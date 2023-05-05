@@ -773,8 +773,6 @@ function get_id(compiler) result(id)
     character(len=*), intent(in) :: compiler
     integer(kind=compiler_enum) :: id
 
-    integer :: stat
-
     if (check_compiler(compiler, "gfortran")) then
         id = id_gcc
         return

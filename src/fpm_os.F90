@@ -136,6 +136,10 @@ contains
     end subroutine c_f_character
 
     !> Determine the canonical, absolute path for the given path.
+    !>
+    !> Calls a C routine that uses the `_WIN32` macro to determine the correct function.
+    !>
+    !> Cannot be used in bootstrap mode.
     subroutine get_realpath(path, real_path, error)
         character(len=*), intent(in) :: path
         character(len=:), allocatable, intent(out) :: real_path
@@ -155,16 +159,7 @@ contains
 
         allocate (cpath(buffersize))
 
-#ifndef FPM_BOOTSTRAP
-        ! Use C routine if not in bootstrap mode.
         ptr = c_realpath(appended_path, cpath, buffersize)
-#else
-#ifndef FPM_IS_WINDOWS
-        ptr = realpath(appended_path, cpath)
-#else
-        ptr = fullpath(cpath, appended_path, buffersize)
-#endif
-#endif
 
         if (c_associated(ptr)) then
             call c_f_character(cpath, real_path)
@@ -172,7 +167,7 @@ contains
             call fatal_error(error, "Failed to retrieve absolute path for '"//path//"'.")
         end if
 
-    end subroutine get_realpath
+    end subroutine
 
     !> Determine the canonical, absolute path for the given path.
     !> Expands home folder (~) on both Unix and Windows.
@@ -182,6 +177,10 @@ contains
         type(error_t), allocatable, intent(out) :: error
 
         character(len=:), allocatable :: home
+
+#ifdef FPM_BOOTSTRAP
+        call get_absolute_path_by_cd(path, absolute_path, error); return
+#endif
 
         if (len_trim(path) < 1) then
             call fatal_error(error, 'Path cannot be empty'); return
@@ -216,6 +215,29 @@ contains
             ! Get canonicalized absolute path from either the absolute or the relative path.
             call get_realpath(path, absolute_path, error)
         end if
+    end subroutine
+
+    !> Alternative to `get_absolute_path` that uses `chdir`/`_chdir` to determine the absolute path.
+    !>
+    !> `get_absolute_path` is preferred but `get_absolute_path_by_cd` can be used in bootstrap mode.
+    subroutine get_absolute_path_by_cd(path, absolute_path, error)
+        character(len=*), intent(in) :: path
+        character(len=:), allocatable, intent(out) :: absolute_path
+        type(error_t), allocatable, intent(out) :: error
+
+        character(len=:), allocatable :: current_path
+
+        call get_current_directory(current_path, error)
+        if (allocated(error)) return
+
+        call change_directory(path, error)
+        if (allocated(error)) return
+
+        call get_current_directory(absolute_path, error)
+        if (allocated(error)) return
+
+        call change_directory(current_path, error)
+        if (allocated(error)) return
     end subroutine
 
     !> Converts a path to an absolute, canonical path.

@@ -126,8 +126,6 @@ contains
             end if
         end if
 
-        call add_fpm_is_windows_macro(package%preprocess)
-
     end subroutine get_package_data
 
 
@@ -182,33 +180,6 @@ contains
         end if
 
     end subroutine package_defaults
-
-
-    !> Add the FPM_IS_WINDOWS macro if it wasn't already defined.
-    subroutine add_fpm_is_windows_macro(preprocessors)
-        !> Preprocessor configurations.
-        type(preprocess_config_t), allocatable, intent(inout) :: preprocessors(:)
-
-        type(preprocess_config_t) :: new_cpp
-        integer :: i, j
-
-        if (os_is_unix()) return
-        if (.not. allocated(preprocessors)) return
-        do i = 1, size(preprocessors)
-            if (preprocessors(i)%export_windows_macro) then
-                if (allocated(preprocessors(i)%macros)) then
-                    ! Do not add if macro is already defined.
-                    do j = 1, size(preprocessors(i)%macros)
-                        if (preprocessors(i)%macros(j)%s == 'FPM_IS_WINDOWS') cycle
-                    end do
-                    ! Macro not found, therefore add it.
-                    preprocessors(i)%macros = [preprocessors(i)%macros, string_t('FPM_IS_WINDOWS')]
-                else
-                    preprocessors(i)%macros = [string_t('FPM_IS_WINDOWS')]
-                end if
-            end if
-        end do
-    end
 
 
 end module fpm_manifest

@@ -7,7 +7,6 @@ copyright = "2020 fpm contributors"
 
 [preprocess]
 [preprocess.cpp]
-export-windows-macro = true
 macros=["FPM_RELEASE_VERSION={version}"]
 
 [dependencies]

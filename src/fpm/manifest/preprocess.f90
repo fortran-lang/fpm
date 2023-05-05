@@ -34,9 +34,6 @@ module fpm_manifest_preprocess
       !> Macros to be defined for the preprocessor
       type(string_t), allocatable :: macros(:)
 
-      !> Export `FPM_IS_WINDOWS` macro on Windows for the respective preprocessor.
-      logical :: export_windows_macro = .false.
-
    contains
 
       !> Print information on this instance
@@ -58,8 +55,6 @@ contains
       !> Error handling
       type(error_t), allocatable, intent(out) :: error
 
-      integer :: stat
-
       call check(table, error)
       if (allocated(error)) return
 
@@ -73,11 +68,6 @@ contains
 
       call get_list(table, "macros", self%macros, error)
       if (allocated(error)) return
-
-      call get_value(table, "export-windows-macro", self%export_windows_macro, .false., stat=stat)
-      if (stat /= toml_stat%success) then
-         call syntax_error(error, "'export-windows-macro' must be a boolean."); return
-      end if
 
    end subroutine new_preprocess_config
 
