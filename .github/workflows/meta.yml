@@ -80,6 +80,7 @@ jobs:
         Start-Process -FilePath "webimage.exe" -ArgumentList "-s -x -f webimage_extracted --log extract.log" -Wait
         Remove-Item "webimage.exe" -Force
         more extract.log
+        Start-Process -FilePath "webimage_extracted\bootstrapper.exe" -ArgumentList "-s --action install --eula=accept --components=""intel.oneapi.win.cpp-compiler:intel.oneapi.win.ifort-compiler:intel.oneapi.win.mpi.devel"" -p=NEED_VS2017_INTEGRATION=0 -p=NEED_VS2019_INTEGRATION=0 -p=NEED_VS2022_INTEGRATION=0 --log-dir=." -Wait
         
     - name: (Ubuntu) Install gfortran
       if: contains(matrix.os,'ubuntu') && (!contains(matrix.mpi,'intel'))
