@@ -2,7 +2,7 @@ module test_os
     use testsuite, only: new_unittest, unittest_t, error_t, test_failed
     use fpm_filesystem, only: env_variable, join_path, mkdir, os_delete_dir, is_dir, get_local_prefix, get_home
     use fpm_environment, only: os_is_unix
-    use fpm_os, only: get_absolute_path
+    use fpm_os, only: get_absolute_path, get_absolute_path_by_cd
 
     implicit none
     private
@@ -27,7 +27,11 @@ contains
         & new_unittest('tilde-nonexistent-path', tilde_nonexistent_path, should_fail=.true.), &
         & new_unittest('abs-path-nonexisting', abs_path_nonexisting, should_fail=.true.), &
         & new_unittest('abs-path-root', abs_path_root), &
-        & new_unittest('abs-path-home', abs_path_home) &
+        & new_unittest('abs-path-home', abs_path_home), &
+        & new_unittest('abs-path-cd-root', abs_path_home), &
+        & new_unittest('abs-path-cd-home', abs_path_cd_home), &
+        & new_unittest('abs-path-cd-current', abs_path_cd_current), &
+        & new_unittest('abs-path-cd-tmp', abs_path_home) &
         ]
 
     end subroutine collect_os
@@ -126,19 +130,17 @@ contains
         call get_absolute_path('/abcde', result, error)
     end
 
-    !> Testing the most obvious absolute path: The root directory.
+    !> Get the absolute path of the root directory.
     subroutine abs_path_root(error)
         type(error_t), allocatable, intent(out) :: error
-        character(len=:), allocatable :: result
-        character(len=:), allocatable :: home_drive
-        character(len=:), allocatable :: home_path
+
+        character(len=:), allocatable :: home_drive, home_path, result
 
         if (os_is_unix()) then
             call get_absolute_path('/', result, error)
 
             if (result /= '/') then
-                call test_failed(error, "Result '"//result//"' doesn't equal input value: '/'")
-                return
+                call test_failed(error, "Result '"//result//"' doesn't equal input value: '/'"); return
             end if
         else
             call env_variable(home_drive, 'HOMEDRIVE')
@@ -147,17 +149,16 @@ contains
             call get_absolute_path(home_path, result, error)
 
             if (result /= home_path) then
-                call test_failed(error, "Result '"//result//"' doesn't equal input value: '"//home_path//"'")
-                return
+                call test_failed(error, "Result '"//result//"' doesn't equal input value: '"//home_path//"'"); return
             end if
         end if
     end
 
-    !> Testing an absolute path which is not root. It should not be altered.
+    !> Get the absolute path of the home directory.
     subroutine abs_path_home(error)
         type(error_t), allocatable, intent(out) :: error
-        character(len=:), allocatable :: result
-        character(len=:), allocatable :: home
+
+        character(len=:), allocatable :: home, result
 
         call get_home(home, error)
         if (allocated(error)) return
@@ -166,8 +167,68 @@ contains
         if (allocated(error)) return
 
         if (result /= home) then
-            call test_failed(error, "Result '"//result//"' doesn't equal home directory '"//home//"'")
-            return
+            call test_failed(error, "Result '"//result//"' doesn't equal home directory '"//home//"'"); return
+        end if
+    end
+
+    !> Get the absolute path of the root directory using `getcwd`/`_getcwd`.
+    subroutine abs_path_cd_root(error)
+        type(error_t), allocatable, intent(out) :: error
+
+        character(len=:), allocatable :: home_drive, home_path, result
+
+        if (os_is_unix()) then
+            call get_absolute_path_by_cd('/', result, error)
+
+            if (result /= '/') then
+                call test_failed(error, "Result '"//result//"' doesn't equal input value: '/'"); return
+            end if
+        else
+            call env_variable(home_drive, 'HOMEDRIVE')
+            home_path = home_drive//'\'
+
+            call get_absolute_path(home_path, result, error)
+
+            if (result /= home_path) then
+                call test_failed(error, "Result '"//result//"' doesn't equal input value: '"//home_path//"'"); return
+            end if
+        end if
+    end
+
+    !> Get the absolute path of the root directory using `getcwd`/`_getcwd`.
+    subroutine abs_path_cd_home(error)
+        type(error_t), allocatable, intent(out) :: error
+
+        character(len=:), allocatable :: home, result
+
+        call get_home(home, error)
+        if (allocated(error)) return
+
+        call get_absolute_path_by_cd(home, result, error)
+        if (allocated(error)) return
+
+        if (result /= home) then
+            call test_failed(error, "Result '"//result//"' doesn't equal home directory '"//home//"'"); return
+        end if
+    end
+
+    !> Get the absolute path of the current directory using `getcwd`/`_getcwd`.
+    subroutine abs_path_cd_current(error)
+        type(error_t), allocatable, intent(out) :: error
+
+        character(len=:), allocatable :: current_dir, result
+
+        if (os_is_unix()) then
+            call env_variable(current_dir, 'PWD')
+        else
+            call env_variable(current_dir, 'CD')
+        end if
+
+        call get_absolute_path_by_cd('.', result, error)
+        if (allocated(error)) return
+
+        if (result /= current_dir) then
+            call test_failed(error, "Result '"//result//"' doesn't equal current directory '"//current_dir//"'"); return
         end if
     end
 

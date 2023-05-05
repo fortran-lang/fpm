@@ -3,9 +3,11 @@ module fpm_os
     use fpm_filesystem, only: exists, join_path, get_home
     use fpm_environment, only: os_is_unix
     use fpm_error, only: error_t, fatal_error
+
     implicit none
     private
-    public :: change_directory, get_current_directory, get_absolute_path, convert_to_absolute_path
+    public :: change_directory, get_current_directory, get_absolute_path, convert_to_absolute_path, &
+            & get_absolute_path_by_cd
 
     integer(c_int), parameter :: buffersize = 1000_c_int
 
