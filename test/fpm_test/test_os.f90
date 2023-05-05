@@ -174,7 +174,10 @@ contains
     subroutine abs_path_cd_root(error)
         type(error_t), allocatable, intent(out) :: error
 
-        character(len=:), allocatable :: home_drive, home_path, result
+        character(len=:), allocatable :: home_drive, home_path, current_dir_before, current_dir_after, result
+
+        call get_current_directory(current_dir_before, error)
+        if (allocated(error)) return
 
         if (os_is_unix()) then
             call get_absolute_path_by_cd('/', result, error)
@@ -186,11 +189,19 @@ contains
             call env_variable(home_drive, 'HOMEDRIVE')
             home_path = home_drive//'\'
 
-            call get_absolute_path(home_path, result, error)
+            call get_absolute_path_by_cd(home_path, result, error)
 
             if (result /= home_path) then
                 call test_failed(error, "Result '"//result//"' doesn't equal input value: '"//home_path//"'"); return
             end if
+        end if
+
+        call get_current_directory(current_dir_after, error)
+        if (allocated(error)) return
+
+        if (current_dir_before /= current_dir_after) then
+            call test_failed(error, "Current directory before getting absolute path '"//current_dir_before// &
+            & "' doesn't equal current directory after getting absolute path '"//current_dir_after//"'."); return
         end if
     end
 
@@ -198,13 +209,24 @@ contains
     subroutine abs_path_cd_home(error)
         type(error_t), allocatable, intent(out) :: error
 
-        character(len=:), allocatable :: home, result
+        character(len=:), allocatable :: home, current_dir_before, current_dir_after, result
+
+        call get_current_directory(current_dir_before, error)
+        if (allocated(error)) return
 
         call get_home(home, error)
         if (allocated(error)) return
 
         call get_absolute_path_by_cd(home, result, error)
         if (allocated(error)) return
+
+        call get_current_directory(current_dir_after, error)
+        if (allocated(error)) return
+
+        if (current_dir_before /= current_dir_after) then
+            call test_failed(error, "Current directory before getting absolute path '"//current_dir_before// &
+            & "' doesn't equal current directory after getting absolute path '"//current_dir_after//"'."); return
+        end if
 
         if (result /= home) then
             call test_failed(error, "Result '"//result//"' doesn't equal home directory '"//home//"'"); return
