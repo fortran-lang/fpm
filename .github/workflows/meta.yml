@@ -73,12 +73,11 @@ jobs:
 
     - name: (Windows) Install OneAPI
       if: contains(matrix.os,'windows') && contains(matrix.mpi,'intel')
-      uses: awvwgk/setup-fortran@main
-      id: setup-fortran
-      with:
-        compiler: intel 
-        version: '2023.1'
-
+      shell: pwsh
+      working-directory: C:\TEMP
+      run: |
+        curl.exe --output .\webimage.exe --url https://registrationcenter-download.intel.com/akdlm/irc_nas/19085/w_HPCKit_p_2023.0.0.25931_offline.exe --retry 5 --retry-delay 5 
+        
     - name: (Ubuntu) Install gfortran
       if: contains(matrix.os,'ubuntu') && (!contains(matrix.mpi,'intel'))
       run: |
