@@ -90,7 +90,7 @@ contains
       do ikey = 1, size(list)
          select case(list(ikey)%key)
          !> Valid keys.
-         case("suffixes", "directories", "macros", "export-windows-macro")
+         case("suffixes", "directories", "macros")
          case default
             call syntax_error(error, "Key '"//list(ikey)%key//"' not allowed in preprocessor '"//name//"'."); exit
          end select
