@@ -2,7 +2,7 @@ module test_os
     use testsuite, only: new_unittest, unittest_t, error_t, test_failed
     use fpm_filesystem, only: env_variable, join_path, mkdir, os_delete_dir, is_dir, get_local_prefix, get_home
     use fpm_environment, only: os_is_unix
-    use fpm_os, only: get_absolute_path, get_absolute_path_by_cd
+    use fpm_os, only: get_absolute_path, get_absolute_path_by_cd, get_current_directory
 
     implicit none
     private
@@ -30,8 +30,7 @@ contains
         & new_unittest('abs-path-home', abs_path_home), &
         & new_unittest('abs-path-cd-root', abs_path_home), &
         & new_unittest('abs-path-cd-home', abs_path_cd_home), &
-        & new_unittest('abs-path-cd-current', abs_path_cd_current), &
-        & new_unittest('abs-path-cd-tmp', abs_path_home) &
+        & new_unittest('abs-path-cd-current', abs_path_cd_current) &
         ]
 
     end subroutine collect_os
@@ -218,11 +217,8 @@ contains
 
         character(len=:), allocatable :: current_dir, result
 
-        if (os_is_unix()) then
-            call env_variable(current_dir, 'PWD')
-        else
-            call env_variable(current_dir, 'CD')
-        end if
+        call get_current_directory(current_dir, error)
+        if (allocated(error)) return
 
         call get_absolute_path_by_cd('.', result, error)
         if (allocated(error)) return
