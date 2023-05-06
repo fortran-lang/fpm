@@ -125,7 +125,7 @@ jobs:
         printenv >> $GITHUB_ENV
 
     - name: (Windows) Put MSYS2_MinGW64 on PATH
-      if: contains(matrix.os,'windows') && !contains(matrix.mpi,'intel')
+      if: contains(matrix.os,'windows') && (!contains(matrix.mpi,'intel'))
       # there is not yet an environment variable for this path from msys2/setup-msys2
       run: echo "${{ runner.temp }}/msys64/mingw64/bin" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
 
@@ -240,7 +240,7 @@ jobs:
         ${{ env.BOOTSTRAP }} run -- --help
 
     - name: Test Fortran fpm (bootstrap)
-      if: !contains(matrix.mpi,'intel')
+      if: (!contains(matrix.mpi,'intel'))
       shell: bash
       run: |
         ${{ env.BOOTSTRAP }} test
