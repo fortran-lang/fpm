@@ -309,6 +309,7 @@ subroutine build_target_list(targets,model)
 
                     associate(target => targets(size(targets))%ptr)
 
+                    ! Linker-only flags are necessary on some compilers for codes with non-Fortran main
                     select case (exe_type)
                        case (FPM_TARGET_C_OBJECT)
                             call model%compiler%get_main_flags("c",compile_flags)
