@@ -690,6 +690,8 @@ subroutine get_main_flags(self, language, flags)
                flags = '-nofor-main'
            case(id_intel_classic_windows,id_intel_llvm_windows)
                flags = '/nofor-main'
+           case (id_pgi,id_nvhpc)
+               flags = '-Mnomain'
         end select
 
     case("c++","cpp","cxx")
@@ -699,6 +701,8 @@ subroutine get_main_flags(self, language, flags)
                flags = '-nofor-main'
            case(id_intel_classic_windows,id_intel_llvm_windows)
                flags = '/nofor-main'
+           case (id_pgi,id_nvhpc)
+               flags = '-Mnomain'
         end select
 
     case default
