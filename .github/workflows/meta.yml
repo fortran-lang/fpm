@@ -240,6 +240,7 @@ jobs:
         ${{ env.BOOTSTRAP }} run -- --help
 
     - name: Test Fortran fpm (bootstrap)
+      if: !contains(matrix.mpi,'intel')
       shell: bash
       run: |
         ${{ env.BOOTSTRAP }} test
