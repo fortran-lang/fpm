@@ -1,17 +1,3 @@
 name = "test_openmp"
-version = "0.1.0"
-license = "license"
-author = "Federico Perini"
-maintainer = "federico.perini@hello.world"
-copyright = "Copyright 2023, Federico Perini and the fpm maintainers"
+dependencies.openmp = "*"
 
-[build]
-auto-executables = true
-auto-tests = true
-auto-examples = true
-
-[dependencies]
-openmp = "*"
-
-[install]
-library = false

@@ -1,20 +1,8 @@
 name = "test_mpi_cpp"
-version = "0.1.0"
-license = "license"
-author = "Federico Perini"
-maintainer = "federico.perini@hello.world"
-copyright = "Copyright 2023, Federico Perini and the fpm maintainers"
+dependencies.mpi="*"
+fortran.implicit-typing=true
+fortran.implicit-external=true
 
 [[executable]]
-name = "test-mpi-cpp"
-main = "main.cpp"
-
-[fortran]
-implicit-typing=true
-implicit-external=true
-
-[dependencies]
-mpi = "*"
-
-[install]
-library = false
+name="test-mpi-cpp"
+main="main.cpp"

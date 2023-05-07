@@ -1,13 +1,2 @@
 name = "test_stdlib"
-version = "0.1.0"
-
-[build]
-auto-executables = true
-auto-tests = true
-auto-examples = true
-
-[dependencies]
-stdlib = "*" 
-
-[install]
-library = false
+dependencies.stdlib = "*" 

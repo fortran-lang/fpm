@@ -1,19 +1,4 @@
 name = "test_mpi"
-version = "0.1.0"
-license = "license"
-author = "Federico Perini"
-maintainer = "federico.perini@hello.world"
-copyright = "Copyright 2023, Federico Perini and the fpm maintainers"
-
-[fortran]
-implicit-external = true
-implicit-typing = true
-
-[build]
-auto-executables = true
-
-[dependencies]
-mpi = "*" 
-
-[install]
-library = false
+dependencies.mpi = "*"
+fortran.implicit-external=true
+fortran.implicit-typing=true
