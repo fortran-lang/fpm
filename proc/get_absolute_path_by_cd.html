@@ -8,7 +8,7 @@
     <meta name="author" content="fortran-lang/fpm contributors" >
     <link rel="icon" href="../favicon.png">
 
-    <title>fortran_features_t &ndash; Fortran-lang/fpm </title>
+    <title>get_absolute_path_by_cd &ndash; Fortran-lang/fpm</title>
 
     <link href="../css/bootstrap.min.css" rel="stylesheet">
     <link href="../css/pygments.css" rel="stylesheet">
@@ -89,8 +89,8 @@
 
     <div class="container">
   <div class="row">
-    <h1>fortran_features_t
-      <small>Derived Type</small>
+    <h1>get_absolute_path_by_cd
+      <small>Subroutine</small>
       
     </h1>
       <div class="row" id="info-bar">
@@ -101,18 +101,18 @@
           <li id="statements"><i class="fa fa-list-ol"></i>
             <a data-toggle="tooltip"
                data-placement="bottom" data-html="true"
-               title="<p> 1.3% of total for derived types.</p>Including implementation: 5 statements,  0.2% of total for derived types.">5 statements</a>
+               title=" 0.3% of total for procedures.">14 statements</a>
           </li>
 
             <li id="source-file">
               <i class="fa fa-code"></i>
-              <a href="../src/fpm_model.f90"> Source File</a>
+              <a href="../src/fpm_os.F90"> Source File</a>
             </li>
         </ul>
         <ol class="breadcrumb in-well text-right">
-              <li><a href='../sourcefile/fpm_model.f90.html'>fpm_model.f90</a></li>
-              <li><a href='../module/fpm_model.html'>fpm_model</a></li>
-          <li class="active">fortran_features_t</li>
+              <li><a href='../sourcefile/fpm_os.f90.html'>fpm_os.F90</a></li>
+              <li><a href='../module/fpm_os.html'>fpm_os</a></li>
+          <li class="active">get_absolute_path_by_cd</li>
         </ol>
       </div>
     </div>
@@ -130,21 +130,6 @@
       <div id="sidebar">
       <h3>Contents</h3>
   
-      <div class="panel panel-primary">
-      <div class="panel-heading text-left">
-        <h3 class="panel-title">
-          <a data-toggle="collapse" href="#vars-0">Variables</a>
-        </h3>
-      </div>
-      <div id="vars-0" class="panel-collapse collapse">
-        <div class="list-group">
-            <a class="list-group-item" href="../type/fortran_features_t.html#variable-implicit_external">implicit_external</a>
-            <a class="list-group-item" href="../type/fortran_features_t.html#variable-implicit_typing">implicit_typing</a>
-            <a class="list-group-item" href="../type/fortran_features_t.html#variable-source_form">source_form</a>
-        </div>
-      </div>
-    </div>
-
   
   
   
@@ -162,12 +147,7 @@
   
   
   
-    <div class="panel panel-primary">
-      <div class="panel-heading text-left"><h3 class="panel-title">Source Code</h3></div>
-      <div class="list-group">
-        <a class="list-group-item" href="../type/fortran_features_t.html#src">fortran_features_t</a>
-      </div>
-    </div>
+  
 
 
   </div>
@@ -175,144 +155,110 @@
     </div>
     
     <div class="col-md-9" id='text'>
-      <h2>type, public :: fortran_features_t</h2>
-    <p>Enabled Fortran language features</p>
-    <br>
+    <h2>public  subroutine get_absolute_path_by_cd(path, absolute_path, error)  
+</h2>
+    
 
-    <section class="visible-xs visible-sm hidden-md">
-        <h3>Contents</h3>
-  
-      <div class="panel panel-primary">
-      <div class="panel-heading text-left">
-        <h3 class="panel-title">
-          <a data-toggle="collapse" href="#vars-1">Variables</a>
-        </h3>
-      </div>
-      <div id="vars-1" class="panel-collapse collapse">
-        <div class="list-group">
-            <a class="list-group-item" href="../type/fortran_features_t.html#variable-implicit_external">implicit_external</a>
-            <a class="list-group-item" href="../type/fortran_features_t.html#variable-implicit_typing">implicit_typing</a>
-            <a class="list-group-item" href="../type/fortran_features_t.html#variable-source_form">source_form</a>
-        </div>
-      </div>
-    </div>
-
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-    <div class="panel panel-primary">
-      <div class="panel-heading text-left"><h3 class="panel-title">Source Code</h3></div>
-      <div class="list-group">
-        <a class="list-group-item" href="../type/fortran_features_t.html#src">fortran_features_t</a>
-      </div>
-    </div>
+    <p>Alternative to <code>get_absolute_path</code> that uses <code>chdir</code>/<code>_chdir</code> to determine the absolute path.</p>
+<p><code>get_absolute_path</code> is preferred but <code>get_absolute_path_by_cd</code> can be used in bootstrap mode.</p>
 
 
-    </section>
-    <br class="visible-xs visible-sm hidden-md">
-
-    <section>
-    <h2>Components</h2>
-      <table class="table table-striped varlist">
+    <h3>Arguments</h3>
+        <table class="table table-striped varlist">
     <thead>
       <tr>
         <th>Type</th>
-<th>Visibility</th>        <th>Attributes</th>
+<th>Intent</th><th>Optional</th>        <th>Attributes</th>
         <th></th>
         <th>Name</th>
-<th></th><th>Initial</th>        <th></th>
+        <th></th>
     </thead>
     <tbody>
         <tr>
             <td>
-              <span class="anchor" id="variable-implicit_external"></span>
-              logical,
+              <span class="anchor" id="variable-path~8"></span>
+              character(len=*),
             </td>
-              <td>public</td>
-            <td>
+<td>intent(in)</td>
+              <td></td>            <td>
               
             </td>
             <td>::</td>
-            <td><strong>implicit_external</strong></td>
-<td> =</td>
-                <td>.false.</td>
+            <td><strong>path</strong></td>
             <td>
-                <p>Use implicit external interface</p>
+                
             </td>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-implicit_typing"></span>
-              logical,
-            </td>
-              <td>public</td>
-            <td>
-              
-            </td>
-            <td>::</td>
-            <td><strong>implicit_typing</strong></td>
-<td> =</td>
-                <td>.false.</td>
-            <td>
-                <p>Use default implicit typing</p>
-            </td>
-        </tr>
-        <tr>
-            <td>
-              <span class="anchor" id="variable-source_form"></span>
+              <span class="anchor" id="variable-absolute_path~2"></span>
               character(len=:),
             </td>
-              <td>public,</td>
-            <td>
+<td>intent(out),</td>
+              <td></td>            <td>
               allocatable
             </td>
             <td>::</td>
-            <td><strong>source_form</strong></td>
-                <td></td>
-                <td></td>
+            <td><strong>absolute_path</strong></td>
             <td>
-                <p>Form to use for all Fortran sources</p>
+                
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-error~89"></span>
+              type(<a href='../type/error_t.html'>error_t</a>),
+            </td>
+<td>intent(out),</td>
+              <td></td>            <td>
+              allocatable
+            </td>
+            <td>::</td>
+            <td><strong>error</strong></td>
+            <td>
+                
             </td>
         </tr>
     </tbody>
   </table>
 
-    </section>
     <br>
+
+    <section class="visible-xs visible-sm hidden-md">
+        <h3>Contents</h3>
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+
+
+    </section>
+    <br class="visible-xs visible-sm hidden-md">
+
+
+    
+    
+
+    
     
 
 
-
-    <section>
-    <h3><span class="anchor" id="src"></span>Source Code</h3>
-    <div class="highlight"><pre><span></span><span class="k">type</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">fortran_features_t</span><span class="w"></span>
-
-<span class="w">    </span><span class="c">!&gt; Use default implicit typing</span>
-<span class="w">    </span><span class="kt">logical</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">implicit_typing</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">.</span><span class="n">false</span><span class="p">.</span><span class="w"></span>
-
-<span class="w">    </span><span class="c">!&gt; Use implicit external interface</span>
-<span class="w">    </span><span class="kt">logical</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">implicit_external</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">.</span><span class="n">false</span><span class="p">.</span><span class="w"></span>
-
-<span class="w">    </span><span class="c">!&gt; Form to use for all Fortran sources</span>
-<span class="w">    </span><span class="kt">character</span><span class="p">(:),</span><span class="w"> </span><span class="k">allocatable</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">source_form</span><span class="w"></span>
-<span class="k">end type </span><span class="n">fortran_features_t</span><span class="w"></span>
-</pre></div>
-
-    </section>
+    
     
     </div>
   </div>

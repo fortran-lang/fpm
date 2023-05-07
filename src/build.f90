@@ -153,10 +153,7 @@ contains
         do ikey = 1, size(list)
             select case(list(ikey)%key)
 
-            case("auto-executables", "auto-examples", "auto-tests", "link", "external-modules")
-                continue
-
-            case ("module-naming")
+            case("auto-executables", "auto-examples", "auto-tests", "link", "external-modules", "module-naming")
                 continue
 
             case default
