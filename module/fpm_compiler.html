@@ -101,7 +101,7 @@
           <li id="statements"><i class="fa fa-list-ol"></i>
             <a data-toggle="tooltip"
                data-placement="bottom" data-html="true"
-               title=" 6.7% of total for modules and submodules.">595 statements</a>
+               title=" 7.1% of total for modules and submodules.">631 statements</a>
           </li>
 
             <li id="source-file">
@@ -269,6 +269,7 @@
             <a class="list-group-item" href="../module/fpm_compiler.html#proc-get_include_flag">get_include_flag</a>
             <a class="list-group-item" href="../module/fpm_compiler.html#proc-get_macros">get_macros</a>
             <a class="list-group-item" href="../module/fpm_compiler.html#proc-get_module_flag">get_module_flag</a>
+            <a class="list-group-item" href="../module/fpm_compiler.html#proc-is_intel">is_intel</a>
             <a class="list-group-item" href="../module/fpm_compiler.html#proc-is_unknown">is_unknown</a>
         </div>
       </div>
@@ -288,6 +289,7 @@
             <a class="list-group-item" href="../module/fpm_compiler.html#proc-get_debug_compile_flags">get_debug_compile_flags</a>
             <a class="list-group-item" href="../module/fpm_compiler.html#proc-get_default_c_compiler">get_default_c_compiler</a>
             <a class="list-group-item" href="../module/fpm_compiler.html#proc-get_default_cxx_compiler">get_default_cxx_compiler</a>
+            <a class="list-group-item" href="../module/fpm_compiler.html#proc-get_main_flags">get_main_flags</a>
             <a class="list-group-item" href="../module/fpm_compiler.html#proc-get_release_compile_flags">get_release_compile_flags</a>
             <a class="list-group-item" href="../module/fpm_compiler.html#proc-link">link</a>
             <a class="list-group-item" href="../module/fpm_compiler.html#proc-make_archive">make_archive</a>
@@ -321,12 +323,12 @@
       <ul class="list-group">
           <li class="list-group-item">
             <ul class="list-inline">
-                <li><a href='../module/fpm_filesystem.html'>fpm_filesystem</a></li>
+                <li><a href='../module/fpm_error.html'>fpm_error</a></li>
+                <li><a href='../module/fpm_manifest.html'>fpm_manifest</a></li>
+                <li><a href='../module/fpm_strings.html'>fpm_strings</a></li>
                 <li><a href='<a href="https://gcc.gnu.org/onlinedocs/gfortran/ISO_005fFORTRAN_005fENV.html">iso_fortran_env</a>'>iso_fortran_env</a></li>
                 <li><a href='../module/fpm_environment.html'>fpm_environment</a></li>
-                <li><a href='../module/fpm_strings.html'>fpm_strings</a></li>
-                <li><a href='../module/fpm_manifest.html'>fpm_manifest</a></li>
-                <li><a href='../module/fpm_error.html'>fpm_error</a></li>
+                <li><a href='../module/fpm_filesystem.html'>fpm_filesystem</a></li>
             </ul>
           </li>
       </ul>
@@ -478,6 +480,7 @@
             <a class="list-group-item" href="../module/fpm_compiler.html#proc-get_include_flag">get_include_flag</a>
             <a class="list-group-item" href="../module/fpm_compiler.html#proc-get_macros">get_macros</a>
             <a class="list-group-item" href="../module/fpm_compiler.html#proc-get_module_flag">get_module_flag</a>
+            <a class="list-group-item" href="../module/fpm_compiler.html#proc-is_intel">is_intel</a>
             <a class="list-group-item" href="../module/fpm_compiler.html#proc-is_unknown">is_unknown</a>
         </div>
       </div>
@@ -497,6 +500,7 @@
             <a class="list-group-item" href="../module/fpm_compiler.html#proc-get_debug_compile_flags">get_debug_compile_flags</a>
             <a class="list-group-item" href="../module/fpm_compiler.html#proc-get_default_c_compiler">get_default_c_compiler</a>
             <a class="list-group-item" href="../module/fpm_compiler.html#proc-get_default_cxx_compiler">get_default_cxx_compiler</a>
+            <a class="list-group-item" href="../module/fpm_compiler.html#proc-get_main_flags">get_main_flags</a>
             <a class="list-group-item" href="../module/fpm_compiler.html#proc-get_release_compile_flags">get_release_compile_flags</a>
             <a class="list-group-item" href="../module/fpm_compiler.html#proc-link">link</a>
             <a class="list-group-item" href="../module/fpm_compiler.html#proc-make_archive">make_archive</a>
@@ -2121,9 +2125,25 @@ parameter
                 <td>
                     procedure
                     ,                  public
+,                   :: <strong><a href='../type/compiler_t.html#boundprocedure-get_main_flags'>get_main_flags</a></strong>
+<small>Subroutine</small>                </td>
+                <td><p>Get flags for the main linking command</p></td>
+              </tr>
+              <tr>
+                <td>
+                    procedure
+                    ,                  public
 ,                   :: <strong><a href='../type/compiler_t.html#boundprocedure-get_module_flag'>get_module_flag</a></strong>
 <small>Function</small>                </td>
                 <td><p>Get flag for module output directories</p></td>
+              </tr>
+              <tr>
+                <td>
+                    procedure
+                    ,                  public
+,                   :: <strong><a href='../type/compiler_t.html#boundprocedure-is_intel'>is_intel</a></strong>
+<small>Function</small>                </td>
+                <td><p>Check whether compiler is Intel family</p></td>
               </tr>
               <tr>
                 <td>
@@ -2651,7 +2671,7 @@ parameter
 </h3></div>
     <div class="panel-body">
           
-  <p>This function will parse and read the macros list and 
+  <p>This function will parse and read the macros list and
 return them as defined flags.
 Set macro defintion symbol on the basis of compiler used
 Check if macros are not allocated.
@@ -2779,6 +2799,51 @@ Split the macro name and value.</p><a href="../proc/get_macros.html" class="pull
     <h4>
     Return Value
     <small>character(len=:), allocatable</small>
+    </h4>
+    
+
+    </div>
+  </div>
+
+              <div class="panel panel-default">
+    <div class="panel-heading codesum"><span class="anchor" id="proc-is_intel"></span><h3>public pure function <a href='../proc/is_intel.html'>is_intel</a>(self)  
+</h3></div>
+    <div class="panel-body">
+          
+  
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th>Type</th>
+<th>Intent</th><th>Optional</th>        <th>Attributes</th>
+        <th></th>
+        <th>Name</th>
+        <th></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" ></span>
+              class(<a href='../type/compiler_t.html'>compiler_t</a>),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>self</strong></td>
+            <td>
+
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+    <h4>
+    Return Value
+    <small>logical</small>
     </h4>
     
 
@@ -3334,6 +3399,76 @@ Split the macro name and value.</p><a href="../proc/get_macros.html" class="pull
             </td>
             <td>::</td>
             <td><strong>cxx_compiler</strong></td>
+            <td>
+
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+
+    </div>
+  </div>
+
+              <div class="panel panel-default">
+    <div class="panel-heading codesum"><span class="anchor" id="proc-get_main_flags"></span><h3>public  subroutine <a href='../proc/get_main_flags.html'>get_main_flags</a>(self, language, flags)  
+</h3></div>
+    <div class="panel-body">
+          
+  <p>Get special flags for the main linker</p>
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th>Type</th>
+<th>Intent</th><th>Optional</th>        <th>Attributes</th>
+        <th></th>
+        <th>Name</th>
+        <th></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" ></span>
+              class(<a href='../type/compiler_t.html'>compiler_t</a>),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>self</strong></td>
+            <td>
+
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" ></span>
+              character(len=*),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>language</strong></td>
+            <td>
+
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" ></span>
+              character(len=:),
+            </td>
+<td>intent(out),</td>
+              <td></td>            <td>
+              allocatable
+            </td>
+            <td>::</td>
+            <td><strong>flags</strong></td>
             <td>
 
             </td>
@@ -3934,7 +4069,7 @@ in case of errors.</p>
             <p class="text-right">
               Documentation generated by
               <a href="https://github.com/Fortran-FOSS-Programmers/ford">FORD</a>
- on 2023-05-07 17:11              </p>
+ on 2023-05-09 17:31              </p>
           </div>
         </div>
         <br>

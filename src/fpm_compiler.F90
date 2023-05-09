@@ -96,6 +96,8 @@ contains
     procedure :: get_include_flag
     !> Get feature flag
     procedure :: get_feature_flag
+    !> Get flags for the main linking command
+    procedure :: get_main_flags
     !> Compile a Fortran object
     procedure :: compile_fortran
     !> Compile a C object
@@ -106,6 +108,8 @@ contains
     procedure :: link
     !> Check whether compiler is recognized
     procedure :: is_unknown
+    !> Check whether compiler is Intel family
+    procedure :: is_intel
     !> Enumerate libraries, based on compiler and platform
     procedure :: enumerate_libraries
 end type compiler_t
@@ -211,7 +215,7 @@ character(*), parameter :: &
     flag_cray_implicit_typing = " -el", &
     flag_cray_fixed_form = " -ffixed", &
     flag_cray_free_form = " -ffree"
-    
+
 contains
 
 
@@ -440,7 +444,7 @@ pure subroutine set_cpp_preprocessor_flags(id, flags)
 
 end subroutine set_cpp_preprocessor_flags
 
-!> This function will parse and read the macros list and 
+!> This function will parse and read the macros list and
 !> return them as defined flags.
 function get_macros(id, macros_list, version) result(macros)
     integer(compiler_enum), intent(in) :: id
@@ -450,7 +454,7 @@ function get_macros(id, macros_list, version) result(macros)
     character(len=:), allocatable :: macros
     character(len=:), allocatable :: macro_definition_symbol
     character(:), allocatable :: valued_macros(:)
-    
+
 
     integer :: i
 
@@ -473,10 +477,10 @@ function get_macros(id, macros_list, version) result(macros)
     end if
 
     do i = 1, size(macros_list)
-        
+
         !> Split the macro name and value.
         call split(macros_list(i)%s, valued_macros, delimiters="=")
- 
+
         if (size(valued_macros) > 1) then
             !> Check if the value of macro starts with '{' character.
             if (str_begins_with_str(trim(valued_macros(size(valued_macros))), "{")) then
@@ -486,15 +490,15 @@ function get_macros(id, macros_list, version) result(macros)
 
                     !> Check if the string contains "version" as substring.
                     if (index(valued_macros(size(valued_macros)), "version") /= 0) then
-                    
+
                         !> These conditions are placed in order to ensure proper spacing between the macros.
                         macros = macros//macro_definition_symbol//trim(valued_macros(1))//'='//version
                         cycle
                     end if
                 end if
-            end if 
+            end if
         end if
-         
+
         macros = macros//macro_definition_symbol//macros_list(i)%s
 
     end do
@@ -663,6 +667,49 @@ function get_feature_flag(self, feature) result(flags)
     end select
 end function get_feature_flag
 
+
+!> Get special flags for the main linker
+subroutine get_main_flags(self, language, flags)
+    class(compiler_t), intent(in) :: self
+    character(len=*), intent(in) :: language
+    character(len=:), allocatable, intent(out) :: flags
+
+    flags = ""
+    select case(language)
+
+    case("fortran")
+        flags = ""
+
+    case("c")
+
+        ! If the main program is on a C/C++ source, the Intel Fortran compiler requires option
+        ! -nofor-main to avoid "duplicate main" errors.
+        ! https://stackoverflow.com/questions/36221612/p3dfft-compilation-ifort-compiler-error-multiple-definiton-of-main
+        select case(self%id)
+           case(id_intel_classic_nix, id_intel_classic_mac, id_intel_llvm_nix)
+               flags = '-nofor-main'
+           case(id_intel_classic_windows,id_intel_llvm_windows)
+               flags = '/nofor-main'
+           case (id_pgi,id_nvhpc)
+               flags = '-Mnomain'
+        end select
+
+    case("c++","cpp","cxx")
+
+        select case(self%id)
+           case(id_intel_classic_nix, id_intel_classic_mac, id_intel_llvm_nix)
+               flags = '-nofor-main'
+           case(id_intel_classic_windows,id_intel_llvm_windows)
+               flags = '/nofor-main'
+           case (id_pgi,id_nvhpc)
+               flags = '-Mnomain'
+        end select
+
+    case default
+        error stop "Unknown language '"//language//'", try "fortran", "c", "c++"'
+    end select
+
+end subroutine get_main_flags
 
 subroutine get_default_c_compiler(f_compiler, c_compiler)
     character(len=*), intent(in) :: f_compiler
@@ -883,6 +930,12 @@ pure function is_unknown(self)
     is_unknown = self%id == id_unknown
 end function is_unknown
 
+pure logical function is_intel(self)
+    class(compiler_t), intent(in) :: self
+    is_intel = any(self%id == [id_intel_classic_mac,id_intel_classic_nix,id_intel_classic_windows,&
+                               id_intel_llvm_nix,id_intel_llvm_unknown,id_intel_llvm_windows])
+end function is_intel
+
 !>
 !> Enumerate libraries, based on compiler and platform
 !>
@@ -917,7 +970,7 @@ subroutine new_compiler(self, fc, cc, cxx, echo, verbose)
     logical, intent(in) :: verbose
 
     self%id = get_compiler_id(fc)
-    
+
     self%echo = echo
     self%verbose = verbose
     self%fc = fc

@@ -8,7 +8,7 @@
     <meta name="author" content="fortran-lang/fpm contributors" >
     <link rel="icon" href="../favicon.png">
 
-    <title>compile_c &ndash; Fortran-lang/fpm</title>
+    <title>get_main_flags &ndash; Fortran-lang/fpm</title>
 
     <link href="../css/bootstrap.min.css" rel="stylesheet">
     <link href="../css/pygments.css" rel="stylesheet">
@@ -89,7 +89,7 @@
 
     <div class="container">
   <div class="row">
-    <h1>compile_c
+    <h1>get_main_flags
       <small>Subroutine</small>
       
     </h1>
@@ -101,7 +101,7 @@
           <li id="statements"><i class="fa fa-list-ol"></i>
             <a data-toggle="tooltip"
                data-placement="bottom" data-html="true"
-               title=" 0.2% of total for procedures.">9 statements</a>
+               title=" 0.6% of total for procedures.">30 statements</a>
           </li>
 
             <li id="source-file">
@@ -112,7 +112,7 @@
         <ol class="breadcrumb in-well text-right">
               <li><a href='../sourcefile/fpm_compiler.f90.html'>fpm_compiler.F90</a></li>
               <li><a href='../module/fpm_compiler.html'>fpm_compiler</a></li>
-          <li class="active">compile_c</li>
+          <li class="active">get_main_flags</li>
         </ol>
       </div>
     </div>
@@ -151,7 +151,7 @@
     <div class="panel panel-primary">
       <div class="panel-heading text-left"><h3 class="panel-title">Source Code</h3></div>
       <div class="list-group">
-        <a class="list-group-item" href="../proc/compile_c.html#src">compile_c</a>
+        <a class="list-group-item" href="../proc/get_main_flags.html#src">get_main_flags</a>
       </div>
     </div>
 
@@ -161,11 +161,11 @@
     </div>
     
     <div class="col-md-9" id='text'>
-    <h2>public  subroutine compile_c(self, input, output, args, log_file, stat)  
+    <h2>public  subroutine get_main_flags(self, language, flags)  
 </h2>
     
 
-    <p>Compile a C object</p>
+    <p>Get special flags for the main linker</p>
 
     <h3>Type Bound</h3>
     <p><a href='../type/compiler_t.html'>compiler_t</a></p>
@@ -183,7 +183,7 @@
     <tbody>
         <tr>
             <td>
-              <span class="anchor" id="variable-self~6"></span>
+              <span class="anchor" id="variable-self~80"></span>
               class(<a href='../type/compiler_t.html'>compiler_t</a>),
             </td>
 <td>intent(in)</td>
@@ -193,12 +193,12 @@
             <td>::</td>
             <td><strong>self</strong></td>
             <td>
-                <p>Instance of the compiler object</p>
+                
             </td>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-input~2"></span>
+              <span class="anchor" id="variable-language"></span>
               character(len=*),
             </td>
 <td>intent(in)</td>
@@ -206,69 +206,24 @@
               
             </td>
             <td>::</td>
-            <td><strong>input</strong></td>
+            <td><strong>language</strong></td>
             <td>
-                <p>Source file input</p>
+                
             </td>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-output~2"></span>
-              character(len=*),
+              <span class="anchor" id="variable-flags~4"></span>
+              character(len=:),
             </td>
-<td>intent(in)</td>
+<td>intent(out),</td>
               <td></td>            <td>
-              
+              allocatable
             </td>
             <td>::</td>
-            <td><strong>output</strong></td>
+            <td><strong>flags</strong></td>
             <td>
-                <p>Output file of object</p>
-            </td>
-        </tr>
-        <tr>
-            <td>
-              <span class="anchor" id="variable-args~2"></span>
-              character(len=*),
-            </td>
-<td>intent(in)</td>
-              <td></td>            <td>
-              
-            </td>
-            <td>::</td>
-            <td><strong>args</strong></td>
-            <td>
-                <p>Arguments for compiler</p>
-            </td>
-        </tr>
-        <tr>
-            <td>
-              <span class="anchor" id="variable-log_file~2"></span>
-              character(len=*),
-            </td>
-<td>intent(in)</td>
-              <td></td>            <td>
-              
-            </td>
-            <td>::</td>
-            <td><strong>log_file</strong></td>
-            <td>
-                <p>Compiler output log file</p>
-            </td>
-        </tr>
-        <tr>
-            <td>
-              <span class="anchor" id="variable-stat~2"></span>
-              integer,
-            </td>
-<td>intent(out)</td>
-              <td></td>            <td>
-              
-            </td>
-            <td>::</td>
-            <td><strong>stat</strong></td>
-            <td>
-                <p>Status flag</p>
+                
             </td>
         </tr>
     </tbody>
@@ -300,7 +255,7 @@
     <div class="panel panel-primary">
       <div class="panel-heading text-left"><h3 class="panel-title">Source Code</h3></div>
       <div class="list-group">
-        <a class="list-group-item" href="../proc/compile_c.html#src">compile_c</a>
+        <a class="list-group-item" href="../proc/get_main_flags.html#src">get_main_flags</a>
       </div>
     </div>
 
@@ -319,23 +274,47 @@
     
     <section>
     <h2><span class="anchor" id="src"></span>Source Code</h2>
-    <div class="highlight"><pre><span></span><span class="k">subroutine </span><span class="n">compile_c</span><span class="p">(</span><span class="n">self</span><span class="p">,</span><span class="w"> </span><span class="n">input</span><span class="p">,</span><span class="w"> </span><span class="n">output</span><span class="p">,</span><span class="w"> </span><span class="n">args</span><span class="p">,</span><span class="w"> </span><span class="n">log_file</span><span class="p">,</span><span class="w"> </span><span class="nb">stat</span><span class="p">)</span><span class="w"></span>
-<span class="w">    </span><span class="c">!&gt; Instance of the compiler object</span>
+    <div class="highlight"><pre><span></span><span class="k">subroutine </span><span class="n">get_main_flags</span><span class="p">(</span><span class="n">self</span><span class="p">,</span><span class="w"> </span><span class="n">language</span><span class="p">,</span><span class="w"> </span><span class="n">flags</span><span class="p">)</span><span class="w"></span>
 <span class="w">    </span><span class="k">class</span><span class="p">(</span><span class="n">compiler_t</span><span class="p">),</span><span class="w"> </span><span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">)</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">self</span><span class="w"></span>
-<span class="w">    </span><span class="c">!&gt; Source file input</span>
-<span class="w">    </span><span class="kt">character</span><span class="p">(</span><span class="nb">len</span><span class="o">=*</span><span class="p">),</span><span class="w"> </span><span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">)</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">input</span><span class="w"></span>
-<span class="w">    </span><span class="c">!&gt; Output file of object</span>
-<span class="w">    </span><span class="kt">character</span><span class="p">(</span><span class="nb">len</span><span class="o">=*</span><span class="p">),</span><span class="w"> </span><span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">)</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">output</span><span class="w"></span>
-<span class="w">    </span><span class="c">!&gt; Arguments for compiler</span>
-<span class="w">    </span><span class="kt">character</span><span class="p">(</span><span class="nb">len</span><span class="o">=*</span><span class="p">),</span><span class="w"> </span><span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">)</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">args</span><span class="w"></span>
-<span class="w">    </span><span class="c">!&gt; Compiler output log file</span>
-<span class="w">    </span><span class="kt">character</span><span class="p">(</span><span class="nb">len</span><span class="o">=*</span><span class="p">),</span><span class="w"> </span><span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">)</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">log_file</span><span class="w"></span>
-<span class="w">    </span><span class="c">!&gt; Status flag</span>
-<span class="w">    </span><span class="kt">integer</span><span class="p">,</span><span class="w"> </span><span class="k">intent</span><span class="p">(</span><span class="n">out</span><span class="p">)</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="nb">stat</span>
+<span class="w">    </span><span class="kt">character</span><span class="p">(</span><span class="nb">len</span><span class="o">=*</span><span class="p">),</span><span class="w"> </span><span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">)</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">language</span><span class="w"></span>
+<span class="w">    </span><span class="kt">character</span><span class="p">(</span><span class="nb">len</span><span class="o">=</span><span class="p">:),</span><span class="w"> </span><span class="k">allocatable</span><span class="p">,</span><span class="w"> </span><span class="k">intent</span><span class="p">(</span><span class="n">out</span><span class="p">)</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">flags</span><span class="w"></span>
 
-<span class="nb">    </span><span class="k">call </span><span class="n">run</span><span class="p">(</span><span class="n">self</span><span class="p">%</span><span class="n">cc</span><span class="w"> </span><span class="o">//</span><span class="w"> </span><span class="s2">&quot; -c &quot;</span><span class="w"> </span><span class="o">//</span><span class="w"> </span><span class="n">input</span><span class="w"> </span><span class="o">//</span><span class="w"> </span><span class="s2">&quot; &quot;</span><span class="w"> </span><span class="o">//</span><span class="w"> </span><span class="n">args</span><span class="w"> </span><span class="o">//</span><span class="w"> </span><span class="s2">&quot; -o &quot;</span><span class="w"> </span><span class="o">//</span><span class="w"> </span><span class="n">output</span><span class="p">,</span><span class="w"> </span><span class="p">&amp;</span><span class="w"></span>
-<span class="w">        </span><span class="p">&amp;</span><span class="w"> </span><span class="n">echo</span><span class="o">=</span><span class="n">self</span><span class="p">%</span><span class="n">echo</span><span class="p">,</span><span class="w"> </span><span class="n">verbose</span><span class="o">=</span><span class="n">self</span><span class="p">%</span><span class="n">verbose</span><span class="p">,</span><span class="w"> </span><span class="n">redirect</span><span class="o">=</span><span class="n">log_file</span><span class="p">,</span><span class="w"> </span><span class="n">exitstat</span><span class="o">=</span><span class="nb">stat</span><span class="p">)</span><span class="w"></span>
-<span class="k">end subroutine </span><span class="n">compile_c</span><span class="w"></span>
+<span class="w">    </span><span class="n">flags</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;&quot;</span><span class="w"></span>
+<span class="w">    </span><span class="k">select case</span><span class="p">(</span><span class="n">language</span><span class="p">)</span><span class="w"></span>
+
+<span class="w">    </span><span class="k">case</span><span class="p">(</span><span class="s2">&quot;fortran&quot;</span><span class="p">)</span><span class="w"></span>
+<span class="w">        </span><span class="n">flags</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;&quot;</span><span class="w"></span>
+
+<span class="w">    </span><span class="k">case</span><span class="p">(</span><span class="s2">&quot;c&quot;</span><span class="p">)</span><span class="w"></span>
+
+<span class="w">        </span><span class="c">! If the main program is on a C/C++ source, the Intel Fortran compiler requires option</span>
+<span class="w">        </span><span class="c">! -nofor-main to avoid &quot;duplicate main&quot; errors.</span>
+<span class="w">        </span><span class="c">! https://stackoverflow.com/questions/36221612/p3dfft-compilation-ifort-compiler-error-multiple-definiton-of-main</span>
+<span class="w">        </span><span class="k">select case</span><span class="p">(</span><span class="n">self</span><span class="p">%</span><span class="n">id</span><span class="p">)</span><span class="w"></span>
+<span class="w">           </span><span class="k">case</span><span class="p">(</span><span class="n">id_intel_classic_nix</span><span class="p">,</span><span class="w"> </span><span class="n">id_intel_classic_mac</span><span class="p">,</span><span class="w"> </span><span class="n">id_intel_llvm_nix</span><span class="p">)</span><span class="w"></span>
+<span class="w">               </span><span class="n">flags</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">&#39;-nofor-main&#39;</span><span class="w"></span>
+<span class="w">           </span><span class="k">case</span><span class="p">(</span><span class="n">id_intel_classic_windows</span><span class="p">,</span><span class="n">id_intel_llvm_windows</span><span class="p">)</span><span class="w"></span>
+<span class="w">               </span><span class="n">flags</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">&#39;/nofor-main&#39;</span><span class="w"></span>
+<span class="w">           </span><span class="k">case</span><span class="w"> </span><span class="p">(</span><span class="n">id_pgi</span><span class="p">,</span><span class="n">id_nvhpc</span><span class="p">)</span><span class="w"></span>
+<span class="w">               </span><span class="n">flags</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">&#39;-Mnomain&#39;</span><span class="w"></span>
+<span class="w">        </span><span class="k">end select</span>
+
+<span class="k">    case</span><span class="p">(</span><span class="s2">&quot;c++&quot;</span><span class="p">,</span><span class="s2">&quot;cpp&quot;</span><span class="p">,</span><span class="s2">&quot;cxx&quot;</span><span class="p">)</span><span class="w"></span>
+
+<span class="w">        </span><span class="k">select case</span><span class="p">(</span><span class="n">self</span><span class="p">%</span><span class="n">id</span><span class="p">)</span><span class="w"></span>
+<span class="w">           </span><span class="k">case</span><span class="p">(</span><span class="n">id_intel_classic_nix</span><span class="p">,</span><span class="w"> </span><span class="n">id_intel_classic_mac</span><span class="p">,</span><span class="w"> </span><span class="n">id_intel_llvm_nix</span><span class="p">)</span><span class="w"></span>
+<span class="w">               </span><span class="n">flags</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">&#39;-nofor-main&#39;</span><span class="w"></span>
+<span class="w">           </span><span class="k">case</span><span class="p">(</span><span class="n">id_intel_classic_windows</span><span class="p">,</span><span class="n">id_intel_llvm_windows</span><span class="p">)</span><span class="w"></span>
+<span class="w">               </span><span class="n">flags</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">&#39;/nofor-main&#39;</span><span class="w"></span>
+<span class="w">           </span><span class="k">case</span><span class="w"> </span><span class="p">(</span><span class="n">id_pgi</span><span class="p">,</span><span class="n">id_nvhpc</span><span class="p">)</span><span class="w"></span>
+<span class="w">               </span><span class="n">flags</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">&#39;-Mnomain&#39;</span><span class="w"></span>
+<span class="w">        </span><span class="k">end select</span>
+
+<span class="k">    case </span><span class="n">default</span><span class="w"></span>
+<span class="w">        </span><span class="k">error stop</span><span class="w"> </span><span class="s2">&quot;Unknown language &#39;&quot;</span><span class="o">//</span><span class="n">language</span><span class="o">//</span><span class="s1">&#39;&quot;, try &quot;fortran&quot;, &quot;c&quot;, &quot;c++&quot;&#39;</span><span class="w"></span>
+<span class="w">    </span><span class="k">end select</span>
+
+<span class="k">end subroutine </span><span class="n">get_main_flags</span><span class="w"></span>
 </pre></div>
 
     </section>
