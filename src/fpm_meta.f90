@@ -572,11 +572,16 @@ logical function msmpi_init(this,compiler,error) result(found)
         ! Check that the runtime is installed
         bindir = get_env('MSMPI_BIN')
 
+        ! Always use DOS paths with no spaces
+        if (len_trim(bindir)>0) then
+            bindir = get_dos_path('C:\Program Files\Microsoft MPI\Bin\mpiexec.exe',error)
+        endif
+
         print *, 'bindir=',bindir
 
         ! In some environments, variable %MSMPI_BIN% is missing (i.e. in GitHub Action images).
         ! Do a second attempt: search for mpiexec.exe
-        if (len_trim(bindir)<=0 .or. .not.exists(bindir)) then
+        if (len_trim(bindir)<=0 .or. .not.exists(bindir) .or. allocated(error)) then
             print *, '+ MSMPI_BIN path does not exist, searching mpiexec.exe....'
             call find_command_location('mpiexec.exe',bindir,verbose=verbose,error=error)
         endif
