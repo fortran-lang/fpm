@@ -577,17 +577,21 @@ logical function msmpi_init(this,compiler,error) result(found)
         ! In some environments, variable %MSMPI_BIN% is missing (i.e. in GitHub Action images).
         ! Do a second attempt: search for mpiexec.exe
         if (len_trim(bindir)<=0 .or. .not.exists(bindir)) then
+            print *, '+ MSMPI_BIN path does not exist, searching mpiexec.exe....'
             call find_command_location('mpiexec.exe',bindir,verbose=verbose,error=error)
         endif
 
         ! Do a third attempt: search for mpiexec.exe in the default location
         if (len_trim(bindir)<=0 .or. .not.exists(bindir) .or. allocated(error)) then
+            print *, '+ MSMPI_BIN path does not exist, searching C:\Program Files\Microsoft MPI\Bin\mpiexec.exe....'
             windir = get_dos_path('C:\Program Files\Microsoft MPI\Bin\mpiexec.exe',error)
 
             print *, 'windir=',windir
 
-            if (.not.allocated(error)) &
-            call find_command_location(windir,bindir,verbose=verbose,error=error)
+            if (.not.allocated(error)) then
+               print *, '+ searching location of ',windir
+               call find_command_location(windir,bindir,verbose=verbose,error=error)
+            endif
 
         endif
 
