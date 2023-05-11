@@ -570,31 +570,26 @@ logical function msmpi_init(this,compiler,error) result(found)
         end if
 
         ! Check that the runtime is installed
-        bindir = get_env('MSMPI_BIN')
+        bindir = ""
+        call get_absolute_path(get_env('MSMPI_BIN'),bindir,error)
 
-        ! Always use DOS paths with no spaces
-        if (len_trim(bindir)>0) then
-            bindir = get_dos_path('C:\Program Files\Microsoft MPI\Bin\mpiexec.exe',error)
-        endif
-
-        print *, 'bindir=',bindir
+        print *, '+ bindir=',bindir
+        print *, '+ windir=',windir
 
         ! In some environments, variable %MSMPI_BIN% is missing (i.e. in GitHub Action images).
-        ! Do a second attempt: search for mpiexec.exe
-        if (len_trim(bindir)<=0 .or. .not.exists(bindir) .or. allocated(error)) then
-            print *, '+ MSMPI_BIN path does not exist, searching mpiexec.exe....'
-            call find_command_location('mpiexec.exe',bindir,verbose=verbose,error=error)
+        ! Do a second attempt: search for the default location
+        if (len_trim(bindir)<=0 .or. allocated(error)) then
+            print *, '+ MSMPI_BIN path does not exist, searching C:\Program Files\Microsoft MPI\Bin\....'
+            call get_absolute_path('C:\Program Files\Microsoft MPI\Bin\mpiexec.exe',bindir,error)
         endif
 
-        ! Do a third attempt: search for mpiexec.exe in the default location
-        if (len_trim(bindir)<=0 .or. .not.exists(bindir) .or. allocated(error)) then
-            print *, '+ MSMPI_BIN path does not exist, searching C:\Program Files\Microsoft MPI\Bin\mpiexec.exe....'
-            windir = get_dos_path('C:\Program Files\Microsoft MPI\Bin\mpiexec.exe',error)
+        ! Do a third attempt: search for mpiexec.exe in PATH location
+        if (len_trim(bindir)<=0 .or. allocated(error)) then
 
-            print *, 'windir=',windir
+            call get_mpi_runner(windir,verbose,error)
 
             if (.not.allocated(error)) then
-               print *, '+ searching location of ',windir
+               print *, '+ searching location of mpi runner, ',windir
                call find_command_location(windir,bindir,verbose=verbose,error=error)
             endif
 
@@ -821,7 +816,7 @@ end subroutine find_command_location
 !> Get MPI runner in $PATH
 subroutine get_mpi_runner(command,verbose,error)
     type(string_t), intent(out) :: command
-    logical, optional, intent(in) :: verbose
+    logical, intent(in) :: verbose
     type(error_t), allocatable, intent(out) :: error
 
     character(*), parameter :: try(*) = ['mpiexec','mpirun ']
