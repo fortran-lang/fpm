@@ -35,7 +35,6 @@ module fpm_manifest_build
         type(string_t) :: module_prefix
 
         !> Libraries to link against
-        !> Libraries to link against
         type(string_t), allocatable :: link(:)
 
         !> External modules to use

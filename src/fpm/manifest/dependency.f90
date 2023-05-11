@@ -230,7 +230,7 @@ contains
         ! An empty table is okay
         if (size(list) < 1) return
 
-        !> If requesting metapackages, do not stop on meta keywords
+        !> Count non-metapackage dependencies, and parse metapackage config
         if (present(meta)) then
             ndep = 0
             do idep = 1, size(list)
@@ -241,16 +241,15 @@ contains
             !> Return metapackages config from this node
             call new_meta_config(meta, table, error)
             if (allocated(error)) return
-
         else
             ndep = size(list)
         end if
 
+        ! Generate non-metapackage dependencies
         allocate(deps(ndep))
         ndep = 0
         do idep = 1, size(list)
 
-            ! Skip meta packages
             if (present(meta) .and. is_meta_package(list(idep)%key)) cycle
 
             ndep = ndep+1

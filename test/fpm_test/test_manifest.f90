@@ -1367,7 +1367,7 @@ contains
         !> Error handling
         type(error_t), allocatable, intent(out) :: error
 
-        character(len=:), allocatable :: macrosPackage, macrosDependency
+        character(len=:), allocatable :: macros_package, macros_pependency
 
         type(package_config_t) :: package, dependency
 
@@ -1413,10 +1413,10 @@ contains
         pkg_ver = package%version%s()
         dep_ver = dependency%version%s()
 
-        macrosPackage = get_macros(id, package%preprocess(1)%macros, pkg_ver)
-        macrosDependency = get_macros(id, dependency%preprocess(1)%macros, dep_ver)
+        macros_package = get_macros(id, package%preprocess(1)%macros, pkg_ver)
+        macros_pependency = get_macros(id, dependency%preprocess(1)%macros, dep_ver)
 
-        if (macrosPackage == macrosDependency) then
+        if (macros_package == macros_pependency) then
             call test_failed(error, "Macros of package and dependency should not be equal")
         end if
 

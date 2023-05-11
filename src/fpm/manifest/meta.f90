@@ -62,7 +62,7 @@ contains
 
     end subroutine request_destroy
 
-    !> Parse version string of a metapackage reques
+    !> Parse version string of a metapackage request
     subroutine request_parse(self, version_request, error)
 
         ! Instance of this metapackage
