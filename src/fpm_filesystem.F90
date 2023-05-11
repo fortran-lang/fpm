@@ -16,7 +16,7 @@ module fpm_filesystem
             filewrite, warnwrite, parent_dir, is_hidden_file, read_lines, read_lines_expanded, which, run, &
             LINE_BUFFER_LEN, os_delete_dir, is_absolute_path, env_variable, get_home, get_tmp_directory, &
             execute_and_read_output, get_dos_path
-    integer, parameter :: LINE_BUFFER_LEN = 1000
+    integer, parameter :: LINE_BUFFER_LEN = 32768
 
 #ifndef FPM_BOOTSTRAP
     interface
