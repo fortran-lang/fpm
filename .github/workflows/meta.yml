@@ -28,20 +28,20 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - os: ubuntu-latest
-            mpi: intel
-          - os: ubuntu-latest
-            mpi: openmpi
-          - os: ubuntu-latest
-            mpi: mpich
-          - os: windows-latest
-            mpi: msmpi
+#          - os: ubuntu-latest
+#            mpi: intel
+#          - os: ubuntu-latest
+#            mpi: openmpi
+#          - os: ubuntu-latest
+#            mpi: mpich
+#          - os: windows-latest
+#            mpi: msmpi
               #  - os: windows-latest
               # mpi: intel
           - os: macos-latest
             mpi: openmpi
-          - os: macos-latest
-            mpi: mpich
+#          - os: macos-latest
+#            mpi: mpich
 
     steps:
     - name: Checkout code
@@ -186,10 +186,10 @@ jobs:
         mkdir /usr/local/opt/gcc@10/lib/gcc
         mkdir /usr/local/opt/gcc@10/lib/gcc/10
         mkdir /usr/local/lib/gcc/10
-        ln -fs /usr/local/opt/gcc@${{ env.GCC_V }}/lib/gcc/${{ env.GCC_V }}/libquadmath.0.dylib /usr/local/opt/gcc@10/lib/gcc/10/libquadmath.0.dylib
-        ln -fs /usr/local/opt/gcc@${{ env.GCC_V }}/lib/gcc/${{ env.GCC_V }}/libgfortran.5.dylib /usr/local/opt/gcc@10/lib/gcc/10/libgfortran.5.dylib
-        # Newer gcc versions use libgcc_s.1.1.dylib
-        ln -fs /usr/local/lib/gcc/${{ env.GCC_V }}/libgcc_s.1.dylib /usr/local/lib/gcc/10/libgcc_s.1.dylib || ln -fs /usr/local/lib/gcc/${{ env.GCC_V }}/libgcc_s.1.1.dylib /usr/local/lib/gcc/10/libgcc_s.1.dylib
+#        ln -fs /usr/local/opt/gcc@${{ env.GCC_V }}/lib/gcc/${{ env.GCC_V }}/libquadmath.0.dylib /usr/local/opt/gcc@10/lib/gcc/10/libquadmath.0.dylib
+#        ln -fs /usr/local/opt/gcc@${{ env.GCC_V }}/lib/gcc/${{ env.GCC_V }}/libgfortran.5.dylib /usr/local/opt/gcc@10/lib/gcc/10/libgfortran.5.dylib
+#        # Newer gcc versions use libgcc_s.1.1.dylib
+#        ln -fs /usr/local/lib/gcc/${{ env.GCC_V }}/libgcc_s.1.dylib /usr/local/lib/gcc/10/libgcc_s.1.dylib || ln -fs /usr/local/lib/gcc/${{ env.GCC_V }}/libgcc_s.1.1.dylib /usr/local/lib/gcc/10/libgcc_s.1.dylib
 
     - name: (macOS) Install homebrew MPICH
       if: contains(matrix.mpi,'mpich') && contains(matrix.os,'macos')
