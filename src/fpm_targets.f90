@@ -194,7 +194,7 @@ subroutine build_target_list(targets,model)
     type(fpm_model_t), intent(inout), target :: model
 
     integer :: i, j, n_source, exe_type
-    character(:), allocatable :: xsuffix, exe_dir
+    character(:), allocatable :: xsuffix, exe_dir, compile_flags
     logical :: with_lib
 
     ! Check for empty build (e.g. header-only lib)
@@ -307,19 +307,18 @@ subroutine build_target_list(targets,model)
                                     output_name = join_path(exe_dir, &
                                     sources(i)%exe_name//xsuffix))
 
+                    associate(target => targets(size(targets))%ptr)
 
-                    associate(target=>targets(size(targets))%ptr)
-
-                    ! If the main program is on a C/C++ source, the Intel Fortran compiler requires option
-                    ! -nofor-main to avoid "duplicate main" errors.
-                    ! https://stackoverflow.com/questions/36221612/p3dfft-compilation-ifort-compiler-error-multiple-definiton-of-main
-                    if (model%compiler%is_intel() .and. any(exe_type==[FPM_TARGET_C_OBJECT,FPM_TARGET_CPP_OBJECT])) then
-                       if (get_os_type()==OS_WINDOWS) then
-                           target%compile_flags = '/nofor-main'
-                       else
-                           target%compile_flags = '-nofor-main'
-                       end if
-                    end if
+                    ! Linker-only flags are necessary on some compilers for codes with non-Fortran main
+                    select case (exe_type)
+                       case (FPM_TARGET_C_OBJECT)
+                            call model%compiler%get_main_flags("c",compile_flags)
+                       case (FPM_TARGET_CPP_OBJECT)
+                            call model%compiler%get_main_flags("c++",compile_flags)
+                       case default
+                            compile_flags = ""
+                    end select
+                    target%compile_flags = target%compile_flags//' '//compile_flags
 
                     ! Executable depends on object
                     call add_dependency(target, targets(size(targets)-1)%ptr)
@@ -826,26 +825,22 @@ subroutine resolve_target_linking(targets, model)
 
         associate(target => targets(i)%ptr)
 
-            ! May have been previously allocated
+            ! If the main program is a C/C++ one, some compilers require additional linking flags, see
+            ! https://stackoverflow.com/questions/36221612/p3dfft-compilation-ifort-compiler-error-multiple-definiton-of-main
+            ! In this case, compile_flags were already allocated
             if (.not.allocated(target%compile_flags)) allocate(character(len=0) :: target%compile_flags)
 
             target%compile_flags = target%compile_flags//' '
-
-            if (target%target_type /= FPM_TARGET_C_OBJECT .and. target%target_type /= FPM_TARGET_CPP_OBJECT) then
-                target%compile_flags = target%compile_flags//model%fortran_compile_flags &
-                    & // get_feature_flags(model%compiler, target%features)
-            else if (target%target_type == FPM_TARGET_C_OBJECT) then
-                target%compile_flags = target%compile_flags//model%c_compile_flags
-            else if(target%target_type == FPM_TARGET_CPP_OBJECT) then
-                target%compile_flags = target%compile_flags//model%cxx_compile_flags
-            end if
-
-            ! If the main program is a C/C++ one, Intel compilers require additional
-            ! linking flag -nofor-main to avoid a "duplicate main" error, see
-            ! https://stackoverflow.com/questions/36221612/p3dfft-compilation-ifort-compiler-error-multiple-definiton-of-main
-            if (model%compiler%is_intel() .and. target%target_type==FPM_TARGET_EXECUTABLE) then
-                print *, 'target compile flags ',target%compile_flags
-            end if
+            
+            select case (target%target_type)
+               case (FPM_TARGET_C_OBJECT)
+                   target%compile_flags = target%compile_flags//model%c_compile_flags
+               case (FPM_TARGET_CPP_OBJECT)
+                   target%compile_flags = target%compile_flags//model%cxx_compile_flags
+               case default
+                   target%compile_flags = target%compile_flags//model%fortran_compile_flags &
+                                        & // get_feature_flags(model%compiler, target%features)
+            end select   
 
             !> Get macros as flags.
             target%compile_flags = target%compile_flags // get_macros(model%compiler%id, &

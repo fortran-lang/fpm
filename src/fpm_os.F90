@@ -3,9 +3,11 @@ module fpm_os
     use fpm_filesystem, only: exists, join_path, get_home
     use fpm_environment, only: os_is_unix
     use fpm_error, only: error_t, fatal_error
+
     implicit none
     private
-    public :: change_directory, get_current_directory, get_absolute_path, convert_to_absolute_path
+    public :: change_directory, get_current_directory, get_absolute_path, convert_to_absolute_path, &
+            & get_absolute_path_by_cd
 
     integer(c_int), parameter :: buffersize = 1000_c_int
 
@@ -47,8 +49,18 @@ module fpm_os
             type(c_ptr) :: ptr
         end function realpath
 
+        !> Determine the absolute, canonicalized path for a given path. Windows-only.
+        function fullpath(resolved_path, path, maxLength) result(ptr) bind(C, name="_fullpath")
+            import :: c_ptr, c_char, c_int
+            character(kind=c_char, len=1), intent(in) :: path(*)
+            character(kind=c_char, len=1), intent(out) :: resolved_path(*)
+            integer(c_int), value, intent(in) :: maxLength
+            type(c_ptr) :: ptr
+        end function fullpath
+
         !> Determine the absolute, canonicalized path for a given path.
-        !> Calls custom C routine and is able to distinguish between Unix and Windows.
+        !> Calls custom C routine because the `_WIN32` macro is correctly exported
+        !> in C using `gfortran`.
         function c_realpath(path, resolved_path, maxLength) result(ptr) &
             bind(C, name="c_realpath")
             import :: c_ptr, c_char, c_int
@@ -126,6 +138,10 @@ contains
     end subroutine c_f_character
 
     !> Determine the canonical, absolute path for the given path.
+    !>
+    !> Calls a C routine that uses the `_WIN32` macro to determine the correct function.
+    !>
+    !> Cannot be used in bootstrap mode.
     subroutine get_realpath(path, real_path, error)
         character(len=*), intent(in) :: path
         character(len=:), allocatable, intent(out) :: real_path
@@ -145,10 +161,7 @@ contains
 
         allocate (cpath(buffersize))
 
-! The _WIN32 macro is currently not exported using gfortran.
-#if defined(FPM_BOOTSTRAP) && !defined(_WIN32)
-        ptr = realpath(appended_path, cpath)
-#else
+#ifndef FPM_BOOTSTRAP
         ptr = c_realpath(appended_path, cpath, buffersize)
 #endif
 
@@ -158,7 +171,7 @@ contains
             call fatal_error(error, "Failed to retrieve absolute path for '"//path//"'.")
         end if
 
-    end subroutine get_realpath
+    end subroutine
 
     !> Determine the canonical, absolute path for the given path.
     !> Expands home folder (~) on both Unix and Windows.
@@ -169,49 +182,66 @@ contains
 
         character(len=:), allocatable :: home
 
+#ifdef FPM_BOOTSTRAP
+        call get_absolute_path_by_cd(path, absolute_path, error); return
+#endif
+
         if (len_trim(path) < 1) then
-            ! Empty path
-            call fatal_error(error, 'Path cannot be empty')
-            return
+            call fatal_error(error, 'Path cannot be empty'); return
         else if (path(1:1) == '~') then
-            ! Expand home
             call get_home(home, error)
             if (allocated(error)) return
 
             if (len_trim(path) == 1) then
-                absolute_path = home
-                return
+                absolute_path = home; return
             end if
 
             if (os_is_unix()) then
                 if (path(2:2) /= '/') then
-                    call fatal_error(error, "Wrong separator in path: '"//path//"'")
-                    return
+                    call fatal_error(error, "Wrong separator in path: '"//path//"'"); return
                 end if
             else
                 if (path(2:2) /= '\') then
-                    call fatal_error(error, "Wrong separator in path: '"//path//"'")
-                    return
+                    call fatal_error(error, "Wrong separator in path: '"//path//"'"); return
                 end if
             end if
 
             if (len_trim(path) == 2) then
-                absolute_path = home
-                return
+                absolute_path = home; return
             end if
 
             absolute_path = join_path(home, path(3:len_trim(path)))
 
             if (.not. exists(absolute_path)) then
-                call fatal_error(error, "Path not found: '"//absolute_path//"'")
-                deallocate (absolute_path)
-                return
+                call fatal_error(error, "Path not found: '"//absolute_path//"'"); return
             end if
         else
             ! Get canonicalized absolute path from either the absolute or the relative path.
             call get_realpath(path, absolute_path, error)
         end if
+    end subroutine
 
+    !> Alternative to `get_absolute_path` that uses `chdir`/`_chdir` to determine the absolute path.
+    !>
+    !> `get_absolute_path` is preferred but `get_absolute_path_by_cd` can be used in bootstrap mode.
+    subroutine get_absolute_path_by_cd(path, absolute_path, error)
+        character(len=*), intent(in) :: path
+        character(len=:), allocatable, intent(out) :: absolute_path
+        type(error_t), allocatable, intent(out) :: error
+
+        character(len=:), allocatable :: current_path
+
+        call get_current_directory(current_path, error)
+        if (allocated(error)) return
+
+        call change_directory(path, error)
+        if (allocated(error)) return
+
+        call get_current_directory(absolute_path, error)
+        if (allocated(error)) return
+
+        call change_directory(current_path, error)
+        if (allocated(error)) return
     end subroutine
 
     !> Converts a path to an absolute, canonical path.

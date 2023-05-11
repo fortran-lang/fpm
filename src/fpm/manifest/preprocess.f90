@@ -10,7 +10,7 @@
 !> macros = []
 !> ```
 
-module fpm_mainfest_preprocess
+module fpm_manifest_preprocess
    use fpm_error, only : error_t, syntax_error
    use fpm_strings, only : string_t
    use fpm_toml, only : toml_table, toml_key, toml_stat, get_value, get_list
@@ -82,27 +82,17 @@ contains
 
       character(len=:), allocatable :: name
       type(toml_key), allocatable :: list(:)
-      logical :: suffixes_present, directories_present, macros_present
       integer :: ikey
-
-      suffixes_present = .false.
-      directories_present = .false.
-      macros_present = .false.
 
       call table%get_key(name)
       call table%get_keys(list)
 
       do ikey = 1, size(list)
          select case(list(ikey)%key)
-          case default
-            call syntax_error(error, "Key " // list(ikey)%key // "is not allowed in preprocessor"//name)
-            exit
-          case("suffixes")
-            suffixes_present = .true.
-          case("directories")
-            directories_present = .true.
-          case("macros")
-            macros_present = .true.
+         !> Valid keys.
+         case("suffixes", "directories", "macros")
+         case default
+            call syntax_error(error, "Key '"//list(ikey)%key//"' not allowed in preprocessor '"//name//"'."); exit
          end select
       end do
    end subroutine check
@@ -191,4 +181,4 @@ contains
 
    end subroutine info
 
-end module fpm_mainfest_preprocess
+end module fpm_manifest_preprocess

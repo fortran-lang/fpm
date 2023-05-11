@@ -47,10 +47,8 @@ module fpm_manifest_package
     use fpm_manifest_metapackages, only: metapackage_config_t, new_meta_config
     use fpm_filesystem, only : exists, getline, join_path
     use fpm_error, only : error_t, fatal_error, syntax_error, bad_name_error
-    use fpm_toml, only : toml_table, toml_array, toml_key, toml_stat, get_value, &
-        & len
+    use fpm_toml, only : toml_table, toml_array, toml_key, toml_stat, get_value, len
     use fpm_versioning, only : version_t, new_version
-    use fpm_filesystem, only: join_path
     implicit none
     private
 
@@ -176,7 +174,7 @@ contains
             call fatal_error(error, "Type mismatch for build entry, must be a table")
             return
         end if
-        call new_build_config(self%build, child, error)
+        call new_build_config(self%build, child, self%name, error)
         if (allocated(error)) return
 
         call get_value(table, "install", child, requested=.true., stat=stat)
