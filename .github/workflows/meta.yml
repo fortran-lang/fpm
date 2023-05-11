@@ -178,7 +178,7 @@ jobs:
         # Only install gcc if not already available
         which gfortran-${{ env.GCC_V }} || brew install gcc@${{ env.GCC_V }}
         which gfortran-${{ env.GCC_V }}
-        # which gfortran
+        which gfortran || ln -s /usr/local/bin/gfortran-${{ env.GCC_V }} /usr/local/bin/gfortran
         # Backport gfortran shared libraries to version 10 folder. This is necessary because all macOS releases of fpm
         # have these paths hardcoded in the executable (no PIC?). Current bootstrap version 0.8.0 has gcc-10
         mkdir /usr/local/opt/gcc@10
@@ -186,10 +186,10 @@ jobs:
         mkdir /usr/local/opt/gcc@10/lib/gcc
         mkdir /usr/local/opt/gcc@10/lib/gcc/10
         mkdir /usr/local/lib/gcc/10
-        #ln -fs /usr/local/opt/gcc@${{ env.GCC_V }}/lib/gcc/${{ env.GCC_V }}/libquadmath.0.dylib /usr/local/opt/gcc@10/lib/gcc/10/libquadmath.0.dylib
-        #ln -fs /usr/local/opt/gcc@${{ env.GCC_V }}/lib/gcc/${{ env.GCC_V }}/libgfortran.5.dylib /usr/local/opt/gcc@10/lib/gcc/10/libgfortran.5.dylib
-        ## Newer gcc versions use libgcc_s.1.1.dylib
-        #ln -fs /usr/local/lib/gcc/${{ env.GCC_V }}/libgcc_s.1.dylib /usr/local/lib/gcc/10/libgcc_s.1.dylib || ln -fs /usr/local/lib/gcc/${{ env.GCC_V }}/libgcc_s.1.1.dylib /usr/local/lib/gcc/10/libgcc_s.1.dylib
+        ln -fs /usr/local/opt/gcc@${{ env.GCC_V }}/lib/gcc/${{ env.GCC_V }}/libquadmath.0.dylib /usr/local/opt/gcc@10/lib/gcc/10/libquadmath.0.dylib
+        ln -fs /usr/local/opt/gcc@${{ env.GCC_V }}/lib/gcc/${{ env.GCC_V }}/libgfortran.5.dylib /usr/local/opt/gcc@10/lib/gcc/10/libgfortran.5.dylib
+        # Newer gcc versions use libgcc_s.1.1.dylib
+        ln -fs /usr/local/lib/gcc/${{ env.GCC_V }}/libgcc_s.1.dylib /usr/local/lib/gcc/10/libgcc_s.1.dylib || ln -fs /usr/local/lib/gcc/${{ env.GCC_V }}/libgcc_s.1.1.dylib /usr/local/lib/gcc/10/libgcc_s.1.dylib
 
     - name: (macOS) Install homebrew MPICH
       if: contains(matrix.mpi,'mpich') && contains(matrix.os,'macos')
