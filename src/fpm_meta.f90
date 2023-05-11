@@ -94,7 +94,7 @@ integer, parameter :: MPI_TYPE_MSMPI   = 4
 public             :: MPI_TYPE_NAME
 
 !> Debugging information
-logical, parameter, private :: verbose = .true.
+logical, parameter, private :: verbose = .false.
 
 integer, parameter, private :: LANG_FORTRAN = 1
 integer, parameter, private :: LANG_C       = 2
@@ -572,24 +572,23 @@ logical function msmpi_init(this,compiler,error) result(found)
         ! Check that the runtime is installed
         bindir = ""
         call get_absolute_path(get_env('MSMPI_BIN'),bindir,error)
-
-        print *, '+ bindir=',bindir
-        print *, '+ windir=',windir
+        if (verbose) print *, '+ %MSMPI_BIN%=',bindir
 
         ! In some environments, variable %MSMPI_BIN% is missing (i.e. in GitHub Action images).
         ! Do a second attempt: search for the default location
         if (len_trim(bindir)<=0 .or. allocated(error)) then
-            print *, '+ MSMPI_BIN path does not exist, searching C:\Program Files\Microsoft MPI\Bin\....'
+            if (verbose) print *, '+ %MSMPI_BIN% empty, searching C:\Program Files\Microsoft MPI\Bin\ ...'
             call get_absolute_path('C:\Program Files\Microsoft MPI\Bin\mpiexec.exe',bindir,error)
         endif
 
         ! Do a third attempt: search for mpiexec.exe in PATH location
         if (len_trim(bindir)<=0 .or. allocated(error)) then
+            if (verbose) print *, '+ C:\Program Files\Microsoft MPI\Bin\ not found. searching %PATH%...'
 
             call get_mpi_runner(runner_path,verbose,error)
 
             if (.not.allocated(error)) then
-               print *, '+ searching location of mpi runner, ',windir
+               if (verbose) print *, '+ mpiexec found: ',runner_path%s
                call find_command_location(runner_path%s,bindir,verbose=verbose,error=error)
             endif
 
@@ -731,18 +730,12 @@ subroutine find_command_location(command,path,echo,verbose,error)
         return
     end if
 
-    print *, '+ get temp filename...'
-
     tmp_file = get_temp_filename()
-
-    print *, '+ get temp filename... '//tmp_file
 
     ! On Windows, we try both commands because we may be on WSL
     do try=merge(1,2,get_os_type()==OS_WINDOWS),2
        search_command = search(try)//command
-       print *, '+ attempt ',try,': ',search_command
        call run(search_command, echo=echo, exitstat=stat, verbose=verbose, redirect=tmp_file)
-       print *, 'after run, stat=',stat
        if (stat==0) exit
     end do
     if (stat/=0) then
@@ -756,7 +749,6 @@ subroutine find_command_location(command,path,echo,verbose,error)
     if (stat == 0)then
        do
            call getline(iunit, line, stat)
-           print *, 'get line, stat=',stat
            if (stat /= 0) exit
            if (len(screen_output)>0) then
                 screen_output = screen_output//new_line('a')//line
@@ -774,7 +766,6 @@ subroutine find_command_location(command,path,echo,verbose,error)
     ! Only use the first instance
     length = index(screen_output,new_line('a'))
 
-    print *, '+ get line length: ',length
     multiline: if (length>1) then
         fullpath = screen_output(1:length-1)
     else
@@ -787,7 +778,6 @@ subroutine find_command_location(command,path,echo,verbose,error)
 
     ! Extract path only
     length = index(fullpath,command,BACK=.true.)
-    print *, 'extract fullpath, length=',length
     if (length<=0) then
         call fatal_error(error,'full path to command ('//command//') does not include command name')
         return
@@ -800,11 +790,7 @@ subroutine find_command_location(command,path,echo,verbose,error)
     if (allocated(error)) return
 
     ! On Windows, be sure to return a path with no spaces
-    if (get_os_type()==OS_WINDOWS) then
-        print *, 'get dos path'
-        path = get_dos_path(path,error)
-        print *, 'dos path = ',path
-    end if
+    if (get_os_type()==OS_WINDOWS) path = get_dos_path(path,error)
 
     if (allocated(error) .or. .not.is_dir(path)) then
         call fatal_error(error,'full path ('//path//') to command ('//command//') is not a directory')
@@ -1195,7 +1181,7 @@ subroutine run_mpi_wrapper(wrapper,args,verbose,exitcode,cmd_success,screen_outp
 
     ! Empty command
     if (len_trim(wrapper)<=0) then
-        if (verbose) print *, '+ <EMPTY COMMAND>'
+        if (echo_local) print *, '+ <EMPTY COMMAND>'
         if (present(exitcode)) exitcode = 0
         if (present(cmd_success)) cmd_success = .true.
         if (present(screen_output)) screen_output = string_t("")
