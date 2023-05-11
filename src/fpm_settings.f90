@@ -56,8 +56,8 @@ contains
     ! Use custom path to the config file if it was specified.
     if (global_settings%has_custom_location()) then
       ! Throw error if folder doesn't exist.
-      if (.not. exists(global_settings%path_to_config_folder)) then
-        call fatal_error(error, "Folder not found: '"//global_settings%path_to_config_folder//"'."); return
+      if (.not. exists(config_path(global_settings))) then
+        call fatal_error(error, "Folder not found: '"//config_path(global_settings)//"'."); return
       end if
 
       ! Throw error if the file doesn't exist.
@@ -115,7 +115,7 @@ contains
 
     allocate (global_settings%registry_settings)
     global_settings%registry_settings%url = official_registry_base_url
-    global_settings%registry_settings%cache_path = join_path(global_settings%path_to_config_folder, &
+    global_settings%registry_settings%cache_path = join_path(config_path(global_settings), &
     & 'dependencies')
   end subroutine use_default_registry_settings
 
@@ -155,7 +155,7 @@ contains
         global_settings%registry_settings%path = path
       else
         ! Get canonical, absolute path on both Unix and Windows.
-        call get_absolute_path(join_path(global_settings%path_to_config_folder, path), &
+        call get_absolute_path(join_path(config_path(global_settings), path), &
         & global_settings%registry_settings%path, error)
         if (allocated(error)) return
 
@@ -201,15 +201,15 @@ contains
         if (.not. exists(cache_path)) call mkdir(cache_path)
         global_settings%registry_settings%cache_path = cache_path
       else
-        cache_path = join_path(global_settings%path_to_config_folder, cache_path)
+        cache_path = join_path(config_path(global_settings), cache_path)
         if (.not. exists(cache_path)) call mkdir(cache_path)
         ! Get canonical, absolute path on both Unix and Windows.
         call get_absolute_path(cache_path, global_settings%registry_settings%cache_path, error)
         if (allocated(error)) return
       end if
     else if (.not. allocated(path)) then
-      global_settings%registry_settings%cache_path = join_path(global_settings%path_to_config_folder, &
-      & 'dependencies')
+       global_settings%registry_settings%cache_path = join_path(config_path(global_settings), &
+    &    'dependencies')
     end if
   end subroutine get_registry_settings
 
@@ -225,7 +225,19 @@ contains
     class(fpm_global_settings), intent(in) :: self
     character(len=:), allocatable :: result
 
-    result = join_path(self%path_to_config_folder, self%config_file_name)
+    result = join_path(config_path(self), self%config_file_name)
   end function
+
+  !> The path to the global config directory.
+  function config_path(self)
+    class(fpm_global_settings), intent(in) :: self
+    character(len=:), allocatable :: config_path
+
+    if (allocated(self%path_to_config_folder)) then
+        config_path = self%path_to_config_folder
+    else
+        config_path = ""
+    end if
+  end function config_path
 
 end module fpm_settings
