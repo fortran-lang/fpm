@@ -34,7 +34,7 @@ jobs:
             mpi: openmpi
           - os: ubuntu-latest
             mpi: mpich
-          - os: windows-latest 
+          - os: windows-latest
             mpi: msmpi
               #  - os: windows-latest
               # mpi: intel
@@ -51,7 +51,7 @@ jobs:
       if: contains(matrix.os,'ubuntu')
       run: |
         echo "GCC_V=10" >> $GITHUB_ENV
-        
+
     - name: (macOS) setup gcc version
       if: contains(matrix.os,'macos')
       run: |
@@ -59,7 +59,7 @@ jobs:
 
     - name: (Windows) Install MSYS2
       uses: msys2/setup-msys2@v2
-      if: contains(matrix.os,'windows') && contains(matrix.mpi,'msmpi') 
+      if: contains(matrix.os,'windows') && contains(matrix.mpi,'msmpi')
       with:
         msystem: MINGW64
         update: true
@@ -70,22 +70,22 @@ jobs:
           unzip
           curl
           gcc-fortran
-          
-    - name: (Windows) Setup VS Build environment 
+
+    - name: (Windows) Setup VS Build environment
       if: contains(matrix.os,'windows') && contains(matrix.mpi,'intel')
-      uses: seanmiddleditch/gha-setup-vsdevenv@master     
+      uses: seanmiddleditch/gha-setup-vsdevenv@master
 
     - name: (Windows) Retrieve Intel toolchain
       if: contains(matrix.os,'windows') && contains(matrix.mpi,'intel')
       shell: pwsh
       working-directory: C:\TEMP
       run: |
-        curl.exe --output webimage.exe --url https://registrationcenter-download.intel.com/akdlm/irc_nas/19085/w_HPCKit_p_2023.0.0.25931_offline.exe --retry 5 --retry-delay 5 
+        curl.exe --output webimage.exe --url https://registrationcenter-download.intel.com/akdlm/irc_nas/19085/w_HPCKit_p_2023.0.0.25931_offline.exe --retry 5 --retry-delay 5
         Start-Process -FilePath "webimage.exe" -ArgumentList "-s -x -f oneAPI --log extract.log" -Wait
         Remove-Item "webimage.exe" -Force
         Start-Process -FilePath "oneAPI\bootstrapper.exe" -ArgumentList "-s --action install --eula=accept --components=""intel.oneapi.win.cpp-compiler:intel.oneapi.win.ifort-compiler:intel.oneapi.win.mpi.devel"" -p=NEED_VS2017_INTEGRATION=0 -p=NEED_VS2019_INTEGRATION=0 -p=NEED_VS2022_INTEGRATION=0 --log-dir=." -Wait
         Remove-Item "oneAPI" -Force -Recurse
-        
+
     - name: (Ubuntu) Install gfortran
       if: contains(matrix.os,'ubuntu') && (!contains(matrix.mpi,'intel'))
       run: |
@@ -135,7 +135,7 @@ jobs:
       run: curl -L -O https://download.microsoft.com/download/a/5/2/a5207ca5-1203-491a-8fb8-906fd68ae623/msmpisetup.exe # 10.1.2
 
     - name: (Windows) Install mpiexec.exe (-force needed to bypass GUI on headless)
-      if: contains(matrix.os,'windows') && contains(matrix.mpi,'msmpi') 
+      if: contains(matrix.os,'windows') && contains(matrix.mpi,'msmpi')
       run: .\msmpisetup.exe -unattend -force
 
     - name: (Windows) test that mpiexec.exe exists
@@ -145,7 +145,7 @@ jobs:
 
     - name: (Windows) test that OneAPI is installed
       if: contains(matrix.os,'windows') && contains(matrix.mpi,'intel')
-      run: | 
+      run: |
         Test-Path -Path "C:\Program Files (x86)\Intel\oneAPI\setvars.bat" -PathType leaf
         Test-Path -Path "C:\Program Files (x86)\Intel\oneAPI\compiler\latest\env\vars.bat" -PathType leaf
 
@@ -153,14 +153,14 @@ jobs:
       if: contains(matrix.os,'windows') && contains(matrix.mpi,'msmpi')
       run: |
         echo "C:\Program Files\Microsoft MPI\Bin\" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
-        echo "MSMPI_BIN=C:\Program Files\Microsoft MPI\Bin\" | Out-File -FilePath $env:GITHUB_ENV -Append 
+        echo "MSMPI_BIN=C:\Program Files\Microsoft MPI\Bin\" | Out-File -FilePath $env:GITHUB_ENV -Append
 
-    - name: (Windows) load OneAPI environment variables 
+    - name: (Windows) load OneAPI environment variables
       if: contains(matrix.os,'windows') && contains(matrix.mpi,'intel')
       shell: cmd
       run: |
         "C:\Program Files (x86)\Intel\oneAPI\setvars.bat"
-        "C:\Program Files (x86)\Intel\oneAPI\compiler\latest\env\vars.bat"        
+        "C:\Program Files (x86)\Intel\oneAPI\compiler\latest\env\vars.bat"
 
     - name: (Windows) Install MSYS2 msmpi package
       if: contains(matrix.os,'windows') && contains(matrix.mpi,'msmpi')
@@ -175,10 +175,11 @@ jobs:
     - name: (macOS) Install Homebrew gfortran
       if: contains(matrix.os, 'macos')
       run: |
-        brew install gcc@${{ env.GCC_V }}
+        # Only install gcc if not already available
+        which gfortran-${{ env.GCC_V }} || brew install gcc@${{ env.GCC_V }}
         which gfortran-${{ env.GCC_V }}
         which gfortran
-        # Backport gfortran shared libraries to version 10 folder. This is necessary because all macOS releases of fpm 
+        # Backport gfortran shared libraries to version 10 folder. This is necessary because all macOS releases of fpm
         # have these paths hardcoded in the executable (no PIC?). Current bootstrap version 0.8.0 has gcc-10
         mkdir /usr/local/opt/gcc@10
         mkdir /usr/local/opt/gcc@10/lib
@@ -220,7 +221,7 @@ jobs:
         echo "FPM_CXX=icpc" >> $GITHUB_ENV
 
     - name: (macOS) Use gcc/g++ instead of Clang for C/C++
-      if: contains(matrix.os,'macOS') 
+      if: contains(matrix.os,'macOS')
       shell: bash
       run: |
         echo "FPM_FC=gfortran-${{ env.GCC_V }}" >> $GITHUB_ENV
