@@ -719,40 +719,45 @@ contains
 
     integer :: code, stat
     type(json_object), pointer :: p, q
-    character(:), allocatable :: version_key, version_str, error_message
+    character(:), allocatable :: version_key, version_str, error_message, namespace, name
+
+    namespace = ""
+    name      = "UNNAMED_NODE"
+    if (allocated(node%namespace)) namespace = node%namespace
+    if (allocated(node%name)) name = node%name
 
     if (.not. json%has_key('code')) then
-      call fatal_error(error, "Failed to download '"//join_path(node%namespace, node%name)//"': No status code."); return
+      call fatal_error(error, "Failed to download '"//join_path(namespace, name)//"': No status code."); return
     end if
 
     call get_value(json, 'code', code, stat=stat)
     if (stat /= 0) then
-      call fatal_error(error, "Failed to download '"//join_path(node%namespace, node%name)//"': "// &
+      call fatal_error(error, "Failed to download '"//join_path(namespace, name)//"': "// &
       & "Failed to read status code."); return
     end if
 
     if (code /= 200) then
       if (.not. json%has_key('message')) then
-        call fatal_error(error, "Failed to download '"//join_path(node%namespace, node%name)//"': No error message."); return
+        call fatal_error(error, "Failed to download '"//join_path(namespace, name)//"': No error message."); return
       end if
 
       call get_value(json, 'message', error_message, stat=stat)
       if (stat /= 0) then
-        call fatal_error(error, "Failed to download '"//join_path(node%namespace, node%name)//"': "// &
+        call fatal_error(error, "Failed to download '"//join_path(namespace, name)//"': "// &
         & "Failed to read error message."); return
       end if
 
-      call fatal_error(error, "Failed to download '"//join_path(node%namespace, node%name)//"'. Status code: '"// &
+      call fatal_error(error, "Failed to download '"//join_path(namespace, name)//"'. Status code: '"// &
       & str(code)//"'. Error message: '"//error_message//"'."); return
     end if
 
     if (.not. json%has_key('data')) then
-      call fatal_error(error, "Failed to download '"//join_path(node%namespace, node%name)//"': No data."); return
+      call fatal_error(error, "Failed to download '"//join_path(namespace, name)//"': No data."); return
     end if
 
     call get_value(json, 'data', p, stat=stat)
     if (stat /= 0) then
-      call fatal_error(error, "Failed to read package data for '"//join_path(node%namespace, node%name)//"'."); return
+      call fatal_error(error, "Failed to read package data for '"//join_path(namespace, name)//"'."); return
     end if
 
     if (allocated(node%requested_version)) then
@@ -762,38 +767,38 @@ contains
     end if
 
     if (.not. p%has_key(version_key)) then
-      call fatal_error(error, "Failed to download '"//join_path(node%namespace, node%name)//"': No version data."); return
+      call fatal_error(error, "Failed to download '"//join_path(namespace, name)//"': No version data."); return
     end if
 
     call get_value(p, version_key, q, stat=stat)
     if (stat /= 0) then
-      call fatal_error(error, "Failed to retrieve version data for '"//join_path(node%namespace, node%name)//"'."); return
+      call fatal_error(error, "Failed to retrieve version data for '"//join_path(namespace, name)//"'."); return
     end if
 
     if (.not. q%has_key('download_url')) then
-      call fatal_error(error, "Failed to download '"//join_path(node%namespace, node%name)//"': No download url."); return
+      call fatal_error(error, "Failed to download '"//join_path(namespace, name)//"': No download url."); return
     end if
 
     call get_value(q, 'download_url', download_url, stat=stat)
     if (stat /= 0) then
-      call fatal_error(error, "Failed to read download url for '"//join_path(node%namespace, node%name)//"'."); return
+      call fatal_error(error, "Failed to read download url for '"//join_path(namespace, name)//"'."); return
     end if
 
     download_url = official_registry_base_url//download_url
 
     if (.not. q%has_key('version')) then
-      call fatal_error(error, "Failed to download '"//join_path(node%namespace, node%name)//"': No version found."); return
+      call fatal_error(error, "Failed to download '"//join_path(namespace, name)//"': No version found."); return
     end if
 
     call get_value(q, 'version', version_str, stat=stat)
     if (stat /= 0) then
-      call fatal_error(error, "Failed to read version data for '"//join_path(node%namespace, node%name)//"'."); return
+      call fatal_error(error, "Failed to read version data for '"//join_path(namespace, name)//"'."); return
     end if
 
     call new_version(version, version_str, error)
     if (allocated(error)) then
       call fatal_error(error, "'"//version_str//"' is not a valid version for '"// &
-      & join_path(node%namespace, node%name)//"'."); return
+      & join_path(namespace, name)//"'."); return
     end if
   end subroutine
 

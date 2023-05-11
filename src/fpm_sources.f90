@@ -7,6 +7,7 @@ module fpm_sources
 use fpm_error, only: error_t
 use fpm_model, only: srcfile_t, FPM_UNIT_PROGRAM
 use fpm_filesystem, only: basename, canon_path, dirname, join_path, list_files, is_hidden_file
+use fpm_environment, only: get_os_type,OS_WINDOWS
 use fpm_strings, only: lower, str_ends_with, string_t, operator(.in.)
 use fpm_source_parsing, only: parse_f_source, parse_c_source
 use fpm_manifest_executable, only: executable_config_t
@@ -14,6 +15,7 @@ implicit none
 
 private
 public :: add_sources_from_dir, add_executable_sources
+public :: get_exe_name_with_suffix
 
 character(4), parameter :: fortran_suffixes(2) = [".f90", &
                                                   ".f  "]
@@ -231,5 +233,22 @@ subroutine get_executable_source_dirs(exe_dirs,executables)
     end if
 
 end subroutine get_executable_source_dirs
+
+!> Build an executable name with suffix. Safe routine that always returns an allocated string
+function get_exe_name_with_suffix(source) result(suffixed)
+    type(srcfile_t), intent(in) :: source
+    character(len=:), allocatable :: suffixed
+
+    if (allocated(source%exe_name)) then
+       if (get_os_type() == OS_WINDOWS) then
+           suffixed = source%exe_name//'.exe'
+       else
+           suffixed = source%exe_name
+       end if
+    else
+       suffixed = ""
+    endif
+
+end function get_exe_name_with_suffix
 
 end module fpm_sources
