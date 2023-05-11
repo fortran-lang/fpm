@@ -68,15 +68,15 @@ character(len=*),parameter           :: tests(*)= [ character(len=256) :: &
 'CMD="test proj1 p2 project3 --profile release -- arg1 -x ""and a long one""", &
    &NAME="proj1","p2","project3",profile="release" ARGS="""arg1"" ""-x"" ""and a long one""",                         ', &
 
-'CMD="build",                                                      NAME= profile="",ARGS="",', &
-'CMD="build --profile release",                                    NAME= profile="release",ARGS="",', &
+'CMD="build",                                                      NAME=, profile="",ARGS="",', &
+'CMD="build --profile release",                                    NAME=, profile="release",ARGS="",', &
 
-'CMD="clean",                                                      NAME= ARGS="",', &
-'CMD="clean --skip",                                        C_S=T, NAME= ARGS="",', &
-'CMD="clean --all",                                         C_A=T, NAME= ARGS="",', &
-'CMD="publish --token abc --show-package-version",       SHOW_V=T, NAME= token="abc",ARGS="",', &
-'CMD="publish --token abc --show-form-data",           SHOW_F_D=T, NAME= token="abc",ARGS="",', &
-'CMD="publish --token abc",                                        NAME= token="abc",ARGS="",', &
+'CMD="clean",                                                      NAME=, ARGS="",', &
+'CMD="clean --skip",                                        C_S=T, NAME=, ARGS="",', &
+'CMD="clean --all",                                         C_A=T, NAME=, ARGS="",', &
+'CMD="publish --token abc --show-package-version",       SHOW_V=T, NAME=, token="abc",ARGS="",', &
+'CMD="publish --token abc --show-form-data",           SHOW_F_D=T, NAME=, token="abc",ARGS="",', &
+'CMD="publish --token abc",                                        NAME=, token="abc",ARGS="",', &
 ' ' ]
 character(len=256) :: readme(3)
 
