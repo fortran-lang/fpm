@@ -8,7 +8,7 @@ module test_package_dependencies
   use fpm_dependency
   use fpm_manifest_dependency
   use fpm_toml
-  use fpm_settings, only: fpm_global_settings, get_registry_settings
+  use fpm_settings, only: fpm_global_settings, get_registry_settings, get_global_settings
   use fpm_downloader, only: downloader_t
   use fpm_versioning, only: version_t
   use jonquil, only: json_object, json_value, json_loads, cast_to_object
@@ -245,7 +245,8 @@ contains
       return
     end if
 
-    call deps%resolve(".", error)
+    ! Do not use polymorphic version due to Ifort issue
+    call resolve_dependencies(deps, ".", error)
     if (allocated(error)) return
 
     if (.not. deps%finished()) then
@@ -1424,6 +1425,30 @@ contains
     dependency%done = .true.
 
   end subroutine resolve_dependency_once
+
+  !> Resolve all dependencies in the tree
+  subroutine resolve_dependencies(self, root, error)
+    !> Instance of the dependency tree
+    type(mock_dependency_tree_t), intent(inout) :: self
+    !> Current installation prefix
+    character(len=*), intent(in) :: root
+    !> Error handling
+    type(error_t), allocatable, intent(out) :: error
+
+    type(fpm_global_settings) :: global_settings
+    integer :: ii
+
+    call get_global_settings(global_settings, error)
+    if (allocated(error)) return
+
+    do ii = 1, self%ndep
+      call resolve_dependency_once(self, self%dep(ii), global_settings, root, error)
+      if (allocated(error)) exit
+    end do
+
+    if (allocated(error)) return
+
+  end subroutine resolve_dependencies
 
   subroutine delete_tmp_folder
     if (is_dir(tmp_folder)) call os_delete_dir(os_is_unix(), tmp_folder)
