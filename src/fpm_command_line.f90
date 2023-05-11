@@ -634,7 +634,7 @@ contains
             cxx_compiler = sget('cxx-compiler')
             archiver = sget('archiver')
 
-            allocate(publish_settings, source=fpm_publish_settings( &
+            allocate(cmd_settings, source=fpm_publish_settings( &
             & show_package_version = lget('show-package-version'), &
             & show_form_data = lget('show-form-data'), &
             & profile=val_profile,&
@@ -650,9 +650,8 @@ contains
             & list=lget('list'),&
             & show_model=lget('show-model'),&
             & build_tests=lget('tests'),&
-            & verbose=lget('verbose')))
-            call get_char_arg(publish_settings%token, 'token')
-            call move_alloc(publish_settings, cmd_settings)
+            & verbose=lget('verbose'),&
+            & token=sget('token')))
 
         case default
 
@@ -1375,6 +1374,7 @@ contains
     subroutine get_char_arg(var, arg)
       character(len=:), allocatable, intent(out) :: var
       character(len=*), intent(in) :: arg
+      if (len_trim(arg)<=0) return
       var = sget(arg)
       if (len_trim(var) == 0) deallocate(var)
     end subroutine get_char_arg
