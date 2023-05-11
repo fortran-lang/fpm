@@ -651,7 +651,7 @@ contains
             & list=lget('list'),&
             & show_model=lget('show-model'),&
             & build_tests=lget('tests'),&
-            & verbose=lget('verbose')),&
+            & verbose=lget('verbose'),&
             & token=token_s)
 
         case default
