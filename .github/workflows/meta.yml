@@ -28,20 +28,20 @@ jobs:
       fail-fast: false
       matrix:
         include:
-#          - os: ubuntu-latest
-#            mpi: intel
-#          - os: ubuntu-latest
-#            mpi: openmpi
-#          - os: ubuntu-latest
-#            mpi: mpich
-#          - os: windows-latest
-#            mpi: msmpi
+          - os: ubuntu-latest
+            mpi: intel
+          - os: ubuntu-latest
+            mpi: openmpi
+          - os: ubuntu-latest
+            mpi: mpich
+          - os: windows-latest
+            mpi: msmpi
               #  - os: windows-latest
               # mpi: intel
           - os: macos-latest
             mpi: openmpi
-#          - os: macos-latest
-#            mpi: mpich
+          - os: macos-latest
+            mpi: mpich
 
     steps:
     - name: Checkout code
