@@ -70,7 +70,8 @@ contains
             & new_unittest("preprocess-wrongkey", test_preprocess_wrongkey, should_fail=.true.), &
             & new_unittest("preprocessors-empty", test_preprocessors_empty, should_fail=.true.), &
             & new_unittest("macro-parsing", test_macro_parsing, should_fail=.false.), &
-            & new_unittest("macro-parsing-dependency", test_macro_parsing_dependency, should_fail=.false.)]
+            & new_unittest("macro-parsing-dependency", test_macro_parsing_dependency, should_fail=.false.) &
+            & ]
 
     end subroutine collect_manifest
 
@@ -669,8 +670,8 @@ contains
             & 'name = "example"', &
             & '[build]', &
             & 'auto-executables = false', &
-            & 'auto-tests = false ', &
-            & 'module-naming = true '
+            & 'auto-tests = false', &
+            & 'module-naming = true'
         close(unit)
 
         call get_package_data(package, temp_file, error)
@@ -678,17 +679,17 @@ contains
         if (allocated(error)) return
 
         if (package%build%auto_executables) then
-            call test_failed(error, "Wong value of 'auto-executables' read, expecting .false.")
+            call test_failed(error, "Wrong value of 'auto-executables' read, expecting .false.")
             return
         end if
 
         if (package%build%auto_tests) then
-            call test_failed(error, "Wong value of 'auto-tests' read, expecting .false.")
+            call test_failed(error, "Wrong value of 'auto-tests' read, expecting .false.")
             return
         end if
 
-        if (.not.package%build%module_naming) then
-            call test_failed(error, "Wong value of 'module-naming' read, expecting .true.")
+        if (.not. package%build%module_naming) then
+            call test_failed(error, "Wrong value of 'module-naming' read, expecting .true.")
             return
         end if
 
@@ -765,17 +766,17 @@ contains
         if (allocated(error)) return
 
         if (.not.package%build%auto_executables) then
-            call test_failed(error, "Wong default value of 'auto-executables' read, expecting .true.")
+            call test_failed(error, "Wrong default value of 'auto-executables' read, expecting .true.")
             return
         end if
 
         if (.not.package%build%auto_tests) then
-            call test_failed(error, "Wong default value of 'auto-tests' read, expecting .true.")
+            call test_failed(error, "Wrong default value of 'auto-tests' read, expecting .true.")
             return
         end if
 
         if (package%build%module_naming) then
-            call test_failed(error, "Wong default value of 'module-naming' read, expecting .false.")
+            call test_failed(error, "Wrong default value of 'module-naming' read, expecting .false.")
             return
         end if
 
@@ -1318,7 +1319,7 @@ contains
     end subroutine test_install_wrongkey
 
     subroutine test_preprocess_empty(error)
-        use fpm_mainfest_preprocess
+        use fpm_manifest_preprocess
         use fpm_toml, only : new_table, toml_table
 
         !> Error handling
@@ -1336,7 +1337,7 @@ contains
 
     !> Pass a TOML table with not allowed keys
     subroutine test_preprocess_wrongkey(error)
-        use fpm_mainfest_preprocess
+        use fpm_manifest_preprocess
         use fpm_toml, only : new_table, add_table, toml_table
 
         !> Error handling
@@ -1357,7 +1358,7 @@ contains
 
     !> Preprocess table cannot be empty.
     subroutine test_preprocessors_empty(error)
-        use fpm_mainfest_preprocess
+        use fpm_manifest_preprocess
         use fpm_toml, only : new_table, toml_table
 
         !> Error handling

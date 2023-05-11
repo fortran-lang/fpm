@@ -43,7 +43,7 @@ subroutine build_model(model, settings, package, error)
     type(package_config_t) :: dependency
     character(len=:), allocatable :: manifest, lib_dir, flags, cflags, cxxflags, ldflags
     logical :: has_cpp
-    logical :: duplicates_found = .false.
+    logical :: duplicates_found
     type(string_t) :: include_dir
 
     model%package_name = package%name
@@ -102,8 +102,7 @@ subroutine build_model(model, settings, package, error)
         associate(dep => model%deps%dep(i))
             manifest = join_path(dep%proj_dir, "fpm.toml")
 
-            call get_package_data(dependency, manifest, error, &
-                apply_defaults=.true.)
+            call get_package_data(dependency, manifest, error, apply_defaults=.true.)
             if (allocated(error)) exit
 
             model%packages(i)%name = dependency%name
@@ -119,7 +118,7 @@ subroutine build_model(model, settings, package, error)
                     if (dependency%preprocess(j)%name == "cpp") then
                         if (.not. has_cpp) has_cpp = .true.
                         if (allocated(dependency%preprocess(j)%macros)) then
-                        model%packages(i)%macros = dependency%preprocess(j)%macros
+                            model%packages(i)%macros = dependency%preprocess(j)%macros
                         end if
                     else
                         write(stderr, '(a)') 'Warning: Preprocessor ' // package%preprocess(i)%name // &
@@ -250,6 +249,7 @@ subroutine build_model(model, settings, package, error)
     if (allocated(error)) return
 
     ! Check for duplicate modules
+    duplicates_found = .false.
     call check_modules_for_duplicates(model, duplicates_found)
     if (duplicates_found) then
         call fpm_stop(1,'*build_model*:Error: One or more duplicate module names found.')

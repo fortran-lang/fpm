@@ -58,8 +58,8 @@ module fpm_dependency
   use, intrinsic :: iso_fortran_env, only: output_unit
   use fpm_environment, only: get_os_type, OS_WINDOWS, os_is_unix
   use fpm_error, only: error_t, fatal_error
-  use fpm_filesystem, only: exists, join_path, mkdir, canon_path, windows_path, list_files, is_dir, &
-                            basename, os_delete_dir
+  use fpm_filesystem, only: exists, join_path, mkdir, canon_path, windows_path, list_files, is_dir, basename, &
+                            os_delete_dir, get_temp_filename
   use fpm_git, only: git_target_revision, git_target_default, git_revision, operator(==), &
                      serializable_t
   use fpm_manifest, only: package_config_t, dependency_config_t, get_package_data
@@ -651,7 +651,7 @@ contains
     !> Downloader instance.
     class(downloader_t), optional, intent(in) :: downloader_
 
-    character(:), allocatable :: cache_path, target_url, tmp_pkg_path, tmp_pkg_file
+    character(:), allocatable :: cache_path, target_url, tmp_file
     type(version_t) :: version
     integer :: stat, unit
     type(json_object) :: json
@@ -680,18 +680,15 @@ contains
       end if
     end if
 
-    ! Define location of the temporary folder and file.
-    tmp_pkg_path = join_path(global_settings%path_to_config_folder, 'tmp')
-    if (.not. exists(tmp_pkg_path)) call mkdir(tmp_pkg_path)
-    tmp_pkg_file = join_path(tmp_pkg_path, 'package_data.tmp')
-    open (newunit=unit, file=tmp_pkg_file, action='readwrite', iostat=stat)
+    tmp_file = get_temp_filename()
+    open (newunit=unit, file=tmp_file, action='readwrite', iostat=stat)
     if (stat /= 0) then
       call fatal_error(error, "Error creating temporary file for downloading package '"//self%name//"'."); return
     end if
 
     ! Include namespace and package name in the target url and download package data.
     target_url = global_settings%registry_settings%url//'/packages/'//self%namespace//'/'//self%name
-    call downloader%get_pkg_data(target_url, self%requested_version, tmp_pkg_file, json, error)
+    call downloader%get_pkg_data(target_url, self%requested_version, tmp_file, json, error)
     close (unit, status='delete')
     if (allocated(error)) return
 
@@ -700,7 +697,7 @@ contains
     if (allocated(error)) return
 
     ! Open new tmp file for downloading the actual package.
-    open (newunit=unit, file=tmp_pkg_file, action='readwrite', iostat=stat)
+    open (newunit=unit, file=tmp_file, action='readwrite', iostat=stat)
     if (stat /= 0) then
       call fatal_error(error, "Error creating temporary file for downloading package '"//self%name//"'."); return
     end if
@@ -711,13 +708,13 @@ contains
       if (is_dir(cache_path)) call os_delete_dir(os_is_unix(), cache_path)
       call mkdir(cache_path)
 
-      call downloader%get_file(target_url, tmp_pkg_file, error)
+      call downloader%get_file(target_url, tmp_file, error)
       if (allocated(error)) then
         close (unit, status='delete'); return
       end if
 
       ! Unpack the downloaded package to the final location.
-      call downloader%unpack(tmp_pkg_file, cache_path, error)
+      call downloader%unpack(tmp_file, cache_path, error)
       close (unit, status='delete')
       if (allocated(error)) return
     end if
