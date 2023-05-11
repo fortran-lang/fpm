@@ -539,7 +539,7 @@ logical function msmpi_init(this,compiler,error) result(found)
 
     character(len=:), allocatable :: incdir,windir,libdir,bindir,post,reall,msysdir
     type(version_t) :: ver,ver10
-    type(string_t) :: cpath,msys_path
+    type(string_t) :: cpath,msys_path,runner_path
     logical :: msys2
 
     !> Default: not found
@@ -586,11 +586,11 @@ logical function msmpi_init(this,compiler,error) result(found)
         ! Do a third attempt: search for mpiexec.exe in PATH location
         if (len_trim(bindir)<=0 .or. allocated(error)) then
 
-            call get_mpi_runner(windir,verbose,error)
+            call get_mpi_runner(runner_path,verbose,error)
 
             if (.not.allocated(error)) then
                print *, '+ searching location of mpi runner, ',windir
-               call find_command_location(windir,bindir,verbose=verbose,error=error)
+               call find_command_location(runner_path%s,bindir,verbose=verbose,error=error)
             endif
 
         endif
