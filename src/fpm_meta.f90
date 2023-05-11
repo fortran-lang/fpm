@@ -736,12 +736,18 @@ subroutine find_command_location(command,path,echo,verbose,error)
         return
     end if
 
+    print *, '+ get temp filename...'
+
     tmp_file = get_temp_filename()
+
+    print *, '+ get temp filename... '//tmp_file
 
     ! On Windows, we try both commands because we may be on WSL
     do try=merge(1,2,get_os_type()==OS_WINDOWS),2
        search_command = search(try)//command
+       print *, '+ attempt ',try,': ',search_command
        call run(search_command, echo=echo, exitstat=stat, verbose=verbose, redirect=tmp_file)
+       print *, 'after run, stat=',stat
        if (stat==0) exit
     end do
     if (stat/=0) then
@@ -755,6 +761,7 @@ subroutine find_command_location(command,path,echo,verbose,error)
     if (stat == 0)then
        do
            call getline(iunit, line, stat)
+           print *, 'get line, stat=',stat
            if (stat /= 0) exit
            if (len(screen_output)>0) then
                 screen_output = screen_output//new_line('a')//line
@@ -771,6 +778,8 @@ subroutine find_command_location(command,path,echo,verbose,error)
 
     ! Only use the first instance
     length = index(screen_output,new_line('a'))
+
+    print *, '+ get line length: ',length
     multiline: if (length>1) then
         fullpath = screen_output(1:length-1)
     else
@@ -783,6 +792,7 @@ subroutine find_command_location(command,path,echo,verbose,error)
 
     ! Extract path only
     length = index(fullpath,command,BACK=.true.)
+    print *, 'extract fullpath, length=',length
     if (length<=0) then
         call fatal_error(error,'full path to command ('//command//') does not include command name')
         return
@@ -795,9 +805,13 @@ subroutine find_command_location(command,path,echo,verbose,error)
     if (allocated(error)) return
 
     ! On Windows, be sure to return a path with no spaces
-    if (get_os_type()==OS_WINDOWS) path = get_dos_path(path,error)
+    if (get_os_type()==OS_WINDOWS) then
+        print *, 'get dos path'
+        path = get_dos_path(path,error)
+        print *, 'dos path = ',path
+    end if
 
-    if (.not.is_dir(path)) then
+    if (allocated(error) .or. .not.is_dir(path)) then
         call fatal_error(error,'full path ('//path//') to command ('//command//') is not a directory')
         return
     end if
