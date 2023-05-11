@@ -218,6 +218,8 @@ contains
     class(fpm_global_settings), intent(in) :: self
 
     has_custom_location = allocated(self%path_to_config_folder) .and. allocated(self%config_file_name)
+    if (.not.has_custom_location) return
+    has_custom_location = len_trim(self%path_to_config_folder)>0 .and. len_trim(self%config_file_name)>0
   end function
 
   !> The full path to the global config file.
