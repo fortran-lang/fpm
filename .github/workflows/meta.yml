@@ -188,7 +188,9 @@ jobs:
         mkdir /usr/local/lib/gcc/10
         ln -fs /usr/local/opt/gcc@${{ env.GCC_V }}/lib/gcc/${{ env.GCC_V }}/libquadmath.0.dylib /usr/local/opt/gcc@10/lib/gcc/10/libquadmath.0.dylib
         ln -fs /usr/local/opt/gcc@${{ env.GCC_V }}/lib/gcc/${{ env.GCC_V }}/libgfortran.5.dylib /usr/local/opt/gcc@10/lib/gcc/10/libgfortran.5.dylib
-        ln -fs /usr/local/lib/gcc/${{ env.GCC_V }}/libgcc_s.1.dylib /usr/local/lib/gcc/10/libgcc_s.1.dylib
+        # Newer gcc versions use libgcc_s.1.1.dylib
+        ls /usr/local/lib/gcc/${{ env.GCC_V }}/libgcc_s.1.dylib && ln -fs /usr/local/lib/gcc/${{ env.GCC_V }}/libgcc_s.1.dylib /usr/local/lib/gcc/10/libgcc_s.1.dylib
+        ls /usr/local/lib/gcc/${{ env.GCC_V }}/libgcc_s.1.1.dylib && ln -fs /usr/local/lib/gcc/${{ env.GCC_V }}/libgcc_s.1.1.dylib /usr/local/lib/gcc/10/libgcc_s.1.dylib
 
     - name: (macOS) Install homebrew MPICH
       if: contains(matrix.mpi,'mpich') && contains(matrix.os,'macos')
