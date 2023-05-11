@@ -543,6 +543,12 @@ end subroutine list_files
 logical function exists(filename) result(r)
     character(len=*), intent(in) :: filename
     inquire(file=filename, exist=r)
+
+    !> Directories are not files for the Intel compilers. If so, also use this compiler-dependent extension
+#if defined(__INTEL_COMPILER)
+    if (.not.r) inquire(directory=filename, exist=r)
+#endif
+
 end function
 
 
