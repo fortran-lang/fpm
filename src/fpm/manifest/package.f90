@@ -43,7 +43,7 @@ module fpm_manifest_package
     use fpm_manifest_library, only : library_config_t, new_library
     use fpm_manifest_install, only: install_config_t, new_install_config
     use fpm_manifest_test, only : test_config_t, new_test
-    use fpm_mainfest_preprocess, only : preprocess_config_t, new_preprocessors
+    use fpm_manifest_preprocess, only : preprocess_config_t, new_preprocessors
     use fpm_manifest_metapackages, only: metapackage_config_t, new_meta_config
     use fpm_filesystem, only : exists, getline, join_path
     use fpm_error, only : error_t, fatal_error, syntax_error, bad_name_error
