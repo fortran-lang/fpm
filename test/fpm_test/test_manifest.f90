@@ -483,7 +483,7 @@ contains
         type(package_config_t) :: package
         character(len=*), parameter :: manifest = 'fpm-profiles.toml'
         integer :: unit
-        character(:), allocatable :: profile_name, compiler, flags
+        character(:), allocatable :: profile_name, compiler
         logical :: profile_found
         type(profile_config_t) :: chosen_profile
 
@@ -536,8 +536,8 @@ contains
         profile_name = 'debug'
         compiler = 'ifort'
         call find_profile(package%profiles, profile_name, compiler, 3, profile_found, chosen_profile)
-        if (.not.(chosen_profile%flags.eq.' /warn:all /check:all /error-limit:1 /Od /Z7 /assume:byterecl /traceback')) then
-            call test_failed(error, "Failed to load built-in profile"//flags)
+        if (.not.(chosen_profile%flags.eq.' /warn:all /check:all /error-limit:1 /Od /Z7 /assume:byterecl /standard-semantics /traceback')) then
+            call test_failed(error, "Failed to load built-in profile "//profile_name)
             return
         end if
 
