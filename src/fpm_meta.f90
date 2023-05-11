@@ -836,6 +836,7 @@ subroutine get_mpi_runner(command,verbose,error)
        ! Success!
        success = len_trim(command%s)>0
        if (success) then
+           if (verbose) print *, '+ runner folder found: '//command%s
            command%s = join_path(command%s,trim(try(itri)))
            return
        endif
