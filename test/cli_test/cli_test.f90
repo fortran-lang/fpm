@@ -251,11 +251,11 @@ type is (fpm_build_settings)
 type is (fpm_run_settings)
     act_profile=settings%profile
     act_name=settings%name
-    if (allocated(settings%args)) act_args=settings%args
+    act_args=settings%args
 type is (fpm_test_settings)
     act_profile=settings%profile
     act_name=settings%name
-    if (allocated(settings%args)) act_args=settings%args
+    act_args=settings%args
 type is (fpm_clean_settings)
     act_c_s=settings%clean_skip
     act_c_a=settings%clean_call
