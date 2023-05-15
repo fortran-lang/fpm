@@ -8,8 +8,8 @@ module fpm_cmd_publish
   use fpm_model, only: fpm_model_t
   use fpm_error, only: error_t, fpm_stop
   use fpm_versioning, only: version_t
-  use fpm_filesystem, only: exists, join_path, get_tmp_directory
-  use fpm_git, only: git_archive, compressed_package_name
+  use fpm_filesystem, only: exists, join_path, get_temp_filename
+  use fpm_git, only: git_archive
   use fpm_downloader, only: downloader_t
   use fpm_strings, only: string_t
   use fpm_settings, only: official_registry_base_url
@@ -31,7 +31,7 @@ contains
     type(error_t), allocatable :: error
     type(version_t), allocatable :: version
     type(string_t), allocatable :: form_data(:)
-    character(len=:), allocatable :: tmpdir
+    character(len=:), allocatable :: tmp_file
     type(downloader_t) :: downloader
     integer :: i
 
@@ -69,11 +69,10 @@ contains
 
     if (allocated(settings%token)) form_data = [form_data, string_t('upload_token="'//settings%token//'"')]
 
-    call get_tmp_directory(tmpdir, error)
-    if (allocated(error)) call fpm_stop(1, '*cmd_publish* Tmp directory error: '//error%message)
-    call git_archive('.', tmpdir, error)
+    tmp_file = get_temp_filename()
+    call git_archive('.', tmp_file, error)
     if (allocated(error)) call fpm_stop(1, '*cmd_publish* Pack error: '//error%message)
-    form_data = [form_data, string_t('tarball=@"'//join_path(tmpdir, compressed_package_name)//'"')]
+    form_data = [form_data, string_t('tarball=@"'//tmp_file//'"')]
 
     if (settings%show_form_data) then
       do i = 1, size(form_data)

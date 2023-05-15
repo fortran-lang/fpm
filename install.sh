@@ -73,9 +73,9 @@ fi
 
 LATEST_RELEASE=$(get_latest_release "fortran-lang/fpm" "$FETCH")
 
+# Fallback to a latest known release if network timeout
 if [ -z "$LATEST_RELEASE" ]; then
-  echo "Could not fetch the latest release from GitHub. Install curl or wget, and ensure network connectivity."
-  exit 3
+   LATEST_RELEASE="0.8.0"
 fi
 
 SOURCE_URL="https://github.com/fortran-lang/fpm/releases/download/v${LATEST_RELEASE}/fpm-${LATEST_RELEASE}.F90"
