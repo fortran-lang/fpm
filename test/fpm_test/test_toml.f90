@@ -9,6 +9,7 @@ module test_toml
     use fpm_manifest_dependency, only: dependency_config_t, dependency_destroy
     use fpm_manifest_install
     use fpm_manifest_fortran
+    use fpm_manifest_library
     use fpm_versioning, only: new_version
     use fpm_strings, only: string_t, operator(==), split
     use fpm_model, only: fortran_features_t, package_t, FPM_SCOPE_LIB, FPM_UNIT_MODULE, fpm_model_t, &
@@ -47,6 +48,7 @@ contains
            & new_unittest("serialize-dependency-tree-invalid2", dependency_tree_invalid2, should_fail=.true.), &
            & new_unittest("serialize-install-config", install_config_roundtrip), &
            & new_unittest("serialize-fortran-config", fortran_features_roundtrip), &
+           & new_unittest("serialize-library-config", library_config_roundtrip), &
            & new_unittest("serialize-string-array", string_array_roundtrip), &
            & new_unittest("serialize-fortran-features", fft_roundtrip), &
            & new_unittest("serialize-fortran-invalid", fft_invalid, should_fail=.true.), &
@@ -1175,8 +1177,6 @@ contains
 
         type(fortran_config_t) :: fortran
 
-        integer :: loop
-
         fortran%implicit_external = .true.
         fortran%implicit_typing = .false.
         fortran%source_form = 'free'
@@ -1188,5 +1188,28 @@ contains
         call fortran%test_serialization('fortran_features_roundtrip 2',error)
 
     end subroutine fortran_features_roundtrip
+
+    subroutine library_config_roundtrip(error)
+
+        !> Error handling
+        type(error_t), allocatable, intent(out) :: error
+
+        type(library_config_t) :: lib
+
+        lib%source_dir = 'lib'
+        lib%include_dir = [string_t('a'),string_t('b')]
+
+        call lib%test_serialization('library_config: 1',error)
+        if (allocated(error)) return
+
+        lib%build_script = 'install.sh'
+
+        call lib%test_serialization('library_config: 2',error)
+        if (allocated(error)) return
+
+        deallocate(lib%include_dir)
+        call lib%test_serialization('library_config: 3',error)
+
+    end subroutine library_config_roundtrip
 
 end module test_toml
