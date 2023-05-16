@@ -79,61 +79,7 @@ contains
         call check(table, package_name, error)
         if (allocated(error)) return
 
-        call get_value(table, "auto-executables", self%auto_executables, .true., stat=stat)
-
-        if (stat /= toml_stat%success) then
-            call fatal_error(error,"Error while reading value for 'auto-executables' in fpm.toml, expecting logical")
-            return
-        end if
-
-        call get_value(table, "auto-tests", self%auto_tests, .true., stat=stat)
-
-        if (stat /= toml_stat%success) then
-            call fatal_error(error,"Error while reading value for 'auto-tests' in fpm.toml, expecting logical")
-            return
-        end if
-
-        call get_value(table, "auto-examples", self%auto_examples, .true., stat=stat)
-
-        if (stat /= toml_stat%success) then
-            call fatal_error(error,"Error while reading value for 'auto-examples' in fpm.toml, expecting logical")
-            return
-        end if
-
-        !> Module naming: fist, attempt boolean value first
-        call get_value(table, "module-naming", self%module_naming, .false., stat=stat)
-
-        if (stat == toml_stat%success) then
-
-            ! Boolean value found. Set no custom prefix. This also falls back to
-            ! key not provided
-            self%module_prefix = string_t("")
-
-        else
-
-            !> Value found, but not a boolean. Attempt to read a prefix string
-            call get_value(table, "module-naming", self%module_prefix%s)
-
-            if (.not.allocated(self%module_prefix%s)) then
-               call syntax_error(error,"Could not read value for 'module-naming' in fpm.toml, expecting logical or a string")
-               return
-            end if
-
-            if (.not.is_valid_module_prefix(self%module_prefix)) then
-               call syntax_error(error,"Invalid custom module name prefix for in fpm.toml: <"//self%module_prefix%s// &
-                            ">, expecting a valid alphanumeric string")
-               return
-            end if
-
-            ! Set module naming to ON
-            self%module_naming = .true.
-
-        end if
-
-        call get_list(table, "link", self%link, error)
-        if (allocated(error)) return
-
-        call get_list(table, "external-modules", self%external_modules, error)
+        call self%load_from_toml(table, error)
         if (allocated(error)) return
 
     end subroutine new_build_config
