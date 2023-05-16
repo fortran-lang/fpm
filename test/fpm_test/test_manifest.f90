@@ -1206,6 +1206,11 @@ contains
         call set_value(table, "link", "z", stat=stat)
 
         call new_build_config(build, table, 'test_link_string', error)
+        if (allocated(error)) return
+
+        !> Test serialization roundtrip
+        call build%test_serialization('test_link_string', error)
+        if (allocated(error)) return
 
     end subroutine test_link_string
 
@@ -1229,6 +1234,11 @@ contains
         call set_value(children, 2, "lapack", stat=stat)
 
         call new_build_config(build, table, 'test_link_array', error)
+        if (allocated(error)) return
+
+        !> Test serialization roundtrip
+        call build%test_serialization('test_link_string', error)
+        if (allocated(error)) return
 
     end subroutine test_link_array
 
