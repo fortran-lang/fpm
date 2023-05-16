@@ -35,7 +35,7 @@ module fpm_manifest_dependency
     private
 
     public :: dependency_config_t, new_dependency, new_dependencies, manifest_has_changed, &
-        & dependency_destroy
+        & dependency_destroy, resize
 
     !> Configuration meta data for a dependency
     type, extends(serializable_t) :: dependency_config_t
@@ -72,6 +72,10 @@ module fpm_manifest_dependency
 
     !> Common output format for writing to the command line
     character(len=*), parameter :: out_fmt = '("#", *(1x, g0))'
+
+    interface resize
+        module procedure resize_dependency_config
+    end interface resize
 
 contains
 
@@ -437,5 +441,40 @@ contains
         end do add_git
 
     end subroutine load_from_toml
+
+    !> Reallocate a list of dependencies
+    pure subroutine resize_dependency_config(var, n)
+        !> Instance of the array to be resized
+        type(dependency_config_t), allocatable, intent(inout) :: var(:)
+        !> Dimension of the final array size
+        integer, intent(in), optional :: n
+
+        type(dependency_config_t), allocatable :: tmp(:)
+        integer :: this_size, new_size
+        integer, parameter :: initial_size = 16
+
+        if (allocated(var)) then
+          this_size = size(var, 1)
+          call move_alloc(var, tmp)
+        else
+          this_size = initial_size
+        end if
+
+        if (present(n)) then
+          new_size = n
+        else
+          new_size = this_size + this_size/2 + 1
+        end if
+
+        allocate (var(new_size))
+
+        if (allocated(tmp)) then
+          this_size = min(size(tmp, 1), size(var, 1))
+          var(:this_size) = tmp(:this_size)
+          deallocate (tmp)
+        end if
+
+    end subroutine resize_dependency_config
+
 
 end module fpm_manifest_dependency

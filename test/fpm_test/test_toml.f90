@@ -10,6 +10,7 @@ module test_toml
     use fpm_manifest_install
     use fpm_manifest_fortran
     use fpm_manifest_library
+    use fpm_manifest_executable
     use fpm_versioning, only: new_version
     use fpm_strings, only: string_t, operator(==), split
     use fpm_model, only: fortran_features_t, package_t, FPM_SCOPE_LIB, FPM_UNIT_MODULE, fpm_model_t, &
@@ -1211,5 +1212,45 @@ contains
         call lib%test_serialization('library_config: 3',error)
 
     end subroutine library_config_roundtrip
+
+
+    subroutine executable_config_roundtrip(error)
+
+        !> Error handling
+        type(error_t), allocatable, intent(out) :: error
+
+        type(executable_config_t) :: exe
+        type(dependency_config_t) :: dep
+
+        exe%name = "my_executable"
+        exe%source_dir = 'app'
+
+        call exe%test_serialization('executable_config: 1',error)
+        if (allocated(error)) return
+
+        exe%main = 'main_program.F90'
+
+        call exe%test_serialization('executable_config: 2',error)
+        if (allocated(error)) return
+
+        exe%link = [string_t('netcdf'),string_t('hdf5')]
+        call exe%test_serialization('executable_config: 3',error)
+
+        call dependency_destroy(dep)
+
+        dep%name = "M_CLI2"
+        dep%path = "~/./some/dummy/path"
+        dep%namespace = "urbanjost"
+        allocate(dep%requested_version)
+        call new_version(dep%requested_version, "3.2.0",error); if (allocated(error)) return
+
+        allocate(dep%git)
+        dep%git = git_target_revision(url="https://github.com/urbanjost/M_CLI2.git", &
+                                      sha1="7264878cdb1baff7323cc48596d829ccfe7751b8")
+
+        allocate(exe%dependency(1),source=dep)
+        call exe%test_serialization('executable_config: 4',error)
+
+    end subroutine executable_config_roundtrip
 
 end module test_toml
