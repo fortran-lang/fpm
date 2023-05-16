@@ -1,24 +1,34 @@
 module fpm_manifest_fortran
     use fpm_error, only : error_t, syntax_error, fatal_error
-    use fpm_toml, only : toml_table, toml_key, toml_stat, get_value
+    use fpm_toml, only : toml_table, toml_key, toml_stat, get_value, serializable_t, set_value, set_string
     implicit none
     private
 
     public :: fortran_config_t, new_fortran_config
 
     !> Configuration data for Fortran
-    type :: fortran_config_t
+    type, extends(serializable_t) :: fortran_config_t
 
         !> Enable default implicit typing
-        logical :: implicit_typing
+        logical :: implicit_typing = .false.
 
         !> Enable implicit external interfaces
-        logical :: implicit_external
+        logical :: implicit_external = .false.
 
         !> Form to use for all Fortran sources
         character(:), allocatable :: source_form
 
+        contains
+
+            !> Serialization interface
+            procedure :: serializable_is_same => fortran_is_same
+            procedure :: dump_to_toml
+            procedure :: load_from_toml
+
+
     end type fortran_config_t
+
+    character(len=*), parameter, private :: class_name = 'fortran_config_t'
 
 contains
 
@@ -101,5 +111,69 @@ contains
         end do
 
     end subroutine check
+
+  logical function fortran_is_same(this,that)
+    class(fortran_config_t), intent(in) :: this
+    class(serializable_t), intent(in) :: that
+
+    fortran_is_same = .false.
+
+    select type (other=>that)
+       type is (fortran_config_t)
+          if (this%implicit_typing.neqv.other%implicit_typing) return
+          if (this%implicit_external.neqv.other%implicit_external) return
+          if (.not.allocated(this%source_form).eqv.allocated(other%source_form)) return
+          if (.not.this%source_form==other%source_form) return
+       class default
+          ! Not the same type
+          return
+    end select
+
+    !> All checks passed!
+    fortran_is_same = .true.
+
+  end function fortran_is_same
+
+  !> Dump install config to toml table
+  subroutine dump_to_toml(self, table, error)
+
+    !> Instance of the serializable object
+    class(fortran_config_t), intent(inout) :: self
+
+    !> Data structure
+    type(toml_table), intent(inout) :: table
+
+    !> Error handling
+    type(error_t), allocatable, intent(out) :: error
+
+    call set_value(table, "implicit-typing", self%implicit_typing, error, class_name)
+    if (allocated(error)) return
+    call set_value(table, "implicit-external", self%implicit_external, error, class_name)
+    if (allocated(error)) return
+    call set_string(table, "source-form", self%source_form, error, class_name)
+    if (allocated(error)) return
+
+  end subroutine dump_to_toml
+
+  !> Read install config from toml table (no checks made at this stage)
+  subroutine load_from_toml(self, table, error)
+
+    !> Instance of the serializable object
+    class(fortran_config_t), intent(inout) :: self
+
+    !> Data structure
+    type(toml_table), intent(inout) :: table
+
+    !> Error handling
+    type(error_t), allocatable, intent(out) :: error
+
+    call get_value(table, "implicit-typing", self%implicit_typing, error, class_name)
+    if (allocated(error)) return
+    call get_value(table, "implicit-external", self%implicit_external, error, class_name)
+    if (allocated(error)) return
+    call get_value(table, "source-form", self%source_form)
+
+  end subroutine load_from_toml
+
 
 end module fpm_manifest_fortran

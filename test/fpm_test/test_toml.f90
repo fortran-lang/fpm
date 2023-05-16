@@ -8,6 +8,7 @@ module test_toml
          & new_dependency_node, new_dependency_tree, resize
     use fpm_manifest_dependency, only: dependency_config_t, dependency_destroy
     use fpm_manifest_install
+    use fpm_manifest_fortran
     use fpm_versioning, only: new_version
     use fpm_strings, only: string_t, operator(==), split
     use fpm_model, only: fortran_features_t, package_t, FPM_SCOPE_LIB, FPM_UNIT_MODULE, fpm_model_t, &
@@ -45,6 +46,7 @@ contains
            & new_unittest("serialize-dependency-tree-invalid", dependency_tree_invalid, should_fail=.true.), &
            & new_unittest("serialize-dependency-tree-invalid2", dependency_tree_invalid2, should_fail=.true.), &
            & new_unittest("serialize-install-config", install_config_roundtrip), &
+           & new_unittest("serialize-fortran-config", fortran_features_roundtrip), &
            & new_unittest("serialize-string-array", string_array_roundtrip), &
            & new_unittest("serialize-fortran-features", fft_roundtrip), &
            & new_unittest("serialize-fortran-invalid", fft_invalid, should_fail=.true.), &
@@ -1165,5 +1167,26 @@ contains
         end do
 
     end subroutine install_config_roundtrip
+
+    subroutine fortran_features_roundtrip(error)
+
+        !> Error handling
+        type(error_t), allocatable, intent(out) :: error
+
+        type(fortran_config_t) :: fortran
+
+        integer :: loop
+
+        fortran%implicit_external = .true.
+        fortran%implicit_typing = .false.
+        fortran%source_form = 'free'
+
+        call fortran%test_serialization('fortran_features_roundtrip',error)
+        if (allocated(error)) return
+
+        deallocate(fortran%source_form)
+        call fortran%test_serialization('fortran_features_roundtrip 2',error)
+
+    end subroutine fortran_features_roundtrip
 
 end module test_toml

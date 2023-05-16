@@ -24,7 +24,6 @@ module fpm_manifest_install
     !> Print information on this instance
     procedure :: info
 
-
     !> Serialization interface
     procedure :: serializable_is_same => install_conf_same
     procedure :: dump_to_toml
