@@ -7,11 +7,13 @@ module test_toml
     use fpm_dependency, only: dependency_node_t, destroy_dependency_node, dependency_tree_t, &
          & new_dependency_node, new_dependency_tree, resize
     use fpm_manifest_dependency, only: dependency_config_t, dependency_destroy
+    use fpm_manifest_install
     use fpm_versioning, only: new_version
     use fpm_strings, only: string_t, operator(==), split
     use fpm_model, only: fortran_features_t, package_t, FPM_SCOPE_LIB, FPM_UNIT_MODULE, fpm_model_t, &
          & srcfile_t
     use fpm_compiler, only: archiver_t, compiler_t, id_gcc
+
 
     implicit none
     private
@@ -42,6 +44,7 @@ contains
            & new_unittest("serialize-dependency-tree", dependency_tree_roundtrip), &
            & new_unittest("serialize-dependency-tree-invalid", dependency_tree_invalid, should_fail=.true.), &
            & new_unittest("serialize-dependency-tree-invalid2", dependency_tree_invalid2, should_fail=.true.), &
+           & new_unittest("serialize-install-config", install_config_roundtrip), &
            & new_unittest("serialize-string-array", string_array_roundtrip), &
            & new_unittest("serialize-fortran-features", fft_roundtrip), &
            & new_unittest("serialize-fortran-invalid", fft_invalid, should_fail=.true.), &
@@ -1141,5 +1144,26 @@ contains
         call model%load(table,error)
 
     end subroutine fpm_model_invalid
+
+    subroutine install_config_roundtrip(error)
+
+        !> Error handling
+        type(error_t), allocatable, intent(out) :: error
+
+        type(install_config_t) :: install
+
+        integer :: loop
+
+        do loop=1,2
+
+           install % library = mod(loop,2)==0
+
+            ! Test full object
+            call install%test_serialization('install_config_roundtrip',error)
+            if (allocated(error)) return
+
+        end do
+
+    end subroutine install_config_roundtrip
 
 end module test_toml
