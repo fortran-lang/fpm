@@ -11,6 +11,7 @@ module test_toml
     use fpm_manifest_fortran
     use fpm_manifest_library
     use fpm_manifest_executable
+    use fpm_manifest_preprocess
     use fpm_versioning, only: new_version
     use fpm_strings, only: string_t, operator(==), split
     use fpm_model, only: fortran_features_t, package_t, FPM_SCOPE_LIB, FPM_UNIT_MODULE, fpm_model_t, &
@@ -50,6 +51,8 @@ contains
            & new_unittest("serialize-install-config", install_config_roundtrip), &
            & new_unittest("serialize-fortran-config", fortran_features_roundtrip), &
            & new_unittest("serialize-library-config", library_config_roundtrip), &
+           & new_unittest("serialize-executable-config", executable_config_roundtrip), &
+           & new_unittest("serialize-preprocess-config", preprocess_config_roundtrip), &
            & new_unittest("serialize-string-array", string_array_roundtrip), &
            & new_unittest("serialize-fortran-features", fft_roundtrip), &
            & new_unittest("serialize-fortran-invalid", fft_invalid, should_fail=.true.), &
@@ -1252,5 +1255,20 @@ contains
         call exe%test_serialization('executable_config: 4',error)
 
     end subroutine executable_config_roundtrip
+
+
+    subroutine preprocess_config_roundtrip(error)
+
+        !> Error handling
+        type(error_t), allocatable, intent(out) :: error
+
+        type(preprocess_config_t) :: prep
+
+        prep%name = "preprocessor config"
+        prep%macros = [string_t('Whatever'),string_t('FPM_BOOTSTRAP')]
+
+        call prep%test_serialization('preprocess_config', error)
+
+    end subroutine preprocess_config_roundtrip
 
 end module test_toml

@@ -12,15 +12,16 @@
 
 module fpm_manifest_preprocess
    use fpm_error, only : error_t, syntax_error
-   use fpm_strings, only : string_t
-   use fpm_toml, only : toml_table, toml_key, toml_stat, get_value, get_list
+   use fpm_strings, only : string_t, operator(==)
+   use fpm_toml, only : toml_table, toml_key, toml_stat, get_value, get_list, serializable_t, set_value, set_list, &
+                        set_string
    implicit none
    private
 
    public :: preprocess_config_t, new_preprocess_config, new_preprocessors
 
    !> Configuration meta data for a preprocessor
-   type :: preprocess_config_t
+   type, extends(serializable_t) :: preprocess_config_t
 
       !> Name of the preprocessor
       character(len=:), allocatable :: name
@@ -39,7 +40,14 @@ module fpm_manifest_preprocess
       !> Print information on this instance
       procedure :: info
 
+      !> Serialization interface
+      procedure :: serializable_is_same => preprocess_is_same
+      procedure :: dump_to_toml
+      procedure :: load_from_toml
+
    end type preprocess_config_t
+
+   character(*), parameter, private :: class_name = 'preprocess_config_t'
 
 contains
 
@@ -154,7 +162,7 @@ contains
          pr = 1
       end if
 
-      if (pr < 1) return 
+      if (pr < 1) return
 
       write(unit, fmt) "Preprocessor"
       if (allocated(self%name)) then
@@ -180,5 +188,76 @@ contains
       end if
 
    end subroutine info
+
+   logical function preprocess_is_same(this,that)
+      class(preprocess_config_t), intent(in) :: this
+      class(serializable_t), intent(in) :: that
+
+      preprocess_is_same = .false.
+
+      select type (other=>that)
+         type is (preprocess_config_t)
+            if (allocated(this%name).neqv.allocated(other%name)) return
+            if (allocated(this%name)) then
+                if (.not.(this%name==other%name)) return
+            endif
+            if (.not.(this%suffixes==other%suffixes)) return
+            if (.not.(this%directories==other%directories)) return
+            if (.not.(this%macros==other%macros)) return
+
+         class default
+            ! Not the same type
+            return
+      end select
+
+      !> All checks passed!
+      preprocess_is_same = .true.
+
+    end function preprocess_is_same
+
+    !> Dump install config to toml table
+    subroutine dump_to_toml(self, table, error)
+
+       !> Instance of the serializable object
+       class(preprocess_config_t), intent(inout) :: self
+
+       !> Data structure
+       type(toml_table), intent(inout) :: table
+
+       !> Error handling
+       type(error_t), allocatable, intent(out) :: error
+
+       call set_string(table, "name", self%name, error)
+       if (allocated(error)) return
+       call set_list(table, "suffixes", self%suffixes, error)
+       if (allocated(error)) return
+       call set_list(table, "directories", self%directories, error)
+       if (allocated(error)) return
+       call set_list(table, "macros", self%macros, error)
+       if (allocated(error)) return
+
+     end subroutine dump_to_toml
+
+     !> Read install config from toml table (no checks made at this stage)
+     subroutine load_from_toml(self, table, error)
+
+        !> Instance of the serializable object
+        class(preprocess_config_t), intent(inout) :: self
+
+        !> Data structure
+        type(toml_table), intent(inout) :: table
+
+        !> Error handling
+        type(error_t), allocatable, intent(out) :: error
+
+        call get_value(table, "name", self%name)
+        call get_list(table, "suffixes", self%suffixes, error)
+        if (allocated(error)) return
+        call get_list(table, "directories", self%directories, error)
+        if (allocated(error)) return
+        call get_list(table, "macros", self%macros, error)
+        if (allocated(error)) return
+
+     end subroutine load_from_toml
 
 end module fpm_manifest_preprocess

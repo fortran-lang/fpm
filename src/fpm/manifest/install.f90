@@ -31,7 +31,7 @@ module fpm_manifest_install
 
   end type install_config_t
 
-  character(*), parameter :: class_name = 'install_config_t'
+  character(*), parameter, private :: class_name = 'install_config_t'
 
 contains
 
