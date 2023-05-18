@@ -85,7 +85,7 @@ module fpm_manifest_profile
       character(len=:), allocatable :: compiler
 
       !> Value repesenting OS
-      integer :: os_type
+      integer :: os_type = OS_ALL
 
       !> Fortran compiler flags
       character(len=:), allocatable :: flags
@@ -103,7 +103,7 @@ module fpm_manifest_profile
       type(file_scope_flag), allocatable :: file_scope_flags(:)
 
       !> Is this profile one of the built-in ones?
-      logical :: is_built_in
+      logical :: is_built_in = .false.
 
       contains
 
@@ -234,7 +234,8 @@ module fpm_manifest_profile
 
         select case (os_name)
           case ("linux");   os_type = OS_LINUX
-          case ("macos");   os_type = OS_WINDOWS
+          case ("macos");   os_type = OS_MACOS
+          case ("windows"); os_type = OS_WINDOWS
           case ("cygwin");  os_type = OS_CYGWIN
           case ("solaris"); os_type = OS_SOLARIS
           case ("freebsd"); os_type = OS_FREEBSD
@@ -244,6 +245,22 @@ module fpm_manifest_profile
         end select
 
       end subroutine match_os_type
+
+      !> Match lowercase string with name of OS to os_type enum
+      function os_type_name(os_type)
+
+        !> Name of operating system
+        character(len=:), allocatable :: os_type_name
+
+        !> Enum representing type of OS
+        integer, intent(in) :: os_type
+
+        select case (os_type)
+          case (OS_ALL); os_type_name = "all"
+          case default; os_type_name = lower(OS_NAME(os_type))
+        end select
+
+      end function os_type_name
 
       subroutine validate_profile_table(profile_name, compiler_name, key_list, table, error, os_valid)
 
@@ -849,7 +866,7 @@ module fpm_manifest_profile
             write(unit, fmt) "- compiler", self%compiler
         end if
 
-        write(unit, fmt) "- os", self%os_type
+        write(unit, fmt) "- os", os_type_name(self%os_type)
 
         if (allocated(self%flags)) then
             write(unit, fmt) "- compiler flags", self%flags
@@ -1042,40 +1059,51 @@ module fpm_manifest_profile
 
           select type (other=>that)
              type is (profile_config_t)
+                print *, 'check name'
                 if (allocated(this%profile_name).neqv.allocated(other%profile_name)) return
                 if (allocated(this%profile_name)) then
                     if (.not.(this%profile_name==other%profile_name)) return
                 endif
+                print *, 'check compiler'
                 if (allocated(this%compiler).neqv.allocated(other%compiler)) return
                 if (allocated(this%compiler)) then
                     if (.not.(this%compiler==other%compiler)) return
                 endif
+                print *, 'check os'
                 if (this%os_type/=other%os_type) return
+                print *, 'check flags'
                 if (allocated(this%flags).neqv.allocated(other%flags)) return
                 if (allocated(this%flags)) then
                     if (.not.(this%flags==other%flags)) return
                 endif
+                print *, 'check cflags'
                 if (allocated(this%c_flags).neqv.allocated(other%c_flags)) return
                 if (allocated(this%c_flags)) then
                     if (.not.(this%c_flags==other%c_flags)) return
                 endif
+                print *, 'check cxxflags'
                 if (allocated(this%cxx_flags).neqv.allocated(other%cxx_flags)) return
                 if (allocated(this%cxx_flags)) then
                     if (.not.(this%cxx_flags==other%cxx_flags)) return
                 endif
+                print *, 'check link'
                 if (allocated(this%link_time_flags).neqv.allocated(other%link_time_flags)) return
                 if (allocated(this%link_time_flags)) then
                     if (.not.(this%link_time_flags==other%link_time_flags)) return
                 endif
 
+                print *, 'check file scope'
+
                 if (allocated(this%file_scope_flags).neqv.allocated(other%file_scope_flags)) return
                 if (allocated(this%file_scope_flags)) then
                     if (.not.size(this%file_scope_flags)==size(other%file_scope_flags)) return
                     do ii=1,size(this%file_scope_flags)
+                        print *, 'check ii-th file scope: ',ii
                        if (.not.this%file_scope_flags(ii)==other%file_scope_flags(ii)) return
                     end do
                 endif
 
+                print *, 'check builtin'
                 if (this%is_built_in.neqv.other%is_built_in) return
 
              class default
@@ -1109,7 +1137,8 @@ module fpm_manifest_profile
        if (allocated(error)) return
        call set_string(table, "compiler", self%compiler, error)
        if (allocated(error)) return
-       call set_string(table,"os-type",OS_NAME(self%os_type), error, 'profile_config_t')
+       print *, 'save os-type = ',os_type_name(self%os_type)
+       call set_string(table,"os-type",os_type_name(self%os_type), error, 'profile_config_t')
        if (allocated(error)) return
        call set_string(table, "flags", self%flags, error)
        if (allocated(error)) return
@@ -1169,8 +1198,52 @@ module fpm_manifest_profile
         !> Error handling
         type(error_t), allocatable, intent(out) :: error
 
-!        call get_value(table, "file-name", self%profile_name)
-!        call get_value(table, "flags", self%flags)
+        !> Local variables
+        character(len=:), allocatable :: flag
+        integer :: ii, jj
+        type(toml_table), pointer :: ptr_dep, ptr
+        type(toml_key), allocatable :: keys(:),dep_keys(:)
+
+        call table%get_keys(keys)
+
+        call get_value(table, "profile-name", self%profile_name)
+        call get_value(table, "compiler", self%compiler)
+        call get_value(table,"os-type",flag)
+        print *, 'OS flag = ',flag
+        call match_os_type(flag, self%os_type)
+        call get_value(table, "flags", self%flags)
+        call get_value(table, "c-flags", self%c_flags)
+        call get_value(table, "cxx-flags", self%cxx_flags)
+        call get_value(table, "link-time-flags", self%link_time_flags)
+        call get_value(table, "is-built-in", self%is_built_in, error, 'profile_config_t')
+        if (allocated(error)) return
+
+        if (allocated(self%file_scope_flags)) deallocate(self%file_scope_flags)
+        sub_deps: do ii = 1, size(keys)
+
+           select case (keys(ii)%key)
+              case ("file-scope-flags")
+
+               call get_value(table, keys(ii), ptr)
+               if (.not.associated(ptr)) then
+                  call fatal_error(error,'profile_config_t: error retrieving file_scope_flags table')
+                  return
+               end if
+
+               !> Read all packages
+               call ptr%get_keys(dep_keys)
+               allocate(self%file_scope_flags(size(dep_keys)))
+
+               do jj = 1, size(dep_keys)
+
+                   call get_value(ptr, dep_keys(jj), ptr_dep)
+                   call self%file_scope_flags(jj)%load_from_toml(ptr_dep, error)
+                   if (allocated(error)) return
+
+               end do
+
+           end select
+        end do sub_deps
 
      end subroutine profile_load
 

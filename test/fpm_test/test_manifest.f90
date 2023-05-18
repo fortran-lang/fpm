@@ -517,6 +517,9 @@ contains
             return
         end if
 
+        call chosen_profile%test_serialization('profile serialization: '//profile_name//' '//compiler,error)
+        if (allocated(error)) return
+
         profile_name = 'release'
         compiler = 'gfortran'
         call find_profile(package%profiles, profile_name, compiler, 3, profile_found, chosen_profile)
@@ -524,6 +527,9 @@ contains
             call test_failed(error, "Failed to choose profile with OS 'all'")
             return
         end if
+
+        call chosen_profile%test_serialization('profile serialization: '//profile_name//' '//compiler,error)
+        if (allocated(error)) return
 
         profile_name = 'publish'
         compiler = 'gfortran'
@@ -533,6 +539,9 @@ contains
             return
         end if
 
+        call chosen_profile%test_serialization('profile serialization: '//profile_name//' '//compiler,error)
+        if (allocated(error)) return
+
         profile_name = 'debug'
         compiler = 'ifort'
         call find_profile(package%profiles, profile_name, compiler, 3, profile_found, chosen_profile)
@@ -541,6 +550,9 @@ contains
             return
         end if
 
+        call chosen_profile%test_serialization('profile serialization: '//profile_name//' '//compiler,error)
+        if (allocated(error)) return
+
         profile_name = 'release'
         compiler = 'ifort'
         call find_profile(package%profiles, profile_name, compiler, 1, profile_found, chosen_profile)
@@ -548,6 +560,10 @@ contains
             call test_failed(error, "Failed to overwrite built-in profile")
             return
         end if
+
+        call chosen_profile%test_serialization('profile serialization: '//profile_name//' '//compiler,error)
+        if (allocated(error)) return
+
     end subroutine test_profiles
 
     !> 'flags' is a key-value entry, test should fail as it is defined as a table
