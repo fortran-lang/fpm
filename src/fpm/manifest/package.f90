@@ -611,6 +611,7 @@ contains
        integer :: ierr, ii
        type(toml_table), pointer :: ptr,ptr_pkg
        character(30) :: unnamed
+       character(128) :: profile_name
 
        call set_string(table, "name", self%name, error, class_name)
        if (allocated(error)) return
@@ -740,14 +741,10 @@ contains
 
               associate (pkg => self%profiles(ii))
 
-                 !> Because dependencies are named, fallback if this has no name
-                 !> So, serialization will work regardless of size(self%dep) == self%ndep
-                 if (len_trim(pkg%profile_name)==0) then
-                    write(unnamed,1) 'PROFILE',ii
-                    call add_table(ptr_pkg, trim(unnamed), ptr, error, class_name//'(profiles)')
-                 else
-                    call add_table(ptr_pkg, pkg%profile_name, ptr, error, class_name//'(profiles)')
-                 end if
+                 !> Duplicate profile names are possible, as multiple profiles are possible with the
+                 !> same name, same compiler, etc. So, use a unique name here
+                 write(profile_name,1) 'PROFILE',ii
+                 call add_table(ptr_pkg, trim(profile_name), ptr, error, class_name//'(profiles)')
                  if (allocated(error)) return
                  call pkg%dump_to_toml(ptr, error)
                  if (allocated(error)) return

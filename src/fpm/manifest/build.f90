@@ -105,9 +105,8 @@ contains
 
         if (stat == toml_stat%success) then
 
-            ! Boolean value found. Set no custom prefix. This also falls back to
-            ! key not provided
-            self%module_prefix = string_t("")
+            ! Boolean value found. Set no custom prefix. This also falls back to key not provided
+            if (allocated(self%module_prefix%s)) deallocate(self%module_prefix%s)
 
         else
 
@@ -306,7 +305,7 @@ contains
         call get_value(table, "module-naming", self%module_naming, .false., stat=stat)
         if (stat == toml_stat%success) then
             ! Boolean value found. Set no custom prefix. This also falls back to key not provided
-            self%module_prefix = string_t("")
+            if (allocated(self%module_prefix%s)) deallocate(self%module_prefix%s)
         else
             !> Value found, but not a boolean. Attempt to read a prefix string
             call get_value(table, "module-naming", self%module_prefix%s)

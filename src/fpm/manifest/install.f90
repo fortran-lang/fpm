@@ -17,7 +17,7 @@ module fpm_manifest_install
   type, extends(serializable_t) :: install_config_t
 
     !> Install library with this project
-    logical :: library
+    logical :: library = .false.
 
   contains
 

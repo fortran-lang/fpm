@@ -167,6 +167,10 @@ contains
             return
         end if
 
+        ! Test package serialization
+        call package%test_serialization('test_valid_manifest',error)
+        if (allocated(error)) return
+
     end subroutine test_valid_manifest
 
 
@@ -220,6 +224,9 @@ contains
             return
         end if
 
+        call package%test_serialization('test_default_library',error)
+        if (allocated(error)) return
+
     end subroutine test_default_library
 
 
@@ -241,6 +248,9 @@ contains
 
         call check_string(error, package%executable(1)%name, name, &
             & "Default executable name")
+        if (allocated(error)) return
+
+        call package%test_serialization('test_default_executable',error)
         if (allocated(error)) return
 
     end subroutine test_default_executable
@@ -1253,7 +1263,7 @@ contains
         if (allocated(error)) return
 
         !> Test serialization roundtrip
-        call build%test_serialization('test_link_string', error)
+        call build%test_serialization('test_link_array', error)
         if (allocated(error)) return
 
     end subroutine test_link_array

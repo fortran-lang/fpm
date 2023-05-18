@@ -1059,40 +1059,31 @@ module fpm_manifest_profile
 
           select type (other=>that)
              type is (profile_config_t)
-                print *, 'check name'
                 if (allocated(this%profile_name).neqv.allocated(other%profile_name)) return
                 if (allocated(this%profile_name)) then
                     if (.not.(this%profile_name==other%profile_name)) return
                 endif
-                print *, 'check compiler'
                 if (allocated(this%compiler).neqv.allocated(other%compiler)) return
                 if (allocated(this%compiler)) then
                     if (.not.(this%compiler==other%compiler)) return
                 endif
-                print *, 'check os'
                 if (this%os_type/=other%os_type) return
-                print *, 'check flags'
                 if (allocated(this%flags).neqv.allocated(other%flags)) return
                 if (allocated(this%flags)) then
                     if (.not.(this%flags==other%flags)) return
                 endif
-                print *, 'check cflags'
                 if (allocated(this%c_flags).neqv.allocated(other%c_flags)) return
                 if (allocated(this%c_flags)) then
                     if (.not.(this%c_flags==other%c_flags)) return
                 endif
-                print *, 'check cxxflags'
                 if (allocated(this%cxx_flags).neqv.allocated(other%cxx_flags)) return
                 if (allocated(this%cxx_flags)) then
                     if (.not.(this%cxx_flags==other%cxx_flags)) return
                 endif
-                print *, 'check link'
                 if (allocated(this%link_time_flags).neqv.allocated(other%link_time_flags)) return
                 if (allocated(this%link_time_flags)) then
                     if (.not.(this%link_time_flags==other%link_time_flags)) return
                 endif
-
-                print *, 'check file scope'
 
                 if (allocated(this%file_scope_flags).neqv.allocated(other%file_scope_flags)) return
                 if (allocated(this%file_scope_flags)) then
@@ -1103,7 +1094,6 @@ module fpm_manifest_profile
                     end do
                 endif
 
-                print *, 'check builtin'
                 if (this%is_built_in.neqv.other%is_built_in) return
 
              class default
@@ -1209,7 +1199,6 @@ module fpm_manifest_profile
         call get_value(table, "profile-name", self%profile_name)
         call get_value(table, "compiler", self%compiler)
         call get_value(table,"os-type",flag)
-        print *, 'OS flag = ',flag
         call match_os_type(flag, self%os_type)
         call get_value(table, "flags", self%flags)
         call get_value(table, "c-flags", self%c_flags)
