@@ -1127,7 +1127,6 @@ module fpm_manifest_profile
        if (allocated(error)) return
        call set_string(table, "compiler", self%compiler, error)
        if (allocated(error)) return
-       print *, 'save os-type = ',os_type_name(self%os_type)
        call set_string(table,"os-type",os_type_name(self%os_type), error, 'profile_config_t')
        if (allocated(error)) return
        call set_string(table, "flags", self%flags, error)
