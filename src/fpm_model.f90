@@ -980,7 +980,6 @@ subroutine model_load_from_toml(self, table, error)
     type(toml_key), allocatable :: keys(:),pkg_keys(:)
     integer :: ierr, ii, jj
     type(toml_table), pointer :: ptr,ptr_pkg
-    character(27) :: unnamed
 
     call table%get_keys(keys)
 
