@@ -227,15 +227,17 @@ contains
         character(len=buffersize) :: buffer
         integer :: ii
 
-        do ii = 1, size(self%num)
-            if (allocated(string)) then
-                write(buffer, '(".", i0)') self%num(ii)
-                string = string // trim(buffer)
-            else
-                write(buffer, '(i0)') self%num(ii)
-                string = trim(buffer)
-            end if
-        end do
+        if (allocated(self%num)) then
+            do ii = 1, size(self%num)
+                if (allocated(string)) then
+                    write(buffer, '(".", i0)') self%num(ii)
+                    string = string // trim(buffer)
+                else
+                    write(buffer, '(i0)') self%num(ii)
+                    string = trim(buffer)
+                end if
+            end do
+        endif
 
         if (.not.allocated(string)) then
             string = '0'
