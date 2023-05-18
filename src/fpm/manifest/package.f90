@@ -743,7 +743,7 @@ contains
 
                  !> Duplicate profile names are possible, as multiple profiles are possible with the
                  !> same name, same compiler, etc. So, use a unique name here
-                 write(profile_name,1) 'PROFILE',ii
+                 write(profile_name,2) ii
                  call add_table(ptr_pkg, trim(profile_name), ptr, error, class_name//'(profiles)')
                  if (allocated(error)) return
                  call pkg%dump_to_toml(ptr, error)
@@ -842,6 +842,7 @@ contains
        end if
 
        1 format('UNNAMED_',a,'_',i0)
+       2 format('PROFILE_',i0)
 
      end subroutine dump_to_toml
 

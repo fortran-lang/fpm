@@ -44,6 +44,7 @@ private
 public :: fpm_cmd_settings, &
           fpm_build_settings, &
           fpm_install_settings, &
+          fpm_export_settings, &
           fpm_new_settings, &
           fpm_run_settings, &
           fpm_test_settings, &
@@ -108,9 +109,16 @@ end type
 !> Settings for interacting and updating with project dependencies
 type, extends(fpm_cmd_settings)  :: fpm_update_settings
     character(len=ibug),allocatable :: name(:)
-    character(len=:),allocatable :: dump
-    logical :: fetch_only
-    logical :: clean
+    character(len=:),allocatable    :: dump
+    logical                         :: fetch_only
+    logical                         :: clean
+end type
+
+!> Settings for exporting model data
+type, extends(fpm_build_settings) :: fpm_export_settings
+    character(len=:),allocatable  :: dump_manifest
+    character(len=:),allocatable  :: dump_dependencies
+    character(len=:),allocatable  :: dump_model
 end type
 
 type, extends(fpm_cmd_settings)   :: fpm_clean_settings
@@ -221,6 +229,7 @@ contains
         logical                       :: is_unix
         type(fpm_install_settings), allocatable :: install_settings
         type(fpm_publish_settings), allocatable :: publish_settings
+        type(fpm_export_settings) , allocatable :: export_settings
         type(version_t) :: version
         character(len=:), allocatable :: common_args, compiler_args, run_args, working_dir, &
             & c_compiler, cxx_compiler, archiver, version_s
@@ -605,6 +614,38 @@ contains
             cmd_settings=fpm_update_settings(name=names, dump=val_dump, &
                 fetch_only=lget('fetch-only'), verbose=lget('verbose'), &
                 clean=lget('clean'))
+
+        case('export')
+
+            call set_args(common_args // compiler_args // '&
+                & --manifest "filename"  &
+                & --model "filename" &
+                & --dependencies "filename" ', &
+                help_build, version_text)
+
+            call check_build_vals()
+
+            c_compiler = sget('c-compiler')
+            cxx_compiler = sget('cxx-compiler')
+            archiver = sget('archiver')
+            allocate(export_settings, source=fpm_export_settings(&
+                profile=val_profile,&
+                prune=.not.lget('no-prune'), &
+                compiler=val_compiler, &
+                c_compiler=c_compiler, &
+                cxx_compiler=cxx_compiler, &
+                archiver=archiver, &
+                flag=val_flag, &
+                cflag=val_cflag, &
+                show_model=.true., &
+                cxxflag=val_cxxflag, &
+                ldflag=val_ldflag, &
+                verbose=lget('verbose')))
+            call get_char_arg(export_settings%dump_model, 'model')
+            call get_char_arg(export_settings%dump_manifest, 'manifest')
+            call get_char_arg(export_settings%dump_dependencies, 'dependencies')
+            call move_alloc(export_settings, cmd_settings)
+
 
         case('clean')
             call set_args(common_args // &

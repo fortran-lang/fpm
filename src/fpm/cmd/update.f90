@@ -15,10 +15,10 @@ contains
   subroutine cmd_update(settings)
     !> Representation of the command line arguments
     type(fpm_update_settings), intent(in) :: settings
+
     type(package_config_t) :: package
     type(dependency_tree_t) :: deps
     type(error_t), allocatable :: error
-
     integer :: ii
     character(len=:), allocatable :: cache
 
