@@ -227,17 +227,15 @@ contains
         character(len=buffersize) :: buffer
         integer :: ii
 
-        if (allocated(self%num)) then
-            do ii = 1, size(self%num)
-                if (allocated(string)) then
-                    write(buffer, '(".", i0)') self%num(ii)
-                    string = string // trim(buffer)
-                else
-                    write(buffer, '(i0)') self%num(ii)
-                    string = trim(buffer)
-                end if
-            end do
-        endif
+        do ii = 1, ndigits(self)
+            if (allocated(string)) then
+                write(buffer, '(".", i0)') self%num(ii)
+                string = string // trim(buffer)
+            else
+                write(buffer, '(i0)') self%num(ii)
+                string = trim(buffer)
+            end if
+        end do
 
         if (.not.allocated(string)) then
             string = '0'
@@ -298,18 +296,18 @@ contains
         !> First version is greater
         logical :: is_greater
 
-        integer :: ii
+        integer :: ii, lhs_size, rhs_size
 
-        do ii = 1, min(size(lhs%num), size(rhs%num))
+        do ii = 1, min(ndigits(lhs),ndigits(rhs))
             if (lhs%num(ii) /= rhs%num(ii)) then
                 is_greater = lhs%num(ii) > rhs%num(ii)
                 return
             end if
         end do
 
-        is_greater = size(lhs%num) > size(rhs%num)
+        is_greater = ndigits(lhs) > ndigits(rhs)
         if (is_greater) then
-            do ii = size(rhs%num) + 1, size(lhs%num)
+            do ii = ndigits(rhs) + 1, ndigits(lhs)
                 is_greater = lhs%num(ii) > 0
                 if (is_greater) return
             end do
@@ -391,6 +389,18 @@ contains
         end if
 
     end function match
+
+    !> Number of digits
+    elemental integer function ndigits(self)
+       class(version_t), intent(in) :: self
+
+       if (allocated(self%num)) then
+          ndigits = size(self%num)
+       else
+          ndigits = 0
+       end if
+
+    end function ndigits
 
 
 end module fpm_versioning
