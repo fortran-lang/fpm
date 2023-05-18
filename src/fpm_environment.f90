@@ -15,7 +15,6 @@ module fpm_environment
     public :: get_command_arguments_quoted
     public :: separator
 
-                        public :: OS_NAME
     integer, parameter, public :: OS_UNKNOWN = 0
     integer, parameter, public :: OS_LINUX   = 1
     integer, parameter, public :: OS_MACOS   = 2
@@ -25,25 +24,6 @@ module fpm_environment
     integer, parameter, public :: OS_FREEBSD = 6
     integer, parameter, public :: OS_OPENBSD = 7
 contains
-
-    !> Return string describing the OS type flag
-    pure function OS_NAME(os)
-        integer, intent(in) :: os
-        character(len=:), allocatable :: OS_NAME
-
-        select case (os)
-            case (OS_LINUX);   OS_NAME =  "Linux"
-            case (OS_MACOS);   OS_NAME =  "macOS"
-            case (OS_WINDOWS); OS_NAME =  "Windows"
-            case (OS_CYGWIN);  OS_NAME =  "Cygwin"
-            case (OS_SOLARIS); OS_NAME =  "Solaris"
-            case (OS_FREEBSD); OS_NAME =  "FreeBSD"
-            case (OS_OPENBSD); OS_NAME =  "OpenBSD"
-            case (OS_UNKNOWN); OS_NAME =  "Unknown"
-            case default     ; OS_NAME =  "UNKNOWN"
-        end select
-    end function OS_NAME
-
     !> Determine the OS type
     integer function get_os_type() result(r)
         !!

@@ -43,11 +43,10 @@
 !>
 module fpm_manifest_profile
     use fpm_error, only : error_t, syntax_error, fatal_error, fpm_stop
-    use fpm_toml, only : toml_table, toml_key, toml_stat, get_value, serializable_t, set_value, &
-                         set_string, add_table
+    use fpm_toml, only : toml_table, toml_key, toml_stat, get_value, serializable_t, set_value, set_string
     use fpm_strings, only: lower
     use fpm_environment, only: get_os_type, OS_UNKNOWN, OS_LINUX, OS_MACOS, OS_WINDOWS, &
-                             OS_CYGWIN, OS_SOLARIS, OS_FREEBSD, OS_OPENBSD, OS_NAME
+                             OS_CYGWIN, OS_SOLARIS, OS_FREEBSD, OS_OPENBSD
     use fpm_filesystem, only: join_path
     implicit none
     public :: profile_config_t, new_profile, new_profiles, get_default_profiles, &
@@ -77,7 +76,7 @@ module fpm_manifest_profile
     end type file_scope_flag
 
     !> Configuration meta data for a profile
-    type, extends(serializable_t) :: profile_config_t
+    type :: profile_config_t
       !> Name of the profile
       character(len=:), allocatable :: profile_name
 
@@ -109,11 +108,6 @@ module fpm_manifest_profile
 
         !> Print information on this instance
         procedure :: info
-
-        !> Serialization interface
-        procedure :: serializable_is_same => profile_same
-        procedure :: dump_to_toml => profile_dump
-        procedure :: load_from_toml => profile_load
 
     end type profile_config_t
 
@@ -1032,147 +1026,6 @@ module fpm_manifest_profile
 
      end subroutine file_scope_load
 
-      logical function profile_same(this,that)
-          class(profile_config_t), intent(in) :: this
-          class(serializable_t), intent(in) :: that
-
-          integer :: ii
-
-          profile_same = .false.
-
-          select type (other=>that)
-             type is (profile_config_t)
-                if (allocated(this%profile_name).neqv.allocated(other%profile_name)) return
-                if (allocated(this%profile_name)) then
-                    if (.not.(this%profile_name==other%profile_name)) return
-                endif
-                if (allocated(this%compiler).neqv.allocated(other%compiler)) return
-                if (allocated(this%compiler)) then
-                    if (.not.(this%compiler==other%compiler)) return
-                endif
-                if (this%os_type/=other%os_type) return
-                if (allocated(this%flags).neqv.allocated(other%flags)) return
-                if (allocated(this%flags)) then
-                    if (.not.(this%flags==other%flags)) return
-                endif
-                if (allocated(this%c_flags).neqv.allocated(other%c_flags)) return
-                if (allocated(this%c_flags)) then
-                    if (.not.(this%c_flags==other%c_flags)) return
-                endif
-                if (allocated(this%cxx_flags).neqv.allocated(other%cxx_flags)) return
-                if (allocated(this%cxx_flags)) then
-                    if (.not.(this%cxx_flags==other%cxx_flags)) return
-                endif
-                if (allocated(this%link_time_flags).neqv.allocated(other%link_time_flags)) return
-                if (allocated(this%link_time_flags)) then
-                    if (.not.(this%link_time_flags==other%link_time_flags)) return
-                endif
-
-                if (allocated(this%file_scope_flags).neqv.allocated(other%file_scope_flags)) return
-                if (allocated(this%file_scope_flags)) then
-                    if (.not.size(this%file_scope_flags)==size(other%file_scope_flags)) return
-                    do ii=1,size(this%file_scope_flags)
-                       if (.not.this%file_scope_flags(ii)==other%file_scope_flags(ii)) return
-                    end do
-                endif
-
-                if (this%is_built_in.neqv.other%is_built_in) return
-
-             class default
-                ! Not the same type
-                return
-          end select
-
-          !> All checks passed!
-          profile_same = .true.
-
-    end function profile_same
-
-    !> Dump to toml table
-    subroutine profile_dump(self, table, error)
-
-       !> Instance of the serializable object
-       class(profile_config_t), intent(inout) :: self
-
-       !> Data structure
-       type(toml_table), intent(inout) :: table
-
-       !> Error handling
-       type(error_t), allocatable, intent(out) :: error
-
-       !> Local variables
-       integer :: ierr, ii
-       type(toml_table), pointer :: ptr_deps, ptr
-       character(len=30) :: unnamed
-
-       call set_string(table, "profile-name", self%profile_name, error)
-       if (allocated(error)) return
-       call set_string(table, "compiler", self%compiler, error)
-       if (allocated(error)) return
-       call set_string(table,"os-type",OS_NAME(self%os_type), error, 'profile_config_t')
-       if (allocated(error)) return
-       call set_string(table, "flags", self%flags, error)
-       if (allocated(error)) return
-       call set_string(table, "c-flags", self%c_flags, error)
-       if (allocated(error)) return
-       call set_string(table, "cxx-flags", self%cxx_flags, error)
-       if (allocated(error)) return
-       call set_string(table, "link-time-flags", self%link_time_flags, error)
-       if (allocated(error)) return
-
-       if (allocated(self%file_scope_flags)) then
-
-           ! Create dependency table
-           call add_table(table, "file-scope-flags", ptr_deps)
-           if (.not. associated(ptr_deps)) then
-              call fatal_error(error, "profile_config_t cannot create file scope table ")
-              return
-           end if
-
-           do ii = 1, size(self%file_scope_flags)
-              associate (dep => self%file_scope_flags(ii))
-
-                 !> Because files need a name, fallback if this has no name
-                 if (len_trim(dep%file_name)==0) then
-                    write(unnamed,1) ii
-                    call add_table(ptr_deps, trim(unnamed), ptr)
-                 else
-                    call add_table(ptr_deps, dep%file_name, ptr)
-                 end if
-                 if (.not. associated(ptr)) then
-                    call fatal_error(error, "profile_config_t cannot create entry for file "//dep%file_name)
-                    return
-                 end if
-                 call dep%dump_to_toml(ptr, error)
-                 if (allocated(error)) return
-              end associate
-           end do
-
-       endif
-
-       call set_value(table, "is-built-in", self%is_built_in, error, 'profile_config_t')
-       if (allocated(error)) return
-
-       1 format('UNNAMED_FILE_',i0)
-
-     end subroutine profile_dump
-
-     !> Read from toml table (no checks made at this stage)
-     subroutine profile_load(self, table, error)
-
-        !> Instance of the serializable object
-        class(profile_config_t), intent(inout) :: self
-
-        !> Data structure
-        type(toml_table), intent(inout) :: table
-
-        !> Error handling
-        type(error_t), allocatable, intent(out) :: error
-
-!        call get_value(table, "file-name", self%profile_name)
-!        call get_value(table, "flags", self%flags)
-
-     end subroutine profile_load
 
 
 end module fpm_manifest_profile

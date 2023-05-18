@@ -25,7 +25,7 @@
 module fpm_command_line
 use fpm_environment,  only : get_os_type, get_env, os_is_unix, &
                              OS_UNKNOWN, OS_LINUX, OS_MACOS, OS_WINDOWS, &
-                             OS_CYGWIN, OS_SOLARIS, OS_FREEBSD, OS_OPENBSD, OS_NAME
+                             OS_CYGWIN, OS_SOLARIS, OS_FREEBSD, OS_OPENBSD
 use M_CLI2,           only : set_args, lget, sget, unnamed, remaining, specified
 use M_CLI2,           only : get_subcommand, CLI_RESPONSE_FILE
 use fpm_strings,      only : lower, split, to_fortran_name, is_fortran_name
@@ -234,7 +234,17 @@ contains
         call set_help()
         os = get_os_type()
         ! text for --version switch,
-        os_type = "OS Type:     "//OS_NAME(os)
+        select case (os)
+            case (OS_LINUX);   os_type =  "OS Type:     Linux"
+            case (OS_MACOS);   os_type =  "OS Type:     macOS"
+            case (OS_WINDOWS); os_type =  "OS Type:     Windows"
+            case (OS_CYGWIN);  os_type =  "OS Type:     Cygwin"
+            case (OS_SOLARIS); os_type =  "OS Type:     Solaris"
+            case (OS_FREEBSD); os_type =  "OS Type:     FreeBSD"
+            case (OS_OPENBSD); os_type =  "OS Type:     OpenBSD"
+            case (OS_UNKNOWN); os_type =  "OS Type:     Unknown"
+            case default     ; os_type =  "OS Type:     UNKNOWN"
+        end select
         is_unix = os_is_unix(os)
 
         ! Get current release version
