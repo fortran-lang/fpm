@@ -82,6 +82,15 @@ module fpm_manifest_package
         !> License meta data
         character(len=:), allocatable :: license
 
+        !> Author meta data
+        character(len=:), allocatable :: author
+
+        !> Maintainer meta data
+        character(len=:), allocatable :: maintainer
+
+        !> Copyright meta data
+        character(len=:), allocatable :: copyright
+
         !> Library meta data
         type(library_config_t), allocatable :: library
 
@@ -161,6 +170,9 @@ contains
         endif
 
         call get_value(table, "license", self%license)
+        call get_value(table, "author", self%author)
+        call get_value(table, "maintainer", self%maintainer)
+        call get_value(table, "copyright", self%copyright)
 
         if (len(self%name) <= 0) then
             call syntax_error(error, "Package name must be a non-empty string")
@@ -532,6 +544,9 @@ contains
             if (.not.this%install==other%install) return
             if (.not.this%fortran==other%fortran) return
             if (.not.this%license==other%license) return
+            if (.not.this%author==other%author) return
+            if (.not.this%maintainer==other%maintainer) return
+            if (.not.this%copyright==other%copyright) return
             if (allocated(this%library).neqv.allocated(other%library)) return
             if (allocated(this%library)) then
                 if (.not.this%library==other%library) return
@@ -618,6 +633,12 @@ contains
        call set_string(table, "version", self%version%s(), error, class_name)
        if (allocated(error)) return
        call set_string(table, "license", self%license, error, class_name)
+       if (allocated(error)) return
+       call set_string(table, "author", self%author, error, class_name)
+       if (allocated(error)) return
+       call set_string(table, "maintainer", self%maintainer, error, class_name)
+       if (allocated(error)) return
+       call set_string(table, "copyright", self%copyright, error, class_name)
        if (allocated(error)) return
 
        call add_table(table, "build", ptr, error, class_name)
@@ -867,6 +888,9 @@ contains
 
         call get_value(table, "name", self%name)
         call get_value(table, "license", self%license)
+        call get_value(table, "author", self%author)
+        call get_value(table, "maintainer", self%maintainer)
+        call get_value(table, "copyright", self%copyright)
         call get_value(table, "version", flag)
         call new_version(self%version, flag, error)
         if (allocated(error)) then
