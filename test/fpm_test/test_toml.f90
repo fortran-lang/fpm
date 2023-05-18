@@ -12,6 +12,7 @@ module test_toml
     use fpm_manifest_library
     use fpm_manifest_executable
     use fpm_manifest_preprocess
+    use fpm_manifest_profile
     use fpm_versioning, only: new_version
     use fpm_strings, only: string_t, operator(==), split
     use fpm_model, only: fortran_features_t, package_t, FPM_SCOPE_LIB, FPM_UNIT_MODULE, fpm_model_t, &
@@ -53,6 +54,7 @@ contains
            & new_unittest("serialize-library-config", library_config_roundtrip), &
            & new_unittest("serialize-executable-config", executable_config_roundtrip), &
            & new_unittest("serialize-preprocess-config", preprocess_config_roundtrip), &
+           & new_unittest("serialize-file-scope-flag", file_scope_flag_roundtrip), &
            & new_unittest("serialize-string-array", string_array_roundtrip), &
            & new_unittest("serialize-fortran-features", fft_roundtrip), &
            & new_unittest("serialize-fortran-invalid", fft_invalid, should_fail=.true.), &
@@ -1270,5 +1272,22 @@ contains
         call prep%test_serialization('preprocess_config', error)
 
     end subroutine preprocess_config_roundtrip
+
+    subroutine file_scope_flag_roundtrip(error)
+
+        !> Error handling
+        type(error_t), allocatable, intent(out) :: error
+
+        type(file_scope_flag) :: ff
+
+        call ff%test_serialization('file_scope_flag: empty', error)
+        if (allocated(error)) return
+
+        ff%file_name = "preprocessor config"
+        ff%flags = "-1 -f -2 -g"
+
+        call ff%test_serialization('file_scope_flag: non-empty', error)
+
+    end subroutine file_scope_flag_roundtrip
 
 end module test_toml
