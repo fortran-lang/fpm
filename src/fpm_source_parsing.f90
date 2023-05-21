@@ -123,7 +123,7 @@ function parse_f_source(f_filename,error) result(f_source)
             ! Detect exported C-API via bind(C)
             if (.not.inside_interface .and. &
                 parse_subsequence(file_lines_lower(i)%s,'bind','(','c')) then
-                
+
                 do j=i,1,-1
 
                     if (index(file_lines_lower(j)%s,'function') > 0 .or. &
@@ -302,7 +302,7 @@ function parse_f_source(f_filename,error) result(f_source)
                     f_source%unit_type = FPM_UNIT_MODULE
                 end if
 
-                if (.not.inside_module) then    
+                if (.not.inside_module) then
                     inside_module = .true.
                 else
                     ! Must have missed an end module statement (can't assume a pure module)
@@ -341,7 +341,7 @@ function parse_f_source(f_filename,error) result(f_source)
                           file_lines_lower(i)%s)
                     return
                 end if
-                
+
                 if (f_source%unit_type /= FPM_UNIT_PROGRAM) then
                     f_source%unit_type = FPM_UNIT_SUBMODULE
                 end if
@@ -403,7 +403,7 @@ function parse_f_source(f_filename,error) result(f_source)
             !  (to check for code outside of modules)
             if (parse_sequence(file_lines_lower(i)%s,'end','module') .or. &
                 parse_sequence(file_lines_lower(i)%s,'end','submodule')) then
-                
+
                 inside_module = .false.
                 cycle
 
@@ -460,7 +460,7 @@ function parse_c_source(c_filename,error) result(c_source)
 
         c_source%unit_type = FPM_UNIT_CHEADER
 
-    else if (str_ends_with(lower(c_filename), ".cpp")) then 
+    else if (str_ends_with(lower(c_filename), ".cpp")) then
 
         c_source%unit_type = FPM_UNIT_CPPSOURCE
 
@@ -542,6 +542,7 @@ function split_n(string,delims,n,stat) result(substring)
     if (n<1) then
         i = size(string_parts) + n
         if (i < 1) then
+            allocate(character(len=0) :: substring) ! ifort bus error otherwise
             stat = 1
             return
         end if
@@ -550,6 +551,7 @@ function split_n(string,delims,n,stat) result(substring)
     end if
 
     if (i>size(string_parts)) then
+        allocate(character(len=0) :: substring) ! ifort bus error otherwise
         stat = 1
         return
     end if
@@ -573,7 +575,7 @@ function parse_subsequence(string,t1,t2,t3,t4) result(found)
     found = .false.
     offset = 1
 
-    do 
+    do
 
         i = index(string(offset:),t1)
 

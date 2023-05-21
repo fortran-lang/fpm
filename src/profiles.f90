@@ -53,7 +53,7 @@ module fpm_manifest_profile
             & info_profile, find_profile, DEFAULT_COMPILER
 
     !> Name of the default compiler
-    character(len=*), parameter :: DEFAULT_COMPILER = 'gfortran' 
+    character(len=*), parameter :: DEFAULT_COMPILER = 'gfortran'
     integer, parameter :: OS_ALL = -1
     character(len=:), allocatable :: path
 
@@ -78,7 +78,7 @@ module fpm_manifest_profile
 
       !> Value repesenting OS
       integer :: os_type
-      
+
       !> Fortran compiler flags
       character(len=:), allocatable :: flags
 
@@ -110,16 +110,16 @@ module fpm_manifest_profile
       function new_profile(profile_name, compiler, os_type, flags, c_flags, cxx_flags, &
                            link_time_flags, file_scope_flags, is_built_in) &
                       & result(profile)
-        
+
         !> Name of the profile
         character(len=*), intent(in) :: profile_name
-        
+
         !> Name of the compiler
         character(len=*), intent(in) :: compiler
-        
+
         !> Type of the OS
         integer, intent(in) :: os_type
-        
+
         !> Fortran compiler flags
         character(len=*), optional, intent(in) :: flags
 
@@ -190,7 +190,7 @@ module fpm_manifest_profile
             is_valid = .false.
         end select
       end subroutine validate_compiler_name
-        
+
       !> Check if os_name is a valid name of a supported OS
       subroutine validate_os_name(os_name, is_valid)
 
@@ -373,10 +373,10 @@ module fpm_manifest_profile
                  & flags, c_flags, cxx_flags, link_time_flags, file_scope_flags)
         profindex = profindex + 1
       end subroutine get_flags
-      
+
       !> Traverse operating system tables to obtain number of profiles
       subroutine traverse_oss_for_size(profile_name, compiler_name, os_list, table, profiles_size, error)
-        
+
         !> Name of profile
         character(len=:), allocatable, intent(in) :: profile_name
 
@@ -447,7 +447,7 @@ module fpm_manifest_profile
 
       !> Traverse operating system tables to obtain profiles
       subroutine traverse_oss(profile_name, compiler_name, os_list, table, profiles, profindex, error)
-        
+
         !> Name of profile
         character(len=:), allocatable, intent(in) :: profile_name
 
@@ -468,7 +468,7 @@ module fpm_manifest_profile
 
         !> Index in the list of profiles
         integer, intent(inout) :: profindex
-        
+
         type(toml_key), allocatable :: key_list(:)
         character(len=:), allocatable :: os_name, l_os_name
         type(toml_table), pointer :: os_node
@@ -513,7 +513,7 @@ module fpm_manifest_profile
 
       !> Traverse compiler tables
       subroutine traverse_compilers(profile_name, comp_list, table, error, profiles_size, profiles, profindex)
-        
+
         !> Name of profile
         character(len=:), allocatable, intent(in) :: profile_name
 
@@ -522,10 +522,10 @@ module fpm_manifest_profile
 
         !> Table containing compiler tables
         type(toml_table), pointer, intent(in) :: table
-        
+
         !> Error handling
         type(error_t), allocatable, intent(out) :: error
-        
+
         !> Number of profiles in list of profiles
         integer, intent(inout), optional :: profiles_size
 
@@ -534,8 +534,8 @@ module fpm_manifest_profile
 
         !> Index in the list of profiles
         integer, intent(inout), optional :: profindex
-        
-        character(len=:), allocatable :: compiler_name        
+
+        character(len=:), allocatable :: compiler_name
         type(toml_table), pointer :: comp_node
         type(toml_key), allocatable :: os_list(:)
         integer :: icomp, stat
@@ -544,7 +544,7 @@ module fpm_manifest_profile
         if (size(comp_list)<1) return
         do icomp = 1, size(comp_list)
           call validate_compiler_name(comp_list(icomp)%key, is_valid)
-          if (is_valid) then  
+          if (is_valid) then
             compiler_name = comp_list(icomp)%key
             call get_value(table, compiler_name, comp_node, stat=stat)
             if (stat /= toml_stat%success) then
@@ -567,7 +567,7 @@ module fpm_manifest_profile
           else
             call fatal_error(error,'*traverse_compilers*:Error: Compiler name not specified or invalid.')
           end if
-        end do        
+        end do
       end subroutine traverse_compilers
 
       !> Construct new profiles array from a TOML data structure
@@ -596,9 +596,9 @@ module fpm_manifest_profile
         default_profiles = get_default_profiles(error)
         if (allocated(error)) return
         call table%get_keys(prof_list)
-        
+
         if (size(prof_list) < 1) return
-        
+
         profiles_size = 0
 
         do iprof = 1, size(prof_list)
@@ -633,7 +633,7 @@ module fpm_manifest_profile
 
         profiles_size = profiles_size + size(default_profiles)
         allocate(profiles(profiles_size))
-        
+
         do profindex=1, size(default_profiles)
           profiles(profindex) = default_profiles(profindex)
         end do
@@ -719,25 +719,25 @@ module fpm_manifest_profile
                 & 'ifort', &
                 & OS_ALL, &
                 & flags = ' -fp-model precise -pc64 -align all -error-limit 1 -reentrancy&
-                          & threaded -nogen-interfaces -assume byterecl', &
+                          & threaded -nogen-interfaces -assume byterecl -standard-semantics', &
                 & is_built_in=.true.), &
               & new_profile('release', &
                 & 'ifort', &
                 & OS_WINDOWS, &
                 & flags = ' /fp:precise /align:all /error-limit:1 /reentrancy:threaded&
-                          & /nogen-interfaces /assume:byterecl', &
+                          & /nogen-interfaces /assume:byterecl /standard-semantics', &
                 & is_built_in=.true.), &
               & new_profile('release', &
                 & 'ifx', &
                 & OS_ALL, &
                 & flags = ' -fp-model=precise -pc64 -align all -error-limit 1 -reentrancy&
-                          & threaded -nogen-interfaces -assume byterecl', &
+                          & threaded -nogen-interfaces -assume byterecl -standard-semantics', &
                 & is_built_in=.true.), &
               & new_profile('release', &
                 & 'ifx', &
                 & OS_WINDOWS, &
                 & flags = ' /fp:precise /align:all /error-limit:1 /reentrancy:threaded&
-                          & /nogen-interfaces /assume:byterecl', &
+                          & /nogen-interfaces /assume:byterecl /standard-semantics', &
                 & is_built_in=.true.), &
               & new_profile('release', &
                 &'nagfor', &
@@ -775,28 +775,28 @@ module fpm_manifest_profile
               & new_profile('debug', &
                 & 'ifort', &
                 & OS_ALL, &
-                & flags = ' -warn all -check all -error-limit 1 -O0 -g -assume byterecl -traceback', &
+                & flags = ' -warn all -check all -error-limit 1 -O0 -g -assume byterecl -standard-semantics -traceback', &
                 & is_built_in=.true.), &
               & new_profile('debug', &
                 & 'ifort', &
                 & OS_WINDOWS, &
                 & flags = ' /warn:all /check:all /error-limit:1&
-                          & /Od /Z7 /assume:byterecl /traceback', &
+                          & /Od /Z7 /assume:byterecl /standard-semantics /traceback', &
                 & is_built_in=.true.), &
               & new_profile('debug', &
                 & 'ifx', &
                 & OS_ALL, &
-                & flags = ' -warn all -check all -error-limit 1 -O0 -g -assume byterecl -traceback', &
+                & flags = ' -warn all -check all -error-limit 1 -O0 -g -assume byterecl -standard-semantics -traceback', &
                 & is_built_in=.true.), &
               & new_profile('debug', &
                 & 'ifx', &
                 & OS_WINDOWS, &
-                & flags = ' /warn:all /check:all /error-limit:1 /Od /Z7 /assume:byterecl', &
+                & flags = ' /warn:all /check:all /error-limit:1 /Od /Z7 /assume:byterecl /standard-semantics', &
                 & is_built_in=.true.), &
               & new_profile('debug', &
                 & 'ifx', &
                 & OS_WINDOWS, &
-                & flags = ' /warn:all /check:all /error-limit:1 /Od /Z7 /assume:byterecl', &
+                & flags = ' /warn:all /check:all /error-limit:1 /Od /Z7 /assume:byterecl /standard-semantics', &
                 & is_built_in=.true.), &
               & new_profile('debug', &
                 & 'lfortran', &

@@ -486,7 +486,7 @@
     <section>
     <h2><span class="anchor" id="src"></span>Source Code</h2>
     <div class="highlight"><pre><span></span><span class="w">      </span><span class="k">subroutine </span><span class="n">traverse_compilers</span><span class="p">(</span><span class="n">profile_name</span><span class="p">,</span><span class="w"> </span><span class="n">comp_list</span><span class="p">,</span><span class="w"> </span><span class="n">table</span><span class="p">,</span><span class="w"> </span><span class="n">error</span><span class="p">,</span><span class="w"> </span><span class="n">profiles_size</span><span class="p">,</span><span class="w"> </span><span class="n">profiles</span><span class="p">,</span><span class="w"> </span><span class="n">profindex</span><span class="p">)</span><span class="w"></span>
-<span class="w">        </span>
+
 <span class="w">        </span><span class="c">!&gt; Name of profile</span>
 <span class="w">        </span><span class="kt">character</span><span class="p">(</span><span class="nb">len</span><span class="o">=</span><span class="p">:),</span><span class="w"> </span><span class="k">allocatable</span><span class="p">,</span><span class="w"> </span><span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">)</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">profile_name</span><span class="w"></span>
 
@@ -495,10 +495,10 @@
 
 <span class="w">        </span><span class="c">!&gt; Table containing compiler tables</span>
 <span class="w">        </span><span class="k">type</span><span class="p">(</span><span class="n">toml_table</span><span class="p">),</span><span class="w"> </span><span class="k">pointer</span><span class="p">,</span><span class="w"> </span><span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">)</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">table</span><span class="w"></span>
-<span class="w">        </span>
+
 <span class="w">        </span><span class="c">!&gt; Error handling</span>
 <span class="w">        </span><span class="k">type</span><span class="p">(</span><span class="n">error_t</span><span class="p">),</span><span class="w"> </span><span class="k">allocatable</span><span class="p">,</span><span class="w"> </span><span class="k">intent</span><span class="p">(</span><span class="n">out</span><span class="p">)</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">error</span><span class="w"></span>
-<span class="w">        </span>
+
 <span class="w">        </span><span class="c">!&gt; Number of profiles in list of profiles</span>
 <span class="w">        </span><span class="kt">integer</span><span class="p">,</span><span class="w"> </span><span class="k">intent</span><span class="p">(</span><span class="n">inout</span><span class="p">),</span><span class="w"> </span><span class="k">optional</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">profiles_size</span><span class="w"></span>
 
@@ -507,8 +507,8 @@
 
 <span class="w">        </span><span class="c">!&gt; Index in the list of profiles</span>
 <span class="w">        </span><span class="kt">integer</span><span class="p">,</span><span class="w"> </span><span class="k">intent</span><span class="p">(</span><span class="n">inout</span><span class="p">),</span><span class="w"> </span><span class="k">optional</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">profindex</span><span class="w"></span>
-<span class="w">        </span>
-<span class="w">        </span><span class="kt">character</span><span class="p">(</span><span class="nb">len</span><span class="o">=</span><span class="p">:),</span><span class="w"> </span><span class="k">allocatable</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">compiler_name</span><span class="w">        </span>
+
+<span class="w">        </span><span class="kt">character</span><span class="p">(</span><span class="nb">len</span><span class="o">=</span><span class="p">:),</span><span class="w"> </span><span class="k">allocatable</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">compiler_name</span><span class="w"></span>
 <span class="w">        </span><span class="k">type</span><span class="p">(</span><span class="n">toml_table</span><span class="p">),</span><span class="w"> </span><span class="k">pointer</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">comp_node</span><span class="w"></span>
 <span class="w">        </span><span class="k">type</span><span class="p">(</span><span class="n">toml_key</span><span class="p">),</span><span class="w"> </span><span class="k">allocatable</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">os_list</span><span class="p">(:)</span><span class="w"></span>
 <span class="w">        </span><span class="kt">integer</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">icomp</span><span class="p">,</span><span class="w"> </span><span class="nb">stat</span>
@@ -517,7 +517,7 @@
 <span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">size</span><span class="p">(</span><span class="n">comp_list</span><span class="p">)</span><span class="o">&lt;</span><span class="mi">1</span><span class="p">)</span><span class="w"> </span><span class="k">return</span>
 <span class="k">        do </span><span class="n">icomp</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="n">size</span><span class="p">(</span><span class="n">comp_list</span><span class="p">)</span><span class="w"></span>
 <span class="w">          </span><span class="k">call </span><span class="n">validate_compiler_name</span><span class="p">(</span><span class="n">comp_list</span><span class="p">(</span><span class="n">icomp</span><span class="p">)%</span><span class="n">key</span><span class="p">,</span><span class="w"> </span><span class="n">is_valid</span><span class="p">)</span><span class="w"></span>
-<span class="w">          </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">is_valid</span><span class="p">)</span><span class="w"> </span><span class="k">then  </span>
+<span class="w">          </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">is_valid</span><span class="p">)</span><span class="w"> </span><span class="k">then</span>
 <span class="k">            </span><span class="n">compiler_name</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">comp_list</span><span class="p">(</span><span class="n">icomp</span><span class="p">)%</span><span class="n">key</span><span class="w"></span>
 <span class="w">            </span><span class="k">call </span><span class="n">get_value</span><span class="p">(</span><span class="n">table</span><span class="p">,</span><span class="w"> </span><span class="n">compiler_name</span><span class="p">,</span><span class="w"> </span><span class="n">comp_node</span><span class="p">,</span><span class="w"> </span><span class="nb">stat</span><span class="o">=</span><span class="nb">stat</span><span class="p">)</span><span class="w"></span>
 <span class="w">            </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="nb">stat</span><span class="w"> </span><span class="o">/=</span><span class="w"> </span><span class="n">toml_stat</span><span class="p">%</span><span class="n">success</span><span class="p">)</span><span class="w"> </span><span class="k">then</span>
@@ -540,7 +540,7 @@
 <span class="k">          else</span>
 <span class="k">            call </span><span class="n">fatal_error</span><span class="p">(</span><span class="n">error</span><span class="p">,</span><span class="s1">&#39;*traverse_compilers*:Error: Compiler name not specified or invalid.&#39;</span><span class="p">)</span><span class="w"></span>
 <span class="w">          </span><span class="k">end if</span>
-<span class="k">        end do        </span>
+<span class="k">        end do</span>
 <span class="k">      end subroutine </span><span class="n">traverse_compilers</span><span class="w"></span>
 </pre></div>
 
@@ -562,7 +562,7 @@
             <p class="text-right">
               Documentation generated by
               <a href="https://github.com/Fortran-FOSS-Programmers/ford">FORD</a>
- on 2023-05-19 08:12              </p>
+ on 2023-05-21 08:36              </p>
           </div>
         </div>
         <br>

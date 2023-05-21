@@ -307,7 +307,7 @@
 <span class="k">        </span><span class="n">global_settings</span><span class="p">%</span><span class="n">registry_settings</span><span class="p">%</span><span class="n">path</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">path</span><span class="w"></span>
 <span class="w">      </span><span class="k">else</span><span class="w"></span>
 <span class="w">        </span><span class="c">! Get canonical, absolute path on both Unix and Windows.</span>
-<span class="w">        </span><span class="k">call </span><span class="n">get_absolute_path</span><span class="p">(</span><span class="n">join_path</span><span class="p">(</span><span class="n">global_settings</span><span class="p">%</span><span class="n">path_to_config_folder</span><span class="p">,</span><span class="w"> </span><span class="n">path</span><span class="p">),</span><span class="w"> </span><span class="p">&amp;</span><span class="w"></span>
+<span class="w">        </span><span class="k">call </span><span class="n">get_absolute_path</span><span class="p">(</span><span class="n">join_path</span><span class="p">(</span><span class="n">config_path</span><span class="p">(</span><span class="n">global_settings</span><span class="p">),</span><span class="w"> </span><span class="n">path</span><span class="p">),</span><span class="w"> </span><span class="p">&amp;</span><span class="w"></span>
 <span class="w">        </span><span class="p">&amp;</span><span class="w"> </span><span class="n">global_settings</span><span class="p">%</span><span class="n">registry_settings</span><span class="p">%</span><span class="n">path</span><span class="p">,</span><span class="w"> </span><span class="n">error</span><span class="p">)</span><span class="w"></span>
 <span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="nb">allocated</span><span class="p">(</span><span class="n">error</span><span class="p">))</span><span class="w"> </span><span class="k">return</span><span class="w"></span>
 
@@ -353,15 +353,15 @@
 <span class="k">        if</span><span class="w"> </span><span class="p">(.</span><span class="nb">not</span><span class="p">.</span><span class="w"> </span><span class="n">exists</span><span class="p">(</span><span class="n">cache_path</span><span class="p">))</span><span class="w"> </span><span class="k">call </span><span class="n">mkdir</span><span class="p">(</span><span class="n">cache_path</span><span class="p">)</span><span class="w"></span>
 <span class="w">        </span><span class="n">global_settings</span><span class="p">%</span><span class="n">registry_settings</span><span class="p">%</span><span class="n">cache_path</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">cache_path</span><span class="w"></span>
 <span class="w">      </span><span class="k">else</span>
-<span class="k">        </span><span class="n">cache_path</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">join_path</span><span class="p">(</span><span class="n">global_settings</span><span class="p">%</span><span class="n">path_to_config_folder</span><span class="p">,</span><span class="w"> </span><span class="n">cache_path</span><span class="p">)</span><span class="w"></span>
+<span class="k">        </span><span class="n">cache_path</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">join_path</span><span class="p">(</span><span class="n">config_path</span><span class="p">(</span><span class="n">global_settings</span><span class="p">),</span><span class="w"> </span><span class="n">cache_path</span><span class="p">)</span><span class="w"></span>
 <span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(.</span><span class="nb">not</span><span class="p">.</span><span class="w"> </span><span class="n">exists</span><span class="p">(</span><span class="n">cache_path</span><span class="p">))</span><span class="w"> </span><span class="k">call </span><span class="n">mkdir</span><span class="p">(</span><span class="n">cache_path</span><span class="p">)</span><span class="w"></span>
 <span class="w">        </span><span class="c">! Get canonical, absolute path on both Unix and Windows.</span>
 <span class="w">        </span><span class="k">call </span><span class="n">get_absolute_path</span><span class="p">(</span><span class="n">cache_path</span><span class="p">,</span><span class="w"> </span><span class="n">global_settings</span><span class="p">%</span><span class="n">registry_settings</span><span class="p">%</span><span class="n">cache_path</span><span class="p">,</span><span class="w"> </span><span class="n">error</span><span class="p">)</span><span class="w"></span>
 <span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="nb">allocated</span><span class="p">(</span><span class="n">error</span><span class="p">))</span><span class="w"> </span><span class="k">return</span>
 <span class="k">      end if</span>
 <span class="k">    else if</span><span class="w"> </span><span class="p">(.</span><span class="nb">not</span><span class="p">.</span><span class="w"> </span><span class="nb">allocated</span><span class="p">(</span><span class="n">path</span><span class="p">))</span><span class="w"> </span><span class="k">then</span>
-<span class="k">      </span><span class="n">global_settings</span><span class="p">%</span><span class="n">registry_settings</span><span class="p">%</span><span class="n">cache_path</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">join_path</span><span class="p">(</span><span class="n">global_settings</span><span class="p">%</span><span class="n">path_to_config_folder</span><span class="p">,</span><span class="w"> </span><span class="p">&amp;</span><span class="w"></span>
-<span class="w">      </span><span class="p">&amp;</span><span class="w"> </span><span class="s1">&#39;dependencies&#39;</span><span class="p">)</span><span class="w"></span>
+<span class="k">       </span><span class="n">global_settings</span><span class="p">%</span><span class="n">registry_settings</span><span class="p">%</span><span class="n">cache_path</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">join_path</span><span class="p">(</span><span class="n">config_path</span><span class="p">(</span><span class="n">global_settings</span><span class="p">),</span><span class="w"> </span><span class="p">&amp;</span><span class="w"></span>
+<span class="w">    </span><span class="p">&amp;</span><span class="w">    </span><span class="s1">&#39;dependencies&#39;</span><span class="p">)</span><span class="w"></span>
 <span class="w">    </span><span class="k">end if</span>
 <span class="k">  end subroutine </span><span class="n">get_registry_settings</span><span class="w"></span>
 </pre></div>
@@ -384,7 +384,7 @@
             <p class="text-right">
               Documentation generated by
               <a href="https://github.com/Fortran-FOSS-Programmers/ford">FORD</a>
- on 2023-05-19 08:12              </p>
+ on 2023-05-21 08:36              </p>
           </div>
         </div>
         <br>
