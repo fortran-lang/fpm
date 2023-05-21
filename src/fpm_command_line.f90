@@ -218,10 +218,9 @@ contains
         integer                       :: os
         logical                       :: is_unix
         type(fpm_install_settings), allocatable :: install_settings
-        type(fpm_publish_settings), allocatable :: publish_settings
         type(version_t) :: version
         character(len=:), allocatable :: common_args, compiler_args, run_args, working_dir, &
-            & c_compiler, cxx_compiler, archiver, version_s
+            & c_compiler, cxx_compiler, archiver, version_s, token_s
 
         character(len=*), parameter :: fc_env = "FC", cc_env = "CC", ar_env = "AR", &
             & fflags_env = "FFLAGS", cflags_env = "CFLAGS", cxxflags_env = "CXXFLAGS", ldflags_env = "LDFLAGS", &
@@ -633,8 +632,10 @@ contains
             c_compiler = sget('c-compiler')
             cxx_compiler = sget('cxx-compiler')
             archiver = sget('archiver')
+            token_s = sget('token')
 
-            allocate(publish_settings, source=fpm_publish_settings( &
+            allocate(fpm_publish_settings :: cmd_settings)
+            cmd_settings = fpm_publish_settings( &
             & show_package_version = lget('show-package-version'), &
             & show_form_data = lget('show-form-data'), &
             & profile=val_profile,&
@@ -650,9 +651,8 @@ contains
             & list=lget('list'),&
             & show_model=lget('show-model'),&
             & build_tests=lget('tests'),&
-            & verbose=lget('verbose')))
-            call get_char_arg(publish_settings%token, 'token')
-            call move_alloc(publish_settings, cmd_settings)
+            & verbose=lget('verbose'),&
+            & token=token_s)
 
         case default
 

@@ -27,7 +27,7 @@ module fpm_manifest_dependency
     use fpm_git, only: git_target_t, git_target_tag, git_target_branch, &
         & git_target_revision, git_target_default, operator(==), git_matches_manifest
     use fpm_toml, only: toml_table, toml_key, toml_stat, get_value, check_keys
-    use fpm_filesystem, only: windows_path
+    use fpm_filesystem, only: windows_path, join_path
     use fpm_environment, only: get_os_type, OS_WINDOWS
     use fpm_versioning, only: version_t, new_version
     implicit none
@@ -94,7 +94,7 @@ contains
         call get_value(table, "path", uri)
         if (allocated(uri)) then
             if (get_os_type() == OS_WINDOWS) uri = windows_path(uri)
-            if (present(root)) uri = root//uri  ! Relative to the fpm.toml it’s written in
+            if (present(root)) uri = join_path(root,uri)  ! Relative to the fpm.toml it’s written in
             call move_alloc(uri, self%path)
             return
         end if
