@@ -45,6 +45,9 @@ module fpm_manifest_metapackages
         !> Request stdlib support
         type(metapackage_request_t) :: stdlib
 
+        !> fortran-lang minpack
+        type(metapackage_request_t) :: minpack
+
     end type metapackage_config_t
 
 
@@ -158,10 +161,13 @@ contains
 
         !> The toml table is not checked here because it already passed
         !> the "new_dependencies" check
-        call new_request(self%openmp, "openmp", table, error);
+        call new_request(self%openmp, "openmp", table, error)
         if (allocated(error)) return
 
         call new_request(self%stdlib, "stdlib", table, error)
+        if (allocated(error)) return
+
+        call new_request(self%minpack, "minpack", table, error)
         if (allocated(error)) return
 
         call new_request(self%mpi, "mpi", table, error)
@@ -178,7 +184,7 @@ contains
         select case (key)
 
             !> Supported metapackages
-            case ("openmp","stdlib","mpi")
+            case ("openmp","stdlib","mpi","minpack")
                 is_meta_package = .true.
 
             case default

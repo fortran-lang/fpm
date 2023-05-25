@@ -19,7 +19,7 @@ use fpm_compiler
 use fpm_model
 use fpm_command_line
 use fpm_manifest_dependency, only: dependency_config_t
-use fpm_git, only : git_target_branch
+use fpm_git, only : git_target_branch, git_target_tag
 use fpm_manifest, only: package_config_t
 use fpm_environment, only: get_env,os_is_unix
 use fpm_filesystem, only: run, get_temp_filename, getline, exists, canon_path, is_dir, get_dos_path
@@ -153,9 +153,10 @@ subroutine init_from_name(this,name,compiler,error)
 
     !> Initialize metapackage by name
     select case(name)
-        case("openmp"); call init_openmp(this,compiler,error)
-        case("stdlib"); call init_stdlib(this,compiler,error)
-        case("mpi");    call init_mpi   (this,compiler,error)
+        case("openmp");  call init_openmp (this,compiler,error)
+        case("stdlib");  call init_stdlib (this,compiler,error)
+        case("minpack"); call init_minpack(this,compiler,error)
+        case("mpi");     call init_mpi    (this,compiler,error)
         case default
             call syntax_error(error, "Package "//name//" is not supported in [metapackages]")
             return
@@ -215,6 +216,30 @@ subroutine init_openmp(this,compiler,error)
 
 
 end subroutine init_openmp
+
+!> Initialize minpack metapackage for the current system
+subroutine init_minpack(this,compiler,error)
+    class(metapackage_t), intent(inout) :: this
+    type(compiler_t), intent(in) :: compiler
+    type(error_t), allocatable, intent(out) :: error
+
+    !> Cleanup
+    call destroy(this)
+
+    !> minpack is queried as a dependency from the official repository
+    this%has_dependencies = .true.
+
+    allocate(this%dependency(1))
+
+    !> 1) minpack. There are no true releases currently. Fetch HEAD
+    this%dependency(1)%name = "minpack"
+    this%dependency(1)%git = git_target_tag("https://github.com/fortran-lang/minpack", "v2.0.0-rc.1")
+    if (.not.allocated(this%dependency(1)%git)) then
+        call fatal_error(error,'cannot initialize git repo dependency for minpack metapackage')
+        return
+    end if
+
+end subroutine init_minpack
 
 !> Initialize stdlib metapackage for the current system
 subroutine init_stdlib(this,compiler,error)
@@ -407,6 +432,13 @@ subroutine resolve_metapackage_model(model,package,settings,error)
         call add_metapackage_model(model,package,settings,"stdlib",error)
         if (allocated(error)) return
     endif
+
+    ! stdlib
+    if (package%meta%minpack%on) then
+        call add_metapackage_model(model,package,settings,"minpack",error)
+        if (allocated(error)) return
+    endif
+
 
     ! Stdlib is not 100% thread safe. print a warning to the user
     if (package%meta%stdlib%on .and. package%meta%openmp%on) then

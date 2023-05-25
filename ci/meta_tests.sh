@@ -27,6 +27,11 @@ pushd metapackage_stdlib
 "$fpm" run --verbose
 popd
 
+pushd metapackage_minpack
+"$fpm" build --verbose
+"$fpm" run --verbose
+popd
+
 pushd metapackage_mpi
 "$fpm" build --verbose 
 "$fpm" run --verbose
