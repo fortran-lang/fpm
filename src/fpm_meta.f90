@@ -837,7 +837,7 @@ subroutine get_mpi_runner(command,verbose,error)
     logical, intent(in) :: verbose
     type(error_t), allocatable, intent(out) :: error
 
-    character(*), parameter :: try(*) = ['mpiexec','mpirun ']
+    character(*), parameter :: try(*) = ['mpiexec    ','mpirun     ','mpiexec.exe','mpirun.exe ']
     integer :: itri
     logical :: success
 
