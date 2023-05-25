@@ -91,6 +91,7 @@ contains
         end if
 
         call get_absolute_path('~'//separator, result, error)
+        if (allocated(error)) return
 
         call get_home(home, error)
         if (allocated(error)) return
@@ -137,6 +138,7 @@ contains
 
         if (os_is_unix()) then
             call get_absolute_path('/', result, error)
+            if (allocated(error)) return
 
             if (result /= '/') then
                 call test_failed(error, "Result '"//result//"' doesn't equal input value: '/'"); return
@@ -146,6 +148,7 @@ contains
             home_path = home_drive//'\'
 
             call get_absolute_path(home_path, result, error)
+            if (allocated(error)) return
 
             if (result /= home_path) then
                 call test_failed(error, "Result '"//result//"' doesn't equal input value: '"//home_path//"'"); return

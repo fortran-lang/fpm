@@ -182,7 +182,8 @@ character(*), parameter :: &
     flag_intel_byterecl = " -assume byterecl", &
     flag_intel_openmp = " -qopenmp", &
     flag_intel_free_form = " -free", &
-    flag_intel_fixed_form = " -fixed"
+    flag_intel_fixed_form = " -fixed", &
+    flag_intel_standard_compliance = " -standard-semantics"
 
 character(*), parameter :: &
     flag_intel_backtrace_win = " /traceback", &
@@ -197,7 +198,8 @@ character(*), parameter :: &
     flag_intel_byterecl_win = " /assume:byterecl", &
     flag_intel_openmp_win = " /Qopenmp", &
     flag_intel_free_form_win = " /free", &
-    flag_intel_fixed_form_win = " /fixed"
+    flag_intel_fixed_form_win = " /fixed", &
+    flag_intel_standard_compliance_win = " /standard-semantics"
 
 character(*), parameter :: &
     flag_nag_coarray = " -coarray=single", &
@@ -284,7 +286,8 @@ subroutine get_release_compile_flags(id, flags)
             flag_intel_limit//&
             flag_intel_pthread//&
             flag_intel_nogen//&
-            flag_intel_byterecl
+            flag_intel_byterecl//&
+            flag_intel_standard_compliance
 
     case(id_intel_classic_mac)
         flags = &
@@ -293,7 +296,8 @@ subroutine get_release_compile_flags(id, flags)
             flag_intel_limit//&
             flag_intel_pthread//&
             flag_intel_nogen//&
-            flag_intel_byterecl
+            flag_intel_byterecl//&
+            flag_intel_standard_compliance
 
     case(id_intel_classic_windows)
         flags = &
@@ -302,7 +306,8 @@ subroutine get_release_compile_flags(id, flags)
             flag_intel_limit_win//&
             flag_intel_pthread_win//&
             flag_intel_nogen_win//&
-            flag_intel_byterecl_win
+            flag_intel_byterecl_win//&
+            flag_intel_standard_compliance_win
 
     case(id_intel_llvm_nix)
         flags = &
@@ -311,7 +316,8 @@ subroutine get_release_compile_flags(id, flags)
             flag_intel_limit//&
             flag_intel_pthread//&
             flag_intel_nogen//&
-            flag_intel_byterecl
+            flag_intel_byterecl//&
+            flag_intel_standard_compliance
 
     case(id_intel_llvm_windows)
         flags = &
@@ -320,7 +326,8 @@ subroutine get_release_compile_flags(id, flags)
             flag_intel_limit_win//&
             flag_intel_pthread_win//&
             flag_intel_nogen_win//&
-            flag_intel_byterecl_win
+            flag_intel_byterecl_win//&
+            flag_intel_standard_compliance_win
 
     case(id_nag)
         flags = &
@@ -384,7 +391,9 @@ subroutine get_debug_compile_flags(id, flags)
             flag_intel_limit//&
             flag_intel_debug//&
             flag_intel_byterecl//&
+            flag_intel_standard_compliance//&
             flag_intel_backtrace
+
     case(id_intel_classic_mac)
         flags = &
             flag_intel_warn//&
@@ -392,6 +401,7 @@ subroutine get_debug_compile_flags(id, flags)
             flag_intel_limit//&
             flag_intel_debug//&
             flag_intel_byterecl//&
+            flag_intel_standard_compliance//&
             flag_intel_backtrace
     case(id_intel_classic_windows)
         flags = &
@@ -400,6 +410,7 @@ subroutine get_debug_compile_flags(id, flags)
             flag_intel_limit_win//&
             flag_intel_debug_win//&
             flag_intel_byterecl_win//&
+            flag_intel_standard_compliance_win//&
             flag_intel_backtrace_win
     case(id_intel_llvm_nix)
         flags = &
@@ -408,6 +419,7 @@ subroutine get_debug_compile_flags(id, flags)
             flag_intel_limit//&
             flag_intel_debug//&
             flag_intel_byterecl//&
+            flag_intel_standard_compliance//&
             flag_intel_backtrace
     case(id_intel_llvm_windows)
         flags = &
@@ -415,7 +427,8 @@ subroutine get_debug_compile_flags(id, flags)
             flag_intel_check_win//&
             flag_intel_limit_win//&
             flag_intel_debug_win//&
-            flag_intel_byterecl_win
+            flag_intel_byterecl_win//&
+            flag_intel_standard_compliance_win
     case(id_nag)
         flags = &
             flag_nag_debug//&

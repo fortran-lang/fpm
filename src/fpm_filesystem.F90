@@ -14,8 +14,8 @@ module fpm_filesystem
     public :: basename, canon_path, dirname, is_dir, join_path, number_of_rows, list_files, get_local_prefix, &
             mkdir, exists, get_temp_filename, windows_path, unix_path, getline, delete_file, fileopen, fileclose, &
             filewrite, warnwrite, parent_dir, is_hidden_file, read_lines, read_lines_expanded, which, run, &
-            LINE_BUFFER_LEN, os_delete_dir, is_absolute_path, env_variable, get_home, get_tmp_directory, &
-            execute_and_read_output, get_dos_path
+            LINE_BUFFER_LEN, os_delete_dir, is_absolute_path, env_variable, get_home, execute_and_read_output, &
+            get_dos_path
     integer, parameter :: LINE_BUFFER_LEN = 32768
 
 #ifndef FPM_BOOTSTRAP
@@ -543,6 +543,12 @@ end subroutine list_files
 logical function exists(filename) result(r)
     character(len=*), intent(in) :: filename
     inquire(file=filename, exist=r)
+
+    !> Directories are not files for the Intel compilers. If so, also use this compiler-dependent extension
+#if defined(__INTEL_COMPILER)
+    if (.not.r) inquire(directory=filename, exist=r)
+#endif
+
 end function
 
 
@@ -1033,21 +1039,15 @@ end subroutine os_delete_dir
         integer, intent(out), optional :: exitstat
 
         integer :: cmdstat, unit, stat = 0
-        character(len=:), allocatable :: cmdmsg, tmp_path
+        character(len=:), allocatable :: cmdmsg, tmp_file
         character(len=1000) :: output_line
 
-        call get_tmp_directory(tmp_path, error)
-        if (allocated(error)) return
+        tmp_file = get_temp_filename()
 
-        if (.not. exists(tmp_path)) call mkdir(tmp_path)
-        tmp_path = join_path(tmp_path, 'command_line_output')
-        call delete_file(tmp_path)
-        call filewrite(tmp_path, [''])
+        call execute_command_line(cmd//' > '//tmp_file, exitstat=exitstat, cmdstat=cmdstat)
+        if (cmdstat /= 0) call fatal_error(error, '*run*: '//"Command failed: '"//cmd//"'. Message: '"//trim(cmdmsg)//"'.")
 
-        call execute_command_line(cmd//' > '//tmp_path, exitstat=exitstat, cmdstat=cmdstat)
-        if (cmdstat /= 0) call fpm_stop(1,'*run*: '//"Command failed: '"//cmd//"'. Message: '"//trim(cmdmsg)//"'.")
-
-        open(unit, file=tmp_path, action='read', status='old')
+        open(newunit=unit, file=tmp_file, action='read', status='old')
         output = ''
         do
           read(unit, *, iostat=stat) output_line
@@ -1055,31 +1055,6 @@ end subroutine os_delete_dir
           output = output//trim(output_line)//' '
         end do
         close(unit, status='delete')
-    end
-
-    !> Get system-dependent tmp directory.
-    subroutine get_tmp_directory(tmp_dir, error)
-        !> System-dependant tmp directory.
-        character(len=:), allocatable, intent(out) :: tmp_dir
-        !> Error to handle.
-        type(error_t), allocatable, intent(out) :: error
-
-        tmp_dir = get_env('TMPDIR', '')
-        if (tmp_dir /= '') then
-          tmp_dir = tmp_dir//'fpm'; return
-        end if
-
-        tmp_dir = get_env('TMP', '')
-        if (tmp_dir /= '') then
-          tmp_dir = tmp_dir//'fpm'; return
-        end if
-
-        tmp_dir = get_env('TEMP', '')
-        if (tmp_dir /= '') then
-          tmp_dir = tmp_dir//'fpm'; return
-        end if
-
-        call fatal_error(error, "Couldn't determine system temporary directory.")
     end
 
     !> Ensure a windows path is converted to an 8.3 DOS path if it contains spaces
