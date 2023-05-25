@@ -6,7 +6,7 @@ module fpm_git
 
     public :: git_target_t, git_target_default, git_target_branch, git_target_tag, git_target_revision, git_revision, &
             & git_archive, git_matches_manifest, operator(==), compressed_package_name
-    
+
     !> Name of the compressed package that is generated temporarily.
     character(len=*), parameter :: compressed_package_name = 'compressed_package'
 
@@ -165,6 +165,8 @@ contains
         !> while the cached dependency always stores a commit hash because it's built
         !> after the repo is available (saved as git_descriptor%revision==revision).
         !> So, comparing against the descriptor is not reliable
+        git_matches_manifest = allocated(cached%object) .eqv. allocated(manifest%object)
+        if (git_matches_manifest .and. allocated(cached%object)) &
         git_matches_manifest = cached%object == manifest%object
         if (.not.git_matches_manifest) then
             if (verbosity>1) write(iunit,out_fmt) "GIT OBJECT has changed: ",cached%object," vs. ", manifest%object
@@ -326,8 +328,7 @@ contains
       call fatal_error(error, "Cannot find a suitable archive format for 'git archive'."); return
     end if
 
-    call execute_command_line('git archive HEAD --format='//archive_format//' -o '// &
-    & join_path(destination, compressed_package_name), exitstat=stat)
+    call execute_command_line('git archive HEAD --format='//archive_format//' -o '// destination, exitstat=stat)
     if (stat /= 0) then
       call fatal_error(error, "Error packing '"//source//"'."); return
     end if
