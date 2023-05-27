@@ -1125,13 +1125,15 @@ contains
     help_new=[character(len=80) ::                                             &
     'NAME                                                                   ', &
     ' new(1) - the fpm(1) subcommand to initialize a new project            ', &
+    '                                                                       ', &
     'SYNOPSIS                                                               ', &
-    '  fpm new NAME [[--lib|--src] [--app] [--test] [--example]]|           ', &
-    '      [--full|--bare][--backfill]                                      ', &
+    ' fpm new NAME [[--lib|--src] [--app] [--test] [--example]]|            ', &
+    '              [--full|--bare][--backfill]                              ', &
     ' fpm new --help|--version                                              ', &
     '                                                                       ', &
     'DESCRIPTION                                                            ', &
     ' "fpm new" creates and populates a new programming project directory.  ', &
+    '                                                                       ', &
     ' It                                                                    ', &
     '   o creates a directory with the specified name                       ', &
     '   o runs the command "git init" in that directory                     ', &
@@ -1361,6 +1363,8 @@ contains
     'SYNOPSIS', &
     ' fpm publish [--token TOKEN]', &
     '', &
+    ' fpm publish --help|--version', &
+    '', &
     'DESCRIPTION', &
     ' Collect relevant source files and upload package to the registry.', &
     ' It is mandatory to provide a token. The token can be generated on the', &
@@ -1369,6 +1373,8 @@ contains
     'OPTIONS', &
     ' --show-package-version   show package version without publishing', &
     ' --show-form-data         show sent form data without publishing', &
+    ' --help                   print this help and exit', &
+    ' --version                print program version information and exit', &
     '' ]
      end subroutine set_help
 
