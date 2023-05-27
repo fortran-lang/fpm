@@ -30,7 +30,7 @@ contains
     type(fpm_model_t) :: model
     type(error_t), allocatable :: error
     type(version_t), allocatable :: version
-    type(string_t), allocatable :: form_data(:)
+    type(string_t), allocatable :: upload_data(:)
     character(len=:), allocatable :: tmp_file
     type(downloader_t) :: downloader
     integer :: i
@@ -61,22 +61,22 @@ contains
       end if
     end do
 
-    form_data = [ &
+    upload_data = [ &
       string_t('package_name="'//package%name//'"'), &
       string_t('package_license="'//package%license//'"'), &
       string_t('package_version="'//version%s()//'"') &
       & ]
 
-    if (allocated(settings%token)) form_data = [form_data, string_t('upload_token="'//settings%token//'"')]
+    if (allocated(settings%token)) upload_data = [upload_data, string_t('upload_token="'//settings%token//'"')]
 
     tmp_file = get_temp_filename()
     call git_archive('.', tmp_file, error)
     if (allocated(error)) call fpm_stop(1, '*cmd_publish* Pack error: '//error%message)
-    form_data = [form_data, string_t('tarball=@"'//tmp_file//'"')]
+    upload_data = [upload_data, string_t('tarball=@"'//tmp_file//'"')]
 
-    if (settings%show_form_data) then
-      do i = 1, size(form_data)
-        print *, form_data(i)%s
+    if (settings%show_upload_data) then
+      do i = 1, size(upload_data)
+        print *, upload_data(i)%s
       end do
       return
     end if
@@ -84,7 +84,7 @@ contains
     ! Make sure a token is provided for publishing.
     if (.not. allocated(settings%token)) call fpm_stop(1, 'No token provided.')
 
-    call downloader%upload_form(official_registry_base_url//'/packages', form_data, error)
+    call downloader%upload_form(official_registry_base_url//'/packages', upload_data, error)
     if (allocated(error)) call fpm_stop(1, '*cmd_publish* Upload error: '//error%message)
   end
 end

@@ -120,7 +120,7 @@ end type
 
 type, extends(fpm_build_settings) :: fpm_publish_settings
     logical :: show_package_version = .false.
-    logical :: show_form_data = .false.
+    logical :: show_upload_data = .false.
     character(len=:), allocatable :: token
 end type
 
@@ -620,7 +620,7 @@ contains
         case('publish')
             call set_args(common_args // compiler_args //'&
             & --show-package-version F &
-            & --show-form-data F &
+            & --show-upload-data F &
             & --token " " &
             & --list F &
             & --show-model F &
@@ -637,7 +637,7 @@ contains
             allocate(fpm_publish_settings :: cmd_settings)
             cmd_settings = fpm_publish_settings( &
             & show_package_version = lget('show-package-version'), &
-            & show_form_data = lget('show-form-data'), &
+            & show_upload_data = lget('show-upload-data'), &
             & profile=val_profile,&
             & prune=.not.lget('no-prune'), &
             & compiler=val_compiler, &
@@ -754,7 +754,7 @@ contains
    ' install [--profile PROF] [--flag FFLAGS] [--no-rebuild] [--prefix PATH]        ', &
    '         [options]                                                              ', &
    ' clean [--skip] [--all]                                                         ', &
-   ' publish [--show-package-version] [--show-form-data] [--token TOKEN]            ', &
+   ' publish [--show-package-version] [--show-upload-data] [--token TOKEN]            ', &
    ' ']
     help_usage=[character(len=80) :: &
     '' ]
@@ -878,7 +878,7 @@ contains
     '    install [--profile PROF] [--flag FFLAGS] [--no-rebuild] [--prefix PATH]     ', &
     '            [options]                                                           ', &
     '    clean [--skip] [--all]                                                      ', &
-    '    publish [--show-package-version] [--show-form-data] [--token TOKEN]         ', &
+    '    publish [--show-package-version] [--show-upload-data] [--token TOKEN]       ', &
     '                                                                                ', &
     'SUBCOMMAND OPTIONS                                                              ', &
     ' -C, --directory PATH', &
@@ -1372,7 +1372,7 @@ contains
     '', &
     'OPTIONS', &
     ' --show-package-version   show package version without publishing', &
-    ' --show-form-data         show sent form data without publishing', &
+    ' --show-upload-data       show uploaded data without publishing', &
     ' --help                   print this help and exit', &
     ' --version                print program version information and exit', &
     '' ]
