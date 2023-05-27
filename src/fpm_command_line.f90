@@ -958,7 +958,7 @@ contains
     ' list(1) - list summary of fpm(1) subcommands                          ', &
     '                                                                       ', &
     'SYNOPSIS                                                               ', &
-    ' fpm list [-list]                                                      ', &
+    ' fpm list                                                              ', &
     '                                                                       ', &
     ' fpm list --help|--version                                             ', &
     '                                                                       ', &
