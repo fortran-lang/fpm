@@ -1366,7 +1366,7 @@ contains
     ' fpm publish --help|--version', &
     '', &
     'DESCRIPTION', &
-    ' Follow the steps to create a tarball and upload the package to the registry:', &
+    ' Follow the steps to create a tarball and upload a package to the registry:', &
     '', &
     '  1. Register on the website (https://registry-frontend.vercel.app/).', &
     '  2. Create a namespace. Uploaded packages must be assigned to a unique', &
@@ -1379,8 +1379,13 @@ contains
     '     But be aware that the upload is permanent. An uploaded package cannot be', &
     '     deleted.', &
     '', &
-    ' See documentation (https://fpm.fortran-lang.org/en/spec/publish.html) for', &
-    ' more information regarding the package upload.', &
+    ' See documentation for more information regarding the package upload and usage:', &
+    '', &
+    ' Package upload:', &
+    ' https://fpm.fortran-lang.org/en/spec/publish.html', &
+    '', &
+    ' Package usage:', &
+    ' https://fpm.fortran-lang.org/en/spec/manifest.html#dependencies-from-a-registry', &
     '', &
     'OPTIONS', &
     ' --show-package-version   show package version without publishing', &
