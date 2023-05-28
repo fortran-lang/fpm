@@ -1361,20 +1361,38 @@ contains
     ' publish(1) - publish package to the registry', &
     '', &
     'SYNOPSIS', &
-    ' fpm publish [--token TOKEN]', &
+    ' fpm publish [--token TOKEN] [--show-package-version] [--show-upload-data]', &
     '', &
     ' fpm publish --help|--version', &
     '', &
     'DESCRIPTION', &
-    ' Collect relevant source files and upload package to the registry.', &
-    ' It is mandatory to provide a token. The token can be generated on the', &
-    ' registry website and will be linked to your username and namespace.', &
+    ' Follow the steps to create a tarball and upload the package to the registry:', &
+    '', &
+    '  1. Register on the website (https://registry-frontend.vercel.app/).', &
+    '  2. Create a namespace. Uploaded packages must be assigned to a unique', &
+    '     namespace to avoid conflicts among packages with similar names. A', &
+    '     namespace can accommodate multiple packages.', &
+    '  3. Create a token for that namespace. A token is linked to your username', &
+    '     and is used to authenticate you during the upload process. Do not share', &
+    '     the token with others.', &
+    '  4. Run fpm publish --token TOKEN to upload the package to the registry.', &
+    '     But be aware that the upload is permanent. An uploaded package cannot be', &
+    '     deleted.', &
+    '', &
+    ' See documentation (https://fpm.fortran-lang.org/en/spec/publish.html) for', &
+    ' more information regarding the package upload.', &
     '', &
     'OPTIONS', &
     ' --show-package-version   show package version without publishing', &
     ' --show-upload-data       show uploaded data without publishing', &
     ' --help                   print this help and exit', &
     ' --version                print program version information and exit', &
+    '', &
+    'EXAMPLES', &
+    '', &
+    ' fpm publish --show-package-version # show package version without publishing', &
+    ' fpm publish --show-upload-data     # show upload data without publishing', &
+    ' fpm publish --token TOKEN          # upload package to the registry using TOKEN', &
     '' ]
      end subroutine set_help
 

@@ -44,15 +44,15 @@ contains
       print *, version%s(); return
     end if
 
-    ! Build model to obtain dependency tree.
-    call build_model(model, settings%fpm_build_settings, package, error)
-    if (allocated(error)) call fpm_stop(1, '*cmd_build* Model error: '//error%message)
-
     !> Checks before uploading the package.
     if (.not. allocated(package%license)) call fpm_stop(1, 'No license specified in fpm.toml.')
     if (.not. allocated(version)) call fpm_stop(1, 'No version specified in fpm.toml.')
     if (version%s() == '0') call fpm_stop(1, 'Invalid version: "'//version%s()//'".')
     if (.not. exists('fpm.toml')) call fpm_stop(1, "Cannot find 'fpm.toml' file. Are you in the project root?")
+
+    ! Build model to obtain dependency tree.
+    call build_model(model, settings%fpm_build_settings, package, error)
+    if (allocated(error)) call fpm_stop(1, '*cmd_build* Model error: '//error%message)
 
     ! Check if package contains git dependencies. Only publish packages without git dependencies.
     do i = 1, model%deps%ndep
