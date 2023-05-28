@@ -57,7 +57,8 @@ contains
     ! Check if package contains git dependencies. Only publish packages without git dependencies.
     do i = 1, model%deps%ndep
       if (allocated(model%deps%dep(i)%git)) then
-        call fpm_stop(1, "Do not publish packages containing git dependencies. '"//model%deps%dep(i)%name//"' is a git dependency.")
+        call fpm_stop(1, 'Do not publish packages containing git dependencies. '// &
+        & "Please upload '"//model%deps%dep(i)%name//"' to the registry first.")
       end if
     end do
 
