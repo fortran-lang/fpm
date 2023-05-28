@@ -754,7 +754,7 @@ contains
    ' install [--profile PROF] [--flag FFLAGS] [--no-rebuild] [--prefix PATH]        ', &
    '         [options]                                                              ', &
    ' clean [--skip] [--all]                                                         ', &
-   ' publish [--show-package-version] [--show-upload-data] [--token TOKEN]            ', &
+   ' publish [--show-package-version] [--show-upload-data] [--token TOKEN]          ', &
    ' ']
     help_usage=[character(len=80) :: &
     '' ]
