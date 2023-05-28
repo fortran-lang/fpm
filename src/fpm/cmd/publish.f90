@@ -82,7 +82,11 @@ contains
     end if
 
     ! Make sure a token is provided for publishing.
-    if (.not. allocated(settings%token)) call fpm_stop(1, 'No token provided.')
+    if (allocated(settings%token)) then
+      if (settings%token == '') call fpm_stop(1, 'No token provided.')
+    else
+      call fpm_stop(1, 'No token provided.')
+    end if
 
     call downloader%upload_form(official_registry_base_url//'/packages', upload_data, error)
     if (allocated(error)) call fpm_stop(1, '*cmd_publish* Upload error: '//error%message)
