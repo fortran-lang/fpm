@@ -81,6 +81,7 @@ contains
       do i = 1, size(upload_data)
         print *, upload_data(i)%s
       end do
+      return
     end if
 
     ! Make sure a token is provided for publishing.
@@ -97,7 +98,8 @@ contains
     if (settings%is_dry_run) then
       print *, 'Dry run successful.'
       print *, ''
-      print *, 'tarball generated for upload: ', tmp_file; return
+      print *, 'tarball generated for upload: ', tmp_file
+      return
     end if
 
     call downloader%upload_form(official_registry_base_url//'/packages', upload_data, error)
