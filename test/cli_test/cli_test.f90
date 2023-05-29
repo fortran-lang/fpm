@@ -30,12 +30,12 @@ logical                              :: w_t,act_w_t          ; namelist/act_cli/
 logical                              :: c_s,act_c_s          ; namelist/act_cli/act_c_s
 logical                              :: c_a,act_c_a          ; namelist/act_cli/act_c_a
 logical                              :: show_v,act_show_v    ; namelist/act_cli/act_show_v
-logical                              :: show_f_d,act_show_f_d; namelist/act_cli/act_show_f_d
+logical                              :: show_u_d,act_show_u_d; namelist/act_cli/act_show_u_d
 character(len=:), allocatable        :: token, act_token     ; namelist/act_cli/act_token
 
 character(len=:), allocatable        :: profile,act_profile  ; namelist/act_cli/act_profile
 character(len=:), allocatable        :: args,act_args        ; namelist/act_cli/act_args
-namelist/expected/cmd,cstat,estat,w_e,w_t,c_s,c_a,name,profile,args,show_v,show_f_d,token
+namelist/expected/cmd,cstat,estat,w_e,w_t,c_s,c_a,name,profile,args,show_v,show_u_d,token
 integer                              :: lun
 logical,allocatable                  :: tally(:)
 logical,allocatable                  :: subtally(:)
@@ -75,7 +75,7 @@ character(len=*),parameter           :: tests(*)= [ character(len=256) :: &
 'CMD="clean --skip",                                        C_S=T, NAME=, ARGS="",', &
 'CMD="clean --all",                                         C_A=T, NAME=, ARGS="",', &
 'CMD="publish --token abc --show-package-version",       SHOW_V=T, NAME=, token="abc",ARGS="",', &
-'CMD="publish --token abc --show-form-data",           SHOW_F_D=T, NAME=, token="abc",ARGS="",', &
+'CMD="publish --token abc --show-upload-data",           SHOW_U_D=T, NAME=, token="abc",ARGS="",', &
 'CMD="publish --token abc",                                        NAME=, token="abc",ARGS="",', &
 ' ' ]
 character(len=256) :: readme(3)
@@ -110,7 +110,7 @@ if(command_argument_count()==0)then  ! assume if called with no arguments to do 
       c_s=.false.                    ! --skip
       c_a=.false.                    ! --all
       show_v=.false.                 ! --show-package-version
-      show_f_d=.false.               ! --show-form-data
+      show_u_d=.false.               ! --show-upload-data
       token=''                       ! --token TOKEN
       args=repeat(' ',132)           ! -- ARGS
       cmd=repeat(' ',132)            ! the command line arguments to test
@@ -132,7 +132,7 @@ if(command_argument_count()==0)then  ! assume if called with no arguments to do 
              act_c_s=.false.
              act_c_a=.false.
              act_show_v=.false.
-             act_show_f_d=.false.
+             act_show_u_d=.false.
              act_token=''
              act_args=repeat(' ',132)
              read(lun,nml=act_cli,iostat=ios,iomsg=message)
@@ -148,7 +148,7 @@ if(command_argument_count()==0)then  ! assume if called with no arguments to do 
              call test_test('WITH_TESTED',act_w_t.eqv.w_t)
              call test_test('WITH_TEST',act_w_t.eqv.w_t)
              call test_test('SHOW-PACKAGE-VERSION',act_show_v.eqv.show_v)
-             call test_test('SHOW-FORM-DATA',act_show_f_d.eqv.show_f_d)
+             call test_test('SHOW-UPLOAD-DATA',act_show_u_d.eqv.show_u_d)
              call test_test('TOKEN',act_token==token)
              call test_test('ARGS',act_args==args)
              if(all(subtally))then
@@ -237,7 +237,7 @@ act_w_t=.false.
 act_c_s=.false.
 act_c_a=.false.
 act_show_v=.false.
-act_show_f_d=.false.
+act_show_u_d=.false.
 act_token=''
 act_profile=''
 
@@ -262,7 +262,7 @@ type is (fpm_clean_settings)
 type is (fpm_install_settings)
 type is (fpm_publish_settings)
     act_show_v=settings%show_package_version
-    act_show_f_d=settings%show_form_data
+    act_show_u_d=settings%show_upload_data
     act_token=settings%token
 end select
 

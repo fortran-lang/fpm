@@ -120,7 +120,7 @@ end type
 
 type, extends(fpm_build_settings) :: fpm_publish_settings
     logical :: show_package_version = .false.
-    logical :: show_form_data = .false.
+    logical :: show_upload_data = .false.
     character(len=:), allocatable :: token
 end type
 
@@ -620,7 +620,7 @@ contains
         case('publish')
             call set_args(common_args // compiler_args //'&
             & --show-package-version F &
-            & --show-form-data F &
+            & --show-upload-data F &
             & --token " " &
             & --list F &
             & --show-model F &
@@ -637,7 +637,7 @@ contains
             allocate(fpm_publish_settings :: cmd_settings)
             cmd_settings = fpm_publish_settings( &
             & show_package_version = lget('show-package-version'), &
-            & show_form_data = lget('show-form-data'), &
+            & show_upload_data = lget('show-upload-data'), &
             & profile=val_profile,&
             & prune=.not.lget('no-prune'), &
             & compiler=val_compiler, &
@@ -754,7 +754,7 @@ contains
    ' install [--profile PROF] [--flag FFLAGS] [--no-rebuild] [--prefix PATH]        ', &
    '         [options]                                                              ', &
    ' clean [--skip] [--all]                                                         ', &
-   ' publish [--show-package-version] [--show-form-data] [--token TOKEN]            ', &
+   ' publish [--show-package-version] [--show-upload-data] [--token TOKEN]          ', &
    ' ']
     help_usage=[character(len=80) :: &
     '' ]
@@ -878,7 +878,7 @@ contains
     '    install [--profile PROF] [--flag FFLAGS] [--no-rebuild] [--prefix PATH]     ', &
     '            [options]                                                           ', &
     '    clean [--skip] [--all]                                                      ', &
-    '    publish [--show-package-version] [--show-form-data] [--token TOKEN]         ', &
+    '    publish [--show-package-version] [--show-upload-data] [--token TOKEN]       ', &
     '                                                                                ', &
     'SUBCOMMAND OPTIONS                                                              ', &
     ' -C, --directory PATH', &
@@ -958,7 +958,7 @@ contains
     ' list(1) - list summary of fpm(1) subcommands                          ', &
     '                                                                       ', &
     'SYNOPSIS                                                               ', &
-    ' fpm list [-list]                                                      ', &
+    ' fpm list                                                              ', &
     '                                                                       ', &
     ' fpm list --help|--version                                             ', &
     '                                                                       ', &
@@ -1125,13 +1125,15 @@ contains
     help_new=[character(len=80) ::                                             &
     'NAME                                                                   ', &
     ' new(1) - the fpm(1) subcommand to initialize a new project            ', &
+    '                                                                       ', &
     'SYNOPSIS                                                               ', &
-    '  fpm new NAME [[--lib|--src] [--app] [--test] [--example]]|           ', &
-    '      [--full|--bare][--backfill]                                      ', &
+    ' fpm new NAME [[--lib|--src] [--app] [--test] [--example]]|            ', &
+    '              [--full|--bare][--backfill]                              ', &
     ' fpm new --help|--version                                              ', &
     '                                                                       ', &
     'DESCRIPTION                                                            ', &
     ' "fpm new" creates and populates a new programming project directory.  ', &
+    '                                                                       ', &
     ' It                                                                    ', &
     '   o creates a directory with the specified name                       ', &
     '   o runs the command "git init" in that directory                     ', &
@@ -1359,16 +1361,43 @@ contains
     ' publish(1) - publish package to the registry', &
     '', &
     'SYNOPSIS', &
-    ' fpm publish [--token TOKEN]', &
+    ' fpm publish [--token TOKEN] [--show-package-version] [--show-upload-data]', &
+    '', &
+    ' fpm publish --help|--version', &
     '', &
     'DESCRIPTION', &
-    ' Collect relevant source files and upload package to the registry.', &
-    ' It is mandatory to provide a token. The token can be generated on the', &
-    ' registry website and will be linked to your username and namespace.', &
+    ' Follow the steps to create a tarball and upload a package to the registry:', &
+    '', &
+    '  1. Register on the website (https://registry-frontend.vercel.app/).', &
+    '  2. Create a namespace. Uploaded packages must be assigned to a unique', &
+    '     namespace to avoid conflicts among packages with similar names. A', &
+    '     namespace can accommodate multiple packages.', &
+    '  3. Create a token for that namespace. A token is linked to your username', &
+    '     and is used to authenticate you during the upload process. Do not share', &
+    '     the token with others.', &
+    '  4. Run fpm publish --token TOKEN to upload the package to the registry.', &
+    '     But be aware that the upload is permanent. An uploaded package cannot be', &
+    '     deleted.', &
+    '', &
+    ' See documentation for more information regarding the package upload and usage:', &
+    '', &
+    ' Package upload:', &
+    ' https://fpm.fortran-lang.org/en/spec/publish.html', &
+    '', &
+    ' Package usage:', &
+    ' https://fpm.fortran-lang.org/en/spec/manifest.html#dependencies-from-a-registry', &
     '', &
     'OPTIONS', &
     ' --show-package-version   show package version without publishing', &
-    ' --show-form-data         show sent form data without publishing', &
+    ' --show-upload-data       show uploaded data without publishing', &
+    ' --help                   print this help and exit', &
+    ' --version                print program version information and exit', &
+    '', &
+    'EXAMPLES', &
+    '', &
+    ' fpm publish --show-package-version # show package version without publishing', &
+    ' fpm publish --show-upload-data     # show upload data without publishing', &
+    ' fpm publish --token TOKEN          # upload package to the registry using TOKEN', &
     '' ]
      end subroutine set_help
 
