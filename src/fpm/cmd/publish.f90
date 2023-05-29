@@ -81,7 +81,6 @@ contains
       do i = 1, size(upload_data)
         print *, upload_data(i)%s
       end do
-      call delete_file(tmp_file); return
     end if
 
     ! Make sure a token is provided for publishing.
@@ -91,6 +90,14 @@ contains
       end if
     else
       call delete_file(tmp_file); call fpm_stop(1, 'No token provided.')
+    end if
+
+    ! Perform network request and validate package on the backend as soon as
+    ! https://github.com/fortran-lang/registry/issues/41 is resolved.
+    if (settings%is_dry_run) then
+      print *, 'Dry run successful.'
+      print *, ''
+      print *, 'tarball generated for upload: ', tmp_file; return
     end if
 
     call downloader%upload_form(official_registry_base_url//'/packages', upload_data, error)

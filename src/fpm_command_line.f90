@@ -121,6 +121,7 @@ end type
 type, extends(fpm_build_settings) :: fpm_publish_settings
     logical :: show_package_version = .false.
     logical :: show_upload_data = .false.
+    logical :: is_dry_run = .false.
     character(len=:), allocatable :: token
 end type
 
@@ -621,6 +622,7 @@ contains
             call set_args(common_args // compiler_args //'&
             & --show-package-version F &
             & --show-upload-data F &
+            & --dry-run F &
             & --token " " &
             & --list F &
             & --show-model F &
@@ -638,6 +640,7 @@ contains
             cmd_settings = fpm_publish_settings( &
             & show_package_version = lget('show-package-version'), &
             & show_upload_data = lget('show-upload-data'), &
+            & is_dry_run = lget('dry-run'), &
             & profile=val_profile,&
             & prune=.not.lget('no-prune'), &
             & compiler=val_compiler, &
@@ -754,7 +757,8 @@ contains
    ' install [--profile PROF] [--flag FFLAGS] [--no-rebuild] [--prefix PATH]        ', &
    '         [options]                                                              ', &
    ' clean [--skip] [--all]                                                         ', &
-   ' publish [--show-package-version] [--show-upload-data] [--token TOKEN]          ', &
+   ' publish [--token TOKEN] [--show-package-version] [--show-upload-data]          ', &
+   '         [--dry-run]                                                            ', &
    ' ']
     help_usage=[character(len=80) :: &
     '' ]
@@ -878,7 +882,8 @@ contains
     '    install [--profile PROF] [--flag FFLAGS] [--no-rebuild] [--prefix PATH]     ', &
     '            [options]                                                           ', &
     '    clean [--skip] [--all]                                                      ', &
-    '    publish [--show-package-version] [--show-upload-data] [--token TOKEN]       ', &
+    '    publish [--token TOKEN] [--show-package-version] [--show-upload-data]       ', &
+    '            [--dry-run]                                                         ', &
     '                                                                                ', &
     'SUBCOMMAND OPTIONS                                                              ', &
     ' -C, --directory PATH', &
@@ -1362,6 +1367,7 @@ contains
     '', &
     'SYNOPSIS', &
     ' fpm publish [--token TOKEN] [--show-package-version] [--show-upload-data]', &
+    '             [--dry-run]                                                  ', &
     '', &
     ' fpm publish --help|--version', &
     '', &
@@ -1390,6 +1396,7 @@ contains
     'OPTIONS', &
     ' --show-package-version   show package version without publishing', &
     ' --show-upload-data       show uploaded data without publishing', &
+    ' --dry-run                create tarball for revision without publishing', &
     ' --help                   print this help and exit', &
     ' --version                print program version information and exit', &
     '', &
@@ -1397,6 +1404,7 @@ contains
     '', &
     ' fpm publish --show-package-version # show package version without publishing', &
     ' fpm publish --show-upload-data     # show upload data without publishing', &
+    ' fpm publish --dry-run              # create tarball without publishing', &
     ' fpm publish --token TOKEN          # upload package to the registry using TOKEN', &
     '' ]
      end subroutine set_help
