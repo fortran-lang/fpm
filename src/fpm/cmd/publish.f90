@@ -99,10 +99,7 @@ contains
     ! Perform network request and validate package, token etc. on the backend once
     ! https://github.com/fortran-lang/registry/issues/41 is resolved.
     if (settings%is_dry_run) then
-      print *, 'Dry run successful.'
-      print *, ''
-      print *, 'tarball generated for upload: ', tmp_file
-      return
+      print *, 'Dry run successful. ', 'Generated tarball: ', tmp_file; return
     end if
 
     call downloader%upload_form(official_registry_base_url//'/packages', upload_data, error)
