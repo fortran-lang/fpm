@@ -169,7 +169,7 @@ character(len=80), parameter :: help_text_flag(*) = [character(len=80) :: &
     ' --flag  FFLAGS    selects compile arguments for the build, the default value is',&
     '                   set by the FPM_FFLAGS environment variable. These are added  ',&
     '                   to the profile options if --profile is specified, else these ',&
-    '                   these options override the defaults. Note object and .mod    ',&
+    '                   options override the defaults. Note object and .mod          ',&
     '                   directory locations are always built in.                     ',&
     ' --c-flag CFLAGS   selects compile arguments specific for C source in the build.',&
     '                   The default value is set by the FPM_CFLAGS environment       ',&
