@@ -78,10 +78,7 @@ contains
     if (allocated(settings%token)) upload_data = [upload_data, string_t('upload_token="'//settings%token//'"')]
 
     if (settings%show_upload_data) then
-      do i = 1, size(upload_data)
-        print *, upload_data(i)%s
-      end do
-      return
+      call print_upload_data(upload_data); return
     end if
 
     ! Make sure a token is provided for publishing.
@@ -93,7 +90,13 @@ contains
       call delete_file(tmp_file); call fpm_stop(1, 'No token provided.')
     end if
 
-    ! Perform network request and validate package on the backend as soon as
+    if (settings%verbose) then
+      print *, ''
+      call print_upload_data(upload_data)
+      print *, ''
+    end if
+
+    ! Perform network request and validate package, token etc. on the backend once
     ! https://github.com/fortran-lang/registry/issues/41 is resolved.
     if (settings%is_dry_run) then
       print *, 'Dry run successful.'
@@ -105,5 +108,15 @@ contains
     call downloader%upload_form(official_registry_base_url//'/packages', upload_data, error)
     call delete_file(tmp_file)
     if (allocated(error)) call fpm_stop(1, '*cmd_publish* Upload error: '//error%message)
+  end
+
+  subroutine print_upload_data(upload_data)
+    type(string_t), intent(in) :: upload_data(:)
+    integer :: i
+
+    print *, 'Upload data:'
+    do i = 1, size(upload_data)
+      print *, upload_data(i)%s
+    end do
   end
 end

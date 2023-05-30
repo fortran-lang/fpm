@@ -758,7 +758,7 @@ contains
    '         [options]                                                              ', &
    ' clean [--skip] [--all]                                                         ', &
    ' publish [--token TOKEN] [--show-package-version] [--show-upload-data]          ', &
-   '         [--dry-run]                                                            ', &
+   '         [--dry-run] [--verbose]                                                ', &
    ' ']
     help_usage=[character(len=80) :: &
     '' ]
@@ -883,7 +883,7 @@ contains
     '            [options]                                                           ', &
     '    clean [--skip] [--all]                                                      ', &
     '    publish [--token TOKEN] [--show-package-version] [--show-upload-data]       ', &
-    '            [--dry-run]                                                         ', &
+    '            [--dry-run] [--verbose]                                             ', &
     '                                                                                ', &
     'SUBCOMMAND OPTIONS                                                              ', &
     ' -C, --directory PATH', &
@@ -1367,7 +1367,7 @@ contains
     '', &
     'SYNOPSIS', &
     ' fpm publish [--token TOKEN] [--show-package-version] [--show-upload-data]', &
-    '             [--dry-run]                                                  ', &
+    '             [--dry-run] [--verbose]                                      ', &
     '', &
     ' fpm publish --help|--version', &
     '', &
@@ -1385,7 +1385,7 @@ contains
     '     But be aware that the upload is permanent. An uploaded package cannot be', &
     '     deleted.', &
     '', &
-    ' See documentation for more information regarding the package upload and usage:', &
+    ' See documentation for more information regarding package upload and usage:', &
     '', &
     ' Package upload:', &
     ' https://fpm.fortran-lang.org/en/spec/publish.html', &
@@ -1395,17 +1395,18 @@ contains
     '', &
     'OPTIONS', &
     ' --show-package-version   show package version without publishing', &
-    ' --show-upload-data       show uploaded data without publishing', &
-    ' --dry-run                create tarball for revision without publishing', &
+    ' --show-upload-data       show upload data without publishing', &
+    ' --dry-run                perform dry run without publishing', &
     ' --help                   print this help and exit', &
     ' --version                print program version information and exit', &
+    ' --verbose                print more information', &
     '', &
     'EXAMPLES', &
     '', &
-    ' fpm publish --show-package-version # show package version without publishing', &
-    ' fpm publish --show-upload-data     # show upload data without publishing', &
-    ' fpm publish --dry-run              # create tarball without publishing', &
-    ' fpm publish --token TOKEN          # upload package to the registry using TOKEN', &
+    ' fpm publish --show-package-version    # show package version without publishing', &
+    ' fpm publish --show-upload-data        # show upload data without publishing', &
+    ' fpm publish --token TOKEN --dry-run   # perform dry run without publishing', &
+    ' fpm publish --token TOKEN             # upload package to the registry', &
     '' ]
      end subroutine set_help
 
