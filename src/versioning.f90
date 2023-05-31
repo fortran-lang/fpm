@@ -1,10 +1,13 @@
 !> Implementation of versioning data for comparing packages
 module fpm_versioning
     use fpm_error, only : error_t, syntax_error
+    use fpm_strings, only: string_t
+    use regex_module, only: regex
     implicit none
     private
 
     public :: version_t, new_version
+    public :: regex_version_from_text
 
 
     type :: version_t
@@ -390,5 +393,38 @@ contains
 
     end function match
 
+    ! Extract canonical version flags "1.0.0" or "1.0" as the first instance inside a text
+    ! (whatever long) using regex
+    type(string_t) function regex_version_from_text(text,what,error) result(ver)
+        character(*), intent(in) :: text
+        character(*), intent(in) :: what
+        type(error_t), allocatable, intent(out) :: error
+
+        integer :: ire, length
+
+        if (len_trim(text)<=0) then
+            call syntax_error(error,'cannot retrieve '//what//' version: empty input string')
+            return
+        end if
+
+        ! Extract 3-sized version "1.0.4"
+        ire = regex(text,'\d+\.\d+\.\d+',length=length)
+        if (ire>0 .and. length>0) then
+            ! Parse version into the object (this should always work)
+            ver = string_t(text(ire:ire+length-1))
+        else
+
+            ! Try 2-sized version "1.0"
+            ire = regex(text,'\d+\.\d+',length=length)
+
+            if (ire>0 .and. length>0) then
+                ver = string_t(text(ire:ire+length-1))
+            else
+                call syntax_error(error,'cannot retrieve '//what//' version.')
+            end if
+
+        end if
+
+    end function regex_version_from_text
 
 end module fpm_versioning

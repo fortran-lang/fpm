@@ -130,6 +130,7 @@ Checks before uploading the package.</p></td></tr>
 			   <tr><td><a href='../proc/compile_c.html'>compile_c</a></td><td><a href='../module/fpm_compiler.html'>fpm_compiler</a></td><td>Subroutine</td><td><p>Compile a C object</p></td></tr>
 			   <tr><td><a href='../proc/compile_cpp.html'>compile_cpp</a></td><td><a href='../module/fpm_compiler.html'>fpm_compiler</a></td><td>Subroutine</td><td><p>Compile a CPP object</p></td></tr>
 			   <tr><td><a href='../proc/compile_fortran.html'>compile_fortran</a></td><td><a href='../module/fpm_compiler.html'>fpm_compiler</a></td><td>Subroutine</td><td><p>Compile a Fortran object</p></td></tr>
+			   <tr><td><a href='../proc/compiler_name.html'>compiler_name</a></td><td><a href='../module/fpm_compiler.html'>fpm_compiler</a></td><td>Function</td><td><p>Return a compiler name string</p></td></tr>
 			   <tr><td><a href='../proc/convert_to_absolute_path.html'>convert_to_absolute_path</a></td><td><a href='../module/fpm_os.html'>fpm_os</a></td><td>Subroutine</td><td><p>Converts a path to an absolute, canonical path.</p></td></tr>
 			   <tr><td><a href='../interface/debug.html'>debug</a></td><td><a href='../module/fpm_compiler.html'>fpm_compiler</a></td><td>Interface</td><td><p>Create debug printout</p></td></tr>
 			   <tr><td><a href='../proc/debug_archiver.html'>debug_archiver</a></td><td><a href='../module/fpm_compiler.html'>fpm_compiler</a></td><td>Function</td><td><p>String representation of an archiver object</p></td></tr>
@@ -172,6 +173,8 @@ Expands home folder (~) on both Unix and Windows.</p></td></tr>
 			   <tr><td><a href='../proc/get_default_cxx_compiler.html'>get_default_cxx_compiler</a></td><td><a href='../module/fpm_compiler.html'>fpm_compiler</a></td><td>Subroutine</td><td><p>Get C++ Compiler.</p></td></tr>
 			   <tr><td><a href='../proc/get_default_flags.html'>get_default_flags</a></td><td><a href='../module/fpm_compiler.html'>fpm_compiler</a></td><td>Function</td><td></td></tr>
 			   <tr><td><a href='../proc/get_default_profiles.html'>get_default_profiles</a></td><td><a href='../module/fpm_manifest_profile.html'>fpm_manifest_profile</a></td><td>Function</td><td><p>Construct an array of built-in profiles</p></td></tr>
+			   <tr><td><a href='../proc/get_dos_path.html'>get_dos_path</a></td><td><a href='../module/fpm_filesystem.html'>fpm_filesystem</a></td><td>Function</td><td><p>Ensure a windows path is converted to an 8.3 DOS path if it contains spaces
+No need to convert if there are no spaces</p><a href="../proc/get_dos_path.html" class="pull-right"><emph>Read more&hellip;</emph></a></td></tr>
 			   <tr><td><a href='../proc/get_env.html'>get_env</a></td><td><a href='../module/fpm_environment.html'>fpm_environment</a></td><td>Function</td><td><p>get named environment variable value. It it is blank or
  not set return the optional default value
 !print <em>, NAME, &rdquo; is not defined in the environment. Strange&hellip;&rdquo;
@@ -230,8 +233,10 @@ Works with MinGW</p></td></tr>
 			   <tr><td><a href='../proc/is_absolute_path.html'>is_absolute_path</a></td><td><a href='../module/fpm_filesystem.html'>fpm_filesystem</a></td><td>Function</td><td><p>Returns .true. if provided path is absolute.</p><a href="../proc/is_absolute_path.html" class="pull-right"><emph>Read more&hellip;</emph></a></td></tr>
 			   <tr><td><a href='../proc/is_dir.html'>is_dir</a></td><td><a href='../module/fpm_filesystem.html'>fpm_filesystem</a></td><td>Function</td><td><p>test if a name matches an existing directory path</p></td></tr>
 			   <tr><td><a href='../proc/is_fortran_name.html'>is_fortran_name</a></td><td><a href='../module/fpm_strings.html'>fpm_strings</a></td><td>Function</td><td></td></tr>
+			   <tr><td><a href='../proc/is_gnu.html'>is_gnu</a></td><td><a href='../module/fpm_compiler.html'>fpm_compiler</a></td><td>Function</td><td></td></tr>
 			   <tr><td><a href='../proc/is_hidden_file.html'>is_hidden_file</a></td><td><a href='../module/fpm_filesystem.html'>fpm_filesystem</a></td><td>Function</td><td><p>test if a file is hidden</p></td></tr>
 			   <tr><td><a href='../proc/is_intel.html'>is_intel</a></td><td><a href='../module/fpm_compiler.html'>fpm_compiler</a></td><td>Function</td><td></td></tr>
+			   <tr><td><a href='../proc/is_meta_package.html'>is_meta_package</a></td><td><a href='../module/fpm_manifest_metapackages.html'>fpm_manifest_metapackages</a></td><td>Function</td><td><p>Check local schema for allowed entries</p><a href="../proc/is_meta_package.html" class="pull-right"><emph>Read more&hellip;</emph></a></td></tr>
 			   <tr><td><a href='../proc/is_unknown.html'>is_unknown</a></td><td><a href='../module/fpm_compiler.html'>fpm_compiler</a></td><td>Function</td><td></td></tr>
 			   <tr><td><a href='../proc/is_valid_module_name.html'>is_valid_module_name</a></td><td><a href='../module/fpm_strings.html'>fpm_strings</a></td><td>Function</td><td><p>Check that a module name fits the current naming rules:
 1) It must be a valid FORTRAN name (&lt;=63 chars, begin with letter, &ldquo;_&rdquo; is only allowed non-alphanumeric)
@@ -256,10 +261,11 @@ Works with MinGW</p></td></tr>
 			   <tr><td><a href='../proc/mkdir.html'>mkdir</a></td><td><a href='../module/fpm_filesystem.html'>fpm_filesystem</a></td><td>Subroutine</td><td><p>Create a directory. Create subdirectories as needed</p></td></tr>
 			   <tr><td><a href='../proc/module_prefix_template.html'>module_prefix_template</a></td><td><a href='../module/fpm_strings.html'>fpm_strings</a></td><td>Function</td><td></td></tr>
 			   <tr><td><a href='../proc/module_prefix_type.html'>module_prefix_type</a></td><td><a href='../module/fpm_strings.html'>fpm_strings</a></td><td>Function</td><td></td></tr>
+			   <tr><td><a href='../proc/mpi_type_name.html'>MPI_TYPE_NAME</a></td><td><a href='../module/fpm_meta.html'>fpm_meta</a></td><td>Function</td><td><p>Return a name for the MPI library</p></td></tr>
 			   <tr><td><a href='../proc/new_archiver.html'>new_archiver</a></td><td><a href='../module/fpm_compiler.html'>fpm_compiler</a></td><td>Subroutine</td><td><p>Create new archiver instance</p></td></tr>
 			   <tr><td><a href='../proc/new_build_config.html'>new_build_config</a></td><td><a href='../module/fpm_manifest_build.html'>fpm_manifest_build</a></td><td>Subroutine</td><td><p>Construct a new build configuration from a TOML data structure</p><a href="../proc/new_build_config.html" class="pull-right"><emph>Read more&hellip;</emph></a></td></tr>
 			   <tr><td><a href='../proc/new_compiler.html'>new_compiler</a></td><td><a href='../module/fpm_compiler.html'>fpm_compiler</a></td><td>Subroutine</td><td><p>Create new compiler instance</p></td></tr>
-			   <tr><td><a href='../proc/new_dependencies.html'>new_dependencies</a></td><td><a href='../module/fpm_manifest_dependency.html'>fpm_manifest_dependency</a></td><td>Subroutine</td><td><p>Construct new dependency array from a TOML data structure</p></td></tr>
+			   <tr><td><a href='../proc/new_dependencies.html'>new_dependencies</a></td><td><a href='../module/fpm_manifest_dependency.html'>fpm_manifest_dependency</a></td><td>Subroutine</td><td><p>Construct new dependency array from a TOML data structure</p><a href="../proc/new_dependencies.html" class="pull-right"><emph>Read more&hellip;</emph></a></td></tr>
 			   <tr><td><a href='../proc/new_dependency.html'>new_dependency</a></td><td><a href='../module/fpm_manifest_dependency.html'>fpm_manifest_dependency</a></td><td>Subroutine</td><td><p>Construct a new dependency configuration from a TOML data structure</p></td></tr>
 			   <tr><td><a href='../proc/new_dependency_node.html'>new_dependency_node</a></td><td><a href='../module/fpm_dependency.html'>fpm_dependency</a></td><td>Subroutine</td><td><p>Create a new dependency node from a configuration</p></td></tr>
 			   <tr><td><a href='../proc/new_dependency_tree.html'>new_dependency_tree</a></td><td><a href='../module/fpm_dependency.html'>fpm_dependency</a></td><td>Subroutine</td><td><p>Create a new dependency tree</p></td></tr>
@@ -269,6 +275,7 @@ Works with MinGW</p></td></tr>
 			   <tr><td><a href='../proc/new_install_config.html'>new_install_config</a></td><td><a href='../module/fpm_manifest_install.html'>fpm_manifest_install</a></td><td>Subroutine</td><td><p>Create a new installation configuration from a TOML data structure</p></td></tr>
 			   <tr><td><a href='../proc/new_installer.html'>new_installer</a></td><td><a href='../module/fpm_installer.html'>fpm_installer</a></td><td>Subroutine</td><td><p>Create a new instance of an installer</p></td></tr>
 			   <tr><td><a href='../proc/new_library.html'>new_library</a></td><td><a href='../module/fpm_manifest_library.html'>fpm_manifest_library</a></td><td>Subroutine</td><td><p>Construct a new library configuration from a TOML data structure</p></td></tr>
+			   <tr><td><a href='../proc/new_meta_config.html'>new_meta_config</a></td><td><a href='../module/fpm_manifest_metapackages.html'>fpm_manifest_metapackages</a></td><td>Subroutine</td><td><p>Construct a new build configuration from a TOML data structure</p><a href="../proc/new_meta_config.html" class="pull-right"><emph>Read more&hellip;</emph></a></td></tr>
 			   <tr><td><a href='../proc/new_package.html'>new_package</a></td><td><a href='../module/fpm_manifest_package.html'>fpm_manifest_package</a></td><td>Subroutine</td><td><p>Construct a new package configuration from a TOML data structure</p></td></tr>
 			   <tr><td><a href='../proc/new_preprocess_config.html'>new_preprocess_config</a></td><td><a href='../module/fpm_manifest_preprocess.html'>fpm_manifest_preprocess</a></td><td>Subroutine</td><td><p>Construct a new preprocess configuration from TOML data structure</p></td></tr>
 			   <tr><td><a href='../proc/new_preprocessors.html'>new_preprocessors</a></td><td><a href='../module/fpm_manifest_preprocess.html'>fpm_manifest_preprocess</a></td><td>Subroutine</td><td><p>Construct new preprocess array from a TOML data structure.</p></td></tr>
@@ -291,9 +298,12 @@ and return .TRUE. if they match and .FALSE. otherwise</p></td></tr>
 			   <tr><td><a href='../proc/read_lines.html'>read_lines</a></td><td><a href='../module/fpm_filesystem.html'>fpm_filesystem</a></td><td>Function</td><td><p>read lines into an array of TYPE(STRING_T) variables</p></td></tr>
 			   <tr><td><a href='../proc/read_lines_expanded.html'>read_lines_expanded</a></td><td><a href='../module/fpm_filesystem.html'>fpm_filesystem</a></td><td>Function</td><td><p>read lines into an array of TYPE(STRING_T) variables expanding tabs</p></td></tr>
 			   <tr><td><a href='../proc/read_package_file.html'>read_package_file</a></td><td><a href='../module/fpm_toml.html'>fpm_toml</a></td><td>Subroutine</td><td><p>Process the configuration file to a TOML data structure</p></td></tr>
+			   <tr><td><a href='../proc/regex_version_from_text.html'>regex_version_from_text</a></td><td><a href='../module/fpm_versioning.html'>fpm_versioning</a></td><td>Function</td><td></td></tr>
+			   <tr><td><a href='../proc/remove_newline_characters.html'>remove_newline_characters</a></td><td><a href='../module/fpm_strings.html'>fpm_strings</a></td><td>Subroutine</td><td></td></tr>
 			   <tr><td><a href='../proc/replace.html'>replace</a></td><td><a href='../module/fpm_strings.html'>fpm_strings</a></td><td>Function</td><td><p>Returns string with characters in charset replaced with target_char.</p></td></tr>
 			   <tr><td><a href='../interface/resize~2.html'>resize</a></td><td><a href='../module/fpm_strings.html'>fpm_strings</a></td><td>Interface</td><td></td></tr>
 			   <tr><td><a href='../interface/resize.html'>resize</a></td><td><a href='../module/fpm_dependency.html'>fpm_dependency</a></td><td>Interface</td><td><p>Overloaded reallocation interface</p></td></tr>
+			   <tr><td><a href='../interface/resolve_metapackages.html'>resolve_metapackages</a></td><td><a href='../module/fpm_meta.html'>fpm_meta</a></td><td>Interface</td><td></td></tr>
 			   <tr><td><a href='../proc/resolve_module_dependencies.html'>resolve_module_dependencies</a></td><td><a href='../module/fpm_targets.html'>fpm_targets</a></td><td>Subroutine</td><td><p>Add dependencies to source-based targets (<code>FPM_TARGET_OBJECT</code>)
  based on any modules used by the corresponding source file.</p><a href="../proc/resolve_module_dependencies.html" class="pull-right"><emph>Read more&hellip;</emph></a></td></tr>
 			   <tr><td><a href='../proc/run.html'>run</a></td><td><a href='../module/fpm_filesystem.html'>fpm_filesystem</a></td><td>Subroutine</td><td><p>echo command string and pass it to the system for execution</p></td></tr>
@@ -347,7 +357,7 @@ in case of errors.</p></td></tr>
             <p class="text-right">
               Documentation generated by
               <a href="https://github.com/Fortran-FOSS-Programmers/ford">FORD</a>
- on 2023-05-29 00:20              </p>
+ on 2023-05-31 06:18              </p>
           </div>
         </div>
         <br>

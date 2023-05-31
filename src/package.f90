@@ -44,6 +44,7 @@ module fpm_manifest_package
     use fpm_manifest_install, only: install_config_t, new_install_config
     use fpm_manifest_test, only : test_config_t, new_test
     use fpm_manifest_preprocess, only : preprocess_config_t, new_preprocessors
+    use fpm_manifest_metapackages, only: metapackage_config_t, new_meta_config
     use fpm_filesystem, only : exists, getline, join_path
     use fpm_error, only : error_t, fatal_error, syntax_error, bad_name_error
     use fpm_toml, only : toml_table, toml_array, toml_key, toml_stat, get_value, len
@@ -71,6 +72,9 @@ module fpm_manifest_package
 
         !> Build configuration data
         type(build_config_t) :: build
+
+        !> Metapackage data
+        type(metapackage_config_t) :: meta
 
         !> Installation configuration data
         type(install_config_t) :: install
@@ -214,13 +218,13 @@ contains
 
         call get_value(table, "dependencies", child, requested=.false.)
         if (associated(child)) then
-            call new_dependencies(self%dependency, child, root, error)
+            call new_dependencies(self%dependency, child, root, self%meta, error)
             if (allocated(error)) return
         end if
 
         call get_value(table, "dev-dependencies", child, requested=.false.)
         if (associated(child)) then
-            call new_dependencies(self%dev_dependency, child, root, error)
+            call new_dependencies(self%dev_dependency, child, root, error=error)
             if (allocated(error)) return
         end if
 
