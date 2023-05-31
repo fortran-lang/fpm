@@ -1,0 +1,310 @@
+name: metapackage-tests
+
+on:
+  push:
+    paths:
+      - 'src/*meta*.f90'  # On push, only launch job if something has changed in the metapackages
+      - 'src/fpm/*meta*.f90'
+      - 'src/fpm/manifest/*meta*.f90'
+      - 'src/ci/meta_tests.sh'
+      - 'src/.github/workflows/meta.yml'
+  pull_request:
+  release:
+    types: [published]
+
+env:
+  CI: "ON" # We can detect this in the build system and other vendors implement it
+  HOMEBREW_NO_ANALYTICS: "ON" # Make Homebrew installation a little quicker
+  HOMEBREW_NO_AUTO_UPDATE: "ON"
+  HOMEBREW_NO_BOTTLE_SOURCE_FALLBACK: "ON"
+  HOMEBREW_NO_GITHUB_API: "ON"
+  HOMEBREW_NO_INSTALL_CLEANUP: "ON"
+
+jobs:
+
+  build:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: ubuntu-latest
+            mpi: intel
+          - os: ubuntu-latest
+            mpi: openmpi
+          - os: ubuntu-latest
+            mpi: mpich
+          - os: windows-latest
+            mpi: msmpi
+          - os: macos-latest
+            mpi: openmpi
+          - os: macos-latest
+            mpi: mpich
+
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v1
+
+    - name: (Ubuntu) setup gcc version
+      if: contains(matrix.os,'ubuntu')
+      run: |
+        echo "GCC_V=10" >> $GITHUB_ENV
+
+    - name: (macOS) setup gcc version
+      if: contains(matrix.os,'macos')
+      run: |
+        echo "GCC_V=13" >> $GITHUB_ENV
+
+    - name: (Windows) Install MSYS2
+      uses: msys2/setup-msys2@v2
+      if: contains(matrix.os,'windows') && contains(matrix.mpi,'msmpi')
+      with:
+        msystem: MINGW64
+        update: true
+        install: >-
+          git
+          base-devel
+          wget
+          unzip
+          curl
+          gcc-fortran
+
+    - name: (Windows) Setup VS Build environment
+      if: contains(matrix.os,'windows') && contains(matrix.mpi,'intel')
+      uses: seanmiddleditch/gha-setup-vsdevenv@master
+
+    - name: (Windows) Retrieve Intel toolchain
+      if: contains(matrix.os,'windows') && contains(matrix.mpi,'intel')
+      shell: pwsh
+      working-directory: C:\TEMP
+      run: |
+        curl.exe --output webimage.exe --url https://registrationcenter-download.intel.com/akdlm/irc_nas/19085/w_HPCKit_p_2023.0.0.25931_offline.exe --retry 5 --retry-delay 5
+        Start-Process -FilePath "webimage.exe" -ArgumentList "-s -x -f oneAPI --log extract.log" -Wait
+        Remove-Item "webimage.exe" -Force
+        Start-Process -FilePath "oneAPI\bootstrapper.exe" -ArgumentList "-s --action install --eula=accept --components=""intel.oneapi.win.cpp-compiler:intel.oneapi.win.ifort-compiler:intel.oneapi.win.mpi.devel"" -p=NEED_VS2017_INTEGRATION=0 -p=NEED_VS2019_INTEGRATION=0 -p=NEED_VS2022_INTEGRATION=0 --log-dir=." -Wait
+        Remove-Item "oneAPI" -Force -Recurse
+
+    - name: (Ubuntu) Install gfortran
+      if: contains(matrix.os,'ubuntu') && (!contains(matrix.mpi,'intel'))
+      run: |
+        sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-${GCC_V} 100 \
+        --slave /usr/bin/gfortran gfortran /usr/bin/gfortran-${GCC_V} \
+        --slave /usr/bin/gcov gcov /usr/bin/gcov-${GCC_V}
+
+    - name: (Ubuntu) Install OpenMPI
+      if: contains(matrix.os,'ubuntu') && contains(matrix.mpi,'openmpi')
+      run: |
+        sudo apt install -y -q openmpi-bin libopenmpi-dev
+
+    - name: (Ubuntu) Install MPICH
+      if: contains(matrix.os,'ubuntu') && contains(matrix.mpi,'mpich')
+      run: |
+        sudo apt install -y -q mpich
+
+    - name: (Ubuntu) Retrieve Intel toolchain
+      if: contains(matrix.os,'ubuntu') && contains(matrix.mpi,'intel')
+      timeout-minutes: 1
+      run: |
+        wget https://apt.repos.intel.com/intel-gpg-keys/GPG-PUB-KEY-INTEL-SW-PRODUCTS-2023.PUB
+        sudo apt-key add GPG-PUB-KEY-INTEL-SW-PRODUCTS-2023.PUB
+        rm GPG-PUB-KEY-INTEL-SW-PRODUCTS-2023.PUB
+        echo "deb https://apt.repos.intel.com/oneapi all main" | sudo tee /etc/apt/sources.list.d/oneAPI.list
+        sudo apt-get update
+
+    - name: (Ubuntu) Install Intel oneAPI
+      if: contains(matrix.os,'ubuntu') && contains(matrix.mpi,'intel')
+      timeout-minutes: 5
+      run: sudo apt-get install intel-oneapi-compiler-fortran intel-oneapi-compiler-dpcpp-cpp-and-cpp-classic intel-oneapi-mpi intel-oneapi-mpi-devel intel-oneapi-mkl ninja-build
+
+    - name: (Ubuntu) Setup Intel oneAPI environment
+      if: contains(matrix.os,'ubuntu') && contains(matrix.mpi,'intel')
+      run: |
+        source /opt/intel/oneapi/setvars.sh
+        printenv >> $GITHUB_ENV
+
+    - name: (Windows) Put MSYS2_MinGW64 on PATH
+      if: contains(matrix.os,'windows') && (!contains(matrix.mpi,'intel'))
+      # there is not yet an environment variable for this path from msys2/setup-msys2
+      run: echo "${{ runner.temp }}/msys64/mingw64/bin" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
+
+    - name: (Windows) download MS-MPI setup (SDK is from MSYS2)
+      if: contains(matrix.os,'windows') && contains(matrix.mpi,'msmpi')
+        #     run: curl -L -O https://github.com/microsoft/Microsoft-MPI/releases/download/v10.1.2/msmpisetup.exe 10.1.1
+      run: curl -L -O https://download.microsoft.com/download/a/5/2/a5207ca5-1203-491a-8fb8-906fd68ae623/msmpisetup.exe # 10.1.2
+
+    - name: (Windows) Install mpiexec.exe (-force needed to bypass GUI on headless)
+      if: contains(matrix.os,'windows') && contains(matrix.mpi,'msmpi')
+      run: .\msmpisetup.exe -unattend -force
+
+    - name: (Windows) test that mpiexec.exe exists
+      if: contains(matrix.os,'windows') && contains(matrix.mpi,'msmpi')
+      # can't use MSMPI_BIN as Actions doesn't update PATH from msmpisetup.exe
+      run: Test-Path "C:\Program Files\Microsoft MPI\Bin\mpiexec.exe" -PathType leaf
+
+    - name: (Windows) test that OneAPI is installed
+      if: contains(matrix.os,'windows') && contains(matrix.mpi,'intel')
+      run: |
+        Test-Path -Path "C:\Program Files (x86)\Intel\oneAPI\setvars.bat" -PathType leaf
+        Test-Path -Path "C:\Program Files (x86)\Intel\oneAPI\compiler\latest\env\vars.bat" -PathType leaf
+
+    - name: (Windows) put MSMPI_BIN on PATH (where mpiexec is)
+      if: contains(matrix.os,'windows') && contains(matrix.mpi,'msmpi')
+      run: |
+        echo "C:\Program Files\Microsoft MPI\Bin\" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
+        echo "MSMPI_BIN=C:\Program Files\Microsoft MPI\Bin\" | Out-File -FilePath $env:GITHUB_ENV -Append
+
+    - name: (Windows) load OneAPI environment variables
+      if: contains(matrix.os,'windows') && contains(matrix.mpi,'intel')
+      shell: cmd
+      run: |
+        "C:\Program Files (x86)\Intel\oneAPI\setvars.bat"
+        "C:\Program Files (x86)\Intel\oneAPI\compiler\latest\env\vars.bat"
+
+    - name: (Windows) Install MSYS2 msmpi package
+      if: contains(matrix.os,'windows') && contains(matrix.mpi,'msmpi')
+      shell: msys2 {0}
+      run: pacman --noconfirm -S mingw-w64-x86_64-msmpi
+
+    - name: (macOS) Set up Homebrew
+      if: contains(matrix.os,'macos')
+      id: set-up-homebrew
+      uses: Homebrew/actions/setup-homebrew@master
+
+    - name: (macOS) Install Homebrew gfortran
+      if: contains(matrix.os, 'macos')
+      run: |
+        # Only install gcc if not already available
+        which gfortran-${{ env.GCC_V }} || brew install gcc@${{ env.GCC_V }}
+        which gfortran-${{ env.GCC_V }}
+        which gfortran || ln -s /usr/local/bin/gfortran-${{ env.GCC_V }} /usr/local/bin/gfortran
+        # Backport gfortran shared libraries to version 10 folder. This is necessary because all macOS releases of fpm
+        # have these paths hardcoded in the executable (no PIC?). Current bootstrap version 0.8.0 has gcc-10
+        mkdir /usr/local/opt/gcc@10
+        mkdir /usr/local/opt/gcc@10/lib
+        mkdir /usr/local/opt/gcc@10/lib/gcc
+        mkdir /usr/local/opt/gcc@10/lib/gcc/10
+        mkdir /usr/local/lib/gcc/10
+        ln -fs /usr/local/opt/gcc@${{ env.GCC_V }}/lib/gcc/${{ env.GCC_V }}/libquadmath.0.dylib /usr/local/opt/gcc@10/lib/gcc/10/libquadmath.0.dylib
+        ln -fs /usr/local/opt/gcc@${{ env.GCC_V }}/lib/gcc/${{ env.GCC_V }}/libgfortran.5.dylib /usr/local/opt/gcc@10/lib/gcc/10/libgfortran.5.dylib
+        # Newer gcc versions use libgcc_s.1.1.dylib
+        ln -fs /usr/local/lib/gcc/${{ env.GCC_V }}/libgcc_s.1.dylib /usr/local/lib/gcc/10/libgcc_s.1.dylib || ln -fs /usr/local/lib/gcc/${{ env.GCC_V }}/libgcc_s.1.1.dylib /usr/local/lib/gcc/10/libgcc_s.1.dylib
+
+    - name: (macOS) Install homebrew MPICH
+      if: contains(matrix.mpi,'mpich') && contains(matrix.os,'macos')
+      run: |
+        brew install mpich
+
+    - name: (macOS) Install homebrew OpenMPI
+      if: contains(matrix.mpi,'openmpi') && contains(matrix.os,'macos')
+      run: |
+        brew install --cc=gcc-${{ env.GCC_V }} openmpi
+
+    # Phase 1: Bootstrap fpm with existing version
+    - name: Install fpm
+      uses: fortran-lang/setup-fpm@v3
+      with:
+        fpm-version: 'v0.8.0'
+
+    - name: Remove fpm from path
+      shell: bash
+      run: |
+        mv $(which fpm) fpm-bootstrap${{ matrix.exe }}
+        echo "BOOTSTRAP=$PWD/fpm-bootstrap" >> $GITHUB_ENV
+
+    - name: Use Intel compiler for the metapackage tests
+      if: contains(matrix.mpi,'intel')
+      shell: bash
+      run: |
+        echo "FPM_FC=ifort" >> $GITHUB_ENV
+        echo "FPM_CC=icc"   >> $GITHUB_ENV
+        echo "FPM_CXX=icpc" >> $GITHUB_ENV
+
+    - name: (macOS) Use gcc/g++ instead of Clang for C/C++
+      if: contains(matrix.os,'macOS')
+      shell: bash
+      run: |
+        echo "FPM_FC=gfortran-${{ env.GCC_V }}" >> $GITHUB_ENV
+        echo "FPM_CC=gcc-${{ env.GCC_V }}"      >> $GITHUB_ENV
+        echo "FPM_CXX=g++-${{ env.GCC_V }}"     >> $GITHUB_ENV
+
+    - name: Build Fortran fpm (bootstrap)
+      shell: bash
+      run: |
+        ${{ env.BOOTSTRAP }} build
+
+    - name: Run Fortran fpm (bootstrap)
+      shell: bash
+      run: |
+        ${{ env.BOOTSTRAP }} run
+        ${{ env.BOOTSTRAP }} run -- --version
+        ${{ env.BOOTSTRAP }} run -- --help
+
+    - name: Test Fortran fpm (bootstrap)
+      if: (!contains(matrix.mpi,'intel'))
+      shell: bash
+      run: |
+        ${{ env.BOOTSTRAP }} test
+
+    - name: Install Fortran fpm (bootstrap)
+      shell: bash
+      run: |
+        ${{ env.BOOTSTRAP }} install
+
+    # Phase 2: Bootstrap fpm with itself
+    - name: Replace bootstrapping version
+      shell: bash
+      run: |
+        ${{ env.BOOTSTRAP }} run --runner cp -- fpm-debug${{ matrix.exe }}
+        rm -v ${{ env.BOOTSTRAP }}
+        echo "FPM=$PWD/fpm-debug" >> $GITHUB_ENV
+
+    - name: Get version (normal)
+      if: github.event_name != 'release'
+      shell: bash
+      run: |
+        VERSION=$(git rev-parse --short HEAD)
+        echo "VERSION=$VERSION" >> $GITHUB_ENV
+
+    - name: Get version (release)
+      if: github.event_name == 'release'
+      shell: bash
+      run: |
+        VERSION=$(echo ${{ github.ref }} | cut -dv -f2)
+        echo "VERSION=$VERSION" >> $GITHUB_ENV
+        FPM_VERSION=$(${{ env.FPM }} --version | grep -o '${{ env.REGEX }}')
+        [ "$VERSION" = "$FPM_VERSION" ]
+      env:
+        REGEX: '[0-9]\{1,4\}\.[0-9]\{1,4\}\.[0-9]\{1,4\}'
+
+    - name: Build Fortran fpm
+      shell: bash
+      run: |
+        ${{ env.FPM }} build ${{ matrix.release-flags }}
+
+    - name: Run Fortran fpm
+      shell: bash
+      run: |
+        ${{ env.FPM }} run ${{ matrix.release-flags }}
+        ${{ env.FPM }} run ${{ matrix.release-flags }} -- --version
+        ${{ env.FPM }} run ${{ matrix.release-flags }} -- --help
+
+    - name: Install Fortran fpm
+      shell: bash
+      run: |
+        ${{ env.FPM }} install ${{ matrix.release-flags }}
+
+    - name: Package release version
+      shell: bash
+      run: |
+        ${{ env.FPM }} run ${{ matrix.release-flags }} --runner cp -- ${{ env.EXE }}
+        rm -v ${{ env.FPM }}
+        echo "FPM_RELEASE=${{ env.EXE }}" >> $GITHUB_ENV
+      env:
+        EXE: fpm-${{ env.VERSION }}-${{ matrix.os-arch }}${{ matrix.exe }}
+
+    - name: Run metapackage tests using the release version
+      shell: bash
+      run: |
+        ci/meta_tests.sh "$PWD/${{ env.FPM_RELEASE }}"
+

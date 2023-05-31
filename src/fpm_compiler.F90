@@ -41,7 +41,6 @@ use fpm_environment, only: &
 use fpm_filesystem, only: join_path, basename, get_temp_filename, delete_file, unix_path, &
     & getline, run
 use fpm_strings, only: split, string_cat, string_t, str_ends_with, str_begins_with_str
-use fpm_manifest, only : package_config_t
 use fpm_error, only: error_t
 implicit none
 public :: compiler_t, new_compiler, archiver_t, new_archiver, get_macros
@@ -108,10 +107,14 @@ contains
     procedure :: link
     !> Check whether compiler is recognized
     procedure :: is_unknown
-    !> Check whether compiler is Intel family
+    !> Check whether this is an Intel compiler
     procedure :: is_intel
+    !> Check whether this is a GNU compiler
+    procedure :: is_gnu
     !> Enumerate libraries, based on compiler and platform
     procedure :: enumerate_libraries
+    !> Return compiler name
+    procedure :: name => compiler_name
 end type compiler_t
 
 
@@ -147,6 +150,7 @@ character(*), parameter :: &
     flag_gnu_check = " -fcheck=bounds -fcheck=array-temps", &
     flag_gnu_limit = " -fmax-errors=1", &
     flag_gnu_external = " -Wimplicit-interface", &
+    flag_gnu_openmp = " -fopenmp", &
     flag_gnu_no_implicit_typing = " -fimplicit-none", &
     flag_gnu_no_implicit_external = " -Werror=implicit-interface", &
     flag_gnu_free_form = " -ffree-form", &
@@ -158,6 +162,7 @@ character(*), parameter :: &
     flag_pgi_debug = " -g", &
     flag_pgi_check = " -Mbounds -Mchkptr -Mchkstk", &
     flag_pgi_warn = " -Minform=inform", &
+    flag_pgi_openmp = " -mp", &
     flag_pgi_free_form = " -Mfree", &
     flag_pgi_fixed_form = " -Mfixed"
 
@@ -175,6 +180,7 @@ character(*), parameter :: &
     flag_intel_pthread = " -reentrancy threaded", &
     flag_intel_nogen = " -nogen-interfaces", &
     flag_intel_byterecl = " -assume byterecl", &
+    flag_intel_openmp = " -qopenmp", &
     flag_intel_free_form = " -free", &
     flag_intel_fixed_form = " -fixed", &
     flag_intel_standard_compliance = " -standard-semantics"
@@ -190,6 +196,7 @@ character(*), parameter :: &
     flag_intel_pthread_win = " /reentrancy:threaded", &
     flag_intel_nogen_win = " /nogen-interfaces", &
     flag_intel_byterecl_win = " /assume:byterecl", &
+    flag_intel_openmp_win = " /Qopenmp", &
     flag_intel_free_form_win = " /free", &
     flag_intel_fixed_form_win = " /fixed", &
     flag_intel_standard_compliance_win = " /standard-semantics"
@@ -201,16 +208,17 @@ character(*), parameter :: &
     flag_nag_debug = " -g -O0", &
     flag_nag_opt = " -O4", &
     flag_nag_backtrace = " -gline", &
+    flag_nag_openmp = " -openmp", &
     flag_nag_free_form = " -free", &
     flag_nag_fixed_form = " -fixed", &
     flag_nag_no_implicit_typing = " -u"
 
 character(*), parameter :: &
     flag_lfortran_opt = " --fast", &
+    flag_lfortran_openmp = " --openmp", &
     flag_lfortran_implicit_typing = " --implicit-typing", &
     flag_lfortran_implicit_external = " --allow-implicit-interface", &
     flag_lfortran_fixed_form = " --fixed-form"
-
 
 character(*), parameter :: &
     flag_cray_no_implicit_typing = " -dl", &
@@ -945,9 +953,14 @@ end function is_unknown
 
 pure logical function is_intel(self)
     class(compiler_t), intent(in) :: self
-    is_intel = any(self%id == [id_intel_classic_mac,id_intel_classic_nix,id_intel_classic_windows,&
-                               id_intel_llvm_nix,id_intel_llvm_unknown,id_intel_llvm_windows])
+    is_intel = any(self%id == [id_intel_classic_nix,id_intel_classic_mac,id_intel_classic_windows, &
+                               id_intel_llvm_nix,id_intel_llvm_windows,id_intel_llvm_unknown])
 end function is_intel
+
+pure logical function is_gnu(self)
+    class(compiler_t), intent(in) :: self
+    is_gnu = any(self%id == [id_f95,id_gcc,id_caf])
+end function is_gnu
 
 !>
 !> Enumerate libraries, based on compiler and platform
@@ -1204,6 +1217,38 @@ pure function debug_archiver(self) result(repr)
 
     repr = 'ar="'//self%ar//'"'
 end function debug_archiver
+
+!> Return a compiler name string
+pure function compiler_name(self) result(name)
+   !> Instance of the compiler object
+   class(compiler_t), intent(in) :: self
+   !> Representation as string
+   character(len=:), allocatable :: name
+
+   select case (self%id)
+       case(id_gcc); name = "gfortran"
+       case(id_f95); name = "f95"
+       case(id_caf); name = "caf"
+       case(id_intel_classic_nix);     name = "ifort"
+       case(id_intel_classic_mac);     name = "ifort"
+       case(id_intel_classic_windows); name = "ifort"
+       case(id_intel_llvm_nix);     name = "ifx"
+       case(id_intel_llvm_windows); name = "ifx"
+       case(id_intel_llvm_unknown); name = "ifx"
+       case(id_pgi);       name = "pgfortran"
+       case(id_nvhpc);     name = "nvfortran"
+       case(id_nag);       name = "nagfor"
+       case(id_flang);     name = "flang"
+       case(id_flang_new); name = "flang-new"
+       case(id_f18);       name = "f18"
+       case(id_ibmxl);     name = "xlf90"
+       case(id_cray);      name = "crayftn"
+       case(id_lahey);     name = "lfc"
+       case(id_lfortran);  name = "lFortran"
+       case default;       name = "invalid/unknown"
+   end select
+end function compiler_name
+
 
 
 end module fpm_compiler

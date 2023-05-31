@@ -820,23 +820,22 @@ subroutine resolve_target_linking(targets, model)
 
         associate(target => targets(i)%ptr)
 
-            ! May have been previously allocated
+            ! If the main program is a C/C++ one, some compilers require additional linking flags, see
+            ! https://stackoverflow.com/questions/36221612/p3dfft-compilation-ifort-compiler-error-multiple-definiton-of-main
+            ! In this case, compile_flags were already allocated
             if (.not.allocated(target%compile_flags)) allocate(character(len=0) :: target%compile_flags)
 
             target%compile_flags = target%compile_flags//' '
-
-            if (target%target_type /= FPM_TARGET_C_OBJECT .and. target%target_type /= FPM_TARGET_CPP_OBJECT) then
-                target%compile_flags = target%compile_flags//model%fortran_compile_flags &
-                    & // get_feature_flags(model%compiler, target%features)
-            else if (target%target_type == FPM_TARGET_C_OBJECT) then
-                target%compile_flags = target%compile_flags//model%c_compile_flags
-            else if(target%target_type == FPM_TARGET_CPP_OBJECT) then
-                target%compile_flags = target%compile_flags//model%cxx_compile_flags
-            end if
-
-            ! If the main program is a C/C++ one, Intel compilers require additional
-            ! linking flag -nofor-main to avoid a "duplicate main" error, see
-            ! https://stackoverflow.com/questions/36221612/p3dfft-compilation-ifort-compiler-error-multiple-definiton-of-main
+            
+            select case (target%target_type)
+               case (FPM_TARGET_C_OBJECT)
+                   target%compile_flags = target%compile_flags//model%c_compile_flags
+               case (FPM_TARGET_CPP_OBJECT)
+                   target%compile_flags = target%compile_flags//model%cxx_compile_flags
+               case default
+                   target%compile_flags = target%compile_flags//model%fortran_compile_flags &
+                                        & // get_feature_flags(model%compiler, target%features)
+            end select   
 
             !> Get macros as flags.
             target%compile_flags = target%compile_flags // get_macros(model%compiler%id, &

@@ -1465,7 +1465,6 @@ contains
 
         macros_package = get_macros(id, package%preprocess(1)%macros, pkg_ver)
         macros_dependency = get_macros(id, dependency%preprocess(1)%macros, dep_ver)
-
         if (macros_package == macros_dependency) then
             call test_failed(error, "Macros of package and dependency should not be equal")
         end if
