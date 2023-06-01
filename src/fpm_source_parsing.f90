@@ -643,7 +643,8 @@ subroutine parse_use_statement(f_filename,i,line,use_stmt,is_intrinsic,module_na
     lowercase = lower(trim(adjustl(line)))
 
     ! 'use' should be the first string in the adjustl line
-    use_stmt = index(lowercase,'use')==1; if (.not.use_stmt) return
+    use_stmt = index(lowercase,'use ')==1 .or. index(lowercase,'use::')==1 .or. index(lowercase,'use,')==1
+    if (.not.use_stmt) return
     colons   = index(lowercase,'::')
     nonintr  = 0
     intr     = 0
