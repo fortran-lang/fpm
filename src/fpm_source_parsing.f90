@@ -652,10 +652,6 @@ subroutine parse_use_statement(f_filename,i,line,use_stmt,is_intrinsic,module_na
     end if intrinsicness
 
     ! If declared intrinsic, check that it is true
-    print *, 'colons=',colons
-    print *, 'intr=',intr
-    print *, 'nonintr=',nonintr
-
     if (colons>3) then
 
         ! If there is an intrinsic/non-intrinsic spec
