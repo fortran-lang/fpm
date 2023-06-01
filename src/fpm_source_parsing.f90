@@ -690,10 +690,17 @@ subroutine parse_use_statement(f_filename,i,line,use_stmt,is_intrinsic,module_na
     has_intrinsic_name = any([(index(module_name,trim(INTRINSIC_NAMES(j)))>0, &
                              j=1,size(INTRINSIC_NAMES))])
     if (intr>0 .and. .not.has_intrinsic_name) then
-        call file_parse_error(error,f_filename, &
-                              'module '//module_name//' is declared intrinsic but it is not ',i, &
-                              lowercase)
-        return
+
+        ! An intrinsic module was not found. Its name could be in the next line,
+        ! in which case, we just skip this check. The compiler will do the job if the name is invalid.
+
+        ! Module name was not read: it's in the next line
+        if (index(module_name,'&')<=0) then
+            call file_parse_error(error,f_filename, &
+                                  'module '//module_name//' is declared intrinsic but it is not ',i, &
+                                  lowercase)
+            return
+        endif
     endif
 
     ! Should we treat this as an intrinsic module
