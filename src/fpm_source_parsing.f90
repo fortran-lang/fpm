@@ -646,14 +646,10 @@ subroutine parse_use_statement(f_filename,i,line,use_stmt,is_intrinsic,module_na
     colons   = index(lowercase,'::')
     nonintr  = 0
     intr     = 0
-    intrinsicness: if (colons>3) then
 
-    end if intrinsicness
+    have_colons: if (colons>3) then
 
-    ! If declared intrinsic, check that it is true
-    if (colons>3) then
-
-        ! If there is an intrinsic/non-intrinsic spec
+        ! there may be an intrinsic/non-intrinsic spec
         nonintr = index(lowercase(1:colons-1),'non_intrinsic')
         if (nonintr==0) intr = index(lowercase(1:colons-1),'intrinsic')
 
@@ -684,7 +680,7 @@ subroutine parse_use_statement(f_filename,i,line,use_stmt,is_intrinsic,module_na
             return
         end if
 
-    end if
+    end if have_colons
 
     ! If declared intrinsic, check that it is true
     has_intrinsic_name = any([(index(module_name,trim(INTRINSIC_NAMES(j)))>0, &
