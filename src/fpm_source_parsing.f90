@@ -612,8 +612,6 @@ function parse_sequence(string,t1,t2,t3,t4) result(found)
 
 end function parse_sequence
 
-! Process 'USE' statements
-
 ! USE [, intrinsic] :: module_name [, only: only_list]
 ! USE [, non_intrinsic] :: module_name [, only: only_list]
 subroutine parse_use_statement(f_filename,i,line,use_stmt,is_intrinsic,module_name,error)
@@ -693,7 +691,7 @@ subroutine parse_use_statement(f_filename,i,line,use_stmt,is_intrinsic,module_na
                              j=1,size(INTRINSIC_NAMES))])
     if (intr>0 .and. .not.has_intrinsic_name) then
         call file_parse_error(error,f_filename, &
-                              'module is declared intrinsic but it is not ',i, &
+                              'module '//module_name//' is declared intrinsic but it is not ',i, &
                               lowercase)
         return
     endif
@@ -703,6 +701,7 @@ subroutine parse_use_statement(f_filename,i,line,use_stmt,is_intrinsic,module_na
                    (intr>0 .or. has_intrinsic_name)
 
 end subroutine parse_use_statement
+
 
 
 end module fpm_source_parsing
