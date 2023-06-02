@@ -725,7 +725,6 @@ logical function msmpi_init(this,compiler,error) result(found)
         !> Add default run command
         this%has_run_command = .true.
         this%run_command = string_t(join_path(get_dos_path(bindir,error),'mpiexec.exe')//' -np * ')
-        print *, this%run_command%s
 
     else
 
