@@ -838,6 +838,7 @@ subroutine get_mpi_runner(command,verbose,error)
     type(error_t), allocatable, intent(out) :: error
 
     character(*), parameter :: try(*) = ['mpiexec    ','mpirun     ','mpiexec.exe','mpirun.exe ']
+    character(:), allocatable :: bindir
     integer :: itri
     logical :: success
 
@@ -854,6 +855,25 @@ subroutine get_mpi_runner(command,verbose,error)
            return
        endif
     end do
+
+    ! On windows, also search in %MSMPI_BIN%
+    if (get_os_type()==OS_WINDOWS) then
+        ! Check that the runtime is installed
+        bindir = ""
+        call get_absolute_path(get_env('MSMPI_BIN'),bindir,error)
+        if (verbose) print *, '+ %MSMPI_BIN%=',bindir
+        ! In some environments, variable %MSMPI_BIN% is missing (i.e. in GitHub Action images).
+        ! Do a second attempt: search for the default location
+        if (len_trim(bindir)<=0 .or. allocated(error)) then
+            if (verbose) print *, '+ %MSMPI_BIN% empty, searching C:\Program Files\Microsoft MPI\Bin\ ...'
+            call get_absolute_path('C:\Program Files\Microsoft MPI\Bin\mpiexec.exe',bindir,error)
+        endif
+        if (len_trim(bindir)>0 .and. .not.allocated(error)) then
+            ! MSMPI_BIN directory found
+            command%s = join_path(bindir,'mpiexec.exe')
+            return
+        endif
+    endif
 
     ! No valid command found
     call fatal_error(error,'cannot find a valid mpi runner command')
