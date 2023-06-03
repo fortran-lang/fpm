@@ -328,7 +328,7 @@ contains
       call fatal_error(error, "Cannot find a suitable archive format for 'git archive'."); return
     end if
 
-    call execute_command_line('git archive HEAD --format='//archive_format//' -o '// destination, exitstat=stat)
+    call execute_command_line('git archive HEAD --format='//archive_format//' -o '//destination, exitstat=stat)
     if (stat /= 0) then
       call fatal_error(error, "Error packing '"//source//"'."); return
     end if

@@ -121,6 +121,7 @@ end type
 type, extends(fpm_build_settings) :: fpm_publish_settings
     logical :: show_package_version = .false.
     logical :: show_upload_data = .false.
+    logical :: is_dry_run = .false.
     character(len=:), allocatable :: token
 end type
 
@@ -168,7 +169,7 @@ character(len=80), parameter :: help_text_flag(*) = [character(len=80) :: &
     ' --flag  FFLAGS    selects compile arguments for the build, the default value is',&
     '                   set by the FPM_FFLAGS environment variable. These are added  ',&
     '                   to the profile options if --profile is specified, else these ',&
-    '                   these options override the defaults. Note object and .mod    ',&
+    '                   options override the defaults. Note object and .mod          ',&
     '                   directory locations are always built in.                     ',&
     ' --c-flag CFLAGS   selects compile arguments specific for C source in the build.',&
     '                   The default value is set by the FPM_CFLAGS environment       ',&
@@ -621,6 +622,7 @@ contains
             call set_args(common_args // compiler_args //'&
             & --show-package-version F &
             & --show-upload-data F &
+            & --dry-run F &
             & --token " " &
             & --list F &
             & --show-model F &
@@ -638,6 +640,7 @@ contains
             cmd_settings = fpm_publish_settings( &
             & show_package_version = lget('show-package-version'), &
             & show_upload_data = lget('show-upload-data'), &
+            & is_dry_run = lget('dry-run'), &
             & profile=val_profile,&
             & prune=.not.lget('no-prune'), &
             & compiler=val_compiler, &
@@ -754,7 +757,8 @@ contains
    ' install [--profile PROF] [--flag FFLAGS] [--no-rebuild] [--prefix PATH]        ', &
    '         [options]                                                              ', &
    ' clean [--skip] [--all]                                                         ', &
-   ' publish [--show-package-version] [--show-upload-data] [--token TOKEN]          ', &
+   ' publish [--token TOKEN] [--show-package-version] [--show-upload-data]          ', &
+   '         [--dry-run] [--verbose]                                                ', &
    ' ']
     help_usage=[character(len=80) :: &
     '' ]
@@ -878,7 +882,8 @@ contains
     '    install [--profile PROF] [--flag FFLAGS] [--no-rebuild] [--prefix PATH]     ', &
     '            [options]                                                           ', &
     '    clean [--skip] [--all]                                                      ', &
-    '    publish [--show-package-version] [--show-upload-data] [--token TOKEN]       ', &
+    '    publish [--token TOKEN] [--show-package-version] [--show-upload-data]       ', &
+    '            [--dry-run] [--verbose]                                             ', &
     '                                                                                ', &
     'SUBCOMMAND OPTIONS                                                              ', &
     ' -C, --directory PATH', &
@@ -1362,6 +1367,7 @@ contains
     '', &
     'SYNOPSIS', &
     ' fpm publish [--token TOKEN] [--show-package-version] [--show-upload-data]', &
+    '             [--dry-run] [--verbose]                                      ', &
     '', &
     ' fpm publish --help|--version', &
     '', &
@@ -1379,7 +1385,7 @@ contains
     '     But be aware that the upload is permanent. An uploaded package cannot be', &
     '     deleted.', &
     '', &
-    ' See documentation for more information regarding the package upload and usage:', &
+    ' See documentation for more information regarding package upload and usage:', &
     '', &
     ' Package upload:', &
     ' https://fpm.fortran-lang.org/en/spec/publish.html', &
@@ -1389,15 +1395,18 @@ contains
     '', &
     'OPTIONS', &
     ' --show-package-version   show package version without publishing', &
-    ' --show-upload-data       show uploaded data without publishing', &
+    ' --show-upload-data       show upload data without publishing', &
+    ' --dry-run                perform dry run without publishing', &
     ' --help                   print this help and exit', &
     ' --version                print program version information and exit', &
+    ' --verbose                print more information', &
     '', &
     'EXAMPLES', &
     '', &
-    ' fpm publish --show-package-version # show package version without publishing', &
-    ' fpm publish --show-upload-data     # show upload data without publishing', &
-    ' fpm publish --token TOKEN          # upload package to the registry using TOKEN', &
+    ' fpm publish --show-package-version    # show package version without publishing', &
+    ' fpm publish --show-upload-data        # show upload data without publishing', &
+    ' fpm publish --token TOKEN --dry-run   # perform dry run without publishing', &
+    ' fpm publish --token TOKEN             # upload package to the registry', &
     '' ]
      end subroutine set_help
 
