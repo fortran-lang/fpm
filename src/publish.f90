@@ -8,7 +8,7 @@ module fpm_cmd_publish
   use fpm_model, only: fpm_model_t
   use fpm_error, only: error_t, fpm_stop
   use fpm_versioning, only: version_t
-  use fpm_filesystem, only: exists, join_path, get_temp_filename
+  use fpm_filesystem, only: exists, join_path, get_temp_filename, delete_file
   use fpm_git, only: git_archive
   use fpm_downloader, only: downloader_t
   use fpm_strings, only: string_t
@@ -64,34 +64,56 @@ contains
       end if
     end do
 
+    tmp_file = get_temp_filename()
+    call git_archive('.', tmp_file, error)
+    if (allocated(error)) call fpm_stop(1, '*cmd_publish* Archive error: '//error%message)
+
     upload_data = [ &
-      string_t('package_name="'//package%name//'"'), &
-      string_t('package_license="'//package%license//'"'), &
-      string_t('package_version="'//version%s()//'"') &
-      & ]
+    & string_t('package_name="'//package%name//'"'), &
+    & string_t('package_license="'//package%license//'"'), &
+    & string_t('package_version="'//version%s()//'"'), &
+    & string_t('tarball=@"'//tmp_file//'"') &
+    & ]
 
     if (allocated(settings%token)) upload_data = [upload_data, string_t('upload_token="'//settings%token//'"')]
 
-    tmp_file = get_temp_filename()
-    call git_archive('.', tmp_file, error)
-    if (allocated(error)) call fpm_stop(1, '*cmd_publish* Pack error: '//error%message)
-    upload_data = [upload_data, string_t('tarball=@"'//tmp_file//'"')]
-
     if (settings%show_upload_data) then
-      do i = 1, size(upload_data)
-        print *, upload_data(i)%s
-      end do
-      return
+      call print_upload_data(upload_data); return
     end if
 
     ! Make sure a token is provided for publishing.
     if (allocated(settings%token)) then
-      if (settings%token == '') call fpm_stop(1, 'No token provided.')
+      if (settings%token == '') then
+        call delete_file(tmp_file); call fpm_stop(1, 'No token provided.')
+      end if
     else
-      call fpm_stop(1, 'No token provided.')
+      call delete_file(tmp_file); call fpm_stop(1, 'No token provided.')
+    end if
+
+    if (settings%verbose) then
+      print *, ''
+      call print_upload_data(upload_data)
+      print *, ''
+    end if
+
+    ! Perform network request and validate package, token etc. on the backend once
+    ! https://github.com/fortran-lang/registry/issues/41 is resolved.
+    if (settings%is_dry_run) then
+      print *, 'Dry run successful. Generated tarball: ', tmp_file; return
     end if
 
     call downloader%upload_form(official_registry_base_url//'/packages', upload_data, error)
+    call delete_file(tmp_file)
     if (allocated(error)) call fpm_stop(1, '*cmd_publish* Upload error: '//error%message)
+  end
+
+  subroutine print_upload_data(upload_data)
+    type(string_t), intent(in) :: upload_data(:)
+    integer :: i
+
+    print *, 'Upload data:'
+    do i = 1, size(upload_data)
+      print *, upload_data(i)%s
+    end do
   end
 end
