@@ -7,6 +7,8 @@ module test_package_dependencies
   use fpm_os, only: get_current_directory
   use fpm_dependency
   use fpm_manifest_dependency
+  use fpm_manifest_metapackages, only: metapackage_config_t
+  use fpm_manifest, only: package_config_t, get_package_data
   use fpm_toml
   use fpm_settings, only: fpm_global_settings, get_registry_settings, get_global_settings
   use fpm_downloader, only: downloader_t
@@ -45,10 +47,11 @@ contains
         & new_unittest("status-after-load", test_status), &
         & new_unittest("add-dependencies", test_add_dependencies), &
         & new_unittest("update-dependencies", test_update_dependencies), &
+        & new_unittest("metapackage-override", test_metapackage_override), &
         & new_unittest("do-not-update-dependencies", test_non_updated_dependencies), &
         & new_unittest("registry-dir-not-found", registry_dir_not_found, should_fail=.true.), &
         & new_unittest("no-versions-in-registry", no_versions_in_registry, should_fail=.true.), &
-     & new_unittest("local-registry-specified-version-not-found", local_registry_specified_version_not_found, should_fail=.true.), &
+  & new_unittest("local-registry-specified-version-not-found", local_registry_specified_version_not_found, should_fail=.true.), &
         & new_unittest("local-registry-specified-no-manifest", local_registry_specified_no_manifest, should_fail=.true.), &
         & new_unittest("local-registry-specified-has-manifest", local_registry_specified_has_manifest), &
         & new_unittest("local-registry-specified-not-a-dir", local_registry_specified_not_a_dir, should_fail=.true.), &
@@ -420,6 +423,70 @@ contains
     end if
 
   end subroutine test_update_dependencies
+
+
+  !> Test that a metapackage is overridden if a regular dependency is provided
+  subroutine test_metapackage_override(error)
+
+    !> Error handling
+    type(error_t), allocatable, intent(out) :: error
+
+    type(toml_table) :: manifest
+    type(toml_table), pointer :: ptr
+    type(dependency_config_t), allocatable :: deps(:)
+    type(metapackage_config_t) :: meta
+    logical :: found
+    integer :: i
+
+    ! Create a dummy manifest, with a standard git dependency for stdlib
+    manifest = toml_table()
+    call add_table(manifest, "stdlib", ptr)
+    call set_value(ptr, "git", "https://github.com/fortran-lang/stdlib")
+    call set_value(ptr, "branch", "stdlib-fpm")
+
+    ! Load dependencies from manifest
+    call new_dependencies(deps, manifest, meta=meta, error=error)
+    if (allocated(error)) return
+
+    ! Check that stdlib is in the regular dependency list
+    found = .false.
+    do i=1,size(deps)
+       if (deps(i)%name=="stdlib") found = .true.
+    end do
+
+    if (.not.found) then
+        call test_failed(error,"standard git-based dependency for stdlib not recognized")
+        return
+    end if
+    call manifest%destroy()
+
+
+    ! Create a dummy manifest, with a version-based metapackage dependency for stdlib
+    manifest = toml_table()
+    call set_value(manifest, "stdlib", "*")
+
+    ! Load dependencies from manifest
+    call new_dependencies(deps, manifest, meta=meta, error=error)
+    if (allocated(error)) return
+
+    ! Check that stdlib is in the metapackage config and not the standard dependencies
+    found = .false.
+    do i=1,size(deps)
+       if (deps(i)%name=="stdlib") found = .true.
+    end do
+
+    if (found) then
+        call test_failed(error,"metapackage dependency for stdlib should not be in the tree")
+        return
+    end if
+    call manifest%destroy()
+
+    if (.not.meta%stdlib%on) then
+        call test_failed(error,"metapackage dependency for stdlib should be in the metapackage config")
+        return
+    end if
+
+  end subroutine test_metapackage_override
 
   !> Directories for namespace and package name not found in path registry.
   subroutine registry_dir_not_found(error)
