@@ -101,7 +101,7 @@
           <li id="statements"><i class="fa fa-list-ol"></i>
             <a data-toggle="tooltip"
                data-placement="bottom" data-html="true"
-               title="<p> 6.8% of total for derived types.</p>Including implementation: 209 statements,  8.1% of total for derived types.">29 statements</a>
+               title="<p> 7.3% of total for derived types.</p>Including implementation: 219 statements,  8.4% of total for derived types.">31 statements</a>
           </li>
 
             <li id="source-file">
@@ -141,6 +141,7 @@
             <a class="list-group-item" href="../type/metapackage_t.html#variable-cflags">cflags</a>
             <a class="list-group-item" href="../type/metapackage_t.html#variable-cxxflags">cxxflags</a>
             <a class="list-group-item" href="../type/metapackage_t.html#variable-dependency">dependency</a>
+            <a class="list-group-item" href="../type/metapackage_t.html#variable-external_modules~3">external_modules</a>
             <a class="list-group-item" href="../type/metapackage_t.html#variable-fflags">fflags</a>
             <a class="list-group-item" href="../type/metapackage_t.html#variable-flags">flags</a>
             <a class="list-group-item" href="../type/metapackage_t.html#variable-fortran">fortran</a>
@@ -148,6 +149,7 @@
             <a class="list-group-item" href="../type/metapackage_t.html#variable-has_c_flags">has_c_flags</a>
             <a class="list-group-item" href="../type/metapackage_t.html#variable-has_cxx_flags">has_cxx_flags</a>
             <a class="list-group-item" href="../type/metapackage_t.html#variable-has_dependencies">has_dependencies</a>
+            <a class="list-group-item" href="../type/metapackage_t.html#variable-has_external_modules">has_external_modules</a>
             <a class="list-group-item" href="../type/metapackage_t.html#variable-has_fortran_flags">has_fortran_flags</a>
             <a class="list-group-item" href="../type/metapackage_t.html#variable-has_include_dirs">has_include_dirs</a>
             <a class="list-group-item" href="../type/metapackage_t.html#variable-has_link_flags">has_link_flags</a>
@@ -157,7 +159,7 @@
             <a class="list-group-item" href="../type/metapackage_t.html#variable-link_flags~3">link_flags</a>
             <a class="list-group-item" href="../type/metapackage_t.html#variable-link_libs">link_libs</a>
             <a class="list-group-item" href="../type/metapackage_t.html#variable-run_command">run_command</a>
-            <a class="list-group-item" href="../type/metapackage_t.html#variable-version~2">version</a>
+            <a class="list-group-item" href="../type/metapackage_t.html#variable-version">version</a>
         </div>
       </div>
     </div>
@@ -224,6 +226,7 @@
             <a class="list-group-item" href="../type/metapackage_t.html#variable-cflags">cflags</a>
             <a class="list-group-item" href="../type/metapackage_t.html#variable-cxxflags">cxxflags</a>
             <a class="list-group-item" href="../type/metapackage_t.html#variable-dependency">dependency</a>
+            <a class="list-group-item" href="../type/metapackage_t.html#variable-external_modules~3">external_modules</a>
             <a class="list-group-item" href="../type/metapackage_t.html#variable-fflags">fflags</a>
             <a class="list-group-item" href="../type/metapackage_t.html#variable-flags">flags</a>
             <a class="list-group-item" href="../type/metapackage_t.html#variable-fortran">fortran</a>
@@ -231,6 +234,7 @@
             <a class="list-group-item" href="../type/metapackage_t.html#variable-has_c_flags">has_c_flags</a>
             <a class="list-group-item" href="../type/metapackage_t.html#variable-has_cxx_flags">has_cxx_flags</a>
             <a class="list-group-item" href="../type/metapackage_t.html#variable-has_dependencies">has_dependencies</a>
+            <a class="list-group-item" href="../type/metapackage_t.html#variable-has_external_modules">has_external_modules</a>
             <a class="list-group-item" href="../type/metapackage_t.html#variable-has_fortran_flags">has_fortran_flags</a>
             <a class="list-group-item" href="../type/metapackage_t.html#variable-has_include_dirs">has_include_dirs</a>
             <a class="list-group-item" href="../type/metapackage_t.html#variable-has_link_flags">has_link_flags</a>
@@ -240,7 +244,7 @@
             <a class="list-group-item" href="../type/metapackage_t.html#variable-link_flags~3">link_flags</a>
             <a class="list-group-item" href="../type/metapackage_t.html#variable-link_libs">link_libs</a>
             <a class="list-group-item" href="../type/metapackage_t.html#variable-run_command">run_command</a>
-            <a class="list-group-item" href="../type/metapackage_t.html#variable-version~2">version</a>
+            <a class="list-group-item" href="../type/metapackage_t.html#variable-version">version</a>
         </div>
       </div>
     </div>
@@ -349,6 +353,23 @@
             <td>
                 <p>List of Development dependency meta data.
 Metapackage dependencies are never exported from the model</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-external_modules~3"></span>
+              type(<a href='../type/string_t.html'>string_t</a>),
+            </td>
+              <td>public,</td>
+            <td>
+              allocatable
+            </td>
+            <td>::</td>
+            <td><strong>external_modules</strong>(:)</td>
+                <td></td>
+                <td></td>
+            <td>
+                
             </td>
         </tr>
         <tr>
@@ -464,6 +485,23 @@ Metapackage dependencies are never exported from the model</p>
             </td>
             <td>::</td>
             <td><strong>has_dependencies</strong></td>
+<td> =</td>
+                <td>.false.</td>
+            <td>
+                
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-has_external_modules"></span>
+              logical,
+            </td>
+              <td>public</td>
+            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>has_external_modules</strong></td>
 <td> =</td>
                 <td>.false.</td>
             <td>
@@ -625,7 +663,7 @@ Metapackage dependencies are never exported from the model</p>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-version~2"></span>
+              <span class="anchor" id="variable-version"></span>
               type(<a href='../type/version_t.html'>version_t</a>),
             </td>
               <td>public,</td>
@@ -1009,15 +1047,16 @@ Initialize metapackage by name</p>
 <span class="w">    </span><span class="c">!&gt; Package version (if supported)</span>
 <span class="w">    </span><span class="k">type</span><span class="p">(</span><span class="n">version_t</span><span class="p">),</span><span class="w"> </span><span class="k">allocatable</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">version</span><span class="w"></span>
 
-<span class="w">    </span><span class="kt">logical</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">has_link_libraries</span><span class="w">  </span><span class="o">=</span><span class="w"> </span><span class="p">.</span><span class="n">false</span><span class="p">.</span><span class="w"></span>
-<span class="w">    </span><span class="kt">logical</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">has_link_flags</span><span class="w">      </span><span class="o">=</span><span class="w"> </span><span class="p">.</span><span class="n">false</span><span class="p">.</span><span class="w"></span>
-<span class="w">    </span><span class="kt">logical</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">has_build_flags</span><span class="w">     </span><span class="o">=</span><span class="w"> </span><span class="p">.</span><span class="n">false</span><span class="p">.</span><span class="w"></span>
-<span class="w">    </span><span class="kt">logical</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">has_fortran_flags</span><span class="w">   </span><span class="o">=</span><span class="w"> </span><span class="p">.</span><span class="n">false</span><span class="p">.</span><span class="w"></span>
-<span class="w">    </span><span class="kt">logical</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">has_c_flags</span><span class="w">         </span><span class="o">=</span><span class="w"> </span><span class="p">.</span><span class="n">false</span><span class="p">.</span><span class="w"></span>
-<span class="w">    </span><span class="kt">logical</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">has_cxx_flags</span><span class="w">       </span><span class="o">=</span><span class="w"> </span><span class="p">.</span><span class="n">false</span><span class="p">.</span><span class="w"></span>
-<span class="w">    </span><span class="kt">logical</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">has_include_dirs</span><span class="w">    </span><span class="o">=</span><span class="w"> </span><span class="p">.</span><span class="n">false</span><span class="p">.</span><span class="w"></span>
-<span class="w">    </span><span class="kt">logical</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">has_dependencies</span><span class="w">    </span><span class="o">=</span><span class="w"> </span><span class="p">.</span><span class="n">false</span><span class="p">.</span><span class="w"></span>
-<span class="w">    </span><span class="kt">logical</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">has_run_command</span><span class="w">     </span><span class="o">=</span><span class="w"> </span><span class="p">.</span><span class="n">false</span><span class="p">.</span><span class="w"></span>
+<span class="w">    </span><span class="kt">logical</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">has_link_libraries</span><span class="w">   </span><span class="o">=</span><span class="w"> </span><span class="p">.</span><span class="n">false</span><span class="p">.</span><span class="w"></span>
+<span class="w">    </span><span class="kt">logical</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">has_link_flags</span><span class="w">       </span><span class="o">=</span><span class="w"> </span><span class="p">.</span><span class="n">false</span><span class="p">.</span><span class="w"></span>
+<span class="w">    </span><span class="kt">logical</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">has_build_flags</span><span class="w">      </span><span class="o">=</span><span class="w"> </span><span class="p">.</span><span class="n">false</span><span class="p">.</span><span class="w"></span>
+<span class="w">    </span><span class="kt">logical</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">has_fortran_flags</span><span class="w">    </span><span class="o">=</span><span class="w"> </span><span class="p">.</span><span class="n">false</span><span class="p">.</span><span class="w"></span>
+<span class="w">    </span><span class="kt">logical</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">has_c_flags</span><span class="w">          </span><span class="o">=</span><span class="w"> </span><span class="p">.</span><span class="n">false</span><span class="p">.</span><span class="w"></span>
+<span class="w">    </span><span class="kt">logical</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">has_cxx_flags</span><span class="w">        </span><span class="o">=</span><span class="w"> </span><span class="p">.</span><span class="n">false</span><span class="p">.</span><span class="w"></span>
+<span class="w">    </span><span class="kt">logical</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">has_include_dirs</span><span class="w">     </span><span class="o">=</span><span class="w"> </span><span class="p">.</span><span class="n">false</span><span class="p">.</span><span class="w"></span>
+<span class="w">    </span><span class="kt">logical</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">has_dependencies</span><span class="w">     </span><span class="o">=</span><span class="w"> </span><span class="p">.</span><span class="n">false</span><span class="p">.</span><span class="w"></span>
+<span class="w">    </span><span class="kt">logical</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">has_run_command</span><span class="w">      </span><span class="o">=</span><span class="w"> </span><span class="p">.</span><span class="n">false</span><span class="p">.</span><span class="w"></span>
+<span class="w">    </span><span class="kt">logical</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">has_external_modules</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">.</span><span class="n">false</span><span class="p">.</span><span class="w"></span>
 
 <span class="w">    </span><span class="c">!&gt; List of compiler flags and options to be added</span>
 <span class="w">    </span><span class="k">type</span><span class="p">(</span><span class="n">string_t</span><span class="p">)</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">flags</span><span class="w"></span>
@@ -1028,6 +1067,7 @@ Initialize metapackage by name</p>
 <span class="w">    </span><span class="k">type</span><span class="p">(</span><span class="n">string_t</span><span class="p">)</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">run_command</span><span class="w"></span>
 <span class="w">    </span><span class="k">type</span><span class="p">(</span><span class="n">string_t</span><span class="p">),</span><span class="w"> </span><span class="k">allocatable</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">incl_dirs</span><span class="p">(:)</span><span class="w"></span>
 <span class="w">    </span><span class="k">type</span><span class="p">(</span><span class="n">string_t</span><span class="p">),</span><span class="w"> </span><span class="k">allocatable</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">link_libs</span><span class="p">(:)</span><span class="w"></span>
+<span class="w">    </span><span class="k">type</span><span class="p">(</span><span class="n">string_t</span><span class="p">),</span><span class="w"> </span><span class="k">allocatable</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">external_modules</span><span class="p">(:)</span><span class="w"></span>
 
 <span class="w">    </span><span class="c">!&gt; Special fortran features</span>
 <span class="w">    </span><span class="k">type</span><span class="p">(</span><span class="n">fortran_features_t</span><span class="p">),</span><span class="w"> </span><span class="k">allocatable</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">fortran</span><span class="w"></span>
@@ -1070,7 +1110,7 @@ Initialize metapackage by name</p>
             <p class="text-right">
               Documentation generated by
               <a href="https://github.com/Fortran-FOSS-Programmers/ford">FORD</a>
- on 2023-06-03 07:24              </p>
+ on 2023-06-08 19:49              </p>
           </div>
         </div>
         <br>
