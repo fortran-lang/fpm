@@ -39,15 +39,16 @@ type, public :: metapackage_t
     !> Package version (if supported)
     type(version_t), allocatable :: version
 
-    logical :: has_link_libraries  = .false.
-    logical :: has_link_flags      = .false.
-    logical :: has_build_flags     = .false.
-    logical :: has_fortran_flags   = .false.
-    logical :: has_c_flags         = .false.
-    logical :: has_cxx_flags       = .false.
-    logical :: has_include_dirs    = .false.
-    logical :: has_dependencies    = .false.
-    logical :: has_run_command     = .false.
+    logical :: has_link_libraries   = .false.
+    logical :: has_link_flags       = .false.
+    logical :: has_build_flags      = .false.
+    logical :: has_fortran_flags    = .false.
+    logical :: has_c_flags          = .false.
+    logical :: has_cxx_flags        = .false.
+    logical :: has_include_dirs     = .false.
+    logical :: has_dependencies     = .false.
+    logical :: has_run_command      = .false.
+    logical :: has_external_modules = .false.
 
     !> List of compiler flags and options to be added
     type(string_t) :: flags
@@ -58,6 +59,7 @@ type, public :: metapackage_t
     type(string_t) :: run_command
     type(string_t), allocatable :: incl_dirs(:)
     type(string_t), allocatable :: link_libs(:)
+    type(string_t), allocatable :: external_modules(:)
 
     !> Special fortran features
     type(fortran_features_t), allocatable :: fortran
@@ -120,15 +122,16 @@ end function MPI_TYPE_NAME
 elemental subroutine destroy(this)
    class(metapackage_t), intent(inout) :: this
 
-   this%has_link_libraries  = .false.
-   this%has_link_flags      = .false.
-   this%has_build_flags     = .false.
-   this%has_fortran_flags   = .false.
-   this%has_c_flags         = .false.
-   this%has_cxx_flags       = .false.
-   this%has_include_dirs    = .false.
-   this%has_dependencies    = .false.
-   this%has_run_command     = .false.
+   this%has_link_libraries   = .false.
+   this%has_link_flags       = .false.
+   this%has_build_flags      = .false.
+   this%has_fortran_flags    = .false.
+   this%has_c_flags          = .false.
+   this%has_cxx_flags        = .false.
+   this%has_include_dirs     = .false.
+   this%has_dependencies     = .false.
+   this%has_run_command      = .false.
+   this%has_external_modules = .false.
 
    if (allocated(this%fortran)) deallocate(this%fortran)
    if (allocated(this%version)) deallocate(this%version)
@@ -141,6 +144,7 @@ elemental subroutine destroy(this)
    if (allocated(this%link_libs)) deallocate(this%link_libs)
    if (allocated(this%dependency)) deallocate(this%dependency)
    if (allocated(this%incl_dirs)) deallocate(this%incl_dirs)
+   if (allocated(this%external_modules)) deallocate(this%external_modules)
 
 end subroutine destroy
 
@@ -327,6 +331,10 @@ subroutine resolve_model(self,model,error)
         model%include_dirs          = [model%include_dirs,self%incl_dirs]
     end if
 
+    if (self%has_external_modules) then
+        model%external_modules      = [model%external_modules,self%external_modules]
+    end if
+
 end subroutine resolve_model
 
 subroutine resolve_package_config(self,package,error)
@@ -467,10 +475,8 @@ subroutine init_mpi(this,compiler,error)
     integer :: wcfit(3),mpilib(3),ic,icpp,i
     logical :: found
 
-
     !> Cleanup
     call destroy(this)
-
 
     !> Get all candidate MPI wrappers
     call mpi_wrappers(compiler,fort_wrappers,c_wrappers,cpp_wrappers)
@@ -521,6 +527,11 @@ subroutine init_mpi(this,compiler,error)
         endif
 
     end if
+
+    !> Not all MPI implementations offer modules mpi and mpi_f08: hence, include them
+    !> to the list of external modules, so they won't be requested as standard source files
+    this%has_external_modules = .true.
+    this%external_modules = [string_t("mpi"),string_t("mpi_f08")]
 
     1 format('MPI wrappers found: fortran=',i0,' c=',i0,' c++=',i0)
 
