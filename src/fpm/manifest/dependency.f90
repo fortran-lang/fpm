@@ -29,7 +29,8 @@ module fpm_manifest_dependency
     use fpm_toml, only: toml_table, toml_key, toml_stat, get_value, check_keys
     use fpm_filesystem, only: windows_path, join_path
     use fpm_environment, only: get_os_type, OS_WINDOWS
-    use fpm_manifest_metapackages, only: metapackage_config_t, is_meta_package, new_meta_config
+    use fpm_manifest_metapackages, only: metapackage_config_t, is_meta_package, new_meta_config, &
+            metapackage_request_t, new_meta_request
     use fpm_versioning, only: version_t, new_version
     implicit none
     private
@@ -223,45 +224,73 @@ contains
 
         type(toml_table), pointer :: node
         type(toml_key), allocatable :: list(:)
-        logical, allocatable :: non_meta(:)
+        type(dependency_config_t), allocatable :: all_deps(:)
+        type(metapackage_request_t) :: meta_request
+        logical, allocatable :: is_meta(:)
+        logical :: metapackages_allowed
         integer :: idep, stat, ndep
 
         call table%get_keys(list)
         ! An empty table is okay
         if (size(list) < 1) return
 
-        !> Count non-metapackage dependencies, and parse metapackage config
-        if (present(meta)) then
-            ndep = 0
-            do idep = 1, size(list)
-                if (is_meta_package(list(idep)%key)) cycle
-                ndep = ndep+1
-            end do
+        !> Flag dependencies that should be treated as metapackages
+        metapackages_allowed = present(meta)
+        allocate(is_meta(size(list)),source=.false.)
+        allocate(all_deps(size(list)))
 
-            !> Return metapackages config from this node
-            call new_meta_config(meta, table, error)
-            if (allocated(error)) return
-        else
-            ndep = size(list)
-        end if
-
-        ! Generate non-metapackage dependencies
-        allocate(deps(ndep))
-        ndep = 0
+        !> Parse all meta- and non-metapackage dependencies
         do idep = 1, size(list)
-
-            if (present(meta) .and. is_meta_package(list(idep)%key)) cycle
-
-            ndep = ndep+1
 
             call get_value(table, list(idep)%key, node, stat=stat)
             if (stat /= toml_stat%success) then
                 call syntax_error(error, "Dependency "//list(idep)%key//" must be a table entry")
                 exit
             end if
-            call new_dependency(deps(ndep), node, root, error)
-            if (allocated(error)) exit
+
+            ! Try to parse as a standard dependency
+            call new_dependency(all_deps(idep), node, root, error)
+
+            is_standard_dependency: if (.not.allocated(error)) then
+
+                ! If a valid git/local config is found, use it always
+                is_meta(idep) = .false.
+
+            elseif (metapackages_allowed .and. is_meta_package(list(idep)%key)) then
+
+                !> Metapackage name: Check if this is a valid metapackage request
+                call new_meta_request(meta_request, list(idep)%key, table, error=error)
+
+                !> Neither a standard dep nor a metapackage
+                if (allocated(error)) return
+
+                !> Valid meta dependency
+                is_meta(idep) = .true.
+
+            else
+
+                !> Not a standard dependency and not a metapackage: dump an error
+                call syntax_error(error, "Dependency "//list(idep)%key//" cannot be parsed. Check input format")
+                return
+
+            endif is_standard_dependency
+
         end do
+
+        ! Non-meta dependencies
+        ndep = count(.not.is_meta)
+
+        ! Finalize standard dependencies
+        allocate(deps(ndep))
+        ndep = 0
+        do idep = 1, size(list)
+            if (is_meta(idep)) cycle
+            ndep = ndep+1
+            deps(ndep) = all_deps(idep)
+        end do
+
+        ! Finalize meta dependencies
+        if (metapackages_allowed) call new_meta_config(meta,table,is_meta,error)
 
     end subroutine new_dependencies
 

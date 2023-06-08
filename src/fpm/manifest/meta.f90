@@ -16,6 +16,7 @@ module fpm_manifest_metapackages
     private
 
     public :: metapackage_config_t, new_meta_config, is_meta_package
+    public :: metapackage_request_t, new_meta_request
 
 
     !> Configuration data for a single metapackage request
@@ -95,7 +96,7 @@ contains
     end subroutine request_parse
 
     !> Construct a new metapackage request from the dependencies table
-    subroutine new_request(self, key, table, error)
+    subroutine new_meta_request(self, key, table, meta_allowed, error)
 
         type(metapackage_request_t), intent(out) :: self
 
@@ -105,12 +106,16 @@ contains
         !> Instance of the TOML data structure
         type(toml_table), intent(inout) :: table
 
+        !> List of keys allowed to be metapackages
+        logical, intent(in), optional :: meta_allowed(:)
+
         !> Error handling
         type(error_t), allocatable, intent(out) :: error
 
 
         integer :: stat,i
         character(len=:), allocatable :: value
+        logical, allocatable :: allow_meta(:)
         type(toml_key), allocatable :: keys(:)
 
         call request_destroy(self)
@@ -127,7 +132,23 @@ contains
 
         call table%get_keys(keys)
 
+        !> Set list of entries that are allowed to be metapackages
+        if (present(meta_allowed)) then
+            if (size(meta_allowed)/=size(keys)) then
+                 call fatal_error(error,"Internal error: list of metapackage-enable entries does not match table size")
+                 return
+            end if
+            allow_meta = meta_allowed
+        else
+            allocate(allow_meta(size(keys)),source=.true.)
+        endif
+
+
         do i=1,size(keys)
+
+            ! Skip standard dependencies
+            if (.not.meta_allowed(i)) cycle
+
             if (keys(i)%key==key) then
                 call get_value(table, key, value)
                 if (.not. allocated(value)) then
@@ -143,16 +164,19 @@ contains
         ! Key is not present, metapackage not requested
         return
 
-    end subroutine new_request
+    end subroutine new_meta_request
 
     !> Construct a new build configuration from a TOML data structure
-    subroutine new_meta_config(self, table, error)
+    subroutine new_meta_config(self, table, meta_allowed, error)
 
         !> Instance of the build configuration
         type(metapackage_config_t), intent(out) :: self
 
         !> Instance of the TOML data structure
         type(toml_table), intent(inout) :: table
+
+        !> List of keys allowed to be metapackages
+        logical, intent(in) :: meta_allowed(:)
 
         !> Error handling
         type(error_t), allocatable, intent(out) :: error
@@ -161,16 +185,16 @@ contains
 
         !> The toml table is not checked here because it already passed
         !> the "new_dependencies" check
-        call new_request(self%openmp, "openmp", table, error)
+        call new_meta_request(self%openmp, "openmp", table, meta_allowed, error)
         if (allocated(error)) return
 
-        call new_request(self%stdlib, "stdlib", table, error)
+        call new_meta_request(self%stdlib, "stdlib", table, meta_allowed, error)
         if (allocated(error)) return
 
-        call new_request(self%minpack, "minpack", table, error)
+        call new_meta_request(self%minpack, "minpack", table, meta_allowed, error)
         if (allocated(error)) return
 
-        call new_request(self%mpi, "mpi", table, error)
+        call new_meta_request(self%mpi, "mpi", table, meta_allowed, error)
         if (allocated(error)) return
 
     end subroutine new_meta_config
