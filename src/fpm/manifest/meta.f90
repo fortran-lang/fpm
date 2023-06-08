@@ -147,7 +147,7 @@ contains
         do i=1,size(keys)
 
             ! Skip standard dependencies
-            if (.not.meta_allowed(i)) cycle
+            if (.not.allow_meta(i)) cycle
 
             if (keys(i)%key==key) then
                 call get_value(table, key, value)

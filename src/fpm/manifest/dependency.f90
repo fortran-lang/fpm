@@ -242,38 +242,31 @@ contains
         !> Parse all meta- and non-metapackage dependencies
         do idep = 1, size(list)
 
+            ! Check if this is a standard dependency node
             call get_value(table, list(idep)%key, node, stat=stat)
-            if (stat /= toml_stat%success) then
-                call syntax_error(error, "Dependency "//list(idep)%key//" must be a table entry")
-                exit
-            end if
+            is_standard_dependency: if (stat /= toml_stat%success) then
 
-            ! Try to parse as a standard dependency
-            call new_dependency(all_deps(idep), node, root, error)
-
-            is_standard_dependency: if (.not.allocated(error)) then
-
-                ! If a valid git/local config is found, use it always
-                is_meta(idep) = .false.
-
-            elseif (metapackages_allowed .and. is_meta_package(list(idep)%key)) then
-
-                !> Metapackage name: Check if this is a valid metapackage request
+                ! See if it can be a valid metapackage name
                 call new_meta_request(meta_request, list(idep)%key, table, error=error)
 
                 !> Neither a standard dep nor a metapackage
-                if (allocated(error)) return
+                if (allocated(error)) then
+                   call syntax_error(error, "Dependency "//list(idep)%key//" is not a valid metapackage or a table entry")
+                   return
+                endif
 
                 !> Valid meta dependency
                 is_meta(idep) = .true.
 
             else
 
-                !> Not a standard dependency and not a metapackage: dump an error
-                call syntax_error(error, "Dependency "//list(idep)%key//" cannot be parsed. Check input format")
-                return
+                ! Parse as a standard dependency
+                is_meta(idep) = .false.
 
-            endif is_standard_dependency
+                call new_dependency(all_deps(idep), node, root, error)
+                if (allocated(error)) return
+
+            end if is_standard_dependency
 
         end do
 
