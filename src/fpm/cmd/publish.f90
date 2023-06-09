@@ -47,7 +47,7 @@ contains
     !> Checks before uploading the package.
     if (.not. allocated(package%license)) call fpm_stop(1, 'No license specified in fpm.toml.')
     if (.not. package%build%module_naming) call fpm_stop(1, 'The package does not meet the module naming requirements. '// &
-      & 'Please set "module_naming = true" in fpm.toml [build] or specify a custom module prefix.')
+      & 'Please set "module-naming = true" in fpm.toml [build] or specify a custom module prefix.')
     if (.not. allocated(version)) call fpm_stop(1, 'No version specified in fpm.toml.')
     if (version%s() == '0') call fpm_stop(1, 'Invalid version: "'//version%s()//'".')
     if (.not. exists('fpm.toml')) call fpm_stop(1, "Cannot find 'fpm.toml' file. Are you in the project root?")
