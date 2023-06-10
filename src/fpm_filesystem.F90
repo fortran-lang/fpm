@@ -774,31 +774,32 @@ character(len=256)                    :: message
 
 end subroutine filewrite
 
-function which(command) result(pathname)
+!>AUTHOR: John S. Urban
+!!LICENSE: Public Domain
 !>
-!!##NAME
+!!##Name
 !!     which(3f) - [M_io:ENVIRONMENT] given a command name find the pathname by searching
 !!                 the directories in the environment variable $PATH
 !!     (LICENSE:PD)
 !!
-!!##SYNTAX
+!!##Syntax
 !!   function which(command) result(pathname)
 !!
 !!    character(len=*),intent(in)  :: command
 !!    character(len=:),allocatable :: pathname
 !!
-!!##DESCRIPTION
+!!##Description
 !!    Given a command name find the first file with that name in the directories
 !!    specified by the environment variable $PATH.
 !!
-!!##OPTIONS
+!!##options
 !!    COMMAND   the command to search for
 !!
-!!##RETURNS
+!!##Returns
 !!    PATHNAME  the first pathname found in the current user path. Returns blank
 !!              if the command is not found.
 !!
-!!##EXAMPLE
+!!##Example
 !!
 !!   Sample program:
 !!
@@ -812,11 +813,7 @@ function which(command) result(pathname)
 !!        write(*,*)'install is ',which('install')
 !!     end program demo_which
 !!
-!!##AUTHOR
-!!    John S. Urban
-!!##LICENSE
-!!    Public Domain
-
+function which(command) result(pathname)
 character(len=*),intent(in)     :: command
 character(len=:),allocatable    :: pathname, checkon, paths(:), exts(:)
 integer                         :: i, j
@@ -854,8 +851,66 @@ integer                         :: i, j
    enddo SEARCH
 end function which
 
-!> echo command string and pass it to the system for execution
-!call run(cmd,echo=.false.,exitstat=exitstat,verbose=.false.,redirect='')
+!>AUTHOR: fpm(1) contributors
+!!LICENSE: MIT
+!>
+!!##Name
+!!    run(3f) -  execute specified system command and selectively echo
+!!    command and output to a file and/or stdout.
+!!    (LICENSE:MIT)
+!!
+!!##Syntax
+!!    subroutine run(cmd,echo,exitstat,verbose,redirect)
+!!
+!!     character(len=*), intent(in)       :: cmd
+!!     logical,intent(in),optional        :: echo
+!!     integer, intent(out),optional      :: exitstat
+!!     logical, intent(in), optional      :: verbose
+!!     character(*), intent(in), optional :: redirect
+!!
+!!##Description
+!!   Execute the specified system command. Optionally
+!!
+!!   +  echo the command before execution
+!!   +  return the system exit status of the command.
+!!   +  redirect the output of the command to a file.
+!!   +  echo command output to stdout
+!!
+!!   Calling run(3f) is preferred to direct calls to
+!!   execute_command_line(3f) in the fpm(1) source to provide a standard
+!!   interface where output modes can be specified.
+!!
+!!##Options
+!!    CMD       System command to execute
+!!    ECHO      Whether to echo the command being executed or not
+!!              Defaults to .TRUE. .
+!!    VERBOSE   Whether to redirect the command output to a null device or not
+!!              Defaults to .TRUE. .
+!!    REDIRECT  Filename to redirect stdout and stderr of the command into.
+!!              If generated it is closed before run(3f) returns.
+!!    EXITSTAT  The system exit status of the command when supported by
+!!              the system. If not present and a non-zero status is
+!!              generated program termination occurs.
+!!
+!!##Example
+!!
+!!   Sample program:
+!!
+!!   Checking the error message and counting lines:
+!!
+!!     program demo_run
+!!     use fpm_filesystem, only : run
+!!     implicit none
+!!     logical,parameter :: T=.true., F=.false.
+!!     integer :: exitstat
+!!     character(len=:),allocatable :: cmd
+!!        cmd='ls -ltrasd *.md'
+!!        call run(cmd)
+!!        call run(cmd,exitstat=exitstat)
+!!        call run(cmd,echo=F)
+!!        call run(cmd,verbose=F)
+!!     end program demo_run
+!!
 subroutine run(cmd,echo,exitstat,verbose,redirect)
     character(len=*), intent(in) :: cmd
     logical,intent(in),optional  :: echo

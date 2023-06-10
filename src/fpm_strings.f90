@@ -236,9 +236,9 @@ pure function fnv_1a_string_t(input, seed) result(hash)
 end function fnv_1a_string_t
 
 
- !>Author: John S. Urban
- !!License: Public Domain
- !! Changes a string to lowercase over optional specified column range
+!>Author: John S. Urban
+!!License: Public Domain
+!! Changes a string to lowercase over optional specified column range
 elemental pure function lower(str,begin,end) result (string)
 
     character(*), intent(In)     :: str
@@ -624,8 +624,9 @@ integer                              :: i
    if(present(end))string=string//end
 end function join
 
-!>##AUTHOR John S. Urban
-!!##LICENSE Public Domain
+!>AUTHOR: John S. Urban
+!!LICENSE: Public Domain
+!>
 !!## NAME
 !!    glob(3f) - [fpm_strings:COMPARE] compare given string for match to
 !!    pattern which may contain wildcard characters
@@ -1259,6 +1260,8 @@ subroutine remove_newline_characters(string)
 
 end subroutine remove_newline_characters
 
+!>AUTHOR: John S. Urban
+!!LICENSE: Public Domain
 !>
 !!### NAME
 !!   notabs(3f) - [fpm_strings:NONALPHA] expand tab characters
@@ -1316,11 +1319,6 @@ end subroutine remove_newline_characters
 !!### SEE ALSO
 !!   GNU/Unix commands expand(1) and unexpand(1)
 !!
-!!### AUTHOR
-!!   John S. Urban
-!!
-!!### LICENSE
-!!   Public Domain
 elemental impure subroutine notabs(instr,outstr,ilen)
 
 ! ident_31="@(#)fpm_strings::notabs(3f): convert tabs to spaces while maintaining columns, remove CRLF chars"
