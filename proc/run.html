@@ -97,6 +97,8 @@
     <div class="col-lg-12">
       <div class="well well-sm">
         <ul class="list-inline" style="margin-bottom:0px;display:inline">
+            <li id="meta-author"><i class="fa fa-pencil"></i> fpm(1) contributors</li>
+            <li id="meta-license"><i class="fa fa-legal"></i> MIT</li>
 
           <li id="statements"><i class="fa fa-list-ol"></i>
             <a data-toggle="tooltip"
@@ -165,7 +167,62 @@
 </h2>
     
 
-    <p>echo command string and pass it to the system for execution</p>
+    <h2 id="name">Name</h2>
+<div class="codehilite"><pre><span></span><code>run(3f) -  execute specified system command and selectively echo
+command and output to a file and/or stdout.
+(LICENSE:MIT)
+</code></pre></div>
+
+<h2 id="syntax">Syntax</h2>
+<div class="codehilite"><pre><span></span><code>subroutine run(cmd,echo,exitstat,verbose,redirect)
+
+ character(len=*), intent(in)       :: cmd
+ logical,intent(in),optional        :: echo
+ integer, intent(out),optional      :: exitstat
+ logical, intent(in), optional      :: verbose
+ character(*), intent(in), optional :: redirect
+</code></pre></div>
+
+<h2 id="description">Description</h2>
+<p>Execute the specified system command. Optionally</p>
+<ul>
+<li>echo the command before execution</li>
+<li>return the system exit status of the command.</li>
+<li>redirect the output of the command to a file.</li>
+<li>echo command output to stdout</li>
+</ul>
+<p>Calling run(3f) is preferred to direct calls to
+   execute_command_line(3f) in the fpm(1) source to provide a standard
+   interface where output modes can be specified.</p>
+<h2 id="options">Options</h2>
+<div class="codehilite"><pre><span></span><code><span class="nv">CMD</span>       <span class="nv">System</span> <span class="nv">command</span> <span class="nv">to</span> <span class="nv">execute</span>
+<span class="nv">ECHO</span>      <span class="nv">Whether</span> <span class="nv">to</span> <span class="nv">echo</span> <span class="nv">the</span> <span class="nv">command</span> <span class="nv">being</span> <span class="nv">executed</span> <span class="nv">or</span> <span class="nv">not</span>
+          <span class="nv">Defaults</span> <span class="nv">to</span> .<span class="nv">TRUE</span>. .
+<span class="nv">VERBOSE</span>   <span class="nv">Whether</span> <span class="nv">to</span> <span class="nv">redirect</span> <span class="nv">the</span> <span class="nv">command</span> <span class="nv">output</span> <span class="nv">to</span> <span class="nv">a</span> <span class="nv">null</span> <span class="nv">device</span> <span class="nv">or</span> <span class="nv">not</span>
+          <span class="nv">Defaults</span> <span class="nv">to</span> .<span class="nv">TRUE</span>. .
+<span class="nv">REDIRECT</span>  <span class="nv">Filename</span> <span class="nv">to</span> <span class="nv">redirect</span> <span class="nv">stdout</span> <span class="nv">and</span> <span class="nv">stderr</span> <span class="nv">of</span> <span class="nv">the</span> <span class="nv">command</span> <span class="nv">into</span>.
+          <span class="k">If</span> <span class="nv">generated</span> <span class="nv">it</span> <span class="nv">is</span> <span class="nv">closed</span> <span class="nv">before</span> <span class="nv">run</span><span class="ss">(</span><span class="mi">3</span><span class="nv">f</span><span class="ss">)</span> <span class="nv">returns</span>.
+<span class="nv">EXITSTAT</span>  <span class="nv">The</span> <span class="nv">system</span> <span class="k">exit</span> <span class="nv">status</span> <span class="nv">of</span> <span class="nv">the</span> <span class="nv">command</span> <span class="nv">when</span> <span class="nv">supported</span> <span class="nv">by</span>
+          <span class="nv">the</span> <span class="nv">system</span>. <span class="k">If</span> <span class="nv">not</span> <span class="nv">present</span> <span class="nv">and</span> <span class="nv">a</span> <span class="nv">non</span><span class="o">-</span><span class="nv">zero</span> <span class="nv">status</span> <span class="nv">is</span>
+          <span class="nv">generated</span> <span class="nv">program</span> <span class="nv">termination</span> <span class="nv">occurs</span>.
+</code></pre></div>
+
+<h2 id="example">Example</h2>
+<p>Sample program:</p>
+<p>Checking the error message and counting lines:</p>
+<div class="codehilite"><pre><span></span><code> <span class="nv">program</span> <span class="nv">demo_run</span>
+ <span class="nv">use</span> <span class="nv">fpm_filesystem</span>, <span class="nv">only</span> : <span class="nv">run</span>
+ <span class="nv">implicit</span> <span class="nv">none</span>
+ <span class="nv">logical</span>,<span class="nv">parameter</span> :: <span class="nv">T</span><span class="o">=</span>.<span class="nv">true</span>., <span class="nv">F</span><span class="o">=</span>.<span class="nv">false</span>.
+ <span class="nv">integer</span> :: <span class="nv">exitstat</span>
+ <span class="nv">character</span><span class="ss">(</span><span class="nv">len</span><span class="o">=</span>:<span class="ss">)</span>,<span class="nv">allocatable</span> :: <span class="nv">cmd</span>
+    <span class="nv">cmd</span><span class="o">=</span><span class="s1">&#39;</span><span class="s">ls -ltrasd *.md</span><span class="s1">&#39;</span>
+    <span class="k">call</span> <span class="nl">run</span><span class="ss">(</span><span class="nv">cmd</span><span class="ss">)</span>
+    <span class="k">call</span> <span class="nl">run</span><span class="ss">(</span><span class="nv">cmd</span>,<span class="nv">exitstat</span><span class="o">=</span><span class="nv">exitstat</span><span class="ss">)</span>
+    <span class="k">call</span> <span class="nl">run</span><span class="ss">(</span><span class="nv">cmd</span>,<span class="nv">echo</span><span class="o">=</span><span class="nv">F</span><span class="ss">)</span>
+    <span class="k">call</span> <span class="nl">run</span><span class="ss">(</span><span class="nv">cmd</span>,<span class="nv">verbose</span><span class="o">=</span><span class="nv">F</span><span class="ss">)</span>
+ <span class="k">end</span> <span class="nv">program</span> <span class="nv">demo_run</span>
+</code></pre></div>
 
 
     <h3>Arguments</h3>
@@ -398,7 +455,7 @@
             <p class="text-right">
               Documentation generated by
               <a href="https://github.com/Fortran-FOSS-Programmers/ford">FORD</a>
- on 2023-06-09 15:06              </p>
+ on 2023-06-10 06:09              </p>
           </div>
         </div>
         <br>
