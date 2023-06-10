@@ -3,7 +3,7 @@ use fpm_filesystem, only: run
 implicit none
 integer :: exitstat
 character(len=:), allocatable :: cmd
-logical, parameter T = .true., F = .false.
+logical, parameter ::  T = .true., F = .false.
 cmd = 'ls -ltrasd *.md'
 
    call run(cmd)
