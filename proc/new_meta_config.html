@@ -101,7 +101,7 @@
           <li id="statements"><i class="fa fa-list-ol"></i>
             <a data-toggle="tooltip"
                data-placement="bottom" data-html="true"
-               title=" 0.3% of total for procedures.">14 statements</a>
+               title=" 0.3% of total for procedures.">15 statements</a>
           </li>
 
             <li id="source-file">
@@ -161,7 +161,7 @@
     </div>
     
     <div class="col-md-9" id='text'>
-    <h2>public  subroutine new_meta_config(self, table, error)  
+    <h2>public  subroutine new_meta_config(self, table, meta_allowed, error)  
 </h2>
     
 
@@ -209,6 +209,21 @@ the &ldquo;new_dependencies&rdquo; check</p>
             <td><strong>table</strong></td>
             <td>
                 <p>Instance of the TOML data structure</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-meta_allowed~2"></span>
+              logical,
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>meta_allowed</strong>(:)</td>
+            <td>
+                <p>List of keys allowed to be metapackages</p>
             </td>
         </tr>
         <tr>
@@ -274,13 +289,16 @@ the &ldquo;new_dependencies&rdquo; check</p>
     
     <section>
     <h2><span class="anchor" id="src"></span>Source Code</h2>
-    <div class="highlight"><pre><span></span><span class="w">    </span><span class="k">subroutine </span><span class="n">new_meta_config</span><span class="p">(</span><span class="n">self</span><span class="p">,</span><span class="w"> </span><span class="n">table</span><span class="p">,</span><span class="w"> </span><span class="n">error</span><span class="p">)</span><span class="w"></span>
+    <div class="highlight"><pre><span></span><span class="w">    </span><span class="k">subroutine </span><span class="n">new_meta_config</span><span class="p">(</span><span class="n">self</span><span class="p">,</span><span class="w"> </span><span class="n">table</span><span class="p">,</span><span class="w"> </span><span class="n">meta_allowed</span><span class="p">,</span><span class="w"> </span><span class="n">error</span><span class="p">)</span><span class="w"></span>
 
 <span class="w">        </span><span class="c">!&gt; Instance of the build configuration</span>
 <span class="w">        </span><span class="k">type</span><span class="p">(</span><span class="n">metapackage_config_t</span><span class="p">),</span><span class="w"> </span><span class="k">intent</span><span class="p">(</span><span class="n">out</span><span class="p">)</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">self</span><span class="w"></span>
 
 <span class="w">        </span><span class="c">!&gt; Instance of the TOML data structure</span>
 <span class="w">        </span><span class="k">type</span><span class="p">(</span><span class="n">toml_table</span><span class="p">),</span><span class="w"> </span><span class="k">intent</span><span class="p">(</span><span class="n">inout</span><span class="p">)</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">table</span><span class="w"></span>
+
+<span class="w">        </span><span class="c">!&gt; List of keys allowed to be metapackages</span>
+<span class="w">        </span><span class="kt">logical</span><span class="p">,</span><span class="w"> </span><span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">)</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">meta_allowed</span><span class="p">(:)</span><span class="w"></span>
 
 <span class="w">        </span><span class="c">!&gt; Error handling</span>
 <span class="w">        </span><span class="k">type</span><span class="p">(</span><span class="n">error_t</span><span class="p">),</span><span class="w"> </span><span class="k">allocatable</span><span class="p">,</span><span class="w"> </span><span class="k">intent</span><span class="p">(</span><span class="n">out</span><span class="p">)</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">error</span><span class="w"></span>
@@ -289,16 +307,16 @@ the &ldquo;new_dependencies&rdquo; check</p>
 
 <span class="w">        </span><span class="c">!&gt; The toml table is not checked here because it already passed</span>
 <span class="w">        </span><span class="c">!&gt; the &quot;new_dependencies&quot; check</span>
-<span class="w">        </span><span class="k">call </span><span class="n">new_request</span><span class="p">(</span><span class="n">self</span><span class="p">%</span><span class="n">openmp</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;openmp&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">table</span><span class="p">,</span><span class="w"> </span><span class="n">error</span><span class="p">)</span><span class="w"></span>
+<span class="w">        </span><span class="k">call </span><span class="n">new_meta_request</span><span class="p">(</span><span class="n">self</span><span class="p">%</span><span class="n">openmp</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;openmp&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">table</span><span class="p">,</span><span class="w"> </span><span class="n">meta_allowed</span><span class="p">,</span><span class="w"> </span><span class="n">error</span><span class="p">)</span><span class="w"></span>
 <span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="nb">allocated</span><span class="p">(</span><span class="n">error</span><span class="p">))</span><span class="w"> </span><span class="k">return</span>
 
-<span class="k">        call </span><span class="n">new_request</span><span class="p">(</span><span class="n">self</span><span class="p">%</span><span class="n">stdlib</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;stdlib&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">table</span><span class="p">,</span><span class="w"> </span><span class="n">error</span><span class="p">)</span><span class="w"></span>
+<span class="k">        call </span><span class="n">new_meta_request</span><span class="p">(</span><span class="n">self</span><span class="p">%</span><span class="n">stdlib</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;stdlib&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">table</span><span class="p">,</span><span class="w"> </span><span class="n">meta_allowed</span><span class="p">,</span><span class="w"> </span><span class="n">error</span><span class="p">)</span><span class="w"></span>
 <span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="nb">allocated</span><span class="p">(</span><span class="n">error</span><span class="p">))</span><span class="w"> </span><span class="k">return</span>
 
-<span class="k">        call </span><span class="n">new_request</span><span class="p">(</span><span class="n">self</span><span class="p">%</span><span class="n">minpack</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;minpack&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">table</span><span class="p">,</span><span class="w"> </span><span class="n">error</span><span class="p">)</span><span class="w"></span>
+<span class="k">        call </span><span class="n">new_meta_request</span><span class="p">(</span><span class="n">self</span><span class="p">%</span><span class="n">minpack</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;minpack&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">table</span><span class="p">,</span><span class="w"> </span><span class="n">meta_allowed</span><span class="p">,</span><span class="w"> </span><span class="n">error</span><span class="p">)</span><span class="w"></span>
 <span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="nb">allocated</span><span class="p">(</span><span class="n">error</span><span class="p">))</span><span class="w"> </span><span class="k">return</span>
 
-<span class="k">        call </span><span class="n">new_request</span><span class="p">(</span><span class="n">self</span><span class="p">%</span><span class="n">mpi</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;mpi&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">table</span><span class="p">,</span><span class="w"> </span><span class="n">error</span><span class="p">)</span><span class="w"></span>
+<span class="k">        call </span><span class="n">new_meta_request</span><span class="p">(</span><span class="n">self</span><span class="p">%</span><span class="n">mpi</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;mpi&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">table</span><span class="p">,</span><span class="w"> </span><span class="n">meta_allowed</span><span class="p">,</span><span class="w"> </span><span class="n">error</span><span class="p">)</span><span class="w"></span>
 <span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="nb">allocated</span><span class="p">(</span><span class="n">error</span><span class="p">))</span><span class="w"> </span><span class="k">return</span>
 
 <span class="k">    end subroutine </span><span class="n">new_meta_config</span><span class="w"></span>
@@ -322,7 +340,7 @@ the &ldquo;new_dependencies&rdquo; check</p>
             <p class="text-right">
               Documentation generated by
               <a href="https://github.com/Fortran-FOSS-Programmers/ford">FORD</a>
- on 2023-06-10 06:09              </p>
+ on 2023-06-10 14:09              </p>
           </div>
         </div>
         <br>
