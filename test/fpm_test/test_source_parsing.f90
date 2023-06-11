@@ -240,22 +240,22 @@ contains
         end if
 
         if (.not. ('ieee_arithmetic' .in. f_source%modules_used)) then
-            call test_failed(error,'Non-Intrinsic module found in modules_used')
+            call test_failed(error,'Non-Intrinsic module not found in modules_used')
             return
         end if
 
         if (.not. ('ieee_exceptions' .in. f_source%modules_used)) then
-            call test_failed(error,'Non-Intrinsic module found in modules_used')
+            call test_failed(error,'Non-Intrinsic module not found in modules_used')
             return
         end if
 
         if (.not. ('ieee_features' .in. f_source%modules_used)) then
-            call test_failed(error,'Non-Intrinsic module found in modules_used')
+            call test_failed(error,'Non-Intrinsic module not found in modules_used')
             return
         end if
 
         if (.not. ('my_module' .in. f_source%modules_used)) then
-            call test_failed(error,'Non-Intrinsic module found in modules_used')
+            call test_failed(error,'Non-Intrinsic module not found in modules_used')
             return
         end if
 
