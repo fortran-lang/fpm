@@ -622,8 +622,17 @@ subroutine parse_use_statement(f_filename,i,line,use_stmt,is_intrinsic,module_na
 
     !> The line being parsed. MUST BE preprocessed with trim(adjustl()
     character(*), intent(in) :: line
-    logical, intent(out) :: use_stmt,is_intrinsic
+
+    !> Does this line contain a `use` statement?
+    logical, intent(out) :: use_stmt
+
+    !> Is the module in this statement intrinsic?
+    logical, intent(out) :: is_intrinsic
+
+    !> used module name
     character(:), allocatable, intent(out) :: module_name
+
+    !> Error handling
     type(error_t), allocatable, intent(out) :: error
 
     character(15), parameter :: INTRINSIC_NAMES(*) =  &
