@@ -615,8 +615,13 @@ end function parse_sequence
 ! USE [, intrinsic] :: module_name [, only: only_list]
 ! USE [, non_intrinsic] :: module_name [, only: only_list]
 subroutine parse_use_statement(f_filename,i,line,use_stmt,is_intrinsic,module_name,error)
-    character(*), intent(in) :: f_filename,line
-    integer, intent(in) :: i ! line number
+
+    !> Current file name and line number (for error messaging)
+    character(*), intent(in) :: f_filename
+    integer, intent(in) :: i
+
+    !> The line being parsed. MUST BE preprocessed with trim(adjustl()
+    character(*), intent(in) :: line
     logical, intent(out) :: use_stmt,is_intrinsic
     character(:), allocatable, intent(out) :: module_name
     type(error_t), allocatable, intent(out) :: error
@@ -629,7 +634,7 @@ subroutine parse_use_statement(f_filename,i,line,use_stmt,is_intrinsic,module_na
                                   'ieee_features  ', &
                                   'omp_lib        ']
 
-    character(len=:), allocatable :: lowercase,temp_string
+    character(len=:), allocatable :: temp_string
     integer :: colons,intr,nonintr,j,stat
     logical :: has_intrinsic_name
 
@@ -637,28 +642,31 @@ subroutine parse_use_statement(f_filename,i,line,use_stmt,is_intrinsic,module_na
     is_intrinsic  = .false.
     if (len_trim(line)<=0) return
 
-    ! Preprocess: lowercase, remove heading spaces
-    lowercase = lower(trim(adjustl(line)))
+    ! Quick check that the line is preprocessed
+    if (line(1:1)==' ') then
+        call fatal_error(error,'internal_error: source file line is not trim(adjustl()) on input to parse_use_statement')
+        return
+    end if
 
     ! 'use' should be the first string in the adjustl line
-    use_stmt = index(lowercase,'use ')==1 .or. index(lowercase,'use::')==1 .or. index(lowercase,'use,')==1
+    use_stmt = index(line,'use ')==1 .or. index(line,'use::')==1 .or. index(line,'use,')==1
     if (.not.use_stmt) return
-    colons   = index(lowercase,'::')
+    colons   = index(line,'::')
     nonintr  = 0
     intr     = 0
 
     have_colons: if (colons>3) then
 
         ! there may be an intrinsic/non-intrinsic spec
-        nonintr = index(lowercase(1:colons-1),'non_intrinsic')
-        if (nonintr==0) intr = index(lowercase(1:colons-1),'intrinsic')
+        nonintr = index(line(1:colons-1),'non_intrinsic')
+        if (nonintr==0) intr = index(line(1:colons-1),'intrinsic')
 
 
-        temp_string = split_n(lowercase,delims=':',n=2,stat=stat)
+        temp_string = split_n(line,delims=':',n=2,stat=stat)
         if (stat /= 0) then
             call file_parse_error(error,f_filename, &
                     'unable to find used module name',i, &
-                    lowercase,colons)
+                    line,colons)
             return
         end if
 
@@ -666,17 +674,17 @@ subroutine parse_use_statement(f_filename,i,line,use_stmt,is_intrinsic,module_na
         if (stat /= 0) then
             call file_parse_error(error,f_filename, &
                      'unable to find used module name',i, &
-                     lowercase)
+                     line)
             return
         end if
 
     else
 
-        module_name = split_n(lowercase,n=2,delims=' ,',stat=stat)
+        module_name = split_n(line,n=2,delims=' ,',stat=stat)
         if (stat /= 0) then
             call file_parse_error(error,f_filename, &
                     'unable to find used module name',i, &
-                    lowercase)
+                    line)
             return
         end if
 
@@ -694,7 +702,7 @@ subroutine parse_use_statement(f_filename,i,line,use_stmt,is_intrinsic,module_na
         if (index(module_name,'&')<=0) then
             call file_parse_error(error,f_filename, &
                                   'module '//module_name//' is declared intrinsic but it is not ',i, &
-                                  lowercase)
+                                  line)
             return
         endif
     endif
