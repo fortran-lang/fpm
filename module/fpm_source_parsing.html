@@ -101,7 +101,7 @@
           <li id="statements"><i class="fa fa-list-ol"></i>
             <a data-toggle="tooltip"
                data-placement="bottom" data-html="true"
-               title=" 3.5% of total for modules and submodules.">361 statements</a>
+               title=" 3.8% of total for modules and submodules.">391 statements</a>
           </li>
 
             <li id="source-file">
@@ -153,7 +153,19 @@
       </div>
     </div>
 
-  
+      <div class="panel panel-primary">
+      <div class="panel-heading text-left">
+        <h3 class="panel-title">
+          <a data-toggle="collapse" href="#subs-0">Subroutines</a>
+        </h3>
+      </div>
+      <div id="subs-0" class="panel-collapse collapse">
+        <div class="list-group">
+            <a class="list-group-item" href="../module/fpm_source_parsing.html#proc-parse_use_statement">parse_use_statement</a>
+        </div>
+      </div>
+    </div>
+
   
   
   
@@ -186,9 +198,9 @@
       <ul class="list-group">
           <li class="list-group-item">
             <ul class="list-inline">
-                <li><a href='../module/fpm_model.html'>fpm_model</a></li>
-                <li><a href='../module/fpm_error.html'>fpm_error</a></li>
                 <li><a href='../module/fpm_strings.html'>fpm_strings</a></li>
+                <li><a href='../module/fpm_error.html'>fpm_error</a></li>
+                <li><a href='../module/fpm_model.html'>fpm_model</a></li>
                 <li><a href='../module/fpm_filesystem.html'>fpm_filesystem</a></li>
             </ul>
           </li>
@@ -225,7 +237,19 @@
       </div>
     </div>
 
-  
+      <div class="panel panel-primary">
+      <div class="panel-heading text-left">
+        <h3 class="panel-title">
+          <a data-toggle="collapse" href="#subs-1">Subroutines</a>
+        </h3>
+      </div>
+      <div id="subs-1" class="panel-collapse collapse">
+        <div class="list-group">
+            <a class="list-group-item" href="../module/fpm_source_parsing.html#proc-parse_use_statement">parse_use_statement</a>
+        </div>
+      </div>
+    </div>
+
   
   
   
@@ -368,6 +392,140 @@
         </section>
         <br>
 
+        <section>
+          <h2>Subroutines</h2>
+              <div class="panel panel-default">
+    <div class="panel-heading codesum"><span class="anchor" id="proc-parse_use_statement"></span><h3>public  subroutine <a href='../proc/parse_use_statement.html'>parse_use_statement</a>(f_filename, i, line, use_stmt, is_intrinsic, module_name, error)  
+</h3></div>
+    <div class="panel-body">
+          
+  
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th>Type</th>
+<th>Intent</th><th>Optional</th>        <th>Attributes</th>
+        <th></th>
+        <th>Name</th>
+        <th></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" ></span>
+              character(len=*),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>f_filename</strong></td>
+            <td>
+<p>Current file name and line number (for error messaging)</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" ></span>
+              integer,
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>i</strong></td>
+            <td>
+
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" ></span>
+              character(len=*),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>line</strong></td>
+            <td>
+<p>The line being parsed. MUST BE preprocessed with trim(adjustl()</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" ></span>
+              logical,
+            </td>
+<td>intent(out)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>use_stmt</strong></td>
+            <td>
+<p>Does this line contain a <code>use</code> statement?</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" ></span>
+              logical,
+            </td>
+<td>intent(out)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>is_intrinsic</strong></td>
+            <td>
+<p>Is the module in this statement intrinsic?</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" ></span>
+              character(len=:),
+            </td>
+<td>intent(out),</td>
+              <td></td>            <td>
+              allocatable
+            </td>
+            <td>::</td>
+            <td><strong>module_name</strong></td>
+            <td>
+<p>used module name</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" ></span>
+              type(<a href='../type/error_t.html'>error_t</a>),
+            </td>
+<td>intent(out),</td>
+              <td></td>            <td>
+              allocatable
+            </td>
+            <td>::</td>
+            <td><strong>error</strong></td>
+            <td>
+<p>Error handling</p>
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+
+    </div>
+  </div>
+
+        </section>
+        <br>
 
 
 
@@ -386,7 +544,7 @@
             <p class="text-right">
               Documentation generated by
               <a href="https://github.com/Fortran-FOSS-Programmers/ford">FORD</a>
- on 2023-06-10 14:09              </p>
+ on 2023-06-14 15:51              </p>
           </div>
         </div>
         <br>
