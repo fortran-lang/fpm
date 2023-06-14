@@ -31,6 +31,10 @@ pushd circular_example
 "$fpm" build
 popd
 
+pushd nonintrinsic
+"$fpm" build
+popd
+
 pushd hello_complex
 "$fpm" build
 "$fpm" test
