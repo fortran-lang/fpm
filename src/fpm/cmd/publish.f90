@@ -75,6 +75,12 @@ contains
     & string_t('tarball=@"'//tmp_file//'"') &
     & ]
 
+    if (settings%is_dry_run) then
+      upload_data = [upload_data, string_t('dry_run="true"')]
+    else
+      upload_data = [upload_data, string_t('dry_run="false"')]
+    end if
+
     if (allocated(settings%token)) upload_data = [upload_data, string_t('upload_token="'//settings%token//'"')]
 
     if (settings%show_upload_data) then
@@ -96,15 +102,16 @@ contains
       print *, ''
     end if
 
-    ! Perform network request and validate package, token etc. on the backend once
-    ! https://github.com/fortran-lang/registry/issues/41 is resolved.
-    if (settings%is_dry_run) then
-      print *, 'Dry run successful. Generated tarball: ', tmp_file; return
+    call downloader%upload_form(official_registry_base_url//'/packages', upload_data, error)
+    if (allocated(error)) then
+      call delete_file(tmp_file); call fpm_stop(1, '*cmd_publish* Upload error: '//error%message)
     end if
 
-    call downloader%upload_form(official_registry_base_url//'/packages', upload_data, error)
-    call delete_file(tmp_file)
-    if (allocated(error)) call fpm_stop(1, '*cmd_publish* Upload error: '//error%message)
+    if (settings%is_dry_run) then
+      print *, 'Generated tarball: ', tmp_file
+    else
+      call delete_file(tmp_file)
+    end if
   end
 
   subroutine print_upload_data(upload_data)
