@@ -412,7 +412,7 @@ subroutine add_metapackage_model(model,package,settings,name,error)
     call meta%resolve(settings,error)
     if (allocated(error)) return
 
-    ! If we need to run executables, there shouold be an MPI runner
+    ! If we need to run executables, there should be an MPI runner
     if (name=="mpi") then
         select type (settings)
            class is (fpm_run_settings) ! run, test
