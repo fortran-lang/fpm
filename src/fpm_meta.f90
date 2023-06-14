@@ -976,6 +976,7 @@ subroutine init_mpi_from_wrappers(this,compiler,mpilib,fort_wrapper,c_wrapper,cx
     type(error_t), allocatable, intent(out) :: error
 
     type(version_t) :: version
+    type(error_t), allocatable :: runner_error
 
     ! Cleanup structure
     call destroy(this)
@@ -1014,11 +1015,8 @@ subroutine init_mpi_from_wrappers(this,compiler,mpilib,fort_wrapper,c_wrapper,cx
     end if
 
     !> Add default run command, if present
-    this%run_command = mpi_wrapper_query(mpilib,fort_wrapper,'runner',verbose,error)
-    this%has_run_command = (len_trim(this%run_command)>0) .and. .not.allocated(error)
-
-    !> Do not trigger a fatal error here if run command is missing
-    if (allocated(error)) deallocate(error)
+    this%run_command = mpi_wrapper_query(mpilib,fort_wrapper,'runner',verbose,runner_error)
+    this%has_run_command = (len_trim(this%run_command)>0) .and. .not.allocated(runner_error)
 
     contains
 
