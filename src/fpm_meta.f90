@@ -412,6 +412,15 @@ subroutine add_metapackage_model(model,package,settings,name,error)
     call meta%resolve(settings,error)
     if (allocated(error)) return
 
+    ! If we need to run executables, there shouold be an MPI runner
+    if (name=="mpi") then
+        select type (settings)
+           class is (fpm_run_settings) ! run, test
+              if (.not.meta%has_run_command) &
+              call fatal_error(error,"cannot find a valid mpi runner on the local host")
+        end select
+    endif
+
 end subroutine add_metapackage_model
 
 !> Resolve all metapackages into the package config
@@ -1006,8 +1015,10 @@ subroutine init_mpi_from_wrappers(this,compiler,mpilib,fort_wrapper,c_wrapper,cx
 
     !> Add default run command, if present
     this%run_command = mpi_wrapper_query(mpilib,fort_wrapper,'runner',verbose,error)
-    if (allocated(error)) return
-    this%has_run_command = len_trim(this%run_command)>0
+    this%has_run_command = (len_trim(this%run_command)>0) .and. .not.allocated(error)
+
+    !> Do not trigger a fatal error here if run command is missing
+    if (allocated(error)) deallocate(error)
 
     contains
 
