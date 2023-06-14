@@ -864,7 +864,7 @@ subroutine get_mpi_runner(command,verbose,error)
 
     ! Try several commands
     do itri=1,size(try)
-       call find_command_location(trim(try(itri)),command%s,verbose=.true.,error=error)
+       call find_command_location(trim(try(itri)),command%s,verbose=verbose,error=error)
        if (allocated(error)) cycle
 
        ! Success!
