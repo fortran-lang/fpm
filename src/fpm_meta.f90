@@ -1074,7 +1074,7 @@ subroutine mpi_compiler_match(language,wrappers,compiler,which_one,mpilib,error)
         select case (language)
            case (LANG_FORTRAN)
                ! Build compiler type. The ID is created based on the Fortran name
-               call new_compiler(mpi_compiler,screen%s,'','',echo=.true.,verbose=.true.)
+               call new_compiler(mpi_compiler,screen%s,'','',echo=.true.,verbose=.false.)
 
                ! Fortran match found!
                if (mpi_compiler%id == compiler%id) then
