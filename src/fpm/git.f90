@@ -308,19 +308,31 @@ contains
     end subroutine info
 
   !> Archive a folder using `git archive`.
-  subroutine git_archive(source, destination, error)
+  subroutine git_archive(source, destination, ref, verbose, error)
     !> Directory to archive.
     character(*), intent(in) :: source
     !> Destination of the archive.
     character(*), intent(in) :: destination
+    !> (Symbolic) Reference to be archived.
+    character(*), intent(in) :: ref
+    !> Whether to print verbose output.
+    logical, intent(in) :: verbose
     !> Error handling.
     type(error_t), allocatable, intent(out) :: error
 
     integer :: stat
-    character(len=:), allocatable :: cmd_output, archive_format
+    character(len=:), allocatable :: cmd_output, archive_format, cmd
+
+    if (verbose) then
+      print *, ''
+      print *, 'Show git archive options:'
+      print *, ' + git archive -l'
+    end if
 
     call execute_and_read_output('git archive -l', cmd_output, error)
     if (allocated(error)) return
+
+    if (verbose) print *, ' ', cmd_output
 
     if (index(cmd_output, 'tar.gz') /= 0) then
       archive_format = 'tar.gz'
@@ -328,11 +340,19 @@ contains
       call fatal_error(error, "Cannot find a suitable archive format for 'git archive'."); return
     end if
 
-    call execute_command_line('git archive HEAD --format='//archive_format//' -o '//destination, exitstat=stat)
+    cmd = 'git archive '//ref//' --format='//archive_format//' -o '//destination
+
+    if (verbose) then
+      print *, ''
+      print *, 'Archive ', ref, ' using ', archive_format, ':'
+      print *, ' + ', cmd
+      print *, ''
+    end if
+
+    call execute_command_line(cmd, exitstat=stat)
     if (stat /= 0) then
       call fatal_error(error, "Error packing '"//source//"'."); return
     end if
   end
-
 
 end module fpm_git
