@@ -101,7 +101,7 @@ contains
       print *, 'Dry run successful. Generated tarball: ', tmp_file; return
     end if
 
-    call downloader%upload_form(official_registry_base_url//'/packages', upload_data, error)
+    call downloader%upload_form(official_registry_base_url//'/packages', upload_data, settings%verbose, error)
     call delete_file(tmp_file)
     if (allocated(error)) call fpm_stop(1, '*cmd_publish* Upload error: '//error%message)
   end

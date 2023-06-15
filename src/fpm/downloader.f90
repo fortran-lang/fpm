@@ -76,23 +76,30 @@ contains
   end
 
   !> Perform an http post request with form data.
-  subroutine upload_form(endpoint, form_data, error)
+  subroutine upload_form(endpoint, form_data, verbose, error)
+    !> Endpoint to upload to.
     character(len=*), intent(in) :: endpoint
+    !> Form data to upload.
     type(string_t), intent(in) :: form_data(:)
+    !> Print additional information when true.
+    logical, intent(in) :: verbose
+    !> Error handling.
     type(error_t), allocatable, intent(out) :: error
 
     integer :: stat, i
-    character(len=:), allocatable :: form_data_str
+    character(len=:), allocatable :: form_data_str, cmd
 
     form_data_str = ''
     do i = 1, size(form_data)
       form_data_str = form_data_str//"-F '"//form_data(i)%s//"' "
     end do
 
+    cmd = 'curl -X POST -H "Content-Type: multipart/form-data" '//form_data_str//endpoint
+
     if (which('curl') /= '') then
       print *, 'Uploading package ...'
-      call execute_command_line('curl -X POST -H "Content-Type: multipart/form-data" ' &
-      & //form_data_str//endpoint, exitstat=stat)
+      if (verbose) print *, ' + ', cmd
+      call execute_command_line(cmd, exitstat=stat)
     else
       call fatal_error(error, "'curl' not installed."); return
     end if
@@ -104,8 +111,11 @@ contains
 
   !> Unpack a tarball to a destination.
   subroutine unpack(tmp_pkg_file, destination, error)
+    !> Path to tarball.
     character(*), intent(in) :: tmp_pkg_file
+    !> Destination to unpack to.
     character(*), intent(in) :: destination
+    !> Error handling.
     type(error_t), allocatable, intent(out) :: error
 
     integer :: stat
