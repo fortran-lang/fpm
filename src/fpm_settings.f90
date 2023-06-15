@@ -106,7 +106,7 @@ contains
       call use_default_registry_settings(global_settings)
     end if
 
-  end subroutine get_global_settings
+  end
 
   !> Default registry settings are typically applied if the config file doesn't exist or no registry table was found in
   !> the global config file.
@@ -117,7 +117,7 @@ contains
     global_settings%registry_settings%url = official_registry_base_url
     global_settings%registry_settings%cache_path = join_path(config_path(global_settings), &
     & 'dependencies')
-  end subroutine use_default_registry_settings
+  end
 
   !> Read registry settings from the global config file.
   subroutine get_registry_settings(table, global_settings, error)
@@ -208,19 +208,19 @@ contains
         if (allocated(error)) return
       end if
     else if (.not. allocated(path)) then
-       global_settings%registry_settings%cache_path = join_path(config_path(global_settings), &
-    &    'dependencies')
+      global_settings%registry_settings%cache_path = join_path(config_path(global_settings), &
+      & 'dependencies')
     end if
-  end subroutine get_registry_settings
+  end
 
   !> True if the global config file is not at the default location.
   pure logical function has_custom_location(self)
     class(fpm_global_settings), intent(in) :: self
 
     has_custom_location = allocated(self%path_to_config_folder) .and. allocated(self%config_file_name)
-    if (.not.has_custom_location) return
-    has_custom_location = len_trim(self%path_to_config_folder)>0 .and. len_trim(self%config_file_name)>0
-  end function
+    if (.not. has_custom_location) return
+    has_custom_location = len_trim(self%path_to_config_folder) > 0 .and. len_trim(self%config_file_name) > 0
+  end
 
   !> The full path to the global config file.
   function full_path(self) result(result)
@@ -228,7 +228,7 @@ contains
     character(len=:), allocatable :: result
 
     result = join_path(config_path(self), self%config_file_name)
-  end function
+  end
 
   !> The path to the global config directory.
   function config_path(self)
@@ -236,10 +236,10 @@ contains
     character(len=:), allocatable :: config_path
 
     if (allocated(self%path_to_config_folder)) then
-        config_path = self%path_to_config_folder
+      config_path = self%path_to_config_folder
     else
-        config_path = ""
+      config_path = ""
     end if
-  end function config_path
+  end
 
-end module fpm_settings
+end
