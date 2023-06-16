@@ -23,7 +23,8 @@
 !! - [[IS_FORTRAN_NAME]]  determine whether a string is an acceptable Fortran entity name
 !! - [[TO_FORTRAN_NAME]]  replace allowed special but unusuable characters in names with underscore
 !!### Whitespace
-!! - [[NOTABS]]  Expand tab characters assuming a tab space every eight characters
+!! - [[NOTABS]]  subroutine to expand tab characters assuming a tab space every eight characters
+!! - [[DILATE]]  function to expand tab characters assuming a tab space every eight characters
 !! - [[LEN_TRIM]]  Determine total trimmed length of **STRING_T** array
 !!### Miscellaneous
 !! - [[FNV_1A]]  Hash a **CHARACTER(*)** string of default kind or a **TYPE(STRING_T)** array
@@ -43,7 +44,7 @@ public :: f_string, lower, split, str_ends_with, string_t, str_begins_with_str
 public :: to_fortran_name, is_fortran_name
 public :: string_array_contains, string_cat, len_trim, operator(.in.), fnv_1a
 public :: replace, resize, str, join, glob
-public :: notabs, remove_newline_characters
+public :: notabs, dilate, remove_newline_characters
 
 !> Module naming
 public :: is_valid_module_name, is_valid_module_prefix, &
@@ -1015,7 +1016,7 @@ pure function to_fortran_name(string) result(res)
     res = replace(string, SPECIAL_CHARACTERS, '_')
 end function to_fortran_name
 
-function is_fortran_name(line) result (lout)
+elemental function is_fortran_name(line) result (lout)
 ! determine if a string is a valid Fortran name ignoring trailing spaces
 ! (but not leading spaces)
     character(len=*),parameter   :: int='0123456789'
@@ -1364,5 +1365,67 @@ integer                       :: iade         ! ADE (ASCII Decimal Equivalent) o
       ilen=len_trim(outstr(:ipos))            ! trim trailing spaces
 
 end subroutine notabs
+
+!>AUTHOR: John S. Urban
+!!LICENSE: Public Domain
+!>
+!!##NAME
+!!    dilate(3f) - [M_strings:NONALPHA] expand tab characters
+!!    (LICENSE:PD)
+!!
+!!##SYNOPSIS
+!!
+!!    function dilate(INSTR) result(OUTSTR)
+!!
+!!     character(len=*),intent=(in)  :: INSTR
+!!     character(len=:),allocatable  :: OUTSTR
+!!
+!!##DESCRIPTION
+!!     dilate() converts tabs in INSTR to spaces in OUTSTR.  It assumes a
+!!     tab is set every 8 characters. Trailing spaces are removed.
+!!
+!!     In addition, trailing carriage returns and line feeds are removed
+!!     (they are usually a problem created by going to and from MSWindows).
+!!
+!!##OPTIONS
+!!     instr     Input line to remove tabs from
+!!
+!!##RESULTS
+!!     outstr    Output string with tabs expanded.
+!!
+!!##EXAMPLES
+!!
+!!   Sample program:
+!!
+!!    program demo_dilate
+!!
+!!    use M_strings, only : dilate
+!!    implicit none
+!!    character(len=:),allocatable :: in
+!!    integer                      :: i
+!!       in='  this is my string  '
+!!       ! change spaces to tabs to make a sample input
+!!       do i=1,len(in)
+!!          if(in(i:i) == ' ')in(i:i)=char(9)
+!!       enddo
+!!       write(*,'(a)')in,dilate(in)
+!!    end program demo_dilate
+!!
+function dilate(instr) result(outstr)
+
+   character(len=*), intent(in)  :: instr        ! input line to scan for tab characters
+   character(len=:), allocatable :: outstr       ! tab-expanded version of INSTR produced
+   integer                       :: i
+   integer                       :: icount
+   integer                       :: lgth
+   icount = 0
+   do i = 1, len(instr)
+      if (instr(i:i) == char(9)) icount = icount + 1
+   end do
+   allocate (character(len=(len(instr) + 8*icount)) :: outstr)
+   call notabs(instr, outstr, lgth)
+   outstr = outstr(:lgth)
+
+end function dilate
 
 end module fpm_strings
