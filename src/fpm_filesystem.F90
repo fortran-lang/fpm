@@ -626,8 +626,68 @@ function unix_path(path) result(nixpath)
 
 end function unix_path
 
-
-!> read a line of arbitrary length into a CHARACTER variable from the specified LUN
+!>AUTHOR: fpm(1) contributors
+!!LICENSE: MIT
+!>
+!!##NAME
+!!     getline(3f) - [M_io:READ] read a line of arbintrary length from specified
+!!     LUN into allocatable string (up to system line length limit)
+!!    (LICENSE:PD)
+!!
+!!##SYNTAX
+!!   subroutine getline(unit,line,iostat,iomsg)
+!!
+!!    integer,intent(in)                       :: unit
+!!    character(len=:),allocatable,intent(out) :: line
+!!    integer,intent(out)                      :: iostat
+!!    character(len=:), allocatable, optional  :: iomsg
+!!
+!!##DESCRIPTION
+!!    Read a line of any length up to programming environment maximum
+!!    line length. Requires Fortran 2003+.
+!!
+!!    It is primarily expected to be used when reading input which will
+!!    then be parsed or echoed.
+!!
+!!    The input file must have a PAD attribute of YES for the function
+!!    to work properly, which is typically true.
+!!
+!!    The simple use of a loop that repeatedly re-allocates a character
+!!    variable in addition to reading the input file one buffer at a
+!!    time could (depending on the programming environment used) be
+!!    inefficient, as it could reallocate and allocate memory used for
+!!    the output string with each buffer read.
+!!
+!!##OPTIONS
+!!    LINE    The line read when IOSTAT returns as zero.
+!!    LUN     LUN (Fortran logical I/O unit) number of file open and ready
+!!            to read.
+!!    IOSTAT  status returned by READ(IOSTAT=IOS). If not zero, an error
+!!            occurred or an end-of-file or end-of-record was encountered.
+!!    IOMSG   error message returned by system when IOSTAT is not zero.
+!!
+!!##EXAMPLE
+!!
+!!   Sample program:
+!!
+!!    program demo_getline
+!!    use,intrinsic :: iso_fortran_env, only : stdin=>input_unit
+!!    use,intrinsic :: iso_fortran_env, only : iostat_end
+!!    use M_filesystem, only : getline
+!!    implicit none
+!!    integer :: iostat
+!!    character(len=:),allocatable :: line, iomsg
+!!       open(unit=stdin,pad='yes')
+!!       INFINITE: do 
+!!          call getline(stdin,line,iostat=iostat,iomsg)
+!!          if(iostat /= 0) exit INFINITE
+!!          write(*,'(a)')'['//line//']'
+!!       enddo INFINITE
+!!       if(iostat /= iostat_end)then
+!!          write(*,*)'error reading input:',iomsg
+!!       endif
+!!    end program demo_getline
+!!
 subroutine getline(unit, line, iostat, iomsg)
 
     !> Formatted IO unit
@@ -642,11 +702,12 @@ subroutine getline(unit, line, iostat, iomsg)
     !> Error message
     character(len=:), allocatable, optional :: iomsg
 
-    integer, parameter :: FILENAME_MAX = 4096
-    character(len=FILENAME_MAX) :: buffer
-    character(len=FILENAME_MAX) :: msg
+    integer, parameter :: BUFFER_SIZE = 32768
+    character(len=BUFFER_SIZE)       :: buffer
+    character(len=256)               :: msg
     integer :: size
     integer :: stat
+
 
     allocate(character(len=0) :: line)
     do
