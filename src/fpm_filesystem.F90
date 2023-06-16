@@ -673,13 +673,13 @@ end function unix_path
 !!    program demo_getline
 !!    use,intrinsic :: iso_fortran_env, only : stdin=>input_unit
 !!    use,intrinsic :: iso_fortran_env, only : iostat_end
-!!    use M_filesystem, only : getline
+!!    use FPM_filesystem, only : getline
 !!    implicit none
 !!    integer :: iostat
 !!    character(len=:),allocatable :: line, iomsg
 !!       open(unit=stdin,pad='yes')
 !!       INFINITE: do 
-!!          call getline(stdin,line,iostat=iostat,iomsg)
+!!          call getline(stdin,line,iostat,iomsg)
 !!          if(iostat /= 0) exit INFINITE
 !!          write(*,'(a)')'['//line//']'
 !!       enddo INFINITE
