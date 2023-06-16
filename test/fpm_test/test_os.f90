@@ -1,7 +1,7 @@
 module test_os
     use testsuite, only: new_unittest, unittest_t, error_t, test_failed
-    use fpm_filesystem, only: env_variable, join_path, mkdir, os_delete_dir, is_dir, get_local_prefix, get_home
-    use fpm_environment, only: os_is_unix
+    use fpm_filesystem, only: join_path, mkdir, os_delete_dir, is_dir, get_local_prefix, get_home
+    use fpm_environment, only: os_is_unix, get_env
     use fpm_os, only: get_absolute_path, get_absolute_path_by_cd, get_current_directory
 
     implicit none
@@ -134,7 +134,7 @@ contains
     subroutine abs_path_root(error)
         type(error_t), allocatable, intent(out) :: error
 
-        character(len=:), allocatable :: home_drive, home_path, result
+        character(len=:), allocatable :: home_path, result
 
         if (os_is_unix()) then
             call get_absolute_path('/', result, error)
@@ -144,8 +144,7 @@ contains
                 call test_failed(error, "Result '"//result//"' doesn't equal input value: '/'"); return
             end if
         else
-            call env_variable(home_drive, 'HOMEDRIVE')
-            home_path = home_drive//'\'
+            home_path = get_env('HOMEDRIVE','') //'\'
 
             call get_absolute_path(home_path, result, error)
             if (allocated(error)) return
@@ -177,7 +176,7 @@ contains
     subroutine abs_path_cd_root(error)
         type(error_t), allocatable, intent(out) :: error
 
-        character(len=:), allocatable :: home_drive, home_path, current_dir_before, current_dir_after, result
+        character(len=:), allocatable :: home_path, current_dir_before, current_dir_after, result
 
         call get_current_directory(current_dir_before, error)
         if (allocated(error)) return
@@ -189,8 +188,7 @@ contains
                 call test_failed(error, "Result '"//result//"' doesn't equal input value: '/'"); return
             end if
         else
-            call env_variable(home_drive, 'HOMEDRIVE')
-            home_path = home_drive//'\'
+            home_path = get_env('HOMEDRIVE','')//'\'
 
             call get_absolute_path_by_cd(home_path, result, error)
 
