@@ -6,7 +6,7 @@ module fpm_filesystem
                                OS_UNKNOWN, OS_LINUX, OS_MACOS, OS_WINDOWS, &
                                OS_CYGWIN, OS_SOLARIS, OS_FREEBSD, OS_OPENBSD
     use fpm_environment, only: separator, get_env, os_is_unix
-    use fpm_strings, only: f_string, replace, string_t, split, notabs, str_begins_with_str
+    use fpm_strings, only: f_string, replace, string_t, split, dilate, str_begins_with_str
     use iso_c_binding, only: c_char, c_ptr, c_int, c_null_char, c_associated, c_f_pointer
     use fpm_error, only : fpm_stop, error_t, fatal_error
     implicit none
@@ -14,9 +14,8 @@ module fpm_filesystem
     public :: basename, canon_path, dirname, is_dir, join_path, number_of_rows, list_files, get_local_prefix, &
             mkdir, exists, get_temp_filename, windows_path, unix_path, getline, delete_file, fileopen, fileclose, &
             filewrite, warnwrite, parent_dir, is_hidden_file, read_lines, read_lines_expanded, which, run, &
-            LINE_BUFFER_LEN, os_delete_dir, is_absolute_path, env_variable, get_home, execute_and_read_output, &
+            os_delete_dir, is_absolute_path, env_variable, get_home, execute_and_read_output, &
             get_dos_path
-    integer, parameter :: LINE_BUFFER_LEN = 32768
 
 #ifndef FPM_BOOTSTRAP
     interface
@@ -332,14 +331,13 @@ function read_lines_expanded(fh) result(lines)
     type(string_t), allocatable :: lines(:)
 
     integer :: i
-    integer :: ilen
-    character(LINE_BUFFER_LEN) :: line_buffer_read, line_buffer_expanded
+    integer :: iostat
+    character(len=:),allocatable :: line_buffer_read
 
     allocate(lines(number_of_rows(fh)))
     do i = 1, size(lines)
-        read(fh, '(A)') line_buffer_read
-        call notabs(line_buffer_read, line_buffer_expanded, ilen)
-        lines(i)%s = trim(line_buffer_expanded)
+        call getline(fh, line_buffer_read, iostat)
+        lines(i)%s = dilate(line_buffer_read)
     end do
 
 end function read_lines_expanded
@@ -350,12 +348,11 @@ function read_lines(fh) result(lines)
     type(string_t), allocatable :: lines(:)
 
     integer :: i
-    character(LINE_BUFFER_LEN) :: line_buffer
+    integer :: iostat
 
     allocate(lines(number_of_rows(fh)))
     do i = 1, size(lines)
-        read(fh, '(A)') line_buffer
-        lines(i)%s = trim(line_buffer)
+        call getline(fh, lines(i)%s, iostat)
     end do
 
 end function read_lines
@@ -560,6 +557,7 @@ end function
 function get_temp_filename() result(tempfile)
     !
     use iso_c_binding, only: c_ptr, C_NULL_PTR, c_f_pointer
+    integer, parameter :: MAX_FILENAME_LENGTH = 32768
     character(:), allocatable :: tempfile
 
     type(c_ptr) :: c_tempfile_ptr
@@ -582,7 +580,7 @@ function get_temp_filename() result(tempfile)
     end interface
 
     c_tempfile_ptr = c_tempnam(C_NULL_PTR, C_NULL_PTR)
-    call c_f_pointer(c_tempfile_ptr,c_tempfile,[LINE_BUFFER_LEN])
+    call c_f_pointer(c_tempfile_ptr,c_tempfile,[MAX_FILENAME_LENGTH])
 
     tempfile = f_string(c_tempfile)
 
@@ -644,8 +642,9 @@ subroutine getline(unit, line, iostat, iomsg)
     !> Error message
     character(len=:), allocatable, optional :: iomsg
 
-    character(len=LINE_BUFFER_LEN) :: buffer
-    character(len=LINE_BUFFER_LEN) :: msg
+    integer, parameter :: FILENAME_MAX = 4096
+    character(len=FILENAME_MAX) :: buffer
+    character(len=FILENAME_MAX) :: msg
     integer :: size
     integer :: stat
 
@@ -1095,7 +1094,7 @@ end subroutine os_delete_dir
 
         integer :: cmdstat, unit, stat = 0
         character(len=:), allocatable :: cmdmsg, tmp_file
-        character(len=1000) :: output_line
+        character(len=:),allocatable :: output_line
 
         tmp_file = get_temp_filename()
 
@@ -1105,12 +1104,12 @@ end subroutine os_delete_dir
         open(newunit=unit, file=tmp_file, action='read', status='old')
         output = ''
         do
-          read(unit, *, iostat=stat) output_line
-          if (stat /= 0) exit
-          output = output//trim(output_line)//' '
+           call getline(unit, output_line, stat)
+           if (stat /= 0) exit
+           output = output//output_line//' '
         end do
-        close(unit, status='delete')
-    end
+        close(unit, status='delete',iostat=stat)
+    end subroutine execute_and_read_output
 
     !> Ensure a windows path is converted to an 8.3 DOS path if it contains spaces
     function get_dos_path(path,error)
