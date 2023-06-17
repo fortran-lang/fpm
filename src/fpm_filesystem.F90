@@ -6,7 +6,7 @@ module fpm_filesystem
                                OS_UNKNOWN, OS_LINUX, OS_MACOS, OS_WINDOWS, &
                                OS_CYGWIN, OS_SOLARIS, OS_FREEBSD, OS_OPENBSD
     use fpm_environment, only: separator, get_env, os_is_unix
-    use fpm_strings, only: f_string, replace, string_t, split, notabs, str_begins_with_str
+    use fpm_strings, only: f_string, replace, string_t, split, dilate, str_begins_with_str
     use iso_c_binding, only: c_char, c_ptr, c_int, c_null_char, c_associated, c_f_pointer
     use fpm_error, only : fpm_stop, error_t, fatal_error
     implicit none
@@ -14,9 +14,8 @@ module fpm_filesystem
     public :: basename, canon_path, dirname, is_dir, join_path, number_of_rows, list_files, get_local_prefix, &
             mkdir, exists, get_temp_filename, windows_path, unix_path, getline, delete_file, fileopen, fileclose, &
             filewrite, warnwrite, parent_dir, is_hidden_file, read_lines, read_lines_expanded, which, run, &
-            LINE_BUFFER_LEN, os_delete_dir, is_absolute_path, env_variable, get_home, execute_and_read_output, &
+            os_delete_dir, is_absolute_path, env_variable, get_home, execute_and_read_output, &
             get_dos_path
-    integer, parameter :: LINE_BUFFER_LEN = 32768
 
 #ifndef FPM_BOOTSTRAP
     interface
@@ -332,14 +331,13 @@ function read_lines_expanded(fh) result(lines)
     type(string_t), allocatable :: lines(:)
 
     integer :: i
-    integer :: ilen
-    character(LINE_BUFFER_LEN) :: line_buffer_read, line_buffer_expanded
+    integer :: iostat
+    character(len=:),allocatable :: line_buffer_read
 
     allocate(lines(number_of_rows(fh)))
     do i = 1, size(lines)
-        read(fh, '(A)') line_buffer_read
-        call notabs(line_buffer_read, line_buffer_expanded, ilen)
-        lines(i)%s = trim(line_buffer_expanded)
+        call getline(fh, line_buffer_read, iostat)
+        lines(i)%s = dilate(line_buffer_read)
     end do
 
 end function read_lines_expanded
@@ -350,12 +348,11 @@ function read_lines(fh) result(lines)
     type(string_t), allocatable :: lines(:)
 
     integer :: i
-    character(LINE_BUFFER_LEN) :: line_buffer
+    integer :: iostat
 
     allocate(lines(number_of_rows(fh)))
     do i = 1, size(lines)
-        read(fh, '(A)') line_buffer
-        lines(i)%s = trim(line_buffer)
+        call getline(fh, lines(i)%s, iostat)
     end do
 
 end function read_lines
@@ -560,6 +557,7 @@ end function
 function get_temp_filename() result(tempfile)
     !
     use iso_c_binding, only: c_ptr, C_NULL_PTR, c_f_pointer
+    integer, parameter :: MAX_FILENAME_LENGTH = 32768
     character(:), allocatable :: tempfile
 
     type(c_ptr) :: c_tempfile_ptr
@@ -582,7 +580,7 @@ function get_temp_filename() result(tempfile)
     end interface
 
     c_tempfile_ptr = c_tempnam(C_NULL_PTR, C_NULL_PTR)
-    call c_f_pointer(c_tempfile_ptr,c_tempfile,[LINE_BUFFER_LEN])
+    call c_f_pointer(c_tempfile_ptr,c_tempfile,[MAX_FILENAME_LENGTH])
 
     tempfile = f_string(c_tempfile)
 
@@ -628,8 +626,68 @@ function unix_path(path) result(nixpath)
 
 end function unix_path
 
-
-!> read a line of arbitrary length into a CHARACTER variable from the specified LUN
+!>AUTHOR: fpm(1) contributors
+!!LICENSE: MIT
+!>
+!!##NAME
+!!     getline(3f) - [M_io:READ] read a line of arbintrary length from specified
+!!     LUN into allocatable string (up to system line length limit)
+!!    (LICENSE:PD)
+!!
+!!##SYNTAX
+!!   subroutine getline(unit,line,iostat,iomsg)
+!!
+!!    integer,intent(in)                       :: unit
+!!    character(len=:),allocatable,intent(out) :: line
+!!    integer,intent(out)                      :: iostat
+!!    character(len=:), allocatable, optional  :: iomsg
+!!
+!!##DESCRIPTION
+!!    Read a line of any length up to programming environment maximum
+!!    line length. Requires Fortran 2003+.
+!!
+!!    It is primarily expected to be used when reading input which will
+!!    then be parsed or echoed.
+!!
+!!    The input file must have a PAD attribute of YES for the function
+!!    to work properly, which is typically true.
+!!
+!!    The simple use of a loop that repeatedly re-allocates a character
+!!    variable in addition to reading the input file one buffer at a
+!!    time could (depending on the programming environment used) be
+!!    inefficient, as it could reallocate and allocate memory used for
+!!    the output string with each buffer read.
+!!
+!!##OPTIONS
+!!    LINE    The line read when IOSTAT returns as zero.
+!!    LUN     LUN (Fortran logical I/O unit) number of file open and ready
+!!            to read.
+!!    IOSTAT  status returned by READ(IOSTAT=IOS). If not zero, an error
+!!            occurred or an end-of-file or end-of-record was encountered.
+!!    IOMSG   error message returned by system when IOSTAT is not zero.
+!!
+!!##EXAMPLE
+!!
+!!   Sample program:
+!!
+!!    program demo_getline
+!!    use,intrinsic :: iso_fortran_env, only : stdin=>input_unit
+!!    use,intrinsic :: iso_fortran_env, only : iostat_end
+!!    use FPM_filesystem, only : getline
+!!    implicit none
+!!    integer :: iostat
+!!    character(len=:),allocatable :: line, iomsg
+!!       open(unit=stdin,pad='yes')
+!!       INFINITE: do 
+!!          call getline(stdin,line,iostat,iomsg)
+!!          if(iostat /= 0) exit INFINITE
+!!          write(*,'(a)')'['//line//']'
+!!       enddo INFINITE
+!!       if(iostat /= iostat_end)then
+!!          write(*,*)'error reading input:',iomsg
+!!       endif
+!!    end program demo_getline
+!!
 subroutine getline(unit, line, iostat, iomsg)
 
     !> Formatted IO unit
@@ -644,8 +702,9 @@ subroutine getline(unit, line, iostat, iomsg)
     !> Error message
     character(len=:), allocatable, optional :: iomsg
 
-    character(len=LINE_BUFFER_LEN) :: buffer
-    character(len=LINE_BUFFER_LEN) :: msg
+    integer, parameter :: BUFFER_SIZE = 32768
+    character(len=BUFFER_SIZE)       :: buffer
+    character(len=256)               :: msg
     integer :: size
     integer :: stat
 
@@ -1094,8 +1153,7 @@ end subroutine os_delete_dir
         logical, intent(in), optional :: verbose
 
         integer :: exitstat, unit, stat = 0
-        character(len=:), allocatable :: cmdmsg, tmp_file
-        character(len=1000) :: output_line
+        character(len=:), allocatable :: cmdmsg, tmp_file, output_line
         logical :: is_verbose
 
         if (present(verbose)) then
@@ -1112,12 +1170,12 @@ end subroutine os_delete_dir
         open(newunit=unit, file=tmp_file, action='read', status='old')
         output = ''
         do
-          read(unit, *, iostat=stat) output_line
-          if (stat /= 0) exit
-          output = output//trim(output_line)//' '
+           call getline(unit, output_line, stat)
+           if (stat /= 0) exit
+           output = output//output_line//' '
         end do
         if (is_verbose) print *, output
-        close(unit, status='delete')
+        close(unit, status='delete', iostat=stat)
     end
 
     !> Ensure a windows path is converted to an 8.3 DOS path if it contains spaces
