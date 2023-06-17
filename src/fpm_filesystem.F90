@@ -1083,24 +1083,31 @@ end subroutine os_delete_dir
     end subroutine get_home
 
     !> Execute command line and return output as a string.
-    subroutine execute_and_read_output(cmd, output, error, exitstat)
+    subroutine execute_and_read_output(cmd, output, error, verbose)
         !> Command to execute.
         character(len=*), intent(in) :: cmd
         !> Command line output.
         character(len=:), allocatable, intent(out) :: output
         !> Error to handle.
         type(error_t), allocatable, intent(out) :: error
-        !> Can optionally used for error handling.
-        integer, intent(out), optional :: exitstat
+        !> Print additional information if true.
+        logical, intent(in), optional :: verbose
 
-        integer :: cmdstat, unit, stat = 0
+        integer :: exitstat, unit, stat = 0
         character(len=:), allocatable :: cmdmsg, tmp_file
         character(len=1000) :: output_line
+        logical :: is_verbose
+
+        if (present(verbose)) then
+          is_verbose = verbose
+        else
+          is_verbose = .false.
+        end if
 
         tmp_file = get_temp_filename()
 
-        call execute_command_line(cmd//' > '//tmp_file, exitstat=exitstat, cmdstat=cmdstat)
-        if (cmdstat /= 0) call fatal_error(error, '*run*: '//"Command failed: '"//cmd//"'. Message: '"//trim(cmdmsg)//"'.")
+        call run(cmd//' > '//tmp_file, exitstat=exitstat, echo=is_verbose)
+        if (exitstat /= 0) call fatal_error(error, '*run*: '//"Command failed: '"//cmd//"'. Message: '"//trim(cmdmsg)//"'.")
 
         open(newunit=unit, file=tmp_file, action='read', status='old')
         output = ''
@@ -1109,6 +1116,7 @@ end subroutine os_delete_dir
           if (stat /= 0) exit
           output = output//trim(output_line)//' '
         end do
+        if (is_verbose) print *, output
         close(unit, status='delete')
     end
 

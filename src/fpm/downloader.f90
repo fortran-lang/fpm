@@ -1,6 +1,6 @@
 module fpm_downloader
   use fpm_error, only: error_t, fatal_error
-  use fpm_filesystem, only: which
+  use fpm_filesystem, only: which, run
   use fpm_versioning, only: version_t
   use jonquil, only: json_object, json_value, json_error, json_load, cast_to_object
   use fpm_strings, only: string_t
@@ -81,25 +81,23 @@ contains
     character(len=*), intent(in) :: endpoint
     !> Form data to upload.
     type(string_t), intent(in) :: form_data(:)
-    !> Print additional information when true.
+    !> Print additional information if true.
     logical, intent(in) :: verbose
     !> Error handling.
     type(error_t), allocatable, intent(out) :: error
 
     integer :: stat, i
-    character(len=:), allocatable :: form_data_str, cmd
+    character(len=:), allocatable :: form_data_str
 
     form_data_str = ''
     do i = 1, size(form_data)
       form_data_str = form_data_str//"-F '"//form_data(i)%s//"' "
     end do
 
-    cmd = 'curl -X POST -H "Content-Type: multipart/form-data" '//form_data_str//endpoint
-
     if (which('curl') /= '') then
       print *, 'Uploading package ...'
-      if (verbose) print *, ' + ', cmd
-      call execute_command_line(cmd, exitstat=stat)
+      call run('curl -X POST -H "Content-Type: multipart/form-data" '// &
+      & form_data_str//endpoint, exitstat=stat, verbose=verbose)
     else
       call fatal_error(error, "'curl' not installed."); return
     end if

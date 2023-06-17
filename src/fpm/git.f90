@@ -1,7 +1,8 @@
 !> Implementation for interacting with git repositories.
 module fpm_git
     use fpm_error, only: error_t, fatal_error
-    use fpm_filesystem, only : get_temp_filename, getline, join_path, execute_and_read_output
+    use fpm_filesystem, only : get_temp_filename, getline, join_path, execute_and_read_output, run
+
     implicit none
 
     public :: git_target_t, git_target_default, git_target_branch, git_target_tag, git_target_revision, git_revision, &
@@ -321,18 +322,10 @@ contains
     type(error_t), allocatable, intent(out) :: error
 
     integer :: stat
-    character(len=:), allocatable :: cmd_output, archive_format, cmd
+    character(len=:), allocatable :: cmd_output, archive_format
 
-    if (verbose) then
-      print *, ''
-      print *, 'Show git archive options:'
-      print *, ' + git archive -l'
-    end if
-
-    call execute_and_read_output('git archive -l', cmd_output, error)
+    call execute_and_read_output('git archive -l', cmd_output, error, verbose)
     if (allocated(error)) return
-
-    if (verbose) print *, ' ', cmd_output
 
     if (index(cmd_output, 'tar.gz') /= 0) then
       archive_format = 'tar.gz'
@@ -340,16 +333,7 @@ contains
       call fatal_error(error, "Cannot find a suitable archive format for 'git archive'."); return
     end if
 
-    cmd = 'git archive '//ref//' --format='//archive_format//' -o '//destination
-
-    if (verbose) then
-      print *, ''
-      print *, 'Archive ', ref, ' using ', archive_format, ':'
-      print *, ' + ', cmd
-      print *, ''
-    end if
-
-    call execute_command_line(cmd, exitstat=stat)
+    call run('git archive '//ref//' --format='//archive_format//' -o '//destination, echo=verbose, exitstat=stat)
     if (stat /= 0) then
       call fatal_error(error, "Error packing '"//source//"'."); return
     end if
