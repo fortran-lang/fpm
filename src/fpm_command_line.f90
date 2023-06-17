@@ -92,6 +92,8 @@ type, extends(fpm_build_settings)  :: fpm_run_settings
     character(len=:),allocatable :: runner
     character(len=:),allocatable :: runner_args
     logical :: example
+    contains
+       procedure :: runner_command
 end type
 
 type, extends(fpm_run_settings)  :: fpm_test_settings
@@ -1435,5 +1437,22 @@ contains
 
       val = get_env(fpm_prefix//env, default)
     end function get_fpm_env
+
+    !> Build a full runner command (executable + command-line arguments)
+    function runner_command(cmd) result(run_cmd)
+        class(fpm_run_settings), intent(in) :: cmd
+        character(len=:), allocatable :: run_cmd
+
+        !> Get executable
+        if (len_trim(cmd%runner)>0) then
+            run_cmd = trim(cmd%runner)
+        else
+            run_cmd = ''
+        end if
+
+        !> Append command-line arguments
+        if (len_trim(cmd%runner_args)>0) run_cmd = run_cmd//' '//trim(cmd%runner_args)
+
+    end function runner_command
 
 end module fpm_command_line
