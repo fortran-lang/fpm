@@ -90,7 +90,6 @@ type, extends(fpm_build_settings)  :: fpm_run_settings
     character(len=ibug),allocatable :: name(:)
     character(len=:),allocatable :: args
     character(len=:),allocatable :: runner
-    character(len=:),allocatable :: runner_args
     logical :: example
     contains
        procedure :: runner_command
@@ -144,7 +143,7 @@ character(len=20),parameter :: manual(*)=[ character(len=20) ::&
 &  'test',  'runner', 'install', 'update', 'list',   'help',   'version', 'publish' ]
 
 character(len=:), allocatable :: val_runner, val_compiler, val_flag, val_cflag, val_cxxflag, val_ldflag, &
-    val_profile, val_runner_args
+    val_profile
 
 !   '12345678901234567890123456789012345678901234567890123456789012345678901234567890',&
 character(len=80), parameter :: help_text_build_common(*) = [character(len=80) ::      &
@@ -271,8 +270,7 @@ contains
         run_args = &
           ' --target " "' // &
           ' --list F' // &
-          ' --runner " "'// &
-          ' --runner-args " "'
+          ' --runner " "'
 
         compiler_args = &
           ' --profile " "' // &
@@ -326,8 +324,7 @@ contains
             archiver = sget('archiver')
             allocate(fpm_run_settings :: cmd_settings)
             val_runner=sget('runner')
-            val_runner_args=sget('runner-args')
-            if (specified('runner') .and. val_runner=='')val_runner='echo'
+            if(specified('runner') .and. val_runner=='')val_runner='echo'
             cmd_settings=fpm_run_settings(&
             & args=remaining,&
             & profile=val_profile,&
@@ -345,7 +342,6 @@ contains
             & build_tests=.false.,&
             & name=names,&
             & runner=val_runner,&
-            & runner_args=val_runner_args,&
             & verbose=lget('verbose') )
 
         case('build')
@@ -577,7 +573,6 @@ contains
             allocate(fpm_test_settings :: cmd_settings)
             val_runner=sget('runner')
             if(specified('runner') .and. val_runner=='')val_runner='echo'
-            val_runner_args=sget('runner-args')
             cmd_settings=fpm_test_settings(&
             & args=remaining, &
             & profile=val_profile, &
@@ -595,7 +590,6 @@ contains
             & build_tests=.true., &
             & name=names, &
             & runner=val_runner, &
-            & runner_args=val_runner_args, &
             & verbose=lget('verbose') )
 
         case('update')
