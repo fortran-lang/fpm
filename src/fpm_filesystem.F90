@@ -1152,7 +1152,7 @@ end subroutine os_delete_dir
         !> Print additional information if true.
         logical, intent(in), optional :: verbose
 
-        integer :: exitstat, unit, stat = 0
+        integer :: exitstat, unit, stat
         character(len=:), allocatable :: cmdmsg, tmp_file, output_line
         logical :: is_verbose
 
@@ -1175,7 +1175,7 @@ end subroutine os_delete_dir
            output = output//output_line//' '
         end do
         if (is_verbose) print *, output
-        close(unit, status='delete', iostat=stat)
+        close(unit, status='delete')
     end
 
     !> Ensure a windows path is converted to an 8.3 DOS path if it contains spaces
