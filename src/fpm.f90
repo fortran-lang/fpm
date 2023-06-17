@@ -543,6 +543,8 @@ subroutine cmd_run(settings,test)
         end if
     end if
 
+
+
     ! Check all names are valid
     ! or no name and found more than one file
     toomany= size(settings%name)==0 .and. size(executables)>1
@@ -587,10 +589,10 @@ subroutine cmd_run(settings,test)
             if (exists(executables(i)%s)) then
                 if(settings%runner /= ' ')then
                     if(.not.allocated(settings%args))then
-                       call run(settings%runner//' '//executables(i)%s, &
+                       call run(settings%runner_command()//' '//executables(i)%s, &
                              echo=settings%verbose, exitstat=stat(i))
                     else
-                       call run(settings%runner//' '//executables(i)%s//" "//settings%args, &
+                       call run(settings%runner_command()//' '//executables(i)%s//" "//settings%args, &
                              echo=settings%verbose, exitstat=stat(i))
                     endif
                 else

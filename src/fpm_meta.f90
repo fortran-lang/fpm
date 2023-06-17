@@ -289,11 +289,8 @@ subroutine resolve_cmd(self,settings,error)
         select type (cmd=>settings)
            class is (fpm_run_settings) ! includes fpm_test_settings
 
-              if (.not.allocated(cmd%runner)) then
-                  cmd%runner = self%run_command%s
-              else
-                  cmd%runner = self%run_command%s//' '//cmd%runner
-              end if
+              ! Only override runner if user has not provided a custom one
+              if (.not.len_trim(cmd%runner)>0) cmd%runner = self%run_command%s
 
         end select
 
