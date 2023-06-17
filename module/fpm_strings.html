@@ -101,7 +101,7 @@
           <li id="statements"><i class="fa fa-list-ol"></i>
             <a data-toggle="tooltip"
                data-placement="bottom" data-html="true"
-               title=" 6.8% of total for modules and submodules.">701 statements</a>
+               title=" 6.9% of total for modules and submodules.">715 statements</a>
           </li>
 
             <li id="source-file">
@@ -177,6 +177,7 @@
       </div>
       <div id="funcs-0" class="panel-collapse collapse">
         <div class="list-group">
+            <a class="list-group-item" href="../module/fpm_strings.html#proc-dilate">dilate</a>
             <a class="list-group-item" href="../module/fpm_strings.html#proc-f_string">f_string</a>
             <a class="list-group-item" href="../module/fpm_strings.html#proc-glob">glob</a>
             <a class="list-group-item" href="../module/fpm_strings.html#proc-has_valid_custom_prefix">has_valid_custom_prefix</a>
@@ -259,7 +260,8 @@
 </ul>
 <h3 id="whitespace">Whitespace</h3>
 <ul>
-<li><a href="../proc/notabs.html">notabs</a>  Expand tab characters assuming a tab space every eight characters</li>
+<li><a href="../proc/notabs.html">notabs</a>  subroutine to expand tab characters assuming a tab space every eight characters</li>
+<li><a href="../proc/dilate.html">dilate</a>  function to expand tab characters assuming a tab space every eight characters</li>
 <li><a href="../interface/len_trim.html">len_trim</a>  Determine total trimmed length of <strong>STRING_T</strong> array</li>
 </ul>
 <h3 id="miscellaneous">Miscellaneous</h3>
@@ -276,8 +278,8 @@
       <ul class="list-group">
           <li class="list-group-item">
             <ul class="list-inline">
-                <li><a href='<a href="https://gcc.gnu.org/onlinedocs/gfortran/ISO_005fFORTRAN_005fENV.html">iso_fortran_env</a>'>iso_fortran_env</a></li>
                 <li><a href='<a href="http://fortranwiki.org/fortran/show/iso_c_binding">iso_c_binding</a>'>iso_c_binding</a></li>
+                <li><a href='<a href="https://gcc.gnu.org/onlinedocs/gfortran/ISO_005fFORTRAN_005fENV.html">iso_fortran_env</a>'>iso_fortran_env</a></li>
             </ul>
           </li>
       </ul>
@@ -337,6 +339,7 @@
       </div>
       <div id="funcs-1" class="panel-collapse collapse">
         <div class="list-group">
+            <a class="list-group-item" href="../module/fpm_strings.html#proc-dilate">dilate</a>
             <a class="list-group-item" href="../module/fpm_strings.html#proc-f_string">f_string</a>
             <a class="list-group-item" href="../module/fpm_strings.html#proc-glob">glob</a>
             <a class="list-group-item" href="../module/fpm_strings.html#proc-has_valid_custom_prefix">has_valid_custom_prefix</a>
@@ -1140,6 +1143,55 @@
         <section>
           <h2>Functions</h2>
               <div class="panel panel-default">
+    <div class="panel-heading codesum"><span class="anchor" id="proc-dilate"></span><h3>public  function <a href='../proc/dilate.html'>dilate</a>(instr) result(outstr)  
+</h3></div>
+    <div class="panel-body">
+              <dl class="dl-horizontal">
+        <dt>Author</dt><dd>John S. Urban</dd>
+        <dt>License</dt><dd>Public Domain</dd>
+    </dl>
+
+  <p>Sample program:</p><a href="../proc/dilate.html" class="pull-right"><emph>Read more&hellip;</emph></a>
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th>Type</th>
+<th>Intent</th><th>Optional</th>        <th>Attributes</th>
+        <th></th>
+        <th>Name</th>
+        <th></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" ></span>
+              character(len=*),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>instr</strong></td>
+            <td>
+
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+    <h4>
+    Return Value
+    <small>character(len=:), allocatable</small>
+    </h4>
+    
+
+    </div>
+  </div>
+
+              <div class="panel panel-default">
     <div class="panel-heading codesum"><span class="anchor" id="proc-f_string"></span><h3>public  function <a href='../proc/f_string.html'>f_string</a>(c_string)  
 </h3></div>
     <div class="panel-body">
@@ -1377,7 +1429,7 @@ single characters terminated with a C_NULL_CHAR character</p>
   </div>
 
               <div class="panel panel-default">
-    <div class="panel-heading codesum"><span class="anchor" id="proc-is_fortran_name"></span><h3>public  function <a href='../proc/is_fortran_name.html'>is_fortran_name</a>(line) result(lout)  
+    <div class="panel-heading codesum"><span class="anchor" id="proc-is_fortran_name"></span><h3>public elemental function <a href='../proc/is_fortran_name.html'>is_fortran_name</a>(line) result(lout)  
 </h3></div>
     <div class="panel-body">
           
@@ -2465,7 +2517,7 @@ expanded to other characters if needed.</p>
             <p class="text-right">
               Documentation generated by
               <a href="https://github.com/Fortran-FOSS-Programmers/ford">FORD</a>
- on 2023-06-17 12:53              </p>
+ on 2023-06-17 14:43              </p>
           </div>
         </div>
         <br>

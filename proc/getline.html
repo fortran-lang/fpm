@@ -97,11 +97,13 @@
     <div class="col-lg-12">
       <div class="well well-sm">
         <ul class="list-inline" style="margin-bottom:0px;display:inline">
+            <li id="meta-author"><i class="fa fa-pencil"></i> fpm(1) contributors</li>
+            <li id="meta-license"><i class="fa fa-legal"></i> MIT</li>
 
           <li id="statements"><i class="fa fa-list-ol"></i>
             <a data-toggle="tooltip"
                data-placement="bottom" data-html="true"
-               title=" 0.5% of total for procedures.">26 statements</a>
+               title=" 0.5% of total for procedures.">27 statements</a>
           </li>
 
             <li id="source-file">
@@ -165,7 +167,66 @@
 </h2>
     
 
-    <p>read a line of arbitrary length into a CHARACTER variable from the specified LUN</p>
+    <h2 id="name">NAME</h2>
+<div class="codehilite"><pre><span></span><code> getline(3f) - [M_io:READ] read a line of arbintrary length from specified
+ LUN into allocatable string (up to system line length limit)
+(LICENSE:PD)
+</code></pre></div>
+
+<h2 id="syntax">SYNTAX</h2>
+<p>subroutine getline(unit,line,iostat,iomsg)</p>
+<div class="codehilite"><pre><span></span><code>integer,intent(in)                       :: unit
+character(len=:),allocatable,intent(out) :: line
+integer,intent(out)                      :: iostat
+character(len=:), allocatable, optional  :: iomsg
+</code></pre></div>
+
+<h2 id="description">DESCRIPTION</h2>
+<div class="codehilite"><pre><span></span><code><span class="n">Read</span><span class="w"> </span><span class="n">a</span><span class="w"> </span><span class="n">line</span><span class="w"> </span><span class="n">of</span><span class="w"> </span><span class="n">any</span><span class="w"> </span><span class="n">length</span><span class="w"> </span><span class="n">up</span><span class="w"> </span><span class="n">to</span><span class="w"> </span><span class="n">programming</span><span class="w"> </span><span class="n">environment</span><span class="w"> </span><span class="n">maximum</span><span class="w"></span>
+<span class="n">line</span><span class="w"> </span><span class="n">length</span><span class="o">.</span><span class="w"> </span><span class="n">Requires</span><span class="w"> </span><span class="n">Fortran</span><span class="w"> </span><span class="mi">2003</span><span class="o">+.</span><span class="w"></span>
+
+<span class="n">It</span><span class="w"> </span><span class="k">is</span><span class="w"> </span><span class="n">primarily</span><span class="w"> </span><span class="n">expected</span><span class="w"> </span><span class="n">to</span><span class="w"> </span><span class="n">be</span><span class="w"> </span><span class="n">used</span><span class="w"> </span><span class="n">when</span><span class="w"> </span><span class="n">reading</span><span class="w"> </span><span class="n">input</span><span class="w"> </span><span class="n">which</span><span class="w"> </span><span class="n">will</span><span class="w"></span>
+<span class="n">then</span><span class="w"> </span><span class="n">be</span><span class="w"> </span><span class="n">parsed</span><span class="w"> </span><span class="ow">or</span><span class="w"> </span><span class="n">echoed</span><span class="o">.</span><span class="w"></span>
+
+<span class="n">The</span><span class="w"> </span><span class="n">input</span><span class="w"> </span><span class="n">file</span><span class="w"> </span><span class="n">must</span><span class="w"> </span><span class="n">have</span><span class="w"> </span><span class="n">a</span><span class="w"> </span><span class="n">PAD</span><span class="w"> </span><span class="n">attribute</span><span class="w"> </span><span class="n">of</span><span class="w"> </span><span class="n">YES</span><span class="w"> </span><span class="k">for</span><span class="w"> </span><span class="n">the</span><span class="w"> </span><span class="n">function</span><span class="w"></span>
+<span class="n">to</span><span class="w"> </span><span class="n">work</span><span class="w"> </span><span class="n">properly</span><span class="p">,</span><span class="w"> </span><span class="n">which</span><span class="w"> </span><span class="k">is</span><span class="w"> </span><span class="n">typically</span><span class="w"> </span><span class="bp">true</span><span class="o">.</span><span class="w"></span>
+
+<span class="n">The</span><span class="w"> </span><span class="n">simple</span><span class="w"> </span><span class="n">use</span><span class="w"> </span><span class="n">of</span><span class="w"> </span><span class="n">a</span><span class="w"> </span><span class="n">loop</span><span class="w"> </span><span class="n">that</span><span class="w"> </span><span class="n">repeatedly</span><span class="w"> </span><span class="n">re</span><span class="o">-</span><span class="n">allocates</span><span class="w"> </span><span class="n">a</span><span class="w"> </span><span class="n">character</span><span class="w"></span>
+<span class="n">variable</span><span class="w"> </span><span class="ow">in</span><span class="w"> </span><span class="n">addition</span><span class="w"> </span><span class="n">to</span><span class="w"> </span><span class="n">reading</span><span class="w"> </span><span class="n">the</span><span class="w"> </span><span class="n">input</span><span class="w"> </span><span class="n">file</span><span class="w"> </span><span class="n">one</span><span class="w"> </span><span class="n">buffer</span><span class="w"> </span><span class="n">at</span><span class="w"> </span><span class="n">a</span><span class="w"></span>
+<span class="n">time</span><span class="w"> </span><span class="n">could</span><span class="w"> </span><span class="p">(</span><span class="n">depending</span><span class="w"> </span><span class="n">on</span><span class="w"> </span><span class="n">the</span><span class="w"> </span><span class="n">programming</span><span class="w"> </span><span class="n">environment</span><span class="w"> </span><span class="n">used</span><span class="p">)</span><span class="w"> </span><span class="n">be</span><span class="w"></span>
+<span class="n">inefficient</span><span class="p">,</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="n">it</span><span class="w"> </span><span class="n">could</span><span class="w"> </span><span class="n">reallocate</span><span class="w"> </span><span class="ow">and</span><span class="w"> </span><span class="n">allocate</span><span class="w"> </span><span class="n">memory</span><span class="w"> </span><span class="n">used</span><span class="w"> </span><span class="k">for</span><span class="w"></span>
+<span class="n">the</span><span class="w"> </span><span class="n">output</span><span class="w"> </span><span class="n">string</span><span class="w"> </span><span class="n">with</span><span class="w"> </span><span class="n">each</span><span class="w"> </span><span class="n">buffer</span><span class="w"> </span><span class="n">read</span><span class="o">.</span><span class="w"></span>
+</code></pre></div>
+
+<h2 id="options">OPTIONS</h2>
+<div class="codehilite"><pre><span></span><code><span class="nv">LINE</span>    <span class="nv">The</span> <span class="nv">line</span> <span class="nv">read</span> <span class="nv">when</span> <span class="nv">IOSTAT</span> <span class="nv">returns</span> <span class="nv">as</span> <span class="nv">zero</span>.
+<span class="nv">LUN</span>     <span class="nv">LUN</span> <span class="ss">(</span><span class="nv">Fortran</span> <span class="nv">logical</span> <span class="nv">I</span><span class="o">/</span><span class="nv">O</span> <span class="nv">unit</span><span class="ss">)</span> <span class="nv">number</span> <span class="nv">of</span> <span class="nv">file</span> <span class="nv">open</span> <span class="nv">and</span> <span class="nv">ready</span>
+        <span class="nv">to</span> <span class="nv">read</span>.
+<span class="nv">IOSTAT</span>  <span class="nv">status</span> <span class="nv">returned</span> <span class="nv">by</span> <span class="nv">READ</span><span class="ss">(</span><span class="nv">IOSTAT</span><span class="o">=</span><span class="nv">IOS</span><span class="ss">)</span>. <span class="k">If</span> <span class="nv">not</span> <span class="nv">zero</span>, <span class="nv">an</span> <span class="nv">error</span>
+        <span class="nv">occurred</span> <span class="nv">or</span> <span class="nv">an</span> <span class="k">end</span><span class="o">-</span><span class="nv">of</span><span class="o">-</span><span class="nv">file</span> <span class="nv">or</span> <span class="k">end</span><span class="o">-</span><span class="nv">of</span><span class="o">-</span><span class="nv">record</span> <span class="nv">was</span> <span class="nv">encountered</span>.
+<span class="nv">IOMSG</span>   <span class="nv">error</span> <span class="nv">message</span> <span class="nv">returned</span> <span class="nv">by</span> <span class="nv">system</span> <span class="nv">when</span> <span class="nv">IOSTAT</span> <span class="nv">is</span> <span class="nv">not</span> <span class="nv">zero</span>.
+</code></pre></div>
+
+<h2 id="example">EXAMPLE</h2>
+<p>Sample program:</p>
+<div class="codehilite"><pre><span></span><code><span class="nv">program</span> <span class="nv">demo_getline</span>
+<span class="nv">use</span>,<span class="nv">intrinsic</span> :: <span class="nv">iso_fortran_env</span>, <span class="nv">only</span> : <span class="nv">stdin</span><span class="o">=&gt;</span><span class="nv">input_unit</span>
+<span class="nv">use</span>,<span class="nv">intrinsic</span> :: <span class="nv">iso_fortran_env</span>, <span class="nv">only</span> : <span class="nv">iostat_end</span>
+<span class="nv">use</span> <span class="nv">FPM_filesystem</span>, <span class="nv">only</span> : <span class="nv">getline</span>
+<span class="nv">implicit</span> <span class="nv">none</span>
+<span class="nv">integer</span> :: <span class="nv">iostat</span>
+<span class="nv">character</span><span class="ss">(</span><span class="nv">len</span><span class="o">=</span>:<span class="ss">)</span>,<span class="nv">allocatable</span> :: <span class="nv">line</span>, <span class="nv">iomsg</span>
+   <span class="nv">open</span><span class="ss">(</span><span class="nv">unit</span><span class="o">=</span><span class="nv">stdin</span>,<span class="nv">pad</span><span class="o">=</span><span class="s1">&#39;</span><span class="s">yes</span><span class="s1">&#39;</span><span class="ss">)</span>
+   <span class="nv">INFINITE</span>: <span class="k">do</span> 
+      <span class="k">call</span> <span class="nl">getline</span><span class="ss">(</span><span class="nv">stdin</span>,<span class="nv">line</span>,<span class="nv">iostat</span>,<span class="nv">iomsg</span><span class="ss">)</span>
+      <span class="k">if</span><span class="ss">(</span><span class="nv">iostat</span> <span class="o">/=</span> <span class="mi">0</span><span class="ss">)</span> <span class="k">exit</span> <span class="nv">INFINITE</span>
+      <span class="nv">write</span><span class="ss">(</span><span class="o">*</span>,<span class="s1">&#39;</span><span class="s">(a)</span><span class="s1">&#39;</span><span class="ss">)</span><span class="s1">&#39;</span><span class="s">[</span><span class="s1">&#39;</span><span class="o">//</span><span class="nv">line</span><span class="o">//</span><span class="s1">&#39;</span><span class="s">]</span><span class="s1">&#39;</span>
+   <span class="nv">enddo</span> <span class="nv">INFINITE</span>
+   <span class="k">if</span><span class="ss">(</span><span class="nv">iostat</span> <span class="o">/=</span> <span class="nv">iostat_end</span><span class="ss">)</span><span class="k">then</span>
+      <span class="nv">write</span><span class="ss">(</span><span class="o">*</span>,<span class="o">*</span><span class="ss">)</span><span class="s1">&#39;</span><span class="s">error reading input:</span><span class="s1">&#39;</span>,<span class="nv">iomsg</span>
+   <span class="k">endif</span>
+<span class="k">end</span> <span class="nv">program</span> <span class="nv">demo_getline</span>
+</code></pre></div>
 
 
     <h3>Arguments</h3>
@@ -301,10 +362,12 @@
 <span class="w">    </span><span class="c">!&gt; Error message</span>
 <span class="w">    </span><span class="kt">character</span><span class="p">(</span><span class="nb">len</span><span class="o">=</span><span class="p">:),</span><span class="w"> </span><span class="k">allocatable</span><span class="p">,</span><span class="w"> </span><span class="k">optional</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">iomsg</span><span class="w"></span>
 
-<span class="w">    </span><span class="kt">character</span><span class="p">(</span><span class="nb">len</span><span class="o">=</span><span class="n">LINE_BUFFER_LEN</span><span class="p">)</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">buffer</span><span class="w"></span>
-<span class="w">    </span><span class="kt">character</span><span class="p">(</span><span class="nb">len</span><span class="o">=</span><span class="n">LINE_BUFFER_LEN</span><span class="p">)</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">msg</span><span class="w"></span>
+<span class="w">    </span><span class="kt">integer</span><span class="p">,</span><span class="w"> </span><span class="k">parameter</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">BUFFER_SIZE</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">32768</span><span class="w"></span>
+<span class="w">    </span><span class="kt">character</span><span class="p">(</span><span class="nb">len</span><span class="o">=</span><span class="n">BUFFER_SIZE</span><span class="p">)</span><span class="w">       </span><span class="kd">::</span><span class="w"> </span><span class="n">buffer</span><span class="w"></span>
+<span class="w">    </span><span class="kt">character</span><span class="p">(</span><span class="nb">len</span><span class="o">=</span><span class="mi">256</span><span class="p">)</span><span class="w">               </span><span class="kd">::</span><span class="w"> </span><span class="n">msg</span><span class="w"></span>
 <span class="w">    </span><span class="kt">integer</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">size</span><span class="w"></span>
 <span class="w">    </span><span class="kt">integer</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="nb">stat</span>
+
 
 <span class="nb">    </span><span class="k">allocate</span><span class="p">(</span><span class="kt">character</span><span class="p">(</span><span class="nb">len</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">line</span><span class="p">)</span><span class="w"></span>
 <span class="w">    </span><span class="k">do</span>
@@ -346,7 +409,7 @@
             <p class="text-right">
               Documentation generated by
               <a href="https://github.com/Fortran-FOSS-Programmers/ford">FORD</a>
- on 2023-06-17 12:53              </p>
+ on 2023-06-17 14:43              </p>
           </div>
         </div>
         <br>
