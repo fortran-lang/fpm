@@ -323,7 +323,8 @@ contains
 
             ! If there are additional command-line arguments, remove the additional
             ! double quotes which have been added by M_CLI2
-            call remove_characters_in_set(remaining,set='"')
+            val_runner_args=sget('runner-args')
+            call remove_characters_in_set(val_runner_args,set='"')
 
             c_compiler = sget('c-compiler')
             cxx_compiler = sget('cxx-compiler')
@@ -331,7 +332,7 @@ contains
             allocate(fpm_run_settings :: cmd_settings)
             val_runner=sget('runner')
             if(specified('runner') .and. val_runner=='')val_runner='echo'
-            val_runner_args=sget('runner-args')
+
             cmd_settings=fpm_run_settings(&
             & args=remaining,&
             & profile=val_profile,&
@@ -577,7 +578,8 @@ contains
 
             ! If there are additional command-line arguments, remove the additional
             ! double quotes which have been added by M_CLI2
-            call remove_characters_in_set(remaining,set='"')
+            val_runner_args=sget('runner-args')
+            call remove_characters_in_set(val_runner_args,set='"')
 
             c_compiler = sget('c-compiler')
             cxx_compiler = sget('cxx-compiler')
@@ -585,7 +587,7 @@ contains
             allocate(fpm_test_settings :: cmd_settings)
             val_runner=sget('runner')
             if(specified('runner') .and. val_runner=='')val_runner='echo'
-            val_runner_args=sget('runner-args')
+
             cmd_settings=fpm_test_settings(&
             & args=remaining, &
             & profile=val_profile, &
