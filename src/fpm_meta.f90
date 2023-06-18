@@ -3,7 +3,7 @@
 !> This is a wrapper data type that encapsulate all pre-processing information
 !> (compiler flags, linker libraries, etc.) required to correctly enable a package
 !> to use a core library.
-!>    
+!>        
 !>
 !>### Available core libraries   
 !>
