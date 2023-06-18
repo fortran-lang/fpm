@@ -8,6 +8,10 @@
 !>### Available core libraries
 !>
 !> - OpenMP
+!> - MPI
+!> - fortran-lang stdlib
+!> - fortran-lang minpack
+!> 
 !>
 !> @note Core libraries are enabled in the [build] section of the fpm.toml manifest
 !>
