@@ -776,21 +776,22 @@ contains
    help_list_dash = [character(len=80) :: &
    '                                                                                ', &
    ' build [--compiler COMPILER_NAME] [--profile PROF] [--flag FFLAGS] [--list]     ', &
-   '       [--tests] [--no-prune]                                                   ', &
+   '       [--tests] [--no-prune] [--config-file PATH]                              ', &
    ' help [NAME(s)]                                                                 ', &
    ' new NAME [[--lib|--src] [--app] [--test] [--example]]|                         ', &
    '          [--full|--bare][--backfill]                                           ', &
-   ' update [NAME(s)] [--fetch-only] [--clean] [--verbose]                          ', &
+   ' update [NAME(s)] [--fetch-only] [--clean] [--verbose] [--config-file PATH]     ', &
    ' list [--list]                                                                  ', &
    ' run  [[--target] NAME(s) [--example] [--profile PROF] [--flag FFLAGS] [--all]  ', &
    '      [--runner "CMD"] [--compiler COMPILER_NAME] [--list] [-- ARGS]            ', &
+   '      [--config-file PATH]                                                      ', &
    ' test [[--target] NAME(s)] [--profile PROF] [--flag FFLAGS] [--runner "CMD"]    ', &
-   '      [--list] [--compiler COMPILER_NAME] [-- ARGS]                             ', &
+   '      [--list] [--compiler COMPILER_NAME] [--config-file PATH] [-- ARGS]        ', &
    ' install [--profile PROF] [--flag FFLAGS] [--no-rebuild] [--prefix PATH]        ', &
-   '         [options]                                                              ', &
-   ' clean [--skip] [--all]                                                         ', &
+   '         [--config-file PATH] [options]                                         ', &
+   ' clean [--skip] [--all] [--config-file PATH]                                    ', &
    ' publish [--token TOKEN] [--show-package-version] [--show-upload-data]          ', &
-   '         [--dry-run] [--verbose]                                                ', &
+   '         [--dry-run] [--verbose] [--config-file PATH]                           ', &
    ' ']
     help_usage=[character(len=80) :: &
     '' ]
@@ -900,22 +901,23 @@ contains
     '  Their syntax is                                                      ', &
     '                                                                                ', &
     '    build [--profile PROF] [--flag FFLAGS] [--list] [--compiler COMPILER_NAME]  ', &
-    '          [--tests] [--no-prune]                                                ', &
+    '          [--tests] [--no-prune] [--config-file PATH]                           ', &
     '    new NAME [[--lib|--src] [--app] [--test] [--example]]|                      ', &
     '             [--full|--bare][--backfill]                                        ', &
-    '    update [NAME(s)] [--fetch-only] [--clean]                                   ', &
+    '    update [NAME(s)] [--fetch-only] [--clean] [--config-file PATH]              ', &
     '    run [[--target] NAME(s)] [--profile PROF] [--flag FFLAGS] [--list] [--all]  ', &
     '        [--example] [--runner "CMD"] [--compiler COMPILER_NAME]                 ', &
-    '        [--no-prune] [-- ARGS]                                                  ', &
+    '        [--no-prune] [-- ARGS] [--config-file PATH]                             ', &
     '    test [[--target] NAME(s)] [--profile PROF] [--flag FFLAGS] [--list]         ', &
     '         [--runner "CMD"] [--compiler COMPILER_NAME] [--no-prune] [-- ARGS]     ', &
+    '         [--config-file PATH]                                                   ', &
     '    help [NAME(s)]                                                              ', &
     '    list [--list]                                                               ', &
     '    install [--profile PROF] [--flag FFLAGS] [--no-rebuild] [--prefix PATH]     ', &
-    '            [options]                                                           ', &
-    '    clean [--skip] [--all]                                                      ', &
+    '            [options] [--config-file PATH]                                      ', &
+    '    clean [--skip] [--all] [--config-file PATH]                                 ', &
     '    publish [--token TOKEN] [--show-package-version] [--show-upload-data]       ', &
-    '            [--dry-run] [--verbose]                                             ', &
+    '            [--dry-run] [--verbose] [--config-file PATH]                        ', &
     '                                                                                ', &
     'SUBCOMMAND OPTIONS                                                              ', &
     ' -C, --directory PATH', &
@@ -1017,9 +1019,9 @@ contains
     ' run(1) - the fpm(1) subcommand to run project applications            ', &
     '                                                                       ', &
     'SYNOPSIS                                                               ', &
-    ' fpm run [[--target] NAME(s) [--profile PROF] [--flag FFLAGS]', &
+    ' fpm run [[--target] NAME(s)] [--profile PROF] [--flag FFLAGS]', &
     '         [--compiler COMPILER_NAME] [--runner "CMD"] [--example]', &
-    '         [--list] [--all] [-- ARGS]', &
+    '         [--list] [--all] [--config-file PATH] [-- ARGS]', &
     '                                                                       ', &
     ' fpm run --help|--version                                              ', &
     '                                                                       ', &
@@ -1041,8 +1043,9 @@ contains
     '                   any single character and "*" represents any string. ', &
     '                   Note The glob string normally needs quoted to       ', &
     '                   the special characters from shell expansion.        ', &
-    ' --all   Run all examples or applications. An alias for --target ''*''.', &
+    ' --all  Run all examples or applications. An alias for --target ''*''. ', &
     ' --example  Run example programs instead of applications.              ', &
+    ' --config-file PATH  Custom location of the global config file.        ', &
     help_text_build_common, &
     help_text_compiler, &
     help_text_flag, &
@@ -1088,7 +1091,7 @@ contains
     '                                                                       ', &
     'SYNOPSIS                                                               ', &
     ' fpm build [--profile PROF] [--flag FFLAGS] [--compiler COMPILER_NAME] ', &
-    '           [--list] [--tests]                                          ', &
+    '           [--list] [--tests] [--config-file PATH]                     ', &
     '                                                                       ', &
     ' fpm build --help|--version                                            ', &
     '                                                                       ', &
@@ -1113,12 +1116,13 @@ contains
     help_text_build_common,&
     help_text_compiler, &
     help_text_flag, &
-    ' --list        list candidates instead of building or running them     ', &
-    ' --tests       build all tests (otherwise only if needed)              ', &
-    ' --show-model  show the model and exit (do not build)                  ', &
-    ' --help        print this help and exit                                ', &
-    ' --version     print program version information and exit              ', &
-    '                                                                       ', &
+    ' --list              list candidates instead of building or running them', &
+    ' --tests             build all tests (otherwise only if needed)         ', &
+    ' --show-model        show the model and exit (do not build)             ', &
+    ' --help              print this help and exit                           ', &
+    ' --version           print program version information and exit         ', &
+    ' --config-file PATH  custom location of the global config file          ', &
+    '                                                                        ', &
     help_text_environment, &
     '                                                                       ', &
     'EXAMPLES                                                               ', &
@@ -1268,8 +1272,9 @@ contains
     ' test(1) - the fpm(1) subcommand to run project tests                  ', &
     '                                                                       ', &
     'SYNOPSIS                                                               ', &
-    ' fpm test [[--target] NAME(s)] [--profile PROF] [--flag FFLAGS]', &
-    '          [--compiler COMPILER_NAME ] [--runner "CMD"] [--list][-- ARGS]', &
+    ' fpm test [[--target] NAME(s)] [--profile PROF] [--flag FFLAGS]        ', &
+    '          [--compiler COMPILER_NAME ] [--runner "CMD"] [--list]        ', &
+    '          [-- ARGS] [--config-file PATH]                               ', &
     '                                                                       ', &
     ' fpm test --help|--version                                             ', &
     '                                                                       ', &
@@ -1292,6 +1297,7 @@ contains
     '               see "fpm help runner" for further details.              ', &
     ' --list     list candidate basenames instead of running them. Note they', &
     ' --list     will still be built if not currently up to date.           ', &
+    ' --config-file PATH  Custom location of the global config file.        ', &
     ' -- ARGS    optional arguments to pass to the test program(s).         ', &
     '            The same arguments are passed to all test names            ', &
     '            specified.                                                 ', &
@@ -1317,16 +1323,18 @@ contains
     ' update(1) - manage project dependencies', &
     '', &
     'SYNOPSIS', &
-    ' fpm update [--fetch-only] [--clean] [--verbose] [NAME(s)]', &
+    ' fpm update [--fetch-only] [--clean] [--verbose] [NAME(s)] ', &
+    '            [--global-config PATH] ', &
     '', &
     'DESCRIPTION', &
     ' Manage and update project dependencies. If no dependency names are', &
     ' provided all the dependencies are updated automatically.', &
     '', &
     'OPTIONS', &
-    ' --fetch-only  Only fetch dependencies, do not update existing projects', &
-    ' --clean       Do not use previous dependency cache', &
-    ' --verbose     Show additional printout', &
+    ' --fetch-only        Only fetch dependencies, do not update existing projects', &
+    ' --clean             Do not use previous dependency cache', &
+    ' --config-file PATH  Custom location of the global config file', &
+    ' --verbose           Show additional printout', &
     '', &
     'SEE ALSO', &
     ' The fpm(1) home page at https://github.com/fortran-lang/fpm', &
@@ -1338,7 +1346,7 @@ contains
     'SYNOPSIS', &
     ' fpm install [--profile PROF] [--flag FFLAGS] [--list] [--no-rebuild]', &
     '             [--prefix DIR] [--bindir DIR] [--libdir DIR] [--includedir DIR]', &
-    '             [--verbose]', &
+    '             [--verbose] [--global-config PATH]', &
     '', &
     'DESCRIPTION', &
     ' Subcommand to install fpm projects. Running install will export the', &
@@ -1352,16 +1360,17 @@ contains
     '                   but do not install any of them', &
     help_text_build_common,&
     help_text_flag, &
-    ' --no-rebuild      do not rebuild project before installation', &
-    ' --prefix DIR      path to installation directory (requires write access),', &
-    '                   the default prefix on Unix systems is $HOME/.local', &
-    '                   and %APPDATA%\local on Windows', &
-    ' --bindir DIR      subdirectory to place executables in (default: bin)', &
-    ' --libdir DIR      subdirectory to place libraries and archives in', &
-    '                   (default: lib)', &
-    ' --includedir DIR  subdirectory to place headers and module files in', &
-    '                   (default: include)', &
-    ' --verbose         print more information', &
+    ' --no-rebuild        do not rebuild project before installation', &
+    ' --prefix DIR        path to installation directory (requires write access),', &
+    '                     the default prefix on Unix systems is $HOME/.local', &
+    '                     and %APPDATA%\local on Windows', &
+    ' --bindir DIR        subdirectory to place executables in (default: bin)', &
+    ' --libdir DIR        subdirectory to place libraries and archives in', &
+    '                     (default: lib)', &
+    ' --includedir DIR    subdirectory to place headers and module files in', &
+    '                     (default: include)', &
+    ' --config-file PATH  custom location of the global config file', &
+    ' --verbose           print more information', &
     '', &
     help_text_environment, &
     '', &
@@ -1390,8 +1399,9 @@ contains
     ' directories in the build/ directory are deleted, except dependencies.', &
     '', &
     'OPTIONS', &
-    ' --skip           delete the build without prompting but skip dependencies.', &
-    ' --all            delete the build without prompting including dependencies.', &
+    ' --skip              Delete the build without prompting but skip dependencies.', &
+    ' --all               Delete the build without prompting including dependencies.', &
+    ' --config-file PATH  Custom location of the global config file.', &
     '' ]
     help_publish=[character(len=80) :: &
     'NAME', &
@@ -1399,7 +1409,7 @@ contains
     '', &
     'SYNOPSIS', &
     ' fpm publish [--token TOKEN] [--show-package-version] [--show-upload-data]', &
-    '             [--dry-run] [--verbose]                                      ', &
+    '             [--dry-run] [--verbose] [--global-config PATH]', &
     '', &
     ' fpm publish --help|--version', &
     '', &
@@ -1431,6 +1441,7 @@ contains
     ' --dry-run                perform dry run without publishing', &
     ' --help                   print this help and exit', &
     ' --version                print program version information and exit', &
+    ' --config-file PATH       custom location of the global config file', &
     ' --verbose                print more information', &
     '', &
     'EXAMPLES', &
