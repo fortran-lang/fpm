@@ -76,7 +76,9 @@ subroutine env_variable(var, name)
 end subroutine env_variable
 
 
-!> Extract filename from path with/without suffix
+!> Extract filename from path with or without suffix.
+!>
+!> The suffix is included by default.
 function basename(path,suffix) result (base)
 
     character(*), intent(In) :: path
