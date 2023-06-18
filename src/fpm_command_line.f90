@@ -54,6 +54,7 @@ public :: fpm_cmd_settings, &
 
 type, abstract :: fpm_cmd_settings
     character(len=:), allocatable :: working_dir
+    character(len=:), allocatable :: path_to_config
     logical                       :: verbose=.true.
 end type
 
@@ -221,7 +222,7 @@ contains
         type(fpm_install_settings), allocatable :: install_settings
         type(version_t) :: version
         character(len=:), allocatable :: common_args, compiler_args, run_args, working_dir, &
-            & c_compiler, cxx_compiler, archiver, version_s, token_s
+            & c_compiler, cxx_compiler, archiver, version_s, token_s, global_config
 
         character(len=*), parameter :: fc_env = "FC", cc_env = "CC", ar_env = "AR", &
             & fflags_env = "FFLAGS", cflags_env = "CFLAGS", cxxflags_env = "CXXFLAGS", ldflags_env = "LDFLAGS", &
@@ -289,7 +290,8 @@ contains
         case('run')
             call set_args(common_args // compiler_args // run_args //'&
             & --all F &
-            & --example F&
+            & --example F &
+            & --global-config " " &
             & --',help_run,version_text)
 
             call check_build_vals()
@@ -299,7 +301,6 @@ contains
             else
                 names=[character(len=len(names)) :: ]
             endif
-
 
             if(specified('target') )then
                call split(sget('target'),tnames,delimiters=' ,:')
@@ -320,6 +321,7 @@ contains
             c_compiler = sget('c-compiler')
             cxx_compiler = sget('cxx-compiler')
             archiver = sget('archiver')
+            global_config = sget('global-config')
             allocate(fpm_run_settings :: cmd_settings)
             val_runner=sget('runner')
             if(specified('runner') .and. val_runner=='')val_runner='echo'
@@ -331,6 +333,7 @@ contains
             & c_compiler=c_compiler, &
             & cxx_compiler=cxx_compiler, &
             & archiver=archiver, &
+            & path_to_config=global_config, &
             & flag=val_flag, &
             & cflag=val_cflag, &
             & cxxflag=val_cxxflag, &
@@ -347,6 +350,7 @@ contains
             & --list F &
             & --show-model F &
             & --tests F &
+            & --global-config " " &
             & --',help_build,version_text)
 
             call check_build_vals()
@@ -354,6 +358,8 @@ contains
             c_compiler = sget('c-compiler')
             cxx_compiler = sget('cxx-compiler')
             archiver = sget('archiver')
+            global_config = sget('global-config')
+
             allocate( fpm_build_settings :: cmd_settings )
             cmd_settings=fpm_build_settings(  &
             & profile=val_profile,&
@@ -362,6 +368,7 @@ contains
             & c_compiler=c_compiler, &
             & cxx_compiler=cxx_compiler, &
             & archiver=archiver, &
+            & path_to_config=global_config, &
             & flag=val_flag, &
             & cflag=val_cflag, &
             & cxxflag=val_cxxflag, &
@@ -380,8 +387,8 @@ contains
             & --example F &
             & --backfill F &
             & --full F &
-            & --bare F', &
-            & help_new, version_text)
+            & --bare F &
+            &', help_new, version_text)
             select case(size(unnamed))
             case(1)
                 if(lget('backfill'))then
@@ -413,7 +420,6 @@ contains
                 & '        numbers, underscores, or hyphens, and start with a letter.']
                 call fpm_stop(4,' ')
             endif
-
 
             allocate(fpm_new_settings :: cmd_settings)
             if (any( specified([character(len=10) :: 'src','lib','app','test','example','bare'])) &
@@ -450,7 +456,7 @@ contains
                  & verbose=lget('verbose') )
             endif
 
-        case('help','manual')
+        case('help', 'manual')
             call set_args(common_args, help_help,version_text)
             if(size(unnamed)<2)then
                 if(unnamed(1)=='help')then
@@ -501,16 +507,21 @@ contains
 
         case('install')
             call set_args(common_args // compiler_args // '&
-                & --no-rebuild F --prefix " " &
+                & --no-rebuild F &
+                & --prefix " " &
                 & --list F &
-                & --libdir "lib" --bindir "bin" --includedir "include"', &
-                help_install, version_text)
+                & --libdir "lib" &
+                & --bindir "bin" &
+                & --includedir "include" &
+                & --global-config " " &
+                &', help_install, version_text)
 
             call check_build_vals()
 
             c_compiler = sget('c-compiler')
             cxx_compiler = sget('cxx-compiler')
             archiver = sget('archiver')
+            global_config = sget('global-config')
             allocate(install_settings, source=fpm_install_settings(&
                 list=lget('list'), &
                 profile=val_profile,&
@@ -519,6 +530,7 @@ contains
                 c_compiler=c_compiler, &
                 cxx_compiler=cxx_compiler, &
                 archiver=archiver, &
+                path_to_config=global_config, &
                 flag=val_flag, &
                 cflag=val_cflag, &
                 cxxflag=val_cxxflag, &
@@ -533,7 +545,7 @@ contains
 
         case('list')
             call set_args(common_args // '&
-            & --list F&
+            & --list F &
             &', help_list, version_text)
             if(lget('list'))then
                 help_text = [character(widest) :: help_list_nodash, help_list_dash]
@@ -543,8 +555,9 @@ contains
             call printhelp(help_text)
 
         case('test')
-            call set_args(common_args // compiler_args // run_args // ' --', &
-              help_test,version_text)
+            call set_args(common_args // compiler_args // run_args // '&
+            & --global-config " " &
+            & -- ', help_test,version_text)
 
             call check_build_vals()
 
@@ -568,6 +581,8 @@ contains
             c_compiler = sget('c-compiler')
             cxx_compiler = sget('cxx-compiler')
             archiver = sget('archiver')
+            global_config = sget('global-config')
+
             allocate(fpm_test_settings :: cmd_settings)
             val_runner=sget('runner')
             if(specified('runner') .and. val_runner=='')val_runner='echo'
@@ -579,6 +594,7 @@ contains
             & c_compiler=c_compiler, &
             & cxx_compiler=cxx_compiler, &
             & archiver=archiver, &
+            & path_to_config=global_config, &
             & flag=val_flag, &
             & cflag=val_cflag, &
             & cxxflag=val_cxxflag, &
@@ -591,8 +607,11 @@ contains
             & verbose=lget('verbose') )
 
         case('update')
-            call set_args(common_args // ' --fetch-only F --clean F', &
-                help_update, version_text)
+            call set_args(common_args // '&
+            & --fetch-only F &
+            & --clean F &
+            & --global-config " " &
+            &', help_update, version_text)
 
             if( size(unnamed) > 1 )then
                 names=unnamed(2:)
@@ -600,23 +619,33 @@ contains
                 names=[character(len=len(names)) :: ]
             endif
 
+            global_config = sget('global-config')
+
             allocate(fpm_update_settings :: cmd_settings)
             cmd_settings=fpm_update_settings(name=names, &
-                fetch_only=lget('fetch-only'), verbose=lget('verbose'), &
-                clean=lget('clean'))
+            & fetch_only=lget('fetch-only'), &
+            & verbose=lget('verbose'), &
+            & path_to_config=global_config, &
+            & clean=lget('clean'))
 
         case('clean')
-            call set_args(common_args // &
-            &   ' --skip'             // &
-            &   ' --all',                &
-                help_clean, version_text)
+            call set_args(common_args // '&
+            & --skip &
+            & --all &
+            & --global-config " " &
+            &', help_clean, version_text)
+
+            global_config = sget('global-config')
+
             allocate(fpm_clean_settings :: cmd_settings)
             call get_current_directory(working_dir, error)
             cmd_settings=fpm_clean_settings( &
-            &   is_unix=is_unix,             &
-            &   calling_dir=working_dir,     &
-            &   clean_skip=lget('skip'),     &
-                clean_call=lget('all'))
+            & is_unix=is_unix, &
+            & calling_dir=working_dir, &
+            & clean_skip=lget('skip'), &
+            & clean_call=lget('all'), &
+            & path_to_config=global_config &
+            &)
 
         case('publish')
             call set_args(common_args // compiler_args //'&
@@ -627,6 +656,7 @@ contains
             & --list F &
             & --show-model F &
             & --tests F &
+            & --global-config " " &
             & --', help_publish, version_text)
 
             call check_build_vals()
@@ -634,6 +664,7 @@ contains
             c_compiler = sget('c-compiler')
             cxx_compiler = sget('cxx-compiler')
             archiver = sget('archiver')
+            global_config = sget('global-config')
             token_s = sget('token')
 
             allocate(fpm_publish_settings :: cmd_settings)
@@ -654,6 +685,7 @@ contains
             & list=lget('list'),&
             & show_model=lget('show-model'),&
             & build_tests=lget('tests'),&
+            & path_to_config=global_config, &
             & verbose=lget('verbose'),&
             & token=token_s)
 
@@ -697,7 +729,7 @@ contains
 
         val_flag = " " // sget('flag')
         val_cflag = " " // sget('c-flag')
-        val_cxxflag = " "// sget('cxx-flag')
+        val_cxxflag = " " // sget('cxx-flag')
         val_ldflag = " " // sget('link-flag')
         val_profile = sget('profile')
 
@@ -780,14 +812,14 @@ contains
    '   from platform to platform or require independent installation.               ', &
    '                                                                                ', &
    'OPTION                                                                          ', &
-   ' --runner ''CMD''  quoted command used to launch the fpm(1) executables.          ', &
+   ' --runner ''CMD''  quoted command used to launch the fpm(1) executables.        ', &
    '               Available for both the "run" and "test" subcommands.             ', &
    '               If the keyword is specified without a value the default command  ', &
    '               is "echo".                                                       ', &
    ' -- SUFFIX_OPTIONS  additional options to suffix the command CMD and executable ', &
    '                    file names with.                                            ', &
    'EXAMPLES                                                                        ', &
-   '   Use cases for ''fpm run|test --runner "CMD"'' include employing                ', &
+   '   Use cases for ''fpm run|test --runner "CMD"'' include employing              ', &
    '   the following common GNU/Linux and Unix commands:                            ', &
    '                                                                                ', &
    ' INTERROGATE                                                                    ', &
@@ -816,7 +848,7 @@ contains
    '  fpm run --runner "tar cvfz $HOME/bundle.tgz"                                  ', &
    '  fpm run --runner ldd                                                          ', &
    '  fpm run --runner strip                                                        ', &
-   '  fpm run --runner ''cp -t /usr/local/bin''                                       ', &
+   '  fpm run --runner ''cp -t /usr/local/bin''                                     ', &
    '                                                                                ', &
    '  # options after executable name can be specified after the -- option          ', &
    '  fpm --runner cp run -- /usr/local/bin/                                        ', &
@@ -1009,7 +1041,7 @@ contains
     '                   any single character and "*" represents any string. ', &
     '                   Note The glob string normally needs quoted to       ', &
     '                   the special characters from shell expansion.        ', &
-    ' --all   Run all examples or applications. An alias for --target ''*''.  ', &
+    ' --all   Run all examples or applications. An alias for --target ''*''.', &
     ' --example  Run example programs instead of applications.              ', &
     help_text_build_common, &
     help_text_compiler, &

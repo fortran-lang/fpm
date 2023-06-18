@@ -42,7 +42,6 @@ subroutine build_model(model, settings, package, error)
     integer :: i, j
     type(package_config_t) :: dependency
     character(len=:), allocatable :: manifest, lib_dir
-    character(len=:), allocatable :: version
     logical :: has_cpp
     logical :: duplicates_found
     type(string_t) :: include_dir
@@ -75,7 +74,8 @@ subroutine build_model(model, settings, package, error)
     if (allocated(error)) return
 
     ! Create dependencies
-    call new_dependency_tree(model%deps, cache=join_path("build", "cache.toml"))
+    call new_dependency_tree(model%deps, cache=join_path("build", "cache.toml"), &
+    & path_to_config=settings%path_to_config)
 
     ! Build and resolve model dependencies
     call model%deps%add(package, error)
@@ -324,7 +324,7 @@ end subroutine check_modules_for_duplicates
 subroutine check_module_names(model, error)
     type(fpm_model_t), intent(in) :: model
     type(error_t), allocatable, intent(out) :: error
-    integer :: i,j,k,l,m
+    integer :: k,l,m
     logical :: valid,errors_found,enforce_this_file
     type(string_t) :: package_name,module_name,package_prefix
 
@@ -621,13 +621,13 @@ subroutine cmd_run(settings,test)
     contains
     subroutine compact_list_all()
     integer, parameter :: LINE_WIDTH = 80
-    integer :: i, j, nCol
-        j = 1
+    integer :: ii, jj, nCol
+        jj = 1
         nCol = LINE_WIDTH/col_width
         write(stderr,*) 'Available names:'
-        do i=1,size(targets)
+        do ii=1,size(targets)
 
-            exe_target => targets(i)%ptr
+            exe_target => targets(ii)%ptr
 
             if (exe_target%target_type == FPM_TARGET_EXECUTABLE .and. &
                 allocated(exe_target%dependencies)) then
@@ -636,9 +636,9 @@ subroutine cmd_run(settings,test)
 
                 if (exe_source%unit_scope == run_scope) then
 
-                    write(stderr,'(A)',advance=(merge("yes","no ",modulo(j,nCol)==0))) &
+                    write(stderr,'(A)',advance=(merge("yes","no ",modulo(jj,nCol)==0))) &
                         & [character(len=col_width) :: basename(exe_target%output_file, suffix=.false.)]
-                    j = j + 1
+                    jj = jj + 1
 
                 end if
             end if
@@ -648,14 +648,14 @@ subroutine cmd_run(settings,test)
 
     subroutine compact_list()
     integer, parameter :: LINE_WIDTH = 80
-    integer :: i, j, nCol
-        j = 1
+    integer :: ii, jj, nCol
+        jj = 1
         nCol = LINE_WIDTH/col_width
         write(stderr,*) 'Matched names:'
-        do i=1,size(executables)
-            write(stderr,'(A)',advance=(merge("yes","no ",modulo(j,nCol)==0))) &
-                & [character(len=col_width) :: basename(executables(i)%s, suffix=.false.)]
-            j = j + 1
+        do ii=1,size(executables)
+            write(stderr,'(A)',advance=(merge("yes","no ",modulo(jj,nCol)==0))) &
+                & [character(len=col_width) :: basename(executables(ii)%s, suffix=.false.)]
+            jj = jj + 1
         enddo
         write(stderr,*)
     end subroutine compact_list

@@ -11,6 +11,7 @@ module fpm_settings
   public :: fpm_global_settings, get_global_settings, get_registry_settings, official_registry_base_url
 
   character(*), parameter :: official_registry_base_url = 'https://registry-apis.vercel.app'
+  character(*), parameter :: default_config_file_name = 'config.toml'
 
   type :: fpm_global_settings
     !> Path to the global config file excluding the file name.
@@ -77,7 +78,7 @@ contains
       end if
 
       ! Use default file name.
-      global_settings%config_file_name = 'config.toml'
+      global_settings%config_file_name = default_config_file_name
 
       ! Apply default registry settings and return if config file doesn't exist.
       if (.not. exists(global_settings%full_path())) then
