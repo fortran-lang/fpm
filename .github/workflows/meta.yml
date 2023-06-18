@@ -14,11 +14,11 @@ on:
 
 env:
   CI: "ON" # We can detect this in the build system and other vendors implement it
-  HOMEBREW_NO_ANALYTICS: "ON" # Make Homebrew installation a little quicker
+  HOMEBREW_NO_ANALYTICS: 1 # Make Homebrew installation a little quicker
   HOMEBREW_NO_AUTO_UPDATE: 1
-  HOMEBREW_NO_BOTTLE_SOURCE_FALLBACK: "ON"
-  HOMEBREW_NO_GITHUB_API: "ON"
-  HOMEBREW_NO_INSTALL_CLEANUP: "ON"
+  HOMEBREW_NO_BOTTLE_SOURCE_FALLBACK: 1
+  HOMEBREW_NO_GITHUB_API: 1
+  HOMEBREW_NO_INSTALL_CLEANUP: 1
 
 jobs:
 
