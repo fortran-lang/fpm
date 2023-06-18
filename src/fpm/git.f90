@@ -316,7 +316,7 @@ contains
     character(*), intent(in) :: destination
     !> (Symbolic) Reference to be archived.
     character(*), intent(in) :: ref
-    !> Print additional information when true.
+    !> Print additional information if true.
     logical, intent(in) :: verbose
     !> Error handling.
     type(error_t), allocatable, intent(out) :: error
