@@ -222,7 +222,7 @@ contains
         type(fpm_install_settings), allocatable :: install_settings
         type(version_t) :: version
         character(len=:), allocatable :: common_args, compiler_args, run_args, working_dir, &
-            & c_compiler, cxx_compiler, archiver, version_s, token_s, global_config
+            & c_compiler, cxx_compiler, archiver, version_s, token_s, config_file
 
         character(len=*), parameter :: fc_env = "FC", cc_env = "CC", ar_env = "AR", &
             & fflags_env = "FFLAGS", cflags_env = "CFLAGS", cxxflags_env = "CXXFLAGS", ldflags_env = "LDFLAGS", &
@@ -291,7 +291,7 @@ contains
             call set_args(common_args // compiler_args // run_args //'&
             & --all F &
             & --example F &
-            & --global-config " " &
+            & --config-file " " &
             & --',help_run,version_text)
 
             call check_build_vals()
@@ -321,7 +321,7 @@ contains
             c_compiler = sget('c-compiler')
             cxx_compiler = sget('cxx-compiler')
             archiver = sget('archiver')
-            global_config = sget('global-config')
+            config_file = sget('config-file')
             allocate(fpm_run_settings :: cmd_settings)
             val_runner=sget('runner')
             if(specified('runner') .and. val_runner=='')val_runner='echo'
@@ -333,7 +333,7 @@ contains
             & c_compiler=c_compiler, &
             & cxx_compiler=cxx_compiler, &
             & archiver=archiver, &
-            & path_to_config=global_config, &
+            & path_to_config=config_file, &
             & flag=val_flag, &
             & cflag=val_cflag, &
             & cxxflag=val_cxxflag, &
@@ -350,7 +350,7 @@ contains
             & --list F &
             & --show-model F &
             & --tests F &
-            & --global-config " " &
+            & --config-file " " &
             & --',help_build,version_text)
 
             call check_build_vals()
@@ -358,7 +358,7 @@ contains
             c_compiler = sget('c-compiler')
             cxx_compiler = sget('cxx-compiler')
             archiver = sget('archiver')
-            global_config = sget('global-config')
+            config_file = sget('config-file')
 
             allocate( fpm_build_settings :: cmd_settings )
             cmd_settings=fpm_build_settings(  &
@@ -368,7 +368,7 @@ contains
             & c_compiler=c_compiler, &
             & cxx_compiler=cxx_compiler, &
             & archiver=archiver, &
-            & path_to_config=global_config, &
+            & path_to_config=config_file, &
             & flag=val_flag, &
             & cflag=val_cflag, &
             & cxxflag=val_cxxflag, &
@@ -513,7 +513,7 @@ contains
                 & --libdir "lib" &
                 & --bindir "bin" &
                 & --includedir "include" &
-                & --global-config " " &
+                & --config-file " " &
                 &', help_install, version_text)
 
             call check_build_vals()
@@ -521,7 +521,7 @@ contains
             c_compiler = sget('c-compiler')
             cxx_compiler = sget('cxx-compiler')
             archiver = sget('archiver')
-            global_config = sget('global-config')
+            config_file = sget('config-file')
             allocate(install_settings, source=fpm_install_settings(&
                 list=lget('list'), &
                 profile=val_profile,&
@@ -530,7 +530,7 @@ contains
                 c_compiler=c_compiler, &
                 cxx_compiler=cxx_compiler, &
                 archiver=archiver, &
-                path_to_config=global_config, &
+                path_to_config=config_file, &
                 flag=val_flag, &
                 cflag=val_cflag, &
                 cxxflag=val_cxxflag, &
@@ -556,7 +556,7 @@ contains
 
         case('test')
             call set_args(common_args // compiler_args // run_args // '&
-            & --global-config " " &
+            & --config-file " " &
             & -- ', help_test,version_text)
 
             call check_build_vals()
@@ -581,7 +581,7 @@ contains
             c_compiler = sget('c-compiler')
             cxx_compiler = sget('cxx-compiler')
             archiver = sget('archiver')
-            global_config = sget('global-config')
+            config_file = sget('config-file')
 
             allocate(fpm_test_settings :: cmd_settings)
             val_runner=sget('runner')
@@ -594,7 +594,7 @@ contains
             & c_compiler=c_compiler, &
             & cxx_compiler=cxx_compiler, &
             & archiver=archiver, &
-            & path_to_config=global_config, &
+            & path_to_config=config_file, &
             & flag=val_flag, &
             & cflag=val_cflag, &
             & cxxflag=val_cxxflag, &
@@ -610,7 +610,7 @@ contains
             call set_args(common_args // '&
             & --fetch-only F &
             & --clean F &
-            & --global-config " " &
+            & --config-file " " &
             &', help_update, version_text)
 
             if( size(unnamed) > 1 )then
@@ -619,23 +619,23 @@ contains
                 names=[character(len=len(names)) :: ]
             endif
 
-            global_config = sget('global-config')
+            config_file = sget('config-file')
 
             allocate(fpm_update_settings :: cmd_settings)
             cmd_settings=fpm_update_settings(name=names, &
             & fetch_only=lget('fetch-only'), &
             & verbose=lget('verbose'), &
-            & path_to_config=global_config, &
+            & path_to_config=config_file, &
             & clean=lget('clean'))
 
         case('clean')
             call set_args(common_args // '&
             & --skip &
             & --all &
-            & --global-config " " &
+            & --config-file " " &
             &', help_clean, version_text)
 
-            global_config = sget('global-config')
+            config_file = sget('config-file')
 
             allocate(fpm_clean_settings :: cmd_settings)
             call get_current_directory(working_dir, error)
@@ -644,7 +644,7 @@ contains
             & calling_dir=working_dir, &
             & clean_skip=lget('skip'), &
             & clean_call=lget('all'), &
-            & path_to_config=global_config &
+            & path_to_config=config_file &
             &)
 
         case('publish')
@@ -656,7 +656,7 @@ contains
             & --list F &
             & --show-model F &
             & --tests F &
-            & --global-config " " &
+            & --config-file " " &
             & --', help_publish, version_text)
 
             call check_build_vals()
@@ -664,7 +664,7 @@ contains
             c_compiler = sget('c-compiler')
             cxx_compiler = sget('cxx-compiler')
             archiver = sget('archiver')
-            global_config = sget('global-config')
+            config_file = sget('config-file')
             token_s = sget('token')
 
             allocate(fpm_publish_settings :: cmd_settings)
@@ -685,7 +685,7 @@ contains
             & list=lget('list'),&
             & show_model=lget('show-model'),&
             & build_tests=lget('tests'),&
-            & path_to_config=global_config, &
+            & path_to_config=config_file, &
             & verbose=lget('verbose'),&
             & token=token_s)
 
@@ -1324,7 +1324,7 @@ contains
     '', &
     'SYNOPSIS', &
     ' fpm update [--fetch-only] [--clean] [--verbose] [NAME(s)] ', &
-    '            [--global-config PATH] ', &
+    '            [--config-file PATH] ', &
     '', &
     'DESCRIPTION', &
     ' Manage and update project dependencies. If no dependency names are', &
@@ -1346,7 +1346,7 @@ contains
     'SYNOPSIS', &
     ' fpm install [--profile PROF] [--flag FFLAGS] [--list] [--no-rebuild]', &
     '             [--prefix DIR] [--bindir DIR] [--libdir DIR] [--includedir DIR]', &
-    '             [--verbose] [--global-config PATH]', &
+    '             [--verbose] [--config-file PATH]', &
     '', &
     'DESCRIPTION', &
     ' Subcommand to install fpm projects. Running install will export the', &
@@ -1409,7 +1409,7 @@ contains
     '', &
     'SYNOPSIS', &
     ' fpm publish [--token TOKEN] [--show-package-version] [--show-upload-data]', &
-    '             [--dry-run] [--verbose] [--global-config PATH]', &
+    '             [--dry-run] [--verbose] [--config-file PATH]', &
     '', &
     ' fpm publish --help|--version', &
     '', &
