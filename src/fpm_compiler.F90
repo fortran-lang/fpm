@@ -28,7 +28,6 @@
 module fpm_compiler
 use,intrinsic :: iso_fortran_env, only: stderr=>error_unit
 use fpm_environment, only: &
-        get_env, &
         get_os_type, &
         OS_LINUX, &
         OS_MACOS, &
