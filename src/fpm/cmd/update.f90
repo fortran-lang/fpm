@@ -24,15 +24,13 @@ contains
     call get_package_data(package, "fpm.toml", error, apply_defaults=.true.)
     call handle_error(error)
 
-    if (.not.exists("build")) then
+    if (.not. exists("build")) then
       call mkdir("build")
       call filewrite(join_path("build", ".gitignore"),["*"])
     end if
 
     cache = join_path("build", "cache.toml")
-    if (settings%clean) then
-      call delete_file(cache)
-    end if
+    if (settings%clean) call delete_file(cache)
 
     call new_dependency_tree(deps, cache=cache, &
       verbosity=merge(2, 1, settings%verbose))
