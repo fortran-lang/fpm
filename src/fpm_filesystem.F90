@@ -14,8 +14,7 @@ module fpm_filesystem
     public :: basename, canon_path, dirname, is_dir, join_path, number_of_rows, list_files, get_local_prefix, &
             mkdir, exists, get_temp_filename, windows_path, unix_path, getline, delete_file, fileopen, fileclose, &
             filewrite, warnwrite, parent_dir, is_hidden_file, read_lines, read_lines_expanded, which, run, &
-            os_delete_dir, is_absolute_path, env_variable, get_home, execute_and_read_output, &
-            get_dos_path
+            os_delete_dir, is_absolute_path, get_home, execute_and_read_output, get_dos_path
 
 #ifndef FPM_BOOTSTRAP
     interface
@@ -53,32 +52,7 @@ module fpm_filesystem
 
 contains
 
-
-!> return value of environment variable
-subroutine env_variable(var, name)
-   character(len=:), allocatable, intent(out) :: var
-   character(len=*), intent(in) :: name
-   integer :: length, stat
-
-   call get_environment_variable(name, length=length, status=stat)
-   if (stat /= 0) return
-
-   allocate(character(len=length) :: var)
-
-   if (length > 0) then
-      call get_environment_variable(name, var, status=stat)
-      if (stat /= 0) then
-         deallocate(var)
-         return
-      end if
-   end if
-
-end subroutine env_variable
-
-
-!> Extract filename from path with or without suffix.
-!>
-!> The suffix is included by default.
+!> Extract filename from path with/without suffix
 function basename(path,suffix) result (base)
 
     character(*), intent(In) :: path
@@ -710,7 +684,6 @@ subroutine getline(unit, line, iostat, iomsg)
     integer :: size
     integer :: stat
 
-
     allocate(character(len=0) :: line)
     do
         read(unit, '(a)', advance='no', iostat=stat, iomsg=msg, size=size) &
@@ -1079,15 +1052,15 @@ end subroutine os_delete_dir
         character(len=:), allocatable :: home
 
         if (os_is_unix(os)) then
-            call env_variable(home, "HOME")
-            if (allocated(home)) then
+            home=get_env('HOME','')
+            if (home /= '' ) then
                 prefix = join_path(home, ".local")
             else
                 prefix = default_prefix_unix
             end if
         else
-            call env_variable(home, "APPDATA")
-            if (allocated(home)) then
+            home=get_env('APPDATA','')
+            if (home /= '' ) then
                 prefix = join_path(home, "local")
             else
                 prefix = default_prefix_win
@@ -1130,14 +1103,14 @@ end subroutine os_delete_dir
         type(error_t), allocatable, intent(out) :: error
 
         if (os_is_unix()) then
-            call env_variable(home, 'HOME')
-            if (.not. allocated(home)) then
+            home=get_env('HOME','')
+            if ( home == '' ) then
                 call fatal_error(error, "Couldn't retrieve 'HOME' variable")
                 return
             end if
         else
-            call env_variable(home, 'USERPROFILE')
-            if (.not. allocated(home)) then
+            home=get_env('USERPROFILE','')
+            if ( home == '' ) then
                 call fatal_error(error, "Couldn't retrieve '%USERPROFILE%' variable")
                 return
             end if
@@ -1145,24 +1118,30 @@ end subroutine os_delete_dir
     end subroutine get_home
 
     !> Execute command line and return output as a string.
-    subroutine execute_and_read_output(cmd, output, error, exitstat)
+    subroutine execute_and_read_output(cmd, output, error, verbose)
         !> Command to execute.
         character(len=*), intent(in) :: cmd
         !> Command line output.
         character(len=:), allocatable, intent(out) :: output
         !> Error to handle.
         type(error_t), allocatable, intent(out) :: error
-        !> Can optionally used for error handling.
-        integer, intent(out), optional :: exitstat
+        !> Print additional information if true.
+        logical, intent(in), optional :: verbose
 
-        integer :: cmdstat, unit, stat = 0
-        character(len=:), allocatable :: cmdmsg, tmp_file
-        character(len=:),allocatable :: output_line
+        integer :: exitstat, unit, stat
+        character(len=:), allocatable :: cmdmsg, tmp_file, output_line
+        logical :: is_verbose
+
+        if (present(verbose)) then
+          is_verbose = verbose
+        else
+          is_verbose = .false.
+        end if
 
         tmp_file = get_temp_filename()
 
-        call execute_command_line(cmd//' > '//tmp_file, exitstat=exitstat, cmdstat=cmdstat)
-        if (cmdstat /= 0) call fatal_error(error, '*run*: '//"Command failed: '"//cmd//"'. Message: '"//trim(cmdmsg)//"'.")
+        call run(cmd//' > '//tmp_file, exitstat=exitstat, echo=is_verbose)
+        if (exitstat /= 0) call fatal_error(error, '*run*: '//"Command failed: '"//cmd//"'. Message: '"//trim(cmdmsg)//"'.")
 
         open(newunit=unit, file=tmp_file, action='read', status='old')
         output = ''
@@ -1171,8 +1150,9 @@ end subroutine os_delete_dir
            if (stat /= 0) exit
            output = output//output_line//' '
         end do
-        close(unit, status='delete',iostat=stat)
-    end subroutine execute_and_read_output
+        if (is_verbose) print *, output
+        close(unit, status='delete')
+    end
 
     !> Ensure a windows path is converted to an 8.3 DOS path if it contains spaces
     function get_dos_path(path,error)

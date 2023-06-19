@@ -14,11 +14,12 @@ on:
 
 env:
   CI: "ON" # We can detect this in the build system and other vendors implement it
-  HOMEBREW_NO_ANALYTICS: "ON" # Make Homebrew installation a little quicker
-  HOMEBREW_NO_AUTO_UPDATE: "ON"
-  HOMEBREW_NO_BOTTLE_SOURCE_FALLBACK: "ON"
-  HOMEBREW_NO_GITHUB_API: "ON"
-  HOMEBREW_NO_INSTALL_CLEANUP: "ON"
+  HOMEBREW_NO_ANALYTICS: 1 # Make Homebrew installation a little quicker
+  HOMEBREW_NO_AUTO_UPDATE: 1
+  HOMEBREW_NO_BOTTLE_SOURCE_FALLBACK: 1
+  HOMEBREW_NO_GITHUB_API: 1
+  HOMEBREW_NO_INSTALL_CLEANUP: 1
+  HOMEBREW_NO_INSTALLED_DEPENDENTS_CHECK: 1
 
 jobs:
 
@@ -198,7 +199,7 @@ jobs:
     - name: (macOS) Install homebrew OpenMPI
       if: contains(matrix.mpi,'openmpi') && contains(matrix.os,'macos')
       run: |
-        brew install --cc=gcc-${{ env.GCC_V }} openmpi
+        brew install openmpi #--cc=gcc-${{ env.GCC_V }} openmpi
 
     # Phase 1: Bootstrap fpm with existing version
     - name: Install fpm
