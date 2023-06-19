@@ -3,11 +3,15 @@
 !> This is a wrapper data type that encapsulate all pre-processing information
 !> (compiler flags, linker libraries, etc.) required to correctly enable a package
 !> to use a core library.
+!>        
 !>
-!>
-!>### Available core libraries
+!>### Available core libraries   
 !>
 !> - OpenMP
+!> - MPI
+!> - fortran-lang stdlib
+!> - fortran-lang minpack
+!> 
 !>
 !> @note Core libraries are enabled in the [build] section of the fpm.toml manifest
 !>
