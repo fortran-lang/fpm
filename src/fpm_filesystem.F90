@@ -14,8 +14,7 @@ module fpm_filesystem
     public :: basename, canon_path, dirname, is_dir, join_path, number_of_rows, list_files, get_local_prefix, &
             mkdir, exists, get_temp_filename, windows_path, unix_path, getline, delete_file, fileopen, fileclose, &
             filewrite, warnwrite, parent_dir, is_hidden_file, read_lines, read_lines_expanded, which, run, &
-            os_delete_dir, is_absolute_path, env_variable, get_home, execute_and_read_output, &
-            get_dos_path
+            os_delete_dir, is_absolute_path, get_home, execute_and_read_output, get_dos_path
 
 #ifndef FPM_BOOTSTRAP
     interface
@@ -53,32 +52,7 @@ module fpm_filesystem
 
 contains
 
-
-!> return value of environment variable
-subroutine env_variable(var, name)
-   character(len=:), allocatable, intent(out) :: var
-   character(len=*), intent(in) :: name
-   integer :: length, stat
-
-   call get_environment_variable(name, length=length, status=stat)
-   if (stat /= 0) return
-
-   allocate(character(len=length) :: var)
-
-   if (length > 0) then
-      call get_environment_variable(name, var, status=stat)
-      if (stat /= 0) then
-         deallocate(var)
-         return
-      end if
-   end if
-
-end subroutine env_variable
-
-
-!> Extract filename from path with or without suffix.
-!>
-!> The suffix is included by default.
+!> Extract filename from path with/without suffix
 function basename(path,suffix) result (base)
 
     character(*), intent(In) :: path
@@ -1079,15 +1053,15 @@ end subroutine os_delete_dir
         character(len=:), allocatable :: home
 
         if (os_is_unix(os)) then
-            call env_variable(home, "HOME")
-            if (allocated(home)) then
+            home=get_env('HOME','')
+            if (home /= '' ) then
                 prefix = join_path(home, ".local")
             else
                 prefix = default_prefix_unix
             end if
         else
-            call env_variable(home, "APPDATA")
-            if (allocated(home)) then
+            home=get_env('APPDATA','')
+            if (home /= '' ) then
                 prefix = join_path(home, "local")
             else
                 prefix = default_prefix_win
@@ -1130,14 +1104,14 @@ end subroutine os_delete_dir
         type(error_t), allocatable, intent(out) :: error
 
         if (os_is_unix()) then
-            call env_variable(home, 'HOME')
-            if (.not. allocated(home)) then
+            home=get_env('HOME','')
+            if ( home == '' ) then
                 call fatal_error(error, "Couldn't retrieve 'HOME' variable")
                 return
             end if
         else
-            call env_variable(home, 'USERPROFILE')
-            if (.not. allocated(home)) then
+            home=get_env('USERPROFILE','')
+            if ( home == '' ) then
                 call fatal_error(error, "Couldn't retrieve '%USERPROFILE%' variable")
                 return
             end if
