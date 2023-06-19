@@ -1,7 +1,8 @@
 !> Implementation for interacting with git repositories.
 module fpm_git
     use fpm_error, only: error_t, fatal_error
-    use fpm_filesystem, only : get_temp_filename, getline, join_path, execute_and_read_output
+    use fpm_filesystem, only : get_temp_filename, getline, join_path, execute_and_read_output, run
+
     implicit none
 
     public :: git_target_t, git_target_default, git_target_branch, git_target_tag, git_target_revision, git_revision, &
@@ -308,18 +309,22 @@ contains
     end subroutine info
 
   !> Archive a folder using `git archive`.
-  subroutine git_archive(source, destination, error)
+  subroutine git_archive(source, destination, ref, verbose, error)
     !> Directory to archive.
     character(*), intent(in) :: source
     !> Destination of the archive.
     character(*), intent(in) :: destination
+    !> (Symbolic) Reference to be archived.
+    character(*), intent(in) :: ref
+    !> Print additional information if true.
+    logical, intent(in) :: verbose
     !> Error handling.
     type(error_t), allocatable, intent(out) :: error
 
     integer :: stat
     character(len=:), allocatable :: cmd_output, archive_format
 
-    call execute_and_read_output('git archive -l', cmd_output, error)
+    call execute_and_read_output('git archive -l', cmd_output, error, verbose)
     if (allocated(error)) return
 
     if (index(cmd_output, 'tar.gz') /= 0) then
@@ -328,11 +333,10 @@ contains
       call fatal_error(error, "Cannot find a suitable archive format for 'git archive'."); return
     end if
 
-    call execute_command_line('git archive HEAD --format='//archive_format//' -o '//destination, exitstat=stat)
+    call run('git archive '//ref//' --format='//archive_format//' -o '//destination, echo=verbose, exitstat=stat)
     if (stat /= 0) then
       call fatal_error(error, "Error packing '"//source//"'."); return
     end if
   end
-
 
 end module fpm_git
