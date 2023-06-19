@@ -4,8 +4,8 @@ module fpm_settings
   use fpm_environment, only: os_is_unix
   use fpm_error, only: error_t, fatal_error
   use fpm_toml, only: toml_table, toml_error, toml_stat, get_value, toml_load, check_keys
-  use fpm_os, only: get_current_directory, change_directory, get_absolute_path, &
-                    convert_to_absolute_path
+  use fpm_os, only: get_current_directory, change_directory, get_absolute_path, convert_to_absolute_path
+
   implicit none
   private
   public :: fpm_global_settings, get_global_settings, get_registry_settings, official_registry_base_url
@@ -21,7 +21,7 @@ module fpm_settings
     !> Registry configs.
     type(fpm_registry_settings), allocatable :: registry_settings
   contains
-    procedure :: has_custom_location, full_path
+    procedure :: has_custom_location, full_path, path_to_config_folder_or_empty
   end type
 
   type :: fpm_registry_settings
@@ -57,8 +57,8 @@ contains
     ! Use custom path to the config file if it was specified.
     if (global_settings%has_custom_location()) then
       ! Throw error if folder doesn't exist.
-      if (.not. exists(config_path(global_settings))) then
-        call fatal_error(error, "Folder not found: '"//config_path(global_settings)//"'."); return
+      if (.not. exists(global_settings%path_to_config_folder)) then
+        call fatal_error(error, "Folder not found: '"//global_settings%path_to_config_folder//"'."); return
       end if
 
       ! Throw error if the file doesn't exist.
@@ -106,7 +106,6 @@ contains
     else
       call use_default_registry_settings(global_settings)
     end if
-
   end
 
   !> Default registry settings are typically applied if the config file doesn't exist or no registry table was found in
@@ -116,7 +115,7 @@ contains
 
     allocate (global_settings%registry_settings)
     global_settings%registry_settings%url = official_registry_base_url
-    global_settings%registry_settings%cache_path = join_path(config_path(global_settings), &
+    global_settings%registry_settings%cache_path = join_path(global_settings%path_to_config_folder_or_empty(), &
     & 'dependencies')
   end
 
@@ -156,7 +155,7 @@ contains
         global_settings%registry_settings%path = path
       else
         ! Get canonical, absolute path on both Unix and Windows.
-        call get_absolute_path(join_path(config_path(global_settings), path), &
+        call get_absolute_path(join_path(global_settings%path_to_config_folder_or_empty(), path), &
         & global_settings%registry_settings%path, error)
         if (allocated(error)) return
 
@@ -202,20 +201,20 @@ contains
         if (.not. exists(cache_path)) call mkdir(cache_path)
         global_settings%registry_settings%cache_path = cache_path
       else
-        cache_path = join_path(config_path(global_settings), cache_path)
+        cache_path = join_path(global_settings%path_to_config_folder_or_empty(), cache_path)
         if (.not. exists(cache_path)) call mkdir(cache_path)
         ! Get canonical, absolute path on both Unix and Windows.
         call get_absolute_path(cache_path, global_settings%registry_settings%cache_path, error)
         if (allocated(error)) return
       end if
     else if (.not. allocated(path)) then
-      global_settings%registry_settings%cache_path = join_path(config_path(global_settings), &
-      & 'dependencies')
+      global_settings%registry_settings%cache_path = &
+        join_path(global_settings%path_to_config_folder_or_empty(), 'dependencies')
     end if
   end
 
   !> True if the global config file is not at the default location.
-  pure logical function has_custom_location(self)
+  elemental logical function has_custom_location(self)
     class(fpm_global_settings), intent(in) :: self
 
     has_custom_location = allocated(self%path_to_config_folder) .and. allocated(self%config_file_name)
@@ -228,19 +227,18 @@ contains
     class(fpm_global_settings), intent(in) :: self
     character(len=:), allocatable :: result
 
-    result = join_path(config_path(self), self%config_file_name)
+    result = join_path(self%path_to_config_folder_or_empty(), self%config_file_name)
   end
 
   !> The path to the global config directory.
-  function config_path(self)
+  pure function path_to_config_folder_or_empty(self)
     class(fpm_global_settings), intent(in) :: self
-    character(len=:), allocatable :: config_path
+    character(len=:), allocatable :: path_to_config_folder_or_empty
 
     if (allocated(self%path_to_config_folder)) then
-      config_path = self%path_to_config_folder
+      path_to_config_folder_or_empty = self%path_to_config_folder
     else
-      config_path = ""
+      path_to_config_folder_or_empty = ""
     end if
   end
-
 end

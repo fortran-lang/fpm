@@ -617,8 +617,10 @@ subroutine cmd_run(settings,test)
             call fpm_stop(stat(firsterror),'*cmd_run*:stopping due to failed executions')
         end if
 
-    endif
+    end if
+
     contains
+
     subroutine compact_list_all()
     integer, parameter :: LINE_WIDTH = 80
     integer :: ii, jj, nCol
@@ -635,11 +637,9 @@ subroutine cmd_run(settings,test)
                 exe_source => exe_target%dependencies(1)%ptr%source
 
                 if (exe_source%unit_scope == run_scope) then
-
                     write(stderr,'(A)',advance=(merge("yes","no ",modulo(jj,nCol)==0))) &
                         & [character(len=col_width) :: basename(exe_target%output_file, suffix=.false.)]
                     jj = jj + 1
-
                 end if
             end if
         end do
@@ -656,7 +656,7 @@ subroutine cmd_run(settings,test)
             write(stderr,'(A)',advance=(merge("yes","no ",modulo(jj,nCol)==0))) &
                 & [character(len=col_width) :: basename(executables(ii)%s, suffix=.false.)]
             jj = jj + 1
-        enddo
+        end do
         write(stderr,*)
     end subroutine compact_list
 
