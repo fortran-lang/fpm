@@ -101,7 +101,7 @@
           <li id="statements"><i class="fa fa-list-ol"></i>
             <a data-toggle="tooltip"
                data-placement="bottom" data-html="true"
-               title=" 0.4% of total for procedures.">20 statements</a>
+               title=" 0.5% of total for procedures.">26 statements</a>
           </li>
 
             <li id="source-file">
@@ -148,12 +148,6 @@
   
   
   
-    <div class="panel panel-primary">
-      <div class="panel-heading text-left"><h3 class="panel-title">Source Code</h3></div>
-      <div class="list-group">
-        <a class="list-group-item" href="../proc/execute_and_read_output.html#src">execute_and_read_output</a>
-      </div>
-    </div>
 
 
   </div>
@@ -161,7 +155,7 @@
     </div>
     
     <div class="col-md-9" id='text'>
-    <h2>public  subroutine execute_and_read_output(cmd, output, error, exitstat)  
+    <h2>public  subroutine execute_and_read_output(cmd, output, error, verbose)  
 </h2>
     
 
@@ -226,17 +220,17 @@
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-exitstat"></span>
-              integer,
+              <span class="anchor" id="variable-verbose~2"></span>
+              logical,
             </td>
-<td>intent(out),</td>
+<td>intent(in),</td>
               <td>optional</td>            <td>
               
             </td>
             <td>::</td>
-            <td><strong>exitstat</strong></td>
+            <td><strong>verbose</strong></td>
             <td>
-                <p>Can optionally used for error handling.</p>
+                <p>Print additional information if true.</p>
             </td>
         </tr>
     </tbody>
@@ -265,12 +259,6 @@
   
   
   
-    <div class="panel panel-primary">
-      <div class="panel-heading text-left"><h3 class="panel-title">Source Code</h3></div>
-      <div class="list-group">
-        <a class="list-group-item" href="../proc/execute_and_read_output.html#src">execute_and_read_output</a>
-      </div>
-    </div>
 
 
     </section>
@@ -285,40 +273,6 @@
 
 
     
-    <section>
-    <h2><span class="anchor" id="src"></span>Source Code</h2>
-    <div class="highlight"><pre><span></span><span class="w">    </span><span class="k">subroutine </span><span class="n">execute_and_read_output</span><span class="p">(</span><span class="n">cmd</span><span class="p">,</span><span class="w"> </span><span class="n">output</span><span class="p">,</span><span class="w"> </span><span class="n">error</span><span class="p">,</span><span class="w"> </span><span class="n">exitstat</span><span class="p">)</span><span class="w"></span>
-<span class="w">        </span><span class="c">!&gt; Command to execute.</span>
-<span class="w">        </span><span class="kt">character</span><span class="p">(</span><span class="nb">len</span><span class="o">=*</span><span class="p">),</span><span class="w"> </span><span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">)</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">cmd</span><span class="w"></span>
-<span class="w">        </span><span class="c">!&gt; Command line output.</span>
-<span class="w">        </span><span class="kt">character</span><span class="p">(</span><span class="nb">len</span><span class="o">=</span><span class="p">:),</span><span class="w"> </span><span class="k">allocatable</span><span class="p">,</span><span class="w"> </span><span class="k">intent</span><span class="p">(</span><span class="n">out</span><span class="p">)</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">output</span><span class="w"></span>
-<span class="w">        </span><span class="c">!&gt; Error to handle.</span>
-<span class="w">        </span><span class="k">type</span><span class="p">(</span><span class="n">error_t</span><span class="p">),</span><span class="w"> </span><span class="k">allocatable</span><span class="p">,</span><span class="w"> </span><span class="k">intent</span><span class="p">(</span><span class="n">out</span><span class="p">)</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">error</span><span class="w"></span>
-<span class="w">        </span><span class="c">!&gt; Can optionally used for error handling.</span>
-<span class="w">        </span><span class="kt">integer</span><span class="p">,</span><span class="w"> </span><span class="k">intent</span><span class="p">(</span><span class="n">out</span><span class="p">),</span><span class="w"> </span><span class="k">optional</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">exitstat</span><span class="w"></span>
-
-<span class="w">        </span><span class="kt">integer</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">cmdstat</span><span class="p">,</span><span class="w"> </span><span class="n">unit</span><span class="p">,</span><span class="w"> </span><span class="nb">stat</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="w"></span>
-<span class="w">        </span><span class="kt">character</span><span class="p">(</span><span class="nb">len</span><span class="o">=</span><span class="p">:),</span><span class="w"> </span><span class="k">allocatable</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">cmdmsg</span><span class="p">,</span><span class="w"> </span><span class="n">tmp_file</span><span class="w"></span>
-<span class="w">        </span><span class="kt">character</span><span class="p">(</span><span class="nb">len</span><span class="o">=</span><span class="p">:),</span><span class="k">allocatable</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">output_line</span><span class="w"></span>
-
-<span class="w">        </span><span class="n">tmp_file</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">get_temp_filename</span><span class="p">()</span><span class="w"></span>
-
-<span class="w">        </span><span class="k">call </span><span class="nb">execute_command_line</span><span class="p">(</span><span class="n">cmd</span><span class="o">//</span><span class="s1">&#39; &gt; &#39;</span><span class="o">//</span><span class="n">tmp_file</span><span class="p">,</span><span class="w"> </span><span class="n">exitstat</span><span class="o">=</span><span class="n">exitstat</span><span class="p">,</span><span class="w"> </span><span class="n">cmdstat</span><span class="o">=</span><span class="n">cmdstat</span><span class="p">)</span><span class="w"></span>
-<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">cmdstat</span><span class="w"> </span><span class="o">/=</span><span class="w"> </span><span class="mi">0</span><span class="p">)</span><span class="w"> </span><span class="k">call </span><span class="n">fatal_error</span><span class="p">(</span><span class="n">error</span><span class="p">,</span><span class="w"> </span><span class="s1">&#39;*run*: &#39;</span><span class="o">//</span><span class="s2">&quot;Command failed: &#39;&quot;</span><span class="o">//</span><span class="n">cmd</span><span class="o">//</span><span class="s2">&quot;&#39;. Message: &#39;&quot;</span><span class="o">//</span><span class="nb">trim</span><span class="p">(</span><span class="n">cmdmsg</span><span class="p">)</span><span class="o">//</span><span class="s2">&quot;&#39;.&quot;</span><span class="p">)</span><span class="w"></span>
-
-<span class="w">        </span><span class="k">open</span><span class="p">(</span><span class="n">newunit</span><span class="o">=</span><span class="n">unit</span><span class="p">,</span><span class="w"> </span><span class="k">file</span><span class="o">=</span><span class="n">tmp_file</span><span class="p">,</span><span class="w"> </span><span class="n">action</span><span class="o">=</span><span class="s1">&#39;read&#39;</span><span class="p">,</span><span class="w"> </span><span class="n">status</span><span class="o">=</span><span class="s1">&#39;old&#39;</span><span class="p">)</span><span class="w"></span>
-<span class="w">        </span><span class="n">output</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">&#39;&#39;</span><span class="w"></span>
-<span class="w">        </span><span class="k">do</span>
-<span class="k">           call </span><span class="n">getline</span><span class="p">(</span><span class="n">unit</span><span class="p">,</span><span class="w"> </span><span class="n">output_line</span><span class="p">,</span><span class="w"> </span><span class="nb">stat</span><span class="p">)</span><span class="w"></span>
-<span class="w">           </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="nb">stat</span><span class="w"> </span><span class="o">/=</span><span class="w"> </span><span class="mi">0</span><span class="p">)</span><span class="w"> </span><span class="k">exit</span>
-<span class="k">           </span><span class="n">output</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">output</span><span class="o">//</span><span class="n">output_line</span><span class="o">//</span><span class="s1">&#39; &#39;</span><span class="w"></span>
-<span class="w">        </span><span class="k">end do</span>
-<span class="k">        close</span><span class="p">(</span><span class="n">unit</span><span class="p">,</span><span class="w"> </span><span class="n">status</span><span class="o">=</span><span class="s1">&#39;delete&#39;</span><span class="p">,</span><span class="n">iostat</span><span class="o">=</span><span class="nb">stat</span><span class="p">)</span><span class="w"></span>
-<span class="w">    </span><span class="k">end subroutine </span><span class="n">execute_and_read_output</span><span class="w"></span>
-</pre></div>
-
-    </section>
-    <br>
     
     </div>
   </div>
@@ -335,7 +289,7 @@
             <p class="text-right">
               Documentation generated by
               <a href="https://github.com/Fortran-FOSS-Programmers/ford">FORD</a>
- on 2023-06-19 06:38              </p>
+ on 2023-06-19 08:16              </p>
           </div>
         </div>
         <br>
