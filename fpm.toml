@@ -39,3 +39,17 @@ name = "help-test"
 source-dir = "test/help_test"
 main = "help_test.f90"
 
+[[test]]
+name="test_suite_fpm_filesystem"
+source-dir="test/procedures"
+main="test_suite_fpm_filesystem.f90"
+[test.dependencies]
+M_framework = { git = "https://github.com/urbanjost/M_framework.git" }
+
+[[test]]
+name="test_suite_fpm_strings"
+source-dir="test/procedures"
+main="test_suite_fpm_strings.f90"
+[test.dependencies]
+M_framework = { git = "https://github.com/urbanjost/M_framework.git" }
+
