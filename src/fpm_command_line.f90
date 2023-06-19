@@ -54,6 +54,7 @@ public :: fpm_cmd_settings, &
 
 type, abstract :: fpm_cmd_settings
     character(len=:), allocatable :: working_dir
+    character(len=:), allocatable :: path_to_config
     logical                       :: verbose=.true.
 end type
 
@@ -221,7 +222,7 @@ contains
         type(fpm_install_settings), allocatable :: install_settings
         type(version_t) :: version
         character(len=:), allocatable :: common_args, compiler_args, run_args, working_dir, &
-            & c_compiler, cxx_compiler, archiver, version_s, token_s
+            & c_compiler, cxx_compiler, archiver, version_s, token_s, config_file
 
         character(len=*), parameter :: fc_env = "FC", cc_env = "CC", ar_env = "AR", &
             & fflags_env = "FFLAGS", cflags_env = "CFLAGS", cxxflags_env = "CXXFLAGS", ldflags_env = "LDFLAGS", &
@@ -289,7 +290,8 @@ contains
         case('run')
             call set_args(common_args // compiler_args // run_args //'&
             & --all F &
-            & --example F&
+            & --example F &
+            & --config-file " " &
             & --',help_run,version_text)
 
             call check_build_vals()
@@ -299,7 +301,6 @@ contains
             else
                 names=[character(len=len(names)) :: ]
             endif
-
 
             if(specified('target') )then
                call split(sget('target'),tnames,delimiters=' ,:')
@@ -320,6 +321,7 @@ contains
             c_compiler = sget('c-compiler')
             cxx_compiler = sget('cxx-compiler')
             archiver = sget('archiver')
+            config_file = sget('config-file')
             allocate(fpm_run_settings :: cmd_settings)
             val_runner=sget('runner')
             if(specified('runner') .and. val_runner=='')val_runner='echo'
@@ -331,6 +333,7 @@ contains
             & c_compiler=c_compiler, &
             & cxx_compiler=cxx_compiler, &
             & archiver=archiver, &
+            & path_to_config=config_file, &
             & flag=val_flag, &
             & cflag=val_cflag, &
             & cxxflag=val_cxxflag, &
@@ -347,6 +350,7 @@ contains
             & --list F &
             & --show-model F &
             & --tests F &
+            & --config-file " " &
             & --',help_build,version_text)
 
             call check_build_vals()
@@ -354,6 +358,8 @@ contains
             c_compiler = sget('c-compiler')
             cxx_compiler = sget('cxx-compiler')
             archiver = sget('archiver')
+            config_file = sget('config-file')
+
             allocate( fpm_build_settings :: cmd_settings )
             cmd_settings=fpm_build_settings(  &
             & profile=val_profile,&
@@ -362,6 +368,7 @@ contains
             & c_compiler=c_compiler, &
             & cxx_compiler=cxx_compiler, &
             & archiver=archiver, &
+            & path_to_config=config_file, &
             & flag=val_flag, &
             & cflag=val_cflag, &
             & cxxflag=val_cxxflag, &
@@ -380,8 +387,8 @@ contains
             & --example F &
             & --backfill F &
             & --full F &
-            & --bare F', &
-            & help_new, version_text)
+            & --bare F &
+            &', help_new, version_text)
             select case(size(unnamed))
             case(1)
                 if(lget('backfill'))then
@@ -413,7 +420,6 @@ contains
                 & '        numbers, underscores, or hyphens, and start with a letter.']
                 call fpm_stop(4,' ')
             endif
-
 
             allocate(fpm_new_settings :: cmd_settings)
             if (any( specified([character(len=10) :: 'src','lib','app','test','example','bare'])) &
@@ -450,7 +456,7 @@ contains
                  & verbose=lget('verbose') )
             endif
 
-        case('help','manual')
+        case('help', 'manual')
             call set_args(common_args, help_help,version_text)
             if(size(unnamed)<2)then
                 if(unnamed(1)=='help')then
@@ -501,16 +507,21 @@ contains
 
         case('install')
             call set_args(common_args // compiler_args // '&
-                & --no-rebuild F --prefix " " &
+                & --no-rebuild F &
+                & --prefix " " &
                 & --list F &
-                & --libdir "lib" --bindir "bin" --includedir "include"', &
-                help_install, version_text)
+                & --libdir "lib" &
+                & --bindir "bin" &
+                & --includedir "include" &
+                & --config-file " " &
+                &', help_install, version_text)
 
             call check_build_vals()
 
             c_compiler = sget('c-compiler')
             cxx_compiler = sget('cxx-compiler')
             archiver = sget('archiver')
+            config_file = sget('config-file')
             allocate(install_settings, source=fpm_install_settings(&
                 list=lget('list'), &
                 profile=val_profile,&
@@ -519,6 +530,7 @@ contains
                 c_compiler=c_compiler, &
                 cxx_compiler=cxx_compiler, &
                 archiver=archiver, &
+                path_to_config=config_file, &
                 flag=val_flag, &
                 cflag=val_cflag, &
                 cxxflag=val_cxxflag, &
@@ -533,7 +545,7 @@ contains
 
         case('list')
             call set_args(common_args // '&
-            & --list F&
+            & --list F &
             &', help_list, version_text)
             if(lget('list'))then
                 help_text = [character(widest) :: help_list_nodash, help_list_dash]
@@ -543,8 +555,9 @@ contains
             call printhelp(help_text)
 
         case('test')
-            call set_args(common_args // compiler_args // run_args // ' --', &
-              help_test,version_text)
+            call set_args(common_args // compiler_args // run_args // '&
+            & --config-file " " &
+            & -- ', help_test,version_text)
 
             call check_build_vals()
 
@@ -568,6 +581,8 @@ contains
             c_compiler = sget('c-compiler')
             cxx_compiler = sget('cxx-compiler')
             archiver = sget('archiver')
+            config_file = sget('config-file')
+
             allocate(fpm_test_settings :: cmd_settings)
             val_runner=sget('runner')
             if(specified('runner') .and. val_runner=='')val_runner='echo'
@@ -579,6 +594,7 @@ contains
             & c_compiler=c_compiler, &
             & cxx_compiler=cxx_compiler, &
             & archiver=archiver, &
+            & path_to_config=config_file, &
             & flag=val_flag, &
             & cflag=val_cflag, &
             & cxxflag=val_cxxflag, &
@@ -591,8 +607,11 @@ contains
             & verbose=lget('verbose') )
 
         case('update')
-            call set_args(common_args // ' --fetch-only F --clean F', &
-                help_update, version_text)
+            call set_args(common_args // '&
+            & --fetch-only F &
+            & --clean F &
+            & --config-file " " &
+            &', help_update, version_text)
 
             if( size(unnamed) > 1 )then
                 names=unnamed(2:)
@@ -600,23 +619,33 @@ contains
                 names=[character(len=len(names)) :: ]
             endif
 
+            config_file = sget('config-file')
+
             allocate(fpm_update_settings :: cmd_settings)
             cmd_settings=fpm_update_settings(name=names, &
-                fetch_only=lget('fetch-only'), verbose=lget('verbose'), &
-                clean=lget('clean'))
+            & fetch_only=lget('fetch-only'), &
+            & verbose=lget('verbose'), &
+            & path_to_config=config_file, &
+            & clean=lget('clean'))
 
         case('clean')
-            call set_args(common_args // &
-            &   ' --skip'             // &
-            &   ' --all',                &
-                help_clean, version_text)
+            call set_args(common_args // '&
+            & --skip &
+            & --all &
+            & --config-file " " &
+            &', help_clean, version_text)
+
+            config_file = sget('config-file')
+
             allocate(fpm_clean_settings :: cmd_settings)
             call get_current_directory(working_dir, error)
             cmd_settings=fpm_clean_settings( &
-            &   is_unix=is_unix,             &
-            &   calling_dir=working_dir,     &
-            &   clean_skip=lget('skip'),     &
-                clean_call=lget('all'))
+            & is_unix=is_unix, &
+            & calling_dir=working_dir, &
+            & clean_skip=lget('skip'), &
+            & clean_call=lget('all'), &
+            & path_to_config=config_file &
+            &)
 
         case('publish')
             call set_args(common_args // compiler_args //'&
@@ -627,6 +656,7 @@ contains
             & --list F &
             & --show-model F &
             & --tests F &
+            & --config-file " " &
             & --', help_publish, version_text)
 
             call check_build_vals()
@@ -634,6 +664,7 @@ contains
             c_compiler = sget('c-compiler')
             cxx_compiler = sget('cxx-compiler')
             archiver = sget('archiver')
+            config_file = sget('config-file')
             token_s = sget('token')
 
             allocate(fpm_publish_settings :: cmd_settings)
@@ -654,6 +685,7 @@ contains
             & list=lget('list'),&
             & show_model=lget('show-model'),&
             & build_tests=lget('tests'),&
+            & path_to_config=config_file, &
             & verbose=lget('verbose'),&
             & token=token_s)
 
@@ -697,7 +729,7 @@ contains
 
         val_flag = " " // sget('flag')
         val_cflag = " " // sget('c-flag')
-        val_cxxflag = " "// sget('cxx-flag')
+        val_cxxflag = " " // sget('cxx-flag')
         val_ldflag = " " // sget('link-flag')
         val_profile = sget('profile')
 
@@ -744,21 +776,22 @@ contains
    help_list_dash = [character(len=80) :: &
    '                                                                                ', &
    ' build [--compiler COMPILER_NAME] [--profile PROF] [--flag FFLAGS] [--list]     ', &
-   '       [--tests] [--no-prune]                                                   ', &
+   '       [--tests] [--no-prune] [--config-file PATH]                              ', &
    ' help [NAME(s)]                                                                 ', &
    ' new NAME [[--lib|--src] [--app] [--test] [--example]]|                         ', &
    '          [--full|--bare][--backfill]                                           ', &
-   ' update [NAME(s)] [--fetch-only] [--clean] [--verbose]                          ', &
+   ' update [NAME(s)] [--fetch-only] [--clean] [--verbose] [--config-file PATH]     ', &
    ' list [--list]                                                                  ', &
    ' run  [[--target] NAME(s) [--example] [--profile PROF] [--flag FFLAGS] [--all]  ', &
    '      [--runner "CMD"] [--compiler COMPILER_NAME] [--list] [-- ARGS]            ', &
+   '      [--config-file PATH]                                                      ', &
    ' test [[--target] NAME(s)] [--profile PROF] [--flag FFLAGS] [--runner "CMD"]    ', &
-   '      [--list] [--compiler COMPILER_NAME] [-- ARGS]                             ', &
+   '      [--list] [--compiler COMPILER_NAME] [--config-file PATH] [-- ARGS]        ', &
    ' install [--profile PROF] [--flag FFLAGS] [--no-rebuild] [--prefix PATH]        ', &
-   '         [options]                                                              ', &
-   ' clean [--skip] [--all]                                                         ', &
+   '         [--config-file PATH] [options]                                         ', &
+   ' clean [--skip] [--all] [--config-file PATH]                                    ', &
    ' publish [--token TOKEN] [--show-package-version] [--show-upload-data]          ', &
-   '         [--dry-run] [--verbose]                                                ', &
+   '         [--dry-run] [--verbose] [--config-file PATH]                           ', &
    ' ']
     help_usage=[character(len=80) :: &
     '' ]
@@ -780,14 +813,14 @@ contains
    '   from platform to platform or require independent installation.               ', &
    '                                                                                ', &
    'OPTION                                                                          ', &
-   ' --runner ''CMD''  quoted command used to launch the fpm(1) executables.          ', &
+   ' --runner ''CMD''  quoted command used to launch the fpm(1) executables.        ', &
    '               Available for both the "run" and "test" subcommands.             ', &
    '               If the keyword is specified without a value the default command  ', &
    '               is "echo".                                                       ', &
    ' -- SUFFIX_OPTIONS  additional options to suffix the command CMD and executable ', &
    '                    file names with.                                            ', &
    'EXAMPLES                                                                        ', &
-   '   Use cases for ''fpm run|test --runner "CMD"'' include employing                ', &
+   '   Use cases for ''fpm run|test --runner "CMD"'' include employing              ', &
    '   the following common GNU/Linux and Unix commands:                            ', &
    '                                                                                ', &
    ' INTERROGATE                                                                    ', &
@@ -816,7 +849,7 @@ contains
    '  fpm run --runner "tar cvfz $HOME/bundle.tgz"                                  ', &
    '  fpm run --runner ldd                                                          ', &
    '  fpm run --runner strip                                                        ', &
-   '  fpm run --runner ''cp -t /usr/local/bin''                                       ', &
+   '  fpm run --runner ''cp -t /usr/local/bin''                                     ', &
    '                                                                                ', &
    '  # options after executable name can be specified after the -- option          ', &
    '  fpm --runner cp run -- /usr/local/bin/                                        ', &
@@ -868,22 +901,23 @@ contains
     '  Their syntax is                                                      ', &
     '                                                                                ', &
     '    build [--profile PROF] [--flag FFLAGS] [--list] [--compiler COMPILER_NAME]  ', &
-    '          [--tests] [--no-prune]                                                ', &
+    '          [--tests] [--no-prune] [--config-file PATH]                           ', &
     '    new NAME [[--lib|--src] [--app] [--test] [--example]]|                      ', &
     '             [--full|--bare][--backfill]                                        ', &
-    '    update [NAME(s)] [--fetch-only] [--clean]                                   ', &
+    '    update [NAME(s)] [--fetch-only] [--clean] [--config-file PATH]              ', &
     '    run [[--target] NAME(s)] [--profile PROF] [--flag FFLAGS] [--list] [--all]  ', &
     '        [--example] [--runner "CMD"] [--compiler COMPILER_NAME]                 ', &
-    '        [--no-prune] [-- ARGS]                                                  ', &
+    '        [--no-prune] [-- ARGS] [--config-file PATH]                             ', &
     '    test [[--target] NAME(s)] [--profile PROF] [--flag FFLAGS] [--list]         ', &
     '         [--runner "CMD"] [--compiler COMPILER_NAME] [--no-prune] [-- ARGS]     ', &
+    '         [--config-file PATH]                                                   ', &
     '    help [NAME(s)]                                                              ', &
     '    list [--list]                                                               ', &
     '    install [--profile PROF] [--flag FFLAGS] [--no-rebuild] [--prefix PATH]     ', &
-    '            [options]                                                           ', &
-    '    clean [--skip] [--all]                                                      ', &
+    '            [options] [--config-file PATH]                                      ', &
+    '    clean [--skip] [--all] [--config-file PATH]                                 ', &
     '    publish [--token TOKEN] [--show-package-version] [--show-upload-data]       ', &
-    '            [--dry-run] [--verbose]                                             ', &
+    '            [--dry-run] [--verbose] [--config-file PATH]                        ', &
     '                                                                                ', &
     'SUBCOMMAND OPTIONS                                                              ', &
     ' -C, --directory PATH', &
@@ -985,9 +1019,9 @@ contains
     ' run(1) - the fpm(1) subcommand to run project applications            ', &
     '                                                                       ', &
     'SYNOPSIS                                                               ', &
-    ' fpm run [[--target] NAME(s) [--profile PROF] [--flag FFLAGS]', &
+    ' fpm run [[--target] NAME(s)] [--profile PROF] [--flag FFLAGS]', &
     '         [--compiler COMPILER_NAME] [--runner "CMD"] [--example]', &
-    '         [--list] [--all] [-- ARGS]', &
+    '         [--list] [--all] [--config-file PATH] [-- ARGS]', &
     '                                                                       ', &
     ' fpm run --help|--version                                              ', &
     '                                                                       ', &
@@ -1009,8 +1043,9 @@ contains
     '                   any single character and "*" represents any string. ', &
     '                   Note The glob string normally needs quoted to       ', &
     '                   the special characters from shell expansion.        ', &
-    ' --all   Run all examples or applications. An alias for --target ''*''.  ', &
+    ' --all  Run all examples or applications. An alias for --target ''*''. ', &
     ' --example  Run example programs instead of applications.              ', &
+    ' --config-file PATH  Custom location of the global config file.        ', &
     help_text_build_common, &
     help_text_compiler, &
     help_text_flag, &
@@ -1056,7 +1091,7 @@ contains
     '                                                                       ', &
     'SYNOPSIS                                                               ', &
     ' fpm build [--profile PROF] [--flag FFLAGS] [--compiler COMPILER_NAME] ', &
-    '           [--list] [--tests]                                          ', &
+    '           [--list] [--tests] [--config-file PATH]                     ', &
     '                                                                       ', &
     ' fpm build --help|--version                                            ', &
     '                                                                       ', &
@@ -1081,12 +1116,13 @@ contains
     help_text_build_common,&
     help_text_compiler, &
     help_text_flag, &
-    ' --list        list candidates instead of building or running them     ', &
-    ' --tests       build all tests (otherwise only if needed)              ', &
-    ' --show-model  show the model and exit (do not build)                  ', &
-    ' --help        print this help and exit                                ', &
-    ' --version     print program version information and exit              ', &
-    '                                                                       ', &
+    ' --list              list candidates instead of building or running them', &
+    ' --tests             build all tests (otherwise only if needed)         ', &
+    ' --show-model        show the model and exit (do not build)             ', &
+    ' --help              print this help and exit                           ', &
+    ' --version           print program version information and exit         ', &
+    ' --config-file PATH  custom location of the global config file          ', &
+    '                                                                        ', &
     help_text_environment, &
     '                                                                       ', &
     'EXAMPLES                                                               ', &
@@ -1236,8 +1272,9 @@ contains
     ' test(1) - the fpm(1) subcommand to run project tests                  ', &
     '                                                                       ', &
     'SYNOPSIS                                                               ', &
-    ' fpm test [[--target] NAME(s)] [--profile PROF] [--flag FFLAGS]', &
-    '          [--compiler COMPILER_NAME ] [--runner "CMD"] [--list][-- ARGS]', &
+    ' fpm test [[--target] NAME(s)] [--profile PROF] [--flag FFLAGS]        ', &
+    '          [--compiler COMPILER_NAME ] [--runner "CMD"] [--list]        ', &
+    '          [-- ARGS] [--config-file PATH]                               ', &
     '                                                                       ', &
     ' fpm test --help|--version                                             ', &
     '                                                                       ', &
@@ -1260,6 +1297,7 @@ contains
     '               see "fpm help runner" for further details.              ', &
     ' --list     list candidate basenames instead of running them. Note they', &
     ' --list     will still be built if not currently up to date.           ', &
+    ' --config-file PATH  Custom location of the global config file.        ', &
     ' -- ARGS    optional arguments to pass to the test program(s).         ', &
     '            The same arguments are passed to all test names            ', &
     '            specified.                                                 ', &
@@ -1285,16 +1323,18 @@ contains
     ' update(1) - manage project dependencies', &
     '', &
     'SYNOPSIS', &
-    ' fpm update [--fetch-only] [--clean] [--verbose] [NAME(s)]', &
+    ' fpm update [--fetch-only] [--clean] [--verbose] [NAME(s)] ', &
+    '            [--config-file PATH] ', &
     '', &
     'DESCRIPTION', &
     ' Manage and update project dependencies. If no dependency names are', &
     ' provided all the dependencies are updated automatically.', &
     '', &
     'OPTIONS', &
-    ' --fetch-only  Only fetch dependencies, do not update existing projects', &
-    ' --clean       Do not use previous dependency cache', &
-    ' --verbose     Show additional printout', &
+    ' --fetch-only        Only fetch dependencies, do not update existing projects', &
+    ' --clean             Do not use previous dependency cache', &
+    ' --config-file PATH  Custom location of the global config file', &
+    ' --verbose           Show additional printout', &
     '', &
     'SEE ALSO', &
     ' The fpm(1) home page at https://github.com/fortran-lang/fpm', &
@@ -1306,7 +1346,7 @@ contains
     'SYNOPSIS', &
     ' fpm install [--profile PROF] [--flag FFLAGS] [--list] [--no-rebuild]', &
     '             [--prefix DIR] [--bindir DIR] [--libdir DIR] [--includedir DIR]', &
-    '             [--verbose]', &
+    '             [--verbose] [--config-file PATH]', &
     '', &
     'DESCRIPTION', &
     ' Subcommand to install fpm projects. Running install will export the', &
@@ -1320,16 +1360,17 @@ contains
     '                   but do not install any of them', &
     help_text_build_common,&
     help_text_flag, &
-    ' --no-rebuild      do not rebuild project before installation', &
-    ' --prefix DIR      path to installation directory (requires write access),', &
-    '                   the default prefix on Unix systems is $HOME/.local', &
-    '                   and %APPDATA%\local on Windows', &
-    ' --bindir DIR      subdirectory to place executables in (default: bin)', &
-    ' --libdir DIR      subdirectory to place libraries and archives in', &
-    '                   (default: lib)', &
-    ' --includedir DIR  subdirectory to place headers and module files in', &
-    '                   (default: include)', &
-    ' --verbose         print more information', &
+    ' --no-rebuild        do not rebuild project before installation', &
+    ' --prefix DIR        path to installation directory (requires write access),', &
+    '                     the default prefix on Unix systems is $HOME/.local', &
+    '                     and %APPDATA%\local on Windows', &
+    ' --bindir DIR        subdirectory to place executables in (default: bin)', &
+    ' --libdir DIR        subdirectory to place libraries and archives in', &
+    '                     (default: lib)', &
+    ' --includedir DIR    subdirectory to place headers and module files in', &
+    '                     (default: include)', &
+    ' --config-file PATH  custom location of the global config file', &
+    ' --verbose           print more information', &
     '', &
     help_text_environment, &
     '', &
@@ -1358,8 +1399,9 @@ contains
     ' directories in the build/ directory are deleted, except dependencies.', &
     '', &
     'OPTIONS', &
-    ' --skip           delete the build without prompting but skip dependencies.', &
-    ' --all            delete the build without prompting including dependencies.', &
+    ' --skip              Delete the build without prompting but skip dependencies.', &
+    ' --all               Delete the build without prompting including dependencies.', &
+    ' --config-file PATH  Custom location of the global config file.', &
     '' ]
     help_publish=[character(len=80) :: &
     'NAME', &
@@ -1367,7 +1409,7 @@ contains
     '', &
     'SYNOPSIS', &
     ' fpm publish [--token TOKEN] [--show-package-version] [--show-upload-data]', &
-    '             [--dry-run] [--verbose]                                      ', &
+    '             [--dry-run] [--verbose] [--config-file PATH]', &
     '', &
     ' fpm publish --help|--version', &
     '', &
@@ -1399,6 +1441,7 @@ contains
     ' --dry-run                perform dry run without publishing', &
     ' --help                   print this help and exit', &
     ' --version                print program version information and exit', &
+    ' --config-file PATH       custom location of the global config file', &
     ' --verbose                print more information', &
     '', &
     'EXAMPLES', &
