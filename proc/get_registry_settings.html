@@ -148,12 +148,6 @@
   
   
   
-    <div class="panel panel-primary">
-      <div class="panel-heading text-left"><h3 class="panel-title">Source Code</h3></div>
-      <div class="list-group">
-        <a class="list-group-item" href="../proc/get_registry_settings.html#src">get_registry_settings</a>
-      </div>
-    </div>
 
 
   </div>
@@ -250,12 +244,6 @@
   
   
   
-    <div class="panel panel-primary">
-      <div class="panel-heading text-left"><h3 class="panel-title">Source Code</h3></div>
-      <div class="list-group">
-        <a class="list-group-item" href="../proc/get_registry_settings.html#src">get_registry_settings</a>
-      </div>
-    </div>
 
 
     </section>
@@ -270,104 +258,6 @@
 
 
     
-    <section>
-    <h2><span class="anchor" id="src"></span>Source Code</h2>
-    <div class="highlight"><pre><span></span><span class="w">  </span><span class="k">subroutine </span><span class="n">get_registry_settings</span><span class="p">(</span><span class="n">table</span><span class="p">,</span><span class="w"> </span><span class="n">global_settings</span><span class="p">,</span><span class="w"> </span><span class="n">error</span><span class="p">)</span><span class="w"></span>
-<span class="w">    </span><span class="c">!&gt; The [registry] subtable from the global config file.</span>
-<span class="w">    </span><span class="k">type</span><span class="p">(</span><span class="n">toml_table</span><span class="p">),</span><span class="w"> </span><span class="k">target</span><span class="p">,</span><span class="w"> </span><span class="k">intent</span><span class="p">(</span><span class="n">inout</span><span class="p">)</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">table</span><span class="w"></span>
-<span class="w">    </span><span class="c">!&gt; The global settings which can be filled with the registry settings.</span>
-<span class="w">    </span><span class="k">type</span><span class="p">(</span><span class="n">fpm_global_settings</span><span class="p">),</span><span class="w"> </span><span class="k">intent</span><span class="p">(</span><span class="n">inout</span><span class="p">)</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">global_settings</span><span class="w"></span>
-<span class="w">    </span><span class="c">!&gt; Error handling.</span>
-<span class="w">    </span><span class="k">type</span><span class="p">(</span><span class="n">error_t</span><span class="p">),</span><span class="w"> </span><span class="k">allocatable</span><span class="p">,</span><span class="w"> </span><span class="k">intent</span><span class="p">(</span><span class="n">out</span><span class="p">)</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">error</span><span class="w"></span>
-
-<span class="w">    </span><span class="kt">character</span><span class="p">(:),</span><span class="w"> </span><span class="k">allocatable</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">path</span><span class="p">,</span><span class="w"> </span><span class="n">url</span><span class="p">,</span><span class="w"> </span><span class="n">cache_path</span><span class="w"></span>
-<span class="w">    </span><span class="kt">integer</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="nb">stat</span><span class="w"></span>
-
-<span class="w">    </span><span class="c">!&gt; List of valid keys for the dependency table.</span>
-<span class="w">    </span><span class="kt">character</span><span class="p">(</span><span class="o">*</span><span class="p">),</span><span class="w"> </span><span class="k">dimension</span><span class="p">(</span><span class="o">*</span><span class="p">),</span><span class="w"> </span><span class="k">parameter</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">valid_keys</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">[</span><span class="kt">character</span><span class="p">(</span><span class="mi">10</span><span class="p">)</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="p">&amp;</span><span class="w"></span>
-<span class="w">        </span><span class="p">&amp;</span><span class="w"> </span><span class="s1">&#39;path&#39;</span><span class="p">,</span><span class="w"> </span><span class="p">&amp;</span><span class="w"></span>
-<span class="w">        </span><span class="p">&amp;</span><span class="w"> </span><span class="s1">&#39;url&#39;</span><span class="p">,</span><span class="w"> </span><span class="p">&amp;</span><span class="w"></span>
-<span class="w">        </span><span class="p">&amp;</span><span class="w"> </span><span class="s1">&#39;cache_path&#39;</span><span class="w"> </span><span class="p">&amp;</span><span class="w"></span>
-<span class="w">        </span><span class="p">&amp;</span><span class="w"> </span><span class="p">]</span><span class="w"></span>
-
-<span class="w">    </span><span class="k">call </span><span class="n">check_keys</span><span class="p">(</span><span class="n">table</span><span class="p">,</span><span class="w"> </span><span class="n">valid_keys</span><span class="p">,</span><span class="w"> </span><span class="n">error</span><span class="p">)</span><span class="w"></span>
-<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="nb">allocated</span><span class="p">(</span><span class="n">error</span><span class="p">))</span><span class="w"> </span><span class="k">return</span>
-
-<span class="k">    allocate</span><span class="w"> </span><span class="p">(</span><span class="n">global_settings</span><span class="p">%</span><span class="n">registry_settings</span><span class="p">)</span><span class="w"></span>
-
-<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">table</span><span class="p">%</span><span class="n">has_key</span><span class="p">(</span><span class="s1">&#39;path&#39;</span><span class="p">))</span><span class="w"> </span><span class="k">then</span>
-<span class="k">      call </span><span class="n">get_value</span><span class="p">(</span><span class="n">table</span><span class="p">,</span><span class="w"> </span><span class="s1">&#39;path&#39;</span><span class="p">,</span><span class="w"> </span><span class="n">path</span><span class="p">,</span><span class="w"> </span><span class="nb">stat</span><span class="o">=</span><span class="nb">stat</span><span class="p">)</span><span class="w"></span>
-<span class="w">      </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="nb">stat</span><span class="w"> </span><span class="o">/=</span><span class="w"> </span><span class="n">toml_stat</span><span class="p">%</span><span class="n">success</span><span class="p">)</span><span class="w"> </span><span class="k">then</span>
-<span class="k">        call </span><span class="n">fatal_error</span><span class="p">(</span><span class="n">error</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;Error reading registry path: &#39;&quot;</span><span class="o">//</span><span class="n">path</span><span class="o">//</span><span class="s2">&quot;&#39;.&quot;</span><span class="p">);</span><span class="w"> </span><span class="k">return</span>
-<span class="k">      end if</span>
-<span class="k">    end if</span>
-
-<span class="k">    if</span><span class="w"> </span><span class="p">(</span><span class="nb">allocated</span><span class="p">(</span><span class="n">path</span><span class="p">))</span><span class="w"> </span><span class="k">then</span>
-<span class="k">      if</span><span class="w"> </span><span class="p">(</span><span class="n">is_absolute_path</span><span class="p">(</span><span class="n">path</span><span class="p">))</span><span class="w"> </span><span class="k">then</span>
-<span class="k">        </span><span class="n">global_settings</span><span class="p">%</span><span class="n">registry_settings</span><span class="p">%</span><span class="n">path</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">path</span><span class="w"></span>
-<span class="w">      </span><span class="k">else</span><span class="w"></span>
-<span class="w">        </span><span class="c">! Get canonical, absolute path on both Unix and Windows.</span>
-<span class="w">        </span><span class="k">call </span><span class="n">get_absolute_path</span><span class="p">(</span><span class="n">join_path</span><span class="p">(</span><span class="n">config_path</span><span class="p">(</span><span class="n">global_settings</span><span class="p">),</span><span class="w"> </span><span class="n">path</span><span class="p">),</span><span class="w"> </span><span class="p">&amp;</span><span class="w"></span>
-<span class="w">        </span><span class="p">&amp;</span><span class="w"> </span><span class="n">global_settings</span><span class="p">%</span><span class="n">registry_settings</span><span class="p">%</span><span class="n">path</span><span class="p">,</span><span class="w"> </span><span class="n">error</span><span class="p">)</span><span class="w"></span>
-<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="nb">allocated</span><span class="p">(</span><span class="n">error</span><span class="p">))</span><span class="w"> </span><span class="k">return</span><span class="w"></span>
-
-<span class="w">        </span><span class="c">! Check if the path to the registry exists.</span>
-<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(.</span><span class="nb">not</span><span class="p">.</span><span class="w"> </span><span class="n">exists</span><span class="p">(</span><span class="n">global_settings</span><span class="p">%</span><span class="n">registry_settings</span><span class="p">%</span><span class="n">path</span><span class="p">))</span><span class="w"> </span><span class="k">then</span>
-<span class="k">          call </span><span class="n">fatal_error</span><span class="p">(</span><span class="n">error</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;Directory &#39;&quot;</span><span class="o">//</span><span class="n">global_settings</span><span class="p">%</span><span class="n">registry_settings</span><span class="p">%</span><span class="n">path</span><span class="o">//</span><span class="w"> </span><span class="p">&amp;</span><span class="w"></span>
-<span class="w">          </span><span class="p">&amp;</span><span class="w"> </span><span class="s2">&quot;&#39; doesn&#39;t exist.&quot;</span><span class="p">);</span><span class="w"> </span><span class="k">return</span>
-<span class="k">        end if</span>
-<span class="k">      end if</span>
-<span class="k">    end if</span>
-
-<span class="k">    if</span><span class="w"> </span><span class="p">(</span><span class="n">table</span><span class="p">%</span><span class="n">has_key</span><span class="p">(</span><span class="s1">&#39;url&#39;</span><span class="p">))</span><span class="w"> </span><span class="k">then</span>
-<span class="k">      call </span><span class="n">get_value</span><span class="p">(</span><span class="n">table</span><span class="p">,</span><span class="w"> </span><span class="s1">&#39;url&#39;</span><span class="p">,</span><span class="w"> </span><span class="n">url</span><span class="p">,</span><span class="w"> </span><span class="nb">stat</span><span class="o">=</span><span class="nb">stat</span><span class="p">)</span><span class="w"></span>
-<span class="w">      </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="nb">stat</span><span class="w"> </span><span class="o">/=</span><span class="w"> </span><span class="n">toml_stat</span><span class="p">%</span><span class="n">success</span><span class="p">)</span><span class="w"> </span><span class="k">then</span>
-<span class="k">        call </span><span class="n">fatal_error</span><span class="p">(</span><span class="n">error</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;Error reading registry url: &#39;&quot;</span><span class="o">//</span><span class="n">url</span><span class="o">//</span><span class="s2">&quot;&#39;.&quot;</span><span class="p">);</span><span class="w"> </span><span class="k">return</span>
-<span class="k">      end if</span>
-<span class="k">    end if</span>
-
-<span class="k">    if</span><span class="w"> </span><span class="p">(</span><span class="nb">allocated</span><span class="p">(</span><span class="n">url</span><span class="p">))</span><span class="w"> </span><span class="k">then</span><span class="w"></span>
-<span class="w">      </span><span class="c">! Throw error when both path and url were provided.</span>
-<span class="w">      </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="nb">allocated</span><span class="p">(</span><span class="n">path</span><span class="p">))</span><span class="w"> </span><span class="k">then</span>
-<span class="k">        call </span><span class="n">fatal_error</span><span class="p">(</span><span class="n">error</span><span class="p">,</span><span class="w"> </span><span class="s1">&#39;Do not provide both path and url to the registry.&#39;</span><span class="p">);</span><span class="w"> </span><span class="k">return</span>
-<span class="k">      end if</span>
-<span class="k">      </span><span class="n">global_settings</span><span class="p">%</span><span class="n">registry_settings</span><span class="p">%</span><span class="n">url</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">url</span><span class="w"></span>
-<span class="w">    </span><span class="k">else if</span><span class="w"> </span><span class="p">(.</span><span class="nb">not</span><span class="p">.</span><span class="w"> </span><span class="nb">allocated</span><span class="p">(</span><span class="n">path</span><span class="p">))</span><span class="w"> </span><span class="k">then</span>
-<span class="k">      </span><span class="n">global_settings</span><span class="p">%</span><span class="n">registry_settings</span><span class="p">%</span><span class="n">url</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">official_registry_base_url</span><span class="w"></span>
-<span class="w">    </span><span class="k">end if</span>
-
-<span class="k">    if</span><span class="w"> </span><span class="p">(</span><span class="n">table</span><span class="p">%</span><span class="n">has_key</span><span class="p">(</span><span class="s1">&#39;cache_path&#39;</span><span class="p">))</span><span class="w"> </span><span class="k">then</span>
-<span class="k">      call </span><span class="n">get_value</span><span class="p">(</span><span class="n">table</span><span class="p">,</span><span class="w"> </span><span class="s1">&#39;cache_path&#39;</span><span class="p">,</span><span class="w"> </span><span class="n">cache_path</span><span class="p">,</span><span class="w"> </span><span class="nb">stat</span><span class="o">=</span><span class="nb">stat</span><span class="p">)</span><span class="w"></span>
-<span class="w">      </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="nb">stat</span><span class="w"> </span><span class="o">/=</span><span class="w"> </span><span class="n">toml_stat</span><span class="p">%</span><span class="n">success</span><span class="p">)</span><span class="w"> </span><span class="k">then</span>
-<span class="k">        call </span><span class="n">fatal_error</span><span class="p">(</span><span class="n">error</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;Error reading path to registry cache: &#39;&quot;</span><span class="o">//</span><span class="n">cache_path</span><span class="o">//</span><span class="s2">&quot;&#39;.&quot;</span><span class="p">);</span><span class="w"> </span><span class="k">return</span>
-<span class="k">      end if</span>
-<span class="k">    end if</span>
-
-<span class="k">    if</span><span class="w"> </span><span class="p">(</span><span class="nb">allocated</span><span class="p">(</span><span class="n">cache_path</span><span class="p">))</span><span class="w"> </span><span class="k">then</span><span class="w"></span>
-<span class="w">      </span><span class="c">! Throw error when both path and cache_path were provided.</span>
-<span class="w">      </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="nb">allocated</span><span class="p">(</span><span class="n">path</span><span class="p">))</span><span class="w"> </span><span class="k">then</span>
-<span class="k">        call </span><span class="n">fatal_error</span><span class="p">(</span><span class="n">error</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;Do not provide both &#39;path&#39; and &#39;cache_path&#39;.&quot;</span><span class="p">);</span><span class="w"> </span><span class="k">return</span>
-<span class="k">      end if</span>
-
-<span class="k">      if</span><span class="w"> </span><span class="p">(</span><span class="n">is_absolute_path</span><span class="p">(</span><span class="n">cache_path</span><span class="p">))</span><span class="w"> </span><span class="k">then</span>
-<span class="k">        if</span><span class="w"> </span><span class="p">(.</span><span class="nb">not</span><span class="p">.</span><span class="w"> </span><span class="n">exists</span><span class="p">(</span><span class="n">cache_path</span><span class="p">))</span><span class="w"> </span><span class="k">call </span><span class="n">mkdir</span><span class="p">(</span><span class="n">cache_path</span><span class="p">)</span><span class="w"></span>
-<span class="w">        </span><span class="n">global_settings</span><span class="p">%</span><span class="n">registry_settings</span><span class="p">%</span><span class="n">cache_path</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">cache_path</span><span class="w"></span>
-<span class="w">      </span><span class="k">else</span>
-<span class="k">        </span><span class="n">cache_path</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">join_path</span><span class="p">(</span><span class="n">config_path</span><span class="p">(</span><span class="n">global_settings</span><span class="p">),</span><span class="w"> </span><span class="n">cache_path</span><span class="p">)</span><span class="w"></span>
-<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(.</span><span class="nb">not</span><span class="p">.</span><span class="w"> </span><span class="n">exists</span><span class="p">(</span><span class="n">cache_path</span><span class="p">))</span><span class="w"> </span><span class="k">call </span><span class="n">mkdir</span><span class="p">(</span><span class="n">cache_path</span><span class="p">)</span><span class="w"></span>
-<span class="w">        </span><span class="c">! Get canonical, absolute path on both Unix and Windows.</span>
-<span class="w">        </span><span class="k">call </span><span class="n">get_absolute_path</span><span class="p">(</span><span class="n">cache_path</span><span class="p">,</span><span class="w"> </span><span class="n">global_settings</span><span class="p">%</span><span class="n">registry_settings</span><span class="p">%</span><span class="n">cache_path</span><span class="p">,</span><span class="w"> </span><span class="n">error</span><span class="p">)</span><span class="w"></span>
-<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="nb">allocated</span><span class="p">(</span><span class="n">error</span><span class="p">))</span><span class="w"> </span><span class="k">return</span>
-<span class="k">      end if</span>
-<span class="k">    else if</span><span class="w"> </span><span class="p">(.</span><span class="nb">not</span><span class="p">.</span><span class="w"> </span><span class="nb">allocated</span><span class="p">(</span><span class="n">path</span><span class="p">))</span><span class="w"> </span><span class="k">then</span>
-<span class="k">       </span><span class="n">global_settings</span><span class="p">%</span><span class="n">registry_settings</span><span class="p">%</span><span class="n">cache_path</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">join_path</span><span class="p">(</span><span class="n">config_path</span><span class="p">(</span><span class="n">global_settings</span><span class="p">),</span><span class="w"> </span><span class="p">&amp;</span><span class="w"></span>
-<span class="w">    </span><span class="p">&amp;</span><span class="w">    </span><span class="s1">&#39;dependencies&#39;</span><span class="p">)</span><span class="w"></span>
-<span class="w">    </span><span class="k">end if</span>
-<span class="k">  end subroutine </span><span class="n">get_registry_settings</span><span class="w"></span>
-</pre></div>
-
-    </section>
-    <br>
     
     </div>
   </div>
@@ -384,7 +274,7 @@
             <p class="text-right">
               Documentation generated by
               <a href="https://github.com/Fortran-FOSS-Programmers/ford">FORD</a>
- on 2023-06-17 14:43              </p>
+ on 2023-06-19 02:54              </p>
           </div>
         </div>
         <br>
