@@ -21,10 +21,12 @@ use fpm_targets, only: targets_from_sources, build_target_t, build_target_ptr, &
 use fpm_manifest, only : get_package_data, package_config_t
 use fpm_meta, only : resolve_metapackages
 use fpm_error, only : error_t, fatal_error, fpm_stop
-use,intrinsic :: iso_fortran_env, only : stdin=>input_unit,   &
-                                       & stdout=>output_unit, &
-                                       & stderr=>error_unit
+use, intrinsic :: iso_fortran_env, only : stdin => input_unit, &
+                                        & stdout => output_unit, &
+                                        & stderr => error_unit
 use iso_c_binding, only: c_char, c_ptr, c_int, c_null_char, c_associated, c_f_pointer
+use fpm_environment, only: os_is_unix
+
 implicit none
 private
 public :: cmd_build, cmd_run, cmd_clean
@@ -676,27 +678,28 @@ subroutine delete_skip(is_unix)
     end do
 end subroutine delete_skip
 
+!> Delete the build directory including or excluding dependencies.
 subroutine cmd_clean(settings)
-    !> fpm clean called
+    !> Settings for the clean command.
     class(fpm_clean_settings), intent(in) :: settings
-    ! character(len=:), allocatable :: dir
-    ! type(string_t), allocatable :: files(:)
-    character(len=1) :: response
+
+    character :: user_response
+
     if (is_dir('build')) then
-        ! remove the entire build directory
+        ! Remove the entire build directory
         if (settings%clean_call) then
-            call os_delete_dir(settings%is_unix, 'build')
-            return
+            call os_delete_dir(os_is_unix(), 'build'); return
         end if
-        ! remove the build directory but skip dependencies
+
+        ! Remove the build directory but skip dependencies
         if (settings%clean_skip) then
-            call delete_skip(settings%is_unix)
-            return
+            call delete_skip(os_is_unix()); return
         end if
-        ! prompt to remove the build directory but skip dependencies
+
+        ! Prompt to remove the build directory but skip dependencies
         write(stdout, '(A)', advance='no') "Delete build, excluding dependencies (y/n)? "
-        read(stdin, '(A1)') response
-        if (lower(response) == 'y') call delete_skip(settings%is_unix)
+        read(stdin, '(A1)') user_response
+        if (lower(user_response) == 'y') call delete_skip(os_is_unix())
     else
         write (stdout, '(A)') "fpm: No build directory found."
     end if
