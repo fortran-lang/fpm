@@ -114,6 +114,7 @@ end type
 type, extends(fpm_cmd_settings)   :: fpm_clean_settings
     logical                       :: clean_skip = .false.
     logical                       :: clean_all = .false.
+    logical                       :: registry_cache = .false.
 end type
 
 type, extends(fpm_build_settings) :: fpm_publish_settings
@@ -603,6 +604,7 @@ contains
 
         case('clean')
             call set_args(common_args // &
+            &   ' --registry-cache'   // &
             &   ' --skip'             // &
             &   ' --all',                &
                 help_clean, version_text)
@@ -618,8 +620,9 @@ contains
                 end if
 
                 allocate(fpm_clean_settings :: cmd_settings)
-                cmd_settings=fpm_clean_settings( &
-                &   clean_skip=skip,     &
+                cmd_settings = fpm_clean_settings( &
+                &   registry_cache=lget('registry-cache'), &
+                &   clean_skip=skip, &
                 &   clean_all=clean_all)
             end block
 

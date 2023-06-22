@@ -26,6 +26,7 @@ use, intrinsic :: iso_fortran_env, only : stdin => input_unit, &
                                         & stderr => error_unit
 use iso_c_binding, only: c_char, c_ptr, c_int, c_null_char, c_associated, c_f_pointer
 use fpm_environment, only: os_is_unix
+use fpm_settings, only: fpm_global_settings, get_global_settings
 
 implicit none
 private
@@ -684,15 +685,23 @@ subroutine cmd_clean(settings)
     class(fpm_clean_settings), intent(in) :: settings
 
     character :: user_response
+    type(fpm_global_settings) :: global_settings
+    type(error_t), allocatable :: error
+
+    ! Clear registry cache
+    if (settings%registry_cache) then
+        call get_global_settings(global_settings, error)
+        if (allocated(error)) return
+
+        call os_delete_dir(os_is_unix(), global_settings%registry_settings%cache_path)
+    end if
 
     if (is_dir('build')) then
         ! Remove the entire build directory
         if (settings%clean_all) then
             call os_delete_dir(os_is_unix(), 'build'); return
-        end if
-
         ! Remove the build directory but skip dependencies
-        if (settings%clean_skip) then
+        else if (settings%clean_skip) then
             call delete_skip(os_is_unix()); return
         end if
 
