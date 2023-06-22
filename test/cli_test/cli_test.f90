@@ -29,6 +29,7 @@ logical                              :: w_e,act_w_e          ; namelist/act_cli/
 logical                              :: w_t,act_w_t          ; namelist/act_cli/act_w_t
 logical                              :: c_s,act_c_s          ; namelist/act_cli/act_c_s
 logical                              :: c_a,act_c_a          ; namelist/act_cli/act_c_a
+logical                              :: reg_c,act_reg_c      ; namelist/act_cli/act_reg_c
 logical                              :: show_v,act_show_v    ; namelist/act_cli/act_show_v
 logical                              :: show_u_d,act_show_u_d; namelist/act_cli/act_show_u_d
 logical                              :: dry_run,act_dry_run  ; namelist/act_cli/act_dry_run
@@ -36,7 +37,7 @@ character(len=:), allocatable        :: token, act_token     ; namelist/act_cli/
 
 character(len=:), allocatable        :: profile,act_profile  ; namelist/act_cli/act_profile
 character(len=:), allocatable        :: args,act_args        ; namelist/act_cli/act_args
-namelist/expected/cmd,cstat,estat,w_e,w_t,c_s,c_a,name,profile,args,show_v,show_u_d,dry_run,token
+namelist/expected/cmd,cstat,estat,w_e,w_t,c_s,c_a,reg_c,name,profile,args,show_v,show_u_d,dry_run,token
 integer                              :: lun
 logical,allocatable                  :: tally(:)
 logical,allocatable                  :: subtally(:)
@@ -75,6 +76,7 @@ character(len=*),parameter           :: tests(*)= [ character(len=256) :: &
 'CMD="clean",                                                      NAME=, ARGS="",', &
 'CMD="clean --skip",                                        C_S=T, NAME=, ARGS="",', &
 'CMD="clean --all",                                         C_A=T, NAME=, ARGS="",', &
+'CMD="clean --registry-cache",                            REG_C=T, NAME=, ARGS="",', &
 'CMD="publish --token abc --show-package-version",       SHOW_V=T, NAME=, token="abc",ARGS="",', &
 'CMD="publish --token abc --show-upload-data",           SHOW_U_D=T, NAME=, token="abc",ARGS="",', &
 'CMD="publish --token abc --dry-run",                    DRY_RUN=T, NAME=, token="abc",ARGS="",', &
@@ -111,6 +113,7 @@ if(command_argument_count()==0)then  ! assume if called with no arguments to do 
       w_t=.false.                    ! --test
       c_s=.false.                    ! --skip
       c_a=.false.                    ! --all
+      reg_c=.false.                  ! --registry-cache
       show_v=.false.                 ! --show-package-version
       show_u_d=.false.               ! --show-upload-data
       dry_run=.false.                ! --dry-run
@@ -134,6 +137,7 @@ if(command_argument_count()==0)then  ! assume if called with no arguments to do 
              act_w_t=.false.
              act_c_s=.false.
              act_c_a=.false.
+             act_reg_c=.false.
              act_show_v=.false.
              act_show_u_d=.false.
              act_dry_run=.false.
@@ -148,6 +152,9 @@ if(command_argument_count()==0)then  ! assume if called with no arguments to do 
              subtally=[logical ::]
              call test_test('NAME',all(act_name==name))
              call test_test('PROFILE',act_profile==profile)
+             call test_test('SKIP',act_c_s.eqv.c_s)
+             call test_test('ALL',act_c_a.eqv.c_a)
+             call test_test('REGISTRY-CACHE',act_reg_c.eqv.reg_c)
              call test_test('WITH_EXPECTED',act_w_e.eqv.w_e)
              call test_test('WITH_TESTED',act_w_t.eqv.w_t)
              call test_test('WITH_TEST',act_w_t.eqv.w_t)
@@ -241,6 +248,7 @@ act_w_e=.false.
 act_w_t=.false.
 act_c_s=.false.
 act_c_a=.false.
+act_reg_c=.false.
 act_show_v=.false.
 act_show_u_d=.false.
 act_dry_run=.false.
@@ -265,6 +273,7 @@ type is (fpm_test_settings)
 type is (fpm_clean_settings)
     act_c_s=settings%clean_skip
     act_c_a=settings%clean_all
+    act_reg_c=settings%registry_cache
 type is (fpm_install_settings)
 type is (fpm_publish_settings)
     act_show_v=settings%show_package_version
