@@ -687,7 +687,7 @@ subroutine cmd_clean(settings)
 
     if (is_dir('build')) then
         ! Remove the entire build directory
-        if (settings%clean_call) then
+        if (settings%clean_all) then
             call os_delete_dir(os_is_unix(), 'build'); return
         end if
 

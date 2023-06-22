@@ -113,7 +113,7 @@ end type
 
 type, extends(fpm_cmd_settings)   :: fpm_clean_settings
     logical                       :: clean_skip = .false.
-    logical                       :: clean_call = .false.
+    logical                       :: clean_all = .false.
 end type
 
 type, extends(fpm_build_settings) :: fpm_publish_settings
@@ -606,11 +606,22 @@ contains
             &   ' --skip'             // &
             &   ' --all',                &
                 help_clean, version_text)
-            allocate(fpm_clean_settings :: cmd_settings)
-            call get_current_directory(working_dir, error)
-            cmd_settings=fpm_clean_settings( &
-            &   clean_skip=lget('skip'),     &
-            &   clean_call=lget('all'))
+
+            block
+                logical :: skip, clean_all
+
+                skip = lget('skip')
+                clean_all = lget('all')
+
+                if (all([skip, clean_all])) then
+                    call fpm_stop(6, 'Do not specify both --skip and --all options on the clean subcommand.')
+                end if
+
+                allocate(fpm_clean_settings :: cmd_settings)
+                cmd_settings=fpm_clean_settings( &
+                &   clean_skip=skip,     &
+                &   clean_all=clean_all)
+            end block
 
         case('publish')
             call set_args(common_args // compiler_args //'&

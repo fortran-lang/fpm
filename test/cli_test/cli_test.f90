@@ -264,7 +264,7 @@ type is (fpm_test_settings)
     if (allocated(settings%args)) act_args=settings%args
 type is (fpm_clean_settings)
     act_c_s=settings%clean_skip
-    act_c_a=settings%clean_call
+    act_c_a=settings%clean_all
 type is (fpm_install_settings)
 type is (fpm_publish_settings)
     act_show_v=settings%show_package_version
@@ -275,7 +275,6 @@ end select
 
 open(file='_test_cli',newunit=lun,delim='quote')
 write(lun,nml=act_cli,delim='quote')
-!!write(*,nml=act_cli)
 close(unit=lun)
 
 end subroutine parse
