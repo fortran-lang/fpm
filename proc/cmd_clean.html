@@ -165,6 +165,7 @@
 </h2>
     
 
+    <p>Delete the build directory including or excluding dependencies.</p>
 
 
     <h3>Arguments</h3>
@@ -190,7 +191,7 @@
             <td>::</td>
             <td><strong>settings</strong></td>
             <td>
-                <p>fpm clean called</p>
+                <p>Settings for the clean command.</p>
             </td>
         </tr>
     </tbody>
@@ -242,26 +243,26 @@
     <section>
     <h2><span class="anchor" id="src"></span>Source Code</h2>
     <div class="highlight"><pre><span></span><span class="k">subroutine </span><span class="n">cmd_clean</span><span class="p">(</span><span class="n">settings</span><span class="p">)</span><span class="w"></span>
-<span class="w">    </span><span class="c">!&gt; fpm clean called</span>
+<span class="w">    </span><span class="c">!&gt; Settings for the clean command.</span>
 <span class="w">    </span><span class="k">class</span><span class="p">(</span><span class="n">fpm_clean_settings</span><span class="p">),</span><span class="w"> </span><span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">)</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">settings</span><span class="w"></span>
-<span class="w">    </span><span class="c">! character(len=:), allocatable :: dir</span>
-<span class="w">    </span><span class="c">! type(string_t), allocatable :: files(:)</span>
-<span class="w">    </span><span class="kt">character</span><span class="p">(</span><span class="nb">len</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">response</span><span class="w"></span>
+
+<span class="w">    </span><span class="kt">character</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">user_response</span><span class="w"></span>
+
 <span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">is_dir</span><span class="p">(</span><span class="s1">&#39;build&#39;</span><span class="p">))</span><span class="w"> </span><span class="k">then</span><span class="w"></span>
-<span class="w">        </span><span class="c">! remove the entire build directory</span>
+<span class="w">        </span><span class="c">! Remove the entire build directory</span>
 <span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">settings</span><span class="p">%</span><span class="n">clean_call</span><span class="p">)</span><span class="w"> </span><span class="k">then</span>
-<span class="k">            call </span><span class="n">os_delete_dir</span><span class="p">(</span><span class="n">settings</span><span class="p">%</span><span class="n">is_unix</span><span class="p">,</span><span class="w"> </span><span class="s1">&#39;build&#39;</span><span class="p">)</span><span class="w"></span>
-<span class="w">            </span><span class="k">return</span>
+<span class="k">            call </span><span class="n">os_delete_dir</span><span class="p">(</span><span class="n">os_is_unix</span><span class="p">(),</span><span class="w"> </span><span class="s1">&#39;build&#39;</span><span class="p">);</span><span class="w"> </span><span class="k">return</span>
 <span class="k">        end if</span><span class="w"></span>
-<span class="w">        </span><span class="c">! remove the build directory but skip dependencies</span>
+
+<span class="w">        </span><span class="c">! Remove the build directory but skip dependencies</span>
 <span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">settings</span><span class="p">%</span><span class="n">clean_skip</span><span class="p">)</span><span class="w"> </span><span class="k">then</span>
-<span class="k">            call </span><span class="n">delete_skip</span><span class="p">(</span><span class="n">settings</span><span class="p">%</span><span class="n">is_unix</span><span class="p">)</span><span class="w"></span>
-<span class="w">            </span><span class="k">return</span>
+<span class="k">            call </span><span class="n">delete_skip</span><span class="p">(</span><span class="n">os_is_unix</span><span class="p">());</span><span class="w"> </span><span class="k">return</span>
 <span class="k">        end if</span><span class="w"></span>
-<span class="w">        </span><span class="c">! prompt to remove the build directory but skip dependencies</span>
+
+<span class="w">        </span><span class="c">! Prompt to remove the build directory but skip dependencies</span>
 <span class="w">        </span><span class="k">write</span><span class="p">(</span><span class="n">stdout</span><span class="p">,</span><span class="w"> </span><span class="s1">&#39;(A)&#39;</span><span class="p">,</span><span class="w"> </span><span class="n">advance</span><span class="o">=</span><span class="s1">&#39;no&#39;</span><span class="p">)</span><span class="w"> </span><span class="s2">&quot;Delete build, excluding dependencies (y/n)? &quot;</span><span class="w"></span>
-<span class="w">        </span><span class="k">read</span><span class="p">(</span><span class="n">stdin</span><span class="p">,</span><span class="w"> </span><span class="s1">&#39;(A1)&#39;</span><span class="p">)</span><span class="w"> </span><span class="n">response</span><span class="w"></span>
-<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">lower</span><span class="p">(</span><span class="n">response</span><span class="p">)</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="s1">&#39;y&#39;</span><span class="p">)</span><span class="w"> </span><span class="k">call </span><span class="n">delete_skip</span><span class="p">(</span><span class="n">settings</span><span class="p">%</span><span class="n">is_unix</span><span class="p">)</span><span class="w"></span>
+<span class="w">        </span><span class="k">read</span><span class="p">(</span><span class="n">stdin</span><span class="p">,</span><span class="w"> </span><span class="s1">&#39;(A1)&#39;</span><span class="p">)</span><span class="w"> </span><span class="n">user_response</span><span class="w"></span>
+<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">lower</span><span class="p">(</span><span class="n">user_response</span><span class="p">)</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="s1">&#39;y&#39;</span><span class="p">)</span><span class="w"> </span><span class="k">call </span><span class="n">delete_skip</span><span class="p">(</span><span class="n">os_is_unix</span><span class="p">())</span><span class="w"></span>
 <span class="w">    </span><span class="k">else</span>
 <span class="k">        write</span><span class="w"> </span><span class="p">(</span><span class="n">stdout</span><span class="p">,</span><span class="w"> </span><span class="s1">&#39;(A)&#39;</span><span class="p">)</span><span class="w"> </span><span class="s2">&quot;fpm: No build directory found.&quot;</span><span class="w"></span>
 <span class="w">    </span><span class="k">end if</span>
@@ -286,7 +287,7 @@
             <p class="text-right">
               Documentation generated by
               <a href="https://github.com/Fortran-FOSS-Programmers/ford">FORD</a>
- on 2023-06-21 11:47              </p>
+ on 2023-06-22 06:23              </p>
           </div>
         </div>
         <br>
