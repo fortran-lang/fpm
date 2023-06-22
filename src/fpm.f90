@@ -679,7 +679,8 @@ subroutine delete_skip(is_unix)
     end do
 end subroutine delete_skip
 
-!> Delete the build directory including or excluding dependencies.
+!> Delete the build directory including or excluding dependencies. Can be used
+!> to clear the registry cache.
 subroutine cmd_clean(settings)
     !> Settings for the clean command.
     class(fpm_clean_settings), intent(in) :: settings

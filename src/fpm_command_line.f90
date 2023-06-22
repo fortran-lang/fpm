@@ -764,7 +764,7 @@ contains
    '      [--list] [--compiler COMPILER_NAME] [-- ARGS]                             ', &
    ' install [--profile PROF] [--flag FFLAGS] [--no-rebuild] [--prefix PATH]        ', &
    '         [options]                                                              ', &
-   ' clean [--skip] [--all]                                                         ', &
+   ' clean [--skip] [--all] [--registry-cache]                                      ', &
    ' publish [--token TOKEN] [--show-package-version] [--show-upload-data]          ', &
    '         [--dry-run] [--verbose]                                                ', &
    ' ']
@@ -889,7 +889,7 @@ contains
     '    list [--list]                                                               ', &
     '    install [--profile PROF] [--flag FFLAGS] [--no-rebuild] [--prefix PATH]     ', &
     '            [options]                                                           ', &
-    '    clean [--skip] [--all]                                                      ', &
+    '    clean [--skip] [--all] [--registry-cache]                                   ', &
     '    publish [--token TOKEN] [--show-package-version] [--show-upload-data]       ', &
     '            [--dry-run] [--verbose]                                             ', &
     '                                                                                ', &
@@ -901,12 +901,15 @@ contains
     help_text_flag, &
     '  --list     List candidates instead of building or running them. On   ', &
     '             the fpm(1) command this shows a brief list of subcommands.', &
-    '  --runner CMD   Provides a command to prefix program execution paths. ', &
+    '  --runner CMD  Provides a command to prefix program execution paths.  ', &
     '  -- ARGS    Arguments to pass to executables.                         ', &
     '  --skip     Delete directories in the build/ directory without        ', &
-    '             prompting, but skip dependencies.                         ', &
+    '             prompting, but skip dependencies. Cannot be used together ', &
+    '             with --all.                                               ', &
     '  --all      Delete directories in the build/ directory without        ', &
-    '             prompting, including dependencies.                        ', &
+    '             prompting, including dependencies. Cannot be used together', &
+    '             with --skip.                                              ', &
+    '  --registry-cache  Delete registry cache.                             ', &
     '                                                                       ', &
     'VALID FOR ALL SUBCOMMANDS                                              ', &
     '  --help     Show help text and exit                                   ', &
@@ -1364,10 +1367,12 @@ contains
     'DESCRIPTION', &
     ' Prompts the user to confirm deletion of the build. If affirmative,', &
     ' directories in the build/ directory are deleted, except dependencies.', &
+    ' Use the --registry-cache option to delete the registry cache.', &
     '', &
     'OPTIONS', &
-    ' --skip           delete the build without prompting but skip dependencies.', &
-    ' --all            delete the build without prompting including dependencies.', &
+    ' --skip            Delete the build without prompting but skip dependencies.', &
+    ' --all             Delete the build without prompting including dependencies.', &
+    ' --registry-cache  Delete registry cache.', &
     '' ]
     help_publish=[character(len=80) :: &
     'NAME', &
