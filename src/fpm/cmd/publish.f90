@@ -65,7 +65,7 @@ contains
     end do
 
     tmp_file = get_temp_filename()
-    call git_archive('.', tmp_file, error)
+    call git_archive('.', tmp_file, 'HEAD', settings%verbose, error)
     if (allocated(error)) call fpm_stop(1, '*cmd_publish* Archive error: '//error%message)
 
     upload_data = [ &
@@ -97,16 +97,16 @@ contains
     end if
 
     if (settings%verbose) then
-      print *, ''
       call print_upload_data(upload_data)
       print *, ''
     end if
 
-    call downloader%upload_form(official_registry_base_url//'/packages', upload_data, error)
+    call downloader%upload_form(official_registry_base_url//'/packages', upload_data, settings%verbose, error)
     if (allocated(error)) then
       call delete_file(tmp_file); call fpm_stop(1, '*cmd_publish* Upload error: '//error%message)
     end if
 
+    call downloader%upload_form(official_registry_base_url//'/packages', upload_data, settings%verbose, error)
     if (settings%is_dry_run) then
       print *, 'Generated tarball: ', tmp_file
     else

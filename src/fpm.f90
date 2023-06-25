@@ -21,10 +21,12 @@ use fpm_targets, only: targets_from_sources, build_target_t, build_target_ptr, &
 use fpm_manifest, only : get_package_data, package_config_t
 use fpm_meta, only : resolve_metapackages
 use fpm_error, only : error_t, fatal_error, fpm_stop
-use,intrinsic :: iso_fortran_env, only : stdin=>input_unit,   &
-                                       & stdout=>output_unit, &
-                                       & stderr=>error_unit
+use, intrinsic :: iso_fortran_env, only : stdin => input_unit, &
+                                        & stdout => output_unit, &
+                                        & stderr => error_unit
 use iso_c_binding, only: c_char, c_ptr, c_int, c_null_char, c_associated, c_f_pointer
+use fpm_environment, only: os_is_unix
+
 implicit none
 private
 public :: cmd_build, cmd_run, cmd_clean
@@ -42,7 +44,6 @@ subroutine build_model(model, settings, package, error)
     integer :: i, j
     type(package_config_t) :: dependency
     character(len=:), allocatable :: manifest, lib_dir
-    character(len=:), allocatable :: version
     logical :: has_cpp
     logical :: duplicates_found
     type(string_t) :: include_dir
@@ -324,7 +325,7 @@ end subroutine check_modules_for_duplicates
 subroutine check_module_names(model, error)
     type(fpm_model_t), intent(in) :: model
     type(error_t), allocatable, intent(out) :: error
-    integer :: i,j,k,l,m
+    integer :: k,l,m
     logical :: valid,errors_found,enforce_this_file
     type(string_t) :: package_name,module_name,package_prefix
 
@@ -617,17 +618,19 @@ subroutine cmd_run(settings,test)
             call fpm_stop(stat(firsterror),'*cmd_run*:stopping due to failed executions')
         end if
 
-    endif
+    end if
+
     contains
+
     subroutine compact_list_all()
     integer, parameter :: LINE_WIDTH = 80
-    integer :: i, j, nCol
-        j = 1
+    integer :: ii, jj, nCol
+        jj = 1
         nCol = LINE_WIDTH/col_width
         write(stderr,*) 'Available names:'
-        do i=1,size(targets)
+        do ii=1,size(targets)
 
-            exe_target => targets(i)%ptr
+            exe_target => targets(ii)%ptr
 
             if (exe_target%target_type == FPM_TARGET_EXECUTABLE .and. &
                 allocated(exe_target%dependencies)) then
@@ -635,11 +638,9 @@ subroutine cmd_run(settings,test)
                 exe_source => exe_target%dependencies(1)%ptr%source
 
                 if (exe_source%unit_scope == run_scope) then
-
-                    write(stderr,'(A)',advance=(merge("yes","no ",modulo(j,nCol)==0))) &
+                    write(stderr,'(A)',advance=(merge("yes","no ",modulo(jj,nCol)==0))) &
                         & [character(len=col_width) :: basename(exe_target%output_file, suffix=.false.)]
-                    j = j + 1
-
+                    jj = jj + 1
                 end if
             end if
         end do
@@ -648,15 +649,15 @@ subroutine cmd_run(settings,test)
 
     subroutine compact_list()
     integer, parameter :: LINE_WIDTH = 80
-    integer :: i, j, nCol
-        j = 1
+    integer :: ii, jj, nCol
+        jj = 1
         nCol = LINE_WIDTH/col_width
         write(stderr,*) 'Matched names:'
-        do i=1,size(executables)
-            write(stderr,'(A)',advance=(merge("yes","no ",modulo(j,nCol)==0))) &
-                & [character(len=col_width) :: basename(executables(i)%s, suffix=.false.)]
-            j = j + 1
-        enddo
+        do ii=1,size(executables)
+            write(stderr,'(A)',advance=(merge("yes","no ",modulo(jj,nCol)==0))) &
+                & [character(len=col_width) :: basename(executables(ii)%s, suffix=.false.)]
+            jj = jj + 1
+        end do
         write(stderr,*)
     end subroutine compact_list
 
@@ -677,27 +678,28 @@ subroutine delete_skip(is_unix)
     end do
 end subroutine delete_skip
 
+!> Delete the build directory including or excluding dependencies.
 subroutine cmd_clean(settings)
-    !> fpm clean called
+    !> Settings for the clean command.
     class(fpm_clean_settings), intent(in) :: settings
-    ! character(len=:), allocatable :: dir
-    ! type(string_t), allocatable :: files(:)
-    character(len=1) :: response
+
+    character :: user_response
+
     if (is_dir('build')) then
-        ! remove the entire build directory
+        ! Remove the entire build directory
         if (settings%clean_call) then
-            call os_delete_dir(settings%is_unix, 'build')
-            return
+            call os_delete_dir(os_is_unix(), 'build'); return
         end if
-        ! remove the build directory but skip dependencies
+
+        ! Remove the build directory but skip dependencies
         if (settings%clean_skip) then
-            call delete_skip(settings%is_unix)
-            return
+            call delete_skip(os_is_unix()); return
         end if
-        ! prompt to remove the build directory but skip dependencies
+
+        ! Prompt to remove the build directory but skip dependencies
         write(stdout, '(A)', advance='no') "Delete build, excluding dependencies (y/n)? "
-        read(stdin, '(A1)') response
-        if (lower(response) == 'y') call delete_skip(settings%is_unix)
+        read(stdin, '(A1)') user_response
+        if (lower(user_response) == 'y') call delete_skip(os_is_unix())
     else
         write (stdout, '(A)') "fpm: No build directory found."
     end if
