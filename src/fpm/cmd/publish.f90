@@ -97,8 +97,7 @@ contains
     end if
 
     if (settings%verbose) then
-      call print_upload_data(upload_data)
-      print *, ''
+      call print_upload_data(upload_data); print *, ''
     end if
 
     call downloader%upload_form(official_registry_base_url//'/packages', upload_data, settings%verbose, error)
@@ -106,9 +105,8 @@ contains
       call delete_file(tmp_file); call fpm_stop(1, '*cmd_publish* Upload error: '//error%message)
     end if
 
-    call downloader%upload_form(official_registry_base_url//'/packages', upload_data, settings%verbose, error)
     if (settings%is_dry_run) then
-      print *, 'Generated tarball: ', tmp_file
+      print *, 'Dry run successful. Generated tarball: ', tmp_file
     else
       call delete_file(tmp_file)
     end if
