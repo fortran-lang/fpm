@@ -23,7 +23,7 @@
 !> ``fpm-help`` and ``fpm --list`` help pages below to make sure the help output
 !> is complete and consistent as well.
 module fpm_command_line
-use fpm_environment,  only : get_os_type, get_env, os_is_unix, &
+use fpm_environment,  only : get_os_type, get_env, &
                              OS_UNKNOWN, OS_LINUX, OS_MACOS, OS_WINDOWS, &
                              OS_CYGWIN, OS_SOLARIS, OS_FREEBSD, OS_OPENBSD
 use M_CLI2,           only : set_args, lget, sget, unnamed, remaining, specified
@@ -115,10 +115,8 @@ type, extends(fpm_cmd_settings)  :: fpm_update_settings
 end type
 
 type, extends(fpm_cmd_settings)   :: fpm_clean_settings
-    logical                       :: is_unix
-    character(len=:), allocatable :: calling_dir  ! directory clean called from
-    logical                       :: clean_skip=.false.
-    logical                       :: clean_call=.false.
+    logical                       :: clean_skip = .false.
+    logical                       :: clean_call = .false.
 end type
 
 type, extends(fpm_build_settings) :: fpm_publish_settings
@@ -220,7 +218,6 @@ contains
         character(len=4096)           :: cmdarg
         integer                       :: i
         integer                       :: os
-        logical                       :: is_unix
         type(fpm_install_settings), allocatable :: install_settings
         type(version_t) :: version
         character(len=:), allocatable :: common_args, compiler_args, run_args, working_dir, &
@@ -246,7 +243,6 @@ contains
             case (OS_UNKNOWN); os_type =  "OS Type:     Unknown"
             case default     ; os_type =  "OS Type:     UNKNOWN"
         end select
-        is_unix = os_is_unix(os)
 
         ! Get current release version
         version = fpm_version()
@@ -606,7 +602,7 @@ contains
             & name=names, &
             & runner=val_runner, &
             & runner_args=val_runner_args, &
-            & verbose=lget('verbose') )
+            & verbose=lget('verbose'))
 
         case('update')
             call set_args(common_args // ' --fetch-only F --clean F', &
@@ -631,10 +627,8 @@ contains
             allocate(fpm_clean_settings :: cmd_settings)
             call get_current_directory(working_dir, error)
             cmd_settings=fpm_clean_settings( &
-            &   is_unix=is_unix,             &
-            &   calling_dir=working_dir,     &
             &   clean_skip=lget('skip'),     &
-                clean_call=lget('all'))
+            &   clean_call=lget('all'))
 
         case('publish')
             call set_args(common_args // compiler_args //'&

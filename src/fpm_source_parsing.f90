@@ -27,15 +27,7 @@ use fpm_filesystem, only: read_lines, read_lines_expanded, exists
 implicit none
 
 private
-public :: parse_f_source, parse_c_source
-
-character(15), parameter :: INTRINSIC_MODULE_NAMES(*) =  &
-                             ['iso_c_binding  ', &
-                              'iso_fortran_env', &
-                              'ieee_arithmetic', &
-                              'ieee_exceptions', &
-                              'ieee_features  ', &
-                              'omp_lib        ']
+public :: parse_f_source, parse_c_source, parse_use_statement
 
 contains
 
@@ -77,7 +69,7 @@ function parse_f_source(f_filename,error) result(f_source)
     type(srcfile_t) :: f_source
     type(error_t), allocatable, intent(out) :: error
 
-    logical :: inside_module, inside_interface
+    logical :: inside_module, inside_interface, using, intrinsic_module
     integer :: stat
     integer :: fh, n_use, n_include, n_mod, n_parent, i, j, ic, pass
     type(string_t), allocatable :: file_lines(:), file_lines_lower(:)
@@ -179,59 +171,24 @@ function parse_f_source(f_filename,error) result(f_source)
             end if
 
             ! Process 'USE' statements
-            if (index(file_lines_lower(i)%s,'use ') == 1 .or. &
-                index(file_lines_lower(i)%s,'use::') == 1) then
+            call parse_use_statement(f_filename,i,file_lines_lower(i)%s,using,intrinsic_module,mod_name,error)
+            if (allocated(error)) return
 
-                if (index(file_lines_lower(i)%s,'::') > 0) then
+            if (using) then
 
-                    temp_string = split_n(file_lines_lower(i)%s,delims=':',n=2,stat=stat)
-                    if (stat /= 0) then
-                        call file_parse_error(error,f_filename, &
-                                'unable to find used module name',i, &
-                                file_lines_lower(i)%s,index(file_lines_lower(i)%s,'::'))
-                        return
-                    end if
+                ! Not a valid module name?
+                if (.not.is_fortran_name(mod_name)) cycle
 
-                    mod_name = split_n(temp_string,delims=' ,',n=1,stat=stat)
-                    if (stat /= 0) then
-                        call file_parse_error(error,f_filename, &
-                                 'unable to find used module name',i, &
-                                 file_lines_lower(i)%s)
-                        return
-                    end if
-
-                else
-
-                    mod_name = split_n(file_lines_lower(i)%s,n=2,delims=' ,',stat=stat)
-                    if (stat /= 0) then
-                        call file_parse_error(error,f_filename, &
-                                'unable to find used module name',i, &
-                                file_lines_lower(i)%s)
-                        return
-                    end if
-
-                end if
-
-                if (.not.is_fortran_name(mod_name)) then
-                    cycle
-                end if
-
-                if (any([(index(mod_name,trim(INTRINSIC_MODULE_NAMES(j)))>0, &
-                            j=1,size(INTRINSIC_MODULE_NAMES))])) then
-                    cycle
-                end if
+                ! Valid intrinsic module: not a dependency
+                if (intrinsic_module) cycle
 
                 n_use = n_use + 1
 
-                if (pass == 2) then
-
-                    f_source%modules_used(n_use)%s = mod_name
-
-                end if
+                if (pass == 2) f_source%modules_used(n_use)%s = mod_name
 
                 cycle
 
-            end if
+            endif
 
             ! Process 'INCLUDE' statements
             ic = index(file_lines_lower(i)%s,'include')
@@ -654,6 +611,118 @@ function parse_sequence(string,t1,t2,t3,t4) result(found)
     found = .true.
 
 end function parse_sequence
+
+! USE [, intrinsic] :: module_name [, only: only_list]
+! USE [, non_intrinsic] :: module_name [, only: only_list]
+subroutine parse_use_statement(f_filename,i,line,use_stmt,is_intrinsic,module_name,error)
+
+    !> Current file name and line number (for error messaging)
+    character(*), intent(in) :: f_filename
+    integer, intent(in) :: i
+
+    !> The line being parsed. MUST BE preprocessed with trim(adjustl()
+    character(*), intent(in) :: line
+
+    !> Does this line contain a `use` statement?
+    logical, intent(out) :: use_stmt
+
+    !> Is the module in this statement intrinsic?
+    logical, intent(out) :: is_intrinsic
+
+    !> used module name
+    character(:), allocatable, intent(out) :: module_name
+
+    !> Error handling
+    type(error_t), allocatable, intent(out) :: error
+
+    character(15), parameter :: INTRINSIC_NAMES(*) =  &
+                                 ['iso_c_binding  ', &
+                                  'iso_fortran_env', &
+                                  'ieee_arithmetic', &
+                                  'ieee_exceptions', &
+                                  'ieee_features  ', &
+                                  'omp_lib        ']
+
+    character(len=:), allocatable :: temp_string
+    integer :: colons,intr,nonintr,j,stat
+    logical :: has_intrinsic_name
+
+    use_stmt      = .false.
+    is_intrinsic  = .false.
+    if (len_trim(line)<=0) return
+
+    ! Quick check that the line is preprocessed
+    if (line(1:1)==' ') then
+        call fatal_error(error,'internal_error: source file line is not trim(adjustl()) on input to parse_use_statement')
+        return
+    end if
+
+    ! 'use' should be the first string in the adjustl line
+    use_stmt = index(line,'use ')==1 .or. index(line,'use::')==1 .or. index(line,'use,')==1
+    if (.not.use_stmt) return
+    colons   = index(line,'::')
+    nonintr  = 0
+    intr     = 0
+
+    have_colons: if (colons>3) then
+
+        ! there may be an intrinsic/non-intrinsic spec
+        nonintr = index(line(1:colons-1),'non_intrinsic')
+        if (nonintr==0) intr = index(line(1:colons-1),'intrinsic')
+
+
+        temp_string = split_n(line,delims=':',n=2,stat=stat)
+        if (stat /= 0) then
+            call file_parse_error(error,f_filename, &
+                    'unable to find used module name',i, &
+                    line,colons)
+            return
+        end if
+
+        module_name = split_n(temp_string,delims=' ,',n=1,stat=stat)
+        if (stat /= 0) then
+            call file_parse_error(error,f_filename, &
+                     'unable to find used module name',i, &
+                     line)
+            return
+        end if
+
+    else
+
+        module_name = split_n(line,n=2,delims=' ,',stat=stat)
+        if (stat /= 0) then
+            call file_parse_error(error,f_filename, &
+                    'unable to find used module name',i, &
+                    line)
+            return
+        end if
+
+    end if have_colons
+
+    ! If declared intrinsic, check that it is true
+    has_intrinsic_name = any([(index(module_name,trim(INTRINSIC_NAMES(j)))>0, &
+                             j=1,size(INTRINSIC_NAMES))])
+    if (intr>0 .and. .not.has_intrinsic_name) then
+
+        ! An intrinsic module was not found. Its name could be in the next line,
+        ! in which case, we just skip this check. The compiler will do the job if the name is invalid.
+
+        ! Module name was not read: it's in the next line
+        if (index(module_name,'&')<=0) then
+            call file_parse_error(error,f_filename, &
+                                  'module '//module_name//' is declared intrinsic but it is not ',i, &
+                                  line)
+            return
+        endif
+    endif
+
+    ! Should we treat this as an intrinsic module
+    is_intrinsic = nonintr==0 .and. & ! not declared non-intrinsic
+                   (intr>0 .or. has_intrinsic_name)
+
+end subroutine parse_use_statement
+
+
 
 end module fpm_source_parsing
 

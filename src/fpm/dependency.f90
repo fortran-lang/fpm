@@ -123,7 +123,9 @@ module fpm_dependency
     type(dependency_node_t), allocatable :: dep(:)
     !> Cache file
     character(len=:), allocatable :: cache
+
   contains
+
     !> Overload procedure to add new dependencies to the tree
     generic :: add => add_project, add_project_dependencies, add_dependencies, &
       add_dependency, add_dependency_node
@@ -194,13 +196,9 @@ contains
     call resize(self%dep)
     self%dep_dir = join_path("build", "dependencies")
 
-    if (present(verbosity)) then
-      self%verbosity = verbosity
-    end if
+    if (present(verbosity)) self%verbosity = verbosity
 
-    if (present(cache)) then
-      self%cache = cache
-    end if
+    if (present(cache)) self%cache = cache
 
   end subroutine new_dependency_tree
 
@@ -311,15 +309,15 @@ contains
 
     ! After resolving all dependencies, check if we have cached ones to avoid updates
     if (allocated(self%cache)) then
-      call new_dependency_tree(cached, verbosity=self%verbosity,cache=self%cache)
+      call new_dependency_tree(cached, verbosity=self%verbosity, cache=self%cache)
       call cached%load(self%cache, error)
       if (allocated(error)) return
 
       ! Skip root node
-      do id=2,cached%ndep
-          cached%dep(id)%cached = .true.
-          call self%add(cached%dep(id), error)
-          if (allocated(error)) return
+      do id = 2, cached%ndep
+        cached%dep(id)%cached = .true.
+        call self%add(cached%dep(id), error)
+        if (allocated(error)) return
       end do
     end if
 
@@ -443,13 +441,13 @@ contains
       ! the manifest has priority
       if (dependency%cached) then
         if (dependency_has_changed(dependency, self%dep(id), self%verbosity, self%unit)) then
-           if (self%verbosity>0) write (self%unit, out_fmt) "Dependency change detected:", dependency%name
-           self%dep(id)%update = .true.
+          if (self%verbosity > 0) write (self%unit, out_fmt) "Dependency change detected:", dependency%name
+          self%dep(id)%update = .true.
         else
-           ! Store the cached one
-           self%dep(id) = dependency
-           self%dep(id)%update = .false.
-        endif
+          ! Store the cached one
+          self%dep(id) = dependency
+          self%dep(id)%update = .false.
+        end if
       end if
     else
       ! New dependency: add from scratch
@@ -498,7 +496,7 @@ contains
 
     associate (dep => self%dep(id))
       if (allocated(dep%git) .and. dep%update) then
-        if (self%verbosity>0) write (self%unit, out_fmt) "Update:", dep%name
+        if (self%verbosity > 0) write (self%unit, out_fmt) "Update:", dep%name
         proj_dir = join_path(self%dep_dir, dep%name)
         call dep%git%checkout(proj_dir, error)
         if (allocated(error)) return
@@ -722,7 +720,7 @@ contains
     character(:), allocatable :: version_key, version_str, error_message, namespace, name
 
     namespace = ""
-    name      = "UNNAMED_NODE"
+    name = "UNNAMED_NODE"
     if (allocated(node%namespace)) namespace = node%namespace
     if (allocated(node%name)) name = node%name
 
@@ -1199,27 +1197,27 @@ contains
     !> may not have it
     if (allocated(cached%version) .and. allocated(manifest%version)) then
       if (cached%version /= manifest%version) then
-         if (verbosity>1) write(iunit,out_fmt) "VERSION has changed: "//cached%version%s()//" vs. "//manifest%version%s()
-         return
-      endif
+        if (verbosity > 1) write (iunit, out_fmt) "VERSION has changed: "//cached%version%s()//" vs. "//manifest%version%s()
+        return
+      end if
     else
-       if (verbosity>1) write(iunit,out_fmt) "VERSION has changed presence "
+      if (verbosity > 1) write (iunit, out_fmt) "VERSION has changed presence "
     end if
     if (allocated(cached%revision) .and. allocated(manifest%revision)) then
       if (cached%revision /= manifest%revision) then
-        if (verbosity>1) write(iunit,out_fmt) "REVISION has changed: "//cached%revision//" vs. "//manifest%revision
+        if (verbosity > 1) write (iunit, out_fmt) "REVISION has changed: "//cached%revision//" vs. "//manifest%revision
         return
-      endif
+      end if
     else
-      if (verbosity>1) write(iunit,out_fmt) "REVISION has changed presence "
+      if (verbosity > 1) write (iunit, out_fmt) "REVISION has changed presence "
     end if
     if (allocated(cached%proj_dir) .and. allocated(manifest%proj_dir)) then
       if (cached%proj_dir /= manifest%proj_dir) then
-        if (verbosity>1) write(iunit,out_fmt) "PROJECT DIR has changed: "//cached%proj_dir//" vs. "//manifest%proj_dir
+        if (verbosity > 1) write (iunit, out_fmt) "PROJECT DIR has changed: "//cached%proj_dir//" vs. "//manifest%proj_dir
         return
-      endif
+      end if
     else
-      if (verbosity>1) write(iunit,out_fmt) "PROJECT DIR has changed presence "
+      if (verbosity > 1) write (iunit, out_fmt) "PROJECT DIR has changed presence "
     end if
 
     !> All checks passed: the two dependencies have no differences
