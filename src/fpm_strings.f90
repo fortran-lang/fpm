@@ -44,7 +44,7 @@ public :: f_string, lower, split, str_ends_with, string_t, str_begins_with_str
 public :: to_fortran_name, is_fortran_name
 public :: string_array_contains, string_cat, len_trim, operator(.in.), fnv_1a
 public :: replace, resize, str, join, glob
-public :: notabs, dilate, remove_newline_characters
+public :: notabs, dilate, remove_newline_characters, remove_characters_in_set
 
 !> Module naming
 public :: is_valid_module_name, is_valid_module_prefix, &
@@ -1221,6 +1221,48 @@ logical function has_valid_standard_prefix(module_name,package_name) result(vali
 
 end function has_valid_standard_prefix
 
+! Remove all characters from a set from a string
+subroutine remove_characters_in_set(string,set,replace_with)
+    character(len=:), allocatable, intent(inout) :: string
+    character(*), intent(in) :: set
+    character, optional, intent(in) :: replace_with ! Replace with this character instead of removing
+
+    integer :: feed,length
+
+    if (.not.allocated(string)) return
+    if (len(set)<=0) return
+
+    length = len(string)
+    feed   = scan(string,set)
+
+    do while (length>0 .and. feed>0)
+
+        ! Remove heading
+        if (length==1) then
+            string = ""
+
+        elseif (feed==1) then
+            string = string(2:length)
+
+        ! Remove trailing
+        elseif (feed==length) then
+            string = string(1:length-1)
+
+        ! In between: replace with given character
+        elseif (present(replace_with)) then
+            string(feed:feed) = replace_with
+        ! Or just remove
+        else
+            string = string(1:feed-1)//string(feed+1:length)
+        end if
+
+        length = len(string)
+        feed   = scan(string,set)
+
+    end do
+
+end subroutine remove_characters_in_set
+
 ! Remove all new line characters from the current string, replace them with spaces
 subroutine remove_newline_characters(string)
     type(string_t), intent(inout) :: string
@@ -1230,34 +1272,7 @@ subroutine remove_newline_characters(string)
     character(*), parameter :: CRLF  = new_line('a')//achar(13)
     character(*), parameter :: SPACE = ' '
 
-    if (.not.allocated(string%s)) return
-
-
-    length = len(string%s)
-    feed   = scan(string%s,CRLF)
-
-    do while (length>0 .and. feed>0)
-
-        ! Remove heading
-        if (length==1) then
-            string = string_t("")
-
-        elseif (feed==1) then
-            string%s = string%s(2:length)
-
-        ! Remove trailing
-        elseif (feed==length) then
-            string%s = string%s(1:length-1)
-
-        ! In between: replace with space
-        else
-            string%s(feed:feed) = SPACE
-        end if
-
-        length = len(string%s)
-        feed   = scan(string%s,CRLF)
-
-    end do
+    call remove_characters_in_set(string%s,set=CRLF,replace_with=SPACE)
 
 end subroutine remove_newline_characters
 

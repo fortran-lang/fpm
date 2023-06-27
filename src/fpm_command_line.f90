@@ -28,7 +28,7 @@ use fpm_environment,  only : get_os_type, get_env, &
                              OS_CYGWIN, OS_SOLARIS, OS_FREEBSD, OS_OPENBSD
 use M_CLI2,           only : set_args, lget, sget, unnamed, remaining, specified
 use M_CLI2,           only : get_subcommand, CLI_RESPONSE_FILE
-use fpm_strings,      only : lower, split, to_fortran_name, is_fortran_name
+use fpm_strings,      only : lower, split, to_fortran_name, is_fortran_name, remove_characters_in_set, string_t
 use fpm_filesystem,   only : basename, canon_path, which, run
 use fpm_environment,  only : get_command_arguments_quoted
 use fpm_error,        only : fpm_stop, error_t
@@ -88,9 +88,12 @@ end type
 
 type, extends(fpm_build_settings)  :: fpm_run_settings
     character(len=ibug),allocatable :: name(:)
-    character(len=:),allocatable :: args
+    character(len=:),allocatable :: args ! passed to the app
     character(len=:),allocatable :: runner
+    character(len=:),allocatable :: runner_args ! passed to the runner
     logical :: example
+    contains
+       procedure :: runner_command
 end type
 
 type, extends(fpm_run_settings)  :: fpm_test_settings
@@ -139,7 +142,7 @@ character(len=20),parameter :: manual(*)=[ character(len=20) ::&
 &  'test',  'runner', 'install', 'update', 'list',   'help',   'version', 'publish' ]
 
 character(len=:), allocatable :: val_runner, val_compiler, val_flag, val_cflag, val_cxxflag, val_ldflag, &
-    val_profile
+    val_profile, val_runner_args
 
 !   '12345678901234567890123456789012345678901234567890123456789012345678901234567890',&
 character(len=80), parameter :: help_text_build_common(*) = [character(len=80) ::      &
@@ -264,7 +267,8 @@ contains
         run_args = &
           ' --target " "' // &
           ' --list F' // &
-          ' --runner " "'
+          ' --runner " "' // &
+          ' --runner-args " "'
 
         compiler_args = &
           ' --profile " "' // &
@@ -313,12 +317,18 @@ contains
                if(names(i)=='..')names(i)='*'
             enddo
 
+            ! If there are additional command-line arguments, remove the additional
+            ! double quotes which have been added by M_CLI2
+            val_runner_args=sget('runner-args')
+            call remove_characters_in_set(val_runner_args,set='"')
+
             c_compiler = sget('c-compiler')
             cxx_compiler = sget('cxx-compiler')
             archiver = sget('archiver')
             allocate(fpm_run_settings :: cmd_settings)
             val_runner=sget('runner')
             if(specified('runner') .and. val_runner=='')val_runner='echo'
+
             cmd_settings=fpm_run_settings(&
             & args=remaining,&
             & profile=val_profile,&
@@ -336,6 +346,7 @@ contains
             & build_tests=.false.,&
             & name=names,&
             & runner=val_runner,&
+            & runner_args=val_runner_args, &
             & verbose=lget('verbose') )
 
         case('build')
@@ -561,12 +572,18 @@ contains
                if(names(i)=='..')names(i)='*'
             enddo
 
+            ! If there are additional command-line arguments, remove the additional
+            ! double quotes which have been added by M_CLI2
+            val_runner_args=sget('runner-args')
+            call remove_characters_in_set(val_runner_args,set='"')
+
             c_compiler = sget('c-compiler')
             cxx_compiler = sget('cxx-compiler')
             archiver = sget('archiver')
             allocate(fpm_test_settings :: cmd_settings)
             val_runner=sget('runner')
             if(specified('runner') .and. val_runner=='')val_runner='echo'
+
             cmd_settings=fpm_test_settings(&
             & args=remaining, &
             & profile=val_profile, &
@@ -584,6 +601,7 @@ contains
             & build_tests=.true., &
             & name=names, &
             & runner=val_runner, &
+            & runner_args=val_runner_args, &
             & verbose=lget('verbose'))
 
         case('update')
@@ -762,7 +780,7 @@ contains
    '                 executables.                                                   ', &
    '                                                                                ', &
    'SYNOPSIS                                                                        ', &
-   '   fpm run|test --runner CMD ... -- SUFFIX_OPTIONS                              ', &
+   '   fpm run|test --runner CMD ... --runner-args ARGS -- SUFFIX_OPTIONS           ', &
    '                                                                                ', &
    'DESCRIPTION                                                                     ', &
    '   The --runner option allows specifying a program to launch                    ', &
@@ -778,8 +796,11 @@ contains
    '               Available for both the "run" and "test" subcommands.             ', &
    '               If the keyword is specified without a value the default command  ', &
    '               is "echo".                                                       ', &
+   ' --runner-args "args"    an additional option to pass command-line arguments    ', &
+   '               to the runner command, instead of to the fpm app.                ', &
    ' -- SUFFIX_OPTIONS  additional options to suffix the command CMD and executable ', &
-   '                    file names with.                                            ', &
+   '                    file names with. These options are passed as command-line   ', &
+   '                    arguments to the app.                                       ', &
    'EXAMPLES                                                                        ', &
    '   Use cases for ''fpm run|test --runner "CMD"'' include employing                ', &
    '   the following common GNU/Linux and Unix commands:                            ', &
@@ -808,6 +829,7 @@ contains
    '                                                                                ', &
    '  fpm test --runner gdb                                                         ', &
    '  fpm run --runner "tar cvfz $HOME/bundle.tgz"                                  ', &
+   '  fpm run --runner "mpiexec" --runner-args "-np 12"                             ', &
    '  fpm run --runner ldd                                                          ', &
    '  fpm run --runner strip                                                        ', &
    '  fpm run --runner ''cp -t /usr/local/bin''                                       ', &
@@ -1423,5 +1445,21 @@ contains
 
       val = get_env(fpm_prefix//env, default)
     end function get_fpm_env
+
+
+    !> Build a full runner command (executable + command-line arguments)
+    function runner_command(cmd) result(run_cmd)
+        class(fpm_run_settings), intent(in) :: cmd
+        character(len=:), allocatable :: run_cmd
+        !> Get executable
+        if (len_trim(cmd%runner)>0) then
+            run_cmd = trim(cmd%runner)
+        else
+            run_cmd = ''
+        end if
+        !> Append command-line arguments
+        if (len_trim(cmd%runner_args)>0) run_cmd = run_cmd//' '//trim(cmd%runner_args)
+    end function runner_command
+
 
 end module fpm_command_line
