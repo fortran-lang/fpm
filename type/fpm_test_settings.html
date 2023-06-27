@@ -101,7 +101,7 @@
           <li id="statements"><i class="fa fa-list-ol"></i>
             <a data-toggle="tooltip"
                data-placement="bottom" data-html="true"
-               title="<p> 0.5% of total for derived types.</p>Including implementation: 2 statements,  0.1% of total for derived types.">2 statements</a>
+               title="<p> 0.5% of total for derived types.</p>Including implementation: 12 statements,  0.5% of total for derived types.">2 statements</a>
           </li>
 
             <li id="source-file">
@@ -154,6 +154,7 @@
             <a class="list-group-item" href="../type/fpm_test_settings.html#variable-profile~2">profile</a>
             <a class="list-group-item" href="../type/fpm_test_settings.html#variable-prune~2">prune</a>
             <a class="list-group-item" href="../type/fpm_test_settings.html#variable-runner">runner</a>
+            <a class="list-group-item" href="../type/fpm_test_settings.html#variable-runner_args">runner_args</a>
             <a class="list-group-item" href="../type/fpm_test_settings.html#variable-show_model">show_model</a>
             <a class="list-group-item" href="../type/fpm_test_settings.html#variable-verbose~9">verbose</a>
             <a class="list-group-item" href="../type/fpm_test_settings.html#variable-working_dir">working_dir</a>
@@ -176,7 +177,19 @@
   
   
   
-  
+      <div class="panel panel-primary">
+      <div class="panel-heading text-left">
+        <h3 class="panel-title">
+          <a data-toggle="collapse" href="#boundprocs-0">Type-Bound Procedures</a>
+        </h3>
+      </div>
+      <div id="boundprocs-0" class="panel-collapse collapse">
+        <div class="list-group">
+            <a class="list-group-item" href="../type/fpm_test_settings.html#boundprocedure-runner_command">runner_command</a>
+        </div>
+      </div>
+    </div>
+
   
 
 
@@ -216,6 +229,7 @@
             <a class="list-group-item" href="../type/fpm_test_settings.html#variable-profile~2">profile</a>
             <a class="list-group-item" href="../type/fpm_test_settings.html#variable-prune~2">prune</a>
             <a class="list-group-item" href="../type/fpm_test_settings.html#variable-runner">runner</a>
+            <a class="list-group-item" href="../type/fpm_test_settings.html#variable-runner_args">runner_args</a>
             <a class="list-group-item" href="../type/fpm_test_settings.html#variable-show_model">show_model</a>
             <a class="list-group-item" href="../type/fpm_test_settings.html#variable-verbose~9">verbose</a>
             <a class="list-group-item" href="../type/fpm_test_settings.html#variable-working_dir">working_dir</a>
@@ -238,7 +252,19 @@
   
   
   
-  
+      <div class="panel panel-primary">
+      <div class="panel-heading text-left">
+        <h3 class="panel-title">
+          <a data-toggle="collapse" href="#boundprocs-1">Type-Bound Procedures</a>
+        </h3>
+      </div>
+      <div id="boundprocs-1" class="panel-collapse collapse">
+        <div class="list-group">
+            <a class="list-group-item" href="../type/fpm_test_settings.html#boundprocedure-runner_command">runner_command</a>
+        </div>
+      </div>
+    </div>
+
   
 
 
@@ -531,6 +557,23 @@
         </tr>
         <tr>
             <td>
+              <span class="anchor" id="variable-runner_args"></span>
+              character(len=:),
+            </td>
+              <td>public,</td>
+            <td>
+              allocatable
+            </td>
+            <td>::</td>
+            <td><strong>runner_args</strong></td>
+                <td></td>
+                <td></td>
+            <td>
+                
+            </td>
+        </tr>
+        <tr>
+            <td>
               <span class="anchor" id="variable-show_model"></span>
               logical,
             </td>
@@ -588,6 +631,60 @@
     
 
 
+      <section>
+        <h2>Type-Bound Procedures</h2>
+            <div class="panel panel-default">
+    <div class="panel-heading codesum"><span class="anchor" id="boundprocedure-runner_command"></span><h3>procedure, public,  :: <strong>runner_command</strong>          
+    </h3></div>
+    <ul class="list-group">
+        <li class="list-group-item">
+                  <h3>
+    private  function runner_command(cmd) result(run_cmd)  
+</h3>
+  <p>Build a full runner command (executable + command-line arguments)
+Get executable
+Append command-line arguments</p>
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th>Type</th>
+<th>Intent</th><th>Optional</th>        <th>Attributes</th>
+        <th></th>
+        <th>Name</th>
+        <th></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" ></span>
+              class(<a href='../type/fpm_run_settings.html'>fpm_run_settings</a>),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>cmd</strong></td>
+            <td>
+                
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+    <h4>
+    Return Value
+    <small>character(len=:), allocatable</small>
+    </h4>
+    
+
+        </li>
+    </ul>
+  </div>
+
+      </section>
 
     
     </div>
@@ -605,7 +702,7 @@
             <p class="text-right">
               Documentation generated by
               <a href="https://github.com/Fortran-FOSS-Programmers/ford">FORD</a>
- on 2023-06-22 06:23              </p>
+ on 2023-06-27 16:11              </p>
           </div>
         </div>
         <br>

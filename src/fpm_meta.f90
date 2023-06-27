@@ -293,11 +293,8 @@ subroutine resolve_cmd(self,settings,error)
         select type (cmd=>settings)
            class is (fpm_run_settings) ! includes fpm_test_settings
 
-              if (.not.allocated(cmd%runner)) then
-                  cmd%runner = self%run_command%s
-              else
-                  cmd%runner = self%run_command%s//' '//cmd%runner
-              end if
+              ! Only override runner if user has not provided a custom one
+              if (.not.len_trim(cmd%runner)>0) cmd%runner = self%run_command%s
 
         end select
 
@@ -415,6 +412,15 @@ subroutine add_metapackage_model(model,package,settings,name,error)
     !> Add it into the settings
     call meta%resolve(settings,error)
     if (allocated(error)) return
+
+    ! If we need to run executables, there should be an MPI runner
+    if (name=="mpi") then
+        select type (settings)
+           class is (fpm_run_settings) ! run, test
+              if (.not.meta%has_run_command) &
+              call fatal_error(error,"cannot find a valid mpi runner on the local host")
+        end select
+    endif
 
 end subroutine add_metapackage_model
 
@@ -859,7 +865,7 @@ subroutine get_mpi_runner(command,verbose,error)
 
     ! Try several commands
     do itri=1,size(try)
-       call find_command_location(trim(try(itri)),command%s,verbose=.true.,error=error)
+       call find_command_location(trim(try(itri)),command%s,verbose=verbose,error=error)
        if (allocated(error)) cycle
 
        ! Success!
@@ -971,6 +977,7 @@ subroutine init_mpi_from_wrappers(this,compiler,mpilib,fort_wrapper,c_wrapper,cx
     type(error_t), allocatable, intent(out) :: error
 
     type(version_t) :: version
+    type(error_t), allocatable :: runner_error
 
     ! Cleanup structure
     call destroy(this)
@@ -1009,9 +1016,8 @@ subroutine init_mpi_from_wrappers(this,compiler,mpilib,fort_wrapper,c_wrapper,cx
     end if
 
     !> Add default run command, if present
-    this%run_command = mpi_wrapper_query(mpilib,fort_wrapper,'runner',verbose,error)
-    if (allocated(error)) return
-    this%has_run_command = len_trim(this%run_command)>0
+    this%run_command = mpi_wrapper_query(mpilib,fort_wrapper,'runner',verbose,runner_error)
+    this%has_run_command = (len_trim(this%run_command)>0) .and. .not.allocated(runner_error)
 
     contains
 
@@ -1067,7 +1073,7 @@ subroutine mpi_compiler_match(language,wrappers,compiler,which_one,mpilib,error)
         select case (language)
            case (LANG_FORTRAN)
                ! Build compiler type. The ID is created based on the Fortran name
-               call new_compiler(mpi_compiler,screen%s,'','',echo=.true.,verbose=.true.)
+               call new_compiler(mpi_compiler,screen%s,'','',echo=.true.,verbose=.false.)
 
                ! Fortran match found!
                if (mpi_compiler%id == compiler%id) then

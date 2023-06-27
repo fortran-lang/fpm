@@ -101,7 +101,7 @@
           <li id="statements"><i class="fa fa-list-ol"></i>
             <a data-toggle="tooltip"
                data-placement="bottom" data-html="true"
-               title=" 6.9% of total for source files.">715 statements</a>
+               title=" 7.0% of total for source files.">725 statements</a>
           </li>
 
             <li id="source-file">
@@ -264,7 +264,7 @@
 <a id="ln-44" name="ln-44" href="#ln-44"></a><span class="k">public</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">to_fortran_name</span><span class="p">,</span><span class="w"> </span><span class="n">is_fortran_name</span><span class="w"></span>
 <a id="ln-45" name="ln-45" href="#ln-45"></a><span class="k">public</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">string_array_contains</span><span class="p">,</span><span class="w"> </span><span class="n">string_cat</span><span class="p">,</span><span class="w"> </span><span class="nb">len_trim</span><span class="p">,</span><span class="w"> </span><span class="n">operator</span><span class="p">(.</span><span class="n">in</span><span class="p">.),</span><span class="w"> </span><span class="n">fnv_1a</span><span class="w"></span>
 <a id="ln-46" name="ln-46" href="#ln-46"></a><span class="k">public</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">replace</span><span class="p">,</span><span class="w"> </span><span class="n">resize</span><span class="p">,</span><span class="w"> </span><span class="n">str</span><span class="p">,</span><span class="w"> </span><span class="n">join</span><span class="p">,</span><span class="w"> </span><span class="n">glob</span><span class="w"></span>
-<a id="ln-47" name="ln-47" href="#ln-47"></a><span class="k">public</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">notabs</span><span class="p">,</span><span class="w"> </span><span class="n">dilate</span><span class="p">,</span><span class="w"> </span><span class="n">remove_newline_characters</span><span class="w"></span>
+<a id="ln-47" name="ln-47" href="#ln-47"></a><span class="k">public</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">notabs</span><span class="p">,</span><span class="w"> </span><span class="n">dilate</span><span class="p">,</span><span class="w"> </span><span class="n">remove_newline_characters</span><span class="p">,</span><span class="w"> </span><span class="n">remove_characters_in_set</span><span class="w"></span>
 <a id="ln-48" name="ln-48" href="#ln-48"></a>
 <a id="ln-49" name="ln-49" href="#ln-49"></a><span class="c">!&gt; Module naming</span>
 <a id="ln-50" name="ln-50" href="#ln-50"></a><span class="k">public</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">is_valid_module_name</span><span class="p">,</span><span class="w"> </span><span class="n">is_valid_module_prefix</span><span class="p">,</span><span class="w"> </span><span class="p">&amp;</span><span class="w"></span>
@@ -1441,214 +1441,229 @@
 <a id="ln-1221" name="ln-1221" href="#ln-1221"></a>
 <a id="ln-1222" name="ln-1222" href="#ln-1222"></a><span class="k">end function </span><span class="n">has_valid_standard_prefix</span><span class="w"></span>
 <a id="ln-1223" name="ln-1223" href="#ln-1223"></a>
-<a id="ln-1224" name="ln-1224" href="#ln-1224"></a><span class="c">! Remove all new line characters from the current string, replace them with spaces</span>
-<a id="ln-1225" name="ln-1225" href="#ln-1225"></a><span class="k">subroutine </span><span class="n">remove_newline_characters</span><span class="p">(</span><span class="n">string</span><span class="p">)</span><span class="w"></span>
-<a id="ln-1226" name="ln-1226" href="#ln-1226"></a><span class="w">    </span><span class="k">type</span><span class="p">(</span><span class="n">string_t</span><span class="p">),</span><span class="w"> </span><span class="k">intent</span><span class="p">(</span><span class="n">inout</span><span class="p">)</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">string</span><span class="w"></span>
-<a id="ln-1227" name="ln-1227" href="#ln-1227"></a>
-<a id="ln-1228" name="ln-1228" href="#ln-1228"></a><span class="w">    </span><span class="kt">integer</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">feed</span><span class="p">,</span><span class="n">length</span><span class="w"></span>
+<a id="ln-1224" name="ln-1224" href="#ln-1224"></a><span class="c">! Remove all characters from a set from a string</span>
+<a id="ln-1225" name="ln-1225" href="#ln-1225"></a><span class="k">subroutine </span><span class="n">remove_characters_in_set</span><span class="p">(</span><span class="n">string</span><span class="p">,</span><span class="n">set</span><span class="p">,</span><span class="n">replace_with</span><span class="p">)</span><span class="w"></span>
+<a id="ln-1226" name="ln-1226" href="#ln-1226"></a><span class="w">    </span><span class="kt">character</span><span class="p">(</span><span class="nb">len</span><span class="o">=</span><span class="p">:),</span><span class="w"> </span><span class="k">allocatable</span><span class="p">,</span><span class="w"> </span><span class="k">intent</span><span class="p">(</span><span class="n">inout</span><span class="p">)</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">string</span><span class="w"></span>
+<a id="ln-1227" name="ln-1227" href="#ln-1227"></a><span class="w">    </span><span class="kt">character</span><span class="p">(</span><span class="o">*</span><span class="p">),</span><span class="w"> </span><span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">)</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">set</span><span class="w"></span>
+<a id="ln-1228" name="ln-1228" href="#ln-1228"></a><span class="w">    </span><span class="kt">character</span><span class="p">,</span><span class="w"> </span><span class="k">optional</span><span class="p">,</span><span class="w"> </span><span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">)</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">replace_with</span><span class="w"> </span><span class="c">! Replace with this character instead of removing</span>
 <a id="ln-1229" name="ln-1229" href="#ln-1229"></a>
-<a id="ln-1230" name="ln-1230" href="#ln-1230"></a><span class="w">    </span><span class="kt">character</span><span class="p">(</span><span class="o">*</span><span class="p">),</span><span class="w"> </span><span class="k">parameter</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">CRLF</span><span class="w">  </span><span class="o">=</span><span class="w"> </span><span class="nb">new_line</span><span class="p">(</span><span class="s1">&#39;a&#39;</span><span class="p">)</span><span class="o">//</span><span class="nb">achar</span><span class="p">(</span><span class="mi">13</span><span class="p">)</span><span class="w"></span>
-<a id="ln-1231" name="ln-1231" href="#ln-1231"></a><span class="w">    </span><span class="kt">character</span><span class="p">(</span><span class="o">*</span><span class="p">),</span><span class="w"> </span><span class="k">parameter</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">SPACE</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">&#39; &#39;</span><span class="w"></span>
-<a id="ln-1232" name="ln-1232" href="#ln-1232"></a>
-<a id="ln-1233" name="ln-1233" href="#ln-1233"></a><span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(.</span><span class="nb">not</span><span class="p">.</span><span class="nb">allocated</span><span class="p">(</span><span class="n">string</span><span class="p">%</span><span class="n">s</span><span class="p">))</span><span class="w"> </span><span class="k">return</span>
+<a id="ln-1230" name="ln-1230" href="#ln-1230"></a><span class="w">    </span><span class="kt">integer</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">feed</span><span class="p">,</span><span class="n">length</span><span class="w"></span>
+<a id="ln-1231" name="ln-1231" href="#ln-1231"></a>
+<a id="ln-1232" name="ln-1232" href="#ln-1232"></a><span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(.</span><span class="nb">not</span><span class="p">.</span><span class="nb">allocated</span><span class="p">(</span><span class="n">string</span><span class="p">))</span><span class="w"> </span><span class="k">return</span>
+<a id="ln-1233" name="ln-1233" href="#ln-1233"></a><span class="k">    if</span><span class="w"> </span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">set</span><span class="p">)</span><span class="o">&lt;=</span><span class="mi">0</span><span class="p">)</span><span class="w"> </span><span class="k">return</span>
 <a id="ln-1234" name="ln-1234" href="#ln-1234"></a>
-<a id="ln-1235" name="ln-1235" href="#ln-1235"></a>
-<a id="ln-1236" name="ln-1236" href="#ln-1236"></a><span class="k">    </span><span class="n">length</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">len</span><span class="p">(</span><span class="n">string</span><span class="p">%</span><span class="n">s</span><span class="p">)</span><span class="w"></span>
-<a id="ln-1237" name="ln-1237" href="#ln-1237"></a><span class="w">    </span><span class="n">feed</span><span class="w">   </span><span class="o">=</span><span class="w"> </span><span class="nb">scan</span><span class="p">(</span><span class="n">string</span><span class="p">%</span><span class="n">s</span><span class="p">,</span><span class="n">CRLF</span><span class="p">)</span><span class="w"></span>
-<a id="ln-1238" name="ln-1238" href="#ln-1238"></a>
-<a id="ln-1239" name="ln-1239" href="#ln-1239"></a><span class="w">    </span><span class="k">do while</span><span class="w"> </span><span class="p">(</span><span class="n">length</span><span class="o">&gt;</span><span class="mi">0</span><span class="w"> </span><span class="p">.</span><span class="nb">and</span><span class="p">.</span><span class="w"> </span><span class="n">feed</span><span class="o">&gt;</span><span class="mi">0</span><span class="p">)</span><span class="w"></span>
-<a id="ln-1240" name="ln-1240" href="#ln-1240"></a>
-<a id="ln-1241" name="ln-1241" href="#ln-1241"></a><span class="w">        </span><span class="c">! Remove heading</span>
-<a id="ln-1242" name="ln-1242" href="#ln-1242"></a><span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">length</span><span class="o">==</span><span class="mi">1</span><span class="p">)</span><span class="w"> </span><span class="k">then</span>
-<a id="ln-1243" name="ln-1243" href="#ln-1243"></a><span class="k">            </span><span class="n">string</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">string_t</span><span class="p">(</span><span class="s2">&quot;&quot;</span><span class="p">)</span><span class="w"></span>
-<a id="ln-1244" name="ln-1244" href="#ln-1244"></a>
-<a id="ln-1245" name="ln-1245" href="#ln-1245"></a><span class="w">        </span><span class="n">elseif</span><span class="w"> </span><span class="p">(</span><span class="n">feed</span><span class="o">==</span><span class="mi">1</span><span class="p">)</span><span class="w"> </span><span class="k">then</span>
-<a id="ln-1246" name="ln-1246" href="#ln-1246"></a><span class="k">            </span><span class="n">string</span><span class="p">%</span><span class="n">s</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">string</span><span class="p">%</span><span class="n">s</span><span class="p">(</span><span class="mi">2</span><span class="p">:</span><span class="n">length</span><span class="p">)</span><span class="w"></span>
-<a id="ln-1247" name="ln-1247" href="#ln-1247"></a>
-<a id="ln-1248" name="ln-1248" href="#ln-1248"></a><span class="w">        </span><span class="c">! Remove trailing</span>
-<a id="ln-1249" name="ln-1249" href="#ln-1249"></a><span class="w">        </span><span class="n">elseif</span><span class="w"> </span><span class="p">(</span><span class="n">feed</span><span class="o">==</span><span class="n">length</span><span class="p">)</span><span class="w"> </span><span class="k">then</span>
-<a id="ln-1250" name="ln-1250" href="#ln-1250"></a><span class="k">            </span><span class="n">string</span><span class="p">%</span><span class="n">s</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">string</span><span class="p">%</span><span class="n">s</span><span class="p">(</span><span class="mi">1</span><span class="p">:</span><span class="n">length</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span><span class="w"></span>
-<a id="ln-1251" name="ln-1251" href="#ln-1251"></a>
-<a id="ln-1252" name="ln-1252" href="#ln-1252"></a><span class="w">        </span><span class="c">! In between: replace with space</span>
-<a id="ln-1253" name="ln-1253" href="#ln-1253"></a><span class="w">        </span><span class="k">else</span>
-<a id="ln-1254" name="ln-1254" href="#ln-1254"></a><span class="k">            </span><span class="n">string</span><span class="p">%</span><span class="n">s</span><span class="p">(</span><span class="n">feed</span><span class="p">:</span><span class="n">feed</span><span class="p">)</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">SPACE</span><span class="w"></span>
-<a id="ln-1255" name="ln-1255" href="#ln-1255"></a><span class="w">        </span><span class="k">end if</span>
-<a id="ln-1256" name="ln-1256" href="#ln-1256"></a>
-<a id="ln-1257" name="ln-1257" href="#ln-1257"></a><span class="k">        </span><span class="n">length</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">len</span><span class="p">(</span><span class="n">string</span><span class="p">%</span><span class="n">s</span><span class="p">)</span><span class="w"></span>
-<a id="ln-1258" name="ln-1258" href="#ln-1258"></a><span class="w">        </span><span class="n">feed</span><span class="w">   </span><span class="o">=</span><span class="w"> </span><span class="nb">scan</span><span class="p">(</span><span class="n">string</span><span class="p">%</span><span class="n">s</span><span class="p">,</span><span class="n">CRLF</span><span class="p">)</span><span class="w"></span>
-<a id="ln-1259" name="ln-1259" href="#ln-1259"></a>
-<a id="ln-1260" name="ln-1260" href="#ln-1260"></a><span class="w">    </span><span class="k">end do</span>
+<a id="ln-1235" name="ln-1235" href="#ln-1235"></a><span class="k">    </span><span class="n">length</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">len</span><span class="p">(</span><span class="n">string</span><span class="p">)</span><span class="w"></span>
+<a id="ln-1236" name="ln-1236" href="#ln-1236"></a><span class="w">    </span><span class="n">feed</span><span class="w">   </span><span class="o">=</span><span class="w"> </span><span class="nb">scan</span><span class="p">(</span><span class="n">string</span><span class="p">,</span><span class="n">set</span><span class="p">)</span><span class="w"></span>
+<a id="ln-1237" name="ln-1237" href="#ln-1237"></a>
+<a id="ln-1238" name="ln-1238" href="#ln-1238"></a><span class="w">    </span><span class="k">do while</span><span class="w"> </span><span class="p">(</span><span class="n">length</span><span class="o">&gt;</span><span class="mi">0</span><span class="w"> </span><span class="p">.</span><span class="nb">and</span><span class="p">.</span><span class="w"> </span><span class="n">feed</span><span class="o">&gt;</span><span class="mi">0</span><span class="p">)</span><span class="w"></span>
+<a id="ln-1239" name="ln-1239" href="#ln-1239"></a>
+<a id="ln-1240" name="ln-1240" href="#ln-1240"></a><span class="w">        </span><span class="c">! Remove heading</span>
+<a id="ln-1241" name="ln-1241" href="#ln-1241"></a><span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">length</span><span class="o">==</span><span class="mi">1</span><span class="p">)</span><span class="w"> </span><span class="k">then</span>
+<a id="ln-1242" name="ln-1242" href="#ln-1242"></a><span class="k">            </span><span class="n">string</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;&quot;</span><span class="w"></span>
+<a id="ln-1243" name="ln-1243" href="#ln-1243"></a>
+<a id="ln-1244" name="ln-1244" href="#ln-1244"></a><span class="w">        </span><span class="n">elseif</span><span class="w"> </span><span class="p">(</span><span class="n">feed</span><span class="o">==</span><span class="mi">1</span><span class="p">)</span><span class="w"> </span><span class="k">then</span>
+<a id="ln-1245" name="ln-1245" href="#ln-1245"></a><span class="k">            </span><span class="n">string</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">string</span><span class="p">(</span><span class="mi">2</span><span class="p">:</span><span class="n">length</span><span class="p">)</span><span class="w"></span>
+<a id="ln-1246" name="ln-1246" href="#ln-1246"></a>
+<a id="ln-1247" name="ln-1247" href="#ln-1247"></a><span class="w">        </span><span class="c">! Remove trailing</span>
+<a id="ln-1248" name="ln-1248" href="#ln-1248"></a><span class="w">        </span><span class="n">elseif</span><span class="w"> </span><span class="p">(</span><span class="n">feed</span><span class="o">==</span><span class="n">length</span><span class="p">)</span><span class="w"> </span><span class="k">then</span>
+<a id="ln-1249" name="ln-1249" href="#ln-1249"></a><span class="k">            </span><span class="n">string</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">string</span><span class="p">(</span><span class="mi">1</span><span class="p">:</span><span class="n">length</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span><span class="w"></span>
+<a id="ln-1250" name="ln-1250" href="#ln-1250"></a>
+<a id="ln-1251" name="ln-1251" href="#ln-1251"></a><span class="w">        </span><span class="c">! In between: replace with given character</span>
+<a id="ln-1252" name="ln-1252" href="#ln-1252"></a><span class="w">        </span><span class="n">elseif</span><span class="w"> </span><span class="p">(</span><span class="nb">present</span><span class="p">(</span><span class="n">replace_with</span><span class="p">))</span><span class="w"> </span><span class="k">then</span>
+<a id="ln-1253" name="ln-1253" href="#ln-1253"></a><span class="k">            </span><span class="n">string</span><span class="p">(</span><span class="n">feed</span><span class="p">:</span><span class="n">feed</span><span class="p">)</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">replace_with</span><span class="w"></span>
+<a id="ln-1254" name="ln-1254" href="#ln-1254"></a><span class="w">        </span><span class="c">! Or just remove</span>
+<a id="ln-1255" name="ln-1255" href="#ln-1255"></a><span class="w">        </span><span class="k">else</span>
+<a id="ln-1256" name="ln-1256" href="#ln-1256"></a><span class="k">            </span><span class="n">string</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">string</span><span class="p">(</span><span class="mi">1</span><span class="p">:</span><span class="n">feed</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span><span class="o">//</span><span class="n">string</span><span class="p">(</span><span class="n">feed</span><span class="o">+</span><span class="mi">1</span><span class="p">:</span><span class="n">length</span><span class="p">)</span><span class="w"></span>
+<a id="ln-1257" name="ln-1257" href="#ln-1257"></a><span class="w">        </span><span class="k">end if</span>
+<a id="ln-1258" name="ln-1258" href="#ln-1258"></a>
+<a id="ln-1259" name="ln-1259" href="#ln-1259"></a><span class="k">        </span><span class="n">length</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">len</span><span class="p">(</span><span class="n">string</span><span class="p">)</span><span class="w"></span>
+<a id="ln-1260" name="ln-1260" href="#ln-1260"></a><span class="w">        </span><span class="n">feed</span><span class="w">   </span><span class="o">=</span><span class="w"> </span><span class="nb">scan</span><span class="p">(</span><span class="n">string</span><span class="p">,</span><span class="n">set</span><span class="p">)</span><span class="w"></span>
 <a id="ln-1261" name="ln-1261" href="#ln-1261"></a>
-<a id="ln-1262" name="ln-1262" href="#ln-1262"></a><span class="k">end subroutine </span><span class="n">remove_newline_characters</span><span class="w"></span>
+<a id="ln-1262" name="ln-1262" href="#ln-1262"></a><span class="w">    </span><span class="k">end do</span>
 <a id="ln-1263" name="ln-1263" href="#ln-1263"></a>
-<a id="ln-1264" name="ln-1264" href="#ln-1264"></a><span class="c">!&gt;AUTHOR: John S. Urban</span>
-<a id="ln-1265" name="ln-1265" href="#ln-1265"></a><span class="c">!!LICENSE: Public Domain</span>
-<a id="ln-1266" name="ln-1266" href="#ln-1266"></a><span class="c">!&gt;</span>
-<a id="ln-1267" name="ln-1267" href="#ln-1267"></a><span class="c">!!### NAME</span>
-<a id="ln-1268" name="ln-1268" href="#ln-1268"></a><span class="c">!!   notabs(3f) - [fpm_strings:NONALPHA] expand tab characters</span>
-<a id="ln-1269" name="ln-1269" href="#ln-1269"></a><span class="c">!!   (LICENSE:PD)</span>
-<a id="ln-1270" name="ln-1270" href="#ln-1270"></a><span class="c">!!</span>
-<a id="ln-1271" name="ln-1271" href="#ln-1271"></a><span class="c">!!### SYNOPSIS</span>
-<a id="ln-1272" name="ln-1272" href="#ln-1272"></a><span class="c">!!</span>
-<a id="ln-1273" name="ln-1273" href="#ln-1273"></a><span class="c">!!    subroutine notabs(INSTR,OUTSTR,ILEN)</span>
-<a id="ln-1274" name="ln-1274" href="#ln-1274"></a><span class="c">!!</span>
-<a id="ln-1275" name="ln-1275" href="#ln-1275"></a><span class="c">!!     character(len=*),intent=(in)  :: INSTR</span>
-<a id="ln-1276" name="ln-1276" href="#ln-1276"></a><span class="c">!!     character(len=*),intent=(out) :: OUTSTR</span>
-<a id="ln-1277" name="ln-1277" href="#ln-1277"></a><span class="c">!!     integer,intent=(out)          :: ILEN</span>
-<a id="ln-1278" name="ln-1278" href="#ln-1278"></a><span class="c">!!</span>
-<a id="ln-1279" name="ln-1279" href="#ln-1279"></a><span class="c">!!### DESCRIPTION</span>
-<a id="ln-1280" name="ln-1280" href="#ln-1280"></a><span class="c">!!   NOTABS() converts tabs in INSTR to spaces in OUTSTR while maintaining</span>
-<a id="ln-1281" name="ln-1281" href="#ln-1281"></a><span class="c">!!   columns. It assumes a tab is set every 8 characters. Trailing spaces</span>
-<a id="ln-1282" name="ln-1282" href="#ln-1282"></a><span class="c">!!   are removed.</span>
-<a id="ln-1283" name="ln-1283" href="#ln-1283"></a><span class="c">!!</span>
-<a id="ln-1284" name="ln-1284" href="#ln-1284"></a><span class="c">!!   In addition, trailing carriage returns and line feeds are removed</span>
-<a id="ln-1285" name="ln-1285" href="#ln-1285"></a><span class="c">!!   (they are usually a problem created by going to and from MSWindows).</span>
-<a id="ln-1286" name="ln-1286" href="#ln-1286"></a><span class="c">!!</span>
-<a id="ln-1287" name="ln-1287" href="#ln-1287"></a><span class="c">!!   What are some reasons for removing tab characters from an input line?</span>
-<a id="ln-1288" name="ln-1288" href="#ln-1288"></a><span class="c">!!   Some Fortran compilers have problems with tabs, as tabs are not</span>
-<a id="ln-1289" name="ln-1289" href="#ln-1289"></a><span class="c">!!   part of the Fortran character set. Some editors and printers will</span>
-<a id="ln-1290" name="ln-1290" href="#ln-1290"></a><span class="c">!!   have problems with tabs. It is often useful to expand tabs in input</span>
-<a id="ln-1291" name="ln-1291" href="#ln-1291"></a><span class="c">!!   files to simplify further processing such as tokenizing an input line.</span>
-<a id="ln-1292" name="ln-1292" href="#ln-1292"></a><span class="c">!!</span>
-<a id="ln-1293" name="ln-1293" href="#ln-1293"></a><span class="c">!!### OPTIONS</span>
-<a id="ln-1294" name="ln-1294" href="#ln-1294"></a><span class="c">!!     instr     Input line to remove tabs from</span>
-<a id="ln-1295" name="ln-1295" href="#ln-1295"></a><span class="c">!!</span>
-<a id="ln-1296" name="ln-1296" href="#ln-1296"></a><span class="c">!!### RESULTS</span>
-<a id="ln-1297" name="ln-1297" href="#ln-1297"></a><span class="c">!!     outstr    Output string with tabs expanded. Assumed to be of sufficient</span>
-<a id="ln-1298" name="ln-1298" href="#ln-1298"></a><span class="c">!!               length</span>
-<a id="ln-1299" name="ln-1299" href="#ln-1299"></a><span class="c">!!     ilen      Significant length of returned string</span>
-<a id="ln-1300" name="ln-1300" href="#ln-1300"></a><span class="c">!!</span>
-<a id="ln-1301" name="ln-1301" href="#ln-1301"></a><span class="c">!!### EXAMPLES</span>
-<a id="ln-1302" name="ln-1302" href="#ln-1302"></a><span class="c">!!</span>
-<a id="ln-1303" name="ln-1303" href="#ln-1303"></a><span class="c">!!   Sample program:</span>
-<a id="ln-1304" name="ln-1304" href="#ln-1304"></a><span class="c">!!</span>
-<a id="ln-1305" name="ln-1305" href="#ln-1305"></a><span class="c">!!    program demo_notabs</span>
-<a id="ln-1306" name="ln-1306" href="#ln-1306"></a><span class="c">!!</span>
-<a id="ln-1307" name="ln-1307" href="#ln-1307"></a><span class="c">!!    !  test filter to remove tabs and trailing white space from input</span>
-<a id="ln-1308" name="ln-1308" href="#ln-1308"></a><span class="c">!!    !  on files up to 1024 characters wide</span>
-<a id="ln-1309" name="ln-1309" href="#ln-1309"></a><span class="c">!!    use fpm_strings, only : notabs</span>
-<a id="ln-1310" name="ln-1310" href="#ln-1310"></a><span class="c">!!    character(len=1024) :: in,out</span>
-<a id="ln-1311" name="ln-1311" href="#ln-1311"></a><span class="c">!!    integer             :: ios,iout</span>
-<a id="ln-1312" name="ln-1312" href="#ln-1312"></a><span class="c">!!       do</span>
-<a id="ln-1313" name="ln-1313" href="#ln-1313"></a><span class="c">!!          read(*,&#39;(A)&#39;,iostat=ios)in</span>
-<a id="ln-1314" name="ln-1314" href="#ln-1314"></a><span class="c">!!          if(ios /= 0) exit</span>
-<a id="ln-1315" name="ln-1315" href="#ln-1315"></a><span class="c">!!          call notabs(in,out,iout)</span>
-<a id="ln-1316" name="ln-1316" href="#ln-1316"></a><span class="c">!!          write(*,&#39;(a)&#39;)out(:iout)</span>
-<a id="ln-1317" name="ln-1317" href="#ln-1317"></a><span class="c">!!       enddo</span>
-<a id="ln-1318" name="ln-1318" href="#ln-1318"></a><span class="c">!!    end program demo_notabs</span>
+<a id="ln-1264" name="ln-1264" href="#ln-1264"></a><span class="k">end subroutine </span><span class="n">remove_characters_in_set</span><span class="w"></span>
+<a id="ln-1265" name="ln-1265" href="#ln-1265"></a>
+<a id="ln-1266" name="ln-1266" href="#ln-1266"></a><span class="c">! Remove all new line characters from the current string, replace them with spaces</span>
+<a id="ln-1267" name="ln-1267" href="#ln-1267"></a><span class="k">subroutine </span><span class="n">remove_newline_characters</span><span class="p">(</span><span class="n">string</span><span class="p">)</span><span class="w"></span>
+<a id="ln-1268" name="ln-1268" href="#ln-1268"></a><span class="w">    </span><span class="k">type</span><span class="p">(</span><span class="n">string_t</span><span class="p">),</span><span class="w"> </span><span class="k">intent</span><span class="p">(</span><span class="n">inout</span><span class="p">)</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">string</span><span class="w"></span>
+<a id="ln-1269" name="ln-1269" href="#ln-1269"></a>
+<a id="ln-1270" name="ln-1270" href="#ln-1270"></a><span class="w">    </span><span class="kt">integer</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">feed</span><span class="p">,</span><span class="n">length</span><span class="w"></span>
+<a id="ln-1271" name="ln-1271" href="#ln-1271"></a>
+<a id="ln-1272" name="ln-1272" href="#ln-1272"></a><span class="w">    </span><span class="kt">character</span><span class="p">(</span><span class="o">*</span><span class="p">),</span><span class="w"> </span><span class="k">parameter</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">CRLF</span><span class="w">  </span><span class="o">=</span><span class="w"> </span><span class="nb">new_line</span><span class="p">(</span><span class="s1">&#39;a&#39;</span><span class="p">)</span><span class="o">//</span><span class="nb">achar</span><span class="p">(</span><span class="mi">13</span><span class="p">)</span><span class="w"></span>
+<a id="ln-1273" name="ln-1273" href="#ln-1273"></a><span class="w">    </span><span class="kt">character</span><span class="p">(</span><span class="o">*</span><span class="p">),</span><span class="w"> </span><span class="k">parameter</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">SPACE</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">&#39; &#39;</span><span class="w"></span>
+<a id="ln-1274" name="ln-1274" href="#ln-1274"></a>
+<a id="ln-1275" name="ln-1275" href="#ln-1275"></a><span class="w">    </span><span class="k">call </span><span class="n">remove_characters_in_set</span><span class="p">(</span><span class="n">string</span><span class="p">%</span><span class="n">s</span><span class="p">,</span><span class="n">set</span><span class="o">=</span><span class="n">CRLF</span><span class="p">,</span><span class="n">replace_with</span><span class="o">=</span><span class="n">SPACE</span><span class="p">)</span><span class="w"></span>
+<a id="ln-1276" name="ln-1276" href="#ln-1276"></a>
+<a id="ln-1277" name="ln-1277" href="#ln-1277"></a><span class="k">end subroutine </span><span class="n">remove_newline_characters</span><span class="w"></span>
+<a id="ln-1278" name="ln-1278" href="#ln-1278"></a>
+<a id="ln-1279" name="ln-1279" href="#ln-1279"></a><span class="c">!&gt;AUTHOR: John S. Urban</span>
+<a id="ln-1280" name="ln-1280" href="#ln-1280"></a><span class="c">!!LICENSE: Public Domain</span>
+<a id="ln-1281" name="ln-1281" href="#ln-1281"></a><span class="c">!&gt;</span>
+<a id="ln-1282" name="ln-1282" href="#ln-1282"></a><span class="c">!!### NAME</span>
+<a id="ln-1283" name="ln-1283" href="#ln-1283"></a><span class="c">!!   notabs(3f) - [fpm_strings:NONALPHA] expand tab characters</span>
+<a id="ln-1284" name="ln-1284" href="#ln-1284"></a><span class="c">!!   (LICENSE:PD)</span>
+<a id="ln-1285" name="ln-1285" href="#ln-1285"></a><span class="c">!!</span>
+<a id="ln-1286" name="ln-1286" href="#ln-1286"></a><span class="c">!!### SYNOPSIS</span>
+<a id="ln-1287" name="ln-1287" href="#ln-1287"></a><span class="c">!!</span>
+<a id="ln-1288" name="ln-1288" href="#ln-1288"></a><span class="c">!!    subroutine notabs(INSTR,OUTSTR,ILEN)</span>
+<a id="ln-1289" name="ln-1289" href="#ln-1289"></a><span class="c">!!</span>
+<a id="ln-1290" name="ln-1290" href="#ln-1290"></a><span class="c">!!     character(len=*),intent=(in)  :: INSTR</span>
+<a id="ln-1291" name="ln-1291" href="#ln-1291"></a><span class="c">!!     character(len=*),intent=(out) :: OUTSTR</span>
+<a id="ln-1292" name="ln-1292" href="#ln-1292"></a><span class="c">!!     integer,intent=(out)          :: ILEN</span>
+<a id="ln-1293" name="ln-1293" href="#ln-1293"></a><span class="c">!!</span>
+<a id="ln-1294" name="ln-1294" href="#ln-1294"></a><span class="c">!!### DESCRIPTION</span>
+<a id="ln-1295" name="ln-1295" href="#ln-1295"></a><span class="c">!!   NOTABS() converts tabs in INSTR to spaces in OUTSTR while maintaining</span>
+<a id="ln-1296" name="ln-1296" href="#ln-1296"></a><span class="c">!!   columns. It assumes a tab is set every 8 characters. Trailing spaces</span>
+<a id="ln-1297" name="ln-1297" href="#ln-1297"></a><span class="c">!!   are removed.</span>
+<a id="ln-1298" name="ln-1298" href="#ln-1298"></a><span class="c">!!</span>
+<a id="ln-1299" name="ln-1299" href="#ln-1299"></a><span class="c">!!   In addition, trailing carriage returns and line feeds are removed</span>
+<a id="ln-1300" name="ln-1300" href="#ln-1300"></a><span class="c">!!   (they are usually a problem created by going to and from MSWindows).</span>
+<a id="ln-1301" name="ln-1301" href="#ln-1301"></a><span class="c">!!</span>
+<a id="ln-1302" name="ln-1302" href="#ln-1302"></a><span class="c">!!   What are some reasons for removing tab characters from an input line?</span>
+<a id="ln-1303" name="ln-1303" href="#ln-1303"></a><span class="c">!!   Some Fortran compilers have problems with tabs, as tabs are not</span>
+<a id="ln-1304" name="ln-1304" href="#ln-1304"></a><span class="c">!!   part of the Fortran character set. Some editors and printers will</span>
+<a id="ln-1305" name="ln-1305" href="#ln-1305"></a><span class="c">!!   have problems with tabs. It is often useful to expand tabs in input</span>
+<a id="ln-1306" name="ln-1306" href="#ln-1306"></a><span class="c">!!   files to simplify further processing such as tokenizing an input line.</span>
+<a id="ln-1307" name="ln-1307" href="#ln-1307"></a><span class="c">!!</span>
+<a id="ln-1308" name="ln-1308" href="#ln-1308"></a><span class="c">!!### OPTIONS</span>
+<a id="ln-1309" name="ln-1309" href="#ln-1309"></a><span class="c">!!     instr     Input line to remove tabs from</span>
+<a id="ln-1310" name="ln-1310" href="#ln-1310"></a><span class="c">!!</span>
+<a id="ln-1311" name="ln-1311" href="#ln-1311"></a><span class="c">!!### RESULTS</span>
+<a id="ln-1312" name="ln-1312" href="#ln-1312"></a><span class="c">!!     outstr    Output string with tabs expanded. Assumed to be of sufficient</span>
+<a id="ln-1313" name="ln-1313" href="#ln-1313"></a><span class="c">!!               length</span>
+<a id="ln-1314" name="ln-1314" href="#ln-1314"></a><span class="c">!!     ilen      Significant length of returned string</span>
+<a id="ln-1315" name="ln-1315" href="#ln-1315"></a><span class="c">!!</span>
+<a id="ln-1316" name="ln-1316" href="#ln-1316"></a><span class="c">!!### EXAMPLES</span>
+<a id="ln-1317" name="ln-1317" href="#ln-1317"></a><span class="c">!!</span>
+<a id="ln-1318" name="ln-1318" href="#ln-1318"></a><span class="c">!!   Sample program:</span>
 <a id="ln-1319" name="ln-1319" href="#ln-1319"></a><span class="c">!!</span>
-<a id="ln-1320" name="ln-1320" href="#ln-1320"></a><span class="c">!!### SEE ALSO</span>
-<a id="ln-1321" name="ln-1321" href="#ln-1321"></a><span class="c">!!   GNU/Unix commands expand(1) and unexpand(1)</span>
-<a id="ln-1322" name="ln-1322" href="#ln-1322"></a><span class="c">!!</span>
-<a id="ln-1323" name="ln-1323" href="#ln-1323"></a><span class="k">elemental impure subroutine </span><span class="n">notabs</span><span class="p">(</span><span class="n">instr</span><span class="p">,</span><span class="n">outstr</span><span class="p">,</span><span class="n">ilen</span><span class="p">)</span><span class="w"></span>
-<a id="ln-1324" name="ln-1324" href="#ln-1324"></a>
-<a id="ln-1325" name="ln-1325" href="#ln-1325"></a><span class="c">! ident_31=&quot;@(#)fpm_strings::notabs(3f): convert tabs to spaces while maintaining columns, remove CRLF chars&quot;</span>
-<a id="ln-1326" name="ln-1326" href="#ln-1326"></a>
-<a id="ln-1327" name="ln-1327" href="#ln-1327"></a><span class="kt">character</span><span class="p">(</span><span class="nb">len</span><span class="o">=*</span><span class="p">),</span><span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">)</span><span class="w">   </span><span class="kd">::</span><span class="w"> </span><span class="n">instr</span><span class="w">        </span><span class="c">! input line to scan for tab characters</span>
-<a id="ln-1328" name="ln-1328" href="#ln-1328"></a><span class="kt">character</span><span class="p">(</span><span class="nb">len</span><span class="o">=*</span><span class="p">),</span><span class="k">intent</span><span class="p">(</span><span class="n">out</span><span class="p">)</span><span class="w">  </span><span class="kd">::</span><span class="w"> </span><span class="n">outstr</span><span class="w">       </span><span class="c">! tab-expanded version of INSTR produced</span>
-<a id="ln-1329" name="ln-1329" href="#ln-1329"></a><span class="kt">integer</span><span class="p">,</span><span class="k">intent</span><span class="p">(</span><span class="n">out</span><span class="p">)</span><span class="w">           </span><span class="kd">::</span><span class="w"> </span><span class="n">ilen</span><span class="w">         </span><span class="c">! column position of last character put into output string</span>
-<a id="ln-1330" name="ln-1330" href="#ln-1330"></a><span class="w">                                              </span><span class="c">! that is, ILEN holds the position of the last non-blank character in OUTSTR</span>
-<a id="ln-1331" name="ln-1331" href="#ln-1331"></a>
-<a id="ln-1332" name="ln-1332" href="#ln-1332"></a><span class="kt">integer</span><span class="p">,</span><span class="k">parameter</span><span class="w">             </span><span class="kd">::</span><span class="w"> </span><span class="n">tabsize</span><span class="o">=</span><span class="mi">8</span><span class="w">    </span><span class="c">! assume a tab stop is set every 8th column</span>
-<a id="ln-1333" name="ln-1333" href="#ln-1333"></a><span class="kt">integer</span><span class="w">                       </span><span class="kd">::</span><span class="w"> </span><span class="n">ipos</span><span class="w">         </span><span class="c">! position in OUTSTR to put next character of INSTR</span>
-<a id="ln-1334" name="ln-1334" href="#ln-1334"></a><span class="kt">integer</span><span class="w">                       </span><span class="kd">::</span><span class="w"> </span><span class="n">lenin</span><span class="w">        </span><span class="c">! length of input string trimmed of trailing spaces</span>
-<a id="ln-1335" name="ln-1335" href="#ln-1335"></a><span class="kt">integer</span><span class="w">                       </span><span class="kd">::</span><span class="w"> </span><span class="n">lenout</span><span class="w">       </span><span class="c">! number of characters output string can hold</span>
-<a id="ln-1336" name="ln-1336" href="#ln-1336"></a><span class="kt">integer</span><span class="w">                       </span><span class="kd">::</span><span class="w"> </span><span class="n">istep</span><span class="w">        </span><span class="c">! counter that advances thru input string INSTR one character at a time</span>
-<a id="ln-1337" name="ln-1337" href="#ln-1337"></a><span class="kt">character</span><span class="p">(</span><span class="nb">len</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span><span class="w">              </span><span class="kd">::</span><span class="w"> </span><span class="n">c</span><span class="w">            </span><span class="c">! character in input line being processed</span>
-<a id="ln-1338" name="ln-1338" href="#ln-1338"></a><span class="kt">integer</span><span class="w">                       </span><span class="kd">::</span><span class="w"> </span><span class="n">iade</span><span class="w">         </span><span class="c">! ADE (ASCII Decimal Equivalent) of character being tested</span>
+<a id="ln-1320" name="ln-1320" href="#ln-1320"></a><span class="c">!!    program demo_notabs</span>
+<a id="ln-1321" name="ln-1321" href="#ln-1321"></a><span class="c">!!</span>
+<a id="ln-1322" name="ln-1322" href="#ln-1322"></a><span class="c">!!    !  test filter to remove tabs and trailing white space from input</span>
+<a id="ln-1323" name="ln-1323" href="#ln-1323"></a><span class="c">!!    !  on files up to 1024 characters wide</span>
+<a id="ln-1324" name="ln-1324" href="#ln-1324"></a><span class="c">!!    use fpm_strings, only : notabs</span>
+<a id="ln-1325" name="ln-1325" href="#ln-1325"></a><span class="c">!!    character(len=1024) :: in,out</span>
+<a id="ln-1326" name="ln-1326" href="#ln-1326"></a><span class="c">!!    integer             :: ios,iout</span>
+<a id="ln-1327" name="ln-1327" href="#ln-1327"></a><span class="c">!!       do</span>
+<a id="ln-1328" name="ln-1328" href="#ln-1328"></a><span class="c">!!          read(*,&#39;(A)&#39;,iostat=ios)in</span>
+<a id="ln-1329" name="ln-1329" href="#ln-1329"></a><span class="c">!!          if(ios /= 0) exit</span>
+<a id="ln-1330" name="ln-1330" href="#ln-1330"></a><span class="c">!!          call notabs(in,out,iout)</span>
+<a id="ln-1331" name="ln-1331" href="#ln-1331"></a><span class="c">!!          write(*,&#39;(a)&#39;)out(:iout)</span>
+<a id="ln-1332" name="ln-1332" href="#ln-1332"></a><span class="c">!!       enddo</span>
+<a id="ln-1333" name="ln-1333" href="#ln-1333"></a><span class="c">!!    end program demo_notabs</span>
+<a id="ln-1334" name="ln-1334" href="#ln-1334"></a><span class="c">!!</span>
+<a id="ln-1335" name="ln-1335" href="#ln-1335"></a><span class="c">!!### SEE ALSO</span>
+<a id="ln-1336" name="ln-1336" href="#ln-1336"></a><span class="c">!!   GNU/Unix commands expand(1) and unexpand(1)</span>
+<a id="ln-1337" name="ln-1337" href="#ln-1337"></a><span class="c">!!</span>
+<a id="ln-1338" name="ln-1338" href="#ln-1338"></a><span class="k">elemental impure subroutine </span><span class="n">notabs</span><span class="p">(</span><span class="n">instr</span><span class="p">,</span><span class="n">outstr</span><span class="p">,</span><span class="n">ilen</span><span class="p">)</span><span class="w"></span>
 <a id="ln-1339" name="ln-1339" href="#ln-1339"></a>
-<a id="ln-1340" name="ln-1340" href="#ln-1340"></a><span class="w">   </span><span class="n">ipos</span><span class="o">=</span><span class="mi">1</span><span class="w">                                     </span><span class="c">! where to put next character in output string OUTSTR</span>
-<a id="ln-1341" name="ln-1341" href="#ln-1341"></a><span class="w">   </span><span class="n">lenin</span><span class="o">=</span><span class="nb">len_trim</span><span class="p">(</span><span class="n">instr</span><span class="p">(</span><span class="w"> </span><span class="mi">1</span><span class="p">:</span><span class="nb">len</span><span class="p">(</span><span class="n">instr</span><span class="p">)</span><span class="w"> </span><span class="p">))</span><span class="w">      </span><span class="c">! length of INSTR trimmed of trailing spaces</span>
-<a id="ln-1342" name="ln-1342" href="#ln-1342"></a><span class="w">   </span><span class="n">lenout</span><span class="o">=</span><span class="nb">len</span><span class="p">(</span><span class="n">outstr</span><span class="p">)</span><span class="w">                         </span><span class="c">! number of characters output string OUTSTR can hold</span>
-<a id="ln-1343" name="ln-1343" href="#ln-1343"></a><span class="w">   </span><span class="n">outstr</span><span class="o">=</span><span class="s2">&quot; &quot;</span><span class="w">                                 </span><span class="c">! this SHOULD blank-fill string, a buggy machine required a loop to set all characters</span>
-<a id="ln-1344" name="ln-1344" href="#ln-1344"></a>
-<a id="ln-1345" name="ln-1345" href="#ln-1345"></a><span class="w">      </span><span class="n">SCAN_LINE</span><span class="p">:</span><span class="w"> </span><span class="k">do </span><span class="n">istep</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span><span class="n">lenin</span><span class="w">             </span><span class="c">! look through input string one character at a time</span>
-<a id="ln-1346" name="ln-1346" href="#ln-1346"></a><span class="w">         </span><span class="n">c</span><span class="o">=</span><span class="n">instr</span><span class="p">(</span><span class="n">istep</span><span class="p">:</span><span class="n">istep</span><span class="p">)</span><span class="w">                 </span><span class="c">! get next character</span>
-<a id="ln-1347" name="ln-1347" href="#ln-1347"></a><span class="w">         </span><span class="n">iade</span><span class="o">=</span><span class="nb">ichar</span><span class="p">(</span><span class="n">c</span><span class="p">)</span><span class="w">                        </span><span class="c">! get ADE of the character</span>
-<a id="ln-1348" name="ln-1348" href="#ln-1348"></a><span class="w">         </span><span class="n">EXPAND_TABS</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="k">select case</span><span class="w"> </span><span class="p">(</span><span class="n">iade</span><span class="p">)</span><span class="w">     </span><span class="c">! take different actions depending on which character was found</span>
-<a id="ln-1349" name="ln-1349" href="#ln-1349"></a><span class="w">         </span><span class="k">case</span><span class="p">(</span><span class="mi">9</span><span class="p">)</span><span class="w">                              </span><span class="c">! test if character is a tab and move pointer out to appropriate column</span>
-<a id="ln-1350" name="ln-1350" href="#ln-1350"></a><span class="w">            </span><span class="n">ipos</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">ipos</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="p">(</span><span class="n">tabsize</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="p">(</span><span class="nb">mod</span><span class="p">(</span><span class="n">ipos</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span><span class="n">tabsize</span><span class="p">)))</span><span class="w"></span>
-<a id="ln-1351" name="ln-1351" href="#ln-1351"></a><span class="w">         </span><span class="k">case</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span><span class="mi">13</span><span class="p">)</span><span class="w">                          </span><span class="c">! convert carriage-return and new-line to space ,typically to handle DOS-format files</span>
-<a id="ln-1352" name="ln-1352" href="#ln-1352"></a><span class="w">            </span><span class="n">ipos</span><span class="o">=</span><span class="n">ipos</span><span class="o">+</span><span class="mi">1</span><span class="w"></span>
-<a id="ln-1353" name="ln-1353" href="#ln-1353"></a><span class="w">         </span><span class="k">case </span><span class="n">default</span><span class="w">                         </span><span class="c">! c is anything else other than a tab,newline,or return  insert it in output string</span>
-<a id="ln-1354" name="ln-1354" href="#ln-1354"></a><span class="w">            </span><span class="k">if</span><span class="p">(</span><span class="n">ipos</span><span class="w"> </span><span class="o">&gt;</span><span class="w"> </span><span class="n">lenout</span><span class="p">)</span><span class="k">then</span>
-<a id="ln-1355" name="ln-1355" href="#ln-1355"></a><span class="k">               write</span><span class="p">(</span><span class="n">stderr</span><span class="p">,</span><span class="o">*</span><span class="p">)</span><span class="s2">&quot;*notabs* output string overflow&quot;</span><span class="w"></span>
-<a id="ln-1356" name="ln-1356" href="#ln-1356"></a><span class="w">               </span><span class="k">exit</span>
-<a id="ln-1357" name="ln-1357" href="#ln-1357"></a><span class="k">            else</span>
-<a id="ln-1358" name="ln-1358" href="#ln-1358"></a><span class="k">               </span><span class="n">outstr</span><span class="p">(</span><span class="n">ipos</span><span class="p">:</span><span class="n">ipos</span><span class="p">)</span><span class="o">=</span><span class="n">c</span><span class="w"></span>
-<a id="ln-1359" name="ln-1359" href="#ln-1359"></a><span class="w">               </span><span class="n">ipos</span><span class="o">=</span><span class="n">ipos</span><span class="o">+</span><span class="mi">1</span><span class="w"></span>
-<a id="ln-1360" name="ln-1360" href="#ln-1360"></a><span class="w">            </span><span class="k">endif</span>
-<a id="ln-1361" name="ln-1361" href="#ln-1361"></a><span class="k">         end select </span><span class="n">EXPAND_TABS</span><span class="w"></span>
-<a id="ln-1362" name="ln-1362" href="#ln-1362"></a><span class="w">      </span><span class="k">enddo </span><span class="n">SCAN_LINE</span><span class="w"></span>
-<a id="ln-1363" name="ln-1363" href="#ln-1363"></a>
-<a id="ln-1364" name="ln-1364" href="#ln-1364"></a><span class="w">      </span><span class="n">ipos</span><span class="o">=</span><span class="nb">min</span><span class="p">(</span><span class="n">ipos</span><span class="p">,</span><span class="n">lenout</span><span class="p">)</span><span class="w">                   </span><span class="c">! tabs or newline or return characters or last character might have gone too far</span>
-<a id="ln-1365" name="ln-1365" href="#ln-1365"></a><span class="w">      </span><span class="n">ilen</span><span class="o">=</span><span class="nb">len_trim</span><span class="p">(</span><span class="n">outstr</span><span class="p">(:</span><span class="n">ipos</span><span class="p">))</span><span class="w">            </span><span class="c">! trim trailing spaces</span>
-<a id="ln-1366" name="ln-1366" href="#ln-1366"></a>
-<a id="ln-1367" name="ln-1367" href="#ln-1367"></a><span class="k">end subroutine </span><span class="n">notabs</span><span class="w"></span>
-<a id="ln-1368" name="ln-1368" href="#ln-1368"></a>
-<a id="ln-1369" name="ln-1369" href="#ln-1369"></a><span class="c">!&gt;AUTHOR: John S. Urban</span>
-<a id="ln-1370" name="ln-1370" href="#ln-1370"></a><span class="c">!!LICENSE: Public Domain</span>
-<a id="ln-1371" name="ln-1371" href="#ln-1371"></a><span class="c">!&gt;</span>
-<a id="ln-1372" name="ln-1372" href="#ln-1372"></a><span class="c">!!##NAME</span>
-<a id="ln-1373" name="ln-1373" href="#ln-1373"></a><span class="c">!!    dilate(3f) - [M_strings:NONALPHA] expand tab characters</span>
-<a id="ln-1374" name="ln-1374" href="#ln-1374"></a><span class="c">!!    (LICENSE:PD)</span>
-<a id="ln-1375" name="ln-1375" href="#ln-1375"></a><span class="c">!!</span>
-<a id="ln-1376" name="ln-1376" href="#ln-1376"></a><span class="c">!!##SYNOPSIS</span>
-<a id="ln-1377" name="ln-1377" href="#ln-1377"></a><span class="c">!!</span>
-<a id="ln-1378" name="ln-1378" href="#ln-1378"></a><span class="c">!!    function dilate(INSTR) result(OUTSTR)</span>
-<a id="ln-1379" name="ln-1379" href="#ln-1379"></a><span class="c">!!</span>
-<a id="ln-1380" name="ln-1380" href="#ln-1380"></a><span class="c">!!     character(len=*),intent=(in)  :: INSTR</span>
-<a id="ln-1381" name="ln-1381" href="#ln-1381"></a><span class="c">!!     character(len=:),allocatable  :: OUTSTR</span>
-<a id="ln-1382" name="ln-1382" href="#ln-1382"></a><span class="c">!!</span>
-<a id="ln-1383" name="ln-1383" href="#ln-1383"></a><span class="c">!!##DESCRIPTION</span>
-<a id="ln-1384" name="ln-1384" href="#ln-1384"></a><span class="c">!!     dilate() converts tabs in INSTR to spaces in OUTSTR.  It assumes a</span>
-<a id="ln-1385" name="ln-1385" href="#ln-1385"></a><span class="c">!!     tab is set every 8 characters. Trailing spaces are removed.</span>
-<a id="ln-1386" name="ln-1386" href="#ln-1386"></a><span class="c">!!</span>
-<a id="ln-1387" name="ln-1387" href="#ln-1387"></a><span class="c">!!     In addition, trailing carriage returns and line feeds are removed</span>
-<a id="ln-1388" name="ln-1388" href="#ln-1388"></a><span class="c">!!     (they are usually a problem created by going to and from MSWindows).</span>
-<a id="ln-1389" name="ln-1389" href="#ln-1389"></a><span class="c">!!</span>
-<a id="ln-1390" name="ln-1390" href="#ln-1390"></a><span class="c">!!##OPTIONS</span>
-<a id="ln-1391" name="ln-1391" href="#ln-1391"></a><span class="c">!!     instr     Input line to remove tabs from</span>
+<a id="ln-1340" name="ln-1340" href="#ln-1340"></a><span class="c">! ident_31=&quot;@(#)fpm_strings::notabs(3f): convert tabs to spaces while maintaining columns, remove CRLF chars&quot;</span>
+<a id="ln-1341" name="ln-1341" href="#ln-1341"></a>
+<a id="ln-1342" name="ln-1342" href="#ln-1342"></a><span class="kt">character</span><span class="p">(</span><span class="nb">len</span><span class="o">=*</span><span class="p">),</span><span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">)</span><span class="w">   </span><span class="kd">::</span><span class="w"> </span><span class="n">instr</span><span class="w">        </span><span class="c">! input line to scan for tab characters</span>
+<a id="ln-1343" name="ln-1343" href="#ln-1343"></a><span class="kt">character</span><span class="p">(</span><span class="nb">len</span><span class="o">=*</span><span class="p">),</span><span class="k">intent</span><span class="p">(</span><span class="n">out</span><span class="p">)</span><span class="w">  </span><span class="kd">::</span><span class="w"> </span><span class="n">outstr</span><span class="w">       </span><span class="c">! tab-expanded version of INSTR produced</span>
+<a id="ln-1344" name="ln-1344" href="#ln-1344"></a><span class="kt">integer</span><span class="p">,</span><span class="k">intent</span><span class="p">(</span><span class="n">out</span><span class="p">)</span><span class="w">           </span><span class="kd">::</span><span class="w"> </span><span class="n">ilen</span><span class="w">         </span><span class="c">! column position of last character put into output string</span>
+<a id="ln-1345" name="ln-1345" href="#ln-1345"></a><span class="w">                                              </span><span class="c">! that is, ILEN holds the position of the last non-blank character in OUTSTR</span>
+<a id="ln-1346" name="ln-1346" href="#ln-1346"></a>
+<a id="ln-1347" name="ln-1347" href="#ln-1347"></a><span class="kt">integer</span><span class="p">,</span><span class="k">parameter</span><span class="w">             </span><span class="kd">::</span><span class="w"> </span><span class="n">tabsize</span><span class="o">=</span><span class="mi">8</span><span class="w">    </span><span class="c">! assume a tab stop is set every 8th column</span>
+<a id="ln-1348" name="ln-1348" href="#ln-1348"></a><span class="kt">integer</span><span class="w">                       </span><span class="kd">::</span><span class="w"> </span><span class="n">ipos</span><span class="w">         </span><span class="c">! position in OUTSTR to put next character of INSTR</span>
+<a id="ln-1349" name="ln-1349" href="#ln-1349"></a><span class="kt">integer</span><span class="w">                       </span><span class="kd">::</span><span class="w"> </span><span class="n">lenin</span><span class="w">        </span><span class="c">! length of input string trimmed of trailing spaces</span>
+<a id="ln-1350" name="ln-1350" href="#ln-1350"></a><span class="kt">integer</span><span class="w">                       </span><span class="kd">::</span><span class="w"> </span><span class="n">lenout</span><span class="w">       </span><span class="c">! number of characters output string can hold</span>
+<a id="ln-1351" name="ln-1351" href="#ln-1351"></a><span class="kt">integer</span><span class="w">                       </span><span class="kd">::</span><span class="w"> </span><span class="n">istep</span><span class="w">        </span><span class="c">! counter that advances thru input string INSTR one character at a time</span>
+<a id="ln-1352" name="ln-1352" href="#ln-1352"></a><span class="kt">character</span><span class="p">(</span><span class="nb">len</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span><span class="w">              </span><span class="kd">::</span><span class="w"> </span><span class="n">c</span><span class="w">            </span><span class="c">! character in input line being processed</span>
+<a id="ln-1353" name="ln-1353" href="#ln-1353"></a><span class="kt">integer</span><span class="w">                       </span><span class="kd">::</span><span class="w"> </span><span class="n">iade</span><span class="w">         </span><span class="c">! ADE (ASCII Decimal Equivalent) of character being tested</span>
+<a id="ln-1354" name="ln-1354" href="#ln-1354"></a>
+<a id="ln-1355" name="ln-1355" href="#ln-1355"></a><span class="w">   </span><span class="n">ipos</span><span class="o">=</span><span class="mi">1</span><span class="w">                                     </span><span class="c">! where to put next character in output string OUTSTR</span>
+<a id="ln-1356" name="ln-1356" href="#ln-1356"></a><span class="w">   </span><span class="n">lenin</span><span class="o">=</span><span class="nb">len_trim</span><span class="p">(</span><span class="n">instr</span><span class="p">(</span><span class="w"> </span><span class="mi">1</span><span class="p">:</span><span class="nb">len</span><span class="p">(</span><span class="n">instr</span><span class="p">)</span><span class="w"> </span><span class="p">))</span><span class="w">      </span><span class="c">! length of INSTR trimmed of trailing spaces</span>
+<a id="ln-1357" name="ln-1357" href="#ln-1357"></a><span class="w">   </span><span class="n">lenout</span><span class="o">=</span><span class="nb">len</span><span class="p">(</span><span class="n">outstr</span><span class="p">)</span><span class="w">                         </span><span class="c">! number of characters output string OUTSTR can hold</span>
+<a id="ln-1358" name="ln-1358" href="#ln-1358"></a><span class="w">   </span><span class="n">outstr</span><span class="o">=</span><span class="s2">&quot; &quot;</span><span class="w">                                 </span><span class="c">! this SHOULD blank-fill string, a buggy machine required a loop to set all characters</span>
+<a id="ln-1359" name="ln-1359" href="#ln-1359"></a>
+<a id="ln-1360" name="ln-1360" href="#ln-1360"></a><span class="w">      </span><span class="n">SCAN_LINE</span><span class="p">:</span><span class="w"> </span><span class="k">do </span><span class="n">istep</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span><span class="n">lenin</span><span class="w">             </span><span class="c">! look through input string one character at a time</span>
+<a id="ln-1361" name="ln-1361" href="#ln-1361"></a><span class="w">         </span><span class="n">c</span><span class="o">=</span><span class="n">instr</span><span class="p">(</span><span class="n">istep</span><span class="p">:</span><span class="n">istep</span><span class="p">)</span><span class="w">                 </span><span class="c">! get next character</span>
+<a id="ln-1362" name="ln-1362" href="#ln-1362"></a><span class="w">         </span><span class="n">iade</span><span class="o">=</span><span class="nb">ichar</span><span class="p">(</span><span class="n">c</span><span class="p">)</span><span class="w">                        </span><span class="c">! get ADE of the character</span>
+<a id="ln-1363" name="ln-1363" href="#ln-1363"></a><span class="w">         </span><span class="n">EXPAND_TABS</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="k">select case</span><span class="w"> </span><span class="p">(</span><span class="n">iade</span><span class="p">)</span><span class="w">     </span><span class="c">! take different actions depending on which character was found</span>
+<a id="ln-1364" name="ln-1364" href="#ln-1364"></a><span class="w">         </span><span class="k">case</span><span class="p">(</span><span class="mi">9</span><span class="p">)</span><span class="w">                              </span><span class="c">! test if character is a tab and move pointer out to appropriate column</span>
+<a id="ln-1365" name="ln-1365" href="#ln-1365"></a><span class="w">            </span><span class="n">ipos</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">ipos</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="p">(</span><span class="n">tabsize</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="p">(</span><span class="nb">mod</span><span class="p">(</span><span class="n">ipos</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span><span class="n">tabsize</span><span class="p">)))</span><span class="w"></span>
+<a id="ln-1366" name="ln-1366" href="#ln-1366"></a><span class="w">         </span><span class="k">case</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span><span class="mi">13</span><span class="p">)</span><span class="w">                          </span><span class="c">! convert carriage-return and new-line to space ,typically to handle DOS-format files</span>
+<a id="ln-1367" name="ln-1367" href="#ln-1367"></a><span class="w">            </span><span class="n">ipos</span><span class="o">=</span><span class="n">ipos</span><span class="o">+</span><span class="mi">1</span><span class="w"></span>
+<a id="ln-1368" name="ln-1368" href="#ln-1368"></a><span class="w">         </span><span class="k">case </span><span class="n">default</span><span class="w">                         </span><span class="c">! c is anything else other than a tab,newline,or return  insert it in output string</span>
+<a id="ln-1369" name="ln-1369" href="#ln-1369"></a><span class="w">            </span><span class="k">if</span><span class="p">(</span><span class="n">ipos</span><span class="w"> </span><span class="o">&gt;</span><span class="w"> </span><span class="n">lenout</span><span class="p">)</span><span class="k">then</span>
+<a id="ln-1370" name="ln-1370" href="#ln-1370"></a><span class="k">               write</span><span class="p">(</span><span class="n">stderr</span><span class="p">,</span><span class="o">*</span><span class="p">)</span><span class="s2">&quot;*notabs* output string overflow&quot;</span><span class="w"></span>
+<a id="ln-1371" name="ln-1371" href="#ln-1371"></a><span class="w">               </span><span class="k">exit</span>
+<a id="ln-1372" name="ln-1372" href="#ln-1372"></a><span class="k">            else</span>
+<a id="ln-1373" name="ln-1373" href="#ln-1373"></a><span class="k">               </span><span class="n">outstr</span><span class="p">(</span><span class="n">ipos</span><span class="p">:</span><span class="n">ipos</span><span class="p">)</span><span class="o">=</span><span class="n">c</span><span class="w"></span>
+<a id="ln-1374" name="ln-1374" href="#ln-1374"></a><span class="w">               </span><span class="n">ipos</span><span class="o">=</span><span class="n">ipos</span><span class="o">+</span><span class="mi">1</span><span class="w"></span>
+<a id="ln-1375" name="ln-1375" href="#ln-1375"></a><span class="w">            </span><span class="k">endif</span>
+<a id="ln-1376" name="ln-1376" href="#ln-1376"></a><span class="k">         end select </span><span class="n">EXPAND_TABS</span><span class="w"></span>
+<a id="ln-1377" name="ln-1377" href="#ln-1377"></a><span class="w">      </span><span class="k">enddo </span><span class="n">SCAN_LINE</span><span class="w"></span>
+<a id="ln-1378" name="ln-1378" href="#ln-1378"></a>
+<a id="ln-1379" name="ln-1379" href="#ln-1379"></a><span class="w">      </span><span class="n">ipos</span><span class="o">=</span><span class="nb">min</span><span class="p">(</span><span class="n">ipos</span><span class="p">,</span><span class="n">lenout</span><span class="p">)</span><span class="w">                   </span><span class="c">! tabs or newline or return characters or last character might have gone too far</span>
+<a id="ln-1380" name="ln-1380" href="#ln-1380"></a><span class="w">      </span><span class="n">ilen</span><span class="o">=</span><span class="nb">len_trim</span><span class="p">(</span><span class="n">outstr</span><span class="p">(:</span><span class="n">ipos</span><span class="p">))</span><span class="w">            </span><span class="c">! trim trailing spaces</span>
+<a id="ln-1381" name="ln-1381" href="#ln-1381"></a>
+<a id="ln-1382" name="ln-1382" href="#ln-1382"></a><span class="k">end subroutine </span><span class="n">notabs</span><span class="w"></span>
+<a id="ln-1383" name="ln-1383" href="#ln-1383"></a>
+<a id="ln-1384" name="ln-1384" href="#ln-1384"></a><span class="c">!&gt;AUTHOR: John S. Urban</span>
+<a id="ln-1385" name="ln-1385" href="#ln-1385"></a><span class="c">!!LICENSE: Public Domain</span>
+<a id="ln-1386" name="ln-1386" href="#ln-1386"></a><span class="c">!&gt;</span>
+<a id="ln-1387" name="ln-1387" href="#ln-1387"></a><span class="c">!!##NAME</span>
+<a id="ln-1388" name="ln-1388" href="#ln-1388"></a><span class="c">!!    dilate(3f) - [M_strings:NONALPHA] expand tab characters</span>
+<a id="ln-1389" name="ln-1389" href="#ln-1389"></a><span class="c">!!    (LICENSE:PD)</span>
+<a id="ln-1390" name="ln-1390" href="#ln-1390"></a><span class="c">!!</span>
+<a id="ln-1391" name="ln-1391" href="#ln-1391"></a><span class="c">!!##SYNOPSIS</span>
 <a id="ln-1392" name="ln-1392" href="#ln-1392"></a><span class="c">!!</span>
-<a id="ln-1393" name="ln-1393" href="#ln-1393"></a><span class="c">!!##RESULTS</span>
-<a id="ln-1394" name="ln-1394" href="#ln-1394"></a><span class="c">!!     outstr    Output string with tabs expanded.</span>
-<a id="ln-1395" name="ln-1395" href="#ln-1395"></a><span class="c">!!</span>
-<a id="ln-1396" name="ln-1396" href="#ln-1396"></a><span class="c">!!##EXAMPLES</span>
+<a id="ln-1393" name="ln-1393" href="#ln-1393"></a><span class="c">!!    function dilate(INSTR) result(OUTSTR)</span>
+<a id="ln-1394" name="ln-1394" href="#ln-1394"></a><span class="c">!!</span>
+<a id="ln-1395" name="ln-1395" href="#ln-1395"></a><span class="c">!!     character(len=*),intent=(in)  :: INSTR</span>
+<a id="ln-1396" name="ln-1396" href="#ln-1396"></a><span class="c">!!     character(len=:),allocatable  :: OUTSTR</span>
 <a id="ln-1397" name="ln-1397" href="#ln-1397"></a><span class="c">!!</span>
-<a id="ln-1398" name="ln-1398" href="#ln-1398"></a><span class="c">!!   Sample program:</span>
-<a id="ln-1399" name="ln-1399" href="#ln-1399"></a><span class="c">!!</span>
-<a id="ln-1400" name="ln-1400" href="#ln-1400"></a><span class="c">!!    program demo_dilate</span>
+<a id="ln-1398" name="ln-1398" href="#ln-1398"></a><span class="c">!!##DESCRIPTION</span>
+<a id="ln-1399" name="ln-1399" href="#ln-1399"></a><span class="c">!!     dilate() converts tabs in INSTR to spaces in OUTSTR.  It assumes a</span>
+<a id="ln-1400" name="ln-1400" href="#ln-1400"></a><span class="c">!!     tab is set every 8 characters. Trailing spaces are removed.</span>
 <a id="ln-1401" name="ln-1401" href="#ln-1401"></a><span class="c">!!</span>
-<a id="ln-1402" name="ln-1402" href="#ln-1402"></a><span class="c">!!    use M_strings, only : dilate</span>
-<a id="ln-1403" name="ln-1403" href="#ln-1403"></a><span class="c">!!    implicit none</span>
-<a id="ln-1404" name="ln-1404" href="#ln-1404"></a><span class="c">!!    character(len=:),allocatable :: in</span>
-<a id="ln-1405" name="ln-1405" href="#ln-1405"></a><span class="c">!!    integer                      :: i</span>
-<a id="ln-1406" name="ln-1406" href="#ln-1406"></a><span class="c">!!       in=&#39;  this is my string  &#39;</span>
-<a id="ln-1407" name="ln-1407" href="#ln-1407"></a><span class="c">!!       ! change spaces to tabs to make a sample input</span>
-<a id="ln-1408" name="ln-1408" href="#ln-1408"></a><span class="c">!!       do i=1,len(in)</span>
-<a id="ln-1409" name="ln-1409" href="#ln-1409"></a><span class="c">!!          if(in(i:i) == &#39; &#39;)in(i:i)=char(9)</span>
-<a id="ln-1410" name="ln-1410" href="#ln-1410"></a><span class="c">!!       enddo</span>
-<a id="ln-1411" name="ln-1411" href="#ln-1411"></a><span class="c">!!       write(*,&#39;(a)&#39;)in,dilate(in)</span>
-<a id="ln-1412" name="ln-1412" href="#ln-1412"></a><span class="c">!!    end program demo_dilate</span>
-<a id="ln-1413" name="ln-1413" href="#ln-1413"></a><span class="c">!!</span>
-<a id="ln-1414" name="ln-1414" href="#ln-1414"></a><span class="k">function </span><span class="n">dilate</span><span class="p">(</span><span class="n">instr</span><span class="p">)</span><span class="w"> </span><span class="k">result</span><span class="p">(</span><span class="n">outstr</span><span class="p">)</span><span class="w"></span>
-<a id="ln-1415" name="ln-1415" href="#ln-1415"></a>
-<a id="ln-1416" name="ln-1416" href="#ln-1416"></a><span class="w">   </span><span class="kt">character</span><span class="p">(</span><span class="nb">len</span><span class="o">=*</span><span class="p">),</span><span class="w"> </span><span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">)</span><span class="w">  </span><span class="kd">::</span><span class="w"> </span><span class="n">instr</span><span class="w">        </span><span class="c">! input line to scan for tab characters</span>
-<a id="ln-1417" name="ln-1417" href="#ln-1417"></a><span class="w">   </span><span class="kt">character</span><span class="p">(</span><span class="nb">len</span><span class="o">=</span><span class="p">:),</span><span class="w"> </span><span class="k">allocatable</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">outstr</span><span class="w">       </span><span class="c">! tab-expanded version of INSTR produced</span>
-<a id="ln-1418" name="ln-1418" href="#ln-1418"></a><span class="w">   </span><span class="kt">integer</span><span class="w">                       </span><span class="kd">::</span><span class="w"> </span><span class="n">i</span><span class="w"></span>
-<a id="ln-1419" name="ln-1419" href="#ln-1419"></a><span class="w">   </span><span class="kt">integer</span><span class="w">                       </span><span class="kd">::</span><span class="w"> </span><span class="n">icount</span><span class="w"></span>
-<a id="ln-1420" name="ln-1420" href="#ln-1420"></a><span class="w">   </span><span class="kt">integer</span><span class="w">                       </span><span class="kd">::</span><span class="w"> </span><span class="n">lgth</span><span class="w"></span>
-<a id="ln-1421" name="ln-1421" href="#ln-1421"></a><span class="w">   </span><span class="n">icount</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="w"></span>
-<a id="ln-1422" name="ln-1422" href="#ln-1422"></a><span class="w">   </span><span class="k">do </span><span class="n">i</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="nb">len</span><span class="p">(</span><span class="n">instr</span><span class="p">)</span><span class="w"></span>
-<a id="ln-1423" name="ln-1423" href="#ln-1423"></a><span class="w">      </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">instr</span><span class="p">(</span><span class="n">i</span><span class="p">:</span><span class="n">i</span><span class="p">)</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="nb">char</span><span class="p">(</span><span class="mi">9</span><span class="p">))</span><span class="w"> </span><span class="n">icount</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">icount</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="mi">1</span><span class="w"></span>
-<a id="ln-1424" name="ln-1424" href="#ln-1424"></a><span class="w">   </span><span class="k">end do</span>
-<a id="ln-1425" name="ln-1425" href="#ln-1425"></a><span class="k">   allocate</span><span class="w"> </span><span class="p">(</span><span class="kt">character</span><span class="p">(</span><span class="nb">len</span><span class="o">=</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">instr</span><span class="p">)</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="mi">8</span><span class="o">*</span><span class="n">icount</span><span class="p">))</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">outstr</span><span class="p">)</span><span class="w"></span>
-<a id="ln-1426" name="ln-1426" href="#ln-1426"></a><span class="w">   </span><span class="k">call </span><span class="n">notabs</span><span class="p">(</span><span class="n">instr</span><span class="p">,</span><span class="w"> </span><span class="n">outstr</span><span class="p">,</span><span class="w"> </span><span class="n">lgth</span><span class="p">)</span><span class="w"></span>
-<a id="ln-1427" name="ln-1427" href="#ln-1427"></a><span class="w">   </span><span class="n">outstr</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">outstr</span><span class="p">(:</span><span class="n">lgth</span><span class="p">)</span><span class="w"></span>
-<a id="ln-1428" name="ln-1428" href="#ln-1428"></a>
-<a id="ln-1429" name="ln-1429" href="#ln-1429"></a><span class="k">end function </span><span class="n">dilate</span><span class="w"></span>
+<a id="ln-1402" name="ln-1402" href="#ln-1402"></a><span class="c">!!     In addition, trailing carriage returns and line feeds are removed</span>
+<a id="ln-1403" name="ln-1403" href="#ln-1403"></a><span class="c">!!     (they are usually a problem created by going to and from MSWindows).</span>
+<a id="ln-1404" name="ln-1404" href="#ln-1404"></a><span class="c">!!</span>
+<a id="ln-1405" name="ln-1405" href="#ln-1405"></a><span class="c">!!##OPTIONS</span>
+<a id="ln-1406" name="ln-1406" href="#ln-1406"></a><span class="c">!!     instr     Input line to remove tabs from</span>
+<a id="ln-1407" name="ln-1407" href="#ln-1407"></a><span class="c">!!</span>
+<a id="ln-1408" name="ln-1408" href="#ln-1408"></a><span class="c">!!##RESULTS</span>
+<a id="ln-1409" name="ln-1409" href="#ln-1409"></a><span class="c">!!     outstr    Output string with tabs expanded.</span>
+<a id="ln-1410" name="ln-1410" href="#ln-1410"></a><span class="c">!!</span>
+<a id="ln-1411" name="ln-1411" href="#ln-1411"></a><span class="c">!!##EXAMPLES</span>
+<a id="ln-1412" name="ln-1412" href="#ln-1412"></a><span class="c">!!</span>
+<a id="ln-1413" name="ln-1413" href="#ln-1413"></a><span class="c">!!   Sample program:</span>
+<a id="ln-1414" name="ln-1414" href="#ln-1414"></a><span class="c">!!</span>
+<a id="ln-1415" name="ln-1415" href="#ln-1415"></a><span class="c">!!    program demo_dilate</span>
+<a id="ln-1416" name="ln-1416" href="#ln-1416"></a><span class="c">!!</span>
+<a id="ln-1417" name="ln-1417" href="#ln-1417"></a><span class="c">!!    use M_strings, only : dilate</span>
+<a id="ln-1418" name="ln-1418" href="#ln-1418"></a><span class="c">!!    implicit none</span>
+<a id="ln-1419" name="ln-1419" href="#ln-1419"></a><span class="c">!!    character(len=:),allocatable :: in</span>
+<a id="ln-1420" name="ln-1420" href="#ln-1420"></a><span class="c">!!    integer                      :: i</span>
+<a id="ln-1421" name="ln-1421" href="#ln-1421"></a><span class="c">!!       in=&#39;  this is my string  &#39;</span>
+<a id="ln-1422" name="ln-1422" href="#ln-1422"></a><span class="c">!!       ! change spaces to tabs to make a sample input</span>
+<a id="ln-1423" name="ln-1423" href="#ln-1423"></a><span class="c">!!       do i=1,len(in)</span>
+<a id="ln-1424" name="ln-1424" href="#ln-1424"></a><span class="c">!!          if(in(i:i) == &#39; &#39;)in(i:i)=char(9)</span>
+<a id="ln-1425" name="ln-1425" href="#ln-1425"></a><span class="c">!!       enddo</span>
+<a id="ln-1426" name="ln-1426" href="#ln-1426"></a><span class="c">!!       write(*,&#39;(a)&#39;)in,dilate(in)</span>
+<a id="ln-1427" name="ln-1427" href="#ln-1427"></a><span class="c">!!    end program demo_dilate</span>
+<a id="ln-1428" name="ln-1428" href="#ln-1428"></a><span class="c">!!</span>
+<a id="ln-1429" name="ln-1429" href="#ln-1429"></a><span class="k">function </span><span class="n">dilate</span><span class="p">(</span><span class="n">instr</span><span class="p">)</span><span class="w"> </span><span class="k">result</span><span class="p">(</span><span class="n">outstr</span><span class="p">)</span><span class="w"></span>
 <a id="ln-1430" name="ln-1430" href="#ln-1430"></a>
-<a id="ln-1431" name="ln-1431" href="#ln-1431"></a><span class="k">end module </span><span class="n">fpm_strings</span><span class="w"></span>
+<a id="ln-1431" name="ln-1431" href="#ln-1431"></a><span class="w">   </span><span class="kt">character</span><span class="p">(</span><span class="nb">len</span><span class="o">=*</span><span class="p">),</span><span class="w"> </span><span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">)</span><span class="w">  </span><span class="kd">::</span><span class="w"> </span><span class="n">instr</span><span class="w">        </span><span class="c">! input line to scan for tab characters</span>
+<a id="ln-1432" name="ln-1432" href="#ln-1432"></a><span class="w">   </span><span class="kt">character</span><span class="p">(</span><span class="nb">len</span><span class="o">=</span><span class="p">:),</span><span class="w"> </span><span class="k">allocatable</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">outstr</span><span class="w">       </span><span class="c">! tab-expanded version of INSTR produced</span>
+<a id="ln-1433" name="ln-1433" href="#ln-1433"></a><span class="w">   </span><span class="kt">integer</span><span class="w">                       </span><span class="kd">::</span><span class="w"> </span><span class="n">i</span><span class="w"></span>
+<a id="ln-1434" name="ln-1434" href="#ln-1434"></a><span class="w">   </span><span class="kt">integer</span><span class="w">                       </span><span class="kd">::</span><span class="w"> </span><span class="n">icount</span><span class="w"></span>
+<a id="ln-1435" name="ln-1435" href="#ln-1435"></a><span class="w">   </span><span class="kt">integer</span><span class="w">                       </span><span class="kd">::</span><span class="w"> </span><span class="n">lgth</span><span class="w"></span>
+<a id="ln-1436" name="ln-1436" href="#ln-1436"></a><span class="w">   </span><span class="n">icount</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="w"></span>
+<a id="ln-1437" name="ln-1437" href="#ln-1437"></a><span class="w">   </span><span class="k">do </span><span class="n">i</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="nb">len</span><span class="p">(</span><span class="n">instr</span><span class="p">)</span><span class="w"></span>
+<a id="ln-1438" name="ln-1438" href="#ln-1438"></a><span class="w">      </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">instr</span><span class="p">(</span><span class="n">i</span><span class="p">:</span><span class="n">i</span><span class="p">)</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="nb">char</span><span class="p">(</span><span class="mi">9</span><span class="p">))</span><span class="w"> </span><span class="n">icount</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">icount</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="mi">1</span><span class="w"></span>
+<a id="ln-1439" name="ln-1439" href="#ln-1439"></a><span class="w">   </span><span class="k">end do</span>
+<a id="ln-1440" name="ln-1440" href="#ln-1440"></a><span class="k">   allocate</span><span class="w"> </span><span class="p">(</span><span class="kt">character</span><span class="p">(</span><span class="nb">len</span><span class="o">=</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">instr</span><span class="p">)</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="mi">8</span><span class="o">*</span><span class="n">icount</span><span class="p">))</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">outstr</span><span class="p">)</span><span class="w"></span>
+<a id="ln-1441" name="ln-1441" href="#ln-1441"></a><span class="w">   </span><span class="k">call </span><span class="n">notabs</span><span class="p">(</span><span class="n">instr</span><span class="p">,</span><span class="w"> </span><span class="n">outstr</span><span class="p">,</span><span class="w"> </span><span class="n">lgth</span><span class="p">)</span><span class="w"></span>
+<a id="ln-1442" name="ln-1442" href="#ln-1442"></a><span class="w">   </span><span class="n">outstr</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">outstr</span><span class="p">(:</span><span class="n">lgth</span><span class="p">)</span><span class="w"></span>
+<a id="ln-1443" name="ln-1443" href="#ln-1443"></a>
+<a id="ln-1444" name="ln-1444" href="#ln-1444"></a><span class="k">end function </span><span class="n">dilate</span><span class="w"></span>
+<a id="ln-1445" name="ln-1445" href="#ln-1445"></a>
+<a id="ln-1446" name="ln-1446" href="#ln-1446"></a><span class="k">end module </span><span class="n">fpm_strings</span><span class="w"></span>
 </pre></div>
 
     </section>
@@ -1667,7 +1682,7 @@
             <p class="text-right">
               Documentation generated by
               <a href="https://github.com/Fortran-FOSS-Programmers/ford">FORD</a>
- on 2023-06-22 06:23              </p>
+ on 2023-06-27 16:11              </p>
           </div>
         </div>
         <br>

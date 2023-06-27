@@ -101,7 +101,7 @@
           <li id="statements"><i class="fa fa-list-ol"></i>
             <a data-toggle="tooltip"
                data-placement="bottom" data-html="true"
-               title=" 5.0% of total for procedures.">273 statements</a>
+               title=" 5.0% of total for procedures.">277 statements</a>
           </li>
 
             <li id="source-file">
@@ -299,7 +299,8 @@
 <span class="w">        </span><span class="n">run_args</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">&amp;</span><span class="w"></span>
 <span class="w">          </span><span class="s1">&#39; --target &quot; &quot;&#39;</span><span class="w"> </span><span class="o">//</span><span class="w"> </span><span class="p">&amp;</span><span class="w"></span>
 <span class="w">          </span><span class="s1">&#39; --list F&#39;</span><span class="w"> </span><span class="o">//</span><span class="w"> </span><span class="p">&amp;</span><span class="w"></span>
-<span class="w">          </span><span class="s1">&#39; --runner &quot; &quot;&#39;</span><span class="w"></span>
+<span class="w">          </span><span class="s1">&#39; --runner &quot; &quot;&#39;</span><span class="w"> </span><span class="o">//</span><span class="w"> </span><span class="p">&amp;</span><span class="w"></span>
+<span class="w">          </span><span class="s1">&#39; --runner-args &quot; &quot;&#39;</span><span class="w"></span>
 
 <span class="w">        </span><span class="n">compiler_args</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">&amp;</span><span class="w"></span>
 <span class="w">          </span><span class="s1">&#39; --profile &quot; &quot;&#39;</span><span class="w"> </span><span class="o">//</span><span class="w"> </span><span class="p">&amp;</span><span class="w"></span>
@@ -346,14 +347,20 @@
 <span class="w">            </span><span class="c">! to allow for a string that does not require shift-key and quoting</span>
 <span class="w">            </span><span class="k">do </span><span class="n">i</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span><span class="n">size</span><span class="p">(</span><span class="n">names</span><span class="p">)</span><span class="w"></span>
 <span class="w">               </span><span class="k">if</span><span class="p">(</span><span class="n">names</span><span class="p">(</span><span class="n">i</span><span class="p">)</span><span class="o">==</span><span class="s1">&#39;..&#39;</span><span class="p">)</span><span class="n">names</span><span class="p">(</span><span class="n">i</span><span class="p">)</span><span class="o">=</span><span class="s1">&#39;*&#39;</span><span class="w"></span>
-<span class="w">            </span><span class="k">enddo</span>
+<span class="w">            </span><span class="k">enddo</span><span class="w"></span>
 
-<span class="k">            </span><span class="n">c_compiler</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">sget</span><span class="p">(</span><span class="s1">&#39;c-compiler&#39;</span><span class="p">)</span><span class="w"></span>
+<span class="w">            </span><span class="c">! If there are additional command-line arguments, remove the additional</span>
+<span class="w">            </span><span class="c">! double quotes which have been added by M_CLI2</span>
+<span class="w">            </span><span class="n">val_runner_args</span><span class="o">=</span><span class="n">sget</span><span class="p">(</span><span class="s1">&#39;runner-args&#39;</span><span class="p">)</span><span class="w"></span>
+<span class="w">            </span><span class="k">call </span><span class="n">remove_characters_in_set</span><span class="p">(</span><span class="n">val_runner_args</span><span class="p">,</span><span class="n">set</span><span class="o">=</span><span class="s1">&#39;&quot;&#39;</span><span class="p">)</span><span class="w"></span>
+
+<span class="w">            </span><span class="n">c_compiler</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">sget</span><span class="p">(</span><span class="s1">&#39;c-compiler&#39;</span><span class="p">)</span><span class="w"></span>
 <span class="w">            </span><span class="n">cxx_compiler</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">sget</span><span class="p">(</span><span class="s1">&#39;cxx-compiler&#39;</span><span class="p">)</span><span class="w"></span>
 <span class="w">            </span><span class="n">archiver</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">sget</span><span class="p">(</span><span class="s1">&#39;archiver&#39;</span><span class="p">)</span><span class="w"></span>
 <span class="w">            </span><span class="k">allocate</span><span class="p">(</span><span class="n">fpm_run_settings</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">cmd_settings</span><span class="p">)</span><span class="w"></span>
 <span class="w">            </span><span class="n">val_runner</span><span class="o">=</span><span class="n">sget</span><span class="p">(</span><span class="s1">&#39;runner&#39;</span><span class="p">)</span><span class="w"></span>
 <span class="w">            </span><span class="k">if</span><span class="p">(</span><span class="n">specified</span><span class="p">(</span><span class="s1">&#39;runner&#39;</span><span class="p">)</span><span class="w"> </span><span class="p">.</span><span class="nb">and</span><span class="p">.</span><span class="w"> </span><span class="n">val_runner</span><span class="o">==</span><span class="s1">&#39;&#39;</span><span class="p">)</span><span class="n">val_runner</span><span class="o">=</span><span class="s1">&#39;echo&#39;</span><span class="w"></span>
+
 <span class="w">            </span><span class="n">cmd_settings</span><span class="o">=</span><span class="n">fpm_run_settings</span><span class="p">(&amp;</span><span class="w"></span>
 <span class="w">            </span><span class="p">&amp;</span><span class="w"> </span><span class="n">args</span><span class="o">=</span><span class="n">remaining</span><span class="p">,&amp;</span><span class="w"></span>
 <span class="w">            </span><span class="p">&amp;</span><span class="w"> </span><span class="n">profile</span><span class="o">=</span><span class="n">val_profile</span><span class="p">,&amp;</span><span class="w"></span>
@@ -371,6 +378,7 @@
 <span class="w">            </span><span class="p">&amp;</span><span class="w"> </span><span class="n">build_tests</span><span class="o">=</span><span class="p">.</span><span class="n">false</span><span class="p">.,&amp;</span><span class="w"></span>
 <span class="w">            </span><span class="p">&amp;</span><span class="w"> </span><span class="n">name</span><span class="o">=</span><span class="n">names</span><span class="p">,&amp;</span><span class="w"></span>
 <span class="w">            </span><span class="p">&amp;</span><span class="w"> </span><span class="n">runner</span><span class="o">=</span><span class="n">val_runner</span><span class="p">,&amp;</span><span class="w"></span>
+<span class="w">            </span><span class="p">&amp;</span><span class="w"> </span><span class="n">runner_args</span><span class="o">=</span><span class="n">val_runner_args</span><span class="p">,</span><span class="w"> </span><span class="p">&amp;</span><span class="w"></span>
 <span class="w">            </span><span class="p">&amp;</span><span class="w"> </span><span class="n">verbose</span><span class="o">=</span><span class="n">lget</span><span class="p">(</span><span class="s1">&#39;verbose&#39;</span><span class="p">)</span><span class="w"> </span><span class="p">)</span><span class="w"></span>
 
 <span class="w">        </span><span class="k">case</span><span class="p">(</span><span class="s1">&#39;build&#39;</span><span class="p">)</span><span class="w"></span>
@@ -594,14 +602,20 @@
 <span class="w">            </span><span class="c">! to allow for a string that does not require shift-key and quoting</span>
 <span class="w">            </span><span class="k">do </span><span class="n">i</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span><span class="n">size</span><span class="p">(</span><span class="n">names</span><span class="p">)</span><span class="w"></span>
 <span class="w">               </span><span class="k">if</span><span class="p">(</span><span class="n">names</span><span class="p">(</span><span class="n">i</span><span class="p">)</span><span class="o">==</span><span class="s1">&#39;..&#39;</span><span class="p">)</span><span class="n">names</span><span class="p">(</span><span class="n">i</span><span class="p">)</span><span class="o">=</span><span class="s1">&#39;*&#39;</span><span class="w"></span>
-<span class="w">            </span><span class="k">enddo</span>
+<span class="w">            </span><span class="k">enddo</span><span class="w"></span>
 
-<span class="k">            </span><span class="n">c_compiler</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">sget</span><span class="p">(</span><span class="s1">&#39;c-compiler&#39;</span><span class="p">)</span><span class="w"></span>
+<span class="w">            </span><span class="c">! If there are additional command-line arguments, remove the additional</span>
+<span class="w">            </span><span class="c">! double quotes which have been added by M_CLI2</span>
+<span class="w">            </span><span class="n">val_runner_args</span><span class="o">=</span><span class="n">sget</span><span class="p">(</span><span class="s1">&#39;runner-args&#39;</span><span class="p">)</span><span class="w"></span>
+<span class="w">            </span><span class="k">call </span><span class="n">remove_characters_in_set</span><span class="p">(</span><span class="n">val_runner_args</span><span class="p">,</span><span class="n">set</span><span class="o">=</span><span class="s1">&#39;&quot;&#39;</span><span class="p">)</span><span class="w"></span>
+
+<span class="w">            </span><span class="n">c_compiler</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">sget</span><span class="p">(</span><span class="s1">&#39;c-compiler&#39;</span><span class="p">)</span><span class="w"></span>
 <span class="w">            </span><span class="n">cxx_compiler</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">sget</span><span class="p">(</span><span class="s1">&#39;cxx-compiler&#39;</span><span class="p">)</span><span class="w"></span>
 <span class="w">            </span><span class="n">archiver</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">sget</span><span class="p">(</span><span class="s1">&#39;archiver&#39;</span><span class="p">)</span><span class="w"></span>
 <span class="w">            </span><span class="k">allocate</span><span class="p">(</span><span class="n">fpm_test_settings</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">cmd_settings</span><span class="p">)</span><span class="w"></span>
 <span class="w">            </span><span class="n">val_runner</span><span class="o">=</span><span class="n">sget</span><span class="p">(</span><span class="s1">&#39;runner&#39;</span><span class="p">)</span><span class="w"></span>
 <span class="w">            </span><span class="k">if</span><span class="p">(</span><span class="n">specified</span><span class="p">(</span><span class="s1">&#39;runner&#39;</span><span class="p">)</span><span class="w"> </span><span class="p">.</span><span class="nb">and</span><span class="p">.</span><span class="w"> </span><span class="n">val_runner</span><span class="o">==</span><span class="s1">&#39;&#39;</span><span class="p">)</span><span class="n">val_runner</span><span class="o">=</span><span class="s1">&#39;echo&#39;</span><span class="w"></span>
+
 <span class="w">            </span><span class="n">cmd_settings</span><span class="o">=</span><span class="n">fpm_test_settings</span><span class="p">(&amp;</span><span class="w"></span>
 <span class="w">            </span><span class="p">&amp;</span><span class="w"> </span><span class="n">args</span><span class="o">=</span><span class="n">remaining</span><span class="p">,</span><span class="w"> </span><span class="p">&amp;</span><span class="w"></span>
 <span class="w">            </span><span class="p">&amp;</span><span class="w"> </span><span class="n">profile</span><span class="o">=</span><span class="n">val_profile</span><span class="p">,</span><span class="w"> </span><span class="p">&amp;</span><span class="w"></span>
@@ -619,6 +633,7 @@
 <span class="w">            </span><span class="p">&amp;</span><span class="w"> </span><span class="n">build_tests</span><span class="o">=</span><span class="p">.</span><span class="n">true</span><span class="p">.,</span><span class="w"> </span><span class="p">&amp;</span><span class="w"></span>
 <span class="w">            </span><span class="p">&amp;</span><span class="w"> </span><span class="n">name</span><span class="o">=</span><span class="n">names</span><span class="p">,</span><span class="w"> </span><span class="p">&amp;</span><span class="w"></span>
 <span class="w">            </span><span class="p">&amp;</span><span class="w"> </span><span class="n">runner</span><span class="o">=</span><span class="n">val_runner</span><span class="p">,</span><span class="w"> </span><span class="p">&amp;</span><span class="w"></span>
+<span class="w">            </span><span class="p">&amp;</span><span class="w"> </span><span class="n">runner_args</span><span class="o">=</span><span class="n">val_runner_args</span><span class="p">,</span><span class="w"> </span><span class="p">&amp;</span><span class="w"></span>
 <span class="w">            </span><span class="p">&amp;</span><span class="w"> </span><span class="n">verbose</span><span class="o">=</span><span class="n">lget</span><span class="p">(</span><span class="s1">&#39;verbose&#39;</span><span class="p">))</span><span class="w"></span>
 
 <span class="w">        </span><span class="k">case</span><span class="p">(</span><span class="s1">&#39;update&#39;</span><span class="p">)</span><span class="w"></span>
@@ -768,7 +783,7 @@
             <p class="text-right">
               Documentation generated by
               <a href="https://github.com/Fortran-FOSS-Programmers/ford">FORD</a>
- on 2023-06-22 06:23              </p>
+ on 2023-06-27 16:11              </p>
           </div>
         </div>
         <br>

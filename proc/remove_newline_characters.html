@@ -101,7 +101,7 @@
           <li id="statements"><i class="fa fa-list-ol"></i>
             <a data-toggle="tooltip"
                data-placement="bottom" data-html="true"
-               title=" 0.4% of total for procedures.">22 statements</a>
+               title=" 0.1% of total for procedures.">7 statements</a>
           </li>
 
             <li id="source-file">
@@ -180,7 +180,7 @@
     <tbody>
         <tr>
             <td>
-              <span class="anchor" id="variable-string~9"></span>
+              <span class="anchor" id="variable-string~10"></span>
               type(<a href='../type/string_t.html'>string_t</a>),
             </td>
 <td>intent(inout)</td>
@@ -249,34 +249,7 @@
 <span class="w">    </span><span class="kt">character</span><span class="p">(</span><span class="o">*</span><span class="p">),</span><span class="w"> </span><span class="k">parameter</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">CRLF</span><span class="w">  </span><span class="o">=</span><span class="w"> </span><span class="nb">new_line</span><span class="p">(</span><span class="s1">&#39;a&#39;</span><span class="p">)</span><span class="o">//</span><span class="nb">achar</span><span class="p">(</span><span class="mi">13</span><span class="p">)</span><span class="w"></span>
 <span class="w">    </span><span class="kt">character</span><span class="p">(</span><span class="o">*</span><span class="p">),</span><span class="w"> </span><span class="k">parameter</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">SPACE</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">&#39; &#39;</span><span class="w"></span>
 
-<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(.</span><span class="nb">not</span><span class="p">.</span><span class="nb">allocated</span><span class="p">(</span><span class="n">string</span><span class="p">%</span><span class="n">s</span><span class="p">))</span><span class="w"> </span><span class="k">return</span>
-
-
-<span class="k">    </span><span class="n">length</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">len</span><span class="p">(</span><span class="n">string</span><span class="p">%</span><span class="n">s</span><span class="p">)</span><span class="w"></span>
-<span class="w">    </span><span class="n">feed</span><span class="w">   </span><span class="o">=</span><span class="w"> </span><span class="nb">scan</span><span class="p">(</span><span class="n">string</span><span class="p">%</span><span class="n">s</span><span class="p">,</span><span class="n">CRLF</span><span class="p">)</span><span class="w"></span>
-
-<span class="w">    </span><span class="k">do while</span><span class="w"> </span><span class="p">(</span><span class="n">length</span><span class="o">&gt;</span><span class="mi">0</span><span class="w"> </span><span class="p">.</span><span class="nb">and</span><span class="p">.</span><span class="w"> </span><span class="n">feed</span><span class="o">&gt;</span><span class="mi">0</span><span class="p">)</span><span class="w"></span>
-
-<span class="w">        </span><span class="c">! Remove heading</span>
-<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">length</span><span class="o">==</span><span class="mi">1</span><span class="p">)</span><span class="w"> </span><span class="k">then</span>
-<span class="k">            </span><span class="n">string</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">string_t</span><span class="p">(</span><span class="s2">&quot;&quot;</span><span class="p">)</span><span class="w"></span>
-
-<span class="w">        </span><span class="n">elseif</span><span class="w"> </span><span class="p">(</span><span class="n">feed</span><span class="o">==</span><span class="mi">1</span><span class="p">)</span><span class="w"> </span><span class="k">then</span>
-<span class="k">            </span><span class="n">string</span><span class="p">%</span><span class="n">s</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">string</span><span class="p">%</span><span class="n">s</span><span class="p">(</span><span class="mi">2</span><span class="p">:</span><span class="n">length</span><span class="p">)</span><span class="w"></span>
-
-<span class="w">        </span><span class="c">! Remove trailing</span>
-<span class="w">        </span><span class="n">elseif</span><span class="w"> </span><span class="p">(</span><span class="n">feed</span><span class="o">==</span><span class="n">length</span><span class="p">)</span><span class="w"> </span><span class="k">then</span>
-<span class="k">            </span><span class="n">string</span><span class="p">%</span><span class="n">s</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">string</span><span class="p">%</span><span class="n">s</span><span class="p">(</span><span class="mi">1</span><span class="p">:</span><span class="n">length</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span><span class="w"></span>
-
-<span class="w">        </span><span class="c">! In between: replace with space</span>
-<span class="w">        </span><span class="k">else</span>
-<span class="k">            </span><span class="n">string</span><span class="p">%</span><span class="n">s</span><span class="p">(</span><span class="n">feed</span><span class="p">:</span><span class="n">feed</span><span class="p">)</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">SPACE</span><span class="w"></span>
-<span class="w">        </span><span class="k">end if</span>
-
-<span class="k">        </span><span class="n">length</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">len</span><span class="p">(</span><span class="n">string</span><span class="p">%</span><span class="n">s</span><span class="p">)</span><span class="w"></span>
-<span class="w">        </span><span class="n">feed</span><span class="w">   </span><span class="o">=</span><span class="w"> </span><span class="nb">scan</span><span class="p">(</span><span class="n">string</span><span class="p">%</span><span class="n">s</span><span class="p">,</span><span class="n">CRLF</span><span class="p">)</span><span class="w"></span>
-
-<span class="w">    </span><span class="k">end do</span>
+<span class="w">    </span><span class="k">call </span><span class="n">remove_characters_in_set</span><span class="p">(</span><span class="n">string</span><span class="p">%</span><span class="n">s</span><span class="p">,</span><span class="n">set</span><span class="o">=</span><span class="n">CRLF</span><span class="p">,</span><span class="n">replace_with</span><span class="o">=</span><span class="n">SPACE</span><span class="p">)</span><span class="w"></span>
 
 <span class="k">end subroutine </span><span class="n">remove_newline_characters</span><span class="w"></span>
 </pre></div>
@@ -299,7 +272,7 @@
             <p class="text-right">
               Documentation generated by
               <a href="https://github.com/Fortran-FOSS-Programmers/ford">FORD</a>
- on 2023-06-22 06:23              </p>
+ on 2023-06-27 16:11              </p>
           </div>
         </div>
         <br>
