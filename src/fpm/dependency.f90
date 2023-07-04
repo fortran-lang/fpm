@@ -1223,16 +1223,18 @@ contains
       if (verbosity > 1) write (iunit, out_fmt) "PROJECT DIR has changed presence "
     end if
     if (allocated(cached%preprocess) .eqv. allocated(manifest%preprocess)) then
-      if (size(cached%preprocess) /= size(manifest%preprocess)) then
-        if (verbosity > 1) write (iunit, out_fmt) "PREPROCESS has changed size"
-        return
-      end if
-      do ip=1,size(cached%preprocess)
-         if (.not.(cached%preprocess(ip) == manifest%preprocess(ip))) then
-            if (verbosity > 1) write (iunit, out_fmt) "PREPROCESS config has changed"
+      if (allocated(cached%preprocess)) then
+          if (size(cached%preprocess) /= size(manifest%preprocess)) then
+            if (verbosity > 1) write (iunit, out_fmt) "PREPROCESS has changed size"
             return
-         end if
-      end do
+          end if
+          do ip=1,size(cached%preprocess)
+             if (.not.(cached%preprocess(ip) == manifest%preprocess(ip))) then
+                if (verbosity > 1) write (iunit, out_fmt) "PREPROCESS config has changed"
+                return
+             end if
+          end do
+      endif
     else
       if (verbosity > 1) write (iunit, out_fmt) "PREPROCESS has changed presence "
       return
