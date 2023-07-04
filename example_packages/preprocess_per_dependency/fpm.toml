@@ -1,0 +1,4 @@
+name = "preprocess_cpp_deps"
+
+[dependencies]
+utils = { path = "crate/utils" , preprocess.cpp="DEPENDENCY_MACRO" }
