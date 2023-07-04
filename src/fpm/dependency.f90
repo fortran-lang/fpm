@@ -63,6 +63,7 @@ module fpm_dependency
   use fpm_git, only: git_target_revision, git_target_default, git_revision, operator(==)
   use fpm_manifest, only: package_config_t, dependency_config_t, get_package_data
   use fpm_manifest_dependency, only: manifest_has_changed
+  use fpm_manifest_preprocess, only: operator(==)
   use fpm_strings, only: string_t, operator(.in.)
   use fpm_toml, only: toml_table, toml_key, toml_error, toml_serialize, &
                       get_value, set_value, add_table, toml_load, toml_stat
@@ -1227,13 +1228,14 @@ contains
         return
       end if
       do ip=1,size(cached%preprocess)
-         if (cached%preprocess(ip) /= manifest%preprocess(ip)) then
+         if (.not.(cached%preprocess(ip) == manifest%preprocess(ip))) then
             if (verbosity > 1) write (iunit, out_fmt) "PREPROCESS config has changed"
             return
          end if
       end do
     else
       if (verbosity > 1) write (iunit, out_fmt) "PREPROCESS has changed presence "
+      return
     end if
 
     !> All checks passed: the two dependencies have no differences

@@ -17,7 +17,7 @@ module fpm_manifest_preprocess
    implicit none
    private
 
-   public :: preprocess_config_t, new_preprocess_config, new_preprocessors
+   public :: preprocess_config_t, new_preprocess_config, new_preprocessors, operator(==)
 
    !> Configuration meta data for a preprocessor
    type :: preprocess_config_t
@@ -40,6 +40,10 @@ module fpm_manifest_preprocess
       procedure :: info
 
    end type preprocess_config_t
+
+   interface operator(==)
+       module procedure preprocess_is_same
+   end interface
 
 contains
 
@@ -154,7 +158,7 @@ contains
          pr = 1
       end if
 
-      if (pr < 1) return 
+      if (pr < 1) return
 
       write(unit, fmt) "Preprocessor"
       if (allocated(self%name)) then
@@ -180,5 +184,48 @@ contains
       end if
 
    end subroutine info
+
+   logical function preprocess_is_same(this,that)
+      class(preprocess_config_t), intent(in) :: this
+      class(preprocess_config_t), intent(in) :: that
+
+      integer :: istr
+
+      preprocess_is_same = .false.
+
+      select type (other=>that)
+         type is (preprocess_config_t)
+            if (allocated(this%name).neqv.allocated(other%name)) return
+            if (allocated(this%name)) then
+                if (.not.(this%name==other%name)) return
+            endif
+            if (.not.(allocated(this%suffixes).eqv.allocated(other%suffixes))) return
+            if (allocated(this%suffixes)) then
+               do istr=1,size(this%suffixes)
+                  if (.not.(this%suffixes(istr)%s==other%suffixes(istr)%s)) return
+               end do
+            end if
+            if (.not.(allocated(this%directories).eqv.allocated(other%directories))) return
+            if (allocated(this%directories)) then
+               do istr=1,size(this%directories)
+                  if (.not.(this%directories(istr)%s==other%directories(istr)%s)) return
+               end do
+            end if
+            if (.not.(allocated(this%macros).eqv.allocated(other%macros))) return
+            if (allocated(this%macros)) then
+               do istr=1,size(this%macros)
+                  if (.not.(this%macros(istr)%s==other%macros(istr)%s)) return
+               end do
+            end if
+
+         class default
+            ! Not the same type
+            return
+      end select
+
+      !> All checks passed!
+      preprocess_is_same = .true.
+
+    end function preprocess_is_same
 
 end module fpm_manifest_preprocess
