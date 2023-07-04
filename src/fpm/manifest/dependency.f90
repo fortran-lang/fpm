@@ -32,6 +32,8 @@ module fpm_manifest_dependency
     use fpm_manifest_metapackages, only: metapackage_config_t, is_meta_package, new_meta_config, &
             metapackage_request_t, new_meta_request
     use fpm_versioning, only: version_t, new_version
+    use fpm_strings, only: string_t
+    use fpm_manifest_preprocess
     implicit none
     private
 
@@ -54,6 +56,9 @@ module fpm_manifest_dependency
         !> The requested version of the dependency.
         !> The latest version is used if not specified.
         type(version_t), allocatable :: requested_version
+
+        !> Requested macros for the dependency
+        type(preprocess_config_t), allocatable :: preprocess(:)
 
         !> Git descriptor
         type(git_target_t), allocatable :: git
@@ -86,6 +91,8 @@ contains
         type(error_t), allocatable, intent(out) :: error
 
         character(len=:), allocatable :: uri, value, requested_version
+
+        type(toml_table), pointer :: child
 
         call check(table, error)
         if (allocated(error)) return
@@ -136,6 +143,13 @@ contains
             if (allocated(error)) return
         end if
 
+        !> Get optional preprocessor directives
+        call get_value(table, "preprocess", child, requested=.false.)
+        if (associated(child)) then
+            call new_preprocessors(self%preprocess, child, error)
+            if (allocated(error)) return
+        end if
+
     end subroutine new_dependency
 
     !> Check local schema for allowed entries
@@ -158,7 +172,8 @@ contains
               "git", &
               "tag", &
               "branch", &
-              "rev" &
+              "rev", &
+              "preprocess" &
             & ]
 
         call table%get_key(name)
@@ -170,6 +185,7 @@ contains
         end if
 
         call check_keys(table, valid_keys, error)
+        print *, 'check keys ',allocated(error)
         if (allocated(error)) return
 
         if (table%has_key("path") .and. table%has_key("git")) then
