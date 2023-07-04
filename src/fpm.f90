@@ -109,12 +109,31 @@ subroutine build_model(model, settings, package, error)
             end associate
             model%packages(i)%version = package%version%s()
 
+            !> Add this dependency's manifest macros
+            allocate(model%packages(i)%macros(0))
+
             if (allocated(dependency%preprocess)) then
                 do j = 1, size(dependency%preprocess)
                     if (dependency%preprocess(j)%name == "cpp") then
                         if (.not. has_cpp) has_cpp = .true.
                         if (allocated(dependency%preprocess(j)%macros)) then
-                            model%packages(i)%macros = dependency%preprocess(j)%macros
+                            model%packages(i)%macros = [model%packages(i)%macros, dependency%preprocess(j)%macros]
+                        end if
+                    else
+                        write(stderr, '(a)') 'Warning: Preprocessor ' // package%preprocess(i)%name // &
+                            ' is not supported; will ignore it'
+                    end if
+                end do
+            end if
+
+            !> Add this dependency's package-level macros
+            print *, 'dep preprocess? ',allocated(dep%preprocess),' nam,e=',dep%name
+            if (allocated(dep%preprocess)) then
+                do j = 1, size(dep%preprocess)
+                    if (dep%preprocess(j)%name == "cpp") then
+                        if (.not. has_cpp) has_cpp = .true.
+                        if (allocated(dep%preprocess(j)%macros)) then
+                            model%packages(i)%macros = [model%packages(i)%macros, dep%preprocess(j)%macros]
                         end if
                     else
                         write(stderr, '(a)') 'Warning: Preprocessor ' // package%preprocess(i)%name // &

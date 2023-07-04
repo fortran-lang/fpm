@@ -100,6 +100,22 @@ contains
         call table%get_key(self%name)
         call get_value(table, "namespace", self%namespace)
 
+        call get_value(table, "v", requested_version)
+        if (allocated(requested_version)) then
+            if (.not. allocated(self%requested_version)) allocate (self%requested_version)
+            call new_version(self%requested_version, requested_version, error)
+            if (allocated(error)) return
+        end if
+
+        !> Get optional preprocessor directives
+        call get_value(table, "preprocess", child, requested=.false.)
+        print *, 'has preprocess? ',associated(child)
+        if (associated(child)) then
+            call new_preprocessors(self%preprocess, child, error)
+            print *, 'size preprocess ',size(self%preprocess),' error? =',allocated(error)
+            if (allocated(error)) return
+        endif
+
         call get_value(table, "path", uri)
         if (allocated(uri)) then
             if (get_os_type() == OS_WINDOWS) uri = windows_path(uri)
@@ -135,21 +151,6 @@ contains
             return
         end if
 
-        call get_value(table, "v", requested_version)
-
-        if (allocated(requested_version)) then
-            if (.not. allocated(self%requested_version)) allocate (self%requested_version)
-            call new_version(self%requested_version, requested_version, error)
-            if (allocated(error)) return
-        end if
-
-        !> Get optional preprocessor directives
-        call get_value(table, "preprocess", child, requested=.false.)
-        if (associated(child)) then
-            call new_preprocessors(self%preprocess, child, error)
-            if (allocated(error)) return
-        end if
-
     end subroutine new_dependency
 
     !> Check local schema for allowed entries
@@ -163,6 +164,7 @@ contains
 
         character(len=:), allocatable :: name
         type(toml_key), allocatable :: list(:)
+        type(toml_table), pointer :: child
 
         !> List of valid keys for the dependency table.
         character(*), dimension(*), parameter :: valid_keys = [character(24) :: &
@@ -185,7 +187,6 @@ contains
         end if
 
         call check_keys(table, valid_keys, error)
-        print *, 'check keys ',allocated(error)
         if (allocated(error)) return
 
         if (table%has_key("path") .and. table%has_key("git")) then
@@ -216,6 +217,18 @@ contains
         if (table%has_key('v') .and. (table%has_key('path') .or. table%has_key('git'))) then
             call syntax_error(error, "Dependency '"//name//"' cannot have both v and git/path entries")
             return
+        end if
+
+        ! Check preprocess key
+        if (table%has_key('preprocess')) then
+
+            call get_value(table, 'preprocess', child)
+
+            if (.not.associated(child)) then
+                call syntax_error(error, "Dependency '"//name//"' has invalid 'preprocess' entry")
+                return
+            end if
+
         end if
 
     end subroutine check
@@ -279,6 +292,7 @@ contains
                 ! Parse as a standard dependency
                 is_meta(idep) = .false.
 
+                print *, 'new dependency ',all_deps(idep)%name
                 call new_dependency(all_deps(idep), node, root, error)
                 if (allocated(error)) return
 
