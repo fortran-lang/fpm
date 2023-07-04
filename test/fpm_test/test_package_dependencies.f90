@@ -334,7 +334,6 @@ contains
       return
     end if
 
-
     ! Test that dependency 3 is flagged as "not update"
     if (manifest_deps%dep(3)%update) then
       call test_failed(error, "Updated dependency (git rev) detected, should not be")

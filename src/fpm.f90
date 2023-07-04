@@ -127,7 +127,6 @@ subroutine build_model(model, settings, package, error)
             end if
 
             !> Add this dependency's package-level macros
-            print *, 'dep preprocess? ',allocated(dep%preprocess),' nam,e=',dep%name
             if (allocated(dep%preprocess)) then
                 do j = 1, size(dep%preprocess)
                     if (dep%preprocess(j)%name == "cpp") then

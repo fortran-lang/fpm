@@ -109,10 +109,8 @@ contains
 
         !> Get optional preprocessor directives
         call get_value(table, "preprocess", child, requested=.false.)
-        print *, 'has preprocess? ',associated(child)
         if (associated(child)) then
             call new_preprocessors(self%preprocess, child, error)
-            print *, 'size preprocess ',size(self%preprocess),' error? =',allocated(error)
             if (allocated(error)) return
         endif
 
@@ -292,7 +290,6 @@ contains
                 ! Parse as a standard dependency
                 is_meta(idep) = .false.
 
-                print *, 'new dependency ',all_deps(idep)%name
                 call new_dependency(all_deps(idep), node, root, error)
                 if (allocated(error)) return
 
