@@ -1,4 +1,4 @@
 name = "preprocess_cpp_deps"
 
 [dependencies]
-utils = { path = "crate/utils" , preprocess.cpp="DEPENDENCY_MACRO" }
+utils = { path = "crate/utils" , preprocess.cpp.macros=["DEPENDENCY_MACRO"] }
