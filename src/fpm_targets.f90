@@ -198,15 +198,14 @@ subroutine build_target_list(targets,model)
     character(:), allocatable :: exe_dir, compile_flags
     logical :: with_lib
 
+    ! Initialize targets
+    allocate(targets(0))
+
     ! Check for empty build (e.g. header-only lib)
     n_source = sum([(size(model%packages(j)%sources), &
                       j=1,size(model%packages))])
 
-    if (n_source < 1) then
-        allocate(targets(0))
-        return
-    end if
-
+    if (n_source < 1) return
 
     with_lib = any([((model%packages(j)%sources(i)%unit_scope == FPM_SCOPE_LIB, &
                       i=1,size(model%packages(j)%sources)), &
@@ -826,7 +825,7 @@ subroutine resolve_target_linking(targets, model)
             if (.not.allocated(target%compile_flags)) allocate(character(len=0) :: target%compile_flags)
 
             target%compile_flags = target%compile_flags//' '
-            
+
             select case (target%target_type)
                case (FPM_TARGET_C_OBJECT)
                    target%compile_flags = target%compile_flags//model%c_compile_flags
@@ -835,7 +834,7 @@ subroutine resolve_target_linking(targets, model)
                case default
                    target%compile_flags = target%compile_flags//model%fortran_compile_flags &
                                         & // get_feature_flags(model%compiler, target%features)
-            end select   
+            end select
 
             !> Get macros as flags.
             target%compile_flags = target%compile_flags // get_macros(model%compiler%id, &
