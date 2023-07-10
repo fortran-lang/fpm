@@ -150,6 +150,10 @@ pushd preprocess_cpp_deps
 "$fpm" build
 popd
 
+pushd preprocess_per_dependency
+"$fpm" run
+popd
+
 pushd preprocess_hello
 "$fpm" build
 popd

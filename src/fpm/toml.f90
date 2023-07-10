@@ -123,6 +123,7 @@ contains
         type(error_t), allocatable, intent(out) :: error
 
         type(toml_key), allocatable :: keys(:)
+        type(toml_table), pointer :: child
         character(:), allocatable :: name, value, valid_keys_string
         integer :: ikey, ivalid
 
@@ -143,12 +144,18 @@ contains
             end if
 
             ! Check if value can be mapped or else (wrong type) show error message with the error location.
-            ! Right now, it can only be mapped to a string, but this can be extended in the future.
+            ! Right now, it can only be mapped to a string or to a child node, but this can be extended in the future.
             call get_value(table, keys(ikey)%key, value)
             if (.not. allocated(value)) then
-                allocate (error)
-                error%message = "'"//name//"' has an invalid '"//keys(ikey)%key//"' entry."
-                return
+
+                ! If value is not a string, check if it is a child node
+                call get_value(table, keys(ikey)%key, child)
+
+                if (.not.associated(child)) then
+                    allocate (error)
+                    error%message = "'"//name//"' has an invalid '"//keys(ikey)%key//"' entry."
+                    return
+                endif
             end if
         end do
 
