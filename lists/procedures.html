@@ -103,7 +103,8 @@ Adds all sources (including modules) from each <code>executable%source_dir</code
 			   <tr><td><a href='../proc/add_target.html'>add_target</a></td><td><a href='../module/fpm_targets.html'>fpm_targets</a></td><td>Subroutine</td><td><p>Allocate a new target and append to target list</p></td></tr>
 			   <tr><td><a href='../proc/bad_name_error.html'>bad_name_error</a></td><td><a href='../module/fpm_error.html'>fpm_error</a></td><td>Function</td><td></td></tr>
 			   <tr><td><a href='../proc/basename.html'>basename</a></td><td><a href='../module/fpm_filesystem.html'>fpm_filesystem</a></td><td>Function</td><td><p>Extract filename from path with/without suffix</p></td></tr>
-			   <tr><td><a href='../proc/build_model.html'>build_model</a></td><td><a href='../module/fpm.html'>fpm</a></td><td>Subroutine</td><td><p>Constructs a valid fpm model from command line settings and the toml manifest.</p></td></tr>
+			   <tr><td><a href='../proc/build_model.html'>build_model</a></td><td><a href='../module/fpm.html'>fpm</a></td><td>Subroutine</td><td><p>Constructs a valid fpm model from command line settings and the toml manifest.
+Add this dependency&rsquo;s manifest macros</p><a href="../proc/build_model.html" class="pull-right"><emph>Read more&hellip;</emph></a></td></tr>
 			   <tr><td><a href='../proc/build_package.html'>build_package</a></td><td><a href='../module/fpm_backend.html'>fpm_backend</a></td><td>Subroutine</td><td><p>Top-level routine to build package described by <code>model</code></p></td></tr>
 			   <tr><td><a href='../interface/build_progress_t.html'>build_progress_t</a></td><td><a href='../module/fpm_backend_output.html'>fpm_backend_output</a></td><td>Interface</td><td><p>Constructor for build_progress_t</p></td></tr>
 			   <tr><td><a href='../proc/canon_path.html'>canon_path</a></td><td><a href='../module/fpm_filesystem.html'>fpm_filesystem</a></td><td>Function</td><td><p>Canonicalize path for comparison
@@ -266,7 +267,7 @@ Works with MinGW</p></td></tr>
 			   <tr><td><a href='../proc/new_build_config.html'>new_build_config</a></td><td><a href='../module/fpm_manifest_build.html'>fpm_manifest_build</a></td><td>Subroutine</td><td><p>Construct a new build configuration from a TOML data structure</p><a href="../proc/new_build_config.html" class="pull-right"><emph>Read more&hellip;</emph></a></td></tr>
 			   <tr><td><a href='../proc/new_compiler.html'>new_compiler</a></td><td><a href='../module/fpm_compiler.html'>fpm_compiler</a></td><td>Subroutine</td><td><p>Create new compiler instance</p></td></tr>
 			   <tr><td><a href='../proc/new_dependencies.html'>new_dependencies</a></td><td><a href='../module/fpm_manifest_dependency.html'>fpm_manifest_dependency</a></td><td>Subroutine</td><td><p>Construct new dependency array from a TOML data structure</p><a href="../proc/new_dependencies.html" class="pull-right"><emph>Read more&hellip;</emph></a></td></tr>
-			   <tr><td><a href='../proc/new_dependency.html'>new_dependency</a></td><td><a href='../module/fpm_manifest_dependency.html'>fpm_manifest_dependency</a></td><td>Subroutine</td><td><p>Construct a new dependency configuration from a TOML data structure</p></td></tr>
+			   <tr><td><a href='../proc/new_dependency.html'>new_dependency</a></td><td><a href='../module/fpm_manifest_dependency.html'>fpm_manifest_dependency</a></td><td>Subroutine</td><td><p>Construct a new dependency configuration from a TOML data structure</p><a href="../proc/new_dependency.html" class="pull-right"><emph>Read more&hellip;</emph></a></td></tr>
 			   <tr><td><a href='../proc/new_dependency_node.html'>new_dependency_node</a></td><td><a href='../module/fpm_dependency.html'>fpm_dependency</a></td><td>Subroutine</td><td><p>Create a new dependency node from a configuration</p></td></tr>
 			   <tr><td><a href='../proc/new_dependency_tree.html'>new_dependency_tree</a></td><td><a href='../module/fpm_dependency.html'>fpm_dependency</a></td><td>Subroutine</td><td><p>Create a new dependency tree</p></td></tr>
 			   <tr><td><a href='../proc/new_example.html'>new_example</a></td><td><a href='../module/fpm_manifest_example.html'>fpm_manifest_example</a></td><td>Subroutine</td><td><p>Construct a new example configuration from a TOML data structure</p></td></tr>
@@ -289,6 +290,7 @@ Works with MinGW</p></td></tr>
 			   <tr><td><a href='../proc/number_of_rows.html'>number_of_rows</a></td><td><a href='../module/fpm_filesystem.html'>fpm_filesystem</a></td><td>Function</td><td><p>Determine number or rows in a file given a LUN</p></td></tr>
 			   <tr><td><a href='../interface/operator%28.in.%29.html'>operator(.in.)</a></td><td><a href='../module/fpm_strings.html'>fpm_strings</a></td><td>Interface</td><td></td></tr>
 			   <tr><td><a href='../interface/operator%28%3D%3D%29.html'>operator(==)</a></td><td><a href='../module/fpm_git.html'>fpm_git</a></td><td>Interface</td><td></td></tr>
+			   <tr><td><a href='../interface/operator%28%3D%3D%29~2.html'>operator(==)</a></td><td><a href='../module/fpm_manifest_preprocess.html'>fpm_manifest_preprocess</a></td><td>Interface</td><td></td></tr>
 			   <tr><td><a href='../proc/os_delete_dir.html'>os_delete_dir</a></td><td><a href='../module/fpm_filesystem.html'>fpm_filesystem</a></td><td>Subroutine</td><td><p>Delete directory using system OS remove directory commands</p></td></tr>
 			   <tr><td><a href='../proc/os_is_unix.html'>os_is_unix</a></td><td><a href='../module/fpm_environment.html'>fpm_environment</a></td><td>Function</td><td><p>Compare the output of <a href="../proc/get_os_type.html">get_os_type</a> or the optional
 passed INTEGER value to the value for OS_WINDOWS
@@ -360,7 +362,7 @@ in case of errors.</p></td></tr>
             <p class="text-right">
               Documentation generated by
               <a href="https://github.com/Fortran-FOSS-Programmers/ford">FORD</a>
- on 2023-07-07 13:23              </p>
+ on 2023-07-10 06:33              </p>
           </div>
         </div>
         <br>

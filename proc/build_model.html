@@ -101,7 +101,7 @@
           <li id="statements"><i class="fa fa-list-ol"></i>
             <a data-toggle="tooltip"
                data-placement="bottom" data-html="true"
-               title=" 2.6% of total for procedures.">146 statements</a>
+               title=" 2.9% of total for procedures.">159 statements</a>
           </li>
 
             <li id="source-file">
@@ -165,7 +165,9 @@
 </h2>
     
 
-    <p>Constructs a valid fpm model from command line settings and the toml manifest.</p>
+    <p>Constructs a valid fpm model from command line settings and the toml manifest.
+Add this dependency&rsquo;s manifest macros</p>
+<p>Add this dependency&rsquo;s package-level macros</p>
 
 
     <h3>Arguments</h3>
@@ -361,12 +363,30 @@
 <span class="w">            </span><span class="k">end associate</span>
 <span class="k">            </span><span class="n">model</span><span class="p">%</span><span class="n">packages</span><span class="p">(</span><span class="n">i</span><span class="p">)%</span><span class="n">version</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">package</span><span class="p">%</span><span class="n">version</span><span class="p">%</span><span class="n">s</span><span class="p">()</span><span class="w"></span>
 
+<span class="w">            </span><span class="c">!&gt; Add this dependency&#39;s manifest macros</span>
+<span class="w">            </span><span class="k">allocate</span><span class="p">(</span><span class="n">model</span><span class="p">%</span><span class="n">packages</span><span class="p">(</span><span class="n">i</span><span class="p">)%</span><span class="n">macros</span><span class="p">(</span><span class="mi">0</span><span class="p">))</span><span class="w"></span>
+
 <span class="w">            </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="nb">allocated</span><span class="p">(</span><span class="n">dependency</span><span class="p">%</span><span class="n">preprocess</span><span class="p">))</span><span class="w"> </span><span class="k">then</span>
 <span class="k">                do </span><span class="n">j</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="n">size</span><span class="p">(</span><span class="n">dependency</span><span class="p">%</span><span class="n">preprocess</span><span class="p">)</span><span class="w"></span>
 <span class="w">                    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">dependency</span><span class="p">%</span><span class="n">preprocess</span><span class="p">(</span><span class="n">j</span><span class="p">)%</span><span class="n">name</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="s2">&quot;cpp&quot;</span><span class="p">)</span><span class="w"> </span><span class="k">then</span>
 <span class="k">                        if</span><span class="w"> </span><span class="p">(.</span><span class="nb">not</span><span class="p">.</span><span class="w"> </span><span class="n">has_cpp</span><span class="p">)</span><span class="w"> </span><span class="n">has_cpp</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">.</span><span class="n">true</span><span class="p">.</span><span class="w"></span>
 <span class="w">                        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="nb">allocated</span><span class="p">(</span><span class="n">dependency</span><span class="p">%</span><span class="n">preprocess</span><span class="p">(</span><span class="n">j</span><span class="p">)%</span><span class="n">macros</span><span class="p">))</span><span class="w"> </span><span class="k">then</span>
-<span class="k">                            </span><span class="n">model</span><span class="p">%</span><span class="n">packages</span><span class="p">(</span><span class="n">i</span><span class="p">)%</span><span class="n">macros</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">dependency</span><span class="p">%</span><span class="n">preprocess</span><span class="p">(</span><span class="n">j</span><span class="p">)%</span><span class="n">macros</span><span class="w"></span>
+<span class="k">                            </span><span class="n">model</span><span class="p">%</span><span class="n">packages</span><span class="p">(</span><span class="n">i</span><span class="p">)%</span><span class="n">macros</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">[</span><span class="n">model</span><span class="p">%</span><span class="n">packages</span><span class="p">(</span><span class="n">i</span><span class="p">)%</span><span class="n">macros</span><span class="p">,</span><span class="w"> </span><span class="n">dependency</span><span class="p">%</span><span class="n">preprocess</span><span class="p">(</span><span class="n">j</span><span class="p">)%</span><span class="n">macros</span><span class="p">]</span><span class="w"></span>
+<span class="w">                        </span><span class="k">end if</span>
+<span class="k">                    else</span>
+<span class="k">                        write</span><span class="p">(</span><span class="n">stderr</span><span class="p">,</span><span class="w"> </span><span class="s1">&#39;(a)&#39;</span><span class="p">)</span><span class="w"> </span><span class="s1">&#39;Warning: Preprocessor &#39;</span><span class="w"> </span><span class="o">//</span><span class="w"> </span><span class="n">package</span><span class="p">%</span><span class="n">preprocess</span><span class="p">(</span><span class="n">i</span><span class="p">)%</span><span class="n">name</span><span class="w"> </span><span class="o">//</span><span class="w"> </span><span class="p">&amp;</span><span class="w"></span>
+<span class="w">                            </span><span class="s1">&#39; is not supported; will ignore it&#39;</span><span class="w"></span>
+<span class="w">                    </span><span class="k">end if</span>
+<span class="k">                end do</span>
+<span class="k">            end if</span><span class="w"></span>
+
+<span class="w">            </span><span class="c">!&gt; Add this dependency&#39;s package-level macros</span>
+<span class="w">            </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="nb">allocated</span><span class="p">(</span><span class="n">dep</span><span class="p">%</span><span class="n">preprocess</span><span class="p">))</span><span class="w"> </span><span class="k">then</span>
+<span class="k">                do </span><span class="n">j</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="n">size</span><span class="p">(</span><span class="n">dep</span><span class="p">%</span><span class="n">preprocess</span><span class="p">)</span><span class="w"></span>
+<span class="w">                    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">dep</span><span class="p">%</span><span class="n">preprocess</span><span class="p">(</span><span class="n">j</span><span class="p">)%</span><span class="n">name</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="s2">&quot;cpp&quot;</span><span class="p">)</span><span class="w"> </span><span class="k">then</span>
+<span class="k">                        if</span><span class="w"> </span><span class="p">(.</span><span class="nb">not</span><span class="p">.</span><span class="w"> </span><span class="n">has_cpp</span><span class="p">)</span><span class="w"> </span><span class="n">has_cpp</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">.</span><span class="n">true</span><span class="p">.</span><span class="w"></span>
+<span class="w">                        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="nb">allocated</span><span class="p">(</span><span class="n">dep</span><span class="p">%</span><span class="n">preprocess</span><span class="p">(</span><span class="n">j</span><span class="p">)%</span><span class="n">macros</span><span class="p">))</span><span class="w"> </span><span class="k">then</span>
+<span class="k">                            </span><span class="n">model</span><span class="p">%</span><span class="n">packages</span><span class="p">(</span><span class="n">i</span><span class="p">)%</span><span class="n">macros</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">[</span><span class="n">model</span><span class="p">%</span><span class="n">packages</span><span class="p">(</span><span class="n">i</span><span class="p">)%</span><span class="n">macros</span><span class="p">,</span><span class="w"> </span><span class="n">dep</span><span class="p">%</span><span class="n">preprocess</span><span class="p">(</span><span class="n">j</span><span class="p">)%</span><span class="n">macros</span><span class="p">]</span><span class="w"></span>
 <span class="w">                        </span><span class="k">end if</span>
 <span class="k">                    else</span>
 <span class="k">                        write</span><span class="p">(</span><span class="n">stderr</span><span class="p">,</span><span class="w"> </span><span class="s1">&#39;(a)&#39;</span><span class="p">)</span><span class="w"> </span><span class="s1">&#39;Warning: Preprocessor &#39;</span><span class="w"> </span><span class="o">//</span><span class="w"> </span><span class="n">package</span><span class="p">%</span><span class="n">preprocess</span><span class="p">(</span><span class="n">i</span><span class="p">)%</span><span class="n">name</span><span class="w"> </span><span class="o">//</span><span class="w"> </span><span class="p">&amp;</span><span class="w"></span>
@@ -520,7 +540,7 @@
             <p class="text-right">
               Documentation generated by
               <a href="https://github.com/Fortran-FOSS-Programmers/ford">FORD</a>
- on 2023-07-07 13:23              </p>
+ on 2023-07-10 06:33              </p>
           </div>
         </div>
         <br>

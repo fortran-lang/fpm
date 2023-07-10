@@ -101,7 +101,7 @@
           <li id="statements"><i class="fa fa-list-ol"></i>
             <a data-toggle="tooltip"
                data-placement="bottom" data-html="true"
-               title=" 0.9% of total for procedures.">47 statements</a>
+               title=" 1.0% of total for procedures.">53 statements</a>
           </li>
 
             <li id="source-file">
@@ -166,6 +166,7 @@
     
 
     <p>Construct a new dependency configuration from a TOML data structure</p>
+<p>Get optional preprocessor directives</p>
 
 
     <h3>Arguments</h3>
@@ -303,13 +304,29 @@
 
 <span class="w">        </span><span class="kt">character</span><span class="p">(</span><span class="nb">len</span><span class="o">=</span><span class="p">:),</span><span class="w"> </span><span class="k">allocatable</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">uri</span><span class="p">,</span><span class="w"> </span><span class="k">value</span><span class="p">,</span><span class="w"> </span><span class="n">requested_version</span><span class="w"></span>
 
+<span class="w">        </span><span class="k">type</span><span class="p">(</span><span class="n">toml_table</span><span class="p">),</span><span class="w"> </span><span class="k">pointer</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">child</span><span class="w"></span>
+
 <span class="w">        </span><span class="k">call </span><span class="n">check</span><span class="p">(</span><span class="n">table</span><span class="p">,</span><span class="w"> </span><span class="n">error</span><span class="p">)</span><span class="w"></span>
 <span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="nb">allocated</span><span class="p">(</span><span class="n">error</span><span class="p">))</span><span class="w"> </span><span class="k">return</span>
 
 <span class="k">        call </span><span class="n">table</span><span class="p">%</span><span class="n">get_key</span><span class="p">(</span><span class="n">self</span><span class="p">%</span><span class="n">name</span><span class="p">)</span><span class="w"></span>
 <span class="w">        </span><span class="k">call </span><span class="n">get_value</span><span class="p">(</span><span class="n">table</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;namespace&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">self</span><span class="p">%</span><span class="n">namespace</span><span class="p">)</span><span class="w"></span>
 
-<span class="w">        </span><span class="k">call </span><span class="n">get_value</span><span class="p">(</span><span class="n">table</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;path&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">uri</span><span class="p">)</span><span class="w"></span>
+<span class="w">        </span><span class="k">call </span><span class="n">get_value</span><span class="p">(</span><span class="n">table</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;v&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">requested_version</span><span class="p">)</span><span class="w"></span>
+<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="nb">allocated</span><span class="p">(</span><span class="n">requested_version</span><span class="p">))</span><span class="w"> </span><span class="k">then</span>
+<span class="k">            if</span><span class="w"> </span><span class="p">(.</span><span class="nb">not</span><span class="p">.</span><span class="w"> </span><span class="nb">allocated</span><span class="p">(</span><span class="n">self</span><span class="p">%</span><span class="n">requested_version</span><span class="p">))</span><span class="w"> </span><span class="k">allocate</span><span class="w"> </span><span class="p">(</span><span class="n">self</span><span class="p">%</span><span class="n">requested_version</span><span class="p">)</span><span class="w"></span>
+<span class="w">            </span><span class="k">call </span><span class="n">new_version</span><span class="p">(</span><span class="n">self</span><span class="p">%</span><span class="n">requested_version</span><span class="p">,</span><span class="w"> </span><span class="n">requested_version</span><span class="p">,</span><span class="w"> </span><span class="n">error</span><span class="p">)</span><span class="w"></span>
+<span class="w">            </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="nb">allocated</span><span class="p">(</span><span class="n">error</span><span class="p">))</span><span class="w"> </span><span class="k">return</span>
+<span class="k">        end if</span><span class="w"></span>
+
+<span class="w">        </span><span class="c">!&gt; Get optional preprocessor directives</span>
+<span class="w">        </span><span class="k">call </span><span class="n">get_value</span><span class="p">(</span><span class="n">table</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;preprocess&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">child</span><span class="p">,</span><span class="w"> </span><span class="n">requested</span><span class="o">=</span><span class="p">.</span><span class="n">false</span><span class="p">.)</span><span class="w"></span>
+<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="nb">associated</span><span class="p">(</span><span class="n">child</span><span class="p">))</span><span class="w"> </span><span class="k">then</span>
+<span class="k">            call </span><span class="n">new_preprocessors</span><span class="p">(</span><span class="n">self</span><span class="p">%</span><span class="n">preprocess</span><span class="p">,</span><span class="w"> </span><span class="n">child</span><span class="p">,</span><span class="w"> </span><span class="n">error</span><span class="p">)</span><span class="w"></span>
+<span class="w">            </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="nb">allocated</span><span class="p">(</span><span class="n">error</span><span class="p">))</span><span class="w"> </span><span class="k">return</span>
+<span class="k">        endif</span>
+
+<span class="k">        call </span><span class="n">get_value</span><span class="p">(</span><span class="n">table</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;path&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">uri</span><span class="p">)</span><span class="w"></span>
 <span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="nb">allocated</span><span class="p">(</span><span class="n">uri</span><span class="p">))</span><span class="w"> </span><span class="k">then</span>
 <span class="k">            if</span><span class="w"> </span><span class="p">(</span><span class="n">get_os_type</span><span class="p">()</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="n">OS_WINDOWS</span><span class="p">)</span><span class="w"> </span><span class="n">uri</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">windows_path</span><span class="p">(</span><span class="n">uri</span><span class="p">)</span><span class="w"></span>
 <span class="w">            </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="nb">present</span><span class="p">(</span><span class="n">root</span><span class="p">))</span><span class="w"> </span><span class="n">uri</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">join_path</span><span class="p">(</span><span class="n">root</span><span class="p">,</span><span class="n">uri</span><span class="p">)</span><span class="w">  </span><span class="c">! Relative to the fpm.toml it’s written in</span>
@@ -344,14 +361,6 @@
 <span class="k">            return</span>
 <span class="k">        end if</span>
 
-<span class="k">        call </span><span class="n">get_value</span><span class="p">(</span><span class="n">table</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;v&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">requested_version</span><span class="p">)</span><span class="w"></span>
-
-<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="nb">allocated</span><span class="p">(</span><span class="n">requested_version</span><span class="p">))</span><span class="w"> </span><span class="k">then</span>
-<span class="k">            if</span><span class="w"> </span><span class="p">(.</span><span class="nb">not</span><span class="p">.</span><span class="w"> </span><span class="nb">allocated</span><span class="p">(</span><span class="n">self</span><span class="p">%</span><span class="n">requested_version</span><span class="p">))</span><span class="w"> </span><span class="k">allocate</span><span class="w"> </span><span class="p">(</span><span class="n">self</span><span class="p">%</span><span class="n">requested_version</span><span class="p">)</span><span class="w"></span>
-<span class="w">            </span><span class="k">call </span><span class="n">new_version</span><span class="p">(</span><span class="n">self</span><span class="p">%</span><span class="n">requested_version</span><span class="p">,</span><span class="w"> </span><span class="n">requested_version</span><span class="p">,</span><span class="w"> </span><span class="n">error</span><span class="p">)</span><span class="w"></span>
-<span class="w">            </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="nb">allocated</span><span class="p">(</span><span class="n">error</span><span class="p">))</span><span class="w"> </span><span class="k">return</span>
-<span class="k">        end if</span>
-
 <span class="k">    end subroutine </span><span class="n">new_dependency</span><span class="w"></span>
 </pre></div>
 
@@ -373,7 +382,7 @@
             <p class="text-right">
               Documentation generated by
               <a href="https://github.com/Fortran-FOSS-Programmers/ford">FORD</a>
- on 2023-07-07 13:23              </p>
+ on 2023-07-10 06:33              </p>
           </div>
         </div>
         <br>
