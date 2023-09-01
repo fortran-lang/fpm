@@ -52,6 +52,7 @@ module fpm_filesystem
 #endif
 
     integer, parameter :: max_line = 100000  !! maximum number of lines in a text file
+    integer :: idx(max_line) = 1  !! indexes for read_lines
 
 contains
 
@@ -312,7 +313,6 @@ function read_lines_expanded(fh) result(lines)
     integer :: i
     integer :: length, count
     character(len=:), allocatable :: content
-    integer, save :: idx(max_line) = 1
 
     inquire (fh, size=length)
     allocate (character(len=length) :: content)
@@ -343,7 +343,6 @@ function read_lines(fh) result(lines)
     integer :: i
     integer :: length, count
     character(len=:), allocatable :: content
-    integer, save :: idx(max_line) = 1
 
     inquire (fh, size=length)
     allocate (character(len=length) :: content)
