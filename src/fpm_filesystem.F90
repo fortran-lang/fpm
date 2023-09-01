@@ -678,7 +678,7 @@ subroutine getline(unit, line, iostat, iomsg)
     !> Error message
     character(len=:), allocatable, optional :: iomsg
 
-    integer, parameter :: BUFFER_SIZE = 32768
+    integer, parameter :: BUFFER_SIZE = 1024
     character(len=BUFFER_SIZE)       :: buffer
     character(len=256)               :: msg
     integer :: size
