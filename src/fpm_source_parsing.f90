@@ -82,7 +82,7 @@ function parse_f_source(f_filename,error) result(f_source)
 
     f_source%file_name = f_filename
 
-    open(newunit=fh,file=f_filename,status='old',access="stream",form="unformatted")
+    open(newunit=fh,file=f_filename,status='old',access='stream',form='unformatted')
     file_lines = read_lines_expanded(fh)
     close(fh)
 
@@ -427,7 +427,7 @@ function parse_c_source(c_filename,error) result(c_source)
     allocate(c_source%modules_provided(0))
     allocate(c_source%parent_modules(0))
 
-    open(newunit=fh,file=c_filename,status='old',access="stream",form="unformatted")
+    open(newunit=fh,file=c_filename,status='old',access='stream',form='unformatted')
     file_lines = read_lines(fh)
     close(fh)
 

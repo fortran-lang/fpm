@@ -513,7 +513,7 @@ recursive subroutine list_files(dir, files, recurse)
         call fpm_stop(2,'*list_files*:directory listing failed')
     end if
 
-    open (newunit=fh, file=temp_file, status='old')
+    open (newunit=fh, file=temp_file, status='old',access='stream',form='unformatted')
     files = read_lines(fh)
     close(fh,status="delete")
 
