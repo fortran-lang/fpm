@@ -2,6 +2,7 @@
 !!
 module fpm_filesystem
     use,intrinsic :: iso_fortran_env, only : stdin=>input_unit, stdout=>output_unit, stderr=>error_unit
+    use,intrinsic :: iso_c_binding, only: c_new_line
     use fpm_environment, only: get_os_type, &
                                OS_UNKNOWN, OS_LINUX, OS_MACOS, OS_WINDOWS, &
                                OS_CYGWIN, OS_SOLARIS, OS_FREEBSD, OS_OPENBSD
@@ -49,6 +50,8 @@ module fpm_filesystem
         end function c_is_dir
     end interface
 #endif
+
+    integer, parameter :: max_line = 100000  !! maximum number of lines in a text file
 
 contains
 
@@ -307,13 +310,27 @@ function read_lines_expanded(fh) result(lines)
     type(string_t), allocatable :: lines(:)
 
     integer :: i
-    integer :: iostat
-    character(len=:),allocatable :: line_buffer_read
+    integer :: length, count
+    character(len=:), allocatable :: content
+    integer, save :: idx(max_line) = 1
 
-    allocate(lines(number_of_rows(fh)))
-    do i = 1, size(lines)
-        call getline(fh, line_buffer_read, iostat)
-        lines(i)%s = dilate(line_buffer_read)
+    inquire (fh, size=length)
+    allocate (character(len=length) :: content)
+
+    ! read file into a single string
+    read (fh) content
+    count = 0
+    do i = 1, length
+        if (content(i:i) == c_new_line) then
+            count = count + 1
+            idx(count + 1) = i + 1
+        end if
+    end do
+
+    ! allocate lines from file content string
+    allocate (lines(count))
+    do i = 1, count
+        allocate(lines(i)%s, source=dilate(content(idx(i):idx(i + 1) - 1)))
     end do
 
 end function read_lines_expanded
@@ -324,11 +341,27 @@ function read_lines(fh) result(lines)
     type(string_t), allocatable :: lines(:)
 
     integer :: i
-    integer :: iostat
+    integer :: length, count
+    character(len=:), allocatable :: content
+    integer, save :: idx(max_line) = 1
 
-    allocate(lines(number_of_rows(fh)))
-    do i = 1, size(lines)
-        call getline(fh, lines(i)%s, iostat)
+    inquire (fh, size=length)
+    allocate (character(len=length) :: content)
+
+    ! read file into a single string
+    read (fh) content
+    count = 0
+    do i = 1, length
+        if (content(i:i) == c_new_line) then
+            count = count + 1
+            idx(count + 1) = i + 1
+        end if
+    end do
+
+    ! allocate lines from file content string
+    allocate (lines(count))
+    do i = 1, count
+        allocate(lines(i)%s, source=content(idx(i):idx(i + 1) - 1))
     end do
 
 end function read_lines
