@@ -1269,7 +1269,7 @@ subroutine remove_newline_characters(string)
 
     integer :: feed,length
 
-    character(*), parameter :: CRLF  = new_line('a')//achar(13)
+    character(*), parameter :: CRLF  = achar(13)//new_line('a')
     character(*), parameter :: SPACE = ' '
 
     call remove_characters_in_set(string%s,set=CRLF,replace_with=SPACE)
