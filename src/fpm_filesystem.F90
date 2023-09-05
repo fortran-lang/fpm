@@ -7,7 +7,7 @@ module fpm_filesystem
                                OS_UNKNOWN, OS_LINUX, OS_MACOS, OS_WINDOWS, &
                                OS_CYGWIN, OS_SOLARIS, OS_FREEBSD, OS_OPENBSD
     use fpm_environment, only: separator, get_env, os_is_unix
-    use fpm_strings, only: f_string, replace, string_t, split, dilate, str_begins_with_str
+    use fpm_strings, only: f_string, replace, string_t, split, split_first_last, dilate, str_begins_with_str
     use iso_c_binding, only: c_char, c_ptr, c_int, c_null_char, c_associated, c_f_pointer
     use fpm_error, only : fpm_stop, error_t, fatal_error
     implicit none
@@ -50,9 +50,6 @@ module fpm_filesystem
         end function c_is_dir
     end interface
 #endif
-
-    integer, parameter :: max_line = 100000  !! maximum number of lines in a text file
-    integer :: idx(max_line) = 1  !! indexes for read_lines
 
 contains
 
@@ -310,27 +307,25 @@ function read_lines_expanded(fh) result(lines)
     integer, intent(in) :: fh
     type(string_t), allocatable :: lines(:)
 
-    integer :: i
-    integer :: length, count
+    integer :: i, length
     character(len=:), allocatable :: content
+    integer, allocatable :: first(:), last(:)
 
     inquire (fh, size=length)
     allocate (character(len=length) :: content)
+    if (length == 0) then
+        allocate (lines(0))
+        return
+    end if
 
     ! read file into a single string
     read (fh) content
-    count = 0
-    do i = 1, length
-        if (content(i:i) == c_new_line) then
-            count = count + 1
-            idx(count + 1) = i + 1
-        end if
-    end do
+    call split_first_last(content, c_new_line, first, last)  ! TODO: \r (< macOS X), \n (>=macOS X/Linux/Unix), \r\n (Windows)
 
     ! allocate lines from file content string
-    allocate (lines(count))
-    do i = 1, count
-        allocate(lines(i)%s, source=dilate(content(idx(i):idx(i + 1) - 1)))
+    allocate (lines(size(first)))
+    do i = 1, size(first)
+        allocate(lines(i)%s, source=dilate(content(first(i):last(i))))
     end do
 
 end function read_lines_expanded
@@ -340,27 +335,25 @@ function read_lines(fh) result(lines)
     integer, intent(in) :: fh
     type(string_t), allocatable :: lines(:)
 
-    integer :: i
-    integer :: length, count
+    integer :: i, length
     character(len=:), allocatable :: content
+    integer, allocatable :: first(:), last(:)
 
     inquire (fh, size=length)
     allocate (character(len=length) :: content)
+    if (length == 0) then
+        allocate (lines(0))
+        return
+    end if
 
     ! read file into a single string
     read (fh) content
-    count = 0
-    do i = 1, length
-        if (content(i:i) == c_new_line) then
-            count = count + 1
-            idx(count + 1) = i + 1
-        end if
-    end do
+    call split_first_last(content, c_new_line, first, last)  ! TODO: \r (< macOS X), \n (>=macOS X/Linux/Unix), \r\n (Windows)
 
     ! allocate lines from file content string
-    allocate (lines(count))
-    do i = 1, count
-        allocate(lines(i)%s, source=content(idx(i):idx(i + 1) - 1))
+    allocate (lines(size(first)))
+    do i = 1, size(first)
+        allocate(lines(i)%s, source=content(first(i):last(i)))
     end do
 
 end function read_lines
