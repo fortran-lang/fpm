@@ -173,6 +173,7 @@ character(*), parameter :: &
     flag_intel_warn = " -warn all", &
     flag_intel_check = " -check all", &
     flag_intel_debug = " -O0 -g", &
+    flag_intel_opt = " -Ofast", &
     flag_intel_fp = " -fp-model precise -pc64", &
     flag_intel_align = " -align all", &
     flag_intel_limit = " -error-limit 1", &
@@ -189,6 +190,7 @@ character(*), parameter :: &
     flag_intel_warn_win = " /warn:all", &
     flag_intel_check_win = " /check:all", &
     flag_intel_debug_win = " /Od /Z7", &
+    flag_intel_opt_win = " /Ofast", &
     flag_intel_fp_win = " /fp:precise", &
     flag_intel_align_win = " /align:all", &
     flag_intel_limit_win = " /error-limit:1", &
@@ -280,6 +282,7 @@ subroutine get_release_compile_flags(id, flags)
 
     case(id_intel_classic_nix)
         flags = &
+            flag_intel_opt//&
             flag_intel_fp//&
             flag_intel_align//&
             flag_intel_limit//&
@@ -290,6 +293,7 @@ subroutine get_release_compile_flags(id, flags)
 
     case(id_intel_classic_mac)
         flags = &
+            flag_intel_opt//&
             flag_intel_fp//&
             flag_intel_align//&
             flag_intel_limit//&
@@ -300,7 +304,8 @@ subroutine get_release_compile_flags(id, flags)
 
     case(id_intel_classic_windows)
         flags = &
-            & flag_intel_fp_win//&
+            flag_intel_opt_win//&
+            flag_intel_fp_win//&
             flag_intel_align_win//&
             flag_intel_limit_win//&
             flag_intel_pthread_win//&
