@@ -315,6 +315,7 @@ subroutine get_release_compile_flags(id, flags)
 
     case(id_intel_llvm_nix)
         flags = &
+            flag_intel_opt//&
             flag_intel_fp//&
             flag_intel_align//&
             flag_intel_limit//&
@@ -325,6 +326,7 @@ subroutine get_release_compile_flags(id, flags)
 
     case(id_intel_llvm_windows)
         flags = &
+            flag_intel_opt_win//&
             flag_intel_fp_win//&
             flag_intel_align_win//&
             flag_intel_limit_win//&
