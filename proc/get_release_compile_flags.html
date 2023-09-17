@@ -295,6 +295,7 @@
 
 <span class="w">    </span><span class="k">case</span><span class="p">(</span><span class="n">id_intel_classic_nix</span><span class="p">)</span><span class="w"></span>
 <span class="w">        </span><span class="n">flags</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">&amp;</span><span class="w"></span>
+<span class="w">            </span><span class="n">flag_intel_opt</span><span class="o">//</span><span class="p">&amp;</span><span class="w"></span>
 <span class="w">            </span><span class="n">flag_intel_fp</span><span class="o">//</span><span class="p">&amp;</span><span class="w"></span>
 <span class="w">            </span><span class="n">flag_intel_align</span><span class="o">//</span><span class="p">&amp;</span><span class="w"></span>
 <span class="w">            </span><span class="n">flag_intel_limit</span><span class="o">//</span><span class="p">&amp;</span><span class="w"></span>
@@ -305,6 +306,7 @@
 
 <span class="w">    </span><span class="k">case</span><span class="p">(</span><span class="n">id_intel_classic_mac</span><span class="p">)</span><span class="w"></span>
 <span class="w">        </span><span class="n">flags</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">&amp;</span><span class="w"></span>
+<span class="w">            </span><span class="n">flag_intel_opt</span><span class="o">//</span><span class="p">&amp;</span><span class="w"></span>
 <span class="w">            </span><span class="n">flag_intel_fp</span><span class="o">//</span><span class="p">&amp;</span><span class="w"></span>
 <span class="w">            </span><span class="n">flag_intel_align</span><span class="o">//</span><span class="p">&amp;</span><span class="w"></span>
 <span class="w">            </span><span class="n">flag_intel_limit</span><span class="o">//</span><span class="p">&amp;</span><span class="w"></span>
@@ -315,7 +317,8 @@
 
 <span class="w">    </span><span class="k">case</span><span class="p">(</span><span class="n">id_intel_classic_windows</span><span class="p">)</span><span class="w"></span>
 <span class="w">        </span><span class="n">flags</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">&amp;</span><span class="w"></span>
-<span class="w">            </span><span class="p">&amp;</span><span class="w"> </span><span class="n">flag_intel_fp_win</span><span class="o">//</span><span class="p">&amp;</span><span class="w"></span>
+<span class="w">            </span><span class="n">flag_intel_opt_win</span><span class="o">//</span><span class="p">&amp;</span><span class="w"></span>
+<span class="w">            </span><span class="n">flag_intel_fp_win</span><span class="o">//</span><span class="p">&amp;</span><span class="w"></span>
 <span class="w">            </span><span class="n">flag_intel_align_win</span><span class="o">//</span><span class="p">&amp;</span><span class="w"></span>
 <span class="w">            </span><span class="n">flag_intel_limit_win</span><span class="o">//</span><span class="p">&amp;</span><span class="w"></span>
 <span class="w">            </span><span class="n">flag_intel_pthread_win</span><span class="o">//</span><span class="p">&amp;</span><span class="w"></span>
@@ -325,6 +328,7 @@
 
 <span class="w">    </span><span class="k">case</span><span class="p">(</span><span class="n">id_intel_llvm_nix</span><span class="p">)</span><span class="w"></span>
 <span class="w">        </span><span class="n">flags</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">&amp;</span><span class="w"></span>
+<span class="w">            </span><span class="n">flag_intel_opt</span><span class="o">//</span><span class="p">&amp;</span><span class="w"></span>
 <span class="w">            </span><span class="n">flag_intel_fp</span><span class="o">//</span><span class="p">&amp;</span><span class="w"></span>
 <span class="w">            </span><span class="n">flag_intel_align</span><span class="o">//</span><span class="p">&amp;</span><span class="w"></span>
 <span class="w">            </span><span class="n">flag_intel_limit</span><span class="o">//</span><span class="p">&amp;</span><span class="w"></span>
@@ -335,6 +339,7 @@
 
 <span class="w">    </span><span class="k">case</span><span class="p">(</span><span class="n">id_intel_llvm_windows</span><span class="p">)</span><span class="w"></span>
 <span class="w">        </span><span class="n">flags</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">&amp;</span><span class="w"></span>
+<span class="w">            </span><span class="n">flag_intel_opt_win</span><span class="o">//</span><span class="p">&amp;</span><span class="w"></span>
 <span class="w">            </span><span class="n">flag_intel_fp_win</span><span class="o">//</span><span class="p">&amp;</span><span class="w"></span>
 <span class="w">            </span><span class="n">flag_intel_align_win</span><span class="o">//</span><span class="p">&amp;</span><span class="w"></span>
 <span class="w">            </span><span class="n">flag_intel_limit_win</span><span class="o">//</span><span class="p">&amp;</span><span class="w"></span>
@@ -375,7 +380,7 @@
             <p class="text-right">
               Documentation generated by
               <a href="https://github.com/Fortran-FOSS-Programmers/ford">FORD</a>
- on 2023-08-09 07:43              </p>
+ on 2023-09-17 17:40              </p>
           </div>
         </div>
         <br>
