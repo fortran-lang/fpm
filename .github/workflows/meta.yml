@@ -69,7 +69,6 @@ jobs:
           wget
           unzip
           curl
-          gcc-fortran
 
     - name: (Windows) Setup VS Build environment
       if: contains(matrix.os,'windows') && contains(matrix.mpi,'intel')
