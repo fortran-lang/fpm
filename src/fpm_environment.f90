@@ -36,11 +36,11 @@ contains
         !! found on specific system types only.
         !!
         !! Returns OS_UNKNOWN if the operating system cannot be determined.
-        character(len=32) :: val
-        integer           :: length, rc
-        logical           :: file_exists
-        logical, save     :: first_run = .true.
-        integer, save     :: ret = OS_UNKNOWN
+        character(len=255) :: val
+        integer            :: length, rc
+        logical            :: file_exists
+        logical, save      :: first_run = .true.
+        integer, save      :: ret = OS_UNKNOWN
         !$omp threadprivate(ret, first_run)
 
         if (.not. first_run) then
@@ -50,6 +50,8 @@ contains
 
         first_run = .false.
         r = OS_UNKNOWN
+        length = 0
+        rc = 0
 
         ! Check environment variable `OSTYPE`.
         call get_environment_variable('OSTYPE', val, length, rc)

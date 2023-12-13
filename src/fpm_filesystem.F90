@@ -654,7 +654,7 @@ end function unix_path
 !!    integer :: iostat
 !!    character(len=:),allocatable :: line, iomsg
 !!       open(unit=stdin,pad='yes')
-!!       INFINITE: do 
+!!       INFINITE: do
 !!          call getline(stdin,line,iostat,iomsg)
 !!          if(iostat /= 0) exit INFINITE
 !!          write(*,'(a)')'['//line//']'
