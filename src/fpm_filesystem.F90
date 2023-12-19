@@ -51,6 +51,8 @@ module fpm_filesystem
     end interface
 #endif
 
+    character(*), parameter :: eol = new_line('a')    !! End of line
+
 contains
 
 !> Extract filename from path with/without suffix
@@ -303,24 +305,21 @@ integer function number_of_rows(s) result(nrows)
 end function number_of_rows
 
 !> read lines into an array of TYPE(STRING_T) variables expanding tabs
-function read_lines_expanded(fh) result(lines)
-    integer, intent(in) :: fh
+function read_lines_expanded(filename) result(lines)
+    character(len=*), intent(in) :: filename
     type(string_t), allocatable :: lines(:)
 
-    integer :: i, length
+    integer :: i
     character(len=:), allocatable :: content
     integer, allocatable :: first(:), last(:)
 
-    inquire (fh, size=length)
-    allocate (character(len=length) :: content)
-    if (length == 0) then
+    content = read_text_file(filename)
+    if (len(content) == 0) then
         allocate (lines(0))
         return
     end if
 
-    ! read file into a single string
-    read (fh) content
-    call split_first_last(content, c_new_line, first, last)  ! TODO: \r (< macOS X), \n (>=macOS X/Linux/Unix), \r\n (Windows)
+    call split_first_last(content, eol, first, last)  ! TODO: \r (< macOS X), \n (>=macOS X/Linux/Unix), \r\n (Windows)
 
     ! allocate lines from file content string
     allocate (lines(size(first)))
@@ -331,24 +330,21 @@ function read_lines_expanded(fh) result(lines)
 end function read_lines_expanded
 
 !> read lines into an array of TYPE(STRING_T) variables
-function read_lines(fh) result(lines)
-    integer, intent(in) :: fh
+function read_lines(filename) result(lines)
+    character(len=*), intent(in) :: filename
     type(string_t), allocatable :: lines(:)
 
-    integer :: i, length
+    integer :: i
     character(len=:), allocatable :: content
     integer, allocatable :: first(:), last(:)
 
-    inquire (fh, size=length)
-    allocate (character(len=length) :: content)
-    if (length == 0) then
+    content = read_text_file(filename)
+    if (len(content) == 0) then
         allocate (lines(0))
         return
     end if
 
-    ! read file into a single string
-    read (fh) content
-    call split_first_last(content, c_new_line, first, last)  ! TODO: \r (< macOS X), \n (>=macOS X/Linux/Unix), \r\n (Windows)
+    call split_first_last(content, eol, first, last)  ! TODO: \r (< macOS X), \n (>=macOS X/Linux/Unix), \r\n (Windows)
 
     ! allocate lines from file content string
     allocate (lines(size(first)))
@@ -357,6 +353,22 @@ function read_lines(fh) result(lines)
     end do
 
 end function read_lines
+
+!> read text file into a string
+function read_text_file(filename) result(string)
+    character(len=*), intent(in) :: filename
+    character(len=:), allocatable :: string
+    integer :: fh, length
+
+    open (newunit=fh, file=filename, status='old', action='read', &
+            access='stream', form='unformatted')
+    inquire (fh, size=length)
+    allocate (character(len=length) :: string)
+    if (length == 0) return
+    read (fh) string
+    close (fh)
+
+end function read_text_file
 
 !> Create a directory. Create subdirectories as needed
 subroutine mkdir(dir, echo)
@@ -505,9 +517,8 @@ recursive subroutine list_files(dir, files, recurse)
         call fpm_stop(2,'*list_files*:directory listing failed')
     end if
 
-    open (newunit=fh, file=temp_file, status='old',access='stream',form='unformatted')
-    files = read_lines(fh)
-    close(fh,status="delete")
+    files = read_lines(temp_file)
+    call delete_file(temp_file)
 
     do i=1,size(files)
         files(i)%s = join_path(dir,files(i)%s)
