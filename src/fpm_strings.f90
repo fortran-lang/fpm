@@ -23,7 +23,8 @@
 !! - [[IS_FORTRAN_NAME]]  determine whether a string is an acceptable Fortran entity name
 !! - [[TO_FORTRAN_NAME]]  replace allowed special but unusuable characters in names with underscore
 !!### Whitespace
-!! - [[NOTABS]]  Expand tab characters assuming a tab space every eight characters
+!! - [[NOTABS]]  subroutine to expand tab characters assuming a tab space every eight characters
+!! - [[DILATE]]  function to expand tab characters assuming a tab space every eight characters
 !! - [[LEN_TRIM]]  Determine total trimmed length of **STRING_T** array
 !!### Miscellaneous
 !! - [[FNV_1A]]  Hash a **CHARACTER(*)** string of default kind or a **TYPE(STRING_T)** array
@@ -43,7 +44,7 @@ public :: f_string, lower, upper, split, str_ends_with, string_t, str_begins_wit
 public :: to_fortran_name, is_fortran_name
 public :: string_array_contains, string_cat, len_trim, operator(.in.), fnv_1a
 public :: replace, resize, str, join, glob
-public :: notabs
+public :: notabs, dilate, remove_newline_characters, remove_characters_in_set
 public :: operator(==)
 
 !> Module naming
@@ -242,9 +243,9 @@ pure function fnv_1a_string_t(input, seed) result(hash)
 end function fnv_1a_string_t
 
 
- !>Author: John S. Urban
- !!License: Public Domain
- !! Changes a string to lowercase over optional specified column range
+!>Author: John S. Urban
+!!License: Public Domain
+!! Changes a string to lowercase over optional specified column range
 elemental pure function lower(str,begin,end) result (string)
 
     character(*), intent(In)     :: str
@@ -661,8 +662,9 @@ integer                              :: i
    if(present(end))string=string//end
 end function join
 
-!>##AUTHOR John S. Urban
-!!##LICENSE Public Domain
+!>AUTHOR: John S. Urban
+!!LICENSE: Public Domain
+!>
 !!## NAME
 !!    glob(3f) - [fpm_strings:COMPARE] compare given string for match to
 !!    pattern which may contain wildcard characters
@@ -1051,7 +1053,7 @@ pure function to_fortran_name(string) result(res)
     res = replace(string, SPECIAL_CHARACTERS, '_')
 end function to_fortran_name
 
-function is_fortran_name(line) result (lout)
+elemental function is_fortran_name(line) result (lout)
 ! determine if a string is a valid Fortran name ignoring trailing spaces
 ! (but not leading spaces)
     character(len=*),parameter   :: int='0123456789'
@@ -1303,6 +1305,63 @@ pure logical function string_arrays_same(this,that)
 
 end function string_arrays_same
 
+! Remove all characters from a set from a string
+subroutine remove_characters_in_set(string,set,replace_with)
+    character(len=:), allocatable, intent(inout) :: string
+    character(*), intent(in) :: set
+    character, optional, intent(in) :: replace_with ! Replace with this character instead of removing
+
+    integer :: feed,length
+
+    if (.not.allocated(string)) return
+    if (len(set)<=0) return
+
+    length = len(string)
+    feed   = scan(string,set)
+
+    do while (length>0 .and. feed>0)
+
+        ! Remove heading
+        if (length==1) then
+            string = ""
+
+        elseif (feed==1) then
+            string = string(2:length)
+
+        ! Remove trailing
+        elseif (feed==length) then
+            string = string(1:length-1)
+
+        ! In between: replace with given character
+        elseif (present(replace_with)) then
+            string(feed:feed) = replace_with
+        ! Or just remove
+        else
+            string = string(1:feed-1)//string(feed+1:length)
+        end if
+
+        length = len(string)
+        feed   = scan(string,set)
+
+    end do
+
+end subroutine remove_characters_in_set
+
+! Remove all new line characters from the current string, replace them with spaces
+subroutine remove_newline_characters(string)
+    type(string_t), intent(inout) :: string
+
+    integer :: feed,length
+
+    character(*), parameter :: CRLF  = new_line('a')//achar(13)
+    character(*), parameter :: SPACE = ' '
+
+    call remove_characters_in_set(string%s,set=CRLF,replace_with=SPACE)
+
+end subroutine remove_newline_characters
+
+!>AUTHOR: John S. Urban
+!!LICENSE: Public Domain
 !>
 !!### NAME
 !!   notabs(3f) - [fpm_strings:NONALPHA] expand tab characters
@@ -1360,11 +1419,6 @@ end function string_arrays_same
 !!### SEE ALSO
 !!   GNU/Unix commands expand(1) and unexpand(1)
 !!
-!!### AUTHOR
-!!   John S. Urban
-!!
-!!### LICENSE
-!!   Public Domain
 elemental impure subroutine notabs(instr,outstr,ilen)
 
 ! ident_31="@(#)fpm_strings::notabs(3f): convert tabs to spaces while maintaining columns, remove CRLF chars"
@@ -1410,5 +1464,67 @@ integer                       :: iade         ! ADE (ASCII Decimal Equivalent) o
       ilen=len_trim(outstr(:ipos))            ! trim trailing spaces
 
 end subroutine notabs
+
+!>AUTHOR: John S. Urban
+!!LICENSE: Public Domain
+!>
+!!##NAME
+!!    dilate(3f) - [M_strings:NONALPHA] expand tab characters
+!!    (LICENSE:PD)
+!!
+!!##SYNOPSIS
+!!
+!!    function dilate(INSTR) result(OUTSTR)
+!!
+!!     character(len=*),intent=(in)  :: INSTR
+!!     character(len=:),allocatable  :: OUTSTR
+!!
+!!##DESCRIPTION
+!!     dilate() converts tabs in INSTR to spaces in OUTSTR.  It assumes a
+!!     tab is set every 8 characters. Trailing spaces are removed.
+!!
+!!     In addition, trailing carriage returns and line feeds are removed
+!!     (they are usually a problem created by going to and from MSWindows).
+!!
+!!##OPTIONS
+!!     instr     Input line to remove tabs from
+!!
+!!##RESULTS
+!!     outstr    Output string with tabs expanded.
+!!
+!!##EXAMPLES
+!!
+!!   Sample program:
+!!
+!!    program demo_dilate
+!!
+!!    use M_strings, only : dilate
+!!    implicit none
+!!    character(len=:),allocatable :: in
+!!    integer                      :: i
+!!       in='  this is my string  '
+!!       ! change spaces to tabs to make a sample input
+!!       do i=1,len(in)
+!!          if(in(i:i) == ' ')in(i:i)=char(9)
+!!       enddo
+!!       write(*,'(a)')in,dilate(in)
+!!    end program demo_dilate
+!!
+function dilate(instr) result(outstr)
+
+   character(len=*), intent(in)  :: instr        ! input line to scan for tab characters
+   character(len=:), allocatable :: outstr       ! tab-expanded version of INSTR produced
+   integer                       :: i
+   integer                       :: icount
+   integer                       :: lgth
+   icount = 0
+   do i = 1, len(instr)
+      if (instr(i:i) == char(9)) icount = icount + 1
+   end do
+   allocate (character(len=(len(instr) + 8*icount)) :: outstr)
+   call notabs(instr, outstr, lgth)
+   outstr = outstr(:lgth)
+
+end function dilate
 
 end module fpm_strings

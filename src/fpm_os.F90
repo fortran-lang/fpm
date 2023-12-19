@@ -246,7 +246,7 @@ contains
 
     !> Converts a path to an absolute, canonical path.
     subroutine convert_to_absolute_path(path, error)
-        character(len=*), intent(inout) :: path
+        character(len=:), allocatable, intent(inout) :: path
         type(error_t), allocatable, intent(out) :: error
 
         character(len=:), allocatable :: absolute_path

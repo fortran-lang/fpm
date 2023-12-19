@@ -18,7 +18,7 @@ module fpm_manifest_preprocess
    implicit none
    private
 
-   public :: preprocess_config_t, new_preprocess_config, new_preprocessors
+   public :: preprocess_config_t, new_preprocess_config, new_preprocessors, operator(==)
 
    !> Configuration meta data for a preprocessor
    type, extends(serializable_t) :: preprocess_config_t
@@ -48,6 +48,10 @@ module fpm_manifest_preprocess
    end type preprocess_config_t
 
    character(*), parameter, private :: class_name = 'preprocess_config_t'
+
+   interface operator(==)
+       module procedure preprocess_is_same
+   end interface
 
 contains
 
@@ -193,6 +197,9 @@ contains
       class(preprocess_config_t), intent(in) :: this
       class(serializable_t), intent(in) :: that
 
+      integer :: istr
+
+
       preprocess_is_same = .false.
 
       select type (other=>that)
@@ -201,6 +208,7 @@ contains
             if (allocated(this%name)) then
                 if (.not.(this%name==other%name)) return
             endif
+
             if (.not.(this%suffixes==other%suffixes)) return
             if (.not.(this%directories==other%directories)) return
             if (.not.(this%macros==other%macros)) return

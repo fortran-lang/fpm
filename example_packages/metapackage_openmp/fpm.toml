@@ -1,0 +1,3 @@
+name = "test_openmp"
+dependencies.openmp = "*"
+

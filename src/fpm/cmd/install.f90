@@ -22,7 +22,7 @@ contains
   !> Entry point for the fpm-install subcommand
   subroutine cmd_install(settings)
     !> Representation of the command line settings
-    type(fpm_install_settings), intent(in) :: settings
+    type(fpm_install_settings), intent(inout) :: settings
     type(package_config_t) :: package
     type(error_t), allocatable :: error
     type(fpm_model_t) :: model
@@ -34,7 +34,7 @@ contains
     call get_package_data(package, "fpm.toml", error, apply_defaults=.true.)
     call handle_error(error)
 
-    call build_model(model, settings%fpm_build_settings, package, error)
+    call build_model(model, settings, package, error)
     call handle_error(error)
 
     call targets_from_sources(targets, model, settings%prune, error)

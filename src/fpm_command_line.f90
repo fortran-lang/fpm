@@ -23,12 +23,12 @@
 !> ``fpm-help`` and ``fpm --list`` help pages below to make sure the help output
 !> is complete and consistent as well.
 module fpm_command_line
-use fpm_environment,  only : get_os_type, get_env, os_is_unix, &
+use fpm_environment,  only : get_os_type, get_env, &
                              OS_UNKNOWN, OS_LINUX, OS_MACOS, OS_WINDOWS, &
                              OS_CYGWIN, OS_SOLARIS, OS_FREEBSD, OS_OPENBSD, OS_NAME
 use M_CLI2,           only : set_args, lget, sget, unnamed, remaining, specified
 use M_CLI2,           only : get_subcommand, CLI_RESPONSE_FILE
-use fpm_strings,      only : lower, split, to_fortran_name, is_fortran_name
+use fpm_strings,      only : lower, split, to_fortran_name, is_fortran_name, remove_characters_in_set, string_t
 use fpm_filesystem,   only : basename, canon_path, which, run
 use fpm_environment,  only : get_command_arguments_quoted
 use fpm_error,        only : fpm_stop, error_t
@@ -90,9 +90,12 @@ end type
 
 type, extends(fpm_build_settings)  :: fpm_run_settings
     character(len=ibug),allocatable :: name(:)
-    character(len=:),allocatable :: args
+    character(len=:),allocatable :: args ! passed to the app
     character(len=:),allocatable :: runner
+    character(len=:),allocatable :: runner_args ! passed to the runner
     logical :: example
+    contains
+       procedure :: runner_command
 end type
 
 type, extends(fpm_run_settings)  :: fpm_test_settings
@@ -122,15 +125,14 @@ type, extends(fpm_build_settings) :: fpm_export_settings
 end type
 
 type, extends(fpm_cmd_settings)   :: fpm_clean_settings
-    logical                       :: is_unix
-    character(len=:), allocatable :: calling_dir  ! directory clean called from
-    logical                       :: clean_skip=.false.
-    logical                       :: clean_call=.false.
+    logical                       :: clean_skip = .false.
+    logical                       :: clean_call = .false.
 end type
 
 type, extends(fpm_build_settings) :: fpm_publish_settings
     logical :: show_package_version = .false.
-    logical :: show_form_data = .false.
+    logical :: show_upload_data = .false.
+    logical :: is_dry_run = .false.
     character(len=:), allocatable :: token
 end type
 
@@ -150,7 +152,8 @@ character(len=20),parameter :: manual(*)=[ character(len=20) ::&
 &  'test',  'runner', 'install', 'update', 'list',   'help',   'version', 'publish' ]
 
 character(len=:), allocatable :: val_runner, val_compiler, val_flag, val_cflag, val_cxxflag, val_ldflag, &
-    val_profile, val_dump
+    val_profile, val_runner_args, val_dump
+
 
 !   '12345678901234567890123456789012345678901234567890123456789012345678901234567890',&
 character(len=80), parameter :: help_text_build_common(*) = [character(len=80) ::      &
@@ -178,7 +181,7 @@ character(len=80), parameter :: help_text_flag(*) = [character(len=80) :: &
     ' --flag  FFLAGS    selects compile arguments for the build, the default value is',&
     '                   set by the FPM_FFLAGS environment variable. These are added  ',&
     '                   to the profile options if --profile is specified, else these ',&
-    '                   these options override the defaults. Note object and .mod    ',&
+    '                   options override the defaults. Note object and .mod          ',&
     '                   directory locations are always built in.                     ',&
     ' --c-flag CFLAGS   selects compile arguments specific for C source in the build.',&
     '                   The default value is set by the FPM_CFLAGS environment       ',&
@@ -226,13 +229,12 @@ contains
         character(len=4096)           :: cmdarg
         integer                       :: i
         integer                       :: os
-        logical                       :: is_unix
         type(fpm_install_settings), allocatable :: install_settings
         type(fpm_publish_settings), allocatable :: publish_settings
         type(fpm_export_settings) , allocatable :: export_settings
         type(version_t) :: version
         character(len=:), allocatable :: common_args, compiler_args, run_args, working_dir, &
-            & c_compiler, cxx_compiler, archiver, version_s
+            & c_compiler, cxx_compiler, archiver, version_s, token_s
 
         character(len=*), parameter :: fc_env = "FC", cc_env = "CC", ar_env = "AR", &
             & fflags_env = "FFLAGS", cflags_env = "CFLAGS", cxxflags_env = "CXXFLAGS", ldflags_env = "LDFLAGS", &
@@ -243,8 +245,17 @@ contains
         call set_help()
         os = get_os_type()
         ! text for --version switch,
-        os_type = "OS Type:     "//OS_NAME(os)
-        is_unix = os_is_unix(os)
+        select case (os)
+            case (OS_LINUX);   os_type =  "OS Type:     Linux"
+            case (OS_MACOS);   os_type =  "OS Type:     macOS"
+            case (OS_WINDOWS); os_type =  "OS Type:     Windows"
+            case (OS_CYGWIN);  os_type =  "OS Type:     Cygwin"
+            case (OS_SOLARIS); os_type =  "OS Type:     Solaris"
+            case (OS_FREEBSD); os_type =  "OS Type:     FreeBSD"
+            case (OS_OPENBSD); os_type =  "OS Type:     OpenBSD"
+            case (OS_UNKNOWN); os_type =  "OS Type:     Unknown"
+            case default     ; os_type =  "OS Type:     UNKNOWN"
+        end select
 
         ! Get current release version
         version = fpm_version()
@@ -269,7 +280,8 @@ contains
         run_args = &
           ' --target " "' // &
           ' --list F' // &
-          ' --runner " "'
+          ' --runner " "' // &
+          ' --runner-args " "'
 
         compiler_args = &
           ' --profile " "' // &
@@ -318,12 +330,18 @@ contains
                if(names(i)=='..')names(i)='*'
             enddo
 
+            ! If there are additional command-line arguments, remove the additional
+            ! double quotes which have been added by M_CLI2
+            val_runner_args=sget('runner-args')
+            call remove_characters_in_set(val_runner_args,set='"')
+
             c_compiler = sget('c-compiler')
             cxx_compiler = sget('cxx-compiler')
             archiver = sget('archiver')
             allocate(fpm_run_settings :: cmd_settings)
             val_runner=sget('runner')
             if(specified('runner') .and. val_runner=='')val_runner='echo'
+
             cmd_settings=fpm_run_settings(&
             & args=remaining,&
             & profile=val_profile,&
@@ -341,6 +359,7 @@ contains
             & build_tests=.false.,&
             & name=names,&
             & runner=val_runner,&
+            & runner_args=val_runner_args, &
             & verbose=lget('verbose') )
 
         case('build')
@@ -572,12 +591,18 @@ contains
                if(names(i)=='..')names(i)='*'
             enddo
 
+            ! If there are additional command-line arguments, remove the additional
+            ! double quotes which have been added by M_CLI2
+            val_runner_args=sget('runner-args')
+            call remove_characters_in_set(val_runner_args,set='"')
+
             c_compiler = sget('c-compiler')
             cxx_compiler = sget('cxx-compiler')
             archiver = sget('archiver')
             allocate(fpm_test_settings :: cmd_settings)
             val_runner=sget('runner')
             if(specified('runner') .and. val_runner=='')val_runner='echo'
+
             cmd_settings=fpm_test_settings(&
             & args=remaining, &
             & profile=val_profile, &
@@ -595,7 +620,8 @@ contains
             & build_tests=.true., &
             & name=names, &
             & runner=val_runner, &
-            & verbose=lget('verbose') )
+            & runner_args=val_runner_args, &
+            & verbose=lget('verbose'))
 
         case('update')
             call set_args(common_args // ' --fetch-only F --clean F --dump " " ', &
@@ -655,15 +681,14 @@ contains
             allocate(fpm_clean_settings :: cmd_settings)
             call get_current_directory(working_dir, error)
             cmd_settings=fpm_clean_settings( &
-            &   is_unix=is_unix,             &
-            &   calling_dir=working_dir,     &
             &   clean_skip=lget('skip'),     &
-                clean_call=lget('all'))
+            &   clean_call=lget('all'))
 
         case('publish')
             call set_args(common_args // compiler_args //'&
             & --show-package-version F &
-            & --show-form-data F &
+            & --show-upload-data F &
+            & --dry-run F &
             & --token " " &
             & --list F &
             & --show-model F &
@@ -675,10 +700,13 @@ contains
             c_compiler = sget('c-compiler')
             cxx_compiler = sget('cxx-compiler')
             archiver = sget('archiver')
+            token_s = sget('token')
 
-            allocate(publish_settings, source=fpm_publish_settings( &
+            allocate(fpm_publish_settings :: cmd_settings)
+            cmd_settings = fpm_publish_settings( &
             & show_package_version = lget('show-package-version'), &
-            & show_form_data = lget('show-form-data'), &
+            & show_upload_data = lget('show-upload-data'), &
+            & is_dry_run = lget('dry-run'), &
             & profile=val_profile,&
             & prune=.not.lget('no-prune'), &
             & compiler=val_compiler, &
@@ -692,9 +720,8 @@ contains
             & list=lget('list'),&
             & show_model=lget('show-model'),&
             & build_tests=lget('tests'),&
-            & verbose=lget('verbose')))
-            call get_char_arg(publish_settings%token, 'token')
-            call move_alloc(publish_settings, cmd_settings)
+            & verbose=lget('verbose'),&
+            & token=token_s)
 
         case default
 
@@ -796,7 +823,8 @@ contains
    ' install [--profile PROF] [--flag FFLAGS] [--no-rebuild] [--prefix PATH]        ', &
    '         [options]                                                              ', &
    ' clean [--skip] [--all]                                                         ', &
-   ' publish [--show-package-version] [--show-form-data] [--token TOKEN]            ', &
+   ' publish [--token TOKEN] [--show-package-version] [--show-upload-data]          ', &
+   '         [--dry-run] [--verbose]                                                ', &
    ' ']
     help_usage=[character(len=80) :: &
     '' ]
@@ -806,7 +834,7 @@ contains
    '                 executables.                                                   ', &
    '                                                                                ', &
    'SYNOPSIS                                                                        ', &
-   '   fpm run|test --runner CMD ... -- SUFFIX_OPTIONS                              ', &
+   '   fpm run|test --runner CMD ... --runner-args ARGS -- SUFFIX_OPTIONS           ', &
    '                                                                                ', &
    'DESCRIPTION                                                                     ', &
    '   The --runner option allows specifying a program to launch                    ', &
@@ -822,8 +850,11 @@ contains
    '               Available for both the "run" and "test" subcommands.             ', &
    '               If the keyword is specified without a value the default command  ', &
    '               is "echo".                                                       ', &
+   ' --runner-args "args"    an additional option to pass command-line arguments    ', &
+   '               to the runner command, instead of to the fpm app.                ', &
    ' -- SUFFIX_OPTIONS  additional options to suffix the command CMD and executable ', &
-   '                    file names with.                                            ', &
+   '                    file names with. These options are passed as command-line   ', &
+   '                    arguments to the app.                                       ', &
    'EXAMPLES                                                                        ', &
    '   Use cases for ''fpm run|test --runner "CMD"'' include employing                ', &
    '   the following common GNU/Linux and Unix commands:                            ', &
@@ -852,6 +883,7 @@ contains
    '                                                                                ', &
    '  fpm test --runner gdb                                                         ', &
    '  fpm run --runner "tar cvfz $HOME/bundle.tgz"                                  ', &
+   '  fpm run --runner "mpiexec" --runner-args "-np 12"                             ', &
    '  fpm run --runner ldd                                                          ', &
    '  fpm run --runner strip                                                        ', &
    '  fpm run --runner ''cp -t /usr/local/bin''                                       ', &
@@ -920,7 +952,8 @@ contains
     '    install [--profile PROF] [--flag FFLAGS] [--no-rebuild] [--prefix PATH]     ', &
     '            [options]                                                           ', &
     '    clean [--skip] [--all]                                                      ', &
-    '    publish [--show-package-version] [--show-form-data] [--token TOKEN]         ', &
+    '    publish [--token TOKEN] [--show-package-version] [--show-upload-data]       ', &
+    '            [--dry-run] [--verbose]                                             ', &
     '                                                                                ', &
     'SUBCOMMAND OPTIONS                                                              ', &
     ' -C, --directory PATH', &
@@ -1000,7 +1033,7 @@ contains
     ' list(1) - list summary of fpm(1) subcommands                          ', &
     '                                                                       ', &
     'SYNOPSIS                                                               ', &
-    ' fpm list [-list]                                                      ', &
+    ' fpm list                                                              ', &
     '                                                                       ', &
     ' fpm list --help|--version                                             ', &
     '                                                                       ', &
@@ -1170,13 +1203,15 @@ contains
     help_new=[character(len=80) ::                                             &
     'NAME                                                                   ', &
     ' new(1) - the fpm(1) subcommand to initialize a new project            ', &
+    '                                                                       ', &
     'SYNOPSIS                                                               ', &
-    '  fpm new NAME [[--lib|--src] [--app] [--test] [--example]]|           ', &
-    '      [--full|--bare][--backfill]                                      ', &
+    ' fpm new NAME [[--lib|--src] [--app] [--test] [--example]]|            ', &
+    '              [--full|--bare][--backfill]                              ', &
     ' fpm new --help|--version                                              ', &
     '                                                                       ', &
     'DESCRIPTION                                                            ', &
     ' "fpm new" creates and populates a new programming project directory.  ', &
+    '                                                                       ', &
     ' It                                                                    ', &
     '   o creates a directory with the specified name                       ', &
     '   o runs the command "git init" in that directory                     ', &
@@ -1407,16 +1442,47 @@ contains
     ' publish(1) - publish package to the registry', &
     '', &
     'SYNOPSIS', &
-    ' fpm publish [--token TOKEN]', &
+    ' fpm publish [--token TOKEN] [--show-package-version] [--show-upload-data]', &
+    '             [--dry-run] [--verbose]                                      ', &
+    '', &
+    ' fpm publish --help|--version', &
     '', &
     'DESCRIPTION', &
-    ' Collect relevant source files and upload package to the registry.', &
-    ' It is mandatory to provide a token. The token can be generated on the', &
-    ' registry website and will be linked to your username and namespace.', &
+    ' Follow the steps to create a tarball and upload a package to the registry:', &
+    '', &
+    '  1. Register on the website (https://registry-frontend.vercel.app/).', &
+    '  2. Create a namespace. Uploaded packages must be assigned to a unique', &
+    '     namespace to avoid conflicts among packages with similar names. A', &
+    '     namespace can accommodate multiple packages.', &
+    '  3. Create a token for that namespace. A token is linked to your username', &
+    '     and is used to authenticate you during the upload process. Do not share', &
+    '     the token with others.', &
+    '  4. Run fpm publish --token TOKEN to upload the package to the registry.', &
+    '     But be aware that the upload is permanent. An uploaded package cannot be', &
+    '     deleted.', &
+    '', &
+    ' See documentation for more information regarding package upload and usage:', &
+    '', &
+    ' Package upload:', &
+    ' https://fpm.fortran-lang.org/en/spec/publish.html', &
+    '', &
+    ' Package usage:', &
+    ' https://fpm.fortran-lang.org/en/spec/manifest.html#dependencies-from-a-registry', &
     '', &
     'OPTIONS', &
     ' --show-package-version   show package version without publishing', &
-    ' --show-form-data         show sent form data without publishing', &
+    ' --show-upload-data       show upload data without publishing', &
+    ' --dry-run                perform dry run without publishing', &
+    ' --help                   print this help and exit', &
+    ' --version                print program version information and exit', &
+    ' --verbose                print more information', &
+    '', &
+    'EXAMPLES', &
+    '', &
+    ' fpm publish --show-package-version    # show package version without publishing', &
+    ' fpm publish --show-upload-data        # show upload data without publishing', &
+    ' fpm publish --token TOKEN --dry-run   # perform dry run without publishing', &
+    ' fpm publish --token TOKEN             # upload package to the registry', &
     '' ]
      end subroutine set_help
 
@@ -1439,5 +1505,21 @@ contains
 
       val = get_env(fpm_prefix//env, default)
     end function get_fpm_env
+
+
+    !> Build a full runner command (executable + command-line arguments)
+    function runner_command(cmd) result(run_cmd)
+        class(fpm_run_settings), intent(in) :: cmd
+        character(len=:), allocatable :: run_cmd
+        !> Get executable
+        if (len_trim(cmd%runner)>0) then
+            run_cmd = trim(cmd%runner)
+        else
+            run_cmd = ''
+        end if
+        !> Append command-line arguments
+        if (len_trim(cmd%runner_args)>0) run_cmd = run_cmd//' '//trim(cmd%runner_args)
+    end function runner_command
+
 
 end module fpm_command_line

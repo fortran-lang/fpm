@@ -1,6 +1,6 @@
 module fpm_downloader
   use fpm_error, only: error_t, fatal_error
-  use fpm_filesystem, only: which
+  use fpm_filesystem, only: which, run
   use fpm_versioning, only: version_t
   use jonquil, only: json_object, json_value, json_error, json_load, cast_to_object
   use fpm_strings, only: string_t
@@ -76,9 +76,14 @@ contains
   end
 
   !> Perform an http post request with form data.
-  subroutine upload_form(endpoint, form_data, error)
+  subroutine upload_form(endpoint, form_data, verbose, error)
+    !> Endpoint to upload to.
     character(len=*), intent(in) :: endpoint
+    !> Form data to upload.
     type(string_t), intent(in) :: form_data(:)
+    !> Print additional information if true.
+    logical, intent(in) :: verbose
+    !> Error handling.
     type(error_t), allocatable, intent(out) :: error
 
     integer :: stat, i
@@ -91,8 +96,8 @@ contains
 
     if (which('curl') /= '') then
       print *, 'Uploading package ...'
-      call execute_command_line('curl -X POST -H "Content-Type: multipart/form-data" ' &
-      & //form_data_str//endpoint, exitstat=stat)
+      call run('curl -X POST -H "Content-Type: multipart/form-data" '// &
+      & form_data_str//endpoint, exitstat=stat, echo=verbose)
     else
       call fatal_error(error, "'curl' not installed."); return
     end if
@@ -104,8 +109,11 @@ contains
 
   !> Unpack a tarball to a destination.
   subroutine unpack(tmp_pkg_file, destination, error)
+    !> Path to tarball.
     character(*), intent(in) :: tmp_pkg_file
+    !> Destination to unpack to.
     character(*), intent(in) :: destination
+    !> Error handling.
     type(error_t), allocatable, intent(out) :: error
 
     integer :: stat

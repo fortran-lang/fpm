@@ -2,18 +2,18 @@
 module test_source_parsing
     use testsuite, only : new_unittest, unittest_t, error_t, test_failed
     use fpm_filesystem, only: get_temp_filename
-    use fpm_source_parsing, only: parse_f_source, parse_c_source
+    use fpm_source_parsing, only: parse_f_source, parse_c_source, parse_use_statement
     use fpm_model, only: srcfile_t, FPM_UNIT_PROGRAM, FPM_UNIT_MODULE, &
                          FPM_UNIT_SUBMODULE, FPM_UNIT_SUBPROGRAM, FPM_UNIT_CSOURCE, &
                          FPM_UNIT_CPPSOURCE
-    use fpm_strings, only: operator(.in.)
+    use fpm_strings, only: operator(.in.), lower
+    use fpm_error, only: file_parse_error, fatal_error
     implicit none
     private
 
     public :: collect_source_parsing
 
 contains
-
 
     !> Collect all exported unit tests
     subroutine collect_source_parsing(testsuite)
@@ -24,6 +24,7 @@ contains
         testsuite = [ &
             & new_unittest("modules-used", test_modules_used), &
             & new_unittest("intrinsic-modules-used", test_intrinsic_modules_used), &
+            & new_unittest("nonintrinsic-modules-used", test_nonintrinsic_modules_used), &
             & new_unittest("include-stmt", test_include_stmt), &
             & new_unittest("program", test_program), &
             & new_unittest("module", test_module), &
@@ -42,7 +43,8 @@ contains
             & new_unittest("invalid-module", &
                            test_invalid_module, should_fail=.true.), &
             & new_unittest("invalid-submodule", &
-                           test_invalid_submodule, should_fail=.true.) &
+                           test_invalid_submodule, should_fail=.true.), &
+            & new_unittest("use-statement",test_use_statement) &
             ]
 
     end subroutine collect_source_parsing
@@ -190,6 +192,78 @@ contains
 
     end subroutine test_intrinsic_modules_used
 
+
+    !> Check that intrinsic module names are not ignored if declared non_intrinsic
+    subroutine test_nonintrinsic_modules_used(error)
+
+        !> Error handling
+        type(error_t), allocatable, intent(out) :: error
+
+        integer :: unit
+        character(:), allocatable :: temp_file
+        type(srcfile_t), allocatable :: f_source
+
+        allocate(temp_file, source=get_temp_filename())
+
+        open(file=temp_file, newunit=unit)
+        write(unit, '(a)') &
+            & 'program test', &
+            & ' use, non_intrinsic :: iso_c_binding', &
+            & ' use,     intrinsic :: iso_fortran_env', &
+            & ' use, non_intrinsic :: ieee_arithmetic', &
+            & ' use, non_intrinsic :: ieee_exceptions', &
+            & ' use, non_intrinsic :: ieee_features', &
+            & ' use, non_intrinsic :: my_module', &
+            & ' implicit none', &
+            & 'end program test'
+        close(unit)
+
+        f_source = parse_f_source(temp_file,error)
+        if (allocated(error)) then
+            return
+        end if
+
+        if (size(f_source%modules_provided) /= 0) then
+            call test_failed(error,'Unexpected modules_provided - expecting zero')
+            return
+        end if
+
+        if (size(f_source%modules_used) /= 5) then
+            call test_failed(error,'Incorrect number of modules_used - expecting five')
+            return
+        end if
+
+        if (.not. ('iso_c_binding' .in. f_source%modules_used)) then
+            call test_failed(error,'Non-Intrinsic module found in modules_used')
+            return
+        end if
+
+        if ('iso_fortran_env' .in. f_source%modules_used) then
+            call test_failed(error,'Intrinsic module found in modules_used')
+            return
+        end if
+
+        if (.not. ('ieee_arithmetic' .in. f_source%modules_used)) then
+            call test_failed(error,'Non-Intrinsic module not found in modules_used')
+            return
+        end if
+
+        if (.not. ('ieee_exceptions' .in. f_source%modules_used)) then
+            call test_failed(error,'Non-Intrinsic module not found in modules_used')
+            return
+        end if
+
+        if (.not. ('ieee_features' .in. f_source%modules_used)) then
+            call test_failed(error,'Non-Intrinsic module not found in modules_used')
+            return
+        end if
+
+        if (.not. ('my_module' .in. f_source%modules_used)) then
+            call test_failed(error,'Non-Intrinsic module not found in modules_used')
+            return
+        end if
+
+    end subroutine test_nonintrinsic_modules_used
 
     !> Check parsing of include statements
     subroutine test_include_stmt(error)
@@ -971,6 +1045,65 @@ contains
 
     end subroutine test_invalid_submodule
 
+    !> Parse several USE statements
+    subroutine test_use_statement(error)
+
+        !> Error handling
+        type(error_t), allocatable, intent(out) :: error
+
+        character(*), parameter :: filename='test_use_statement'
+        character(:), allocatable :: line,module_name
+
+        logical :: used,is_intrinsic
+
+        line = 'use, intrinsic:: iso_fortran_env'
+        call parse_use_statement(filename,0,line,used,is_intrinsic,module_name,error)
+        if (allocated(error)) return
+
+        if (.not. (used .and. &
+                   is_intrinsic .and. &
+                   module_name=='iso_fortran_env' .and. &
+                   used)) then
+          call fatal_error(error,'USE statement failed parsing <'//line//'>')
+          return
+        endif
+
+        line = 'use, non_intrinsic :: iso_fortran_env'
+        call parse_use_statement(filename,0,line,used,is_intrinsic,module_name,error)
+        if (allocated(error)) return
+
+        if (.not. (used .and. &
+                   (.not.is_intrinsic) .and. &
+                   module_name=='iso_fortran_env' .and. &
+                   used)) then
+          call fatal_error(error,'USE statement failed parsing <'//line//'>')
+          return
+        endif
+
+        line = 'use, non_intrinsic :: my_fortran_module'
+        call parse_use_statement(filename,0,line,used,is_intrinsic,module_name,error)
+        if (allocated(error)) return
+
+        if (.not. (used .and. &
+                   (.not.is_intrinsic) .and. &
+                   module_name=='my_fortran_module' .and. &
+                   used)) then
+          call fatal_error(error,'USE statement failed parsing <'//line//'>')
+          return
+        endif
+
+        line = 'use, intrinsic :: my_fortran_module'
+        call parse_use_statement(filename,0,line,used,is_intrinsic,module_name,error)
+
+        ! This is not an intrinsic module: should detect an error
+        if (.not. allocated(error)) then
+          call fatal_error(error,'Did not catch invalid intrinsic module in <'//line//'>')
+          return
+        else
+           deallocate(error)
+        endif
+
+    end subroutine test_use_statement
 
 
 end module test_source_parsing

@@ -28,9 +28,13 @@ module fpm_manifest_dependency
         & git_target_revision, git_target_default, operator(==), git_matches_manifest
     use fpm_toml, only: toml_table, toml_key, toml_stat, get_value, check_keys, serializable_t, add_table, &
         & set_value, set_string
-    use fpm_filesystem, only: windows_path
+    use fpm_filesystem, only: windows_path, join_path
     use fpm_environment, only: get_os_type, OS_WINDOWS
+    use fpm_manifest_metapackages, only: metapackage_config_t, is_meta_package, new_meta_config, &
+            metapackage_request_t, new_meta_request
     use fpm_versioning, only: version_t, new_version
+    use fpm_strings, only: string_t
+    use fpm_manifest_preprocess
     implicit none
     private
 
@@ -54,6 +58,9 @@ module fpm_manifest_dependency
         !> The requested version of the dependency.
         !> The latest version is used if not specified.
         type(version_t), allocatable :: requested_version
+
+        !> Requested macros for the dependency
+        type(preprocess_config_t), allocatable :: preprocess(:)
 
         !> Git descriptor
         type(git_target_t), allocatable :: git
@@ -96,16 +103,32 @@ contains
 
         character(len=:), allocatable :: uri, value, requested_version
 
+        type(toml_table), pointer :: child
+
         call check(table, error)
         if (allocated(error)) return
 
         call table%get_key(self%name)
         call get_value(table, "namespace", self%namespace)
 
+        call get_value(table, "v", requested_version)
+        if (allocated(requested_version)) then
+            if (.not. allocated(self%requested_version)) allocate (self%requested_version)
+            call new_version(self%requested_version, requested_version, error)
+            if (allocated(error)) return
+        end if
+
+        !> Get optional preprocessor directives
+        call get_value(table, "preprocess", child, requested=.false.)
+        if (associated(child)) then
+            call new_preprocessors(self%preprocess, child, error)
+            if (allocated(error)) return
+        endif
+
         call get_value(table, "path", uri)
         if (allocated(uri)) then
             if (get_os_type() == OS_WINDOWS) uri = windows_path(uri)
-            if (present(root)) uri = root//uri  ! Relative to the fpm.toml it’s written in
+            if (present(root)) uri = join_path(root,uri)  ! Relative to the fpm.toml it’s written in
             call move_alloc(uri, self%path)
             return
         end if
@@ -137,14 +160,6 @@ contains
             return
         end if
 
-        call get_value(table, "v", requested_version)
-
-        if (allocated(requested_version)) then
-            if (.not. allocated(self%requested_version)) allocate (self%requested_version)
-            call new_version(self%requested_version, requested_version, error)
-            if (allocated(error)) return
-        end if
-
     end subroutine new_dependency
 
     !> Check local schema for allowed entries
@@ -158,6 +173,7 @@ contains
 
         character(len=:), allocatable :: name
         type(toml_key), allocatable :: list(:)
+        type(toml_table), pointer :: child
 
         !> List of valid keys for the dependency table.
         character(*), dimension(*), parameter :: valid_keys = [character(24) :: &
@@ -167,7 +183,8 @@ contains
               "git", &
               "tag", &
               "branch", &
-              "rev" &
+              "rev", &
+              "preprocess" &
             & ]
 
         call table%get_key(name)
@@ -211,13 +228,28 @@ contains
             return
         end if
 
+        ! Check preprocess key
+        if (table%has_key('preprocess')) then
+
+            call get_value(table, 'preprocess', child)
+
+            if (.not.associated(child)) then
+                call syntax_error(error, "Dependency '"//name//"' has invalid 'preprocess' entry")
+                return
+            end if
+
+        end if
+
     end subroutine check
 
     !> Construct new dependency array from a TOML data structure
-    subroutine new_dependencies(deps, table, root, error)
+    subroutine new_dependencies(deps, table, root, meta, error)
 
         !> Instance of the dependency configuration
         type(dependency_config_t), allocatable, intent(out) :: deps(:)
+
+        !> (optional) metapackages
+        type(metapackage_config_t), optional, intent(out) :: meta
 
         !> Instance of the TOML data structure
         type(toml_table), intent(inout) :: table
@@ -230,22 +262,66 @@ contains
 
         type(toml_table), pointer :: node
         type(toml_key), allocatable :: list(:)
-        integer :: idep, stat
+        type(dependency_config_t), allocatable :: all_deps(:)
+        type(metapackage_request_t) :: meta_request
+        logical, allocatable :: is_meta(:)
+        logical :: metapackages_allowed
+        integer :: idep, stat, ndep
 
         call table%get_keys(list)
         ! An empty table is okay
         if (size(list) < 1) return
 
-        allocate (deps(size(list)))
+        !> Flag dependencies that should be treated as metapackages
+        metapackages_allowed = present(meta)
+        allocate(is_meta(size(list)),source=.false.)
+        allocate(all_deps(size(list)))
+
+        !> Parse all meta- and non-metapackage dependencies
         do idep = 1, size(list)
+
+            ! Check if this is a standard dependency node
             call get_value(table, list(idep)%key, node, stat=stat)
-            if (stat /= toml_stat%success) then
-                call syntax_error(error, "Dependency "//list(idep)%key//" must be a table entry")
-                exit
-            end if
-            call new_dependency(deps(idep), node, root, error)
-            if (allocated(error)) exit
+            is_standard_dependency: if (stat /= toml_stat%success) then
+
+                ! See if it can be a valid metapackage name
+                call new_meta_request(meta_request, list(idep)%key, table, error=error)
+
+                !> Neither a standard dep nor a metapackage
+                if (allocated(error)) then
+                   call syntax_error(error, "Dependency "//list(idep)%key//" is not a valid metapackage or a table entry")
+                   return
+                endif
+
+                !> Valid meta dependency
+                is_meta(idep) = .true.
+
+            else
+
+                ! Parse as a standard dependency
+                is_meta(idep) = .false.
+
+                call new_dependency(all_deps(idep), node, root, error)
+                if (allocated(error)) return
+
+            end if is_standard_dependency
+
         end do
+
+        ! Non-meta dependencies
+        ndep = count(.not.is_meta)
+
+        ! Finalize standard dependencies
+        allocate(deps(ndep))
+        ndep = 0
+        do idep = 1, size(list)
+            if (is_meta(idep)) cycle
+            ndep = ndep+1
+            deps(ndep) = all_deps(idep)
+        end do
+
+        ! Finalize meta dependencies
+        if (metapackages_allowed) call new_meta_config(meta,table,is_meta,error)
 
     end subroutine new_dependencies
 

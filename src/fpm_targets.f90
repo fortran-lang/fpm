@@ -32,6 +32,7 @@ use fpm_environment, only: get_os_type, OS_WINDOWS, OS_MACOS
 use fpm_filesystem, only: dirname, join_path, canon_path
 use fpm_strings, only: string_t, operator(.in.), string_cat, fnv_1a, resize, lower, str_ends_with
 use fpm_compiler, only: get_macros
+use fpm_sources, only: get_exe_name_with_suffix
 implicit none
 
 private
@@ -194,23 +195,17 @@ subroutine build_target_list(targets,model)
     type(fpm_model_t), intent(inout), target :: model
 
     integer :: i, j, n_source, exe_type
-    character(:), allocatable :: xsuffix, exe_dir, compile_flags
+    character(:), allocatable :: exe_dir, compile_flags
     logical :: with_lib
+
+    ! Initialize targets
+    allocate(targets(0))
 
     ! Check for empty build (e.g. header-only lib)
     n_source = sum([(size(model%packages(j)%sources), &
                       j=1,size(model%packages))])
 
-    if (n_source < 1) then
-        allocate(targets(0))
-        return
-    end if
-
-    if (get_os_type() == OS_WINDOWS) then
-        xsuffix = '.exe'
-    else
-        xsuffix = ''
-    end if
+    if (n_source < 1) return
 
     with_lib = any([((model%packages(j)%sources(i)%unit_scope == FPM_SCOPE_LIB, &
                       i=1,size(model%packages(j)%sources)), &
@@ -304,8 +299,7 @@ subroutine build_target_list(targets,model)
 
                     call add_target(targets,package=model%packages(j)%name,type = FPM_TARGET_EXECUTABLE,&
                                     link_libraries = sources(i)%link_libraries, &
-                                    output_name = join_path(exe_dir, &
-                                    sources(i)%exe_name//xsuffix))
+                                    output_name = join_path(exe_dir,get_exe_name_with_suffix(sources(i))))
 
                     associate(target => targets(size(targets))%ptr)
 
@@ -825,23 +819,22 @@ subroutine resolve_target_linking(targets, model)
 
         associate(target => targets(i)%ptr)
 
-            ! May have been previously allocated
+            ! If the main program is a C/C++ one, some compilers require additional linking flags, see
+            ! https://stackoverflow.com/questions/36221612/p3dfft-compilation-ifort-compiler-error-multiple-definiton-of-main
+            ! In this case, compile_flags were already allocated
             if (.not.allocated(target%compile_flags)) allocate(character(len=0) :: target%compile_flags)
 
             target%compile_flags = target%compile_flags//' '
 
-            if (target%target_type /= FPM_TARGET_C_OBJECT .and. target%target_type /= FPM_TARGET_CPP_OBJECT) then
-                target%compile_flags = target%compile_flags//model%fortran_compile_flags &
-                    & // get_feature_flags(model%compiler, target%features)
-            else if (target%target_type == FPM_TARGET_C_OBJECT) then
-                target%compile_flags = target%compile_flags//model%c_compile_flags
-            else if(target%target_type == FPM_TARGET_CPP_OBJECT) then
-                target%compile_flags = target%compile_flags//model%cxx_compile_flags
-            end if
-
-            ! If the main program is a C/C++ one, Intel compilers require additional
-            ! linking flag -nofor-main to avoid a "duplicate main" error, see
-            ! https://stackoverflow.com/questions/36221612/p3dfft-compilation-ifort-compiler-error-multiple-definiton-of-main
+            select case (target%target_type)
+               case (FPM_TARGET_C_OBJECT)
+                   target%compile_flags = target%compile_flags//model%c_compile_flags
+               case (FPM_TARGET_CPP_OBJECT)
+                   target%compile_flags = target%compile_flags//model%cxx_compile_flags
+               case default
+                   target%compile_flags = target%compile_flags//model%fortran_compile_flags &
+                                        & // get_feature_flags(model%compiler, target%features)
+            end select
 
             !> Get macros as flags.
             target%compile_flags = target%compile_flags // get_macros(model%compiler%id, &
@@ -876,7 +869,8 @@ subroutine resolve_target_linking(targets, model)
 
                 call get_link_objects(target%link_objects,target,is_exe=.true.)
 
-                local_link_flags = model%link_flags
+                local_link_flags = ""
+                if (allocated(model%link_flags)) local_link_flags = model%link_flags
                 target%link_flags = model%link_flags//" "//string_cat(target%link_objects," ")
 
                 if (allocated(target%link_libraries)) then

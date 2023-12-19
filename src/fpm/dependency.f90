@@ -64,6 +64,7 @@ module fpm_dependency
                      serializable_t
   use fpm_manifest, only: package_config_t, dependency_config_t, get_package_data
   use fpm_manifest_dependency, only: manifest_has_changed, dependency_destroy
+  use fpm_manifest_preprocess, only: operator(==)
   use fpm_strings, only: string_t, operator(.in.)
   use fpm_toml, only: toml_table, toml_key, toml_error, toml_serialize, &
                       get_value, set_value, add_table, toml_load, toml_stat, set_string
@@ -130,7 +131,9 @@ module fpm_dependency
     type(dependency_node_t), allocatable :: dep(:)
     !> Cache file
     character(len=:), allocatable :: cache
+
   contains
+
     !> Overload procedure to add new dependencies to the tree
     generic :: add => add_project, add_project_dependencies, add_dependencies, &
       add_dependency, add_dependency_node
@@ -207,13 +210,9 @@ contains
     call resize(self%dep)
     self%dep_dir = join_path("build", "dependencies")
 
-    if (present(verbosity)) then
-      self%verbosity = verbosity
-    end if
+    if (present(verbosity)) self%verbosity = verbosity
 
-    if (present(cache)) then
-      self%cache = cache
-    end if
+    if (present(cache)) self%cache = cache
 
   end subroutine new_dependency_tree
 
@@ -329,10 +328,10 @@ contains
       if (allocated(error)) return
 
       ! Skip root node
-      do id=2,cached%ndep
-          cached%dep(id)%cached = .true.
-          call self%add(cached%dep(id), error)
-          if (allocated(error)) return
+      do id = 2, cached%ndep
+        cached%dep(id)%cached = .true.
+        call self%add(cached%dep(id), error)
+        if (allocated(error)) return
       end do
     end if
 
@@ -456,13 +455,13 @@ contains
       ! the manifest has priority
       if (dependency%cached) then
         if (dependency_has_changed(dependency, self%dep(id), self%verbosity, self%unit)) then
-           if (self%verbosity>0) write (self%unit, out_fmt) "Dependency change detected:", dependency%name
-           self%dep(id)%update = .true.
+          if (self%verbosity > 0) write (self%unit, out_fmt) "Dependency change detected:", dependency%name
+          self%dep(id)%update = .true.
         else
-           ! Store the cached one
-           self%dep(id) = dependency
-           self%dep(id)%update = .false.
-        endif
+          ! Store the cached one
+          self%dep(id) = dependency
+          self%dep(id)%update = .false.
+        end if
       end if
     else
       ! New dependency: add from scratch
@@ -511,7 +510,7 @@ contains
 
     associate (dep => self%dep(id))
       if (allocated(dep%git) .and. dep%update) then
-        if (self%verbosity>0) write (self%unit, out_fmt) "Update:", dep%name
+        if (self%verbosity > 0) write (self%unit, out_fmt) "Update:", dep%name
         proj_dir = join_path(self%dep_dir, dep%name)
         call dep%git%checkout(proj_dir, error)
         if (allocated(error)) return
@@ -732,40 +731,45 @@ contains
 
     integer :: code, stat
     type(json_object), pointer :: p, q
-    character(:), allocatable :: version_key, version_str, error_message
+    character(:), allocatable :: version_key, version_str, error_message, namespace, name
+
+    namespace = ""
+    name = "UNNAMED_NODE"
+    if (allocated(node%namespace)) namespace = node%namespace
+    if (allocated(node%name)) name = node%name
 
     if (.not. json%has_key('code')) then
-      call fatal_error(error, "Failed to download '"//join_path(node%namespace, node%name)//"': No status code."); return
+      call fatal_error(error, "Failed to download '"//join_path(namespace, name)//"': No status code."); return
     end if
 
     call get_value(json, 'code', code, stat=stat)
     if (stat /= 0) then
-      call fatal_error(error, "Failed to download '"//join_path(node%namespace, node%name)//"': "// &
+      call fatal_error(error, "Failed to download '"//join_path(namespace, name)//"': "// &
       & "Failed to read status code."); return
     end if
 
     if (code /= 200) then
       if (.not. json%has_key('message')) then
-        call fatal_error(error, "Failed to download '"//join_path(node%namespace, node%name)//"': No error message."); return
+        call fatal_error(error, "Failed to download '"//join_path(namespace, name)//"': No error message."); return
       end if
 
       call get_value(json, 'message', error_message, stat=stat)
       if (stat /= 0) then
-        call fatal_error(error, "Failed to download '"//join_path(node%namespace, node%name)//"': "// &
+        call fatal_error(error, "Failed to download '"//join_path(namespace, name)//"': "// &
         & "Failed to read error message."); return
       end if
 
-      call fatal_error(error, "Failed to download '"//join_path(node%namespace, node%name)//"'. Status code: '"// &
+      call fatal_error(error, "Failed to download '"//join_path(namespace, name)//"'. Status code: '"// &
       & str(code)//"'. Error message: '"//error_message//"'."); return
     end if
 
     if (.not. json%has_key('data')) then
-      call fatal_error(error, "Failed to download '"//join_path(node%namespace, node%name)//"': No data."); return
+      call fatal_error(error, "Failed to download '"//join_path(namespace, name)//"': No data."); return
     end if
 
     call get_value(json, 'data', p, stat=stat)
     if (stat /= 0) then
-      call fatal_error(error, "Failed to read package data for '"//join_path(node%namespace, node%name)//"'."); return
+      call fatal_error(error, "Failed to read package data for '"//join_path(namespace, name)//"'."); return
     end if
 
     if (allocated(node%requested_version)) then
@@ -775,38 +779,38 @@ contains
     end if
 
     if (.not. p%has_key(version_key)) then
-      call fatal_error(error, "Failed to download '"//join_path(node%namespace, node%name)//"': No version data."); return
+      call fatal_error(error, "Failed to download '"//join_path(namespace, name)//"': No version data."); return
     end if
 
     call get_value(p, version_key, q, stat=stat)
     if (stat /= 0) then
-      call fatal_error(error, "Failed to retrieve version data for '"//join_path(node%namespace, node%name)//"'."); return
+      call fatal_error(error, "Failed to retrieve version data for '"//join_path(namespace, name)//"'."); return
     end if
 
     if (.not. q%has_key('download_url')) then
-      call fatal_error(error, "Failed to download '"//join_path(node%namespace, node%name)//"': No download url."); return
+      call fatal_error(error, "Failed to download '"//join_path(namespace, name)//"': No download url."); return
     end if
 
     call get_value(q, 'download_url', download_url, stat=stat)
     if (stat /= 0) then
-      call fatal_error(error, "Failed to read download url for '"//join_path(node%namespace, node%name)//"'."); return
+      call fatal_error(error, "Failed to read download url for '"//join_path(namespace, name)//"'."); return
     end if
 
     download_url = official_registry_base_url//download_url
 
     if (.not. q%has_key('version')) then
-      call fatal_error(error, "Failed to download '"//join_path(node%namespace, node%name)//"': No version found."); return
+      call fatal_error(error, "Failed to download '"//join_path(namespace, name)//"': No version found."); return
     end if
 
     call get_value(q, 'version', version_str, stat=stat)
     if (stat /= 0) then
-      call fatal_error(error, "Failed to read version data for '"//join_path(node%namespace, node%name)//"'."); return
+      call fatal_error(error, "Failed to read version data for '"//join_path(namespace, name)//"'."); return
     end if
 
     call new_version(version, version_str, error)
     if (allocated(error)) then
       call fatal_error(error, "'"//version_str//"' is not a valid version for '"// &
-      & join_path(node%namespace, node%name)//"'."); return
+      & join_path(namespace, name)//"'."); return
     end if
   end subroutine
 
@@ -1197,6 +1201,8 @@ contains
     !> Log verbosity
     integer, intent(in) :: verbosity, iunit
 
+    integer :: ip
+
     has_changed = .true.
 
     !> All the following entities must be equal for the dependency to not have changed
@@ -1207,27 +1213,44 @@ contains
     !> may not have it
     if (allocated(cached%version) .and. allocated(manifest%version)) then
       if (cached%version /= manifest%version) then
-         if (verbosity>1) write(iunit,out_fmt) "VERSION has changed: "//cached%version%s()//" vs. "//manifest%version%s()
-         return
-      endif
+        if (verbosity > 1) write (iunit, out_fmt) "VERSION has changed: "//cached%version%s()//" vs. "//manifest%version%s()
+        return
+      end if
     else
-       if (verbosity>1) write(iunit,out_fmt) "VERSION has changed presence "
+      if (verbosity > 1) write (iunit, out_fmt) "VERSION has changed presence "
     end if
     if (allocated(cached%revision) .and. allocated(manifest%revision)) then
       if (cached%revision /= manifest%revision) then
-        if (verbosity>1) write(iunit,out_fmt) "REVISION has changed: "//cached%revision//" vs. "//manifest%revision
+        if (verbosity > 1) write (iunit, out_fmt) "REVISION has changed: "//cached%revision//" vs. "//manifest%revision
         return
-      endif
+      end if
     else
-      if (verbosity>1) write(iunit,out_fmt) "REVISION has changed presence "
+      if (verbosity > 1) write (iunit, out_fmt) "REVISION has changed presence "
     end if
     if (allocated(cached%proj_dir) .and. allocated(manifest%proj_dir)) then
       if (cached%proj_dir /= manifest%proj_dir) then
-        if (verbosity>1) write(iunit,out_fmt) "PROJECT DIR has changed: "//cached%proj_dir//" vs. "//manifest%proj_dir
+        if (verbosity > 1) write (iunit, out_fmt) "PROJECT DIR has changed: "//cached%proj_dir//" vs. "//manifest%proj_dir
         return
+      end if
+    else
+      if (verbosity > 1) write (iunit, out_fmt) "PROJECT DIR has changed presence "
+    end if
+    if (allocated(cached%preprocess) .eqv. allocated(manifest%preprocess)) then
+      if (allocated(cached%preprocess)) then
+          if (size(cached%preprocess) /= size(manifest%preprocess)) then
+            if (verbosity > 1) write (iunit, out_fmt) "PREPROCESS has changed size"
+            return
+          end if
+          do ip=1,size(cached%preprocess)
+             if (.not.(cached%preprocess(ip) == manifest%preprocess(ip))) then
+                if (verbosity > 1) write (iunit, out_fmt) "PREPROCESS config has changed"
+                return
+             end if
+          end do
       endif
     else
-      if (verbosity>1) write(iunit,out_fmt) "PROJECT DIR has changed presence "
+      if (verbosity > 1) write (iunit, out_fmt) "PREPROCESS has changed presence "
+      return
     end if
 
     !> All checks passed: the two dependencies have no differences

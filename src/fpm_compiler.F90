@@ -28,7 +28,6 @@
 module fpm_compiler
 use,intrinsic :: iso_fortran_env, only: stderr=>error_unit
 use fpm_environment, only: &
-        get_env, &
         get_os_type, &
         OS_LINUX, &
         OS_MACOS, &
@@ -109,8 +108,10 @@ contains
     procedure :: link
     !> Check whether compiler is recognized
     procedure :: is_unknown
-    !> Check whether compiler is Intel family
+    !> Check whether this is an Intel compiler
     procedure :: is_intel
+    !> Check whether this is a GNU compiler
+    procedure :: is_gnu
     !> Enumerate libraries, based on compiler and platform
     procedure :: enumerate_libraries
 
@@ -118,6 +119,8 @@ contains
     procedure :: serializable_is_same => compiler_is_same
     procedure :: dump_to_toml => compiler_dump
     procedure :: load_from_toml => compiler_load
+    !> Return compiler name
+    procedure :: name => compiler_name
 
 end type compiler_t
 
@@ -160,6 +163,7 @@ character(*), parameter :: &
     flag_gnu_check = " -fcheck=bounds -fcheck=array-temps", &
     flag_gnu_limit = " -fmax-errors=1", &
     flag_gnu_external = " -Wimplicit-interface", &
+    flag_gnu_openmp = " -fopenmp", &
     flag_gnu_no_implicit_typing = " -fimplicit-none", &
     flag_gnu_no_implicit_external = " -Werror=implicit-interface", &
     flag_gnu_free_form = " -ffree-form", &
@@ -171,6 +175,7 @@ character(*), parameter :: &
     flag_pgi_debug = " -g", &
     flag_pgi_check = " -Mbounds -Mchkptr -Mchkstk", &
     flag_pgi_warn = " -Minform=inform", &
+    flag_pgi_openmp = " -mp", &
     flag_pgi_free_form = " -Mfree", &
     flag_pgi_fixed_form = " -Mfixed"
 
@@ -182,28 +187,34 @@ character(*), parameter :: &
     flag_intel_warn = " -warn all", &
     flag_intel_check = " -check all", &
     flag_intel_debug = " -O0 -g", &
+    flag_intel_opt = " -O3", &
     flag_intel_fp = " -fp-model precise -pc64", &
     flag_intel_align = " -align all", &
     flag_intel_limit = " -error-limit 1", &
     flag_intel_pthread = " -reentrancy threaded", &
     flag_intel_nogen = " -nogen-interfaces", &
     flag_intel_byterecl = " -assume byterecl", &
+    flag_intel_openmp = " -qopenmp", &
     flag_intel_free_form = " -free", &
-    flag_intel_fixed_form = " -fixed"
+    flag_intel_fixed_form = " -fixed", &
+    flag_intel_standard_compliance = " -standard-semantics"
 
 character(*), parameter :: &
     flag_intel_backtrace_win = " /traceback", &
     flag_intel_warn_win = " /warn:all", &
     flag_intel_check_win = " /check:all", &
     flag_intel_debug_win = " /Od /Z7", &
+    flag_intel_opt_win = " /O3", &
     flag_intel_fp_win = " /fp:precise", &
     flag_intel_align_win = " /align:all", &
     flag_intel_limit_win = " /error-limit:1", &
     flag_intel_pthread_win = " /reentrancy:threaded", &
     flag_intel_nogen_win = " /nogen-interfaces", &
     flag_intel_byterecl_win = " /assume:byterecl", &
+    flag_intel_openmp_win = " /Qopenmp", &
     flag_intel_free_form_win = " /free", &
-    flag_intel_fixed_form_win = " /fixed"
+    flag_intel_fixed_form_win = " /fixed", &
+    flag_intel_standard_compliance_win = " /standard-semantics"
 
 character(*), parameter :: &
     flag_nag_coarray = " -coarray=single", &
@@ -212,16 +223,17 @@ character(*), parameter :: &
     flag_nag_debug = " -g -O0", &
     flag_nag_opt = " -O4", &
     flag_nag_backtrace = " -gline", &
+    flag_nag_openmp = " -openmp", &
     flag_nag_free_form = " -free", &
     flag_nag_fixed_form = " -fixed", &
     flag_nag_no_implicit_typing = " -u"
 
 character(*), parameter :: &
     flag_lfortran_opt = " --fast", &
+    flag_lfortran_openmp = " --openmp", &
     flag_lfortran_implicit_typing = " --implicit-typing", &
     flag_lfortran_implicit_external = " --allow-implicit-interface", &
     flag_lfortran_fixed_form = " --fixed-form"
-
 
 character(*), parameter :: &
     flag_cray_no_implicit_typing = " -dl", &
@@ -284,48 +296,58 @@ subroutine get_release_compile_flags(id, flags)
 
     case(id_intel_classic_nix)
         flags = &
+            flag_intel_opt//&
             flag_intel_fp//&
             flag_intel_align//&
             flag_intel_limit//&
             flag_intel_pthread//&
             flag_intel_nogen//&
-            flag_intel_byterecl
+            flag_intel_byterecl//&
+            flag_intel_standard_compliance
 
     case(id_intel_classic_mac)
         flags = &
+            flag_intel_opt//&
             flag_intel_fp//&
             flag_intel_align//&
             flag_intel_limit//&
             flag_intel_pthread//&
             flag_intel_nogen//&
-            flag_intel_byterecl
+            flag_intel_byterecl//&
+            flag_intel_standard_compliance
 
     case(id_intel_classic_windows)
         flags = &
-            & flag_intel_fp_win//&
-            flag_intel_align_win//&
-            flag_intel_limit_win//&
-            flag_intel_pthread_win//&
-            flag_intel_nogen_win//&
-            flag_intel_byterecl_win
-
-    case(id_intel_llvm_nix)
-        flags = &
-            flag_intel_fp//&
-            flag_intel_align//&
-            flag_intel_limit//&
-            flag_intel_pthread//&
-            flag_intel_nogen//&
-            flag_intel_byterecl
-
-    case(id_intel_llvm_windows)
-        flags = &
+            flag_intel_opt_win//&
             flag_intel_fp_win//&
             flag_intel_align_win//&
             flag_intel_limit_win//&
             flag_intel_pthread_win//&
             flag_intel_nogen_win//&
-            flag_intel_byterecl_win
+            flag_intel_byterecl_win//&
+            flag_intel_standard_compliance_win
+
+    case(id_intel_llvm_nix)
+        flags = &
+            flag_intel_opt//&
+            flag_intel_fp//&
+            flag_intel_align//&
+            flag_intel_limit//&
+            flag_intel_pthread//&
+            flag_intel_nogen//&
+            flag_intel_byterecl//&
+            flag_intel_standard_compliance
+
+    case(id_intel_llvm_windows)
+        flags = &
+            flag_intel_opt_win//&
+            flag_intel_fp_win//&
+            flag_intel_align_win//&
+            flag_intel_limit_win//&
+            flag_intel_pthread_win//&
+            flag_intel_nogen_win//&
+            flag_intel_byterecl_win//&
+            flag_intel_standard_compliance_win
 
     case(id_nag)
         flags = &
@@ -389,7 +411,9 @@ subroutine get_debug_compile_flags(id, flags)
             flag_intel_limit//&
             flag_intel_debug//&
             flag_intel_byterecl//&
+            flag_intel_standard_compliance//&
             flag_intel_backtrace
+
     case(id_intel_classic_mac)
         flags = &
             flag_intel_warn//&
@@ -397,6 +421,7 @@ subroutine get_debug_compile_flags(id, flags)
             flag_intel_limit//&
             flag_intel_debug//&
             flag_intel_byterecl//&
+            flag_intel_standard_compliance//&
             flag_intel_backtrace
     case(id_intel_classic_windows)
         flags = &
@@ -405,6 +430,7 @@ subroutine get_debug_compile_flags(id, flags)
             flag_intel_limit_win//&
             flag_intel_debug_win//&
             flag_intel_byterecl_win//&
+            flag_intel_standard_compliance_win//&
             flag_intel_backtrace_win
     case(id_intel_llvm_nix)
         flags = &
@@ -413,6 +439,7 @@ subroutine get_debug_compile_flags(id, flags)
             flag_intel_limit//&
             flag_intel_debug//&
             flag_intel_byterecl//&
+            flag_intel_standard_compliance//&
             flag_intel_backtrace
     case(id_intel_llvm_windows)
         flags = &
@@ -420,7 +447,8 @@ subroutine get_debug_compile_flags(id, flags)
             flag_intel_check_win//&
             flag_intel_limit_win//&
             flag_intel_debug_win//&
-            flag_intel_byterecl_win
+            flag_intel_byterecl_win//&
+            flag_intel_standard_compliance_win
     case(id_nag)
         flags = &
             flag_nag_debug//&
@@ -945,9 +973,14 @@ end function is_unknown
 
 pure logical function is_intel(self)
     class(compiler_t), intent(in) :: self
-    is_intel = any(self%id == [id_intel_classic_mac,id_intel_classic_nix,id_intel_classic_windows,&
-                               id_intel_llvm_nix,id_intel_llvm_unknown,id_intel_llvm_windows])
+    is_intel = any(self%id == [id_intel_classic_nix,id_intel_classic_mac,id_intel_classic_windows, &
+                               id_intel_llvm_nix,id_intel_llvm_windows,id_intel_llvm_unknown])
 end function is_intel
+
+pure logical function is_gnu(self)
+    class(compiler_t), intent(in) :: self
+    is_gnu = any(self%id == [id_f95,id_gcc,id_caf])
+end function is_gnu
 
 !>
 !> Enumerate libraries, based on compiler and platform
@@ -1357,6 +1390,36 @@ subroutine compiler_load(self, table, error)
 
 end subroutine compiler_load
 
+!> Return a compiler name string
+pure function compiler_name(self) result(name)
+   !> Instance of the compiler object
+   class(compiler_t), intent(in) :: self
+   !> Representation as string
+   character(len=:), allocatable :: name
+
+   select case (self%id)
+       case(id_gcc); name = "gfortran"
+       case(id_f95); name = "f95"
+       case(id_caf); name = "caf"
+       case(id_intel_classic_nix);     name = "ifort"
+       case(id_intel_classic_mac);     name = "ifort"
+       case(id_intel_classic_windows); name = "ifort"
+       case(id_intel_llvm_nix);     name = "ifx"
+       case(id_intel_llvm_windows); name = "ifx"
+       case(id_intel_llvm_unknown); name = "ifx"
+       case(id_pgi);       name = "pgfortran"
+       case(id_nvhpc);     name = "nvfortran"
+       case(id_nag);       name = "nagfor"
+       case(id_flang);     name = "flang"
+       case(id_flang_new); name = "flang-new"
+       case(id_f18);       name = "f18"
+       case(id_ibmxl);     name = "xlf90"
+       case(id_cray);      name = "crayftn"
+       case(id_lahey);     name = "lfc"
+       case(id_lfortran);  name = "lFortran"
+       case default;       name = "invalid/unknown"
+   end select
+end function compiler_name
 
 
 

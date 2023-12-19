@@ -19,12 +19,15 @@ use fpm_sources, only: add_executable_sources, add_sources_from_dir
 use fpm_targets, only: targets_from_sources, build_target_t, build_target_ptr, &
                         FPM_TARGET_EXECUTABLE, FPM_TARGET_ARCHIVE
 use fpm_manifest, only : get_package_data, package_config_t
+use fpm_meta, only : resolve_metapackages
 use fpm_error, only : error_t, fatal_error, fpm_stop
 use fpm_toml, only: name_is_json
-use,intrinsic :: iso_fortran_env, only : stdin=>input_unit,   &
-                                       & stdout=>output_unit, &
-                                       & stderr=>error_unit
+use, intrinsic :: iso_fortran_env, only : stdin => input_unit, &
+                                        & stdout => output_unit, &
+                                        & stderr => error_unit
 use iso_c_binding, only: c_char, c_ptr, c_int, c_null_char, c_associated, c_f_pointer
+use fpm_environment, only: os_is_unix
+
 implicit none
 private
 public :: cmd_build, cmd_run, cmd_clean
@@ -35,13 +38,13 @@ contains
 !> Constructs a valid fpm model from command line settings and the toml manifest.
 subroutine build_model(model, settings, package, error)
     type(fpm_model_t), intent(out) :: model
-    type(fpm_build_settings), intent(in) :: settings
-    type(package_config_t), intent(in) :: package
+    class(fpm_build_settings), intent(inout) :: settings
+    type(package_config_t), intent(inout) :: package
     type(error_t), allocatable, intent(out) :: error
 
     integer :: i, j
     type(package_config_t) :: dependency
-    character(len=:), allocatable :: manifest, lib_dir, flags, cflags, cxxflags, ldflags
+    character(len=:), allocatable :: manifest, lib_dir
     logical :: has_cpp
     logical :: duplicates_found
     type(string_t) :: include_dir
@@ -52,7 +55,31 @@ subroutine build_model(model, settings, package, error)
     allocate(model%link_libraries(0))
     allocate(model%external_modules(0))
 
+    call new_compiler(model%compiler, settings%compiler, settings%c_compiler, &
+        & settings%cxx_compiler, echo=settings%verbose, verbose=settings%verbose)
+    call new_archiver(model%archiver, settings%archiver, &
+        & echo=settings%verbose, verbose=settings%verbose)
+
+    if (model%compiler%is_unknown()) then
+        write(*, '(*(a:,1x))') &
+            "<WARN>", "Unknown compiler", model%compiler%fc, "requested!", &
+            "Defaults for this compiler might be incorrect"
+    end if
+
+    call new_compiler_flags(model,settings)
+    model%build_prefix = join_path("build", basename(model%compiler%fc))
+    model%include_tests = settings%build_tests
+    model%enforce_module_names = package%build%module_naming
+    model%module_prefix = package%build%module_prefix
+
+    ! Resolve meta-dependencies into the package and the model
+    call resolve_metapackages(model,package,settings,error)
+    if (allocated(error)) return
+
+    ! Create dependencies
     call new_dependency_tree(model%deps, cache=join_path("build", "cache.toml"))
+
+    ! Build and resolve model dependencies
     call model%deps%add(package, error)
     if (allocated(error)) return
 
@@ -64,36 +91,6 @@ subroutine build_model(model, settings, package, error)
     if (.not.exists("build/.gitignore")) then
       call filewrite(join_path("build", ".gitignore"),["*"])
     end if
-
-    call new_compiler(model%compiler, settings%compiler, settings%c_compiler, &
-        & settings%cxx_compiler, echo=settings%verbose, verbose=settings%verbose)
-    call new_archiver(model%archiver, settings%archiver, &
-        & echo=settings%verbose, verbose=settings%verbose)
-
-    if (settings%flag == '') then
-        flags = model%compiler%get_default_flags(settings%profile == "release")
-    else
-        flags = settings%flag
-        select case(settings%profile)
-        case("release", "debug")
-            flags = flags // model%compiler%get_default_flags(settings%profile == "release")
-        end select
-    end if
-
-    cflags = trim(settings%cflag)
-    cxxflags = trim(settings%cxxflag)
-    ldflags = trim(settings%ldflag)
-
-    if (model%compiler%is_unknown()) then
-        write(*, '(*(a:,1x))') &
-            "<WARN>", "Unknown compiler", model%compiler%fc, "requested!", &
-            "Defaults for this compiler might be incorrect"
-    end if
-    model%build_prefix = join_path("build", basename(model%compiler%fc))
-
-    model%include_tests = settings%build_tests
-    model%enforce_module_names = package%build%module_naming
-    model%module_prefix = package%build%module_prefix
 
     allocate(model%packages(model%deps%ndep))
 
@@ -113,12 +110,30 @@ subroutine build_model(model, settings, package, error)
             end associate
             model%packages(i)%version = package%version%s()
 
+            !> Add this dependency's manifest macros
+            allocate(model%packages(i)%macros(0))
+
             if (allocated(dependency%preprocess)) then
                 do j = 1, size(dependency%preprocess)
                     if (dependency%preprocess(j)%name == "cpp") then
                         if (.not. has_cpp) has_cpp = .true.
                         if (allocated(dependency%preprocess(j)%macros)) then
-                            model%packages(i)%macros = dependency%preprocess(j)%macros
+                            model%packages(i)%macros = [model%packages(i)%macros, dependency%preprocess(j)%macros]
+                        end if
+                    else
+                        write(stderr, '(a)') 'Warning: Preprocessor ' // package%preprocess(i)%name // &
+                            ' is not supported; will ignore it'
+                    end if
+                end do
+            end if
+
+            !> Add this dependency's package-level macros
+            if (allocated(dep%preprocess)) then
+                do j = 1, size(dep%preprocess)
+                    if (dep%preprocess(j)%name == "cpp") then
+                        if (.not. has_cpp) has_cpp = .true.
+                        if (allocated(dep%preprocess(j)%macros)) then
+                            model%packages(i)%macros = [model%packages(i)%macros, dep%preprocess(j)%macros]
                         end if
                     else
                         write(stderr, '(a)') 'Warning: Preprocessor ' // package%preprocess(i)%name // &
@@ -167,11 +182,8 @@ subroutine build_model(model, settings, package, error)
     end do
     if (allocated(error)) return
 
-    if (has_cpp) call set_cpp_preprocessor_flags(model%compiler%id, flags)
-    model%fortran_compile_flags = flags
-    model%c_compile_flags = cflags
-    model%cxx_compile_flags = cxxflags
-    model%link_flags = ldflags
+    ! Add optional flags
+    if (has_cpp) call set_cpp_preprocessor_flags(model%compiler%id, model%fortran_compile_flags)
 
     ! Add sources from executable directories
     if (is_dir('app') .and. package%build%auto_executables) then
@@ -256,6 +268,34 @@ subroutine build_model(model, settings, package, error)
     end if
 end subroutine build_model
 
+!> Initialize model compiler flags
+subroutine new_compiler_flags(model,settings)
+    type(fpm_model_t), intent(inout) :: model
+    type(fpm_build_settings), intent(in) :: settings
+
+    character(len=:), allocatable :: flags, cflags, cxxflags, ldflags
+
+    if (settings%flag == '') then
+        flags = model%compiler%get_default_flags(settings%profile == "release")
+    else
+        flags = settings%flag
+        select case(settings%profile)
+        case("release", "debug")
+            flags = flags // model%compiler%get_default_flags(settings%profile == "release")
+        end select
+    end if
+
+    cflags   = trim(settings%cflag)
+    cxxflags = trim(settings%cxxflag)
+    ldflags  = trim(settings%ldflag)
+
+    model%fortran_compile_flags = flags
+    model%c_compile_flags       = cflags
+    model%cxx_compile_flags     = cxxflags
+    model%link_flags            = ldflags
+
+end subroutine new_compiler_flags
+
 ! Check for duplicate modules
 subroutine check_modules_for_duplicates(model, duplicates_found)
     type(fpm_model_t), intent(in) :: model
@@ -304,7 +344,7 @@ end subroutine check_modules_for_duplicates
 subroutine check_module_names(model, error)
     type(fpm_model_t), intent(in) :: model
     type(error_t), allocatable, intent(out) :: error
-    integer :: i,j,k,l,m
+    integer :: k,l,m
     logical :: valid,errors_found,enforce_this_file
     type(string_t) :: package_name,module_name,package_prefix
 
@@ -394,7 +434,7 @@ subroutine check_module_names(model, error)
 end subroutine check_module_names
 
 subroutine cmd_build(settings)
-type(fpm_build_settings), intent(in) :: settings
+type(fpm_build_settings), intent(inout) :: settings
 
 type(package_config_t) :: package
 type(fpm_model_t) :: model
@@ -437,7 +477,7 @@ endif
 end subroutine cmd_build
 
 subroutine cmd_run(settings,test)
-    class(fpm_run_settings), intent(in) :: settings
+    class(fpm_run_settings), intent(inout) :: settings
     logical, intent(in) :: test
 
     integer :: i, j, col_width
@@ -460,7 +500,7 @@ subroutine cmd_run(settings,test)
         call fpm_stop(1, '*cmd_run* Package error: '//error%message)
     end if
 
-    call build_model(model, settings%fpm_build_settings, package, error)
+    call build_model(model, settings, package, error)
     if (allocated(error)) then
         call fpm_stop(1, '*cmd_run* Model error: '//error%message)
     end if
@@ -529,6 +569,8 @@ subroutine cmd_run(settings,test)
         end if
     end if
 
+
+
     ! Check all names are valid
     ! or no name and found more than one file
     toomany= size(settings%name)==0 .and. size(executables)>1
@@ -573,10 +615,10 @@ subroutine cmd_run(settings,test)
             if (exists(executables(i)%s)) then
                 if(settings%runner /= ' ')then
                     if(.not.allocated(settings%args))then
-                       call run(settings%runner//' '//executables(i)%s, &
+                       call run(settings%runner_command()//' '//executables(i)%s, &
                              echo=settings%verbose, exitstat=stat(i))
                     else
-                       call run(settings%runner//' '//executables(i)%s//" "//settings%args, &
+                       call run(settings%runner_command()//' '//executables(i)%s//" "//settings%args, &
                              echo=settings%verbose, exitstat=stat(i))
                     endif
                 else
@@ -603,17 +645,19 @@ subroutine cmd_run(settings,test)
             call fpm_stop(stat(firsterror),'*cmd_run*:stopping due to failed executions')
         end if
 
-    endif
+    end if
+
     contains
+
     subroutine compact_list_all()
     integer, parameter :: LINE_WIDTH = 80
-    integer :: i, j, nCol
-        j = 1
+    integer :: ii, jj, nCol
+        jj = 1
         nCol = LINE_WIDTH/col_width
         write(stderr,*) 'Available names:'
-        do i=1,size(targets)
+        do ii=1,size(targets)
 
-            exe_target => targets(i)%ptr
+            exe_target => targets(ii)%ptr
 
             if (exe_target%target_type == FPM_TARGET_EXECUTABLE .and. &
                 allocated(exe_target%dependencies)) then
@@ -621,11 +665,9 @@ subroutine cmd_run(settings,test)
                 exe_source => exe_target%dependencies(1)%ptr%source
 
                 if (exe_source%unit_scope == run_scope) then
-
-                    write(stderr,'(A)',advance=(merge("yes","no ",modulo(j,nCol)==0))) &
+                    write(stderr,'(A)',advance=(merge("yes","no ",modulo(jj,nCol)==0))) &
                         & [character(len=col_width) :: basename(exe_target%output_file, suffix=.false.)]
-                    j = j + 1
-
+                    jj = jj + 1
                 end if
             end if
         end do
@@ -634,15 +676,15 @@ subroutine cmd_run(settings,test)
 
     subroutine compact_list()
     integer, parameter :: LINE_WIDTH = 80
-    integer :: i, j, nCol
-        j = 1
+    integer :: ii, jj, nCol
+        jj = 1
         nCol = LINE_WIDTH/col_width
         write(stderr,*) 'Matched names:'
-        do i=1,size(executables)
-            write(stderr,'(A)',advance=(merge("yes","no ",modulo(j,nCol)==0))) &
-                & [character(len=col_width) :: basename(executables(i)%s, suffix=.false.)]
-            j = j + 1
-        enddo
+        do ii=1,size(executables)
+            write(stderr,'(A)',advance=(merge("yes","no ",modulo(jj,nCol)==0))) &
+                & [character(len=col_width) :: basename(executables(ii)%s, suffix=.false.)]
+            jj = jj + 1
+        end do
         write(stderr,*)
     end subroutine compact_list
 
@@ -663,27 +705,28 @@ subroutine delete_skip(is_unix)
     end do
 end subroutine delete_skip
 
+!> Delete the build directory including or excluding dependencies.
 subroutine cmd_clean(settings)
-    !> fpm clean called
+    !> Settings for the clean command.
     class(fpm_clean_settings), intent(in) :: settings
-    ! character(len=:), allocatable :: dir
-    ! type(string_t), allocatable :: files(:)
-    character(len=1) :: response
+
+    character :: user_response
+
     if (is_dir('build')) then
-        ! remove the entire build directory
+        ! Remove the entire build directory
         if (settings%clean_call) then
-            call os_delete_dir(settings%is_unix, 'build')
-            return
+            call os_delete_dir(os_is_unix(), 'build'); return
         end if
-        ! remove the build directory but skip dependencies
+
+        ! Remove the build directory but skip dependencies
         if (settings%clean_skip) then
-            call delete_skip(settings%is_unix)
-            return
+            call delete_skip(os_is_unix()); return
         end if
-        ! prompt to remove the build directory but skip dependencies
+
+        ! Prompt to remove the build directory but skip dependencies
         write(stdout, '(A)', advance='no') "Delete build, excluding dependencies (y/n)? "
-        read(stdin, '(A1)') response
-        if (lower(response) == 'y') call delete_skip(settings%is_unix)
+        read(stdin, '(A1)') user_response
+        if (lower(user_response) == 'y') call delete_skip(os_is_unix())
     else
         write (stdout, '(A)') "fpm: No build directory found."
     end if
