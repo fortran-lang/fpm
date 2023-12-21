@@ -16,7 +16,7 @@ contains
   !> Entry point for the export subcommand
   subroutine cmd_export(settings)
     !> Representation of the command line arguments
-    type(fpm_export_settings), intent(in) :: settings
+    type(fpm_export_settings), intent(inout) :: settings
     type(package_config_t) :: package
     type(dependency_tree_t) :: deps
     type(fpm_model_t) :: model

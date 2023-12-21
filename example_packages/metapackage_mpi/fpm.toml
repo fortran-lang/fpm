@@ -1,0 +1,4 @@
+name = "test_mpi"
+dependencies.mpi = "*"
+fortran.implicit-external=true
+fortran.implicit-typing=true
