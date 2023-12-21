@@ -50,8 +50,6 @@ contains
 
         first_run = .false.
         r = OS_UNKNOWN
-        length = 0
-        rc = 0
 
         ! Check environment variable `OSTYPE`.
         call get_environment_variable('OSTYPE', val, length, rc)

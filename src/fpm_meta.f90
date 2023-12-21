@@ -490,9 +490,6 @@ subroutine init_mpi(this,compiler,error)
 
     !> Cleanup
     call destroy(this)
-    fwrap = string_t("")
-    cwrap = string_t("")
-    cxxwrap = string_t("")
 
     !> Get all candidate MPI wrappers
     call mpi_wrappers(compiler,fort_wrappers,c_wrappers,cpp_wrappers)
