@@ -1097,49 +1097,31 @@ subroutine mpi_compiler_match(language,wrappers,compiler,which_one,mpilib,error)
                    which_one = i
                    return
                end if
-
-               ! Because the intel mpi library does not support llvm_ compiler wrappers yet,
-               ! we must check for that manually
-               if (same_vendor==0 .and. mpi_compiler%is_intel() .and. compiler%is_intel()) then
-                   same_vendor = i
-                   vendor_mpilib = mpilib
-               end if
-
            case (LANG_C)
                ! For other languages, we can only hope that the name matches the expected one
                if (screen%s==compiler%cc .or. screen%s==compiler%fc) then
                    which_one = i
                    return
                end if
-
-               ! Because the intel mpi library does not support llvm_ compiler wrappers yet,
-               ! we must check for that manually
-               if (same_vendor==0 .and. screen%s=='icc' .and. compiler%cc=='icx') then
-                   same_vendor = i
-                   vendor_mpilib = mpilib
-               end if
-
            case (LANG_CXX)
                if (screen%s==compiler%cxx .or. screen%s==compiler%fc) then
                    which_one = i
                    return
                end if
-
-               ! Because the intel mpi library does not support llvm_ compiler wrappers yet,
-               ! we must check for that manually
-               if (same_vendor==0 .and. screen%s=='icpc' .and. compiler%cc=='icpx') then
-                   same_vendor = i
-                   vendor_mpilib = mpilib
-               end if
-
         end select
 
+        ! Because the intel mpi library does not support llvm_ compiler wrappers yet,
+        ! we must check for that manually
+        if (is_intel_classic_option(language,same_vendor,screen,compiler,mpi_compiler)) then
+            same_vendor = i
+            vendor_mpilib = mpilib
+        end if
     end do
 
     ! Intel compiler: if an exact match is not found, attempt closest wrapper
     if (which_one==0 .and. same_vendor>0) then
         which_one = same_vendor
-        mpilib = vendor_mpilib
+        mpilib    = vendor_mpilib
     end if
 
     ! None of the available wrappers matched the current Fortran compiler
@@ -1148,6 +1130,26 @@ subroutine mpi_compiler_match(language,wrappers,compiler,which_one,mpilib,error)
     1 format('<ERROR> None out of ',i0,' valid MPI wrappers matches compiler ',a)
 
 end subroutine mpi_compiler_match
+
+!> Because the Intel mpi library does not support llvm_ compiler wrappers yet,
+!> we must save the Intel-classic option and later manually replace it
+logical function is_intel_classic_option(language,same_vendor_ID,screen_out,compiler,mpi_compiler)
+    integer, intent(in) :: language,same_vendor_ID
+    type(string_t), intent(in) :: screen_out
+    type(compiler_t), intent(in) :: compiler,mpi_compiler
+
+    if (same_vendor_ID/=0) return
+
+    select case (language)
+       case (LANG_FORTRAN)
+           is_intel_classic_option = mpi_compiler%is_intel() .and. compiler%is_intel()
+       case (LANG_C)
+           is_intel_classic_option = screen_out%s=='icc' .and. compiler%cc=='icx'
+       case (LANG_CXX)
+           is_intel_classic_option = screen_out%s=='icpc' .and. compiler%cc=='icpx'
+    end select
+
+end function is_intel_classic_option
 
 !> Return library version from the MPI wrapper command
 type(version_t) function mpi_version_get(mpilib,wrapper,error)
