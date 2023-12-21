@@ -1135,16 +1135,18 @@ logical function is_intel_classic_option(language,same_vendor_ID,screen_out,comp
     type(string_t), intent(in) :: screen_out
     type(compiler_t), intent(in) :: compiler,mpi_compiler
 
-    if (same_vendor_ID/=0) return
-
-    select case (language)
-       case (LANG_FORTRAN)
-           is_intel_classic_option = mpi_compiler%is_intel() .and. compiler%is_intel()
-       case (LANG_C)
-           is_intel_classic_option = screen_out%s=='icc' .and. compiler%cc=='icx'
-       case (LANG_CXX)
-           is_intel_classic_option = screen_out%s=='icpc' .and. compiler%cc=='icpx'
-    end select
+    if (same_vendor_ID/=0) then
+        is_intel_classic_option = .false.
+    else
+        select case (language)
+           case (LANG_FORTRAN)
+               is_intel_classic_option = mpi_compiler%is_intel() .and. compiler%is_intel()
+           case (LANG_C)
+               is_intel_classic_option = screen_out%s=='icc' .and. compiler%cc=='icx'
+           case (LANG_CXX)
+               is_intel_classic_option = screen_out%s=='icpc' .and. compiler%cc=='icpx'
+        end select
+    end if
 
 end function is_intel_classic_option
 
