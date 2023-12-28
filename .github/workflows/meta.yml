@@ -35,8 +35,6 @@ jobs:
             mpi: openmpi
           - os: ubuntu-latest
             mpi: mpich
-          - os: windows-latest
-            mpi: msmpi
           - os: macos-latest
             mpi: openmpi
           - os: macos-latest
