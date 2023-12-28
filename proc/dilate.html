@@ -10,82 +10,56 @@
 
     <title>dilate &ndash; Fortran-lang/fpm</title>
 
-    <link href="../css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet"
+          integrity="sha384-1BmE4kWBq78iYhFldvKuhfTAU6auU8tT94WrHftjDbrCEXSU1oBoqyl2QvZ6jIW3" crossorigin="anonymous">
     <link href="../css/pygments.css" rel="stylesheet">
     <link href="../css/font-awesome.min.css" rel="stylesheet">
     <link href="../css/local.css" rel="stylesheet">
       <link  href="../tipuesearch/tipuesearch.css" rel="stylesheet">
 
-    <!-- HTML5 shim and Respond.js for IE8 support of HTML5 elements and media queries -->
-    <!--[if lt IE 9]>
-        <script src="https://oss.maxcdn.com/html5shiv/3.7.2/html5shiv.min.js"></script>
-        <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
-        <![endif]-->
-
-         <script src="../js/jquery-2.1.3.min.js"></script>
-         <script src="../js/svg-pan-zoom.min.js"></script>
-
+    <script src="https://code.jquery.com/jquery-3.7.0.slim.min.js" integrity="sha256-tG5mcZUtJsZvyKAxYLVXrmjKBVLd6VpVccqz/r4ypFE=" crossorigin="anonymous"></script>
   </head>
 
   <body>
 
     <!-- Fixed navbar -->
-    <nav class="navbar navbar-inverse navbar-fixed-top">
-      <div class="container">
-        <div class="navbar-header">
-          <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar" aria-expanded="false" aria-controls="navbar">
-            <span class="sr-only">Toggle navigation</span>
-            <span class="icon-bar"></span>
-            <span class="icon-bar"></span>
-            <span class="icon-bar"></span>
-          </button>
+    <div class="container-fluid mb-sm-4 mb-xl-2">
+      <nav class="navbar navbar-expand-lg navbar-dark bg-dark fixed-top">
+        <div class="container">
           <a class="navbar-brand" href="../index.html">Fortran-lang/fpm </a>
-        </div>
-        <div id="navbar" class="navbar-collapse collapse">
-          <ul class="nav navbar-nav">
-              <li><a href='../page/index.html'>Packaging and contributing</a></li>
-            <li class="dropdown hidden-xs visible-sm visible-md hidden-lg">
-              <a href="#" class="dropdown-toggle"
-                 data-toggle="dropdown" role="button"
-                 aria-haspopup="true"
-                 aria-expanded="false">
-                 Contents <span class="caret"></span>
-              </a>
-              <ul class="dropdown-menu">
-                    <li><a href="../lists/files.html">Source Files</a></li>
-                  <li><a href="../lists/modules.html">Modules</a></li>
-                  <li><a href="../lists/procedures.html">Procedures</a></li>
-                  <li><a href="../lists/types.html">Derived Types</a></li>
-                  <li><a href="../program/main.html">Program</a></li>
-              </ul>
-            </li>
-                <li class="visible-xs hidden-sm visible-lg">
-                  <a href="../lists/files.html">Source Files</a>
+          <button type="button" class="navbar-toggler" data-bs-toggle="collapse" data-bs-target="#navbar"
+                  aria-expanded="false" aria-controls="navbar" aria-label="Toggle navigation">
+                  <span class="navbar-toggler-icon">
+          </button>
+
+          <div id="navbar" class="navbar-collapse collapse">
+            <ul class="navbar-nav">
+                <li class="nav-item"><a class="nav-link" href="../page/index.html">Packaging and contributing</a></li>
+                  <li class="nav-item">
+                    <a class="nav-link" href="../lists/files.html">Source Files</a>
+                  </li>
+                <li class="nav-item">
+                  <a class="nav-link" href="../lists/modules.html">Modules</a>
                 </li>
-              <li class="visible-xs hidden-sm visible-lg">
-                <a href="../lists/modules.html">Modules</a>
-              </li>
-              <li class="visible-xs hidden-sm visible-lg">
-                <a href="../lists/procedures.html">Procedures</a>
-              </li>
-              <li class="visible-xs hidden-sm visible-lg">
-                <a href="../lists/types.html">Derived Types</a>
-              </li>
-              <li class="visible-xs hidden-sm visible-lg">
-                <a href="../program/main.html">Program</a>
-              </li>
-          </ul>
-            <form action="../search.html" class="navbar-form navbar-right" role="search">
-              <div class="form-group">
-                <input type="text" class="form-control" placeholder="Search" name="q" id="tipue_search_input" autocomplete="off" required>
+                <li class="nav-item">
+                  <a class="nav-link" href="../lists/procedures.html">Procedures</a>
+                </li>
+                <li class="nav-item">
+                  <a class="nav-link" href="../lists/types.html">Derived Types</a>
+                </li>
+                <li class="nav-item">
+                  <a class="nav-link" href="../program/main.html">Program</a>
+                </li>
+            </ul>
+              <div class="d-flex align-items-end flex-grow-1">
+                <form action="../search.html" role="search" class="ms-auto">
+                  <input type="text" class="form-control" aria-label="Search" placeholder="Search" name="q" id="tipue_search_input" autocomplete="off" required>
+                </form>
               </div>
-              <!--
-                  <button type="submit" class="btn btn-default">Submit</button>
-                  -->
-            </form>
-        </div><!--/.nav-collapse -->
-      </div>
-    </nav>
+          </div><!--/.nav-collapse -->
+        </div>
+      </nav>
+    </div>
 
     <div class="container">
   <div class="row">
@@ -93,35 +67,39 @@
       <small>Function</small>
       
     </h1>
-      <div class="row" id="info-bar">
-    <div class="col-lg-12">
-      <div class="well well-sm">
+      <div class="container p-2 mb-4 bg-light border rounded-3">
+    <div class="row align-items-center justify-content-between" id="info-bar">
+      <div class="col">
         <ul class="list-inline" style="margin-bottom:0px;display:inline">
-            <li id="meta-author"><i class="fa fa-pencil"></i> John S. Urban</li>
-            <li id="meta-license"><i class="fa fa-legal"></i> Public Domain</li>
+            <li class="list-inline-item" id="meta-author"><i class="fa fa-pencil"></i> John S. Urban</li>
+            <li class="list-inline-item" id="meta-license"><i class="fa fa-legal"></i> Public Domain</li>
 
-          <li id="statements"><i class="fa fa-list-ol"></i>
-            <a data-toggle="tooltip"
-               data-placement="bottom" data-html="true"
-               title=" 0.3% of total for procedures.">14 statements</a>
-          </li>
+            <li class="list-inline-item" id="statements"><i class="fa fa-list-ol"></i>
+              <a data-bs-toggle="tooltip"
+                 data-bs-placement="bottom" data-html="true"
+                 title=" 0.3% of total for procedures.">14 statements</a>
+            </li>
 
-            <li id="source-file">
+            <li class="list-inline-item" id="source-file">
               <i class="fa fa-code"></i>
               <a href="../src/fpm_strings.f90"> Source File</a>
             </li>
         </ul>
-        <ol class="breadcrumb in-well text-right">
-              <li><a href='../sourcefile/fpm_strings.f90.html'>fpm_strings.f90</a></li>
-              <li><a href='../module/fpm_strings.html'>fpm_strings</a></li>
-          <li class="active">dilate</li>
-        </ol>
+      </div>
+      <div class="col">
+        <nav aria-label="breadcrumb">
+          <ol class="breadcrumb justify-content-end mb-0">
+                <li class="breadcrumb-item"><a href='../sourcefile/fpm_strings.f90.html'>fpm_strings.f90</a></li>
+                <li class="breadcrumb-item"><a href='../module/fpm_strings.html'>fpm_strings</a></li>
+            <li class="breadcrumb-item active" aria-current="page">dilate</li>
+          </ol>
+        </nav>
       </div>
     </div>
   </div>
   <script>
     $(function () {
-    $('[data-toggle="tooltip"]').tooltip()
+    $('[data-bs-toggle="tooltip"]').tooltip()
     })
   </script>
 
@@ -150,8 +128,9 @@
   
   
   
-    <div class="panel panel-primary">
-      <div class="panel-heading text-left"><h3 class="panel-title">Source Code</h3></div>
+  
+    <div class="card card-primary">
+      <div class="card-header text-left"><h3 class="card-title">Source Code</h3></div>
       <div class="list-group">
         <a class="list-group-item" href="../proc/dilate.html#src">dilate</a>
       </div>
@@ -173,10 +152,10 @@
 </code></pre></div>
 
 <h2 id="synopsis">SYNOPSIS</h2>
-<div class="codehilite"><pre><span></span><code><span class="k">function</span><span class="w"> </span><span class="nf">dilate(INSTR) result</span><span class="p">(</span>OUTSTR<span class="p">)</span><span class="w"></span>
+<div class="codehilite"><pre><span></span><code><span class="k">function</span><span class="w"> </span><span class="nf">dilate(INSTR) result</span><span class="p">(</span>OUTSTR<span class="p">)</span>
 
-<span class="w"> </span><span class="n">character</span><span class="p">(</span><span class="n">len</span><span class="p">=</span><span class="o">*</span><span class="p">),</span><span class="n">intent</span><span class="p">=(</span><span class="n">in</span><span class="p">)</span><span class="w">  </span><span class="p">::</span><span class="w"> </span><span class="n">INSTR</span><span class="w"></span>
-<span class="w"> </span><span class="n">character</span><span class="p">(</span><span class="n">len</span><span class="p">=:),</span><span class="n">allocatable</span><span class="w">  </span><span class="p">::</span><span class="w"> </span><span class="n">OUTSTR</span><span class="w"></span>
+<span class="w"> </span><span class="n">character</span><span class="p">(</span><span class="n">len</span><span class="p">=</span><span class="o">*</span><span class="p">),</span><span class="n">intent</span><span class="p">=(</span><span class="n">in</span><span class="p">)</span><span class="w">  </span><span class="p">::</span><span class="w"> </span><span class="n">INSTR</span>
+<span class="w"> </span><span class="n">character</span><span class="p">(</span><span class="n">len</span><span class="p">=:),</span><span class="n">allocatable</span><span class="w">  </span><span class="p">::</span><span class="w"> </span><span class="n">OUTSTR</span>
 </code></pre></div>
 
 <h2 id="description">DESCRIPTION</h2>
@@ -197,19 +176,19 @@
 
 <h2 id="examples">EXAMPLES</h2>
 <p>Sample program:</p>
-<div class="codehilite"><pre><span></span><code><span class="nv">program</span> <span class="nv">demo_dilate</span>
+<div class="codehilite"><pre><span></span><code><span class="nx">program</span><span class="w"> </span><span class="nx">demo_dilate</span>
 
-<span class="nv">use</span> <span class="nv">M_strings</span>, <span class="nv">only</span> : <span class="nv">dilate</span>
-<span class="nv">implicit</span> <span class="nv">none</span>
-<span class="nv">character</span><span class="ss">(</span><span class="nv">len</span><span class="o">=</span>:<span class="ss">)</span>,<span class="nv">allocatable</span> :: <span class="nv">in</span>
-<span class="nv">integer</span>                      :: <span class="nv">i</span>
-   <span class="nv">in</span><span class="o">=</span><span class="s1">&#39;</span><span class="s">  this is my string  </span><span class="s1">&#39;</span>
-   <span class="o">!</span> <span class="nv">change</span> <span class="nv">spaces</span> <span class="nv">to</span> <span class="nv">tabs</span> <span class="nv">to</span> <span class="nv">make</span> <span class="nv">a</span> <span class="nv">sample</span> <span class="nv">input</span>
-   <span class="k">do</span> <span class="nv">i</span><span class="o">=</span><span class="mi">1</span>,<span class="nv">len</span><span class="ss">(</span><span class="nv">in</span><span class="ss">)</span>
-      <span class="k">if</span><span class="ss">(</span><span class="nv">in</span><span class="ss">(</span><span class="nv">i</span>:<span class="nv">i</span><span class="ss">)</span> <span class="o">==</span> <span class="s1">&#39;</span><span class="s"> </span><span class="s1">&#39;</span><span class="ss">)</span><span class="nv">in</span><span class="ss">(</span><span class="nv">i</span>:<span class="nv">i</span><span class="ss">)</span><span class="o">=</span><span class="nv">char</span><span class="ss">(</span><span class="mi">9</span><span class="ss">)</span>
-   <span class="nv">enddo</span>
-   <span class="nv">write</span><span class="ss">(</span><span class="o">*</span>,<span class="s1">&#39;</span><span class="s">(a)</span><span class="s1">&#39;</span><span class="ss">)</span><span class="nv">in</span>,<span class="nv">dilate</span><span class="ss">(</span><span class="nv">in</span><span class="ss">)</span>
-<span class="k">end</span> <span class="nv">program</span> <span class="nv">demo_dilate</span>
+<span class="nx">use</span><span class="w"> </span><span class="nx">M_strings</span><span class="p">,</span><span class="w"> </span><span class="nx">only</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="nx">dilate</span>
+<span class="nx">implicit</span><span class="w"> </span><span class="nx">none</span>
+<span class="nx">character</span><span class="p">(</span><span class="nx">len</span><span class="p">=:),</span><span class="nx">allocatable</span><span class="w"> </span><span class="o">::</span><span class="w"> </span><span class="k">in</span>
+<span class="nx">integer</span><span class="w">                      </span><span class="o">::</span><span class="w"> </span><span class="nx">i</span>
+<span class="w">   </span><span class="k">in</span><span class="p">=</span><span class="err">&#39;</span><span class="w">  </span><span class="nx">this</span><span class="w"> </span><span class="k">is</span><span class="w"> </span><span class="nx">my</span><span class="w"> </span><span class="kt">string</span><span class="w">  </span><span class="err">&#39;</span>
+<span class="w">   </span><span class="p">!</span><span class="w"> </span><span class="nx">change</span><span class="w"> </span><span class="nx">spaces</span><span class="w"> </span><span class="nx">to</span><span class="w"> </span><span class="nx">tabs</span><span class="w"> </span><span class="nx">to</span><span class="w"> </span><span class="nx">make</span><span class="w"> </span><span class="nx">a</span><span class="w"> </span><span class="nx">sample</span><span class="w"> </span><span class="nx">input</span>
+<span class="w">   </span><span class="nx">do</span><span class="w"> </span><span class="nx">i</span><span class="p">=</span><span class="mi">1</span><span class="p">,</span><span class="nx">len</span><span class="p">(</span><span class="k">in</span><span class="p">)</span>
+<span class="w">      </span><span class="k">if</span><span class="p">(</span><span class="k">in</span><span class="p">(</span><span class="nx">i</span><span class="p">:</span><span class="nx">i</span><span class="p">)</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="sc">&#39; &#39;</span><span class="p">)</span><span class="k">in</span><span class="p">(</span><span class="nx">i</span><span class="p">:</span><span class="nx">i</span><span class="p">)=</span><span class="nx">char</span><span class="p">(</span><span class="mi">9</span><span class="p">)</span>
+<span class="w">   </span><span class="nx">enddo</span>
+<span class="w">   </span><span class="nx">write</span><span class="p">(</span><span class="o">*</span><span class="p">,</span><span class="err">&#39;</span><span class="p">(</span><span class="nx">a</span><span class="p">)</span><span class="err">&#39;</span><span class="p">)</span><span class="k">in</span><span class="p">,</span><span class="nx">dilate</span><span class="p">(</span><span class="k">in</span><span class="p">)</span>
+<span class="nx">end</span><span class="w"> </span><span class="nx">program</span><span class="w"> </span><span class="nx">demo_dilate</span>
 </code></pre></div>
 
 
@@ -217,11 +196,11 @@
         <table class="table table-striped varlist">
     <thead>
       <tr>
-        <th>Type</th>
-<th>Intent</th><th>Optional</th>        <th>Attributes</th>
-        <th></th>
-        <th>Name</th>
-        <th></th>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
     </thead>
     <tbody>
         <tr>
@@ -251,65 +230,34 @@
       
     <br>
 
-    <section class="visible-xs visible-sm hidden-md">
-        <h3>Contents</h3>
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-    <div class="panel panel-primary">
-      <div class="panel-heading text-left"><h3 class="panel-title">Source Code</h3></div>
-      <div class="list-group">
-        <a class="list-group-item" href="../proc/dilate.html#src">dilate</a>
-      </div>
-    </div>
-
-
-    </section>
-    <br class="visible-xs visible-sm hidden-md">
-
 
     
     
 
     
     
+
 
 
     
     <section>
     <h2><span class="anchor" id="src"></span>Source Code</h2>
-    <div class="highlight"><pre><span></span><span class="k">function </span><span class="n">dilate</span><span class="p">(</span><span class="n">instr</span><span class="p">)</span><span class="w"> </span><span class="k">result</span><span class="p">(</span><span class="n">outstr</span><span class="p">)</span><span class="w"></span>
+    <div class="hl codehilite"><pre><span></span><span class="k">function </span><span class="n">dilate</span><span class="p">(</span><span class="n">instr</span><span class="p">)</span><span class="w"> </span><span class="k">result</span><span class="p">(</span><span class="n">outstr</span><span class="p">)</span>
 
 <span class="w">   </span><span class="kt">character</span><span class="p">(</span><span class="nb">len</span><span class="o">=*</span><span class="p">),</span><span class="w"> </span><span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">)</span><span class="w">  </span><span class="kd">::</span><span class="w"> </span><span class="n">instr</span><span class="w">        </span><span class="c">! input line to scan for tab characters</span>
 <span class="w">   </span><span class="kt">character</span><span class="p">(</span><span class="nb">len</span><span class="o">=</span><span class="p">:),</span><span class="w"> </span><span class="k">allocatable</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">outstr</span><span class="w">       </span><span class="c">! tab-expanded version of INSTR produced</span>
-<span class="w">   </span><span class="kt">integer</span><span class="w">                       </span><span class="kd">::</span><span class="w"> </span><span class="n">i</span><span class="w"></span>
-<span class="w">   </span><span class="kt">integer</span><span class="w">                       </span><span class="kd">::</span><span class="w"> </span><span class="n">icount</span><span class="w"></span>
-<span class="w">   </span><span class="kt">integer</span><span class="w">                       </span><span class="kd">::</span><span class="w"> </span><span class="n">lgth</span><span class="w"></span>
-<span class="w">   </span><span class="n">icount</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="w"></span>
-<span class="w">   </span><span class="k">do </span><span class="n">i</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="nb">len</span><span class="p">(</span><span class="n">instr</span><span class="p">)</span><span class="w"></span>
-<span class="w">      </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">instr</span><span class="p">(</span><span class="n">i</span><span class="p">:</span><span class="n">i</span><span class="p">)</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="nb">char</span><span class="p">(</span><span class="mi">9</span><span class="p">))</span><span class="w"> </span><span class="n">icount</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">icount</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="mi">1</span><span class="w"></span>
+<span class="w">   </span><span class="kt">integer</span><span class="w">                       </span><span class="kd">::</span><span class="w"> </span><span class="n">i</span>
+<span class="w">   </span><span class="kt">integer</span><span class="w">                       </span><span class="kd">::</span><span class="w"> </span><span class="n">icount</span>
+<span class="w">   </span><span class="kt">integer</span><span class="w">                       </span><span class="kd">::</span><span class="w"> </span><span class="n">lgth</span>
+<span class="w">   </span><span class="n">icount</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span>
+<span class="w">   </span><span class="k">do </span><span class="n">i</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="nb">len</span><span class="p">(</span><span class="n">instr</span><span class="p">)</span>
+<span class="w">      </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">instr</span><span class="p">(</span><span class="n">i</span><span class="p">:</span><span class="n">i</span><span class="p">)</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="nb">char</span><span class="p">(</span><span class="mi">9</span><span class="p">))</span><span class="w"> </span><span class="n">icount</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">icount</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="mi">1</span>
 <span class="w">   </span><span class="k">end do</span>
-<span class="k">   allocate</span><span class="w"> </span><span class="p">(</span><span class="kt">character</span><span class="p">(</span><span class="nb">len</span><span class="o">=</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">instr</span><span class="p">)</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="mi">8</span><span class="o">*</span><span class="n">icount</span><span class="p">))</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">outstr</span><span class="p">)</span><span class="w"></span>
-<span class="w">   </span><span class="k">call </span><span class="n">notabs</span><span class="p">(</span><span class="n">instr</span><span class="p">,</span><span class="w"> </span><span class="n">outstr</span><span class="p">,</span><span class="w"> </span><span class="n">lgth</span><span class="p">)</span><span class="w"></span>
-<span class="w">   </span><span class="n">outstr</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">outstr</span><span class="p">(:</span><span class="n">lgth</span><span class="p">)</span><span class="w"></span>
+<span class="k">   allocate</span><span class="w"> </span><span class="p">(</span><span class="kt">character</span><span class="p">(</span><span class="nb">len</span><span class="o">=</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">instr</span><span class="p">)</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="mi">8</span><span class="o">*</span><span class="n">icount</span><span class="p">))</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">outstr</span><span class="p">)</span>
+<span class="w">   </span><span class="k">call </span><span class="n">notabs</span><span class="p">(</span><span class="n">instr</span><span class="p">,</span><span class="w"> </span><span class="n">outstr</span><span class="p">,</span><span class="w"> </span><span class="n">lgth</span><span class="p">)</span>
+<span class="w">   </span><span class="n">outstr</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">outstr</span><span class="p">(:</span><span class="n">lgth</span><span class="p">)</span>
 
-<span class="k">end function </span><span class="n">dilate</span><span class="w"></span>
+<span class="k">end function </span><span class="n">dilate</span>
 </pre></div>
 
     </section>
@@ -322,32 +270,27 @@
     </div> <!-- /container -->
     <footer>
       <div class="container">
-        <div class="row">
-          <div class="col-xs-6 col-md-6"><p>Fortran-lang/fpm was developed by fortran-lang/fpm contributors<br>&copy; 2023 
+        <div class="row justify-content-between">
+          <div class="col"><p>Fortran-lang/fpm was developed by fortran-lang/fpm contributors<br>&copy; 2023 
 </p>
           </div>
-          <div class="col-xs-6 col-md-6">
-            <p class="text-right">
+          <div class="col">
+            <p class="text-end">
               Documentation generated by
               <a href="https://github.com/Fortran-FOSS-Programmers/ford">FORD</a>
- on 2023-10-12 20:10              </p>
+ on 2023-12-28 16:08              </p>
           </div>
         </div>
         <br>
       </div> <!-- /container -->
     </footer>
 
-    <!-- Bootstrap core JavaScript
-         ================================================== -->
-         <!-- Placed at the end of the document so the pages load faster -->
-    <!--
-        <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
-        -->
-        <script src="../js/bootstrap.min.js"></script>
-        <!-- IE10 viewport hack for Surface/desktop Windows 8 bug -->
-        <script src="../js/ie10-viewport-bug-workaround.js"></script>
+    <!-- Bootstrap core JavaScript -->
+    <!-- Placed at the end of the document so the pages load faster -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"
+            integrity="sha384-ka7Sk0Gln4gmtz2MlQnikT1wXgYsOg+OMhuP+IlRH9sENBO0LRn5q+8nbTov4+1p" crossorigin="anonymous"></script>    
 
-        <!-- MathJax JavaScript
+    <!-- MathJax JavaScript
              ================================================== -->
              <!-- Placed at the end of the document so the pages load faster -->
         <script type="text/x-mathjax-config">

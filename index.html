@@ -10,86 +10,60 @@
 
     <title> Fortran-lang/fpm </title>
 
-    <link href="./css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet"
+          integrity="sha384-1BmE4kWBq78iYhFldvKuhfTAU6auU8tT94WrHftjDbrCEXSU1oBoqyl2QvZ6jIW3" crossorigin="anonymous">
     <link href="./css/pygments.css" rel="stylesheet">
     <link href="./css/font-awesome.min.css" rel="stylesheet">
     <link href="./css/local.css" rel="stylesheet">
       <link  href="./tipuesearch/tipuesearch.css" rel="stylesheet">
 
-    <!-- HTML5 shim and Respond.js for IE8 support of HTML5 elements and media queries -->
-    <!--[if lt IE 9]>
-        <script src="https://oss.maxcdn.com/html5shiv/3.7.2/html5shiv.min.js"></script>
-        <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
-        <![endif]-->
-
-         <script src="./js/jquery-2.1.3.min.js"></script>
-         <script src="./js/svg-pan-zoom.min.js"></script>
-
+    <script src="https://code.jquery.com/jquery-3.7.0.slim.min.js" integrity="sha256-tG5mcZUtJsZvyKAxYLVXrmjKBVLd6VpVccqz/r4ypFE=" crossorigin="anonymous"></script>
   </head>
 
   <body>
 
     <!-- Fixed navbar -->
-    <nav class="navbar navbar-inverse navbar-fixed-top">
-      <div class="container">
-        <div class="navbar-header">
-          <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar" aria-expanded="false" aria-controls="navbar">
-            <span class="sr-only">Toggle navigation</span>
-            <span class="icon-bar"></span>
-            <span class="icon-bar"></span>
-            <span class="icon-bar"></span>
-          </button>
+    <div class="container-fluid mb-sm-4 mb-xl-2">
+      <nav class="navbar navbar-expand-lg navbar-dark bg-dark fixed-top">
+        <div class="container">
           <a class="navbar-brand" href="./index.html">Fortran-lang/fpm </a>
-        </div>
-        <div id="navbar" class="navbar-collapse collapse">
-          <ul class="nav navbar-nav">
-              <li><a href='./page/index.html'>Packaging and contributing</a></li>
-            <li class="dropdown hidden-xs visible-sm visible-md hidden-lg">
-              <a href="#" class="dropdown-toggle"
-                 data-toggle="dropdown" role="button"
-                 aria-haspopup="true"
-                 aria-expanded="false">
-                 Contents <span class="caret"></span>
-              </a>
-              <ul class="dropdown-menu">
-                    <li><a href="./lists/files.html">Source Files</a></li>
-                  <li><a href="./lists/modules.html">Modules</a></li>
-                  <li><a href="./lists/procedures.html">Procedures</a></li>
-                  <li><a href="./lists/types.html">Derived Types</a></li>
-                  <li><a href="./program/main.html">Program</a></li>
-              </ul>
-            </li>
-                <li class="visible-xs hidden-sm visible-lg">
-                  <a href="./lists/files.html">Source Files</a>
+          <button type="button" class="navbar-toggler" data-bs-toggle="collapse" data-bs-target="#navbar"
+                  aria-expanded="false" aria-controls="navbar" aria-label="Toggle navigation">
+                  <span class="navbar-toggler-icon">
+          </button>
+
+          <div id="navbar" class="navbar-collapse collapse">
+            <ul class="navbar-nav">
+                <li class="nav-item"><a class="nav-link" href="page/index.html">Packaging and contributing</a></li>
+                  <li class="nav-item">
+                    <a class="nav-link" href="./lists/files.html">Source Files</a>
+                  </li>
+                <li class="nav-item">
+                  <a class="nav-link" href="./lists/modules.html">Modules</a>
                 </li>
-              <li class="visible-xs hidden-sm visible-lg">
-                <a href="./lists/modules.html">Modules</a>
-              </li>
-              <li class="visible-xs hidden-sm visible-lg">
-                <a href="./lists/procedures.html">Procedures</a>
-              </li>
-              <li class="visible-xs hidden-sm visible-lg">
-                <a href="./lists/types.html">Derived Types</a>
-              </li>
-              <li class="visible-xs hidden-sm visible-lg">
-                <a href="./program/main.html">Program</a>
-              </li>
-          </ul>
-            <form action="./search.html" class="navbar-form navbar-right" role="search">
-              <div class="form-group">
-                <input type="text" class="form-control" placeholder="Search" name="q" id="tipue_search_input" autocomplete="off" required>
+                <li class="nav-item">
+                  <a class="nav-link" href="./lists/procedures.html">Procedures</a>
+                </li>
+                <li class="nav-item">
+                  <a class="nav-link" href="./lists/types.html">Derived Types</a>
+                </li>
+                <li class="nav-item">
+                  <a class="nav-link" href="./program/main.html">Program</a>
+                </li>
+            </ul>
+              <div class="d-flex align-items-end flex-grow-1">
+                <form action="./search.html" role="search" class="ms-auto">
+                  <input type="text" class="form-control" aria-label="Search" placeholder="Search" name="q" id="tipue_search_input" autocomplete="off" required>
+                </form>
               </div>
-              <!--
-                  <button type="submit" class="btn btn-default">Submit</button>
-                  -->
-            </form>
-        </div><!--/.nav-collapse -->
-      </div>
-    </nav>
+          </div><!--/.nav-collapse -->
+        </div>
+      </nav>
+    </div>
 
     <div class="container">
       <!-- Main component for a primary marketing message or call to action -->
-      <div class="jumbotron">
+      <div class="p-5 mb-4 bg-light border rounded-3" id="jumbotron">
         <p>Fortran Package Manager</p>
 	<p> Find us on&hellip;</p>
         <p>
@@ -99,7 +73,7 @@
       </div>
 
       <div class="row" id='text'>
-        <div class="col-md-8">
+        <div class=col-md-8>
           <h1>Fortran-lang/fpm</h1>
           <div class="toc">
 <ul>
@@ -123,46 +97,49 @@ The manifest is written in TOML, you can find the TOML specification at the offi
 With the package manifest a central place to collect information about the project is provided.
 It contains the versioning and licensing meta data, as well as the information on external dependencies and the required build-tools or compiler settings.</p>
 <p>The manifest format specific to <em>fpm</em> projects is documented in the <a href="page/Manifest.html">manifest reference</a>.</p>
-<p></p><div class="alert alert-info" role="alert"><h4>Note</h4><p>For a more practical but less complete guide on creating <em>fpm</em> projects see the <a href="page/Packaging.html">packaging guide</a>.</p></div>
+<div class="alert alert-info">
+<p class="alert-title h4">Note</p>
+<p>For a more practical but less complete guide on creating <em>fpm</em> projects see the <a href="page/Packaging.html">packaging guide</a>.</p>
+</div>
 <p>The details of the TOML parsing are implemented with using the <a href="https://toml-f.github.io/toml-f">tomlf</a> module.
-Generally, the interface to all TOML related functions for <em>fpm</em> is found in the proxy module <a href="./module/fpm_toml.html">fpm_toml</a>.</p>
-<p>All the manifest types are bundled in <a href="./module/fpm_manifest.html">fpm_manifest</a>.
-While the specific subtables for the package configuration are found in the <code>src/fpm/manifest</code> directory, they should be reexported in the <a href="./module/fpm_manifest.html">fpm_manifest</a> module if they should be elsewhere in <em>fpm</em>.</p>
+Generally, the interface to all TOML related functions for <em>fpm</em> is found in the proxy module <a href="/module/fpm_toml.html">fpm_toml</a>.</p>
+<p>All the manifest types are bundled in <a href="/module/fpm_manifest.html">fpm_manifest</a>.
+While the specific subtables for the package configuration are found in the <code>src/fpm/manifest</code> directory, they should be reexported in the <a href="/module/fpm_manifest.html">fpm_manifest</a> module if they should be elsewhere in <em>fpm</em>.</p>
 <h2 id="command-line-interface">Command line interface</h2>
 <p><em>fpm</em> is mainly used as a command line tool.
 To work with an <em>fpm</em> project as a user you can completely rely on the command line.</p>
-<p>The command line interface is build with the <a href="https://github.com/urbanjost/M_CLI2">M_CLI2</a> module and can be found in <a href="./module/fpm_command_line.html">fpm_command_line</a>.</p>
+<p>The command line interface is build with the <a href="https://github.com/urbanjost/M_CLI2">M_CLI2</a> module and can be found in <a href="/module/fpm_command_line.html">fpm_command_line</a>.</p>
 <h2 id="the-package-model">The package model</h2>
 <p>Once front-end inputs have been received from the package manifest and command line interface, <em>fpm</em> will construct an
 internal representation of the package and its dependencies. This internal representation is known as the package <em>model</em>.
 The model and its associated data types should encapsulate all the information required to correctly build a package and
 should be independent of the intended backend build system. Information stored in the model includes: build targets and
 their inter-dependencies; compiler and compiler flags; library linking information.</p>
-<p>For more information on the contents of the package model and the process for constructing it, please see <a href="./module/fpm_model.html">fpm_model</a>.</p>
+<p>For more information on the contents of the package model and the process for constructing it, please see <a href="/module/fpm_model.html">fpm_model</a>.</p>
 <h2 id="the-build-backend">The build backend</h2>
 <p>Once a complete package model has been constructed, it can be passed to a <em>backend</em> for either performing the compilation
 and linking of targets, or for generating configuration files for a third-party build system.
-Currently, only a native backend is implemented in <em>fpm</em>. See <a href="./module/fpm_backend.html">fpm_backend</a> for more information.</p>
+Currently, only a native backend is implemented in <em>fpm</em>. See <a href="/module/fpm_backend.html">fpm_backend</a> for more information.</p>
 <h2 id="generating-this-documentation">Generating this documentation</h2>
 <p>This documentation is generated by <a href="https://github.com/Fortran-FOSS-Programmers/FORD">FORD</a>.
 For more details on the <a href="https://github.com/fortran-lang/fpm/docs.md">project file</a> and the comment markup in the source code visit the <a href="https://github.com/Fortran-FOSS-Programmers/ford/wiki">FORD documentation</a>.</p>
 <p>To regenerate this documentation run:</p>
-<div class="codehilite"><pre><span></span><code>ford docs.md
+<div class="codehilite"><pre><span></span><code>ford<span class="w"> </span>docs.md
 </code></pre></div>
         </div>
-        <div class="col-md-4">
-	  <div class="well">
-          <h2>Developer Info</h2>
-          <h4>fortran-lang/fpm contributors</h4>
-     		 <img src="https://fortran-lang.org/assets/img/fortran_logo_512x512.png" alt="Developer picture" class="img-thumbnail">
-          
-            <div class="text-center"><div class="btn-group" role="group">
-             <a class="btn btn-lg btn-primary" href="https://fortran-lang.org"><i class="fa fa-globe fa-lg"></i></a>
-              <a class="btn btn-lg btn-primary" href="https://github.com/fortran-lang"><i class="fa fa-github fa-lg"></i></a>
-              <a class="btn btn-lg btn-primary" href="https://twitter.com/fortranlang"><i class="fa fa-twitter fa-lg"></i></a>
-            </div></div>
-       </div>
-       </div>
+          <div class="col-md-4">
+	        <div class="card card-body bg-light">
+     		    <img src="https://fortran-lang.org/assets/img/fortran_logo_512x512.png" alt="Developer picture" class="card-img-top">
+              <h2 class="card-title">Developer Info</h2>
+              <h4 class="card-text">fortran-lang/fpm contributors</h4>
+              <p class="card-text"></p>
+                <div class="text-center"><div class="btn-group" role="group">
+                      <a class="btn btn-lg btn-primary" href="https://fortran-lang.org"><i class="fa fa-globe fa-lg"></i></a>
+                      <a class="btn btn-lg btn-primary" href="https://github.com/fortran-lang"><i class="fa fa-github fa-lg"></i></a>
+                      <a class="btn btn-lg btn-primary" href="https://twitter.com/fortranlang"><i class="fa fa-twitter fa-lg"></i></a>
+                </div></div>
+            </div>
+          </div>
       </div>
         <div class="row">
           <hr>
@@ -180,7 +157,7 @@ For more details on the <a href="https://github.com/fortran-lang/fpm/docs.md">pr
           <div class="col-xs-6 col-sm-3">
             <div>
               <h3>Modules</h3>
-              <ul><li><a href='./module/fpm.html'>fpm</a></li><li><a href='./module/fpm_backend.html'>fpm_backend</a></li><li><a href='./module/fpm_backend_console.html'>fpm_backend_console</a></li><li><a href='./module/fpm_backend_output.html'>fpm_backend_output</a></li><li><a href='./module/fpm_cmd_install.html'>fpm_cmd_install</a></li><li><a href='./module/fpm_cmd_new.html'>fpm_cmd_new</a></li><li><a href='./module/fpm_cmd_publish.html'>fpm_cmd_publish</a></li><li><a href='./module/fpm_cmd_update.html'>fpm_cmd_update</a></li><li><a href='./module/fpm_command_line.html'>fpm_command_line</a></li><li><a href='./module/fpm_compiler.html'>fpm_compiler</a></li></ul>
+              <ul><li><a href='./module/fpm.html'>fpm</a></li><li><a href='./module/fpm_backend.html'>fpm_backend</a></li><li><a href='./module/fpm_backend_console.html'>fpm_backend_console</a></li><li><a href='./module/fpm_backend_output.html'>fpm_backend_output</a></li><li><a href='./module/fpm_cmd_install.html'>fpm_cmd_install</a></li><li><a href='./module/fpm_cmd_new.html'>fpm_cmd_new</a></li><li><a href='./module/fpm_cmd_publish.html'>fpm_cmd_publish</a></li><li><a href='./module/fpm_cmd_update.html'>fpm_cmd_update</a></li><li><a href='./module/fpm_command_line.html'>fpm_command_line</a></li><li><a href='./module/fpm_dependency.html'>fpm_dependency</a></li></ul>
             </div>
             <div>
               <ul>
@@ -191,7 +168,7 @@ For more details on the <a href="https://github.com/fortran-lang/fpm/docs.md">pr
           <div class="col-xs-6 col-sm-3">
             <div>
               <h3>Procedures</h3>
-              <ul><li><a href='./proc/add_dependency.html'>add_dependency</a></li><li><a href='./proc/add_executable_sources.html'>add_executable_sources</a></li><li><a href='./proc/add_sources_from_dir.html'>add_sources_from_dir</a></li><li><a href='./proc/add_target.html'>add_target</a></li><li><a href='./proc/bad_name_error.html'>bad_name_error</a></li><li><a href='./proc/basename.html'>basename</a></li><li><a href='./proc/build_model.html'>build_model</a></li><li><a href='./proc/build_package.html'>build_package</a></li><li><a href='./interface/build_progress_t.html'>build_progress_t</a></li><li><a href='./proc/canon_path.html'>canon_path</a></li></ul>
+              <ul><li><a href='./proc/add_dependency.html'>add_dependency</a></li><li><a href='./proc/add_executable_sources.html'>add_executable_sources</a></li><li><a href='./proc/add_sources_from_dir.html'>add_sources_from_dir</a></li><li><a href='./proc/add_target.html'>add_target</a></li><li><a href='./proc/bad_name_error.html'>bad_name_error</a></li><li><a href='./proc/build_model.html'>build_model</a></li><li><a href='./proc/build_package.html'>build_package</a></li><li><a href='./interface/build_progress_t.html'>build_progress_t</a></li><li><a href='./proc/change_directory.html'>change_directory</a></li><li><a href='./proc/check_and_read_pkg_data.html'>check_and_read_pkg_data</a></li></ul>
             </div>
             <div>
               <ul>
@@ -202,7 +179,7 @@ For more details on the <a href="https://github.com/fortran-lang/fpm/docs.md">pr
           <div class="col-xs-6 col-sm-3">
             <div>
               <h3>Derived Types</h3>
-              <ul><li><a href='./type/archiver_t.html'>archiver_t</a></li><li><a href='./type/build_config_t.html'>build_config_t</a></li><li><a href='./type/build_progress_t.html'>build_progress_t</a></li><li><a href='./type/build_target_ptr.html'>build_target_ptr</a></li><li><a href='./type/build_target_t.html'>build_target_t</a></li><li><a href='./type/compiler_t.html'>compiler_t</a></li><li><a href='./type/console_t.html'>console_t</a></li><li><a href='./type/dependency_config_t.html'>dependency_config_t</a></li><li><a href='./type/dependency_node_t.html'>dependency_node_t</a></li><li><a href='./type/dependency_tree_t.html'>dependency_tree_t</a></li></ul>
+              <ul><li><a href='./type/build_config_t.html'>build_config_t</a></li><li><a href='./type/build_progress_t.html'>build_progress_t</a></li><li><a href='./type/build_target_ptr.html'>build_target_ptr</a></li><li><a href='./type/build_target_t.html'>build_target_t</a></li><li><a href='./type/console_t.html'>console_t</a></li><li><a href='./type/dependency_config_t.html'>dependency_config_t</a></li><li><a href='./type/dependency_node_t.html'>dependency_node_t</a></li><li><a href='./type/dependency_tree_t.html'>dependency_tree_t</a></li><li><a href='./type/downloader_t.html'>downloader_t</a></li><li><a href='./type/enum_descriptor.html'>enum_descriptor</a></li></ul>
             </div>
             <div>
               <ul>
@@ -215,32 +192,27 @@ For more details on the <a href="https://github.com/fortran-lang/fpm/docs.md">pr
     </div> <!-- /container -->
     <footer>
       <div class="container">
-        <div class="row">
-          <div class="col-xs-6 col-md-6"><p>Fortran-lang/fpm was developed by fortran-lang/fpm contributors<br>&copy; 2023 
+        <div class="row justify-content-between">
+          <div class="col"><p>Fortran-lang/fpm was developed by fortran-lang/fpm contributors<br>&copy; 2023 
 </p>
           </div>
-          <div class="col-xs-6 col-md-6">
-            <p class="text-right">
+          <div class="col">
+            <p class="text-end">
               Documentation generated by
               <a href="https://github.com/Fortran-FOSS-Programmers/ford">FORD</a>
- on 2023-10-12 20:10              </p>
+ on 2023-12-28 16:08              </p>
           </div>
         </div>
         <br>
       </div> <!-- /container -->
     </footer>
 
-    <!-- Bootstrap core JavaScript
-         ================================================== -->
-         <!-- Placed at the end of the document so the pages load faster -->
-    <!--
-        <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
-        -->
-        <script src="./js/bootstrap.min.js"></script>
-        <!-- IE10 viewport hack for Surface/desktop Windows 8 bug -->
-        <script src="./js/ie10-viewport-bug-workaround.js"></script>
+    <!-- Bootstrap core JavaScript -->
+    <!-- Placed at the end of the document so the pages load faster -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"
+            integrity="sha384-ka7Sk0Gln4gmtz2MlQnikT1wXgYsOg+OMhuP+IlRH9sENBO0LRn5q+8nbTov4+1p" crossorigin="anonymous"></script>    
 
-        <!-- MathJax JavaScript
+    <!-- MathJax JavaScript
              ================================================== -->
              <!-- Placed at the end of the document so the pages load faster -->
         <script type="text/x-mathjax-config">
