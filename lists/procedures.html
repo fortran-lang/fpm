@@ -52,7 +52,7 @@
                   <a class="nav-link" href="../lists/types.html">Derived Types</a>
                 </li>
                 <li class="nav-item">
-                  <a class="nav-link" href="program/main.html">Program</a>
+                  <a class="nav-link" href="../program/main.html">Program</a>
                 </li>
             </ul>
               <div class="d-flex align-items-end flex-grow-1">
@@ -73,7 +73,7 @@
 			 <thead><tr><th>Procedure</th><th>Location</th><th>Procedure Type</th><th>Description</th></tr></thead>
 			 <tbody>
 			   <tr>
-                 <td><a href='../proc/add_dependency.html'>add_dependency</a></td>
+                 <td><a href='../proc/add_dependency~2.html'>add_dependency</a></td>
                  <td><a href='../module/fpm_targets.html'>fpm_targets</a></td>
                  <td>Subroutine</td>
                  <td><p>Add pointer to dependeny in target%dependencies</p></td>
@@ -105,6 +105,12 @@ Adds all sources (including modules) from each <code>executable%source_dir</code
                  <td></td>
                </tr>
 			   <tr>
+                 <td><a href='../proc/basename.html'>basename</a></td>
+                 <td><a href='../module/fpm_filesystem.html'>fpm_filesystem</a></td>
+                 <td>Function</td>
+                 <td><p>Extract filename from path with/without suffix</p></td>
+               </tr>
+			   <tr>
                  <td><a href='../proc/build_model.html'>build_model</a></td>
                  <td><a href='../module/fpm.html'>fpm</a></td>
                  <td>Subroutine</td>
@@ -124,6 +130,14 @@ Add this dependency&rsquo;s manifest macros</p><a href="../proc/build_model.html
                  <td><p>Constructor for build_progress_t</p></td>
                </tr>
 			   <tr>
+                 <td><a href='../proc/canon_path.html'>canon_path</a></td>
+                 <td><a href='../module/fpm_filesystem.html'>fpm_filesystem</a></td>
+                 <td>Function</td>
+                 <td><p>Canonicalize path for comparison
+* Handles path string redundancies
+* Does not test existence of path</p><a href="../proc/canon_path.html" class="pull-right"><emph>Read more&hellip;</emph></a></td>
+               </tr>
+			   <tr>
                  <td><a href='../proc/change_directory.html'>change_directory</a></td>
                  <td><a href='../module/fpm_os.html'>fpm_os</a></td>
                  <td>Subroutine</td>
@@ -133,6 +147,12 @@ Add this dependency&rsquo;s manifest macros</p><a href="../proc/build_model.html
                  <td><a href='../proc/check_and_read_pkg_data.html'>check_and_read_pkg_data</a></td>
                  <td><a href='../module/fpm_dependency.html'>fpm_dependency</a></td>
                  <td>Subroutine</td>
+                 <td></td>
+               </tr>
+			   <tr>
+                 <td><a href='../proc/check_compiler.html'>check_compiler</a></td>
+                 <td><a href='../module/fpm_compiler.html'>fpm_compiler</a></td>
+                 <td>Function</td>
                  <td></td>
                </tr>
 			   <tr>
@@ -201,10 +221,52 @@ Checks before uploading the package.</p></td>
                  <td><p>Entry point for the update subcommand</p></td>
                </tr>
 			   <tr>
+                 <td><a href='../proc/compile_c.html'>compile_c</a></td>
+                 <td><a href='../module/fpm_compiler.html'>fpm_compiler</a></td>
+                 <td>Subroutine</td>
+                 <td><p>Compile a C object</p></td>
+               </tr>
+			   <tr>
+                 <td><a href='../proc/compile_cpp.html'>compile_cpp</a></td>
+                 <td><a href='../module/fpm_compiler.html'>fpm_compiler</a></td>
+                 <td>Subroutine</td>
+                 <td><p>Compile a CPP object</p></td>
+               </tr>
+			   <tr>
+                 <td><a href='../proc/compile_fortran.html'>compile_fortran</a></td>
+                 <td><a href='../module/fpm_compiler.html'>fpm_compiler</a></td>
+                 <td>Subroutine</td>
+                 <td><p>Compile a Fortran object</p></td>
+               </tr>
+			   <tr>
+                 <td><a href='../proc/compiler_name.html'>compiler_name</a></td>
+                 <td><a href='../module/fpm_compiler.html'>fpm_compiler</a></td>
+                 <td>Function</td>
+                 <td><p>Return a compiler name string</p></td>
+               </tr>
+			   <tr>
                  <td><a href='../proc/convert_to_absolute_path.html'>convert_to_absolute_path</a></td>
                  <td><a href='../module/fpm_os.html'>fpm_os</a></td>
                  <td>Subroutine</td>
                  <td><p>Converts a path to an absolute, canonical path.</p></td>
+               </tr>
+			   <tr>
+                 <td><a href='../interface/debug.html'>debug</a></td>
+                 <td><a href='../module/fpm_compiler.html'>fpm_compiler</a></td>
+                 <td>Interface</td>
+                 <td><p>Create debug printout</p></td>
+               </tr>
+			   <tr>
+                 <td><a href='../proc/debug_archiver.html'>debug_archiver</a></td>
+                 <td><a href='../module/fpm_compiler.html'>fpm_compiler</a></td>
+                 <td>Function</td>
+                 <td><p>String representation of an archiver object</p></td>
+               </tr>
+			   <tr>
+                 <td><a href='../proc/debug_compiler.html'>debug_compiler</a></td>
+                 <td><a href='../module/fpm_compiler.html'>fpm_compiler</a></td>
+                 <td>Function</td>
+                 <td><p>String representation of a compiler object</p></td>
                </tr>
 			   <tr>
                  <td><a href='../proc/default_example.html'>default_example</a></td>
@@ -231,10 +293,40 @@ Checks before uploading the package.</p></td>
                  <td><p>Populate test in case we find the default test/ directory</p></td>
                </tr>
 			   <tr>
+                 <td><a href='../proc/delete_file.html'>delete_file</a></td>
+                 <td><a href='../module/fpm_filesystem.html'>fpm_filesystem</a></td>
+                 <td>Subroutine</td>
+                 <td><p>delete a file by filename</p></td>
+               </tr>
+			   <tr>
                  <td><a href='../proc/dilate.html'>dilate</a></td>
                  <td><a href='../module/fpm_strings.html'>fpm_strings</a></td>
                  <td>Function</td>
                  <td><p>Sample program:</p><a href="../proc/dilate.html" class="pull-right"><emph>Read more&hellip;</emph></a></td>
+               </tr>
+			   <tr>
+                 <td><a href='../proc/dirname.html'>dirname</a></td>
+                 <td><a href='../module/fpm_filesystem.html'>fpm_filesystem</a></td>
+                 <td>Function</td>
+                 <td><p>Extract dirname from path</p></td>
+               </tr>
+			   <tr>
+                 <td><a href='../proc/enumerate_libraries.html'>enumerate_libraries</a></td>
+                 <td><a href='../module/fpm_compiler.html'>fpm_compiler</a></td>
+                 <td>Function</td>
+                 <td><p>Enumerate libraries, based on compiler and platform</p></td>
+               </tr>
+			   <tr>
+                 <td><a href='../proc/execute_and_read_output.html'>execute_and_read_output</a></td>
+                 <td><a href='../module/fpm_filesystem.html'>fpm_filesystem</a></td>
+                 <td>Subroutine</td>
+                 <td><p>Execute command line and return output as a string.</p></td>
+               </tr>
+			   <tr>
+                 <td><a href='../proc/exists.html'>exists</a></td>
+                 <td><a href='../module/fpm_filesystem.html'>fpm_filesystem</a></td>
+                 <td>Function</td>
+                 <td><p>test if pathname already exists</p></td>
                </tr>
 			   <tr>
                  <td><a href='../proc/f_string.html'>f_string</a></td>
@@ -260,6 +352,24 @@ single characters terminated with a C_NULL_CHAR character</p></td>
                  <td><a href='../module/fpm_error.html'>fpm_error</a></td>
                  <td>Subroutine</td>
                  <td><p>Error created when file parsing fails</p></td>
+               </tr>
+			   <tr>
+                 <td><a href='../proc/fileclose.html'>fileclose</a></td>
+                 <td><a href='../module/fpm_filesystem.html'>fpm_filesystem</a></td>
+                 <td>Subroutine</td>
+                 <td><p>simple close of a LUN.  On error show message and stop (by default)</p></td>
+               </tr>
+			   <tr>
+                 <td><a href='../proc/fileopen.html'>fileopen</a></td>
+                 <td><a href='../module/fpm_filesystem.html'>fpm_filesystem</a></td>
+                 <td>Subroutine</td>
+                 <td><p>procedure to open filename as a sequential &ldquo;text&rdquo; file</p></td>
+               </tr>
+			   <tr>
+                 <td><a href='../proc/filewrite.html'>filewrite</a></td>
+                 <td><a href='../module/fpm_filesystem.html'>fpm_filesystem</a></td>
+                 <td>Subroutine</td>
+                 <td><p>procedure to write filedata to file filename</p></td>
                </tr>
 			   <tr>
                  <td><a href='../proc/filter_executable_targets.html'>filter_executable_targets</a></td>
@@ -330,9 +440,39 @@ Expands home folder (~) on both Unix and Windows.</p></td>
 &amp; &lsquo;<ERROR> unknown help topic &ldquo;&rsquo;//trim(unnamed(i)).&rsquo;not found in:&rsquo;,manual]</p></td>
                </tr>
 			   <tr>
+                 <td><a href='../proc/get_compiler_id.html'>get_compiler_id</a></td>
+                 <td><a href='../module/fpm_compiler.html'>fpm_compiler</a></td>
+                 <td>Function</td>
+                 <td></td>
+               </tr>
+			   <tr>
                  <td><a href='../proc/get_current_directory.html'>get_current_directory</a></td>
                  <td><a href='../module/fpm_os.html'>fpm_os</a></td>
                  <td>Subroutine</td>
+                 <td></td>
+               </tr>
+			   <tr>
+                 <td><a href='../proc/get_debug_compile_flags.html'>get_debug_compile_flags</a></td>
+                 <td><a href='../module/fpm_compiler.html'>fpm_compiler</a></td>
+                 <td>Subroutine</td>
+                 <td></td>
+               </tr>
+			   <tr>
+                 <td><a href='../proc/get_default_c_compiler.html'>get_default_c_compiler</a></td>
+                 <td><a href='../module/fpm_compiler.html'>fpm_compiler</a></td>
+                 <td>Subroutine</td>
+                 <td></td>
+               </tr>
+			   <tr>
+                 <td><a href='../proc/get_default_cxx_compiler.html'>get_default_cxx_compiler</a></td>
+                 <td><a href='../module/fpm_compiler.html'>fpm_compiler</a></td>
+                 <td>Subroutine</td>
+                 <td><p>Get C++ Compiler.</p></td>
+               </tr>
+			   <tr>
+                 <td><a href='../proc/get_default_flags.html'>get_default_flags</a></td>
+                 <td><a href='../module/fpm_compiler.html'>fpm_compiler</a></td>
+                 <td>Function</td>
                  <td></td>
                </tr>
 			   <tr>
@@ -340,6 +480,13 @@ Expands home folder (~) on both Unix and Windows.</p></td>
                  <td><a href='../module/fpm_manifest_profile.html'>fpm_manifest_profile</a></td>
                  <td>Function</td>
                  <td><p>Construct an array of built-in profiles</p></td>
+               </tr>
+			   <tr>
+                 <td><a href='../proc/get_dos_path.html'>get_dos_path</a></td>
+                 <td><a href='../module/fpm_filesystem.html'>fpm_filesystem</a></td>
+                 <td>Function</td>
+                 <td><p>Ensure a windows path is converted to an 8.3 DOS path if it contains spaces
+No need to convert if there are no spaces</p><a href="../proc/get_dos_path.html" class="pull-right"><emph>Read more&hellip;</emph></a></td>
                </tr>
 			   <tr>
                  <td><a href='../proc/get_env.html'>get_env</a></td>
@@ -357,6 +504,12 @@ Expands home folder (~) on both Unix and Windows.</p></td>
                  <td><p>Build an executable name with suffix. Safe routine that always returns an allocated string</p></td>
                </tr>
 			   <tr>
+                 <td><a href='../proc/get_feature_flag.html'>get_feature_flag</a></td>
+                 <td><a href='../module/fpm_compiler.html'>fpm_compiler</a></td>
+                 <td>Function</td>
+                 <td></td>
+               </tr>
+			   <tr>
                  <td><a href='../proc/get_flags.html'>get_flags</a></td>
                  <td><a href='../module/fpm_manifest_profile.html'>fpm_manifest_profile</a></td>
                  <td>Subroutine</td>
@@ -370,9 +523,55 @@ and files table in a given table and create new profiles</p></td>
                  <td><p>Obtain global settings from the global config file.</p></td>
                </tr>
 			   <tr>
+                 <td><a href='../proc/get_home.html'>get_home</a></td>
+                 <td><a href='../module/fpm_filesystem.html'>fpm_filesystem</a></td>
+                 <td>Subroutine</td>
+                 <td><p>Get the HOME directory on Unix and the %USERPROFILE% directory on Windows.</p></td>
+               </tr>
+			   <tr>
+                 <td><a href='../proc/get_id.html'>get_id</a></td>
+                 <td><a href='../module/fpm_compiler.html'>fpm_compiler</a></td>
+                 <td>Function</td>
+                 <td></td>
+               </tr>
+			   <tr>
+                 <td><a href='../proc/get_include_flag.html'>get_include_flag</a></td>
+                 <td><a href='../module/fpm_compiler.html'>fpm_compiler</a></td>
+                 <td>Function</td>
+                 <td></td>
+               </tr>
+			   <tr>
                  <td><a href='../proc/get_list.html'>get_list</a></td>
                  <td><a href='../module/fpm_toml.html'>fpm_toml</a></td>
                  <td>Subroutine</td>
+                 <td></td>
+               </tr>
+			   <tr>
+                 <td><a href='../proc/get_local_prefix.html'>get_local_prefix</a></td>
+                 <td><a href='../module/fpm_filesystem.html'>fpm_filesystem</a></td>
+                 <td>Function</td>
+                 <td><p>Determine the path prefix to the local folder. Used for installation, registry etc.</p></td>
+               </tr>
+			   <tr>
+                 <td><a href='../proc/get_macros.html'>get_macros</a></td>
+                 <td><a href='../module/fpm_compiler.html'>fpm_compiler</a></td>
+                 <td>Function</td>
+                 <td><p>This function will parse and read the macros list and
+return them as defined flags.
+Set macro defintion symbol on the basis of compiler used
+Check if macros are not allocated.
+Split the macro name and value.</p><a href="../proc/get_macros.html" class="pull-right"><emph>Read more&hellip;</emph></a></td>
+               </tr>
+			   <tr>
+                 <td><a href='../proc/get_main_flags.html'>get_main_flags</a></td>
+                 <td><a href='../module/fpm_compiler.html'>fpm_compiler</a></td>
+                 <td>Subroutine</td>
+                 <td><p>Get special flags for the main linker</p></td>
+               </tr>
+			   <tr>
+                 <td><a href='../proc/get_module_flag.html'>get_module_flag</a></td>
+                 <td><a href='../module/fpm_compiler.html'>fpm_compiler</a></td>
+                 <td>Function</td>
                  <td></td>
                </tr>
 			   <tr>
@@ -394,10 +593,32 @@ and files table in a given table and create new profiles</p></td>
                  <td><p>Read registry settings from the global config file.</p></td>
                </tr>
 			   <tr>
+                 <td><a href='../proc/get_release_compile_flags.html'>get_release_compile_flags</a></td>
+                 <td><a href='../module/fpm_compiler.html'>fpm_compiler</a></td>
+                 <td>Subroutine</td>
+                 <td></td>
+               </tr>
+			   <tr>
+                 <td><a href='../proc/get_temp_filename.html'>get_temp_filename</a></td>
+                 <td><a href='../module/fpm_filesystem.html'>fpm_filesystem</a></td>
+                 <td>Function</td>
+                 <td><p>Get a unused temporary filename
+ Calls posix &lsquo;tempnam&rsquo; - not recommended, but
+  we have no security concerns for this application
+  and use here is temporary.
+Works with MinGW</p></td>
+               </tr>
+			   <tr>
                  <td><a href='../proc/get_working_dir.html'>get_working_dir</a></td>
                  <td><a href='../program/main.html'>main</a></td>
                  <td>Subroutine</td>
                  <td><p>Save access to working directory in settings, in case setting have not been allocated</p></td>
+               </tr>
+			   <tr>
+                 <td><a href='../proc/getline.html'>getline</a></td>
+                 <td><a href='../module/fpm_filesystem.html'>fpm_filesystem</a></td>
+                 <td>Subroutine</td>
+                 <td><p>subroutine getline(unit,line,iostat,iomsg)</p><a href="../proc/getline.html" class="pull-right"><emph>Read more&hellip;</emph></a></td>
                </tr>
 			   <tr>
                  <td><a href='../proc/git_archive.html'>git_archive</a></td>
@@ -485,16 +706,16 @@ and files table in a given table and create new profiles</p></td>
 3) If longer, package name must be followed by default separator plus at least one char</p><a href="../proc/has_valid_standard_prefix.html" class="pull-right"><emph>Read more&hellip;</emph></a></td>
                </tr>
 			   <tr>
-                 <td><a href='../proc/info~4.html'>info</a></td>
-                 <td><a href='../module/fpm_manifest_profile.html'>fpm_manifest_profile</a></td>
-                 <td>Subroutine</td>
-                 <td><p>Write information on instance</p></td>
-               </tr>
-			   <tr>
                  <td><a href='../proc/info~9.html'>info</a></td>
                  <td><a href='../module/fpm_git.html'>fpm_git</a></td>
                  <td>Subroutine</td>
                  <td><p>Show information on git target</p></td>
+               </tr>
+			   <tr>
+                 <td><a href='../proc/info~11.html'>info</a></td>
+                 <td><a href='../module/fpm_manifest_profile.html'>fpm_manifest_profile</a></td>
+                 <td>Subroutine</td>
+                 <td><p>Write information on instance</p></td>
                </tr>
 			   <tr>
                  <td><a href='../proc/info_profile.html'>info_profile</a></td>
@@ -503,8 +724,38 @@ and files table in a given table and create new profiles</p></td>
                  <td><p>Print a representation of profile_config_t</p></td>
                </tr>
 			   <tr>
+                 <td><a href='../proc/is_absolute_path.html'>is_absolute_path</a></td>
+                 <td><a href='../module/fpm_filesystem.html'>fpm_filesystem</a></td>
+                 <td>Function</td>
+                 <td><p>Returns .true. if provided path is absolute.</p><a href="../proc/is_absolute_path.html" class="pull-right"><emph>Read more&hellip;</emph></a></td>
+               </tr>
+			   <tr>
+                 <td><a href='../proc/is_dir.html'>is_dir</a></td>
+                 <td><a href='../module/fpm_filesystem.html'>fpm_filesystem</a></td>
+                 <td>Function</td>
+                 <td><p>test if a name matches an existing directory path</p></td>
+               </tr>
+			   <tr>
                  <td><a href='../proc/is_fortran_name.html'>is_fortran_name</a></td>
                  <td><a href='../module/fpm_strings.html'>fpm_strings</a></td>
+                 <td>Function</td>
+                 <td></td>
+               </tr>
+			   <tr>
+                 <td><a href='../proc/is_gnu.html'>is_gnu</a></td>
+                 <td><a href='../module/fpm_compiler.html'>fpm_compiler</a></td>
+                 <td>Function</td>
+                 <td></td>
+               </tr>
+			   <tr>
+                 <td><a href='../proc/is_hidden_file.html'>is_hidden_file</a></td>
+                 <td><a href='../module/fpm_filesystem.html'>fpm_filesystem</a></td>
+                 <td>Function</td>
+                 <td><p>test if a file is hidden</p></td>
+               </tr>
+			   <tr>
+                 <td><a href='../proc/is_intel.html'>is_intel</a></td>
+                 <td><a href='../module/fpm_compiler.html'>fpm_compiler</a></td>
                  <td>Function</td>
                  <td></td>
                </tr>
@@ -513,6 +764,12 @@ and files table in a given table and create new profiles</p></td>
                  <td><a href='../module/fpm_manifest_metapackages.html'>fpm_manifest_metapackages</a></td>
                  <td>Function</td>
                  <td><p>Check local schema for allowed entries</p><a href="../proc/is_meta_package.html" class="pull-right"><emph>Read more&hellip;</emph></a></td>
+               </tr>
+			   <tr>
+                 <td><a href='../proc/is_unknown.html'>is_unknown</a></td>
+                 <td><a href='../module/fpm_compiler.html'>fpm_compiler</a></td>
+                 <td>Function</td>
+                 <td></td>
                </tr>
 			   <tr>
                  <td><a href='../proc/is_valid_module_name.html'>is_valid_module_name</a></td>
@@ -541,16 +798,40 @@ and files table in a given table and create new profiles</p></td>
    default separator is a null string.</p><a href="../proc/join.html" class="pull-right"><emph>Read more&hellip;</emph></a></td>
                </tr>
 			   <tr>
+                 <td><a href='../proc/join_path.html'>join_path</a></td>
+                 <td><a href='../module/fpm_filesystem.html'>fpm_filesystem</a></td>
+                 <td>Function</td>
+                 <td><p>Construct path by joining strings with os file separator</p></td>
+               </tr>
+			   <tr>
                  <td><a href='../interface/len_trim.html'>len_trim</a></td>
                  <td><a href='../module/fpm_strings.html'>fpm_strings</a></td>
                  <td>Interface</td>
                  <td></td>
                </tr>
 			   <tr>
+                 <td><a href='../proc/link.html'>link</a></td>
+                 <td><a href='../module/fpm_compiler.html'>fpm_compiler</a></td>
+                 <td>Subroutine</td>
+                 <td><p>Link an executable</p></td>
+               </tr>
+			   <tr>
+                 <td><a href='../proc/list_files.html'>list_files</a></td>
+                 <td><a href='../module/fpm_filesystem.html'>fpm_filesystem</a></td>
+                 <td>Subroutine</td>
+                 <td><p>Get file &amp; directory names in directory <code>dir</code> using iso_c_binding.</p><a href="../proc/list_files.html" class="pull-right"><emph>Read more&hellip;</emph></a></td>
+               </tr>
+			   <tr>
                  <td><a href='../proc/lower.html'>lower</a></td>
                  <td><a href='../module/fpm_strings.html'>fpm_strings</a></td>
                  <td>Function</td>
                  <td><p>Changes a string to lowercase over optional specified column range</p></td>
+               </tr>
+			   <tr>
+                 <td><a href='../proc/make_archive.html'>make_archive</a></td>
+                 <td><a href='../module/fpm_compiler.html'>fpm_compiler</a></td>
+                 <td>Subroutine</td>
+                 <td><p>Create an archive</p><a href="../proc/make_archive.html" class="pull-right"><emph>Read more&hellip;</emph></a></td>
                </tr>
 			   <tr>
                  <td><a href='../proc/manifest_has_changed.html'>manifest_has_changed</a></td>
@@ -563,6 +844,12 @@ and files table in a given table and create new profiles</p></td>
                  <td><a href='../module/fpm_manifest_profile.html'>fpm_manifest_profile</a></td>
                  <td>Subroutine</td>
                  <td><p>Match os_type enum to a lowercase string with name of OS</p></td>
+               </tr>
+			   <tr>
+                 <td><a href='../proc/mkdir.html'>mkdir</a></td>
+                 <td><a href='../module/fpm_filesystem.html'>fpm_filesystem</a></td>
+                 <td>Subroutine</td>
+                 <td><p>Create a directory. Create subdirectories as needed</p></td>
                </tr>
 			   <tr>
                  <td><a href='../proc/module_prefix_template.html'>module_prefix_template</a></td>
@@ -583,10 +870,22 @@ and files table in a given table and create new profiles</p></td>
                  <td><p>Return a name for the MPI library</p></td>
                </tr>
 			   <tr>
+                 <td><a href='../proc/new_archiver.html'>new_archiver</a></td>
+                 <td><a href='../module/fpm_compiler.html'>fpm_compiler</a></td>
+                 <td>Subroutine</td>
+                 <td><p>Create new archiver instance</p></td>
+               </tr>
+			   <tr>
                  <td><a href='../proc/new_build_config.html'>new_build_config</a></td>
                  <td><a href='../module/fpm_manifest_build.html'>fpm_manifest_build</a></td>
                  <td>Subroutine</td>
                  <td><p>Construct a new build configuration from a TOML data structure</p><a href="../proc/new_build_config.html" class="pull-right"><emph>Read more&hellip;</emph></a></td>
+               </tr>
+			   <tr>
+                 <td><a href='../proc/new_compiler.html'>new_compiler</a></td>
+                 <td><a href='../module/fpm_compiler.html'>fpm_compiler</a></td>
+                 <td>Subroutine</td>
+                 <td><p>Create new compiler instance</p></td>
                </tr>
 			   <tr>
                  <td><a href='../proc/new_dependencies.html'>new_dependencies</a></td>
@@ -710,6 +1009,12 @@ and files table in a given table and create new profiles</p></td>
    (LICENSE:PD)</p><a href="../proc/notabs.html" class="pull-right"><emph>Read more&hellip;</emph></a></td>
                </tr>
 			   <tr>
+                 <td><a href='../proc/number_of_rows.html'>number_of_rows</a></td>
+                 <td><a href='../module/fpm_filesystem.html'>fpm_filesystem</a></td>
+                 <td>Function</td>
+                 <td><p>Determine number or rows in a file given a LUN</p></td>
+               </tr>
+			   <tr>
                  <td><a href='../interface/operator(.in.).html'>operator(.in.)</a></td>
                  <td><a href='../module/fpm_strings.html'>fpm_strings</a></td>
                  <td>Interface</td>
@@ -728,12 +1033,24 @@ and files table in a given table and create new profiles</p></td>
                  <td></td>
                </tr>
 			   <tr>
+                 <td><a href='../proc/os_delete_dir.html'>os_delete_dir</a></td>
+                 <td><a href='../module/fpm_filesystem.html'>fpm_filesystem</a></td>
+                 <td>Subroutine</td>
+                 <td><p>Delete directory using system OS remove directory commands</p></td>
+               </tr>
+			   <tr>
                  <td><a href='../proc/os_is_unix.html'>os_is_unix</a></td>
                  <td><a href='../module/fpm_environment.html'>fpm_environment</a></td>
                  <td>Function</td>
-                 <td><p>Compare the output of <a href="get_os_type.html">get_os_type</a> or the optional
+                 <td><p>Compare the output of <a href="../proc/get_os_type.html">get_os_type</a> or the optional
 passed INTEGER value to the value for OS_WINDOWS
 and return .TRUE. if they match and .FALSE. otherwise</p></td>
+               </tr>
+			   <tr>
+                 <td><a href='../proc/parent_dir.html'>parent_dir</a></td>
+                 <td><a href='../module/fpm_filesystem.html'>fpm_filesystem</a></td>
+                 <td>Function</td>
+                 <td><p>Extract dirname from path</p></td>
                </tr>
 			   <tr>
                  <td><a href='../proc/parse_c_source.html'>parse_c_source</a></td>
@@ -752,6 +1069,18 @@ and return .TRUE. if they match and .FALSE. otherwise</p></td>
                  <td><a href='../module/fpm_source_parsing.html'>fpm_source_parsing</a></td>
                  <td>Subroutine</td>
                  <td></td>
+               </tr>
+			   <tr>
+                 <td><a href='../proc/read_lines.html'>read_lines</a></td>
+                 <td><a href='../module/fpm_filesystem.html'>fpm_filesystem</a></td>
+                 <td>Function</td>
+                 <td><p>read lines into an array of TYPE(STRING_T) variables</p></td>
+               </tr>
+			   <tr>
+                 <td><a href='../proc/read_lines_expanded.html'>read_lines_expanded</a></td>
+                 <td><a href='../module/fpm_filesystem.html'>fpm_filesystem</a></td>
+                 <td>Function</td>
+                 <td><p>read lines into an array of TYPE(STRING_T) variables expanding tabs</p></td>
                </tr>
 			   <tr>
                  <td><a href='../proc/read_package_file.html'>read_package_file</a></td>
@@ -785,15 +1114,15 @@ and return .TRUE. if they match and .FALSE. otherwise</p></td>
                </tr>
 			   <tr>
                  <td><a href='../interface/resize.html'>resize</a></td>
-                 <td><a href='../module/fpm_strings.html'>fpm_strings</a></td>
-                 <td>Interface</td>
-                 <td></td>
-               </tr>
-			   <tr>
-                 <td><a href='../interface/resize~2.html'>resize</a></td>
                  <td><a href='../module/fpm_dependency.html'>fpm_dependency</a></td>
                  <td>Interface</td>
                  <td><p>Overloaded reallocation interface</p></td>
+               </tr>
+			   <tr>
+                 <td><a href='../interface/resize~2.html'>resize</a></td>
+                 <td><a href='../module/fpm_strings.html'>fpm_strings</a></td>
+                 <td>Interface</td>
+                 <td></td>
                </tr>
 			   <tr>
                  <td><a href='../interface/resolve_metapackages.html'>resolve_metapackages</a></td>
@@ -809,6 +1138,12 @@ and return .TRUE. if they match and .FALSE. otherwise</p></td>
  based on any modules used by the corresponding source file.</p><a href="../proc/resolve_module_dependencies.html" class="pull-right"><emph>Read more&hellip;</emph></a></td>
                </tr>
 			   <tr>
+                 <td><a href='../proc/run~2.html'>run</a></td>
+                 <td><a href='../module/fpm_filesystem.html'>fpm_filesystem</a></td>
+                 <td>Subroutine</td>
+                 <td><p>Execute the specified system command. Optionally</p><a href="../proc/run~2.html" class="pull-right"><emph>Read more&hellip;</emph></a></td>
+               </tr>
+			   <tr>
                  <td><a href='../proc/schedule_targets.html'>schedule_targets</a></td>
                  <td><a href='../module/fpm_backend.html'>fpm_backend</a></td>
                  <td>Subroutine</td>
@@ -819,6 +1154,12 @@ and return .TRUE. if they match and .FALSE. otherwise</p></td>
                  <td><a href='../module/fpm_environment.html'>fpm_environment</a></td>
                  <td>Function</td>
                  <td><p>sample usage</p><a href="../proc/separator.html" class="pull-right"><emph>Read more&hellip;</emph></a></td>
+               </tr>
+			   <tr>
+                 <td><a href='../proc/set_cpp_preprocessor_flags.html'>set_cpp_preprocessor_flags</a></td>
+                 <td><a href='../module/fpm_compiler.html'>fpm_compiler</a></td>
+                 <td>Subroutine</td>
+                 <td><p>Modify the flag_cpp_preprocessor on the basis of the compiler.</p></td>
                </tr>
 			   <tr>
                  <td><a href='../proc/show_model.html'>show_model</a></td>
@@ -916,6 +1257,12 @@ expanded to other characters if needed.</p></td>
                  <td><p>Traverse operating system tables to obtain number of profiles</p></td>
                </tr>
 			   <tr>
+                 <td><a href='../proc/unix_path.html'>unix_path</a></td>
+                 <td><a href='../module/fpm_filesystem.html'>fpm_filesystem</a></td>
+                 <td>Function</td>
+                 <td><p>Replace file system separators for unix</p></td>
+               </tr>
+			   <tr>
                  <td><a href='../proc/validate_compiler_name.html'>validate_compiler_name</a></td>
                  <td><a href='../module/fpm_manifest_profile.html'>fpm_manifest_profile</a></td>
                  <td>Subroutine</td>
@@ -933,6 +1280,33 @@ expanded to other characters if needed.</p></td>
                  <td>Subroutine</td>
                  <td></td>
                </tr>
+			   <tr>
+                 <td><a href='../proc/warnwrite.html'>warnwrite</a></td>
+                 <td><a href='../module/fpm_filesystem.html'>fpm_filesystem</a></td>
+                 <td>Subroutine</td>
+                 <td><p>write trimmed character data to a file if it does not exist</p></td>
+               </tr>
+			   <tr>
+                 <td><a href='../proc/which.html'>which</a></td>
+                 <td><a href='../module/fpm_filesystem.html'>fpm_filesystem</a></td>
+                 <td>Function</td>
+                 <td><p>function which(command) result(pathname)</p><a href="../proc/which.html" class="pull-right"><emph>Read more&hellip;</emph></a></td>
+               </tr>
+			   <tr>
+                 <td><a href='../proc/windows_path.html'>windows_path</a></td>
+                 <td><a href='../module/fpm_filesystem.html'>fpm_filesystem</a></td>
+                 <td>Function</td>
+                 <td><p>Replace file system separators for windows</p></td>
+               </tr>
+			   <tr>
+                 <td><a href='../proc/write_response_file.html'>write_response_file</a></td>
+                 <td><a href='../module/fpm_compiler.html'>fpm_compiler</a></td>
+                 <td>Subroutine</td>
+                 <td><p>Response files allow to read command line options from files.
+Whitespace is used to separate the arguments, we will use newlines
+as separator to create readable response files which can be inspected
+in case of errors.</p></td>
+               </tr>
 			 </tbody></table>
              
         </div>
@@ -949,7 +1323,7 @@ expanded to other characters if needed.</p></td>
             <p class="text-end">
               Documentation generated by
               <a href="https://github.com/Fortran-FOSS-Programmers/ford">FORD</a>
- on 2024-01-08 09:21              </p>
+ on 2024-01-08 13:25              </p>
           </div>
         </div>
         <br>
