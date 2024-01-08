@@ -1,3 +1,5 @@
+<!-- -*- mode: jinja2 -*- -->
+
 <!DOCTYPE html>
 <html lang="en">
   <head>
@@ -17,7 +19,8 @@
     <link href="../css/local.css" rel="stylesheet">
       <link  href="../tipuesearch/tipuesearch.css" rel="stylesheet">
 
-    <script src="https://code.jquery.com/jquery-3.7.0.slim.min.js" integrity="sha256-tG5mcZUtJsZvyKAxYLVXrmjKBVLd6VpVccqz/r4ypFE=" crossorigin="anonymous"></script>
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js" integrity="sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo=" crossorigin="anonymous"></script>
+    <script src="../js/svg-pan-zoom.min.js"></script>
   </head>
 
   <body>
@@ -48,7 +51,7 @@
                   <a class="nav-link" href="../lists/types.html">Derived Types</a>
                 </li>
                 <li class="nav-item">
-                  <a class="nav-link" href="../program/main.html">Program</a>
+                  <a class="nav-link" href="program/main.html">Program</a>
                 </li>
             </ul>
               <div class="d-flex align-items-end flex-grow-1">
@@ -185,21 +188,21 @@
         <ul class="list-group list-group-flush">
             <li class="list-group-item">
               <ul class="list-inline">
-                  <li class="list-inline-item"><a href='../module/fpm_manifest_dependency.html'>fpm_manifest_dependency</a></li>
-                  <li class="list-inline-item"><a href='../module/fpm_os.html'>fpm_os</a></li>
-                  <li class="list-inline-item"><a href='../module/fpm_strings.html'>fpm_strings</a></li>
+                  <li class="list-inline-item"><a href='fpm_manifest_dependency.html'>fpm_manifest_dependency</a></li>
+                  <li class="list-inline-item"><a href='fpm_command_line.html'>fpm_command_line</a></li>
+                  <li class="list-inline-item"><a href='fpm_environment.html'>fpm_environment</a></li>
                   <li class="list-inline-item">fpm_compiler</li>
-                  <li class="list-inline-item">fpm_filesystem</li>
-                  <li class="list-inline-item"><a href='../module/fpm_command_line.html'>fpm_command_line</a></li>
-                  <li class="list-inline-item"><a href='../module/fpm_error.html'>fpm_error</a></li>
-                  <li class="list-inline-item"><a href='../module/fpm_git.html'>fpm_git</a></li>
-                  <li class="list-inline-item"><a href='../module/fpm_model.html'>fpm_model</a></li>
+                  <li class="list-inline-item"><a href='fpm_manifest.html'>fpm_manifest</a></li>
+                  <li class="list-inline-item"><a href='fpm_strings.html'>fpm_strings</a></li>
+                  <li class="list-inline-item"><a href='fpm_os.html'>fpm_os</a></li>
+                  <li class="list-inline-item"><a href='fpm_error.html'>fpm_error</a></li>
                   <li class="list-inline-item">shlex_module</li>
-                  <li class="list-inline-item"><a href='../module/fpm_manifest.html'>fpm_manifest</a></li>
                   <li class="list-inline-item"><a href='http://fortranwiki.org/fortran/show/iso_fortran_env'>iso_fortran_env</a></li>
-                  <li class="list-inline-item"><a href='../module/fpm_environment.html'>fpm_environment</a></li>
-                  <li class="list-inline-item"><a href='../module/fpm_versioning.html'>fpm_versioning</a></li>
+                  <li class="list-inline-item"><a href='fpm_git.html'>fpm_git</a></li>
+                  <li class="list-inline-item">fpm_filesystem</li>
                   <li class="list-inline-item">regex_module</li>
+                  <li class="list-inline-item"><a href='fpm_model.html'>fpm_model</a></li>
+                  <li class="list-inline-item"><a href='fpm_versioning.html'>fpm_versioning</a></li>
               </ul>
             </li>
         </ul>
@@ -241,7 +244,7 @@
     <tbody>
         <tr>
             <td>
-              <span class="anchor" id="variable-model~4"></span>
+              <span class="anchor" id="variable-model~14"></span>
               type(<a href='../type/fpm_model_t.html'>fpm_model_t</a>),
             </td>
 <td>intent(inout)</td>
@@ -256,7 +259,7 @@
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-package~7"></span>
+              <span class="anchor" id="variable-package~9"></span>
               type(<a href='../type/package_config_t.html'>package_config_t</a>),
             </td>
 <td>intent(inout)</td>
@@ -271,7 +274,7 @@
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-settings~6"></span>
+              <span class="anchor" id="variable-settings~10"></span>
               class(<a href='../type/fpm_build_settings.html'>fpm_build_settings</a>),
             </td>
 <td>intent(inout)</td>
@@ -286,7 +289,7 @@
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-error~88"></span>
+              <span class="anchor" id="variable-error~42"></span>
               type(<a href='../type/error_t.html'>error_t</a>),
             </td>
 <td>intent(out),</td>
@@ -338,7 +341,7 @@
     <tbody>
         <tr>
             <td>
-              <span class="anchor" id="variable-cflags"></span>
+              <span class="anchor" id="variable-cflags~2"></span>
               type(<a href='../type/string_t.html'>string_t</a>),
             </td>
               <td>public</td>
@@ -355,7 +358,7 @@
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-cxxflags"></span>
+              <span class="anchor" id="variable-cxxflags~2"></span>
               type(<a href='../type/string_t.html'>string_t</a>),
             </td>
               <td>public</td>
@@ -372,7 +375,7 @@
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-dependency~2"></span>
+              <span class="anchor" id="variable-dependency~4"></span>
               type(<a href='../type/dependency_config_t.html'>dependency_config_t</a>),
             </td>
               <td>public,</td>
@@ -390,7 +393,7 @@ Metapackage dependencies are never exported from the model</p>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-external_modules~3"></span>
+              <span class="anchor" id="variable-external_modules~2"></span>
               type(<a href='../type/string_t.html'>string_t</a>),
             </td>
               <td>public,</td>
@@ -424,7 +427,7 @@ Metapackage dependencies are never exported from the model</p>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-flags~4"></span>
+              <span class="anchor" id="variable-flags~8"></span>
               type(<a href='../type/string_t.html'>string_t</a>),
             </td>
               <td>public</td>
@@ -441,7 +444,7 @@ Metapackage dependencies are never exported from the model</p>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-fortran"></span>
+              <span class="anchor" id="variable-fortran~2"></span>
               type(<a href='../type/fortran_features_t.html'>fortran_features_t</a>),
             </td>
               <td>public,</td>
@@ -645,7 +648,7 @@ Metapackage dependencies are never exported from the model</p>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-link_flags~3"></span>
+              <span class="anchor" id="variable-link_flags~2"></span>
               type(<a href='../type/string_t.html'>string_t</a>),
             </td>
               <td>public</td>
@@ -696,7 +699,7 @@ Metapackage dependencies are never exported from the model</p>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-version~2"></span>
+              <span class="anchor" id="variable-version~5"></span>
               type(<a href='../type/version_t.html'>version_t</a>),
             </td>
               <td>public,</td>
@@ -723,16 +726,16 @@ Metapackage dependencies are never exported from the model</p>
               <tr>
                 <td>  procedure, public ::
   <strong><a href='../type/metapackage_t.html#boundprocedure-destroy'>destroy</a></strong></td>
-                <td><p>Clean metapackage structure</p></td>
+                <td>../../<p>Clean metapackage structure</p></td>
               </tr>
               <tr>
                 <td>  procedure, public ::
   <strong><a href='../type/metapackage_t.html#boundprocedure-new'>new</a></strong> => init_from_name</td>
-                <td><p>Initialize the metapackage structure from its given name</p></td>
+                <td>../../<p>Initialize the metapackage structure from its given name</p></td>
               </tr>
               <tr>
                 <td>  generic, public ::
-  <strong><a href='../type/metapackage_t.html#boundprocedure-resolve~2'>resolve</a></strong> => resolve_cmd, resolve_model, resolve_package_config</td>
+  <strong><a href='../type/metapackage_t.html#boundprocedure-resolve'>resolve</a></strong> => resolve_cmd, resolve_model, resolve_package_config</td>
                 <td></td>
               </tr>
           </tbody>
@@ -746,7 +749,7 @@ Metapackage dependencies are never exported from the model</p>
         <section>
           <h2>Functions</h2>
               <div class="card">
-    <div class="card-header codesum"><span class="anchor" id="proc-mpi_type_name"></span><h3>public pure function <a href='../proc/mpi_type_name.html'>MPI_TYPE_NAME</a>(mpilib) result(name)  
+    <div class="card-header codesum"><span class="anchor" id="proc-mpi_type_name"></span> <h3>public pure function <a href='../proc/mpi_type_name.html'>MPI_TYPE_NAME</a>(mpilib) result(name)  
 </h3></div>
     <div class="card-body">
           
@@ -804,14 +807,14 @@ Metapackage dependencies are never exported from the model</p>
     <footer>
       <div class="container">
         <div class="row justify-content-between">
-          <div class="col"><p>Fortran-lang/fpm was developed by fortran-lang/fpm contributors<br>&copy; 2023 
+          <div class="col"><p>Fortran-lang/fpm was developed by fortran-lang/fpm contributors<br>&copy; 2024 
 </p>
           </div>
           <div class="col">
             <p class="text-end">
               Documentation generated by
               <a href="https://github.com/Fortran-FOSS-Programmers/ford">FORD</a>
- on 2023-12-28 16:08              </p>
+ on 2024-01-08 09:21              </p>
           </div>
         </div>
         <br>

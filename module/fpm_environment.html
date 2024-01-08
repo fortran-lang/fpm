@@ -1,3 +1,5 @@
+<!-- -*- mode: jinja2 -*- -->
+
 <!DOCTYPE html>
 <html lang="en">
   <head>
@@ -17,7 +19,8 @@
     <link href="../css/local.css" rel="stylesheet">
       <link  href="../tipuesearch/tipuesearch.css" rel="stylesheet">
 
-    <script src="https://code.jquery.com/jquery-3.7.0.slim.min.js" integrity="sha256-tG5mcZUtJsZvyKAxYLVXrmjKBVLd6VpVccqz/r4ypFE=" crossorigin="anonymous"></script>
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js" integrity="sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo=" crossorigin="anonymous"></script>
+    <script src="../js/svg-pan-zoom.min.js"></script>
   </head>
 
   <body>
@@ -48,7 +51,7 @@
                   <a class="nav-link" href="../lists/types.html">Derived Types</a>
                 </li>
                 <li class="nav-item">
-                  <a class="nav-link" href="../program/main.html">Program</a>
+                  <a class="nav-link" href="program/main.html">Program</a>
                 </li>
             </ul>
               <div class="d-flex align-items-end flex-grow-1">
@@ -177,8 +180,8 @@
         <ul class="list-group list-group-flush">
             <li class="list-group-item">
               <ul class="list-inline">
-                  <li class="list-inline-item"><a href='../module/fpm_error.html'>fpm_error</a></li>
                   <li class="list-inline-item"><a href='http://fortranwiki.org/fortran/show/iso_fortran_env'>iso_fortran_env</a></li>
+                  <li class="list-inline-item"><a href='fpm_error.html'>fpm_error</a></li>
               </ul>
             </li>
         </ul>
@@ -350,7 +353,7 @@ parameter
         <section>
           <h2>Functions</h2>
               <div class="card">
-    <div class="card-header codesum"><span class="anchor" id="proc-get_command_arguments_quoted"></span><h3>public  function <a href='../proc/get_command_arguments_quoted.html'>get_command_arguments_quoted</a>() result(args)  
+    <div class="card-header codesum"><span class="anchor" id="proc-get_command_arguments_quoted"></span> <h3>public  function <a href='../proc/get_command_arguments_quoted.html'>get_command_arguments_quoted</a>() result(args)  
 </h3></div>
     <div class="card-body">
           
@@ -368,7 +371,7 @@ parameter
   </div>
 
               <div class="card">
-    <div class="card-header codesum"><span class="anchor" id="proc-get_env"></span><h3>public  function <a href='../proc/get_env.html'>get_env</a>(NAME, DEFAULT) result(VALUE)  
+    <div class="card-header codesum"><span class="anchor" id="proc-get_env"></span> <h3>public  function <a href='../proc/get_env.html'>get_env</a>(NAME, DEFAULT) result(VALUE)  
 </h3></div>
     <div class="card-body">
           
@@ -431,7 +434,7 @@ parameter
   </div>
 
               <div class="card">
-    <div class="card-header codesum"><span class="anchor" id="proc-get_os_type"></span><h3>public  function <a href='../proc/get_os_type.html'>get_os_type</a>() result(r)  
+    <div class="card-header codesum"><span class="anchor" id="proc-get_os_type"></span> <h3>public  function <a href='../proc/get_os_type.html'>get_os_type</a>() result(r)  
 </h3></div>
     <div class="card-body">
           
@@ -449,11 +452,11 @@ parameter
   </div>
 
               <div class="card">
-    <div class="card-header codesum"><span class="anchor" id="proc-os_is_unix"></span><h3>public  function <a href='../proc/os_is_unix.html'>os_is_unix</a>(os)  
+    <div class="card-header codesum"><span class="anchor" id="proc-os_is_unix"></span> <h3>public  function <a href='../proc/os_is_unix.html'>os_is_unix</a>(os)  
 </h3></div>
     <div class="card-body">
           
-  <p>Compare the output of <a href="../proc/get_os_type.html">get_os_type</a> or the optional
+  <p>Compare the output of <a href="get_os_type.html">get_os_type</a> or the optional
 passed INTEGER value to the value for OS_WINDOWS
 and return .TRUE. if they match and .FALSE. otherwise</p>
 
@@ -470,7 +473,7 @@ and return .TRUE. if they match and .FALSE. otherwise</p>
     <tbody>
         <tr>
             <td>
-              <span class="anchor" id="variable-os~2"></span>
+              <span class="anchor" id="variable-os~3"></span>
               integer,
             </td>
 <td>intent(in),</td>
@@ -496,7 +499,7 @@ and return .TRUE. if they match and .FALSE. otherwise</p>
   </div>
 
               <div class="card">
-    <div class="card-header codesum"><span class="anchor" id="proc-separator"></span><h3>public  function <a href='../proc/separator.html'>separator</a>() result(sep)  
+    <div class="card-header codesum"><span class="anchor" id="proc-separator"></span> <h3>public  function <a href='../proc/separator.html'>separator</a>() result(sep)  
 </h3></div>
     <div class="card-body">
           
@@ -527,14 +530,14 @@ and return .TRUE. if they match and .FALSE. otherwise</p>
     <footer>
       <div class="container">
         <div class="row justify-content-between">
-          <div class="col"><p>Fortran-lang/fpm was developed by fortran-lang/fpm contributors<br>&copy; 2023 
+          <div class="col"><p>Fortran-lang/fpm was developed by fortran-lang/fpm contributors<br>&copy; 2024 
 </p>
           </div>
           <div class="col">
             <p class="text-end">
               Documentation generated by
               <a href="https://github.com/Fortran-FOSS-Programmers/ford">FORD</a>
- on 2023-12-28 16:08              </p>
+ on 2024-01-08 09:21              </p>
           </div>
         </div>
         <br>

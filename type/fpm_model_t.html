@@ -1,3 +1,5 @@
+<!-- -*- mode: jinja2 -*- -->
+
 <!DOCTYPE html>
 <html lang="en">
   <head>
@@ -17,7 +19,8 @@
     <link href="../css/local.css" rel="stylesheet">
       <link  href="../tipuesearch/tipuesearch.css" rel="stylesheet">
 
-    <script src="https://code.jquery.com/jquery-3.7.0.slim.min.js" integrity="sha256-tG5mcZUtJsZvyKAxYLVXrmjKBVLd6VpVccqz/r4ypFE=" crossorigin="anonymous"></script>
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js" integrity="sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo=" crossorigin="anonymous"></script>
+    <script src="../js/svg-pan-zoom.min.js"></script>
   </head>
 
   <body>
@@ -48,7 +51,7 @@
                   <a class="nav-link" href="../lists/types.html">Derived Types</a>
                 </li>
                 <li class="nav-item">
-                  <a class="nav-link" href="../program/main.html">Program</a>
+                  <a class="nav-link" href="program/main.html">Program</a>
                 </li>
             </ul>
               <div class="d-flex align-items-end flex-grow-1">
@@ -115,21 +118,21 @@
       </a>
       <div id="vars-0" class="collapse">
         <div class="list-group list-group-flush">
-            <a class="list-group-item" href="../type/fpm_model_t.html#variable-archiver">archiver</a>
-            <a class="list-group-item" href="../type/fpm_model_t.html#variable-build_prefix">build_prefix</a>
+            <a class="list-group-item" href="../type/fpm_model_t.html#variable-archiver~3">archiver</a>
+            <a class="list-group-item" href="../type/fpm_model_t.html#variable-build_prefix~2">build_prefix</a>
             <a class="list-group-item" href="../type/fpm_model_t.html#variable-c_compile_flags">c_compile_flags</a>
-            <a class="list-group-item" href="../type/fpm_model_t.html#variable-compiler~4">compiler</a>
+            <a class="list-group-item" href="../type/fpm_model_t.html#variable-compiler~23">compiler</a>
             <a class="list-group-item" href="../type/fpm_model_t.html#variable-cxx_compile_flags">cxx_compile_flags</a>
-            <a class="list-group-item" href="../type/fpm_model_t.html#variable-deps">deps</a>
-            <a class="list-group-item" href="../type/fpm_model_t.html#variable-enforce_module_names~2">enforce_module_names</a>
-            <a class="list-group-item" href="../type/fpm_model_t.html#variable-external_modules~2">external_modules</a>
+            <a class="list-group-item" href="../type/fpm_model_t.html#variable-deps~3">deps</a>
+            <a class="list-group-item" href="../type/fpm_model_t.html#variable-enforce_module_names~3">enforce_module_names</a>
+            <a class="list-group-item" href="../type/fpm_model_t.html#variable-external_modules~4">external_modules</a>
             <a class="list-group-item" href="../type/fpm_model_t.html#variable-fortran_compile_flags">fortran_compile_flags</a>
             <a class="list-group-item" href="../type/fpm_model_t.html#variable-include_dirs">include_dirs</a>
             <a class="list-group-item" href="../type/fpm_model_t.html#variable-include_tests">include_tests</a>
-            <a class="list-group-item" href="../type/fpm_model_t.html#variable-link_flags~2">link_flags</a>
-            <a class="list-group-item" href="../type/fpm_model_t.html#variable-link_libraries~3">link_libraries</a>
-            <a class="list-group-item" href="../type/fpm_model_t.html#variable-module_prefix~2">module_prefix</a>
-            <a class="list-group-item" href="../type/fpm_model_t.html#variable-package_name~4">package_name</a>
+            <a class="list-group-item" href="../type/fpm_model_t.html#variable-link_flags~3">link_flags</a>
+            <a class="list-group-item" href="../type/fpm_model_t.html#variable-link_libraries~4">link_libraries</a>
+            <a class="list-group-item" href="../type/fpm_model_t.html#variable-module_prefix~4">module_prefix</a>
+            <a class="list-group-item" href="../type/fpm_model_t.html#variable-package_name~7">package_name</a>
             <a class="list-group-item" href="../type/fpm_model_t.html#variable-packages">packages</a>
         </div>
       </div>
@@ -166,7 +169,8 @@
     </div>
     
     <div class="col-md-9" id='text'>
-      <h2>type, public :: fpm_model_t</h2>
+      <h2>
+        type, public :: fpm_model_t</h2>
     <p>Type describing everything required to build
  the root package and its dependencies.</p>
     <br>
@@ -185,7 +189,7 @@
     <tbody>
         <tr>
             <td>
-              <span class="anchor" id="variable-archiver"></span>
+              <span class="anchor" id="variable-archiver~3"></span>
               type(archiver_t),
             </td>
               <td>public</td>
@@ -202,7 +206,7 @@
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-build_prefix"></span>
+              <span class="anchor" id="variable-build_prefix~2"></span>
               character(len=:),
             </td>
               <td>public,</td>
@@ -236,7 +240,7 @@
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-compiler~4"></span>
+              <span class="anchor" id="variable-compiler~23"></span>
               type(compiler_t),
             </td>
               <td>public</td>
@@ -270,8 +274,8 @@
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-deps"></span>
-              type(<a href='../type/dependency_tree_t.html'>dependency_tree_t</a>),
+              <span class="anchor" id="variable-deps~3"></span>
+              type(<a href='dependency_tree_t.html'>dependency_tree_t</a>),
             </td>
               <td>public</td>
             <td>
@@ -287,7 +291,7 @@
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-enforce_module_names~2"></span>
+              <span class="anchor" id="variable-enforce_module_names~3"></span>
               logical,
             </td>
               <td>public</td>
@@ -304,8 +308,8 @@
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-external_modules~2"></span>
-              type(<a href='../type/string_t.html'>string_t</a>),
+              <span class="anchor" id="variable-external_modules~4"></span>
+              type(<a href='string_t.html'>string_t</a>),
             </td>
               <td>public,</td>
             <td>
@@ -339,7 +343,7 @@
         <tr>
             <td>
               <span class="anchor" id="variable-include_dirs"></span>
-              type(<a href='../type/string_t.html'>string_t</a>),
+              type(<a href='string_t.html'>string_t</a>),
             </td>
               <td>public,</td>
             <td>
@@ -372,7 +376,7 @@
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-link_flags~2"></span>
+              <span class="anchor" id="variable-link_flags~3"></span>
               character(len=:),
             </td>
               <td>public,</td>
@@ -389,8 +393,8 @@
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-link_libraries~3"></span>
-              type(<a href='../type/string_t.html'>string_t</a>),
+              <span class="anchor" id="variable-link_libraries~4"></span>
+              type(<a href='string_t.html'>string_t</a>),
             </td>
               <td>public,</td>
             <td>
@@ -406,8 +410,8 @@
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-module_prefix~2"></span>
-              type(<a href='../type/string_t.html'>string_t</a>),
+              <span class="anchor" id="variable-module_prefix~4"></span>
+              type(<a href='string_t.html'>string_t</a>),
             </td>
               <td>public</td>
             <td>
@@ -423,7 +427,7 @@
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-package_name~4"></span>
+              <span class="anchor" id="variable-package_name~7"></span>
               character(len=:),
             </td>
               <td>public,</td>
@@ -529,14 +533,14 @@
     <footer>
       <div class="container">
         <div class="row justify-content-between">
-          <div class="col"><p>Fortran-lang/fpm was developed by fortran-lang/fpm contributors<br>&copy; 2023 
+          <div class="col"><p>Fortran-lang/fpm was developed by fortran-lang/fpm contributors<br>&copy; 2024 
 </p>
           </div>
           <div class="col">
             <p class="text-end">
               Documentation generated by
               <a href="https://github.com/Fortran-FOSS-Programmers/ford">FORD</a>
- on 2023-12-28 16:08              </p>
+ on 2024-01-08 09:21              </p>
           </div>
         </div>
         <br>

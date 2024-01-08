@@ -1,3 +1,5 @@
+<!-- -*- mode: jinja2 -*- -->
+
 <!DOCTYPE html>
 <html lang="en">
   <head>
@@ -17,7 +19,8 @@
     <link href="../css/local.css" rel="stylesheet">
       <link  href="../tipuesearch/tipuesearch.css" rel="stylesheet">
 
-    <script src="https://code.jquery.com/jquery-3.7.0.slim.min.js" integrity="sha256-tG5mcZUtJsZvyKAxYLVXrmjKBVLd6VpVccqz/r4ypFE=" crossorigin="anonymous"></script>
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js" integrity="sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo=" crossorigin="anonymous"></script>
+    <script src="../js/svg-pan-zoom.min.js"></script>
   </head>
 
   <body>
@@ -48,7 +51,7 @@
                   <a class="nav-link" href="../lists/types.html">Derived Types</a>
                 </li>
                 <li class="nav-item">
-                  <a class="nav-link" href="../program/main.html">Program</a>
+                  <a class="nav-link" href="program/main.html">Program</a>
                 </li>
             </ul>
               <div class="d-flex align-items-end flex-grow-1">
@@ -115,12 +118,12 @@
       </a>
       <div id="vars-0" class="collapse">
         <div class="list-group list-group-flush">
-            <a class="list-group-item" href="../type/dependency_tree_t.html#variable-cache">cache</a>
-            <a class="list-group-item" href="../type/dependency_tree_t.html#variable-dep">dep</a>
+            <a class="list-group-item" href="../type/dependency_tree_t.html#variable-cache~2">cache</a>
+            <a class="list-group-item" href="../type/dependency_tree_t.html#variable-dep~2">dep</a>
             <a class="list-group-item" href="../type/dependency_tree_t.html#variable-dep_dir">dep_dir</a>
             <a class="list-group-item" href="../type/dependency_tree_t.html#variable-ndep">ndep</a>
-            <a class="list-group-item" href="../type/dependency_tree_t.html#variable-unit~7">unit</a>
-            <a class="list-group-item" href="../type/dependency_tree_t.html#variable-verbosity~7">verbosity</a>
+            <a class="list-group-item" href="../type/dependency_tree_t.html#variable-unit~14">unit</a>
+            <a class="list-group-item" href="../type/dependency_tree_t.html#variable-verbosity~13">verbosity</a>
         </div>
       </div>
     </div>
@@ -153,7 +156,7 @@
             <a class="list-group-item" href="../type/dependency_tree_t.html#boundprocedure-finished">finished</a>
             <a class="list-group-item" href="../type/dependency_tree_t.html#boundprocedure-has">has</a>
             <a class="list-group-item" href="../type/dependency_tree_t.html#boundprocedure-load">load</a>
-            <a class="list-group-item" href="../type/dependency_tree_t.html#boundprocedure-resolve">resolve</a>
+            <a class="list-group-item" href="../type/dependency_tree_t.html#boundprocedure-resolve~2">resolve</a>
             <a class="list-group-item" href="../type/dependency_tree_t.html#boundprocedure-update~2">update</a>
         </div>
       </div>
@@ -174,7 +177,8 @@
     </div>
     
     <div class="col-md-9" id='text'>
-      <h2>type, public :: dependency_tree_t</h2>
+      <h2>
+        type, public :: dependency_tree_t</h2>
     <p>Respresentation of a projects dependencies</p>
 <p>The dependencies are stored in a simple array for now, this can be replaced
 with a binary-search tree or a hash table in the future.</p>
@@ -194,7 +198,7 @@ with a binary-search tree or a hash table in the future.</p>
     <tbody>
         <tr>
             <td>
-              <span class="anchor" id="variable-cache"></span>
+              <span class="anchor" id="variable-cache~2"></span>
               character(len=:),
             </td>
               <td>public,</td>
@@ -211,8 +215,8 @@ with a binary-search tree or a hash table in the future.</p>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-dep"></span>
-              type(<a href='../type/dependency_node_t.html'>dependency_node_t</a>),
+              <span class="anchor" id="variable-dep~2"></span>
+              type(<a href='dependency_node_t.html'>dependency_node_t</a>),
             </td>
               <td>public,</td>
             <td>
@@ -262,7 +266,7 @@ with a binary-search tree or a hash table in the future.</p>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-unit~7"></span>
+              <span class="anchor" id="variable-unit~14"></span>
               integer,
             </td>
               <td>public</td>
@@ -279,7 +283,7 @@ with a binary-search tree or a hash table in the future.</p>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-verbosity~7"></span>
+              <span class="anchor" id="variable-verbosity~13"></span>
               integer,
             </td>
               <td>public</td>
@@ -342,7 +346,7 @@ as a choice of design.</p>
         <tr>
             <td>
               <span class="anchor" ></span>
-              class(<a href='../type/dependency_tree_t.html'>dependency_tree_t</a>),
+              class(<a href='dependency_tree_t.html'>dependency_tree_t</a>),
             </td>
 <td>intent(inout)</td>
               <td></td>            <td>
@@ -357,7 +361,7 @@ as a choice of design.</p>
         <tr>
             <td>
               <span class="anchor" ></span>
-              type(<a href='../type/package_config_t.html'>package_config_t</a>),
+              type(<a href='package_config_t.html'>package_config_t</a>),
             </td>
 <td>intent(in)</td>
               <td></td>            <td>
@@ -372,7 +376,7 @@ as a choice of design.</p>
         <tr>
             <td>
               <span class="anchor" ></span>
-              type(<a href='../type/error_t.html'>error_t</a>),
+              type(<a href='error_t.html'>error_t</a>),
             </td>
 <td>intent(out),</td>
               <td></td>            <td>
@@ -410,7 +414,7 @@ as a choice of design.</p>
         <tr>
             <td>
               <span class="anchor" ></span>
-              class(<a href='../type/dependency_tree_t.html'>dependency_tree_t</a>),
+              class(<a href='dependency_tree_t.html'>dependency_tree_t</a>),
             </td>
 <td>intent(inout)</td>
               <td></td>            <td>
@@ -425,7 +429,7 @@ as a choice of design.</p>
         <tr>
             <td>
               <span class="anchor" ></span>
-              type(<a href='../type/package_config_t.html'>package_config_t</a>),
+              type(<a href='package_config_t.html'>package_config_t</a>),
             </td>
 <td>intent(in)</td>
               <td></td>            <td>
@@ -470,7 +474,7 @@ as a choice of design.</p>
         <tr>
             <td>
               <span class="anchor" ></span>
-              type(<a href='../type/error_t.html'>error_t</a>),
+              type(<a href='error_t.html'>error_t</a>),
             </td>
 <td>intent(out),</td>
               <td></td>            <td>
@@ -508,7 +512,7 @@ as a choice of design.</p>
         <tr>
             <td>
               <span class="anchor" ></span>
-              class(<a href='../type/dependency_tree_t.html'>dependency_tree_t</a>),
+              class(<a href='dependency_tree_t.html'>dependency_tree_t</a>),
             </td>
 <td>intent(inout)</td>
               <td></td>            <td>
@@ -523,7 +527,7 @@ as a choice of design.</p>
         <tr>
             <td>
               <span class="anchor" ></span>
-              type(<a href='../type/dependency_config_t.html'>dependency_config_t</a>),
+              type(<a href='dependency_config_t.html'>dependency_config_t</a>),
             </td>
 <td>intent(in)</td>
               <td></td>            <td>
@@ -538,7 +542,7 @@ as a choice of design.</p>
         <tr>
             <td>
               <span class="anchor" ></span>
-              type(<a href='../type/error_t.html'>error_t</a>),
+              type(<a href='error_t.html'>error_t</a>),
             </td>
 <td>intent(out),</td>
               <td></td>            <td>
@@ -576,7 +580,7 @@ as a choice of design.</p>
         <tr>
             <td>
               <span class="anchor" ></span>
-              class(<a href='../type/dependency_tree_t.html'>dependency_tree_t</a>),
+              class(<a href='dependency_tree_t.html'>dependency_tree_t</a>),
             </td>
 <td>intent(inout)</td>
               <td></td>            <td>
@@ -591,7 +595,7 @@ as a choice of design.</p>
         <tr>
             <td>
               <span class="anchor" ></span>
-              type(<a href='../type/dependency_config_t.html'>dependency_config_t</a>),
+              type(<a href='dependency_config_t.html'>dependency_config_t</a>),
             </td>
 <td>intent(in)</td>
               <td></td>            <td>
@@ -606,7 +610,7 @@ as a choice of design.</p>
         <tr>
             <td>
               <span class="anchor" ></span>
-              type(<a href='../type/error_t.html'>error_t</a>),
+              type(<a href='error_t.html'>error_t</a>),
             </td>
 <td>intent(out),</td>
               <td></td>            <td>
@@ -645,7 +649,7 @@ Dependency nodes contain additional information (version, git, revision)</p>
         <tr>
             <td>
               <span class="anchor" ></span>
-              class(<a href='../type/dependency_tree_t.html'>dependency_tree_t</a>),
+              class(<a href='dependency_tree_t.html'>dependency_tree_t</a>),
             </td>
 <td>intent(inout)</td>
               <td></td>            <td>
@@ -660,7 +664,7 @@ Dependency nodes contain additional information (version, git, revision)</p>
         <tr>
             <td>
               <span class="anchor" ></span>
-              type(<a href='../type/dependency_node_t.html'>dependency_node_t</a>),
+              type(<a href='dependency_node_t.html'>dependency_node_t</a>),
             </td>
 <td>intent(in)</td>
               <td></td>            <td>
@@ -675,7 +679,7 @@ Dependency nodes contain additional information (version, git, revision)</p>
         <tr>
             <td>
               <span class="anchor" ></span>
-              type(<a href='../type/error_t.html'>error_t</a>),
+              type(<a href='error_t.html'>error_t</a>),
             </td>
 <td>intent(out),</td>
               <td></td>            <td>
@@ -732,7 +736,7 @@ Dependency nodes contain additional information (version, git, revision)</p>
         <tr>
             <td>
               <span class="anchor" ></span>
-              class(<a href='../type/dependency_tree_t.html'>dependency_tree_t</a>),
+              class(<a href='dependency_tree_t.html'>dependency_tree_t</a>),
             </td>
 <td>intent(inout)</td>
               <td></td>            <td>
@@ -762,7 +766,7 @@ Dependency nodes contain additional information (version, git, revision)</p>
         <tr>
             <td>
               <span class="anchor" ></span>
-              type(<a href='../type/error_t.html'>error_t</a>),
+              type(<a href='error_t.html'>error_t</a>),
             </td>
 <td>intent(out),</td>
               <td></td>            <td>
@@ -800,7 +804,7 @@ Dependency nodes contain additional information (version, git, revision)</p>
         <tr>
             <td>
               <span class="anchor" ></span>
-              class(<a href='../type/dependency_tree_t.html'>dependency_tree_t</a>),
+              class(<a href='dependency_tree_t.html'>dependency_tree_t</a>),
             </td>
 <td>intent(inout)</td>
               <td></td>            <td>
@@ -830,7 +834,7 @@ Dependency nodes contain additional information (version, git, revision)</p>
         <tr>
             <td>
               <span class="anchor" ></span>
-              type(<a href='../type/error_t.html'>error_t</a>),
+              type(<a href='error_t.html'>error_t</a>),
             </td>
 <td>intent(out),</td>
               <td></td>            <td>
@@ -868,7 +872,7 @@ Dependency nodes contain additional information (version, git, revision)</p>
         <tr>
             <td>
               <span class="anchor" ></span>
-              class(<a href='../type/dependency_tree_t.html'>dependency_tree_t</a>),
+              class(<a href='dependency_tree_t.html'>dependency_tree_t</a>),
             </td>
 <td>intent(inout)</td>
               <td></td>            <td>
@@ -898,7 +902,7 @@ Dependency nodes contain additional information (version, git, revision)</p>
         <tr>
             <td>
               <span class="anchor" ></span>
-              type(<a href='../type/error_t.html'>error_t</a>),
+              type(<a href='error_t.html'>error_t</a>),
             </td>
 <td>intent(out),</td>
               <td></td>            <td>
@@ -955,7 +959,7 @@ Dependency nodes contain additional information (version, git, revision)</p>
         <tr>
             <td>
               <span class="anchor" ></span>
-              class(<a href='../type/dependency_tree_t.html'>dependency_tree_t</a>),
+              class(<a href='dependency_tree_t.html'>dependency_tree_t</a>),
             </td>
 <td>intent(in)</td>
               <td></td>            <td>
@@ -1032,7 +1036,7 @@ Dependency nodes contain additional information (version, git, revision)</p>
         <tr>
             <td>
               <span class="anchor" ></span>
-              class(<a href='../type/dependency_tree_t.html'>dependency_tree_t</a>),
+              class(<a href='dependency_tree_t.html'>dependency_tree_t</a>),
             </td>
 <td>intent(in)</td>
               <td></td>            <td>
@@ -1094,7 +1098,7 @@ Dependency nodes contain additional information (version, git, revision)</p>
         <tr>
             <td>
               <span class="anchor" ></span>
-              class(<a href='../type/dependency_tree_t.html'>dependency_tree_t</a>),
+              class(<a href='dependency_tree_t.html'>dependency_tree_t</a>),
             </td>
 <td>intent(in)</td>
               <td></td>            <td>
@@ -1109,7 +1113,7 @@ Dependency nodes contain additional information (version, git, revision)</p>
         <tr>
             <td>
               <span class="anchor" ></span>
-              class(<a href='../type/dependency_node_t.html'>dependency_node_t</a>),
+              class(<a href='dependency_node_t.html'>dependency_node_t</a>),
             </td>
 <td>intent(in)</td>
               <td></td>            <td>
@@ -1171,7 +1175,7 @@ Dependency nodes contain additional information (version, git, revision)</p>
         <tr>
             <td>
               <span class="anchor" ></span>
-              class(<a href='../type/dependency_tree_t.html'>dependency_tree_t</a>),
+              class(<a href='dependency_tree_t.html'>dependency_tree_t</a>),
             </td>
 <td>intent(inout)</td>
               <td></td>            <td>
@@ -1201,7 +1205,7 @@ Dependency nodes contain additional information (version, git, revision)</p>
         <tr>
             <td>
               <span class="anchor" ></span>
-              type(<a href='../type/error_t.html'>error_t</a>),
+              type(<a href='error_t.html'>error_t</a>),
             </td>
 <td>intent(out),</td>
               <td></td>            <td>
@@ -1239,7 +1243,7 @@ Dependency nodes contain additional information (version, git, revision)</p>
         <tr>
             <td>
               <span class="anchor" ></span>
-              class(<a href='../type/dependency_tree_t.html'>dependency_tree_t</a>),
+              class(<a href='dependency_tree_t.html'>dependency_tree_t</a>),
             </td>
 <td>intent(inout)</td>
               <td></td>            <td>
@@ -1269,7 +1273,7 @@ Dependency nodes contain additional information (version, git, revision)</p>
         <tr>
             <td>
               <span class="anchor" ></span>
-              type(<a href='../type/error_t.html'>error_t</a>),
+              type(<a href='error_t.html'>error_t</a>),
             </td>
 <td>intent(out),</td>
               <td></td>            <td>
@@ -1307,7 +1311,7 @@ Dependency nodes contain additional information (version, git, revision)</p>
         <tr>
             <td>
               <span class="anchor" ></span>
-              class(<a href='../type/dependency_tree_t.html'>dependency_tree_t</a>),
+              class(<a href='dependency_tree_t.html'>dependency_tree_t</a>),
             </td>
 <td>intent(inout)</td>
               <td></td>            <td>
@@ -1337,7 +1341,7 @@ Dependency nodes contain additional information (version, git, revision)</p>
         <tr>
             <td>
               <span class="anchor" ></span>
-              type(<a href='../type/error_t.html'>error_t</a>),
+              type(<a href='error_t.html'>error_t</a>),
             </td>
 <td>intent(out),</td>
               <td></td>            <td>
@@ -1361,7 +1365,7 @@ Dependency nodes contain additional information (version, git, revision)</p>
           <div class="row">
               <div class="card mt-3">
     <div class="card-header codesum">
-      <span class="anchor" id="boundprocedure-resolve"></span>
+      <span class="anchor" id="boundprocedure-resolve~2"></span>
       <h3>
           generic, public ::
   <strong>resolve</strong> => resolve_dependencies, resolve_dependency
@@ -1394,7 +1398,7 @@ Dependency nodes contain additional information (version, git, revision)</p>
         <tr>
             <td>
               <span class="anchor" ></span>
-              class(<a href='../type/dependency_tree_t.html'>dependency_tree_t</a>),
+              class(<a href='dependency_tree_t.html'>dependency_tree_t</a>),
             </td>
 <td>intent(inout)</td>
               <td></td>            <td>
@@ -1424,7 +1428,7 @@ Dependency nodes contain additional information (version, git, revision)</p>
         <tr>
             <td>
               <span class="anchor" ></span>
-              type(<a href='../type/error_t.html'>error_t</a>),
+              type(<a href='error_t.html'>error_t</a>),
             </td>
 <td>intent(out),</td>
               <td></td>            <td>
@@ -1462,7 +1466,7 @@ Dependency nodes contain additional information (version, git, revision)</p>
         <tr>
             <td>
               <span class="anchor" ></span>
-              class(<a href='../type/dependency_tree_t.html'>dependency_tree_t</a>),
+              class(<a href='dependency_tree_t.html'>dependency_tree_t</a>),
             </td>
 <td>intent(inout)</td>
               <td></td>            <td>
@@ -1477,7 +1481,7 @@ Dependency nodes contain additional information (version, git, revision)</p>
         <tr>
             <td>
               <span class="anchor" ></span>
-              type(<a href='../type/dependency_node_t.html'>dependency_node_t</a>),
+              type(<a href='dependency_node_t.html'>dependency_node_t</a>),
             </td>
 <td>intent(inout)</td>
               <td></td>            <td>
@@ -1492,7 +1496,7 @@ Dependency nodes contain additional information (version, git, revision)</p>
         <tr>
             <td>
               <span class="anchor" ></span>
-              type(<a href='../type/fpm_global_settings.html'>fpm_global_settings</a>),
+              type(<a href='fpm_global_settings.html'>fpm_global_settings</a>),
             </td>
 <td>intent(in)</td>
               <td></td>            <td>
@@ -1522,7 +1526,7 @@ Dependency nodes contain additional information (version, git, revision)</p>
         <tr>
             <td>
               <span class="anchor" ></span>
-              type(<a href='../type/error_t.html'>error_t</a>),
+              type(<a href='error_t.html'>error_t</a>),
             </td>
 <td>intent(out),</td>
               <td></td>            <td>
@@ -1579,7 +1583,7 @@ Dependency nodes contain additional information (version, git, revision)</p>
         <tr>
             <td>
               <span class="anchor" ></span>
-              class(<a href='../type/dependency_tree_t.html'>dependency_tree_t</a>),
+              class(<a href='dependency_tree_t.html'>dependency_tree_t</a>),
             </td>
 <td>intent(inout)</td>
               <td></td>            <td>
@@ -1609,7 +1613,7 @@ Dependency nodes contain additional information (version, git, revision)</p>
         <tr>
             <td>
               <span class="anchor" ></span>
-              type(<a href='../type/error_t.html'>error_t</a>),
+              type(<a href='error_t.html'>error_t</a>),
             </td>
 <td>intent(out),</td>
               <td></td>            <td>
@@ -1647,7 +1651,7 @@ Dependency nodes contain additional information (version, git, revision)</p>
         <tr>
             <td>
               <span class="anchor" ></span>
-              class(<a href='../type/dependency_tree_t.html'>dependency_tree_t</a>),
+              class(<a href='dependency_tree_t.html'>dependency_tree_t</a>),
             </td>
 <td>intent(inout)</td>
               <td></td>            <td>
@@ -1662,7 +1666,7 @@ Dependency nodes contain additional information (version, git, revision)</p>
         <tr>
             <td>
               <span class="anchor" ></span>
-              type(<a href='../type/error_t.html'>error_t</a>),
+              type(<a href='error_t.html'>error_t</a>),
             </td>
 <td>intent(out),</td>
               <td></td>            <td>
@@ -1767,14 +1771,14 @@ Dependency nodes contain additional information (version, git, revision)</p>
     <footer>
       <div class="container">
         <div class="row justify-content-between">
-          <div class="col"><p>Fortran-lang/fpm was developed by fortran-lang/fpm contributors<br>&copy; 2023 
+          <div class="col"><p>Fortran-lang/fpm was developed by fortran-lang/fpm contributors<br>&copy; 2024 
 </p>
           </div>
           <div class="col">
             <p class="text-end">
               Documentation generated by
               <a href="https://github.com/Fortran-FOSS-Programmers/ford">FORD</a>
- on 2023-12-28 16:08              </p>
+ on 2024-01-08 09:21              </p>
           </div>
         </div>
         <br>

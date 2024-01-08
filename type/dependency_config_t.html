@@ -1,3 +1,5 @@
+<!-- -*- mode: jinja2 -*- -->
+
 <!DOCTYPE html>
 <html lang="en">
   <head>
@@ -17,7 +19,8 @@
     <link href="../css/local.css" rel="stylesheet">
       <link  href="../tipuesearch/tipuesearch.css" rel="stylesheet">
 
-    <script src="https://code.jquery.com/jquery-3.7.0.slim.min.js" integrity="sha256-tG5mcZUtJsZvyKAxYLVXrmjKBVLd6VpVccqz/r4ypFE=" crossorigin="anonymous"></script>
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js" integrity="sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo=" crossorigin="anonymous"></script>
+    <script src="../js/svg-pan-zoom.min.js"></script>
   </head>
 
   <body>
@@ -48,7 +51,7 @@
                   <a class="nav-link" href="../lists/types.html">Derived Types</a>
                 </li>
                 <li class="nav-item">
-                  <a class="nav-link" href="../program/main.html">Program</a>
+                  <a class="nav-link" href="program/main.html">Program</a>
                 </li>
             </ul>
               <div class="d-flex align-items-end flex-grow-1">
@@ -116,9 +119,9 @@
       <div id="vars-0" class="collapse">
         <div class="list-group list-group-flush">
             <a class="list-group-item" href="../type/dependency_config_t.html#variable-git">git</a>
-            <a class="list-group-item" href="../type/dependency_config_t.html#variable-name~12">name</a>
-            <a class="list-group-item" href="../type/dependency_config_t.html#variable-namespace">namespace</a>
-            <a class="list-group-item" href="../type/dependency_config_t.html#variable-path~2">path</a>
+            <a class="list-group-item" href="../type/dependency_config_t.html#variable-name~21">name</a>
+            <a class="list-group-item" href="../type/dependency_config_t.html#variable-namespace~2">namespace</a>
+            <a class="list-group-item" href="../type/dependency_config_t.html#variable-path~18">path</a>
             <a class="list-group-item" href="../type/dependency_config_t.html#variable-preprocess~2">preprocess</a>
             <a class="list-group-item" href="../type/dependency_config_t.html#variable-requested_version">requested_version</a>
         </div>
@@ -167,7 +170,8 @@
     </div>
     
     <div class="col-md-9" id='text'>
-      <h2>type, public :: dependency_config_t</h2>
+      <h2>
+        type, public :: dependency_config_t</h2>
     <p>Configuration meta data for a dependency</p>
     <br>
 
@@ -186,7 +190,7 @@
         <tr>
             <td>
               <span class="anchor" id="variable-git"></span>
-              type(<a href='../type/git_target_t.html'>git_target_t</a>),
+              type(<a href='git_target_t.html'>git_target_t</a>),
             </td>
               <td>public,</td>
             <td>
@@ -202,7 +206,7 @@
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-name~12"></span>
+              <span class="anchor" id="variable-name~21"></span>
               character(len=:),
             </td>
               <td>public,</td>
@@ -219,7 +223,7 @@
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-namespace"></span>
+              <span class="anchor" id="variable-namespace~2"></span>
               character(len=:),
             </td>
               <td>public,</td>
@@ -238,7 +242,7 @@ Required for dependencies that are obtained via the official registry.</p>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-path~2"></span>
+              <span class="anchor" id="variable-path~18"></span>
               character(len=:),
             </td>
               <td>public,</td>
@@ -256,7 +260,7 @@ Required for dependencies that are obtained via the official registry.</p>
         <tr>
             <td>
               <span class="anchor" id="variable-preprocess~2"></span>
-              type(<a href='../type/preprocess_config_t.html'>preprocess_config_t</a>),
+              type(<a href='preprocess_config_t.html'>preprocess_config_t</a>),
             </td>
               <td>public,</td>
             <td>
@@ -273,7 +277,7 @@ Required for dependencies that are obtained via the official registry.</p>
         <tr>
             <td>
               <span class="anchor" id="variable-requested_version"></span>
-              type(<a href='../type/version_t.html'>version_t</a>),
+              type(<a href='version_t.html'>version_t</a>),
             </td>
               <td>public,</td>
             <td>
@@ -334,7 +338,7 @@ The latest version is used if not specified.</p>
         <tr>
             <td>
               <span class="anchor" ></span>
-              class(<a href='../type/dependency_config_t.html'>dependency_config_t</a>),
+              class(<a href='dependency_config_t.html'>dependency_config_t</a>),
             </td>
 <td>intent(in)</td>
               <td></td>            <td>
@@ -430,14 +434,14 @@ The latest version is used if not specified.</p>
     <footer>
       <div class="container">
         <div class="row justify-content-between">
-          <div class="col"><p>Fortran-lang/fpm was developed by fortran-lang/fpm contributors<br>&copy; 2023 
+          <div class="col"><p>Fortran-lang/fpm was developed by fortran-lang/fpm contributors<br>&copy; 2024 
 </p>
           </div>
           <div class="col">
             <p class="text-end">
               Documentation generated by
               <a href="https://github.com/Fortran-FOSS-Programmers/ford">FORD</a>
- on 2023-12-28 16:08              </p>
+ on 2024-01-08 09:21              </p>
           </div>
         </div>
         <br>

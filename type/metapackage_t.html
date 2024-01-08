@@ -1,3 +1,5 @@
+<!-- -*- mode: jinja2 -*- -->
+
 <!DOCTYPE html>
 <html lang="en">
   <head>
@@ -17,7 +19,8 @@
     <link href="../css/local.css" rel="stylesheet">
       <link  href="../tipuesearch/tipuesearch.css" rel="stylesheet">
 
-    <script src="https://code.jquery.com/jquery-3.7.0.slim.min.js" integrity="sha256-tG5mcZUtJsZvyKAxYLVXrmjKBVLd6VpVccqz/r4ypFE=" crossorigin="anonymous"></script>
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js" integrity="sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo=" crossorigin="anonymous"></script>
+    <script src="../js/svg-pan-zoom.min.js"></script>
   </head>
 
   <body>
@@ -48,7 +51,7 @@
                   <a class="nav-link" href="../lists/types.html">Derived Types</a>
                 </li>
                 <li class="nav-item">
-                  <a class="nav-link" href="../program/main.html">Program</a>
+                  <a class="nav-link" href="program/main.html">Program</a>
                 </li>
             </ul>
               <div class="d-flex align-items-end flex-grow-1">
@@ -115,13 +118,13 @@
       </a>
       <div id="vars-0" class="collapse">
         <div class="list-group list-group-flush">
-            <a class="list-group-item" href="../type/metapackage_t.html#variable-cflags">cflags</a>
-            <a class="list-group-item" href="../type/metapackage_t.html#variable-cxxflags">cxxflags</a>
-            <a class="list-group-item" href="../type/metapackage_t.html#variable-dependency~2">dependency</a>
-            <a class="list-group-item" href="../type/metapackage_t.html#variable-external_modules~3">external_modules</a>
+            <a class="list-group-item" href="../type/metapackage_t.html#variable-cflags~2">cflags</a>
+            <a class="list-group-item" href="../type/metapackage_t.html#variable-cxxflags~2">cxxflags</a>
+            <a class="list-group-item" href="../type/metapackage_t.html#variable-dependency~4">dependency</a>
+            <a class="list-group-item" href="../type/metapackage_t.html#variable-external_modules~2">external_modules</a>
             <a class="list-group-item" href="../type/metapackage_t.html#variable-fflags">fflags</a>
-            <a class="list-group-item" href="../type/metapackage_t.html#variable-flags~4">flags</a>
-            <a class="list-group-item" href="../type/metapackage_t.html#variable-fortran">fortran</a>
+            <a class="list-group-item" href="../type/metapackage_t.html#variable-flags~8">flags</a>
+            <a class="list-group-item" href="../type/metapackage_t.html#variable-fortran~2">fortran</a>
             <a class="list-group-item" href="../type/metapackage_t.html#variable-has_build_flags">has_build_flags</a>
             <a class="list-group-item" href="../type/metapackage_t.html#variable-has_c_flags">has_c_flags</a>
             <a class="list-group-item" href="../type/metapackage_t.html#variable-has_cxx_flags">has_cxx_flags</a>
@@ -133,10 +136,10 @@
             <a class="list-group-item" href="../type/metapackage_t.html#variable-has_link_libraries">has_link_libraries</a>
             <a class="list-group-item" href="../type/metapackage_t.html#variable-has_run_command">has_run_command</a>
             <a class="list-group-item" href="../type/metapackage_t.html#variable-incl_dirs">incl_dirs</a>
-            <a class="list-group-item" href="../type/metapackage_t.html#variable-link_flags~3">link_flags</a>
+            <a class="list-group-item" href="../type/metapackage_t.html#variable-link_flags~2">link_flags</a>
             <a class="list-group-item" href="../type/metapackage_t.html#variable-link_libs">link_libs</a>
             <a class="list-group-item" href="../type/metapackage_t.html#variable-run_command">run_command</a>
-            <a class="list-group-item" href="../type/metapackage_t.html#variable-version~2">version</a>
+            <a class="list-group-item" href="../type/metapackage_t.html#variable-version~5">version</a>
         </div>
       </div>
     </div>
@@ -165,7 +168,7 @@
         <div class="list-group list-group-flush">
             <a class="list-group-item" href="../type/metapackage_t.html#boundprocedure-destroy">destroy</a>
             <a class="list-group-item" href="../type/metapackage_t.html#boundprocedure-new">new</a>
-            <a class="list-group-item" href="../type/metapackage_t.html#boundprocedure-resolve~2">resolve</a>
+            <a class="list-group-item" href="../type/metapackage_t.html#boundprocedure-resolve">resolve</a>
         </div>
       </div>
     </div>
@@ -185,7 +188,8 @@
     </div>
     
     <div class="col-md-9" id='text'>
-      <h2>type, public :: metapackage_t</h2>
+      <h2>
+        type, public :: metapackage_t</h2>
     <p>Type for describing a source file</p>
     <br>
 
@@ -203,8 +207,8 @@
     <tbody>
         <tr>
             <td>
-              <span class="anchor" id="variable-cflags"></span>
-              type(<a href='../type/string_t.html'>string_t</a>),
+              <span class="anchor" id="variable-cflags~2"></span>
+              type(<a href='string_t.html'>string_t</a>),
             </td>
               <td>public</td>
             <td>
@@ -220,8 +224,8 @@
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-cxxflags"></span>
-              type(<a href='../type/string_t.html'>string_t</a>),
+              <span class="anchor" id="variable-cxxflags~2"></span>
+              type(<a href='string_t.html'>string_t</a>),
             </td>
               <td>public</td>
             <td>
@@ -237,8 +241,8 @@
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-dependency~2"></span>
-              type(<a href='../type/dependency_config_t.html'>dependency_config_t</a>),
+              <span class="anchor" id="variable-dependency~4"></span>
+              type(<a href='dependency_config_t.html'>dependency_config_t</a>),
             </td>
               <td>public,</td>
             <td>
@@ -255,8 +259,8 @@ Metapackage dependencies are never exported from the model</p>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-external_modules~3"></span>
-              type(<a href='../type/string_t.html'>string_t</a>),
+              <span class="anchor" id="variable-external_modules~2"></span>
+              type(<a href='string_t.html'>string_t</a>),
             </td>
               <td>public,</td>
             <td>
@@ -273,7 +277,7 @@ Metapackage dependencies are never exported from the model</p>
         <tr>
             <td>
               <span class="anchor" id="variable-fflags"></span>
-              type(<a href='../type/string_t.html'>string_t</a>),
+              type(<a href='string_t.html'>string_t</a>),
             </td>
               <td>public</td>
             <td>
@@ -289,8 +293,8 @@ Metapackage dependencies are never exported from the model</p>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-flags~4"></span>
-              type(<a href='../type/string_t.html'>string_t</a>),
+              <span class="anchor" id="variable-flags~8"></span>
+              type(<a href='string_t.html'>string_t</a>),
             </td>
               <td>public</td>
             <td>
@@ -306,8 +310,8 @@ Metapackage dependencies are never exported from the model</p>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-fortran"></span>
-              type(<a href='../type/fortran_features_t.html'>fortran_features_t</a>),
+              <span class="anchor" id="variable-fortran~2"></span>
+              type(<a href='fortran_features_t.html'>fortran_features_t</a>),
             </td>
               <td>public,</td>
             <td>
@@ -494,7 +498,7 @@ Metapackage dependencies are never exported from the model</p>
         <tr>
             <td>
               <span class="anchor" id="variable-incl_dirs"></span>
-              type(<a href='../type/string_t.html'>string_t</a>),
+              type(<a href='string_t.html'>string_t</a>),
             </td>
               <td>public,</td>
             <td>
@@ -510,8 +514,8 @@ Metapackage dependencies are never exported from the model</p>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-link_flags~3"></span>
-              type(<a href='../type/string_t.html'>string_t</a>),
+              <span class="anchor" id="variable-link_flags~2"></span>
+              type(<a href='string_t.html'>string_t</a>),
             </td>
               <td>public</td>
             <td>
@@ -528,7 +532,7 @@ Metapackage dependencies are never exported from the model</p>
         <tr>
             <td>
               <span class="anchor" id="variable-link_libs"></span>
-              type(<a href='../type/string_t.html'>string_t</a>),
+              type(<a href='string_t.html'>string_t</a>),
             </td>
               <td>public,</td>
             <td>
@@ -545,7 +549,7 @@ Metapackage dependencies are never exported from the model</p>
         <tr>
             <td>
               <span class="anchor" id="variable-run_command"></span>
-              type(<a href='../type/string_t.html'>string_t</a>),
+              type(<a href='string_t.html'>string_t</a>),
             </td>
               <td>public</td>
             <td>
@@ -561,8 +565,8 @@ Metapackage dependencies are never exported from the model</p>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-version~2"></span>
-              type(<a href='../type/version_t.html'>version_t</a>),
+              <span class="anchor" id="variable-version~5"></span>
+              type(<a href='version_t.html'>version_t</a>),
             </td>
               <td>public,</td>
             <td>
@@ -622,7 +626,7 @@ Metapackage dependencies are never exported from the model</p>
         <tr>
             <td>
               <span class="anchor" ></span>
-              class(<a href='../type/metapackage_t.html'>metapackage_t</a>),
+              class(<a href='metapackage_t.html'>metapackage_t</a>),
             </td>
 <td>intent(inout)</td>
               <td></td>            <td>
@@ -680,7 +684,7 @@ Initialize metapackage by name</p>
         <tr>
             <td>
               <span class="anchor" ></span>
-              class(<a href='../type/metapackage_t.html'>metapackage_t</a>),
+              class(<a href='metapackage_t.html'>metapackage_t</a>),
             </td>
 <td>intent(inout)</td>
               <td></td>            <td>
@@ -725,7 +729,7 @@ Initialize metapackage by name</p>
         <tr>
             <td>
               <span class="anchor" ></span>
-              type(<a href='../type/error_t.html'>error_t</a>),
+              type(<a href='error_t.html'>error_t</a>),
             </td>
 <td>intent(out),</td>
               <td></td>            <td>
@@ -749,7 +753,7 @@ Initialize metapackage by name</p>
           <div class="row">
               <div class="card mt-3">
     <div class="card-header codesum">
-      <span class="anchor" id="boundprocedure-resolve~2"></span>
+      <span class="anchor" id="boundprocedure-resolve"></span>
       <h3>
           generic, public ::
   <strong>resolve</strong> => resolve_cmd, resolve_model, resolve_package_config
@@ -778,7 +782,7 @@ Initialize metapackage by name</p>
         <tr>
             <td>
               <span class="anchor" ></span>
-              class(<a href='../type/metapackage_t.html'>metapackage_t</a>),
+              class(<a href='metapackage_t.html'>metapackage_t</a>),
             </td>
 <td>intent(in)</td>
               <td></td>            <td>
@@ -793,7 +797,7 @@ Initialize metapackage by name</p>
         <tr>
             <td>
               <span class="anchor" ></span>
-              class(<a href='../type/fpm_cmd_settings.html'>fpm_cmd_settings</a>),
+              class(<a href='fpm_cmd_settings.html'>fpm_cmd_settings</a>),
             </td>
 <td>intent(inout)</td>
               <td></td>            <td>
@@ -808,7 +812,7 @@ Initialize metapackage by name</p>
         <tr>
             <td>
               <span class="anchor" ></span>
-              type(<a href='../type/error_t.html'>error_t</a>),
+              type(<a href='error_t.html'>error_t</a>),
             </td>
 <td>intent(out),</td>
               <td></td>            <td>
@@ -846,7 +850,7 @@ Initialize metapackage by name</p>
         <tr>
             <td>
               <span class="anchor" ></span>
-              class(<a href='../type/metapackage_t.html'>metapackage_t</a>),
+              class(<a href='metapackage_t.html'>metapackage_t</a>),
             </td>
 <td>intent(in)</td>
               <td></td>            <td>
@@ -861,7 +865,7 @@ Initialize metapackage by name</p>
         <tr>
             <td>
               <span class="anchor" ></span>
-              type(<a href='../type/fpm_model_t.html'>fpm_model_t</a>),
+              type(<a href='fpm_model_t.html'>fpm_model_t</a>),
             </td>
 <td>intent(inout)</td>
               <td></td>            <td>
@@ -876,7 +880,7 @@ Initialize metapackage by name</p>
         <tr>
             <td>
               <span class="anchor" ></span>
-              type(<a href='../type/error_t.html'>error_t</a>),
+              type(<a href='error_t.html'>error_t</a>),
             </td>
 <td>intent(out),</td>
               <td></td>            <td>
@@ -914,7 +918,7 @@ Initialize metapackage by name</p>
         <tr>
             <td>
               <span class="anchor" ></span>
-              class(<a href='../type/metapackage_t.html'>metapackage_t</a>),
+              class(<a href='metapackage_t.html'>metapackage_t</a>),
             </td>
 <td>intent(in)</td>
               <td></td>            <td>
@@ -929,7 +933,7 @@ Initialize metapackage by name</p>
         <tr>
             <td>
               <span class="anchor" ></span>
-              type(<a href='../type/package_config_t.html'>package_config_t</a>),
+              type(<a href='package_config_t.html'>package_config_t</a>),
             </td>
 <td>intent(inout)</td>
               <td></td>            <td>
@@ -944,7 +948,7 @@ Initialize metapackage by name</p>
         <tr>
             <td>
               <span class="anchor" ></span>
-              type(<a href='../type/error_t.html'>error_t</a>),
+              type(<a href='error_t.html'>error_t</a>),
             </td>
 <td>intent(out),</td>
               <td></td>            <td>
@@ -1030,14 +1034,14 @@ Initialize metapackage by name</p>
     <footer>
       <div class="container">
         <div class="row justify-content-between">
-          <div class="col"><p>Fortran-lang/fpm was developed by fortran-lang/fpm contributors<br>&copy; 2023 
+          <div class="col"><p>Fortran-lang/fpm was developed by fortran-lang/fpm contributors<br>&copy; 2024 
 </p>
           </div>
           <div class="col">
             <p class="text-end">
               Documentation generated by
               <a href="https://github.com/Fortran-FOSS-Programmers/ford">FORD</a>
- on 2023-12-28 16:08              </p>
+ on 2024-01-08 09:21              </p>
           </div>
         </div>
         <br>

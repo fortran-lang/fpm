@@ -1,3 +1,5 @@
+<!-- -*- mode: jinja2 -*- -->
+
 <!DOCTYPE html>
 <html lang="en">
   <head>
@@ -17,7 +19,8 @@
     <link href="../css/local.css" rel="stylesheet">
       <link  href="../tipuesearch/tipuesearch.css" rel="stylesheet">
 
-    <script src="https://code.jquery.com/jquery-3.7.0.slim.min.js" integrity="sha256-tG5mcZUtJsZvyKAxYLVXrmjKBVLd6VpVccqz/r4ypFE=" crossorigin="anonymous"></script>
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js" integrity="sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo=" crossorigin="anonymous"></script>
+    <script src="../js/svg-pan-zoom.min.js"></script>
   </head>
 
   <body>
@@ -48,7 +51,7 @@
                   <a class="nav-link" href="../lists/types.html">Derived Types</a>
                 </li>
                 <li class="nav-item">
-                  <a class="nav-link" href="../program/main.html">Program</a>
+                  <a class="nav-link" href="program/main.html">Program</a>
                 </li>
             </ul>
               <div class="d-flex align-items-end flex-grow-1">
@@ -124,7 +127,7 @@
             <a class="list-group-item" href="../module/fpm_strings.html#interface-fnv_1a">fnv_1a</a>
             <a class="list-group-item" href="../module/fpm_strings.html#interface-len_trim">len_trim</a>
             <a class="list-group-item" href="../module/fpm_strings.html#interface-operator%28.in.%29">operator(.in.)</a>
-            <a class="list-group-item" href="../module/fpm_strings.html#interface-resize~2">resize</a>
+            <a class="list-group-item" href="../module/fpm_strings.html#interface-resize">resize</a>
             <a class="list-group-item" href="../module/fpm_strings.html#interface-str">str</a>
             <a class="list-group-item" href="../module/fpm_strings.html#interface-str_ends_with">str_ends_with</a>
             <a class="list-group-item" href="../module/fpm_strings.html#interface-string_t">string_t</a>
@@ -253,8 +256,8 @@
         <ul class="list-group list-group-flush">
             <li class="list-group-item">
               <ul class="list-inline">
-                  <li class="list-inline-item"><a href='http://fortranwiki.org/fortran/show/iso_c_binding'>iso_c_binding</a></li>
                   <li class="list-inline-item"><a href='http://fortranwiki.org/fortran/show/iso_fortran_env'>iso_fortran_env</a></li>
+                  <li class="list-inline-item"><a href='http://fortranwiki.org/fortran/show/iso_c_binding'>iso_c_binding</a></li>
               </ul>
             </li>
         </ul>
@@ -296,7 +299,7 @@
     <tbody>
         <tr>
             <td>
-              <span class="anchor" id="variable-input"></span>
+              <span class="anchor" id="variable-input~2"></span>
               character(len=*),
             </td>
 <td>intent(in)</td>
@@ -354,7 +357,7 @@
     <tbody>
         <tr>
             <td>
-              <span class="anchor" id="variable-input~2"></span>
+              <span class="anchor" id="variable-input~3"></span>
               type(<a href='../type/string_t.html'>string_t</a>),
             </td>
 <td>intent(in)</td>
@@ -422,7 +425,7 @@
     <tbody>
         <tr>
             <td>
-              <span class="anchor" id="variable-string~11"></span>
+              <span class="anchor" id="variable-string~4"></span>
               type(<a href='../type/string_t.html'>string_t</a>),
             </td>
 <td>intent(in)</td>
@@ -534,7 +537,7 @@
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-array~2"></span>
+              <span class="anchor" id="variable-array"></span>
               type(<a href='../type/string_t.html'>string_t</a>),
             </td>
 <td>intent(in)</td>
@@ -562,8 +565,8 @@
 
               <div class="card">
     <div class="card-header bg-light codesum">
-      <span class="anchor" id="interface-resize~2"></span>
-      <h3>public        interface <a href='../interface/resize~2.html'>resize</a> 
+      <span class="anchor" id="interface-resize"></span>
+      <h3>public        interface <a href='../interface/resize.html'>resize</a> 
       </h3>
     </div>
     <ul class="list-group">
@@ -587,7 +590,7 @@
     <tbody>
         <tr>
             <td>
-              <span class="anchor" id="variable-list~2"></span>
+              <span class="anchor" id="variable-list~14"></span>
               type(<a href='../type/string_t.html'>string_t</a>),
             </td>
 <td>intent(inout),</td>
@@ -602,7 +605,7 @@
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-n"></span>
+              <span class="anchor" id="variable-n~14"></span>
               integer,
             </td>
 <td>intent(in),</td>
@@ -650,7 +653,7 @@
     <tbody>
         <tr>
             <td>
-              <span class="anchor" id="variable-i~3"></span>
+              <span class="anchor" id="variable-i~47"></span>
               integer,
             </td>
 <td>intent(in)</td>
@@ -693,7 +696,7 @@
     <tbody>
         <tr>
             <td>
-              <span class="anchor" id="variable-i~4"></span>
+              <span class="anchor" id="variable-i~49"></span>
               integer(kind=int64),
             </td>
 <td>intent(in)</td>
@@ -736,7 +739,7 @@
     <tbody>
         <tr>
             <td>
-              <span class="anchor" id="variable-l"></span>
+              <span class="anchor" id="variable-l~5"></span>
               logical,
             </td>
 <td>intent(in)</td>
@@ -789,7 +792,7 @@
     <tbody>
         <tr>
             <td>
-              <span class="anchor" id="variable-s~6"></span>
+              <span class="anchor" id="variable-s~3"></span>
               character(len=*),
             </td>
 <td>intent(in)</td>
@@ -804,7 +807,7 @@
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-e~2"></span>
+              <span class="anchor" id="variable-e"></span>
               character(len=*),
             </td>
 <td>intent(in)</td>
@@ -847,7 +850,7 @@
     <tbody>
         <tr>
             <td>
-              <span class="anchor" id="variable-s~7"></span>
+              <span class="anchor" id="variable-s~4"></span>
               character(len=*),
             </td>
 <td>intent(in)</td>
@@ -862,7 +865,7 @@
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-e~3"></span>
+              <span class="anchor" id="variable-e~2"></span>
               character(len=*),
             </td>
 <td>intent(in)</td>
@@ -916,7 +919,7 @@
     <tbody>
         <tr>
             <td>
-              <span class="anchor" id="variable-s~4"></span>
+              <span class="anchor" id="variable-s~9"></span>
               character(len=*),
             </td>
 <td>intent(in)</td>
@@ -973,7 +976,7 @@
     <tbody>
         <tr>
             <td>
-              <span class="anchor" id="variable-s~3"></span>
+              <span class="anchor" id="variable-s~2"></span>
               character(len=:),
             </td>
               <td>public,</td>
@@ -1021,7 +1024,7 @@
         <section>
           <h2>Functions</h2>
               <div class="card">
-    <div class="card-header codesum"><span class="anchor" id="proc-dilate"></span><h3>public  function <a href='../proc/dilate.html'>dilate</a>(instr) result(outstr)  
+    <div class="card-header codesum"><span class="anchor" id="proc-dilate"></span> <h3>public  function <a href='../proc/dilate.html'>dilate</a>(instr) result(outstr)  
 </h3></div>
     <div class="card-body">
               <dl class="dl-horizontal">
@@ -1044,7 +1047,7 @@
     <tbody>
         <tr>
             <td>
-              <span class="anchor" id="variable-instr"></span>
+              <span class="anchor" id="variable-instr~2"></span>
               character(len=*),
             </td>
 <td>intent(in)</td>
@@ -1070,7 +1073,7 @@
   </div>
 
               <div class="card">
-    <div class="card-header codesum"><span class="anchor" id="proc-f_string"></span><h3>public  function <a href='../proc/f_string.html'>f_string</a>(c_string)  
+    <div class="card-header codesum"><span class="anchor" id="proc-f_string"></span> <h3>public  function <a href='../proc/f_string.html'>f_string</a>(c_string)  
 </h3></div>
     <div class="card-body">
           
@@ -1116,7 +1119,7 @@ single characters terminated with a C_NULL_CHAR character</p>
   </div>
 
               <div class="card">
-    <div class="card-header codesum"><span class="anchor" id="proc-glob"></span><h3>public  function <a href='../proc/glob.html'>glob</a>(tame, wild)  
+    <div class="card-header codesum"><span class="anchor" id="proc-glob"></span> <h3>public  function <a href='../proc/glob.html'>glob</a>(tame, wild)  
 </h3></div>
     <div class="card-body">
               <dl class="dl-horizontal">
@@ -1181,7 +1184,7 @@ single characters terminated with a C_NULL_CHAR character</p>
   </div>
 
               <div class="card">
-    <div class="card-header codesum"><span class="anchor" id="proc-has_valid_custom_prefix"></span><h3>public  function <a href='../proc/has_valid_custom_prefix.html'>has_valid_custom_prefix</a>(module_name, custom_prefix) result(valid)  
+    <div class="card-header codesum"><span class="anchor" id="proc-has_valid_custom_prefix"></span> <h3>public  function <a href='../proc/has_valid_custom_prefix.html'>has_valid_custom_prefix</a>(module_name, custom_prefix) result(valid)  
 </h3></div>
     <div class="card-body">
           
@@ -1189,177 +1192,6 @@ single characters terminated with a C_NULL_CHAR character</p>
 1) It must be a valid FORTRAN name subset (&lt;=63 chars, begin with letter, only alphanumeric allowed)
 2) It must begin with the prefix
 3) If longer, package name must be followed by default separator (&ldquo;_&rdquo;) plus at least one char</p><a href="../proc/has_valid_custom_prefix.html" class="pull-right"><emph>Read more&hellip;</emph></a>
-
-  <h4>Arguments</h4>
-      <table class="table table-striped varlist">
-    <thead>
-      <tr>
-        <th scope="col">Type</th>
-<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
-        <th scope="col"></th>
-        <th scope="col">Name</th>
-        <th scope="col"></th>
-    </thead>
-    <tbody>
-        <tr>
-            <td>
-              <span class="anchor" id="variable-module_name~2"></span>
-              type(<a href='../type/string_t.html'>string_t</a>),
-            </td>
-<td>intent(in)</td>
-              <td></td>            <td>
-              
-            </td>
-            <td>::</td>
-            <td><strong>module_name</strong></td>
-            <td>
-
-            </td>
-        </tr>
-        <tr>
-            <td>
-              <span class="anchor" id="variable-custom_prefix"></span>
-              type(<a href='../type/string_t.html'>string_t</a>),
-            </td>
-<td>intent(in)</td>
-              <td></td>            <td>
-              
-            </td>
-            <td>::</td>
-            <td><strong>custom_prefix</strong></td>
-            <td>
-
-            </td>
-        </tr>
-    </tbody>
-  </table>
-
-    <h4>
-    Return Value
-    <small>logical</small>
-    </h4>
-    
-
-    </div>
-  </div>
-
-              <div class="card">
-    <div class="card-header codesum"><span class="anchor" id="proc-has_valid_standard_prefix"></span><h3>public  function <a href='../proc/has_valid_standard_prefix.html'>has_valid_standard_prefix</a>(module_name, package_name) result(valid)  
-</h3></div>
-    <div class="card-body">
-          
-  <p>Check that a module name is prefixed with the default package prefix:
-1) It must be a valid FORTRAN name (&lt;=63 chars, begin with letter, &ldquo;_&rdquo; is only allowed non-alphanumeric)
-2) It must begin with the package name
-3) If longer, package name must be followed by default separator plus at least one char</p><a href="../proc/has_valid_standard_prefix.html" class="pull-right"><emph>Read more&hellip;</emph></a>
-
-  <h4>Arguments</h4>
-      <table class="table table-striped varlist">
-    <thead>
-      <tr>
-        <th scope="col">Type</th>
-<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
-        <th scope="col"></th>
-        <th scope="col">Name</th>
-        <th scope="col"></th>
-    </thead>
-    <tbody>
-        <tr>
-            <td>
-              <span class="anchor" id="variable-module_name~3"></span>
-              type(<a href='../type/string_t.html'>string_t</a>),
-            </td>
-<td>intent(in)</td>
-              <td></td>            <td>
-              
-            </td>
-            <td>::</td>
-            <td><strong>module_name</strong></td>
-            <td>
-
-            </td>
-        </tr>
-        <tr>
-            <td>
-              <span class="anchor" id="variable-package_name~5"></span>
-              type(<a href='../type/string_t.html'>string_t</a>),
-            </td>
-<td>intent(in)</td>
-              <td></td>            <td>
-              
-            </td>
-            <td>::</td>
-            <td><strong>package_name</strong></td>
-            <td>
-
-            </td>
-        </tr>
-    </tbody>
-  </table>
-
-    <h4>
-    Return Value
-    <small>logical</small>
-    </h4>
-    
-
-    </div>
-  </div>
-
-              <div class="card">
-    <div class="card-header codesum"><span class="anchor" id="proc-is_fortran_name"></span><h3>public elemental function <a href='../proc/is_fortran_name.html'>is_fortran_name</a>(line) result(lout)  
-</h3></div>
-    <div class="card-body">
-          
-  
-
-  <h4>Arguments</h4>
-      <table class="table table-striped varlist">
-    <thead>
-      <tr>
-        <th scope="col">Type</th>
-<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
-        <th scope="col"></th>
-        <th scope="col">Name</th>
-        <th scope="col"></th>
-    </thead>
-    <tbody>
-        <tr>
-            <td>
-              <span class="anchor" id="variable-line~3"></span>
-              character(len=*),
-            </td>
-<td>intent(in)</td>
-              <td></td>            <td>
-              
-            </td>
-            <td>::</td>
-            <td><strong>line</strong></td>
-            <td>
-
-            </td>
-        </tr>
-    </tbody>
-  </table>
-
-    <h4>
-    Return Value
-    <small>logical</small>
-    </h4>
-    
-
-    </div>
-  </div>
-
-              <div class="card">
-    <div class="card-header codesum"><span class="anchor" id="proc-is_valid_module_name"></span><h3>public  function <a href='../proc/is_valid_module_name.html'>is_valid_module_name</a>(module_name, package_name, custom_prefix, enforce_module_names) result(valid)  
-</h3></div>
-    <div class="card-body">
-          
-  <p>Check that a module name fits the current naming rules:
-1) It must be a valid FORTRAN name (&lt;=63 chars, begin with letter, &ldquo;_&rdquo; is only allowed non-alphanumeric)
-2) It must begin with the package name
-3) If longer, package name must be followed by default separator plus at least one char</p><a href="../proc/is_valid_module_name.html" class="pull-right"><emph>Read more&hellip;</emph></a>
 
   <h4>Arguments</h4>
       <table class="table table-striped varlist">
@@ -1389,7 +1221,178 @@ single characters terminated with a C_NULL_CHAR character</p>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-package_name~6"></span>
+              <span class="anchor" id="variable-custom_prefix~4"></span>
+              type(<a href='../type/string_t.html'>string_t</a>),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>custom_prefix</strong></td>
+            <td>
+
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+    <h4>
+    Return Value
+    <small>logical</small>
+    </h4>
+    
+
+    </div>
+  </div>
+
+              <div class="card">
+    <div class="card-header codesum"><span class="anchor" id="proc-has_valid_standard_prefix"></span> <h3>public  function <a href='../proc/has_valid_standard_prefix.html'>has_valid_standard_prefix</a>(module_name, package_name) result(valid)  
+</h3></div>
+    <div class="card-body">
+          
+  <p>Check that a module name is prefixed with the default package prefix:
+1) It must be a valid FORTRAN name (&lt;=63 chars, begin with letter, &ldquo;_&rdquo; is only allowed non-alphanumeric)
+2) It must begin with the package name
+3) If longer, package name must be followed by default separator plus at least one char</p><a href="../proc/has_valid_standard_prefix.html" class="pull-right"><emph>Read more&hellip;</emph></a>
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-module_name~5"></span>
+              type(<a href='../type/string_t.html'>string_t</a>),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>module_name</strong></td>
+            <td>
+
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-package_name~4"></span>
+              type(<a href='../type/string_t.html'>string_t</a>),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>package_name</strong></td>
+            <td>
+
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+    <h4>
+    Return Value
+    <small>logical</small>
+    </h4>
+    
+
+    </div>
+  </div>
+
+              <div class="card">
+    <div class="card-header codesum"><span class="anchor" id="proc-is_fortran_name"></span> <h3>public elemental function <a href='../proc/is_fortran_name.html'>is_fortran_name</a>(line) result(lout)  
+</h3></div>
+    <div class="card-body">
+          
+  
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-line~8"></span>
+              character(len=*),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>line</strong></td>
+            <td>
+
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+    <h4>
+    Return Value
+    <small>logical</small>
+    </h4>
+    
+
+    </div>
+  </div>
+
+              <div class="card">
+    <div class="card-header codesum"><span class="anchor" id="proc-is_valid_module_name"></span> <h3>public  function <a href='../proc/is_valid_module_name.html'>is_valid_module_name</a>(module_name, package_name, custom_prefix, enforce_module_names) result(valid)  
+</h3></div>
+    <div class="card-body">
+          
+  <p>Check that a module name fits the current naming rules:
+1) It must be a valid FORTRAN name (&lt;=63 chars, begin with letter, &ldquo;_&rdquo; is only allowed non-alphanumeric)
+2) It must begin with the package name
+3) If longer, package name must be followed by default separator plus at least one char</p><a href="../proc/is_valid_module_name.html" class="pull-right"><emph>Read more&hellip;</emph></a>
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-module_name~3"></span>
+              type(<a href='../type/string_t.html'>string_t</a>),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>module_name</strong></td>
+            <td>
+
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-package_name~3"></span>
               type(<a href='../type/string_t.html'>string_t</a>),
             </td>
 <td>intent(in)</td>
@@ -1404,7 +1407,7 @@ single characters terminated with a C_NULL_CHAR character</p>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-custom_prefix~2"></span>
+              <span class="anchor" id="variable-custom_prefix"></span>
               type(<a href='../type/string_t.html'>string_t</a>),
             </td>
 <td>intent(in)</td>
@@ -1419,7 +1422,7 @@ single characters terminated with a C_NULL_CHAR character</p>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-enforce_module_names~3"></span>
+              <span class="anchor" id="variable-enforce_module_names"></span>
               logical,
             </td>
 <td>intent(in)</td>
@@ -1445,7 +1448,7 @@ single characters terminated with a C_NULL_CHAR character</p>
   </div>
 
               <div class="card">
-    <div class="card-header codesum"><span class="anchor" id="proc-is_valid_module_prefix"></span><h3>public  function <a href='../proc/is_valid_module_prefix.html'>is_valid_module_prefix</a>(module_prefix) result(valid)  
+    <div class="card-header codesum"><span class="anchor" id="proc-is_valid_module_prefix"></span> <h3>public  function <a href='../proc/is_valid_module_prefix.html'>is_valid_module_prefix</a>(module_prefix) result(valid)  
 </h3></div>
     <div class="card-body">
           
@@ -1466,7 +1469,7 @@ single characters terminated with a C_NULL_CHAR character</p>
     <tbody>
         <tr>
             <td>
-              <span class="anchor" id="variable-module_prefix~4"></span>
+              <span class="anchor" id="variable-module_prefix"></span>
               type(<a href='../type/string_t.html'>string_t</a>),
             </td>
 <td>intent(in)</td>
@@ -1492,7 +1495,7 @@ single characters terminated with a C_NULL_CHAR character</p>
   </div>
 
               <div class="card">
-    <div class="card-header codesum"><span class="anchor" id="proc-join"></span><h3>public pure function <a href='../proc/join.html'>join</a>(str, sep, trm, left, right, start, end) result(string)  
+    <div class="card-header codesum"><span class="anchor" id="proc-join"></span> <h3>public pure function <a href='../proc/join.html'>join</a>(str, sep, trm, left, right, start, end) result(string)  
 </h3></div>
     <div class="card-body">
               <dl class="dl-horizontal">
@@ -1518,7 +1521,7 @@ single characters terminated with a C_NULL_CHAR character</p>
     <tbody>
         <tr>
             <td>
-              <span class="anchor" id="variable-str~3"></span>
+              <span class="anchor" id="variable-str~4"></span>
               character(len=*),
             </td>
 <td>intent(in)</td>
@@ -1533,7 +1536,7 @@ single characters terminated with a C_NULL_CHAR character</p>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-sep~2"></span>
+              <span class="anchor" id="variable-sep"></span>
               character(len=*),
             </td>
 <td>intent(in),</td>
@@ -1608,7 +1611,7 @@ single characters terminated with a C_NULL_CHAR character</p>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-end"></span>
+              <span class="anchor" id="variable-end~2"></span>
               character(len=*),
             </td>
 <td>intent(in),</td>
@@ -1634,7 +1637,7 @@ single characters terminated with a C_NULL_CHAR character</p>
   </div>
 
               <div class="card">
-    <div class="card-header codesum"><span class="anchor" id="proc-lower"></span><h3>public pure elemental function <a href='../proc/lower.html'>lower</a>(str, begin, end) result(string)  
+    <div class="card-header codesum"><span class="anchor" id="proc-lower"></span> <h3>public pure elemental function <a href='../proc/lower.html'>lower</a>(str, begin, end) result(string)  
 </h3></div>
     <div class="card-body">
               <dl class="dl-horizontal">
@@ -1657,7 +1660,7 @@ single characters terminated with a C_NULL_CHAR character</p>
     <tbody>
         <tr>
             <td>
-              <span class="anchor" id="variable-str~4"></span>
+              <span class="anchor" id="variable-str~3"></span>
               character(len=*),
             </td>
 <td>intent(in)</td>
@@ -1687,7 +1690,7 @@ single characters terminated with a C_NULL_CHAR character</p>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-end~2"></span>
+              <span class="anchor" id="variable-end"></span>
               integer,
             </td>
 <td>intent(in),</td>
@@ -1713,7 +1716,7 @@ single characters terminated with a C_NULL_CHAR character</p>
   </div>
 
               <div class="card">
-    <div class="card-header codesum"><span class="anchor" id="proc-module_prefix_template"></span><h3>public  function <a href='../proc/module_prefix_template.html'>module_prefix_template</a>(project_name, custom_prefix) result(prefix)  
+    <div class="card-header codesum"><span class="anchor" id="proc-module_prefix_template"></span> <h3>public  function <a href='../proc/module_prefix_template.html'>module_prefix_template</a>(project_name, custom_prefix) result(prefix)  
 </h3></div>
     <div class="card-body">
           
@@ -1733,6 +1736,66 @@ single characters terminated with a C_NULL_CHAR character</p>
         <tr>
             <td>
               <span class="anchor" id="variable-project_name"></span>
+              type(<a href='../type/string_t.html'>string_t</a>),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>project_name</strong></td>
+            <td>
+
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-custom_prefix~2"></span>
+              type(<a href='../type/string_t.html'>string_t</a>),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>custom_prefix</strong></td>
+            <td>
+
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+    <h4>
+    Return Value
+    <small>type(<a href='../type/string_t.html'>string_t</a>)</small>
+    </h4>
+    
+
+    </div>
+  </div>
+
+              <div class="card">
+    <div class="card-header codesum"><span class="anchor" id="proc-module_prefix_type"></span> <h3>public  function <a href='../proc/module_prefix_type.html'>module_prefix_type</a>(project_name, custom_prefix) result(ptype)  
+</h3></div>
+    <div class="card-body">
+          
+  
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-project_name~2"></span>
               type(<a href='../type/string_t.html'>string_t</a>),
             </td>
 <td>intent(in)</td>
@@ -1773,67 +1836,7 @@ single characters terminated with a C_NULL_CHAR character</p>
   </div>
 
               <div class="card">
-    <div class="card-header codesum"><span class="anchor" id="proc-module_prefix_type"></span><h3>public  function <a href='../proc/module_prefix_type.html'>module_prefix_type</a>(project_name, custom_prefix) result(ptype)  
-</h3></div>
-    <div class="card-body">
-          
-  
-
-  <h4>Arguments</h4>
-      <table class="table table-striped varlist">
-    <thead>
-      <tr>
-        <th scope="col">Type</th>
-<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
-        <th scope="col"></th>
-        <th scope="col">Name</th>
-        <th scope="col"></th>
-    </thead>
-    <tbody>
-        <tr>
-            <td>
-              <span class="anchor" id="variable-project_name~2"></span>
-              type(<a href='../type/string_t.html'>string_t</a>),
-            </td>
-<td>intent(in)</td>
-              <td></td>            <td>
-              
-            </td>
-            <td>::</td>
-            <td><strong>project_name</strong></td>
-            <td>
-
-            </td>
-        </tr>
-        <tr>
-            <td>
-              <span class="anchor" id="variable-custom_prefix~4"></span>
-              type(<a href='../type/string_t.html'>string_t</a>),
-            </td>
-<td>intent(in)</td>
-              <td></td>            <td>
-              
-            </td>
-            <td>::</td>
-            <td><strong>custom_prefix</strong></td>
-            <td>
-
-            </td>
-        </tr>
-    </tbody>
-  </table>
-
-    <h4>
-    Return Value
-    <small>type(<a href='../type/string_t.html'>string_t</a>)</small>
-    </h4>
-    
-
-    </div>
-  </div>
-
-              <div class="card">
-    <div class="card-header codesum"><span class="anchor" id="proc-replace"></span><h3>public pure function <a href='../proc/replace.html'>replace</a>(string, charset, target_char) result(res)  
+    <div class="card-header codesum"><span class="anchor" id="proc-replace"></span> <h3>public pure function <a href='../proc/replace.html'>replace</a>(string, charset, target_char) result(res)  
 </h3></div>
     <div class="card-body">
           
@@ -1852,7 +1855,7 @@ single characters terminated with a C_NULL_CHAR character</p>
     <tbody>
         <tr>
             <td>
-              <span class="anchor" id="variable-string~7"></span>
+              <span class="anchor" id="variable-string~5"></span>
               character(len=*),
             </td>
 <td>intent(in)</td>
@@ -1908,7 +1911,7 @@ single characters terminated with a C_NULL_CHAR character</p>
   </div>
 
               <div class="card">
-    <div class="card-header codesum"><span class="anchor" id="proc-str_begins_with_str"></span><h3>public pure function <a href='../proc/str_begins_with_str.html'>str_begins_with_str</a>(s, e, case_sensitive) result(r)  
+    <div class="card-header codesum"><span class="anchor" id="proc-str_begins_with_str"></span> <h3>public pure function <a href='../proc/str_begins_with_str.html'>str_begins_with_str</a>(s, e, case_sensitive) result(r)  
 </h3></div>
     <div class="card-body">
           
@@ -1942,7 +1945,7 @@ single characters terminated with a C_NULL_CHAR character</p>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-e"></span>
+              <span class="anchor" id="variable-e~3"></span>
               character(len=*),
             </td>
 <td>intent(in)</td>
@@ -1983,7 +1986,7 @@ single characters terminated with a C_NULL_CHAR character</p>
   </div>
 
               <div class="card">
-    <div class="card-header codesum"><span class="anchor" id="proc-string_array_contains"></span><h3>public  function <a href='../proc/string_array_contains.html'>string_array_contains</a>(search_string, array)  
+    <div class="card-header codesum"><span class="anchor" id="proc-string_array_contains"></span> <h3>public  function <a href='../proc/string_array_contains.html'>string_array_contains</a>(search_string, array)  
 </h3></div>
     <div class="card-body">
           
@@ -2017,7 +2020,7 @@ single characters terminated with a C_NULL_CHAR character</p>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-array~2"></span>
+              <span class="anchor" id="variable-array"></span>
               type(<a href='../type/string_t.html'>string_t</a>),
             </td>
 <td>intent(in)</td>
@@ -2043,7 +2046,7 @@ single characters terminated with a C_NULL_CHAR character</p>
   </div>
 
               <div class="card">
-    <div class="card-header codesum"><span class="anchor" id="proc-string_cat"></span><h3>public  function <a href='../proc/string_cat.html'>string_cat</a>(strings, delim) result(cat)  
+    <div class="card-header codesum"><span class="anchor" id="proc-string_cat"></span> <h3>public  function <a href='../proc/string_cat.html'>string_cat</a>(strings, delim) result(cat)  
 </h3></div>
     <div class="card-body">
           
@@ -2104,7 +2107,7 @@ single characters terminated with a C_NULL_CHAR character</p>
   </div>
 
               <div class="card">
-    <div class="card-header codesum"><span class="anchor" id="proc-to_fortran_name"></span><h3>public pure function <a href='../proc/to_fortran_name.html'>to_fortran_name</a>(string) result(res)  
+    <div class="card-header codesum"><span class="anchor" id="proc-to_fortran_name"></span> <h3>public pure function <a href='../proc/to_fortran_name.html'>to_fortran_name</a>(string) result(res)  
 </h3></div>
     <div class="card-body">
           
@@ -2125,7 +2128,7 @@ expanded to other characters if needed.</p>
     <tbody>
         <tr>
             <td>
-              <span class="anchor" id="variable-string~8"></span>
+              <span class="anchor" id="variable-string~7"></span>
               character(len=*),
             </td>
 <td>intent(in)</td>
@@ -2156,7 +2159,7 @@ expanded to other characters if needed.</p>
         <section>
           <h2>Subroutines</h2>
               <div class="card">
-    <div class="card-header codesum"><span class="anchor" id="proc-notabs"></span><h3>public impure elemental subroutine <a href='../proc/notabs.html'>notabs</a>(instr, outstr, ilen)  
+    <div class="card-header codesum"><span class="anchor" id="proc-notabs"></span> <h3>public impure elemental subroutine <a href='../proc/notabs.html'>notabs</a>(instr, outstr, ilen)  
 </h3></div>
     <div class="card-body">
               <dl class="dl-horizontal">
@@ -2180,7 +2183,7 @@ expanded to other characters if needed.</p>
     <tbody>
         <tr>
             <td>
-              <span class="anchor" id="variable-instr~2"></span>
+              <span class="anchor" id="variable-instr"></span>
               character(len=*),
             </td>
 <td>intent(in)</td>
@@ -2195,7 +2198,7 @@ expanded to other characters if needed.</p>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-outstr~2"></span>
+              <span class="anchor" id="variable-outstr"></span>
               character(len=*),
             </td>
 <td>intent(out)</td>
@@ -2210,7 +2213,7 @@ expanded to other characters if needed.</p>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-ilen"></span>
+              <span class="anchor" id="variable-ilen~2"></span>
               integer,
             </td>
 <td>intent(out)</td>
@@ -2231,7 +2234,7 @@ expanded to other characters if needed.</p>
   </div>
 
               <div class="card">
-    <div class="card-header codesum"><span class="anchor" id="proc-remove_characters_in_set"></span><h3>public  subroutine <a href='../proc/remove_characters_in_set.html'>remove_characters_in_set</a>(string, set, replace_with)  
+    <div class="card-header codesum"><span class="anchor" id="proc-remove_characters_in_set"></span> <h3>public  subroutine <a href='../proc/remove_characters_in_set.html'>remove_characters_in_set</a>(string, set, replace_with)  
 </h3></div>
     <div class="card-body">
           
@@ -2250,7 +2253,7 @@ expanded to other characters if needed.</p>
     <tbody>
         <tr>
             <td>
-              <span class="anchor" id="variable-string~9"></span>
+              <span class="anchor" id="variable-string~8"></span>
               character(len=:),
             </td>
 <td>intent(inout),</td>
@@ -2301,7 +2304,7 @@ expanded to other characters if needed.</p>
   </div>
 
               <div class="card">
-    <div class="card-header codesum"><span class="anchor" id="proc-remove_newline_characters"></span><h3>public  subroutine <a href='../proc/remove_newline_characters.html'>remove_newline_characters</a>(string)  
+    <div class="card-header codesum"><span class="anchor" id="proc-remove_newline_characters"></span> <h3>public  subroutine <a href='../proc/remove_newline_characters.html'>remove_newline_characters</a>(string)  
 </h3></div>
     <div class="card-body">
           
@@ -2320,7 +2323,7 @@ expanded to other characters if needed.</p>
     <tbody>
         <tr>
             <td>
-              <span class="anchor" id="variable-string~10"></span>
+              <span class="anchor" id="variable-string~9"></span>
               type(<a href='../type/string_t.html'>string_t</a>),
             </td>
 <td>intent(inout)</td>
@@ -2341,7 +2344,7 @@ expanded to other characters if needed.</p>
   </div>
 
               <div class="card">
-    <div class="card-header codesum"><span class="anchor" id="proc-split"></span><h3>public  subroutine <a href='../proc/split.html'>split</a>(input_line, array, delimiters, order, nulls)  
+    <div class="card-header codesum"><span class="anchor" id="proc-split"></span> <h3>public  subroutine <a href='../proc/split.html'>split</a>(input_line, array, delimiters, order, nulls)  
 </h3></div>
     <div class="card-body">
               <dl class="dl-horizontal">
@@ -2380,7 +2383,7 @@ given a line of structure &rdquo; par1 par2 par3 &hellip; parn &rdquo; store eac
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-array"></span>
+              <span class="anchor" id="variable-array~2"></span>
               character(len=:),
             </td>
 <td>intent(out),</td>
@@ -2458,14 +2461,14 @@ given a line of structure &rdquo; par1 par2 par3 &hellip; parn &rdquo; store eac
     <footer>
       <div class="container">
         <div class="row justify-content-between">
-          <div class="col"><p>Fortran-lang/fpm was developed by fortran-lang/fpm contributors<br>&copy; 2023 
+          <div class="col"><p>Fortran-lang/fpm was developed by fortran-lang/fpm contributors<br>&copy; 2024 
 </p>
           </div>
           <div class="col">
             <p class="text-end">
               Documentation generated by
               <a href="https://github.com/Fortran-FOSS-Programmers/ford">FORD</a>
- on 2023-12-28 16:08              </p>
+ on 2024-01-08 09:21              </p>
           </div>
         </div>
         <br>

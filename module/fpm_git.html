@@ -1,3 +1,5 @@
+<!-- -*- mode: jinja2 -*- -->
+
 <!DOCTYPE html>
 <html lang="en">
   <head>
@@ -17,7 +19,8 @@
     <link href="../css/local.css" rel="stylesheet">
       <link  href="../tipuesearch/tipuesearch.css" rel="stylesheet">
 
-    <script src="https://code.jquery.com/jquery-3.7.0.slim.min.js" integrity="sha256-tG5mcZUtJsZvyKAxYLVXrmjKBVLd6VpVccqz/r4ypFE=" crossorigin="anonymous"></script>
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js" integrity="sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo=" crossorigin="anonymous"></script>
+    <script src="../js/svg-pan-zoom.min.js"></script>
   </head>
 
   <body>
@@ -48,7 +51,7 @@
                   <a class="nav-link" href="../lists/types.html">Derived Types</a>
                 </li>
                 <li class="nav-item">
-                  <a class="nav-link" href="../program/main.html">Program</a>
+                  <a class="nav-link" href="program/main.html">Program</a>
                 </li>
             </ul>
               <div class="d-flex align-items-end flex-grow-1">
@@ -116,7 +119,7 @@
         <div class="list-group list-group-flush">
             <a class="list-group-item" href="../module/fpm_git.html#variable-compressed_package_name">compressed_package_name</a>
             <a class="list-group-item" href="../module/fpm_git.html#variable-git_descriptor">git_descriptor</a>
-            <a class="list-group-item" href="../module/fpm_git.html#variable-out_fmt~2">out_fmt</a>
+            <a class="list-group-item" href="../module/fpm_git.html#variable-out_fmt">out_fmt</a>
         </div>
       </div>
     </div>
@@ -180,7 +183,7 @@
             <a class="list-group-item" href="../module/fpm_git.html#proc-checkout">checkout</a>
             <a class="list-group-item" href="../module/fpm_git.html#proc-git_archive">git_archive</a>
             <a class="list-group-item" href="../module/fpm_git.html#proc-git_revision">git_revision</a>
-            <a class="list-group-item" href="../module/fpm_git.html#proc-info~8">info</a>
+            <a class="list-group-item" href="../module/fpm_git.html#proc-info~9">info</a>
         </div>
       </div>
     </div>
@@ -207,7 +210,7 @@
             <li class="list-group-item">
               <ul class="list-inline">
                   <li class="list-inline-item">fpm_filesystem</li>
-                  <li class="list-inline-item"><a href='../module/fpm_error.html'>fpm_error</a></li>
+                  <li class="list-inline-item"><a href='fpm_error.html'>fpm_error</a></li>
               </ul>
             </li>
         </ul>
@@ -266,7 +269,7 @@ parameter
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-out_fmt~2"></span>
+              <span class="anchor" id="variable-out_fmt"></span>
               character(len=*),
             </td>
               <td>public,</td>
@@ -318,7 +321,7 @@ parameter
     <tbody>
         <tr>
             <td>
-              <span class="anchor" id="variable-this"></span>
+              <span class="anchor" id="variable-this~10"></span>
               type(<a href='../type/git_target_t.html'>git_target_t</a>),
             </td>
 <td>intent(in)</td>
@@ -333,7 +336,7 @@ parameter
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-that"></span>
+              <span class="anchor" id="variable-that~2"></span>
               type(<a href='../type/git_target_t.html'>git_target_t</a>),
             </td>
 <td>intent(in)</td>
@@ -424,7 +427,7 @@ parameter
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-revision~3"></span>
+              <span class="anchor" id="variable-revision"></span>
               integer,
             </td>
               <td>public</td>
@@ -524,7 +527,7 @@ parameter
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-url~2"></span>
+              <span class="anchor" id="variable-url~3"></span>
               character(len=:),
             </td>
               <td>public,</td>
@@ -551,12 +554,12 @@ parameter
               <tr>
                 <td>  procedure, public ::
   <strong><a href='../type/git_target_t.html#boundprocedure-checkout'>checkout</a></strong></td>
-                <td><p>Fetch and checkout in local directory</p></td>
+                <td>../../<p>Fetch and checkout in local directory</p></td>
               </tr>
               <tr>
                 <td>  procedure, public ::
-  <strong><a href='../type/git_target_t.html#boundprocedure-info~8'>info</a></strong></td>
-                <td><p>Show information on instance</p></td>
+  <strong><a href='../type/git_target_t.html#boundprocedure-info~9'>info</a></strong></td>
+                <td>../../<p>Show information on instance</p></td>
               </tr>
           </tbody>
         </table>
@@ -569,7 +572,7 @@ parameter
         <section>
           <h2>Functions</h2>
               <div class="card">
-    <div class="card-header codesum"><span class="anchor" id="proc-git_matches_manifest"></span><h3>public  function <a href='../proc/git_matches_manifest.html'>git_matches_manifest</a>(cached, manifest, verbosity, iunit)  
+    <div class="card-header codesum"><span class="anchor" id="proc-git_matches_manifest"></span> <h3>public  function <a href='../proc/git_matches_manifest.html'>git_matches_manifest</a>(cached, manifest, verbosity, iunit)  
 </h3></div>
     <div class="card-body">
           
@@ -588,7 +591,7 @@ parameter
     <tbody>
         <tr>
             <td>
-              <span class="anchor" id="variable-cached~3"></span>
+              <span class="anchor" id="variable-cached"></span>
               type(<a href='../type/git_target_t.html'>git_target_t</a>),
             </td>
 <td>intent(in)</td>
@@ -603,7 +606,7 @@ parameter
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-manifest~3"></span>
+              <span class="anchor" id="variable-manifest~2"></span>
               type(<a href='../type/git_target_t.html'>git_target_t</a>),
             </td>
 <td>intent(in)</td>
@@ -618,7 +621,7 @@ parameter
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-verbosity~19"></span>
+              <span class="anchor" id="variable-verbosity~11"></span>
               integer,
             </td>
 <td>intent(in)</td>
@@ -633,7 +636,7 @@ parameter
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-iunit~3"></span>
+              <span class="anchor" id="variable-iunit~4"></span>
               integer,
             </td>
 <td>intent(in)</td>
@@ -659,7 +662,7 @@ parameter
   </div>
 
               <div class="card">
-    <div class="card-header codesum"><span class="anchor" id="proc-git_target_branch"></span><h3>public  function <a href='../proc/git_target_branch.html'>git_target_branch</a>(url, branch) result(self)  
+    <div class="card-header codesum"><span class="anchor" id="proc-git_target_branch"></span> <h3>public  function <a href='../proc/git_target_branch.html'>git_target_branch</a>(url, branch) result(self)  
 </h3></div>
     <div class="card-body">
           
@@ -678,7 +681,7 @@ parameter
     <tbody>
         <tr>
             <td>
-              <span class="anchor" id="variable-url~4"></span>
+              <span class="anchor" id="variable-url~5"></span>
               character(len=*),
             </td>
 <td>intent(in)</td>
@@ -719,7 +722,7 @@ parameter
   </div>
 
               <div class="card">
-    <div class="card-header codesum"><span class="anchor" id="proc-git_target_default"></span><h3>public  function <a href='../proc/git_target_default.html'>git_target_default</a>(url) result(self)  
+    <div class="card-header codesum"><span class="anchor" id="proc-git_target_default"></span> <h3>public  function <a href='../proc/git_target_default.html'>git_target_default</a>(url) result(self)  
 </h3></div>
     <div class="card-body">
           
@@ -738,7 +741,7 @@ parameter
     <tbody>
         <tr>
             <td>
-              <span class="anchor" id="variable-url~3"></span>
+              <span class="anchor" id="variable-url~4"></span>
               character(len=*),
             </td>
 <td>intent(in)</td>
@@ -764,7 +767,7 @@ parameter
   </div>
 
               <div class="card">
-    <div class="card-header codesum"><span class="anchor" id="proc-git_target_eq"></span><h3>public  function <a href='../proc/git_target_eq.html'>git_target_eq</a>(this, that) result(is_equal)  
+    <div class="card-header codesum"><span class="anchor" id="proc-git_target_eq"></span> <h3>public  function <a href='../proc/git_target_eq.html'>git_target_eq</a>(this, that) result(is_equal)  
 </h3></div>
     <div class="card-body">
           
@@ -783,7 +786,7 @@ parameter
     <tbody>
         <tr>
             <td>
-              <span class="anchor" id="variable-this"></span>
+              <span class="anchor" id="variable-this~10"></span>
               type(<a href='../type/git_target_t.html'>git_target_t</a>),
             </td>
 <td>intent(in)</td>
@@ -798,7 +801,7 @@ parameter
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-that"></span>
+              <span class="anchor" id="variable-that~2"></span>
               type(<a href='../type/git_target_t.html'>git_target_t</a>),
             </td>
 <td>intent(in)</td>
@@ -824,7 +827,7 @@ parameter
   </div>
 
               <div class="card">
-    <div class="card-header codesum"><span class="anchor" id="proc-git_target_revision"></span><h3>public  function <a href='../proc/git_target_revision.html'>git_target_revision</a>(url, sha1) result(self)  
+    <div class="card-header codesum"><span class="anchor" id="proc-git_target_revision"></span> <h3>public  function <a href='../proc/git_target_revision.html'>git_target_revision</a>(url, sha1) result(self)  
 </h3></div>
     <div class="card-body">
           
@@ -843,7 +846,7 @@ parameter
     <tbody>
         <tr>
             <td>
-              <span class="anchor" id="variable-url~5"></span>
+              <span class="anchor" id="variable-url~6"></span>
               character(len=*),
             </td>
 <td>intent(in)</td>
@@ -884,7 +887,7 @@ parameter
   </div>
 
               <div class="card">
-    <div class="card-header codesum"><span class="anchor" id="proc-git_target_tag"></span><h3>public  function <a href='../proc/git_target_tag.html'>git_target_tag</a>(url, tag) result(self)  
+    <div class="card-header codesum"><span class="anchor" id="proc-git_target_tag"></span> <h3>public  function <a href='../proc/git_target_tag.html'>git_target_tag</a>(url, tag) result(self)  
 </h3></div>
     <div class="card-body">
           
@@ -903,7 +906,7 @@ parameter
     <tbody>
         <tr>
             <td>
-              <span class="anchor" id="variable-url~6"></span>
+              <span class="anchor" id="variable-url~7"></span>
               character(len=*),
             </td>
 <td>intent(in)</td>
@@ -949,7 +952,7 @@ parameter
         <section>
           <h2>Subroutines</h2>
               <div class="card">
-    <div class="card-header codesum"><span class="anchor" id="proc-checkout"></span><h3>public  subroutine <a href='../proc/checkout.html'>checkout</a>(self, local_path, error)  
+    <div class="card-header codesum"><span class="anchor" id="proc-checkout"></span> <h3>public  subroutine <a href='../proc/checkout.html'>checkout</a>(self, local_path, error)  
 </h3></div>
     <div class="card-body">
           
@@ -968,7 +971,7 @@ parameter
     <tbody>
         <tr>
             <td>
-              <span class="anchor" id="variable-self~47"></span>
+              <span class="anchor" id="variable-self~40"></span>
               class(<a href='../type/git_target_t.html'>git_target_t</a>),
             </td>
 <td>intent(in)</td>
@@ -998,7 +1001,7 @@ parameter
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-error~60"></span>
+              <span class="anchor" id="variable-error~87"></span>
               type(<a href='../type/error_t.html'>error_t</a>),
             </td>
 <td>intent(out),</td>
@@ -1019,7 +1022,7 @@ parameter
   </div>
 
               <div class="card">
-    <div class="card-header codesum"><span class="anchor" id="proc-git_archive"></span><h3>public  subroutine <a href='../proc/git_archive.html'>git_archive</a>(source, destination, ref, verbose, error)  
+    <div class="card-header codesum"><span class="anchor" id="proc-git_archive"></span> <h3>public  subroutine <a href='../proc/git_archive.html'>git_archive</a>(source, destination, ref, verbose, error)  
 </h3></div>
     <div class="card-body">
           
@@ -1038,7 +1041,7 @@ parameter
     <tbody>
         <tr>
             <td>
-              <span class="anchor" id="variable-source~2"></span>
+              <span class="anchor" id="variable-source~7"></span>
               character(len=*),
             </td>
 <td>intent(in)</td>
@@ -1083,7 +1086,7 @@ parameter
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-verbose~3"></span>
+              <span class="anchor" id="variable-verbose~11"></span>
               logical,
             </td>
 <td>intent(in)</td>
@@ -1098,7 +1101,7 @@ parameter
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-error~62"></span>
+              <span class="anchor" id="variable-error~89"></span>
               type(<a href='../type/error_t.html'>error_t</a>),
             </td>
 <td>intent(out),</td>
@@ -1119,7 +1122,7 @@ parameter
   </div>
 
               <div class="card">
-    <div class="card-header codesum"><span class="anchor" id="proc-git_revision"></span><h3>public  subroutine <a href='../proc/git_revision.html'>git_revision</a>(local_path, object, error)  
+    <div class="card-header codesum"><span class="anchor" id="proc-git_revision"></span> <h3>public  subroutine <a href='../proc/git_revision.html'>git_revision</a>(local_path, object, error)  
 </h3></div>
     <div class="card-body">
           
@@ -1153,7 +1156,7 @@ parameter
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-object~2"></span>
+              <span class="anchor" id="variable-object~3"></span>
               character(len=:),
             </td>
 <td>intent(out),</td>
@@ -1168,7 +1171,7 @@ parameter
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-error~61"></span>
+              <span class="anchor" id="variable-error~88"></span>
               type(<a href='../type/error_t.html'>error_t</a>),
             </td>
 <td>intent(out),</td>
@@ -1189,7 +1192,7 @@ parameter
   </div>
 
               <div class="card">
-    <div class="card-header codesum"><span class="anchor" id="proc-info~8"></span><h3>public  subroutine <a href='../proc/info~8.html'>info</a>(self, unit, verbosity)  
+    <div class="card-header codesum"><span class="anchor" id="proc-info~9"></span> <h3>public  subroutine <a href='../proc/info~9.html'>info</a>(self, unit, verbosity)  
 </h3></div>
     <div class="card-body">
           
@@ -1208,7 +1211,7 @@ parameter
     <tbody>
         <tr>
             <td>
-              <span class="anchor" id="variable-self~48"></span>
+              <span class="anchor" id="variable-self~41"></span>
               class(<a href='../type/git_target_t.html'>git_target_t</a>),
             </td>
 <td>intent(in)</td>
@@ -1223,7 +1226,7 @@ parameter
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-unit~11"></span>
+              <span class="anchor" id="variable-unit~13"></span>
               integer,
             </td>
 <td>intent(in)</td>
@@ -1238,7 +1241,7 @@ parameter
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-verbosity~11"></span>
+              <span class="anchor" id="variable-verbosity~12"></span>
               integer,
             </td>
 <td>intent(in),</td>
@@ -1271,14 +1274,14 @@ parameter
     <footer>
       <div class="container">
         <div class="row justify-content-between">
-          <div class="col"><p>Fortran-lang/fpm was developed by fortran-lang/fpm contributors<br>&copy; 2023 
+          <div class="col"><p>Fortran-lang/fpm was developed by fortran-lang/fpm contributors<br>&copy; 2024 
 </p>
           </div>
           <div class="col">
             <p class="text-end">
               Documentation generated by
               <a href="https://github.com/Fortran-FOSS-Programmers/ford">FORD</a>
- on 2023-12-28 16:08              </p>
+ on 2024-01-08 09:21              </p>
           </div>
         </div>
         <br>

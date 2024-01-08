@@ -1,3 +1,5 @@
+<!-- -*- mode: jinja2 -*- -->
+
 <!DOCTYPE html>
 <html lang="en">
   <head>
@@ -17,7 +19,8 @@
     <link href="../css/local.css" rel="stylesheet">
       <link  href="../tipuesearch/tipuesearch.css" rel="stylesheet">
 
-    <script src="https://code.jquery.com/jquery-3.7.0.slim.min.js" integrity="sha256-tG5mcZUtJsZvyKAxYLVXrmjKBVLd6VpVccqz/r4ypFE=" crossorigin="anonymous"></script>
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js" integrity="sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo=" crossorigin="anonymous"></script>
+    <script src="../js/svg-pan-zoom.min.js"></script>
   </head>
 
   <body>
@@ -48,7 +51,7 @@
                   <a class="nav-link" href="../lists/types.html">Derived Types</a>
                 </li>
                 <li class="nav-item">
-                  <a class="nav-link" href="../program/main.html">Program</a>
+                  <a class="nav-link" href="program/main.html">Program</a>
                 </li>
             </ul>
               <div class="d-flex align-items-end flex-grow-1">
@@ -172,7 +175,7 @@
 </li>
 </ul>
 <p>Source file modification is determined by a file digest (hash) which is calculated during
- the source parsing phase (<a href="../module/fpm_source_parsing.html">fpm_source_parsing</a>) and cached to disk after a target is
+ the source parsing phase (<a href="fpm_source_parsing.html">fpm_source_parsing</a>) and cached to disk after a target is
  successfully generated.</p>
 <br>          <div class="card mb-4">
       <h3 class="card-header card-title bg-light">Uses</h3>
@@ -180,13 +183,13 @@
         <ul class="list-group list-group-flush">
             <li class="list-group-item">
               <ul class="list-inline">
-                  <li class="list-inline-item"><a href='../module/fpm_strings.html'>fpm_strings</a></li>
-                  <li class="list-inline-item">fpm_filesystem</li>
-                  <li class="list-inline-item"><a href='../module/fpm_error.html'>fpm_error</a></li>
-                  <li class="list-inline-item"><a href='../module/fpm_backend_output.html'>fpm_backend_output</a></li>
-                  <li class="list-inline-item"><a href='../module/fpm_model.html'>fpm_model</a></li>
+                  <li class="list-inline-item"><a href='fpm_strings.html'>fpm_strings</a></li>
+                  <li class="list-inline-item"><a href='fpm_targets.html'>fpm_targets</a></li>
+                  <li class="list-inline-item"><a href='fpm_error.html'>fpm_error</a></li>
                   <li class="list-inline-item"><a href='http://fortranwiki.org/fortran/show/iso_fortran_env'>iso_fortran_env</a></li>
-                  <li class="list-inline-item"><a href='../module/fpm_targets.html'>fpm_targets</a></li>
+                  <li class="list-inline-item">fpm_filesystem</li>
+                  <li class="list-inline-item"><a href='fpm_backend_output.html'>fpm_backend_output</a></li>
+                  <li class="list-inline-item"><a href='fpm_model.html'>fpm_model</a></li>
               </ul>
             </li>
         </ul>
@@ -206,7 +209,7 @@
         <section>
           <h2>Subroutines</h2>
               <div class="card">
-    <div class="card-header codesum"><span class="anchor" id="proc-build_package"></span><h3>public  subroutine <a href='../proc/build_package.html'>build_package</a>(targets, model, verbose)  
+    <div class="card-header codesum"><span class="anchor" id="proc-build_package"></span> <h3>public  subroutine <a href='../proc/build_package.html'>build_package</a>(targets, model, verbose)  
 </h3></div>
     <div class="card-body">
           
@@ -225,7 +228,7 @@
     <tbody>
         <tr>
             <td>
-              <span class="anchor" id="variable-targets~9"></span>
+              <span class="anchor" id="variable-targets~20"></span>
               type(<a href='../type/build_target_ptr.html'>build_target_ptr</a>),
             </td>
 <td>intent(inout)</td>
@@ -240,7 +243,7 @@
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-model~8"></span>
+              <span class="anchor" id="variable-model~15"></span>
               type(<a href='../type/fpm_model_t.html'>fpm_model_t</a>),
             </td>
 <td>intent(in)</td>
@@ -255,7 +258,7 @@
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-verbose~5"></span>
+              <span class="anchor" id="variable-verbose~9"></span>
               logical,
             </td>
 <td>intent(in)</td>
@@ -276,7 +279,7 @@
   </div>
 
               <div class="card">
-    <div class="card-header codesum"><span class="anchor" id="proc-schedule_targets"></span><h3>public  subroutine <a href='../proc/schedule_targets.html'>schedule_targets</a>(queue, schedule_ptr, targets)  
+    <div class="card-header codesum"><span class="anchor" id="proc-schedule_targets"></span> <h3>public  subroutine <a href='../proc/schedule_targets.html'>schedule_targets</a>(queue, schedule_ptr, targets)  
 </h3></div>
     <div class="card-body">
           
@@ -295,7 +298,7 @@
     <tbody>
         <tr>
             <td>
-              <span class="anchor" id="variable-queue"></span>
+              <span class="anchor" id="variable-queue~2"></span>
               type(<a href='../type/build_target_ptr.html'>build_target_ptr</a>),
             </td>
 <td>intent(out),</td>
@@ -310,7 +313,7 @@
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-schedule_ptr"></span>
+              <span class="anchor" id="variable-schedule_ptr~2"></span>
               integer,
             </td>
 <td></td>
@@ -325,7 +328,7 @@
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-targets~10"></span>
+              <span class="anchor" id="variable-targets~21"></span>
               type(<a href='../type/build_target_ptr.html'>build_target_ptr</a>),
             </td>
 <td>intent(in)</td>
@@ -346,7 +349,7 @@
   </div>
 
               <div class="card">
-    <div class="card-header codesum"><span class="anchor" id="proc-sort_target"></span><h3>public recursive subroutine <a href='../proc/sort_target.html'>sort_target</a>(target)  
+    <div class="card-header codesum"><span class="anchor" id="proc-sort_target"></span> <h3>public recursive subroutine <a href='../proc/sort_target.html'>sort_target</a>(target)  
 </h3></div>
     <div class="card-body">
           
@@ -366,7 +369,7 @@
     <tbody>
         <tr>
             <td>
-              <span class="anchor" id="variable-target~2"></span>
+              <span class="anchor" id="variable-target~4"></span>
               type(<a href='../type/build_target_t.html'>build_target_t</a>),
             </td>
 <td>intent(inout),</td>
@@ -399,14 +402,14 @@
     <footer>
       <div class="container">
         <div class="row justify-content-between">
-          <div class="col"><p>Fortran-lang/fpm was developed by fortran-lang/fpm contributors<br>&copy; 2023 
+          <div class="col"><p>Fortran-lang/fpm was developed by fortran-lang/fpm contributors<br>&copy; 2024 
 </p>
           </div>
           <div class="col">
             <p class="text-end">
               Documentation generated by
               <a href="https://github.com/Fortran-FOSS-Programmers/ford">FORD</a>
- on 2023-12-28 16:08              </p>
+ on 2024-01-08 09:21              </p>
           </div>
         </div>
         <br>

@@ -1,3 +1,5 @@
+<!-- -*- mode: jinja2 -*- -->
+
 <!DOCTYPE html>
 <html lang="en">
   <head>
@@ -17,7 +19,8 @@
     <link href="../css/local.css" rel="stylesheet">
       <link  href="../tipuesearch/tipuesearch.css" rel="stylesheet">
 
-    <script src="https://code.jquery.com/jquery-3.7.0.slim.min.js" integrity="sha256-tG5mcZUtJsZvyKAxYLVXrmjKBVLd6VpVccqz/r4ypFE=" crossorigin="anonymous"></script>
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js" integrity="sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo=" crossorigin="anonymous"></script>
+    <script src="../js/svg-pan-zoom.min.js"></script>
   </head>
 
   <body>
@@ -48,7 +51,7 @@
                   <a class="nav-link" href="../lists/types.html">Derived Types</a>
                 </li>
                 <li class="nav-item">
-                  <a class="nav-link" href="../program/main.html">Program</a>
+                  <a class="nav-link" href="program/main.html">Program</a>
                 </li>
             </ul>
               <div class="d-flex align-items-end flex-grow-1">
@@ -169,9 +172,9 @@
         <ul class="list-group list-group-flush">
             <li class="list-group-item">
               <ul class="list-inline">
-                  <li class="list-inline-item"><a href='../module/fpm_error.html'>fpm_error</a></li>
-                  <li class="list-inline-item"><a href='../module/fpm_toml.html'>fpm_toml</a></li>
-                  <li class="list-inline-item"><a href='../module/fpm_strings.html'>fpm_strings</a></li>
+                  <li class="list-inline-item"><a href='fpm_strings.html'>fpm_strings</a></li>
+                  <li class="list-inline-item"><a href='fpm_toml.html'>fpm_toml</a></li>
+                  <li class="list-inline-item"><a href='fpm_error.html'>fpm_error</a></li>
               </ul>
             </li>
         </ul>
@@ -264,7 +267,7 @@
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-external_modules"></span>
+              <span class="anchor" id="variable-external_modules~3"></span>
               type(<a href='../type/string_t.html'>string_t</a>),
             </td>
               <td>public,</td>
@@ -315,7 +318,7 @@
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-module_prefix~3"></span>
+              <span class="anchor" id="variable-module_prefix~2"></span>
               type(<a href='../type/string_t.html'>string_t</a>),
             </td>
               <td>public</td>
@@ -341,8 +344,8 @@
           <tbody>
               <tr>
                 <td>  procedure, public ::
-  <strong><a href='../type/build_config_t.html#boundprocedure-info~5'>info</a></strong></td>
-                <td><p>Print information on this instance</p></td>
+  <strong><a href='../type/build_config_t.html#boundprocedure-info~11'>info</a></strong></td>
+                <td>../../<p>Print information on this instance</p></td>
               </tr>
           </tbody>
         </table>
@@ -356,7 +359,7 @@
         <section>
           <h2>Subroutines</h2>
               <div class="card">
-    <div class="card-header codesum"><span class="anchor" id="proc-new_build_config"></span><h3>public  subroutine <a href='../proc/new_build_config.html'>new_build_config</a>(self, table, package_name, error)  
+    <div class="card-header codesum"><span class="anchor" id="proc-new_build_config"></span> <h3>public  subroutine <a href='../proc/new_build_config.html'>new_build_config</a>(self, table, package_name, error)  
 </h3></div>
     <div class="card-body">
           
@@ -375,7 +378,7 @@
     <tbody>
         <tr>
             <td>
-              <span class="anchor" id="variable-self~10"></span>
+              <span class="anchor" id="variable-self~66"></span>
               type(<a href='../type/build_config_t.html'>build_config_t</a>),
             </td>
 <td>intent(out)</td>
@@ -390,7 +393,7 @@
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-table~21"></span>
+              <span class="anchor" id="variable-table~37"></span>
               type(toml_table),
             </td>
 <td>intent(inout)</td>
@@ -405,7 +408,7 @@
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-package_name~2"></span>
+              <span class="anchor" id="variable-package_name~5"></span>
               character(len=*),
             </td>
 <td>intent(in)</td>
@@ -420,7 +423,7 @@
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-error~25"></span>
+              <span class="anchor" id="variable-error~117"></span>
               type(<a href='../type/error_t.html'>error_t</a>),
             </td>
 <td>intent(out),</td>
@@ -453,14 +456,14 @@
     <footer>
       <div class="container">
         <div class="row justify-content-between">
-          <div class="col"><p>Fortran-lang/fpm was developed by fortran-lang/fpm contributors<br>&copy; 2023 
+          <div class="col"><p>Fortran-lang/fpm was developed by fortran-lang/fpm contributors<br>&copy; 2024 
 </p>
           </div>
           <div class="col">
             <p class="text-end">
               Documentation generated by
               <a href="https://github.com/Fortran-FOSS-Programmers/ford">FORD</a>
- on 2023-12-28 16:08              </p>
+ on 2024-01-08 09:21              </p>
           </div>
         </div>
         <br>

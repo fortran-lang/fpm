@@ -1,3 +1,5 @@
+<!-- -*- mode: jinja2 -*- -->
+
 <!DOCTYPE html>
 <html lang="en">
   <head>
@@ -17,7 +19,8 @@
     <link href="../css/local.css" rel="stylesheet">
       <link  href="../tipuesearch/tipuesearch.css" rel="stylesheet">
 
-    <script src="https://code.jquery.com/jquery-3.7.0.slim.min.js" integrity="sha256-tG5mcZUtJsZvyKAxYLVXrmjKBVLd6VpVccqz/r4ypFE=" crossorigin="anonymous"></script>
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js" integrity="sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo=" crossorigin="anonymous"></script>
+    <script src="../js/svg-pan-zoom.min.js"></script>
   </head>
 
   <body>
@@ -48,7 +51,7 @@
                   <a class="nav-link" href="../lists/types.html">Derived Types</a>
                 </li>
                 <li class="nav-item">
-                  <a class="nav-link" href="../program/main.html">Program</a>
+                  <a class="nav-link" href="program/main.html">Program</a>
                 </li>
             </ul>
               <div class="d-flex align-items-end flex-grow-1">
@@ -117,11 +120,11 @@
         <div class="list-group list-group-flush">
             <a class="list-group-item" href="../type/srcfile_t.html#variable-digest">digest</a>
             <a class="list-group-item" href="../type/srcfile_t.html#variable-exe_name">exe_name</a>
-            <a class="list-group-item" href="../type/srcfile_t.html#variable-file_name~2">file_name</a>
+            <a class="list-group-item" href="../type/srcfile_t.html#variable-file_name~6">file_name</a>
             <a class="list-group-item" href="../type/srcfile_t.html#variable-include_dependencies">include_dependencies</a>
-            <a class="list-group-item" href="../type/srcfile_t.html#variable-link_libraries~2">link_libraries</a>
+            <a class="list-group-item" href="../type/srcfile_t.html#variable-link_libraries~3">link_libraries</a>
             <a class="list-group-item" href="../type/srcfile_t.html#variable-modules_provided">modules_provided</a>
-            <a class="list-group-item" href="../type/srcfile_t.html#variable-modules_used">modules_used</a>
+            <a class="list-group-item" href="../type/srcfile_t.html#variable-modules_used~2">modules_used</a>
             <a class="list-group-item" href="../type/srcfile_t.html#variable-parent_modules">parent_modules</a>
             <a class="list-group-item" href="../type/srcfile_t.html#variable-unit_scope">unit_scope</a>
             <a class="list-group-item" href="../type/srcfile_t.html#variable-unit_type">unit_type</a>
@@ -160,7 +163,8 @@
     </div>
     
     <div class="col-md-9" id='text'>
-      <h2>type, public :: srcfile_t</h2>
+      <h2>
+        type, public :: srcfile_t</h2>
     <p>Type for describing a source file</p>
     <br>
 
@@ -212,7 +216,7 @@
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-file_name~2"></span>
+              <span class="anchor" id="variable-file_name~6"></span>
               character(len=:),
             </td>
               <td>public,</td>
@@ -230,7 +234,7 @@
         <tr>
             <td>
               <span class="anchor" id="variable-include_dependencies"></span>
-              type(<a href='../type/string_t.html'>string_t</a>),
+              type(<a href='string_t.html'>string_t</a>),
             </td>
               <td>public,</td>
             <td>
@@ -246,8 +250,8 @@
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-link_libraries~2"></span>
-              type(<a href='../type/string_t.html'>string_t</a>),
+              <span class="anchor" id="variable-link_libraries~3"></span>
+              type(<a href='string_t.html'>string_t</a>),
             </td>
               <td>public,</td>
             <td>
@@ -264,7 +268,7 @@
         <tr>
             <td>
               <span class="anchor" id="variable-modules_provided"></span>
-              type(<a href='../type/string_t.html'>string_t</a>),
+              type(<a href='string_t.html'>string_t</a>),
             </td>
               <td>public,</td>
             <td>
@@ -280,8 +284,8 @@
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-modules_used"></span>
-              type(<a href='../type/string_t.html'>string_t</a>),
+              <span class="anchor" id="variable-modules_used~2"></span>
+              type(<a href='string_t.html'>string_t</a>),
             </td>
               <td>public,</td>
             <td>
@@ -298,7 +302,7 @@
         <tr>
             <td>
               <span class="anchor" id="variable-parent_modules"></span>
-              type(<a href='../type/string_t.html'>string_t</a>),
+              type(<a href='string_t.html'>string_t</a>),
             </td>
               <td>public,</td>
             <td>
@@ -401,14 +405,14 @@
     <footer>
       <div class="container">
         <div class="row justify-content-between">
-          <div class="col"><p>Fortran-lang/fpm was developed by fortran-lang/fpm contributors<br>&copy; 2023 
+          <div class="col"><p>Fortran-lang/fpm was developed by fortran-lang/fpm contributors<br>&copy; 2024 
 </p>
           </div>
           <div class="col">
             <p class="text-end">
               Documentation generated by
               <a href="https://github.com/Fortran-FOSS-Programmers/ford">FORD</a>
- on 2023-12-28 16:08              </p>
+ on 2024-01-08 09:21              </p>
           </div>
         </div>
         <br>

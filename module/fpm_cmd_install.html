@@ -1,3 +1,5 @@
+<!-- -*- mode: jinja2 -*- -->
+
 <!DOCTYPE html>
 <html lang="en">
   <head>
@@ -17,7 +19,8 @@
     <link href="../css/local.css" rel="stylesheet">
       <link  href="../tipuesearch/tipuesearch.css" rel="stylesheet">
 
-    <script src="https://code.jquery.com/jquery-3.7.0.slim.min.js" integrity="sha256-tG5mcZUtJsZvyKAxYLVXrmjKBVLd6VpVccqz/r4ypFE=" crossorigin="anonymous"></script>
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js" integrity="sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo=" crossorigin="anonymous"></script>
+    <script src="../js/svg-pan-zoom.min.js"></script>
   </head>
 
   <body>
@@ -48,7 +51,7 @@
                   <a class="nav-link" href="../lists/types.html">Derived Types</a>
                 </li>
                 <li class="nav-item">
-                  <a class="nav-link" href="../program/main.html">Program</a>
+                  <a class="nav-link" href="program/main.html">Program</a>
                 </li>
             </ul>
               <div class="d-flex align-items-end flex-grow-1">
@@ -87,7 +90,7 @@
       <div class="col">
         <nav aria-label="breadcrumb">
           <ol class="breadcrumb justify-content-end mb-0">
-                <li class="breadcrumb-item"><a href='../sourcefile/install.f90~2.html'>install.f90</a></li>
+                <li class="breadcrumb-item"><a href='../sourcefile/install.f90.html'>install.f90</a></li>
             <li class="breadcrumb-item active" aria-current="page">fpm_cmd_install</li>
           </ol>
         </nav>
@@ -151,17 +154,17 @@
         <ul class="list-group list-group-flush">
             <li class="list-group-item">
               <ul class="list-inline">
-                  <li class="list-inline-item"><a href='../module/fpm_backend.html'>fpm_backend</a></li>
-                  <li class="list-inline-item"><a href='../module/fpm_strings.html'>fpm_strings</a></li>
-                  <li class="list-inline-item">fpm_filesystem</li>
-                  <li class="list-inline-item"><a href='../module/fpm_command_line.html'>fpm_command_line</a></li>
-                  <li class="list-inline-item"><a href='../module/fpm_error.html'>fpm_error</a></li>
-                  <li class="list-inline-item"><a href='../module/fpm_model.html'>fpm_model</a></li>
-                  <li class="list-inline-item"><a href='../module/fpm_manifest.html'>fpm_manifest</a></li>
+                  <li class="list-inline-item"><a href='fpm_backend.html'>fpm_backend</a></li>
+                  <li class="list-inline-item"><a href='fpm_command_line.html'>fpm_command_line</a></li>
+                  <li class="list-inline-item"><a href='fpm_manifest.html'>fpm_manifest</a></li>
+                  <li class="list-inline-item"><a href='fpm_strings.html'>fpm_strings</a></li>
+                  <li class="list-inline-item"><a href='fpm_targets.html'>fpm_targets</a></li>
+                  <li class="list-inline-item"><a href='fpm_error.html'>fpm_error</a></li>
                   <li class="list-inline-item"><a href='http://fortranwiki.org/fortran/show/iso_fortran_env'>iso_fortran_env</a></li>
-                  <li class="list-inline-item"><a href='../module/fpm.html'>fpm</a></li>
-                  <li class="list-inline-item"><a href='../module/fpm_targets.html'>fpm_targets</a></li>
-                  <li class="list-inline-item"><a href='../module/fpm_installer.html'>fpm_installer</a></li>
+                  <li class="list-inline-item"><a href='fpm.html'>fpm</a></li>
+                  <li class="list-inline-item">fpm_filesystem</li>
+                  <li class="list-inline-item"><a href='fpm_installer.html'>fpm_installer</a></li>
+                  <li class="list-inline-item"><a href='fpm_model.html'>fpm_model</a></li>
               </ul>
             </li>
         </ul>
@@ -181,7 +184,7 @@
         <section>
           <h2>Subroutines</h2>
               <div class="card">
-    <div class="card-header codesum"><span class="anchor" id="proc-cmd_install"></span><h3>public  subroutine <a href='../proc/cmd_install.html'>cmd_install</a>(settings)  
+    <div class="card-header codesum"><span class="anchor" id="proc-cmd_install"></span> <h3>public  subroutine <a href='../proc/cmd_install.html'>cmd_install</a>(settings)  
 </h3></div>
     <div class="card-body">
           
@@ -200,7 +203,7 @@
     <tbody>
         <tr>
             <td>
-              <span class="anchor" id="variable-settings~3"></span>
+              <span class="anchor" id="variable-settings"></span>
               type(<a href='../type/fpm_install_settings.html'>fpm_install_settings</a>),
             </td>
 <td>intent(inout)</td>
@@ -233,14 +236,14 @@
     <footer>
       <div class="container">
         <div class="row justify-content-between">
-          <div class="col"><p>Fortran-lang/fpm was developed by fortran-lang/fpm contributors<br>&copy; 2023 
+          <div class="col"><p>Fortran-lang/fpm was developed by fortran-lang/fpm contributors<br>&copy; 2024 
 </p>
           </div>
           <div class="col">
             <p class="text-end">
               Documentation generated by
               <a href="https://github.com/Fortran-FOSS-Programmers/ford">FORD</a>
- on 2023-12-28 16:08              </p>
+ on 2024-01-08 09:21              </p>
           </div>
         </div>
         <br>

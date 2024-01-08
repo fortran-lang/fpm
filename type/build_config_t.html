@@ -1,3 +1,5 @@
+<!-- -*- mode: jinja2 -*- -->
+
 <!DOCTYPE html>
 <html lang="en">
   <head>
@@ -17,7 +19,8 @@
     <link href="../css/local.css" rel="stylesheet">
       <link  href="../tipuesearch/tipuesearch.css" rel="stylesheet">
 
-    <script src="https://code.jquery.com/jquery-3.7.0.slim.min.js" integrity="sha256-tG5mcZUtJsZvyKAxYLVXrmjKBVLd6VpVccqz/r4ypFE=" crossorigin="anonymous"></script>
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js" integrity="sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo=" crossorigin="anonymous"></script>
+    <script src="../js/svg-pan-zoom.min.js"></script>
   </head>
 
   <body>
@@ -48,7 +51,7 @@
                   <a class="nav-link" href="../lists/types.html">Derived Types</a>
                 </li>
                 <li class="nav-item">
-                  <a class="nav-link" href="../program/main.html">Program</a>
+                  <a class="nav-link" href="program/main.html">Program</a>
                 </li>
             </ul>
               <div class="d-flex align-items-end flex-grow-1">
@@ -118,10 +121,10 @@
             <a class="list-group-item" href="../type/build_config_t.html#variable-auto_examples">auto_examples</a>
             <a class="list-group-item" href="../type/build_config_t.html#variable-auto_executables">auto_executables</a>
             <a class="list-group-item" href="../type/build_config_t.html#variable-auto_tests">auto_tests</a>
-            <a class="list-group-item" href="../type/build_config_t.html#variable-external_modules">external_modules</a>
+            <a class="list-group-item" href="../type/build_config_t.html#variable-external_modules~3">external_modules</a>
             <a class="list-group-item" href="../type/build_config_t.html#variable-link~2">link</a>
             <a class="list-group-item" href="../type/build_config_t.html#variable-module_naming">module_naming</a>
-            <a class="list-group-item" href="../type/build_config_t.html#variable-module_prefix~3">module_prefix</a>
+            <a class="list-group-item" href="../type/build_config_t.html#variable-module_prefix~2">module_prefix</a>
         </div>
       </div>
     </div>
@@ -148,7 +151,7 @@
       </a>
       <div id="boundprocs-0" class="collapse">
         <div class="list-group list-group-flush">
-            <a class="list-group-item" href="../type/build_config_t.html#boundprocedure-info~5">info</a>
+            <a class="list-group-item" href="../type/build_config_t.html#boundprocedure-info~11">info</a>
         </div>
       </div>
     </div>
@@ -168,7 +171,8 @@
     </div>
     
     <div class="col-md-9" id='text'>
-      <h2>type, public :: build_config_t</h2>
+      <h2>
+        type, public :: build_config_t</h2>
     <p>Configuration data for build</p>
     <br>
 
@@ -237,8 +241,8 @@
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-external_modules"></span>
-              type(<a href='../type/string_t.html'>string_t</a>),
+              <span class="anchor" id="variable-external_modules~3"></span>
+              type(<a href='string_t.html'>string_t</a>),
             </td>
               <td>public,</td>
             <td>
@@ -255,7 +259,7 @@
         <tr>
             <td>
               <span class="anchor" id="variable-link~2"></span>
-              type(<a href='../type/string_t.html'>string_t</a>),
+              type(<a href='string_t.html'>string_t</a>),
             </td>
               <td>public,</td>
             <td>
@@ -288,8 +292,8 @@
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-module_prefix~3"></span>
-              type(<a href='../type/string_t.html'>string_t</a>),
+              <span class="anchor" id="variable-module_prefix~2"></span>
+              type(<a href='string_t.html'>string_t</a>),
             </td>
               <td>public</td>
             <td>
@@ -316,7 +320,7 @@
           <div class="row">
               <div class="card mt-3">
     <div class="card-header codesum">
-      <span class="anchor" id="boundprocedure-info~5"></span>
+      <span class="anchor" id="boundprocedure-info~11"></span>
       <h3>
           procedure, public ::
   <strong>info</strong>
@@ -349,7 +353,7 @@
         <tr>
             <td>
               <span class="anchor" ></span>
-              class(<a href='../type/build_config_t.html'>build_config_t</a>),
+              class(<a href='build_config_t.html'>build_config_t</a>),
             </td>
 <td>intent(in)</td>
               <td></td>            <td>
@@ -443,14 +447,14 @@
     <footer>
       <div class="container">
         <div class="row justify-content-between">
-          <div class="col"><p>Fortran-lang/fpm was developed by fortran-lang/fpm contributors<br>&copy; 2023 
+          <div class="col"><p>Fortran-lang/fpm was developed by fortran-lang/fpm contributors<br>&copy; 2024 
 </p>
           </div>
           <div class="col">
             <p class="text-end">
               Documentation generated by
               <a href="https://github.com/Fortran-FOSS-Programmers/ford">FORD</a>
- on 2023-12-28 16:08              </p>
+ on 2024-01-08 09:21              </p>
           </div>
         </div>
         <br>

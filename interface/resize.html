@@ -1,3 +1,5 @@
+<!-- -*- mode: jinja2 -*- -->
+
 <!DOCTYPE html>
 <html lang="en">
   <head>
@@ -17,7 +19,8 @@
     <link href="../css/local.css" rel="stylesheet">
       <link  href="../tipuesearch/tipuesearch.css" rel="stylesheet">
 
-    <script src="https://code.jquery.com/jquery-3.7.0.slim.min.js" integrity="sha256-tG5mcZUtJsZvyKAxYLVXrmjKBVLd6VpVccqz/r4ypFE=" crossorigin="anonymous"></script>
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js" integrity="sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo=" crossorigin="anonymous"></script>
+    <script src="../js/svg-pan-zoom.min.js"></script>
   </head>
 
   <body>
@@ -48,7 +51,7 @@
                   <a class="nav-link" href="../lists/types.html">Derived Types</a>
                 </li>
                 <li class="nav-item">
-                  <a class="nav-link" href="../program/main.html">Program</a>
+                  <a class="nav-link" href="program/main.html">Program</a>
                 </li>
             </ul>
               <div class="d-flex align-items-end flex-grow-1">
@@ -75,20 +78,20 @@
             <li class="list-inline-item" id="statements"><i class="fa fa-list-ol"></i>
               <a data-bs-toggle="tooltip"
                  data-bs-placement="bottom" data-html="true"
-                 title="<p> 0.1% of total for procedures.</p>Including implementation: 27 statements,  0.6% of total for procedures.">3 statements</a>
+                 title="<p> 0.1% of total for procedures.</p>Including implementation: 29 statements,  0.7% of total for procedures.">3 statements</a>
             </li>
 
             <li class="list-inline-item" id="source-file">
               <i class="fa fa-code"></i>
-              <a href="../src/dependency.f90"> Source File</a>
+              <a href="../src/fpm_strings.f90"> Source File</a>
             </li>
         </ul>
       </div>
       <div class="col">
         <nav aria-label="breadcrumb">
           <ol class="breadcrumb justify-content-end mb-0">
-                <li class="breadcrumb-item"><a href='../sourcefile/dependency.f90.html'>dependency.f90</a></li>
-                <li class="breadcrumb-item"><a href='../module/fpm_dependency.html'>fpm_dependency</a></li>
+                <li class="breadcrumb-item"><a href='../sourcefile/fpm_strings.f90.html'>fpm_strings.f90</a></li>
+                <li class="breadcrumb-item"><a href='../module/fpm_strings.html'>fpm_strings</a></li>
             <li class="breadcrumb-item active" aria-current="page">resize</li>
           </ol>
         </nav>
@@ -132,7 +135,7 @@
       </a>
       <div id="modprocs-0" class="collapse">
         <div class="list-group list-group-flush">
-            <a class="list-group-item" href="../interface/resize.html#moduleprocedure-resize_dependency_node">resize_dependency_node</a>
+            <a class="list-group-item" href="../interface/resize.html#moduleprocedure-resize_string">resize_string</a>
         </div>
       </div>
     </div>
@@ -146,16 +149,16 @@
 
     <div class="col-md-9" id='text'>
       <h2>public interface resize</h2>
-      <p>Overloaded reallocation interface</p>
-<br>
+      
+
 
 
         <h2>Module Procedures</h2>
             <div class="card">
-    <div class="card-header codesum"><span class="anchor" id="proc-resize_dependency_node"></span><h3>private pure subroutine resize_dependency_node(var, n)  
+    <div class="card-header codesum"><span class="anchor" id="proc-resize_string"></span> <h3>private  subroutine resize_string(list, n)  
 </h3></div>
     <div class="card-body">
-        <p>Reallocate a list of dependencies</p>
+        <p>increase the size of a TYPE(STRING_T) array by N elements</p>
 
   <h4>Arguments</h4>
       <table class="table table-striped varlist">
@@ -170,22 +173,22 @@
     <tbody>
         <tr>
             <td>
-              <span class="anchor" id="variable-var"></span>
-              type(<a href='../type/dependency_node_t.html'>dependency_node_t</a>),
+              <span class="anchor" id="variable-list~14"></span>
+              type(<a href='../type/string_t.html'>string_t</a>),
             </td>
 <td>intent(inout),</td>
               <td></td>            <td>
               allocatable
             </td>
             <td>::</td>
-            <td><strong>var</strong>(:)</td>
+            <td><strong>list</strong>(:)</td>
             <td>
                 <p>Instance of the array to be resized</p>
             </td>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-n~2"></span>
+              <span class="anchor" id="variable-n~14"></span>
               integer,
             </td>
 <td>intent(in),</td>
@@ -212,14 +215,14 @@
     <footer>
       <div class="container">
         <div class="row justify-content-between">
-          <div class="col"><p>Fortran-lang/fpm was developed by fortran-lang/fpm contributors<br>&copy; 2023 
+          <div class="col"><p>Fortran-lang/fpm was developed by fortran-lang/fpm contributors<br>&copy; 2024 
 </p>
           </div>
           <div class="col">
             <p class="text-end">
               Documentation generated by
               <a href="https://github.com/Fortran-FOSS-Programmers/ford">FORD</a>
- on 2023-12-28 16:08              </p>
+ on 2024-01-08 09:21              </p>
           </div>
         </div>
         <br>

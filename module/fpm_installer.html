@@ -1,3 +1,5 @@
+<!-- -*- mode: jinja2 -*- -->
+
 <!DOCTYPE html>
 <html lang="en">
   <head>
@@ -17,7 +19,8 @@
     <link href="../css/local.css" rel="stylesheet">
       <link  href="../tipuesearch/tipuesearch.css" rel="stylesheet">
 
-    <script src="https://code.jquery.com/jquery-3.7.0.slim.min.js" integrity="sha256-tG5mcZUtJsZvyKAxYLVXrmjKBVLd6VpVccqz/r4ypFE=" crossorigin="anonymous"></script>
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js" integrity="sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo=" crossorigin="anonymous"></script>
+    <script src="../js/svg-pan-zoom.min.js"></script>
   </head>
 
   <body>
@@ -48,7 +51,7 @@
                   <a class="nav-link" href="../lists/types.html">Derived Types</a>
                 </li>
                 <li class="nav-item">
-                  <a class="nav-link" href="../program/main.html">Program</a>
+                  <a class="nav-link" href="program/main.html">Program</a>
                 </li>
             </ul>
               <div class="d-flex align-items-end flex-grow-1">
@@ -166,9 +169,9 @@ to any directory within the prefix.</p>
             <li class="list-group-item">
               <ul class="list-inline">
                   <li class="list-inline-item">fpm_filesystem</li>
-                  <li class="list-inline-item"><a href='../module/fpm_error.html'>fpm_error</a></li>
                   <li class="list-inline-item"><a href='http://fortranwiki.org/fortran/show/iso_fortran_env'>iso_fortran_env</a></li>
-                  <li class="list-inline-item"><a href='../module/fpm_environment.html'>fpm_environment</a></li>
+                  <li class="list-inline-item"><a href='fpm_environment.html'>fpm_environment</a></li>
+                  <li class="list-inline-item"><a href='fpm_error.html'>fpm_error</a></li>
               </ul>
             </li>
         </ul>
@@ -210,7 +213,7 @@ to any directory within the prefix.</p>
     <tbody>
         <tr>
             <td>
-              <span class="anchor" id="variable-bindir"></span>
+              <span class="anchor" id="variable-bindir~3"></span>
               character(len=:),
             </td>
               <td>public,</td>
@@ -261,7 +264,7 @@ to any directory within the prefix.</p>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-libdir"></span>
+              <span class="anchor" id="variable-libdir~2"></span>
               character(len=:),
             </td>
               <td>public,</td>
@@ -329,7 +332,7 @@ to any directory within the prefix.</p>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-unit~15"></span>
+              <span class="anchor" id="variable-unit~8"></span>
               integer,
             </td>
               <td>public</td>
@@ -346,7 +349,7 @@ to any directory within the prefix.</p>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-verbosity~15"></span>
+              <span class="anchor" id="variable-verbosity~6"></span>
               integer,
             </td>
               <td>public</td>
@@ -373,32 +376,32 @@ to any directory within the prefix.</p>
               <tr>
                 <td>  procedure, public ::
   <strong><a href='../type/installer_t.html#boundprocedure-install~2'>install</a></strong></td>
-                <td><p>Install a generic file into a subdirectory in the installation prefix</p></td>
+                <td>../../<p>Install a generic file into a subdirectory in the installation prefix</p></td>
               </tr>
               <tr>
                 <td>  procedure, public ::
   <strong><a href='../type/installer_t.html#boundprocedure-install_executable'>install_executable</a></strong></td>
-                <td><p>Install an executable in its correct subdirectory</p></td>
+                <td>../../<p>Install an executable in its correct subdirectory</p></td>
               </tr>
               <tr>
                 <td>  procedure, public ::
   <strong><a href='../type/installer_t.html#boundprocedure-install_header'>install_header</a></strong></td>
-                <td><p>Install a header/module in its correct subdirectory</p></td>
+                <td>../../<p>Install a header/module in its correct subdirectory</p></td>
               </tr>
               <tr>
                 <td>  procedure, public ::
   <strong><a href='../type/installer_t.html#boundprocedure-install_library'>install_library</a></strong></td>
-                <td><p>Install a library in its correct subdirectory</p></td>
+                <td>../../<p>Install a library in its correct subdirectory</p></td>
               </tr>
               <tr>
                 <td>  procedure, public ::
   <strong><a href='../type/installer_t.html#boundprocedure-make_dir'>make_dir</a></strong></td>
-                <td><p>Create a new directory in the prefix, type-bound for unit testing purposes</p></td>
+                <td>../../<p>Create a new directory in the prefix, type-bound for unit testing purposes</p></td>
               </tr>
               <tr>
                 <td>  procedure, public ::
   <strong><a href='../type/installer_t.html#boundprocedure-run'>run</a></strong></td>
-                <td><p>Run an installation command, type-bound for unit testing purposes</p></td>
+                <td>../../<p>Run an installation command, type-bound for unit testing purposes</p></td>
               </tr>
           </tbody>
         </table>
@@ -412,7 +415,7 @@ to any directory within the prefix.</p>
         <section>
           <h2>Subroutines</h2>
               <div class="card">
-    <div class="card-header codesum"><span class="anchor" id="proc-new_installer"></span><h3>public  subroutine <a href='../proc/new_installer.html'>new_installer</a>(self, prefix, bindir, libdir, includedir, verbosity, copy, move)  
+    <div class="card-header codesum"><span class="anchor" id="proc-new_installer"></span> <h3>public  subroutine <a href='../proc/new_installer.html'>new_installer</a>(self, prefix, bindir, libdir, includedir, verbosity, copy, move)  
 </h3></div>
     <div class="card-body">
           
@@ -431,7 +434,7 @@ to any directory within the prefix.</p>
     <tbody>
         <tr>
             <td>
-              <span class="anchor" id="variable-self~58"></span>
+              <span class="anchor" id="variable-self~16"></span>
               type(<a href='../type/installer_t.html'>installer_t</a>),
             </td>
 <td>intent(out)</td>
@@ -461,7 +464,7 @@ to any directory within the prefix.</p>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-bindir~2"></span>
+              <span class="anchor" id="variable-bindir~4"></span>
               character(len=*),
             </td>
 <td>intent(in),</td>
@@ -476,7 +479,7 @@ to any directory within the prefix.</p>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-libdir~2"></span>
+              <span class="anchor" id="variable-libdir~3"></span>
               character(len=*),
             </td>
 <td>intent(in),</td>
@@ -506,7 +509,7 @@ to any directory within the prefix.</p>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-verbosity~16"></span>
+              <span class="anchor" id="variable-verbosity~7"></span>
               integer,
             </td>
 <td>intent(in),</td>
@@ -569,14 +572,14 @@ to any directory within the prefix.</p>
     <footer>
       <div class="container">
         <div class="row justify-content-between">
-          <div class="col"><p>Fortran-lang/fpm was developed by fortran-lang/fpm contributors<br>&copy; 2023 
+          <div class="col"><p>Fortran-lang/fpm was developed by fortran-lang/fpm contributors<br>&copy; 2024 
 </p>
           </div>
           <div class="col">
             <p class="text-end">
               Documentation generated by
               <a href="https://github.com/Fortran-FOSS-Programmers/ford">FORD</a>
- on 2023-12-28 16:08              </p>
+ on 2024-01-08 09:21              </p>
           </div>
         </div>
         <br>

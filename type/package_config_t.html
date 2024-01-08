@@ -1,3 +1,5 @@
+<!-- -*- mode: jinja2 -*- -->
+
 <!DOCTYPE html>
 <html lang="en">
   <head>
@@ -17,7 +19,8 @@
     <link href="../css/local.css" rel="stylesheet">
       <link  href="../tipuesearch/tipuesearch.css" rel="stylesheet">
 
-    <script src="https://code.jquery.com/jquery-3.7.0.slim.min.js" integrity="sha256-tG5mcZUtJsZvyKAxYLVXrmjKBVLd6VpVccqz/r4ypFE=" crossorigin="anonymous"></script>
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js" integrity="sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo=" crossorigin="anonymous"></script>
+    <script src="../js/svg-pan-zoom.min.js"></script>
   </head>
 
   <body>
@@ -48,7 +51,7 @@
                   <a class="nav-link" href="../lists/types.html">Derived Types</a>
                 </li>
                 <li class="nav-item">
-                  <a class="nav-link" href="../program/main.html">Program</a>
+                  <a class="nav-link" href="program/main.html">Program</a>
                 </li>
             </ul>
               <div class="d-flex align-items-end flex-grow-1">
@@ -116,20 +119,20 @@
       <div id="vars-0" class="collapse">
         <div class="list-group list-group-flush">
             <a class="list-group-item" href="../type/package_config_t.html#variable-build">build</a>
-            <a class="list-group-item" href="../type/package_config_t.html#variable-dependency~3">dependency</a>
+            <a class="list-group-item" href="../type/package_config_t.html#variable-dependency~2">dependency</a>
             <a class="list-group-item" href="../type/package_config_t.html#variable-dev_dependency">dev_dependency</a>
             <a class="list-group-item" href="../type/package_config_t.html#variable-example">example</a>
             <a class="list-group-item" href="../type/package_config_t.html#variable-executable">executable</a>
-            <a class="list-group-item" href="../type/package_config_t.html#variable-fortran~2">fortran</a>
+            <a class="list-group-item" href="../type/package_config_t.html#variable-fortran">fortran</a>
             <a class="list-group-item" href="../type/package_config_t.html#variable-install">install</a>
             <a class="list-group-item" href="../type/package_config_t.html#variable-library">library</a>
             <a class="list-group-item" href="../type/package_config_t.html#variable-license">license</a>
             <a class="list-group-item" href="../type/package_config_t.html#variable-meta">meta</a>
-            <a class="list-group-item" href="../type/package_config_t.html#variable-name~4">name</a>
+            <a class="list-group-item" href="../type/package_config_t.html#variable-name">name</a>
             <a class="list-group-item" href="../type/package_config_t.html#variable-preprocess">preprocess</a>
-            <a class="list-group-item" href="../type/package_config_t.html#variable-profiles~6">profiles</a>
+            <a class="list-group-item" href="../type/package_config_t.html#variable-profiles">profiles</a>
             <a class="list-group-item" href="../type/package_config_t.html#variable-test">test</a>
-            <a class="list-group-item" href="../type/package_config_t.html#variable-version~4">version</a>
+            <a class="list-group-item" href="../type/package_config_t.html#variable-version~3">version</a>
         </div>
       </div>
     </div>
@@ -156,7 +159,7 @@
       </a>
       <div id="boundprocs-0" class="collapse">
         <div class="list-group list-group-flush">
-            <a class="list-group-item" href="../type/package_config_t.html#boundprocedure-info~4">info</a>
+            <a class="list-group-item" href="../type/package_config_t.html#boundprocedure-info">info</a>
         </div>
       </div>
     </div>
@@ -176,7 +179,8 @@
     </div>
     
     <div class="col-md-9" id='text'>
-      <h2>type, public :: package_config_t</h2>
+      <h2>
+        type, public :: package_config_t</h2>
     <p>Package meta data</p>
     <br>
 
@@ -195,7 +199,7 @@
         <tr>
             <td>
               <span class="anchor" id="variable-build"></span>
-              type(<a href='../type/build_config_t.html'>build_config_t</a>),
+              type(<a href='build_config_t.html'>build_config_t</a>),
             </td>
               <td>public</td>
             <td>
@@ -211,8 +215,8 @@
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-dependency~3"></span>
-              type(<a href='../type/dependency_config_t.html'>dependency_config_t</a>),
+              <span class="anchor" id="variable-dependency~2"></span>
+              type(<a href='dependency_config_t.html'>dependency_config_t</a>),
             </td>
               <td>public,</td>
             <td>
@@ -229,7 +233,7 @@
         <tr>
             <td>
               <span class="anchor" id="variable-dev_dependency"></span>
-              type(<a href='../type/dependency_config_t.html'>dependency_config_t</a>),
+              type(<a href='dependency_config_t.html'>dependency_config_t</a>),
             </td>
               <td>public,</td>
             <td>
@@ -246,7 +250,7 @@
         <tr>
             <td>
               <span class="anchor" id="variable-example"></span>
-              type(<a href='../type/example_config_t.html'>example_config_t</a>),
+              type(<a href='example_config_t.html'>example_config_t</a>),
             </td>
               <td>public,</td>
             <td>
@@ -263,7 +267,7 @@
         <tr>
             <td>
               <span class="anchor" id="variable-executable"></span>
-              type(<a href='../type/executable_config_t.html'>executable_config_t</a>),
+              type(<a href='executable_config_t.html'>executable_config_t</a>),
             </td>
               <td>public,</td>
             <td>
@@ -279,8 +283,8 @@
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-fortran~2"></span>
-              type(<a href='../type/fortran_config_t.html'>fortran_config_t</a>),
+              <span class="anchor" id="variable-fortran"></span>
+              type(<a href='fortran_config_t.html'>fortran_config_t</a>),
             </td>
               <td>public</td>
             <td>
@@ -297,7 +301,7 @@
         <tr>
             <td>
               <span class="anchor" id="variable-install"></span>
-              type(<a href='../type/install_config_t.html'>install_config_t</a>),
+              type(<a href='install_config_t.html'>install_config_t</a>),
             </td>
               <td>public</td>
             <td>
@@ -314,7 +318,7 @@
         <tr>
             <td>
               <span class="anchor" id="variable-library"></span>
-              type(<a href='../type/library_config_t.html'>library_config_t</a>),
+              type(<a href='library_config_t.html'>library_config_t</a>),
             </td>
               <td>public,</td>
             <td>
@@ -348,7 +352,7 @@
         <tr>
             <td>
               <span class="anchor" id="variable-meta"></span>
-              type(<a href='../type/metapackage_config_t.html'>metapackage_config_t</a>),
+              type(<a href='metapackage_config_t.html'>metapackage_config_t</a>),
             </td>
               <td>public</td>
             <td>
@@ -364,7 +368,7 @@
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-name~4"></span>
+              <span class="anchor" id="variable-name"></span>
               character(len=:),
             </td>
               <td>public,</td>
@@ -382,7 +386,7 @@
         <tr>
             <td>
               <span class="anchor" id="variable-preprocess"></span>
-              type(<a href='../type/preprocess_config_t.html'>preprocess_config_t</a>),
+              type(<a href='preprocess_config_t.html'>preprocess_config_t</a>),
             </td>
               <td>public,</td>
             <td>
@@ -398,8 +402,8 @@
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-profiles~6"></span>
-              type(<a href='../type/profile_config_t.html'>profile_config_t</a>),
+              <span class="anchor" id="variable-profiles"></span>
+              type(<a href='profile_config_t.html'>profile_config_t</a>),
             </td>
               <td>public,</td>
             <td>
@@ -416,7 +420,7 @@
         <tr>
             <td>
               <span class="anchor" id="variable-test"></span>
-              type(<a href='../type/test_config_t.html'>test_config_t</a>),
+              type(<a href='test_config_t.html'>test_config_t</a>),
             </td>
               <td>public,</td>
             <td>
@@ -432,8 +436,8 @@
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-version~4"></span>
-              type(<a href='../type/version_t.html'>version_t</a>),
+              <span class="anchor" id="variable-version~3"></span>
+              type(<a href='version_t.html'>version_t</a>),
             </td>
               <td>public</td>
             <td>
@@ -460,7 +464,7 @@
           <div class="row">
               <div class="card mt-3">
     <div class="card-header codesum">
-      <span class="anchor" id="boundprocedure-info~4"></span>
+      <span class="anchor" id="boundprocedure-info"></span>
       <h3>
           procedure, public ::
   <strong>info</strong>
@@ -493,7 +497,7 @@
         <tr>
             <td>
               <span class="anchor" ></span>
-              class(<a href='../type/package_config_t.html'>package_config_t</a>),
+              class(<a href='package_config_t.html'>package_config_t</a>),
             </td>
 <td>intent(in)</td>
               <td></td>            <td>
@@ -613,14 +617,14 @@
     <footer>
       <div class="container">
         <div class="row justify-content-between">
-          <div class="col"><p>Fortran-lang/fpm was developed by fortran-lang/fpm contributors<br>&copy; 2023 
+          <div class="col"><p>Fortran-lang/fpm was developed by fortran-lang/fpm contributors<br>&copy; 2024 
 </p>
           </div>
           <div class="col">
             <p class="text-end">
               Documentation generated by
               <a href="https://github.com/Fortran-FOSS-Programmers/ford">FORD</a>
- on 2023-12-28 16:08              </p>
+ on 2024-01-08 09:21              </p>
           </div>
         </div>
         <br>

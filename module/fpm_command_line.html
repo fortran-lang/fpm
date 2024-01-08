@@ -1,3 +1,5 @@
+<!-- -*- mode: jinja2 -*- -->
+
 <!DOCTYPE html>
 <html lang="en">
   <head>
@@ -17,7 +19,8 @@
     <link href="../css/local.css" rel="stylesheet">
       <link  href="../tipuesearch/tipuesearch.css" rel="stylesheet">
 
-    <script src="https://code.jquery.com/jquery-3.7.0.slim.min.js" integrity="sha256-tG5mcZUtJsZvyKAxYLVXrmjKBVLd6VpVccqz/r4ypFE=" crossorigin="anonymous"></script>
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js" integrity="sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo=" crossorigin="anonymous"></script>
+    <script src="../js/svg-pan-zoom.min.js"></script>
   </head>
 
   <body>
@@ -48,7 +51,7 @@
                   <a class="nav-link" href="../lists/types.html">Derived Types</a>
                 </li>
                 <li class="nav-item">
-                  <a class="nav-link" href="../program/main.html">Program</a>
+                  <a class="nav-link" href="program/main.html">Program</a>
                 </li>
             </ul>
               <div class="d-flex align-items-end flex-grow-1">
@@ -190,14 +193,14 @@
         <ul class="list-group list-group-flush">
             <li class="list-group-item">
               <ul class="list-inline">
-                  <li class="list-inline-item"><a href='../module/fpm_os.html'>fpm_os</a></li>
-                  <li class="list-inline-item"><a href='../module/fpm_strings.html'>fpm_strings</a></li>
-                  <li class="list-inline-item">fpm_filesystem</li>
-                  <li class="list-inline-item"><a href='../module/fpm_error.html'>fpm_error</a></li>
-                  <li class="list-inline-item"><a href='../module/fpm_release.html'>fpm_release</a></li>
-                  <li class="list-inline-item"><a href='http://fortranwiki.org/fortran/show/iso_fortran_env'>iso_fortran_env</a></li>
-                  <li class="list-inline-item"><a href='../module/fpm_environment.html'>fpm_environment</a></li>
+                  <li class="list-inline-item"><a href='fpm_environment.html'>fpm_environment</a></li>
+                  <li class="list-inline-item"><a href='fpm_os.html'>fpm_os</a></li>
+                  <li class="list-inline-item"><a href='fpm_strings.html'>fpm_strings</a></li>
+                  <li class="list-inline-item"><a href='fpm_release.html'>fpm_release</a></li>
+                  <li class="list-inline-item"><a href='fpm_error.html'>fpm_error</a></li>
                   <li class="list-inline-item"><a href='https://github.com/urbanjost/M_CLI2'>M_CLI2</a></li>
+                  <li class="list-inline-item"><a href='http://fortranwiki.org/fortran/show/iso_fortran_env'>iso_fortran_env</a></li>
+                  <li class="list-inline-item">fpm_filesystem</li>
               </ul>
             </li>
         </ul>
@@ -239,7 +242,7 @@
     <tbody>
         <tr>
             <td>
-              <span class="anchor" id="variable-archiver~2"></span>
+              <span class="anchor" id="variable-archiver"></span>
               character(len=:),
             </td>
               <td>public,</td>
@@ -307,7 +310,7 @@
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-compiler~6"></span>
+              <span class="anchor" id="variable-compiler~22"></span>
               character(len=:),
             </td>
               <td>public,</td>
@@ -392,7 +395,7 @@
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-list~3"></span>
+              <span class="anchor" id="variable-list~16"></span>
               logical,
             </td>
               <td>public</td>
@@ -409,7 +412,7 @@
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-profile~2"></span>
+              <span class="anchor" id="variable-profile~3"></span>
               character(len=:),
             </td>
               <td>public,</td>
@@ -460,7 +463,7 @@
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-verbose~4"></span>
+              <span class="anchor" id="variable-verbose~13"></span>
               logical,
             </td>
               <td>public</td>
@@ -560,7 +563,7 @@
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-verbose~4"></span>
+              <span class="anchor" id="variable-verbose~13"></span>
               logical,
             </td>
               <td>public</td>
@@ -626,7 +629,7 @@
     <tbody>
         <tr>
             <td>
-              <span class="anchor" id="variable-verbose~4"></span>
+              <span class="anchor" id="variable-verbose~13"></span>
               logical,
             </td>
               <td>public</td>
@@ -692,7 +695,7 @@
     <tbody>
         <tr>
             <td>
-              <span class="anchor" id="variable-archiver~2"></span>
+              <span class="anchor" id="variable-archiver"></span>
               character(len=:),
             </td>
               <td>public,</td>
@@ -709,7 +712,7 @@
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-bindir~3"></span>
+              <span class="anchor" id="variable-bindir~5"></span>
               character(len=:),
             </td>
               <td>public,</td>
@@ -777,7 +780,7 @@
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-compiler~6"></span>
+              <span class="anchor" id="variable-compiler~22"></span>
               character(len=:),
             </td>
               <td>public,</td>
@@ -879,7 +882,7 @@
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-libdir~3"></span>
+              <span class="anchor" id="variable-libdir~4"></span>
               character(len=:),
             </td>
               <td>public,</td>
@@ -896,7 +899,7 @@
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-list~3"></span>
+              <span class="anchor" id="variable-list~16"></span>
               logical,
             </td>
               <td>public</td>
@@ -930,7 +933,7 @@
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-prefix~3"></span>
+              <span class="anchor" id="variable-prefix~4"></span>
               character(len=:),
             </td>
               <td>public,</td>
@@ -947,7 +950,7 @@
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-profile~2"></span>
+              <span class="anchor" id="variable-profile~3"></span>
               character(len=:),
             </td>
               <td>public,</td>
@@ -998,7 +1001,7 @@
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-verbose~4"></span>
+              <span class="anchor" id="variable-verbose~13"></span>
               logical,
             </td>
               <td>public</td>
@@ -1081,7 +1084,7 @@
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-name~14"></span>
+              <span class="anchor" id="variable-name~15"></span>
               character(len=:),
             </td>
               <td>public,</td>
@@ -1098,7 +1101,7 @@
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-verbose~4"></span>
+              <span class="anchor" id="variable-verbose~13"></span>
               logical,
             </td>
               <td>public</td>
@@ -1183,7 +1186,7 @@
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-with_lib"></span>
+              <span class="anchor" id="variable-with_lib~2"></span>
               logical,
             </td>
               <td>public</td>
@@ -1266,7 +1269,7 @@
     <tbody>
         <tr>
             <td>
-              <span class="anchor" id="variable-archiver~2"></span>
+              <span class="anchor" id="variable-archiver"></span>
               character(len=:),
             </td>
               <td>public,</td>
@@ -1334,7 +1337,7 @@
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-compiler~6"></span>
+              <span class="anchor" id="variable-compiler~22"></span>
               character(len=:),
             </td>
               <td>public,</td>
@@ -1436,7 +1439,7 @@
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-list~3"></span>
+              <span class="anchor" id="variable-list~16"></span>
               logical,
             </td>
               <td>public</td>
@@ -1453,7 +1456,7 @@
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-profile~2"></span>
+              <span class="anchor" id="variable-profile~3"></span>
               character(len=:),
             </td>
               <td>public,</td>
@@ -1555,7 +1558,7 @@
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-verbose~4"></span>
+              <span class="anchor" id="variable-verbose~13"></span>
               logical,
             </td>
               <td>public</td>
@@ -1621,7 +1624,7 @@
     <tbody>
         <tr>
             <td>
-              <span class="anchor" id="variable-archiver~2"></span>
+              <span class="anchor" id="variable-archiver"></span>
               character(len=:),
             </td>
               <td>public,</td>
@@ -1638,7 +1641,7 @@
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-args"></span>
+              <span class="anchor" id="variable-args~3"></span>
               character(len=:),
             </td>
               <td>public,</td>
@@ -1706,7 +1709,7 @@
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-compiler~6"></span>
+              <span class="anchor" id="variable-compiler~22"></span>
               character(len=:),
             </td>
               <td>public,</td>
@@ -1808,7 +1811,7 @@
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-list~3"></span>
+              <span class="anchor" id="variable-list~16"></span>
               logical,
             </td>
               <td>public</td>
@@ -1825,7 +1828,7 @@
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-name~15"></span>
+              <span class="anchor" id="variable-name~16"></span>
               character(len=ibug),
             </td>
               <td>public,</td>
@@ -1842,7 +1845,7 @@
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-profile~2"></span>
+              <span class="anchor" id="variable-profile~3"></span>
               character(len=:),
             </td>
               <td>public,</td>
@@ -1927,7 +1930,7 @@
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-verbose~4"></span>
+              <span class="anchor" id="variable-verbose~13"></span>
               logical,
             </td>
               <td>public</td>
@@ -2003,7 +2006,7 @@
     <tbody>
         <tr>
             <td>
-              <span class="anchor" id="variable-archiver~2"></span>
+              <span class="anchor" id="variable-archiver"></span>
               character(len=:),
             </td>
               <td>public,</td>
@@ -2020,7 +2023,7 @@
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-args"></span>
+              <span class="anchor" id="variable-args~3"></span>
               character(len=:),
             </td>
               <td>public,</td>
@@ -2088,7 +2091,7 @@
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-compiler~6"></span>
+              <span class="anchor" id="variable-compiler~22"></span>
               character(len=:),
             </td>
               <td>public,</td>
@@ -2190,7 +2193,7 @@
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-list~3"></span>
+              <span class="anchor" id="variable-list~16"></span>
               logical,
             </td>
               <td>public</td>
@@ -2207,7 +2210,7 @@
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-name~15"></span>
+              <span class="anchor" id="variable-name~16"></span>
               character(len=ibug),
             </td>
               <td>public,</td>
@@ -2224,7 +2227,7 @@
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-profile~2"></span>
+              <span class="anchor" id="variable-profile~3"></span>
               character(len=:),
             </td>
               <td>public,</td>
@@ -2309,7 +2312,7 @@
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-verbose~4"></span>
+              <span class="anchor" id="variable-verbose~13"></span>
               logical,
             </td>
               <td>public</td>
@@ -2419,7 +2422,7 @@
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-name~16"></span>
+              <span class="anchor" id="variable-name~17"></span>
               character(len=ibug),
             </td>
               <td>public,</td>
@@ -2436,7 +2439,7 @@
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-verbose~4"></span>
+              <span class="anchor" id="variable-verbose~13"></span>
               logical,
             </td>
               <td>public</td>
@@ -2484,7 +2487,7 @@
         <section>
           <h2>Subroutines</h2>
               <div class="card">
-    <div class="card-header codesum"><span class="anchor" id="proc-get_command_line_settings"></span><h3>public  subroutine <a href='../proc/get_command_line_settings.html'>get_command_line_settings</a>(cmd_settings)  
+    <div class="card-header codesum"><span class="anchor" id="proc-get_command_line_settings"></span> <h3>public  subroutine <a href='../proc/get_command_line_settings.html'>get_command_line_settings</a>(cmd_settings)  
 </h3></div>
     <div class="card-body">
           
@@ -2537,14 +2540,14 @@
     <footer>
       <div class="container">
         <div class="row justify-content-between">
-          <div class="col"><p>Fortran-lang/fpm was developed by fortran-lang/fpm contributors<br>&copy; 2023 
+          <div class="col"><p>Fortran-lang/fpm was developed by fortran-lang/fpm contributors<br>&copy; 2024 
 </p>
           </div>
           <div class="col">
             <p class="text-end">
               Documentation generated by
               <a href="https://github.com/Fortran-FOSS-Programmers/ford">FORD</a>
- on 2023-12-28 16:08              </p>
+ on 2024-01-08 09:21              </p>
           </div>
         </div>
         <br>

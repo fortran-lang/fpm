@@ -1,3 +1,5 @@
+<!-- -*- mode: jinja2 -*- -->
+
 <!DOCTYPE html>
 <html lang="en">
   <head>
@@ -17,7 +19,8 @@
     <link href="../css/local.css" rel="stylesheet">
       <link  href="../tipuesearch/tipuesearch.css" rel="stylesheet">
 
-    <script src="https://code.jquery.com/jquery-3.7.0.slim.min.js" integrity="sha256-tG5mcZUtJsZvyKAxYLVXrmjKBVLd6VpVccqz/r4ypFE=" crossorigin="anonymous"></script>
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js" integrity="sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo=" crossorigin="anonymous"></script>
+    <script src="../js/svg-pan-zoom.min.js"></script>
   </head>
 
   <body>
@@ -48,7 +51,7 @@
                   <a class="nav-link" href="../lists/types.html">Derived Types</a>
                 </li>
                 <li class="nav-item">
-                  <a class="nav-link" href="../program/main.html">Program</a>
+                  <a class="nav-link" href="program/main.html">Program</a>
                 </li>
             </ul>
               <div class="d-flex align-items-end flex-grow-1">
@@ -185,7 +188,7 @@
 <p>Defines the fpm model data types which encapsulate all information
  required to correctly build a package and its dependencies.</p>
 <p>The process (see <code>[[build_model(subroutine)]]</code>) for generating a valid <code>[[fpm_model]]</code> involves
-  source files discovery (<a href="../module/fpm_sources.html">fpm_sources</a>) and parsing (<a href="../module/fpm_source_parsing.html">fpm_source_parsing</a>).</p>
+  source files discovery (<a href="fpm_sources.html">fpm_sources</a>) and parsing (<a href="fpm_source_parsing.html">fpm_source_parsing</a>).</p>
 <p>Once a valid <code>[[fpm_model]]</code> has been constructed, it may be passed to <code>[[fpm_targets:targets_from_sources]]</code> to
  generate a list of build targets for the backend.</p>
 <h3 id="enumerations">Enumerations</h3>
@@ -214,9 +217,9 @@
         <ul class="list-group list-group-flush">
             <li class="list-group-item">
               <ul class="list-inline">
-                  <li class="list-inline-item"><a href='../module/fpm_dependency.html'>fpm_dependency</a></li>
+                  <li class="list-inline-item"><a href='fpm_dependency.html'>fpm_dependency</a></li>
                   <li class="list-inline-item"><a href='http://fortranwiki.org/fortran/show/iso_fortran_env'>iso_fortran_env</a></li>
-                  <li class="list-inline-item"><a href='../module/fpm_strings.html'>fpm_strings</a></li>
+                  <li class="list-inline-item"><a href='fpm_strings.html'>fpm_strings</a></li>
                   <li class="list-inline-item">fpm_compiler</li>
               </ul>
             </li>
@@ -514,7 +517,7 @@ parameter
     <tbody>
         <tr>
             <td>
-              <span class="anchor" id="variable-implicit_external"></span>
+              <span class="anchor" id="variable-implicit_external~2"></span>
               logical,
             </td>
               <td>public</td>
@@ -531,7 +534,7 @@ parameter
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-implicit_typing"></span>
+              <span class="anchor" id="variable-implicit_typing~2"></span>
               logical,
             </td>
               <td>public</td>
@@ -548,7 +551,7 @@ parameter
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-source_form"></span>
+              <span class="anchor" id="variable-source_form~3"></span>
               character(len=:),
             </td>
               <td>public,</td>
@@ -598,7 +601,7 @@ parameter
     <tbody>
         <tr>
             <td>
-              <span class="anchor" id="variable-archiver"></span>
+              <span class="anchor" id="variable-archiver~3"></span>
               type(archiver_t),
             </td>
               <td>public</td>
@@ -615,7 +618,7 @@ parameter
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-build_prefix"></span>
+              <span class="anchor" id="variable-build_prefix~2"></span>
               character(len=:),
             </td>
               <td>public,</td>
@@ -649,7 +652,7 @@ parameter
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-compiler~4"></span>
+              <span class="anchor" id="variable-compiler~23"></span>
               type(compiler_t),
             </td>
               <td>public</td>
@@ -683,7 +686,7 @@ parameter
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-deps"></span>
+              <span class="anchor" id="variable-deps~3"></span>
               type(<a href='../type/dependency_tree_t.html'>dependency_tree_t</a>),
             </td>
               <td>public</td>
@@ -700,7 +703,7 @@ parameter
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-enforce_module_names~2"></span>
+              <span class="anchor" id="variable-enforce_module_names~3"></span>
               logical,
             </td>
               <td>public</td>
@@ -717,7 +720,7 @@ parameter
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-external_modules~2"></span>
+              <span class="anchor" id="variable-external_modules~4"></span>
               type(<a href='../type/string_t.html'>string_t</a>),
             </td>
               <td>public,</td>
@@ -785,7 +788,7 @@ parameter
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-link_flags~2"></span>
+              <span class="anchor" id="variable-link_flags~3"></span>
               character(len=:),
             </td>
               <td>public,</td>
@@ -802,7 +805,7 @@ parameter
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-link_libraries~3"></span>
+              <span class="anchor" id="variable-link_libraries~4"></span>
               type(<a href='../type/string_t.html'>string_t</a>),
             </td>
               <td>public,</td>
@@ -819,7 +822,7 @@ parameter
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-module_prefix~2"></span>
+              <span class="anchor" id="variable-module_prefix~4"></span>
               type(<a href='../type/string_t.html'>string_t</a>),
             </td>
               <td>public</td>
@@ -836,7 +839,7 @@ parameter
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-package_name~4"></span>
+              <span class="anchor" id="variable-package_name~7"></span>
               character(len=:),
             </td>
               <td>public,</td>
@@ -936,7 +939,7 @@ parameter
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-file_name~2"></span>
+              <span class="anchor" id="variable-file_name~6"></span>
               character(len=:),
             </td>
               <td>public,</td>
@@ -970,7 +973,7 @@ parameter
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-link_libraries~2"></span>
+              <span class="anchor" id="variable-link_libraries~3"></span>
               type(<a href='../type/string_t.html'>string_t</a>),
             </td>
               <td>public,</td>
@@ -1004,7 +1007,7 @@ parameter
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-modules_used"></span>
+              <span class="anchor" id="variable-modules_used~2"></span>
               type(<a href='../type/string_t.html'>string_t</a>),
             </td>
               <td>public,</td>
@@ -1086,7 +1089,7 @@ parameter
         <section>
           <h2>Subroutines</h2>
               <div class="card">
-    <div class="card-header codesum"><span class="anchor" id="proc-show_model"></span><h3>public  subroutine <a href='../proc/show_model.html'>show_model</a>(model)  
+    <div class="card-header codesum"><span class="anchor" id="proc-show_model"></span> <h3>public  subroutine <a href='../proc/show_model.html'>show_model</a>(model)  
 </h3></div>
     <div class="card-body">
           
@@ -1105,7 +1108,7 @@ parameter
     <tbody>
         <tr>
             <td>
-              <span class="anchor" id="variable-model~5"></span>
+              <span class="anchor" id="variable-model~19"></span>
               type(<a href='../type/fpm_model_t.html'>fpm_model_t</a>),
             </td>
 <td>intent(in)</td>
@@ -1138,14 +1141,14 @@ parameter
     <footer>
       <div class="container">
         <div class="row justify-content-between">
-          <div class="col"><p>Fortran-lang/fpm was developed by fortran-lang/fpm contributors<br>&copy; 2023 
+          <div class="col"><p>Fortran-lang/fpm was developed by fortran-lang/fpm contributors<br>&copy; 2024 
 </p>
           </div>
           <div class="col">
             <p class="text-end">
               Documentation generated by
               <a href="https://github.com/Fortran-FOSS-Programmers/ford">FORD</a>
- on 2023-12-28 16:08              </p>
+ on 2024-01-08 09:21              </p>
           </div>
         </div>
         <br>
