@@ -47,12 +47,14 @@ subroutine build_model(model, settings, package, error)
     logical :: has_cpp
     logical :: duplicates_found
     type(string_t) :: include_dir
+    type(string_t), allocatable :: preprocess_f_suffixes(:)
 
     model%package_name = package%name
 
     allocate(model%include_dirs(0))
     allocate(model%link_libraries(0))
     allocate(model%external_modules(0))
+    allocate(preprocess_f_suffixes(0))
 
     call new_compiler(model%compiler, settings%compiler, settings%c_compiler, &
         & settings%cxx_compiler, echo=settings%verbose, verbose=settings%verbose)
@@ -119,6 +121,9 @@ subroutine build_model(model, settings, package, error)
                         if (allocated(dependency%preprocess(j)%macros)) then
                             model%packages(i)%macros = [model%packages(i)%macros, dependency%preprocess(j)%macros]
                         end if
+                        if (allocated(dependency%preprocess(j)%suffixes)) then
+                            preprocess_f_suffixes = [preprocess_f_suffixes, dependency%preprocess(j)%suffixes]
+                        end if
                     else
                         write(stderr, '(a)') 'Warning: Preprocessor ' // package%preprocess(i)%name // &
                             ' is not supported; will ignore it'
@@ -133,6 +138,9 @@ subroutine build_model(model, settings, package, error)
                         if (.not. has_cpp) has_cpp = .true.
                         if (allocated(dep%preprocess(j)%macros)) then
                             model%packages(i)%macros = [model%packages(i)%macros, dep%preprocess(j)%macros]
+                        end if
+                        if (allocated(dependency%preprocess(j)%suffixes)) then
+                            preprocess_f_suffixes = [preprocess_f_suffixes, dependency%preprocess(j)%suffixes]
                         end if
                     else
                         write(stderr, '(a)') 'Warning: Preprocessor ' // package%preprocess(i)%name // &
@@ -149,6 +157,7 @@ subroutine build_model(model, settings, package, error)
                     lib_dir = join_path(dep%proj_dir, dependency%library%source_dir)
                     if (is_dir(lib_dir)) then
                         call add_sources_from_dir(model%packages(i)%sources, lib_dir, FPM_SCOPE_LIB, &
+                            add_f_suffixes = preprocess_f_suffixes,&
                             error=error)
                         if (allocated(error)) exit
                     end if
@@ -187,6 +196,7 @@ subroutine build_model(model, settings, package, error)
     ! Add sources from executable directories
     if (is_dir('app') .and. package%build%auto_executables) then
         call add_sources_from_dir(model%packages(1)%sources,'app', FPM_SCOPE_APP, &
+                                   add_f_suffixes = preprocess_f_suffixes,&
                                    with_executables=.true., error=error)
 
         if (allocated(error)) then
@@ -196,6 +206,7 @@ subroutine build_model(model, settings, package, error)
     end if
     if (is_dir('example') .and. package%build%auto_examples) then
         call add_sources_from_dir(model%packages(1)%sources,'example', FPM_SCOPE_EXAMPLE, &
+                                   add_f_suffixes = preprocess_f_suffixes,&
                                    with_executables=.true., error=error)
 
         if (allocated(error)) then
@@ -205,6 +216,7 @@ subroutine build_model(model, settings, package, error)
     end if
     if (is_dir('test') .and. package%build%auto_tests) then
         call add_sources_from_dir(model%packages(1)%sources,'test', FPM_SCOPE_TEST, &
+                                   add_f_suffixes = preprocess_f_suffixes,&
                                    with_executables=.true., error=error)
 
         if (allocated(error)) then
@@ -215,6 +227,7 @@ subroutine build_model(model, settings, package, error)
     if (allocated(package%executable)) then
         call add_executable_sources(model%packages(1)%sources, package%executable, FPM_SCOPE_APP, &
                                      auto_discover=package%build%auto_executables, &
+                                     add_f_suffixes = preprocess_f_suffixes,&
                                      error=error)
 
         if (allocated(error)) then
@@ -225,6 +238,7 @@ subroutine build_model(model, settings, package, error)
     if (allocated(package%example)) then
         call add_executable_sources(model%packages(1)%sources, package%example, FPM_SCOPE_EXAMPLE, &
                                      auto_discover=package%build%auto_examples, &
+                                     add_f_suffixes = preprocess_f_suffixes,&
                                      error=error)
 
         if (allocated(error)) then
@@ -235,6 +249,7 @@ subroutine build_model(model, settings, package, error)
     if (allocated(package%test)) then
         call add_executable_sources(model%packages(1)%sources, package%test, FPM_SCOPE_TEST, &
                                      auto_discover=package%build%auto_tests, &
+                                     add_f_suffixes = preprocess_f_suffixes,&
                                      error=error)
 
         if (allocated(error)) then

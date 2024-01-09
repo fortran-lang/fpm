@@ -8,7 +8,7 @@ use fpm_error, only: error_t
 use fpm_model, only: srcfile_t, FPM_UNIT_PROGRAM
 use fpm_filesystem, only: basename, canon_path, dirname, join_path, list_files, is_hidden_file
 use fpm_environment, only: get_os_type,OS_WINDOWS
-use fpm_strings, only: lower, str_ends_with, string_t, operator(.in.)
+use fpm_strings, only: lower, str_ends_with, string_t, operator(.in.), split, string_cat
 use fpm_source_parsing, only: parse_f_source, parse_c_source
 use fpm_manifest_executable, only: executable_config_t
 implicit none
@@ -25,12 +25,15 @@ contains
 
 !> Wrapper to source parsing routines.
 !> Selects parsing routine based on source file name extension
-function parse_source(source_file_path,error) result(source)
+function parse_source(source_file_path,add_f_suffixes,error) result(source)
     character(*), intent(in) :: source_file_path
+    character(*), intent(in) :: add_f_suffixes(:)
     type(error_t), allocatable, intent(out) :: error
     type(srcfile_t)  :: source
 
-    if (str_ends_with(lower(source_file_path), fortran_suffixes)) then
+    if (str_ends_with(lower(source_file_path), fortran_suffixes)&
+        .or.str_ends_with(source_file_path, add_f_suffixes)&
+       ) then
 
         source = parse_f_source(source_file_path, error)
 
@@ -51,7 +54,7 @@ function parse_source(source_file_path,error) result(source)
 end function parse_source
 
 !> Add to `sources` by looking for source files in `directory`
-subroutine add_sources_from_dir(sources,directory,scope,with_executables,recurse,error)
+subroutine add_sources_from_dir(sources,directory,scope,with_executables,recurse,add_f_suffixes,error)
     !> List of `[[srcfile_t]]` objects to append to. Allocated if not allocated
     type(srcfile_t), allocatable, intent(inout), target :: sources(:)
     !> Directory in which to search for source files
@@ -62,6 +65,8 @@ subroutine add_sources_from_dir(sources,directory,scope,with_executables,recurse
     logical, intent(in), optional :: with_executables
     !> Whether to recursively search subdirectories, default is `.true.`
     logical, intent(in), optional :: recurse
+    !> Additional suffixes
+    type(string_t), intent(in), optional :: add_f_suffixes(:)
     !> Error handling
     type(error_t), allocatable, intent(out) :: error
 
@@ -72,6 +77,7 @@ subroutine add_sources_from_dir(sources,directory,scope,with_executables,recurse
     type(string_t), allocatable :: src_file_names(:)
     type(string_t), allocatable :: existing_src_files(:)
     type(srcfile_t), allocatable :: dir_sources(:)
+    character(:), allocatable :: add_suffixes_(:)
 
     recurse_ = .true.
     if (present(recurse)) recurse_ = recurse
@@ -87,9 +93,12 @@ subroutine add_sources_from_dir(sources,directory,scope,with_executables,recurse
         allocate(existing_src_files(0))
     end if
 
+    call split(string_cat(add_f_suffixes, ' '), add_suffixes_, ' ')
+
     is_source = [(.not.(is_hidden_file(basename(file_names(i)%s))) .and. &
                  .not.(canon_path(file_names(i)%s) .in. existing_src_files) .and. &
                  (str_ends_with(lower(file_names(i)%s), fortran_suffixes) .or. &
+                 str_ends_with(file_names(i)%s, add_suffixes_) .or. &
                  str_ends_with(lower(file_names(i)%s), c_suffixes) ),i=1,size(file_names))]
     src_file_names = pack(file_names,is_source)
 
@@ -98,7 +107,7 @@ subroutine add_sources_from_dir(sources,directory,scope,with_executables,recurse
 
     do i = 1, size(src_file_names)
 
-        dir_sources(i) = parse_source(src_file_names(i)%s,error)
+        dir_sources(i) = parse_source(src_file_names(i)%s,add_suffixes_,error)
         if (allocated(error)) return
 
         dir_sources(i)%unit_scope = scope
@@ -129,7 +138,7 @@ end subroutine add_sources_from_dir
 !> Add to `sources` using the executable and test entries in the manifest and
 !> applies any executable-specific overrides such as `executable%name`.
 !> Adds all sources (including modules) from each `executable%source_dir`
-subroutine add_executable_sources(sources,executables,scope,auto_discover,error)
+subroutine add_executable_sources(sources,executables,scope,auto_discover,add_f_suffixes,error)
     !> List of `[[srcfile_t]]` objects to append to. Allocated if not allocated
     type(srcfile_t), allocatable, intent(inout), target :: sources(:)
     !> List of `[[executable_config_t]]` entries from manifest
@@ -138,6 +147,8 @@ subroutine add_executable_sources(sources,executables,scope,auto_discover,error)
     integer, intent(in) :: scope
     !> If `.false.` only executables and tests specified in the manifest are added to `sources`
     logical, intent(in) :: auto_discover
+    !> Additional suffixes
+    type(string_t), intent(in), optional :: add_f_suffixes(:)
     !> Error handling
     type(error_t), allocatable, intent(out) :: error
 
@@ -145,17 +156,20 @@ subroutine add_executable_sources(sources,executables,scope,auto_discover,error)
 
     type(string_t), allocatable :: exe_dirs(:)
     type(srcfile_t) :: exe_source
+    character(:), allocatable :: add_suffixes_(:)
 
     call get_executable_source_dirs(exe_dirs,executables)
 
     do i=1,size(exe_dirs)
         call add_sources_from_dir(sources,exe_dirs(i)%s, scope, &
-                     with_executables=auto_discover, recurse=.false., error=error)
+                     with_executables=auto_discover, recurse=.false., add_f_suffixes = add_f_suffixes, error=error)
 
         if (allocated(error)) then
             return
         end if
     end do
+
+    call split(string_cat(add_f_suffixes, ' '), add_suffixes_, ' ')
 
     exe_loop: do i=1,size(executables)
 
@@ -180,7 +194,7 @@ subroutine add_executable_sources(sources,executables,scope,auto_discover,error)
 
         ! Add if not already discovered (auto_discovery off)
         associate(exe => executables(i))
-            exe_source = parse_source(join_path(exe%source_dir,exe%main),error)
+            exe_source = parse_source(join_path(exe%source_dir,exe%main),add_suffixes_,error)
             exe_source%exe_name = exe%name
             if (allocated(exe%link)) then
                 exe_source%link_libraries = exe%link

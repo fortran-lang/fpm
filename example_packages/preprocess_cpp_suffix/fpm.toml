@@ -1,0 +1,8 @@
+name = "preprocess_cpp"
+
+version = "1"
+
+[preprocess]
+[preprocess.cpp]
+macros = ["TESTMACRO", "TESTMACRO2=3", "TESTMACRO3={version}"]
+suffixes = ["fpp"]
