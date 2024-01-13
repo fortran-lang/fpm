@@ -253,7 +253,7 @@ contains
        class(preprocess_config_t), intent(inout) :: this
         type(preprocess_config_t), intent(in) :: that
 
-        if (.not.that%name=="cpp") then
+        if (.not.that%is_cpp()) then
             write(stderr, '(a)') 'Warning: Preprocessor ' // that%name // &
                                  ' is not supported; will ignore it'
             return
@@ -293,13 +293,15 @@ contains
     ! Check cpp
     logical function is_cpp(this)
        class(preprocess_config_t), intent(in) :: this
-       is_cpp = this%name == "cpp"
+       is_cpp = .false.
+       if (allocated(this%name)) is_cpp = this%name == "cpp"
     end function is_cpp
 
     ! Check cpp
     logical function is_fypp(this)
        class(preprocess_config_t), intent(in) :: this
-       is_fypp = this%name == "fypp"
+       is_fypp = .false.
+       if (allocated(this%name)) is_fypp = this%name == "fypp"
     end function is_fypp
 
 end module fpm_manifest_preprocess
