@@ -25,12 +25,16 @@ contains
 
 !> Wrapper to source parsing routines.
 !> Selects parsing routine based on source file name extension
-function parse_source(source_file_path,error) result(source)
+function parse_source(source_file_path,custom_f_ext,error) result(source)
     character(*), intent(in) :: source_file_path
+    type(string_t), optional, intent(in) :: custom_f_ext(:)
     type(error_t), allocatable, intent(out) :: error
     type(srcfile_t)  :: source
+    type(string_t), allocatable :: f_ext(:)
 
-    if (str_ends_with(lower(source_file_path), fortran_suffixes)) then
+    call list_fortran_suffixes(f_ext,custom_f_ext)
+
+    if (str_ends_with(lower(source_file_path), f_ext)) then
 
         source = parse_f_source(source_file_path, error)
 
@@ -42,7 +46,7 @@ function parse_source(source_file_path,error) result(source)
 
         source = parse_c_source(source_file_path,error)
 
-    end if
+    endif
 
     if (allocated(error)) then
         return
@@ -50,8 +54,31 @@ function parse_source(source_file_path,error) result(source)
 
 end function parse_source
 
+!> List fortran suffixes, including optional ones
+subroutine list_fortran_suffixes(suffixes,with_f_ext)
+    type(string_t), allocatable, intent(out) :: suffixes(:)
+    !> Additional user-defined (preprocessor) extensions that should be treated as Fortran sources
+    type(string_t), intent(in), optional :: with_f_ext(:)
+
+    integer :: ndefault,nuser,i
+
+    ndefault = size(fortran_suffixes)
+    nuser    = 0; if (present(with_f_ext)) nuser = size(with_f_ext)
+
+    allocate(suffixes(ndefault + nuser))
+    do i=1,ndefault
+        suffixes(i) = string_t(fortran_suffixes(i))
+    end do
+    if (present(with_f_ext)) then
+        do i=1,nuser
+            suffixes(ndefault+1) = string_t(with_f_ext(i)%s)
+        end do
+    endif
+
+end subroutine list_fortran_suffixes
+
 !> Add to `sources` by looking for source files in `directory`
-subroutine add_sources_from_dir(sources,directory,scope,with_executables,recurse,error)
+subroutine add_sources_from_dir(sources,directory,scope,with_executables,with_f_ext,recurse,error)
     !> List of `[[srcfile_t]]` objects to append to. Allocated if not allocated
     type(srcfile_t), allocatable, intent(inout), target :: sources(:)
     !> Directory in which to search for source files
@@ -60,6 +87,8 @@ subroutine add_sources_from_dir(sources,directory,scope,with_executables,recurse
     integer, intent(in) :: scope
     !> Executable sources (fortran `program`s) are ignored unless `with_executables=.true.`
     logical, intent(in), optional :: with_executables
+    !> Additional user-defined (preprocessor) extensions that should be treated as Fortran sources
+    type(string_t), intent(in), optional :: with_f_ext(:)
     !> Whether to recursively search subdirectories, default is `.true.`
     logical, intent(in), optional :: recurse
     !> Error handling
@@ -69,7 +98,7 @@ subroutine add_sources_from_dir(sources,directory,scope,with_executables,recurse
     logical, allocatable :: is_source(:), exclude_source(:)
     logical :: recurse_
     type(string_t), allocatable :: file_names(:)
-    type(string_t), allocatable :: src_file_names(:)
+    type(string_t), allocatable :: src_file_names(:),f_ext(:)
     type(string_t), allocatable :: existing_src_files(:)
     type(srcfile_t), allocatable :: dir_sources(:)
 
@@ -87,10 +116,15 @@ subroutine add_sources_from_dir(sources,directory,scope,with_executables,recurse
         allocate(existing_src_files(0))
     end if
 
+    ! Get legal fortran suffixes
+    call list_fortran_suffixes(f_ext,with_f_ext)
+
     is_source = [(.not.(is_hidden_file(basename(file_names(i)%s))) .and. &
                  .not.(canon_path(file_names(i)%s) .in. existing_src_files) .and. &
-                 (str_ends_with(lower(file_names(i)%s), fortran_suffixes) .or. &
+                 (str_ends_with(lower(file_names(i)%s), f_ext) .or. &
                  str_ends_with(lower(file_names(i)%s), c_suffixes) ),i=1,size(file_names))]
+
+
     src_file_names = pack(file_names,is_source)
 
     allocate(dir_sources(size(src_file_names)))
@@ -98,7 +132,7 @@ subroutine add_sources_from_dir(sources,directory,scope,with_executables,recurse
 
     do i = 1, size(src_file_names)
 
-        dir_sources(i) = parse_source(src_file_names(i)%s,error)
+        dir_sources(i) = parse_source(src_file_names(i)%s,with_f_ext,error)
         if (allocated(error)) return
 
         dir_sources(i)%unit_scope = scope
@@ -129,7 +163,7 @@ end subroutine add_sources_from_dir
 !> Add to `sources` using the executable and test entries in the manifest and
 !> applies any executable-specific overrides such as `executable%name`.
 !> Adds all sources (including modules) from each `executable%source_dir`
-subroutine add_executable_sources(sources,executables,scope,auto_discover,error)
+subroutine add_executable_sources(sources,executables,scope,auto_discover,with_f_ext,error)
     !> List of `[[srcfile_t]]` objects to append to. Allocated if not allocated
     type(srcfile_t), allocatable, intent(inout), target :: sources(:)
     !> List of `[[executable_config_t]]` entries from manifest
@@ -138,6 +172,8 @@ subroutine add_executable_sources(sources,executables,scope,auto_discover,error)
     integer, intent(in) :: scope
     !> If `.false.` only executables and tests specified in the manifest are added to `sources`
     logical, intent(in) :: auto_discover
+    !> Additional user-defined (preprocessor) extensions that should be treated as Fortran sources
+    type(string_t), intent(in), optional :: with_f_ext(:)
     !> Error handling
     type(error_t), allocatable, intent(out) :: error
 
@@ -150,7 +186,7 @@ subroutine add_executable_sources(sources,executables,scope,auto_discover,error)
 
     do i=1,size(exe_dirs)
         call add_sources_from_dir(sources,exe_dirs(i)%s, scope, &
-                     with_executables=auto_discover, recurse=.false., error=error)
+                     with_executables=auto_discover, with_f_ext=with_f_ext,recurse=.false., error=error)
 
         if (allocated(error)) then
             return
@@ -180,7 +216,7 @@ subroutine add_executable_sources(sources,executables,scope,auto_discover,error)
 
         ! Add if not already discovered (auto_discovery off)
         associate(exe => executables(i))
-            exe_source = parse_source(join_path(exe%source_dir,exe%main),error)
+            exe_source = parse_source(join_path(exe%source_dir,exe%main),with_f_ext,error)
             exe_source%exe_name = exe%name
             if (allocated(exe%link)) then
                 exe_source%link_libraries = exe%link

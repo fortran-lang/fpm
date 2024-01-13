@@ -39,6 +39,7 @@ use iso_fortran_env, only: int64
 use fpm_compiler, only: compiler_t, archiver_t, debug
 use fpm_dependency, only: dependency_tree_t
 use fpm_strings, only: string_t, str, len_trim
+use fpm_manifest_preprocess, only: preprocess_config_t
 implicit none
 
 private
@@ -137,7 +138,7 @@ type package_t
     type(srcfile_t), allocatable :: sources(:)
 
     !> List of macros.
-    type(string_t), allocatable :: macros(:)
+    type(preprocess_config_t) :: preprocess
 
     !> Package version number.
     character(:), allocatable :: version
