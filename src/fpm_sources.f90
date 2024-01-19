@@ -71,7 +71,7 @@ subroutine list_fortran_suffixes(suffixes,with_f_ext)
     end do
     if (present(with_f_ext)) then
         do i=1,nuser
-            suffixes(ndefault+1) = string_t(with_f_ext(i)%s)
+            suffixes(ndefault+i) = string_t(with_f_ext(i)%s)
         end do
     endif
 
