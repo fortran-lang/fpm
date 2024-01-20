@@ -43,7 +43,7 @@ jobs:
 
     steps:
     - name: Checkout code
-      uses: actions/checkout@v1
+      uses: actions/checkout@v4
 
     - name: Install GFortran macOS
       if: contains(matrix.os, 'macos')
@@ -194,7 +194,7 @@ jobs:
       - build
     
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v4
 
     - name: Download Artifacts
       uses: actions/download-artifact@v2
@@ -277,7 +277,7 @@ jobs:
       env:
         DEPLOY_BRANCH: ${{ secrets.DEPLOY_BRANCH && contains(github.ref, secrets.DEPLOY_BRANCH) && 1 || 0 }}
 
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v4
       if: ${{ github.event_name == 'push' }}
 
     - name: Download Artifacts
