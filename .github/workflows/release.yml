@@ -128,9 +128,10 @@ jobs:
       if: ${{ github.event_name == 'push' }}
 
     - name: Download Artifacts
-      uses: actions/download-artifact@v2
+      uses: actions/download-artifact@v4
       with:
-        path: ${{ github.workspace }} # This will download all files
+        path: ${{ github.workspace }}
+        merge-multiple: true
 
     - name: Normalize file names for continuous delivery
       if: ${{ github.event_name == 'push' }}
