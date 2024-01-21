@@ -35,7 +35,7 @@ jobs:
         PREFIX: fpm-${{ env.VERSION }}/
 
     - name: Upload artifact
-      uses: actions/upload-artifact@v2
+      uses: actions/upload-artifact@v4
       with:
         name: ${{ env.OUTPUT }}
         path: ${{ env.OUTPUT }}
@@ -104,7 +104,7 @@ jobs:
         ${{ env.EXE }} build 
 
     - name: Upload artifact
-      uses: actions/upload-artifact@v2
+      uses: actions/upload-artifact@v4
       with:
         name: ${{ env.OUTPUT }}
         path: ${{ env.OUTPUT }}

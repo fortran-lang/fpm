@@ -181,7 +181,7 @@ jobs:
         ci/run_tests.sh "$PWD/${{ env.FPM_RELEASE }}"
 
     - name: Upload artifact
-      uses: actions/upload-artifact@v2
+      uses: actions/upload-artifact@v4
       with:
         name: ${{ env.FPM_RELEASE }}
         path: ${{ env.FPM_RELEASE }}
@@ -257,7 +257,7 @@ jobs:
         move fpm-installer.exe fpm-installer-${{ env.VERSION }}.exe
 
     - name: Upload artifact
-      uses: actions/upload-artifact@v2
+      uses: actions/upload-artifact@v4
       with:
         name: fpm-installer
         path: ci/fpm-installer-${{ env.VERSION }}.exe
