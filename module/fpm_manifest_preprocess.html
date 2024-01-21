@@ -78,7 +78,7 @@
             <li class="list-inline-item" id="statements"><i class="fa fa-list-ol"></i>
               <a data-bs-toggle="tooltip"
                  data-bs-placement="bottom" data-html="true"
-                 title=" 1.4% of total for modules and submodules.">142 statements</a>
+                 title=" 1.8% of total for modules and submodules.">194 statements</a>
             </li>
 
             <li class="list-inline-item" id="source-file">
@@ -124,7 +124,7 @@
       </a>
       <div id="inters-0" class="collapse">
         <div class="list-group list-group-flush">
-            <a class="list-group-item" href="../module/fpm_manifest_preprocess.html#interface-operator%28%3D%3D%29~2">operator(==)</a>
+            <a class="list-group-item" href="../module/fpm_manifest_preprocess.html#interface-operator%28%3D%3D%29">operator(==)</a>
         </div>
       </div>
     </div>
@@ -184,9 +184,10 @@
         <ul class="list-group list-group-flush">
             <li class="list-group-item">
               <ul class="list-inline">
-                  <li class="list-inline-item"><a href='fpm_strings.html'>fpm_strings</a></li>
-                  <li class="list-inline-item"><a href='fpm_error.html'>fpm_error</a></li>
+                  <li class="list-inline-item"><a href='http://fortranwiki.org/fortran/show/iso_fortran_env'>iso_fortran_env</a></li>
                   <li class="list-inline-item"><a href='fpm_toml.html'>fpm_toml</a></li>
+                  <li class="list-inline-item"><a href='fpm_error.html'>fpm_error</a></li>
+                  <li class="list-inline-item"><a href='fpm_strings.html'>fpm_strings</a></li>
               </ul>
             </li>
         </ul>
@@ -203,8 +204,8 @@
           <h2>Interfaces</h2>
               <div class="card">
     <div class="card-header bg-light codesum">
-      <span class="anchor" id="interface-operator%28%3D%3D%29~2"></span>
-      <h3>public        interface <a href='../interface/operator(==)~2.html'>operator(==)</a> 
+      <span class="anchor" id="interface-operator%28%3D%3D%29"></span>
+      <h3>public        interface <a href='../interface/operator(==).html'>operator(==)</a> 
       </h3>
     </div>
     <ul class="list-group">
@@ -228,7 +229,7 @@
     <tbody>
         <tr>
             <td>
-              <span class="anchor" id="variable-this~2"></span>
+              <span class="anchor" id="variable-this"></span>
               class(<a href='../type/preprocess_config_t.html'>preprocess_config_t</a>),
             </td>
 <td>intent(in)</td>
@@ -243,7 +244,7 @@
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-that~2"></span>
+              <span class="anchor" id="variable-that"></span>
               class(<a href='../type/preprocess_config_t.html'>preprocess_config_t</a>),
             </td>
 <td>intent(in)</td>
@@ -334,7 +335,7 @@
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-name~5"></span>
+              <span class="anchor" id="variable-name~4"></span>
               character(len=:),
             </td>
               <td>public,</td>
@@ -377,8 +378,28 @@
           <tbody>
               <tr>
                 <td>  procedure, public ::
-  <strong><a href='../type/preprocess_config_t.html#boundprocedure-info~6'>info</a></strong></td>
+  <strong><a href='../type/preprocess_config_t.html#boundprocedure-add_config'>add_config</a></strong></td>
+                <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/preprocess_config_t.html#boundprocedure-destroy'>destroy</a></strong></td>
+                <td>../../<p>Operations</p></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/preprocess_config_t.html#boundprocedure-info~2'>info</a></strong></td>
                 <td>../../<p>Print information on this instance</p></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/preprocess_config_t.html#boundprocedure-is_cpp'>is_cpp</a></strong></td>
+                <td>../../<p>Properties</p></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/preprocess_config_t.html#boundprocedure-is_fypp'>is_fypp</a></strong></td>
+                <td></td>
               </tr>
           </tbody>
         </table>
@@ -411,7 +432,7 @@
     <tbody>
         <tr>
             <td>
-              <span class="anchor" id="variable-self~14"></span>
+              <span class="anchor" id="variable-self~22"></span>
               type(<a href='../type/preprocess_config_t.html'>preprocess_config_t</a>),
             </td>
 <td>intent(out)</td>
@@ -426,7 +447,7 @@
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-table~14"></span>
+              <span class="anchor" id="variable-table~3"></span>
               type(toml_table),
             </td>
 <td>intent(inout)</td>
@@ -441,7 +462,7 @@
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-error~21"></span>
+              <span class="anchor" id="variable-error~7"></span>
               type(<a href='../type/error_t.html'>error_t</a>),
             </td>
 <td>intent(out),</td>
@@ -496,7 +517,7 @@
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-table~16"></span>
+              <span class="anchor" id="variable-table~5"></span>
               type(toml_table),
             </td>
 <td>intent(inout)</td>
@@ -511,7 +532,7 @@
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-error~23"></span>
+              <span class="anchor" id="variable-error~9"></span>
               type(<a href='../type/error_t.html'>error_t</a>),
             </td>
 <td>intent(out),</td>
@@ -551,7 +572,7 @@
             <p class="text-end">
               Documentation generated by
               <a href="https://github.com/Fortran-FOSS-Programmers/ford">FORD</a>
- on 2024-01-20 21:46              </p>
+ on 2024-01-21 09:46              </p>
           </div>
         </div>
         <br>

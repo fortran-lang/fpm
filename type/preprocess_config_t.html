@@ -78,7 +78,7 @@
             <li class="list-inline-item" id="statements"><i class="fa fa-list-ol"></i>
               <a data-bs-toggle="tooltip"
                  data-bs-placement="bottom" data-html="true"
-                 title="<p> 1.8% of total for derived types.</p>Including implementation: 43 statements,  2.0% of total for derived types.">8 statements</a>
+                 title="<p> 2.7% of total for derived types.</p>Including implementation: 94 statements,  4.3% of total for derived types.">12 statements</a>
             </li>
 
             <li class="list-inline-item" id="source-file">
@@ -120,7 +120,7 @@
         <div class="list-group list-group-flush">
             <a class="list-group-item" href="../type/preprocess_config_t.html#variable-directories">directories</a>
             <a class="list-group-item" href="../type/preprocess_config_t.html#variable-macros~2">macros</a>
-            <a class="list-group-item" href="../type/preprocess_config_t.html#variable-name~5">name</a>
+            <a class="list-group-item" href="../type/preprocess_config_t.html#variable-name~4">name</a>
             <a class="list-group-item" href="../type/preprocess_config_t.html#variable-suffixes">suffixes</a>
         </div>
       </div>
@@ -148,7 +148,11 @@
       </a>
       <div id="boundprocs-0" class="collapse">
         <div class="list-group list-group-flush">
-            <a class="list-group-item" href="../type/preprocess_config_t.html#boundprocedure-info~6">info</a>
+            <a class="list-group-item" href="../type/preprocess_config_t.html#boundprocedure-add_config">add_config</a>
+            <a class="list-group-item" href="../type/preprocess_config_t.html#boundprocedure-destroy">destroy</a>
+            <a class="list-group-item" href="../type/preprocess_config_t.html#boundprocedure-info~2">info</a>
+            <a class="list-group-item" href="../type/preprocess_config_t.html#boundprocedure-is_cpp">is_cpp</a>
+            <a class="list-group-item" href="../type/preprocess_config_t.html#boundprocedure-is_fypp">is_fypp</a>
         </div>
       </div>
     </div>
@@ -221,7 +225,7 @@
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-name~5"></span>
+              <span class="anchor" id="variable-name~4"></span>
               character(len=:),
             </td>
               <td>public,</td>
@@ -266,7 +270,132 @@
           <div class="row">
               <div class="card mt-3">
     <div class="card-header codesum">
-      <span class="anchor" id="boundprocedure-info~6"></span>
+      <span class="anchor" id="boundprocedure-add_config"></span>
+      <h3>
+          procedure, public ::
+  <strong>add_config</strong>
+        
+      </h3>
+    </div>
+    <ul class="list-group">
+        <li class="list-group-item">
+                  <h3>
+    private  subroutine add_config(this, that)  
+</h3>
+
+  <p>Add preprocessor settings</p>
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" ></span>
+              class(<a href='preprocess_config_t.html'>preprocess_config_t</a>),
+            </td>
+<td>intent(inout)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>this</strong></td>
+            <td>
+                
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" ></span>
+              type(<a href='preprocess_config_t.html'>preprocess_config_t</a>),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>that</strong></td>
+            <td>
+                
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+
+        </li>
+    </ul>
+  </div>
+
+          </div>
+          <div class="row">
+              <div class="card mt-3">
+    <div class="card-header codesum">
+      <span class="anchor" id="boundprocedure-destroy"></span>
+      <h3>
+          procedure, public ::
+  <strong>destroy</strong>
+        
+      </h3>
+    </div>
+      <div class="card-body">
+        
+        <p>Operations</p>
+      </div>
+    <ul class="list-group">
+        <li class="list-group-item">
+                  <h3>
+    private elemental subroutine destroy(this)  
+</h3>
+
+  <p>Clean preprocessor structure</p>
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" ></span>
+              class(<a href='preprocess_config_t.html'>preprocess_config_t</a>),
+            </td>
+<td>intent(inout)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>this</strong></td>
+            <td>
+                
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+
+        </li>
+    </ul>
+  </div>
+
+          </div>
+          <div class="row">
+              <div class="card mt-3">
+    <div class="card-header codesum">
+      <span class="anchor" id="boundprocedure-info~2"></span>
       <h3>
           procedure, public ::
   <strong>info</strong>
@@ -350,6 +479,126 @@
   </div>
 
           </div>
+          <div class="row">
+              <div class="card mt-3">
+    <div class="card-header codesum">
+      <span class="anchor" id="boundprocedure-is_cpp"></span>
+      <h3>
+          procedure, public ::
+  <strong>is_cpp</strong>
+        
+      </h3>
+    </div>
+      <div class="card-body">
+        
+        <p>Properties</p>
+      </div>
+    <ul class="list-group">
+        <li class="list-group-item">
+                  <h3>
+    private  function is_cpp(this)  
+</h3>
+
+  
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" ></span>
+              class(<a href='preprocess_config_t.html'>preprocess_config_t</a>),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>this</strong></td>
+            <td>
+                
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+    <h4>
+    Return Value
+    <small>logical</small>
+    </h4>
+    
+
+        </li>
+    </ul>
+  </div>
+
+          </div>
+          <div class="row">
+              <div class="card mt-3">
+    <div class="card-header codesum">
+      <span class="anchor" id="boundprocedure-is_fypp"></span>
+      <h3>
+          procedure, public ::
+  <strong>is_fypp</strong>
+        
+      </h3>
+    </div>
+    <ul class="list-group">
+        <li class="list-group-item">
+                  <h3>
+    private  function is_fypp(this)  
+</h3>
+
+  
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" ></span>
+              class(<a href='preprocess_config_t.html'>preprocess_config_t</a>),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>this</strong></td>
+            <td>
+                
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+    <h4>
+    Return Value
+    <small>logical</small>
+    </h4>
+    
+
+        </li>
+    </ul>
+  </div>
+
+          </div>
       </section>
 
     <section>
@@ -373,6 +622,14 @@
 <span class="w">      </span><span class="c">!&gt; Print information on this instance</span>
 <span class="w">      </span><span class="k">procedure</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">info</span>
 
+<span class="w">      </span><span class="c">!&gt; Operations</span>
+<span class="w">      </span><span class="k">procedure</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">destroy</span>
+<span class="w">      </span><span class="k">procedure</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">add_config</span>
+
+<span class="w">      </span><span class="c">!&gt; Properties</span>
+<span class="w">      </span><span class="k">procedure</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">is_cpp</span>
+<span class="w">      </span><span class="k">procedure</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">is_fypp</span>
+
 <span class="w">   </span><span class="k">end type </span><span class="n">preprocess_config_t</span>
 </pre></div>
 
@@ -393,7 +650,7 @@
             <p class="text-end">
               Documentation generated by
               <a href="https://github.com/Fortran-FOSS-Programmers/ford">FORD</a>
- on 2024-01-20 21:46              </p>
+ on 2024-01-21 09:46              </p>
           </div>
         </div>
         <br>

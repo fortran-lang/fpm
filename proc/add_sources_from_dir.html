@@ -78,7 +78,7 @@
             <li class="list-inline-item" id="statements"><i class="fa fa-list-ol"></i>
               <a data-bs-toggle="tooltip"
                  data-bs-placement="bottom" data-html="true"
-                 title=" 0.8% of total for procedures.">47 statements</a>
+                 title=" 0.9% of total for procedures.">49 statements</a>
             </li>
 
             <li class="list-inline-item" id="source-file">
@@ -143,7 +143,7 @@
     </div>
     
     <div class="col-md-9" id='text'>
-    <h2>public  subroutine add_sources_from_dir(sources, directory, scope, with_executables, recurse, error)  
+    <h2>public  subroutine add_sources_from_dir(sources, directory, scope, with_executables, with_f_ext, recurse, error)  
 </h2>
     
 
@@ -193,7 +193,7 @@
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-scope"></span>
+              <span class="anchor" id="variable-scope~3"></span>
               integer,
             </td>
 <td>intent(in)</td>
@@ -223,6 +223,21 @@
         </tr>
         <tr>
             <td>
+              <span class="anchor" id="variable-with_f_ext~2"></span>
+              type(<a href='../type/string_t.html'>string_t</a>),
+            </td>
+<td>intent(in),</td>
+              <td>optional</td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>with_f_ext</strong>(:)</td>
+            <td>
+                <p>Additional user-defined (preprocessor) extensions that should be treated as Fortran sources</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
               <span class="anchor" id="variable-recurse~2"></span>
               logical,
             </td>
@@ -238,7 +253,7 @@
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-error~81"></span>
+              <span class="anchor" id="variable-error~111"></span>
               type(<a href='../type/error_t.html'>error_t</a>),
             </td>
 <td>intent(out),</td>
@@ -268,7 +283,7 @@
     
     <section>
     <h2><span class="anchor" id="src"></span>Source Code</h2>
-    <div class="hl codehilite"><pre><span></span><span class="k">subroutine </span><span class="n">add_sources_from_dir</span><span class="p">(</span><span class="n">sources</span><span class="p">,</span><span class="n">directory</span><span class="p">,</span><span class="n">scope</span><span class="p">,</span><span class="n">with_executables</span><span class="p">,</span><span class="n">recurse</span><span class="p">,</span><span class="n">error</span><span class="p">)</span>
+    <div class="hl codehilite"><pre><span></span><span class="k">subroutine </span><span class="n">add_sources_from_dir</span><span class="p">(</span><span class="n">sources</span><span class="p">,</span><span class="n">directory</span><span class="p">,</span><span class="n">scope</span><span class="p">,</span><span class="n">with_executables</span><span class="p">,</span><span class="n">with_f_ext</span><span class="p">,</span><span class="n">recurse</span><span class="p">,</span><span class="n">error</span><span class="p">)</span>
 <span class="w">    </span><span class="c">!&gt; List of `[[srcfile_t]]` objects to append to. Allocated if not allocated</span>
 <span class="w">    </span><span class="k">type</span><span class="p">(</span><span class="n">srcfile_t</span><span class="p">),</span><span class="w"> </span><span class="k">allocatable</span><span class="p">,</span><span class="w"> </span><span class="k">intent</span><span class="p">(</span><span class="n">inout</span><span class="p">),</span><span class="w"> </span><span class="k">target</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">sources</span><span class="p">(:)</span>
 <span class="w">    </span><span class="c">!&gt; Directory in which to search for source files</span>
@@ -277,6 +292,8 @@
 <span class="w">    </span><span class="kt">integer</span><span class="p">,</span><span class="w"> </span><span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">)</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">scope</span>
 <span class="w">    </span><span class="c">!&gt; Executable sources (fortran `program`s) are ignored unless `with_executables=.true.`</span>
 <span class="w">    </span><span class="kt">logical</span><span class="p">,</span><span class="w"> </span><span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">),</span><span class="w"> </span><span class="k">optional</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">with_executables</span>
+<span class="w">    </span><span class="c">!&gt; Additional user-defined (preprocessor) extensions that should be treated as Fortran sources</span>
+<span class="w">    </span><span class="k">type</span><span class="p">(</span><span class="n">string_t</span><span class="p">),</span><span class="w"> </span><span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">),</span><span class="w"> </span><span class="k">optional</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">with_f_ext</span><span class="p">(:)</span>
 <span class="w">    </span><span class="c">!&gt; Whether to recursively search subdirectories, default is `.true.`</span>
 <span class="w">    </span><span class="kt">logical</span><span class="p">,</span><span class="w"> </span><span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">),</span><span class="w"> </span><span class="k">optional</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">recurse</span>
 <span class="w">    </span><span class="c">!&gt; Error handling</span>
@@ -286,7 +303,7 @@
 <span class="w">    </span><span class="kt">logical</span><span class="p">,</span><span class="w"> </span><span class="k">allocatable</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">is_source</span><span class="p">(:),</span><span class="w"> </span><span class="n">exclude_source</span><span class="p">(:)</span>
 <span class="w">    </span><span class="kt">logical</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">recurse_</span>
 <span class="w">    </span><span class="k">type</span><span class="p">(</span><span class="n">string_t</span><span class="p">),</span><span class="w"> </span><span class="k">allocatable</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">file_names</span><span class="p">(:)</span>
-<span class="w">    </span><span class="k">type</span><span class="p">(</span><span class="n">string_t</span><span class="p">),</span><span class="w"> </span><span class="k">allocatable</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">src_file_names</span><span class="p">(:)</span>
+<span class="w">    </span><span class="k">type</span><span class="p">(</span><span class="n">string_t</span><span class="p">),</span><span class="w"> </span><span class="k">allocatable</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">src_file_names</span><span class="p">(:),</span><span class="n">f_ext</span><span class="p">(:)</span>
 <span class="w">    </span><span class="k">type</span><span class="p">(</span><span class="n">string_t</span><span class="p">),</span><span class="w"> </span><span class="k">allocatable</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">existing_src_files</span><span class="p">(:)</span>
 <span class="w">    </span><span class="k">type</span><span class="p">(</span><span class="n">srcfile_t</span><span class="p">),</span><span class="w"> </span><span class="k">allocatable</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">dir_sources</span><span class="p">(:)</span>
 
@@ -304,10 +321,15 @@
 <span class="k">        allocate</span><span class="p">(</span><span class="n">existing_src_files</span><span class="p">(</span><span class="mi">0</span><span class="p">))</span>
 <span class="w">    </span><span class="k">end if</span>
 
-<span class="k">    </span><span class="n">is_source</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">[(.</span><span class="nb">not</span><span class="p">.(</span><span class="n">is_hidden_file</span><span class="p">(</span><span class="n">basename</span><span class="p">(</span><span class="n">file_names</span><span class="p">(</span><span class="n">i</span><span class="p">)%</span><span class="n">s</span><span class="p">)))</span><span class="w"> </span><span class="p">.</span><span class="nb">and</span><span class="p">.</span><span class="w"> </span><span class="p">&amp;</span>
+<span class="w">    </span><span class="c">! Get legal fortran suffixes</span>
+<span class="w">    </span><span class="k">call </span><span class="n">list_fortran_suffixes</span><span class="p">(</span><span class="n">f_ext</span><span class="p">,</span><span class="n">with_f_ext</span><span class="p">)</span>
+
+<span class="w">    </span><span class="n">is_source</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">[(.</span><span class="nb">not</span><span class="p">.(</span><span class="n">is_hidden_file</span><span class="p">(</span><span class="n">basename</span><span class="p">(</span><span class="n">file_names</span><span class="p">(</span><span class="n">i</span><span class="p">)%</span><span class="n">s</span><span class="p">)))</span><span class="w"> </span><span class="p">.</span><span class="nb">and</span><span class="p">.</span><span class="w"> </span><span class="p">&amp;</span>
 <span class="w">                 </span><span class="p">.</span><span class="nb">not</span><span class="p">.(</span><span class="n">canon_path</span><span class="p">(</span><span class="n">file_names</span><span class="p">(</span><span class="n">i</span><span class="p">)%</span><span class="n">s</span><span class="p">)</span><span class="w"> </span><span class="p">.</span><span class="n">in</span><span class="p">.</span><span class="w"> </span><span class="n">existing_src_files</span><span class="p">)</span><span class="w"> </span><span class="p">.</span><span class="nb">and</span><span class="p">.</span><span class="w"> </span><span class="p">&amp;</span>
-<span class="w">                 </span><span class="p">(</span><span class="n">str_ends_with</span><span class="p">(</span><span class="n">lower</span><span class="p">(</span><span class="n">file_names</span><span class="p">(</span><span class="n">i</span><span class="p">)%</span><span class="n">s</span><span class="p">),</span><span class="w"> </span><span class="n">fortran_suffixes</span><span class="p">)</span><span class="w"> </span><span class="p">.</span><span class="nb">or</span><span class="p">.</span><span class="w"> </span><span class="p">&amp;</span>
+<span class="w">                 </span><span class="p">(</span><span class="n">str_ends_with</span><span class="p">(</span><span class="n">lower</span><span class="p">(</span><span class="n">file_names</span><span class="p">(</span><span class="n">i</span><span class="p">)%</span><span class="n">s</span><span class="p">),</span><span class="w"> </span><span class="n">f_ext</span><span class="p">)</span><span class="w"> </span><span class="p">.</span><span class="nb">or</span><span class="p">.</span><span class="w"> </span><span class="p">&amp;</span>
 <span class="w">                 </span><span class="n">str_ends_with</span><span class="p">(</span><span class="n">lower</span><span class="p">(</span><span class="n">file_names</span><span class="p">(</span><span class="n">i</span><span class="p">)%</span><span class="n">s</span><span class="p">),</span><span class="w"> </span><span class="n">c_suffixes</span><span class="p">)</span><span class="w"> </span><span class="p">),</span><span class="n">i</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span><span class="n">size</span><span class="p">(</span><span class="n">file_names</span><span class="p">))]</span>
+
+
 <span class="w">    </span><span class="n">src_file_names</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">pack</span><span class="p">(</span><span class="n">file_names</span><span class="p">,</span><span class="n">is_source</span><span class="p">)</span>
 
 <span class="w">    </span><span class="k">allocate</span><span class="p">(</span><span class="n">dir_sources</span><span class="p">(</span><span class="n">size</span><span class="p">(</span><span class="n">src_file_names</span><span class="p">)))</span>
@@ -315,7 +337,7 @@
 
 <span class="w">    </span><span class="k">do </span><span class="n">i</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="n">size</span><span class="p">(</span><span class="n">src_file_names</span><span class="p">)</span>
 
-<span class="w">        </span><span class="n">dir_sources</span><span class="p">(</span><span class="n">i</span><span class="p">)</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">parse_source</span><span class="p">(</span><span class="n">src_file_names</span><span class="p">(</span><span class="n">i</span><span class="p">)%</span><span class="n">s</span><span class="p">,</span><span class="n">error</span><span class="p">)</span>
+<span class="w">        </span><span class="n">dir_sources</span><span class="p">(</span><span class="n">i</span><span class="p">)</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">parse_source</span><span class="p">(</span><span class="n">src_file_names</span><span class="p">(</span><span class="n">i</span><span class="p">)%</span><span class="n">s</span><span class="p">,</span><span class="n">with_f_ext</span><span class="p">,</span><span class="n">error</span><span class="p">)</span>
 <span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="nb">allocated</span><span class="p">(</span><span class="n">error</span><span class="p">))</span><span class="w"> </span><span class="k">return</span>
 
 <span class="k">        </span><span class="n">dir_sources</span><span class="p">(</span><span class="n">i</span><span class="p">)%</span><span class="n">unit_scope</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">scope</span>
@@ -361,7 +383,7 @@
             <p class="text-end">
               Documentation generated by
               <a href="https://github.com/Fortran-FOSS-Programmers/ford">FORD</a>
- on 2024-01-20 21:46              </p>
+ on 2024-01-21 09:46              </p>
           </div>
         </div>
         <br>

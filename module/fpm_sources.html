@@ -78,7 +78,7 @@
             <li class="list-inline-item" id="statements"><i class="fa fa-list-ol"></i>
               <a data-bs-toggle="tooltip"
                  data-bs-placement="bottom" data-html="true"
-                 title=" 1.5% of total for modules and submodules.">157 statements</a>
+                 title=" 1.7% of total for modules and submodules.">180 statements</a>
             </li>
 
             <li class="list-inline-item" id="source-file">
@@ -169,12 +169,12 @@
             <li class="list-group-item">
               <ul class="list-inline">
                   <li class="list-inline-item"><a href='fpm_filesystem.html'>fpm_filesystem</a></li>
-                  <li class="list-inline-item"><a href='fpm_manifest_executable.html'>fpm_manifest_executable</a></li>
                   <li class="list-inline-item"><a href='fpm_strings.html'>fpm_strings</a></li>
-                  <li class="list-inline-item"><a href='fpm_model.html'>fpm_model</a></li>
+                  <li class="list-inline-item"><a href='fpm_manifest_executable.html'>fpm_manifest_executable</a></li>
                   <li class="list-inline-item"><a href='fpm_environment.html'>fpm_environment</a></li>
-                  <li class="list-inline-item"><a href='fpm_source_parsing.html'>fpm_source_parsing</a></li>
+                  <li class="list-inline-item"><a href='fpm_model.html'>fpm_model</a></li>
                   <li class="list-inline-item"><a href='fpm_error.html'>fpm_error</a></li>
+                  <li class="list-inline-item"><a href='fpm_source_parsing.html'>fpm_source_parsing</a></li>
               </ul>
             </li>
         </ul>
@@ -212,7 +212,7 @@
     <tbody>
         <tr>
             <td>
-              <span class="anchor" id="variable-source~6"></span>
+              <span class="anchor" id="variable-source~9"></span>
               type(<a href='../type/srcfile_t.html'>srcfile_t</a>),
             </td>
 <td>intent(in)</td>
@@ -243,7 +243,7 @@
         <section>
           <h2>Subroutines</h2>
               <div class="card">
-    <div class="card-header codesum"><span class="anchor" id="proc-add_executable_sources"></span> <h3>public  subroutine <a href='../proc/add_executable_sources.html'>add_executable_sources</a>(sources, executables, scope, auto_discover, error)  
+    <div class="card-header codesum"><span class="anchor" id="proc-add_executable_sources"></span> <h3>public  subroutine <a href='../proc/add_executable_sources.html'>add_executable_sources</a>(sources, executables, scope, auto_discover, with_f_ext, error)  
 </h3></div>
     <div class="card-body">
           
@@ -294,7 +294,7 @@ Adds all sources (including modules) from each <code>executable%source_dir</code
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-scope~2"></span>
+              <span class="anchor" id="variable-scope~4"></span>
               integer,
             </td>
 <td>intent(in)</td>
@@ -324,7 +324,22 @@ Adds all sources (including modules) from each <code>executable%source_dir</code
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-error~82"></span>
+              <span class="anchor" id="variable-with_f_ext~3"></span>
+              type(<a href='../type/string_t.html'>string_t</a>),
+            </td>
+<td>intent(in),</td>
+              <td>optional</td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>with_f_ext</strong>(:)</td>
+            <td>
+<p>Additional user-defined (preprocessor) extensions that should be treated as Fortran sources</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-error~112"></span>
               type(<a href='../type/error_t.html'>error_t</a>),
             </td>
 <td>intent(out),</td>
@@ -345,7 +360,7 @@ Adds all sources (including modules) from each <code>executable%source_dir</code
   </div>
 
               <div class="card">
-    <div class="card-header codesum"><span class="anchor" id="proc-add_sources_from_dir"></span> <h3>public  subroutine <a href='../proc/add_sources_from_dir.html'>add_sources_from_dir</a>(sources, directory, scope, with_executables, recurse, error)  
+    <div class="card-header codesum"><span class="anchor" id="proc-add_sources_from_dir"></span> <h3>public  subroutine <a href='../proc/add_sources_from_dir.html'>add_sources_from_dir</a>(sources, directory, scope, with_executables, with_f_ext, recurse, error)  
 </h3></div>
     <div class="card-body">
           
@@ -394,7 +409,7 @@ Adds all sources (including modules) from each <code>executable%source_dir</code
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-scope"></span>
+              <span class="anchor" id="variable-scope~3"></span>
               integer,
             </td>
 <td>intent(in)</td>
@@ -424,6 +439,21 @@ Adds all sources (including modules) from each <code>executable%source_dir</code
         </tr>
         <tr>
             <td>
+              <span class="anchor" id="variable-with_f_ext~2"></span>
+              type(<a href='../type/string_t.html'>string_t</a>),
+            </td>
+<td>intent(in),</td>
+              <td>optional</td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>with_f_ext</strong>(:)</td>
+            <td>
+<p>Additional user-defined (preprocessor) extensions that should be treated as Fortran sources</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
               <span class="anchor" id="variable-recurse~2"></span>
               logical,
             </td>
@@ -439,7 +469,7 @@ Adds all sources (including modules) from each <code>executable%source_dir</code
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-error~81"></span>
+              <span class="anchor" id="variable-error~111"></span>
               type(<a href='../type/error_t.html'>error_t</a>),
             </td>
 <td>intent(out),</td>
@@ -479,7 +509,7 @@ Adds all sources (including modules) from each <code>executable%source_dir</code
             <p class="text-end">
               Documentation generated by
               <a href="https://github.com/Fortran-FOSS-Programmers/ford">FORD</a>
- on 2024-01-20 21:46              </p>
+ on 2024-01-21 09:46              </p>
           </div>
         </div>
         <br>
