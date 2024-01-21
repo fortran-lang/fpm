@@ -76,6 +76,7 @@ end interface fnv_1a
 interface str_ends_with
     procedure :: str_ends_with_str
     procedure :: str_ends_with_any
+    procedure :: str_ends_with_any_string
 end interface str_ends_with
 
 interface str
@@ -121,6 +122,23 @@ pure logical function str_ends_with_any(s, e) result(r)
     r = .false.
 
 end function str_ends_with_any
+
+!> Test if a CHARACTER string ends with any of an array of string suffixs
+pure logical function str_ends_with_any_string(s, e) result(r)
+    character(*), intent(in) :: s
+    type(string_t), intent(in) :: e(:)
+
+    integer :: i
+
+    r = .true.
+    do i=1,size(e)
+
+        if (str_ends_with(s,trim(e(i)%s))) return
+
+    end do
+    r = .false.
+
+end function str_ends_with_any_string
 
 !> test if a CHARACTER string begins with a specified prefix
 pure logical function str_begins_with_str(s, e, case_sensitive) result(r)
