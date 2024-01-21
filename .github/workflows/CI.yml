@@ -173,7 +173,7 @@ jobs:
         rm -v ${{ env.FPM }}
         echo "FPM_RELEASE=${{ env.EXE }}" >> $GITHUB_ENV
       env:
-        EXE: fpm-${{ env.VERSION }}-${{ matrix.os-arch }}${{ matrix.exe }}
+        EXE: fpm-${{ env.VERSION }}-${{ matrix.os-arch }}-gcc-${{ matrix.gcc_v }}${{ matrix.exe }}
 
     - name: Run release version
       shell: bash
@@ -183,7 +183,7 @@ jobs:
     - name: Upload artifact
       uses: actions/upload-artifact@v4
       with:
-        name: ${{ env.FPM_RELEASE }}-${{ matrix.os-arch }}
+        name: ${{ env.FPM_RELEASE }}
         path: ${{ env.FPM_RELEASE }}
 
 
