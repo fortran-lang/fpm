@@ -1390,7 +1390,7 @@ contains
     'DESCRIPTION', &
     ' Follow the steps to create a tarball and upload a package to the registry:', &
     '', &
-    '  1. Register on the website (https://registry-frontend.vercel.app/).', &
+    '  1. Register on the website (https://registry-phi.vercel.app/).', &
     '  2. Create a namespace. Uploaded packages must be assigned to a unique', &
     '     namespace to avoid conflicts among packages with similar names. A', &
     '     namespace can accommodate multiple packages.', &
