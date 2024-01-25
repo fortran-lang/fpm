@@ -54,14 +54,14 @@ jobs:
         # Backport gfortran shared libraries to version 9 folder. This is necessary because all macOS releases of fpm 
         # have these paths hardcoded in the executable (no PIC?). As the gcc ABIs have not changed from 9 to 10, we 
         # can just create symbolic links for now. This can be removed when an updated fpm release is built with gcc-10  
-        mkdir /usr/local/opt/gcc@9
-        mkdir /usr/local/opt/gcc@9/lib
-        mkdir /usr/local/opt/gcc@9/lib/gcc
-        mkdir /usr/local/opt/gcc@9/lib/gcc/9
-        mkdir /usr/local/lib/gcc/9
-        ln -fs /usr/local/opt/gcc@${GCC_V}/lib/gcc/${GCC_V}/libquadmath.0.dylib /usr/local/opt/gcc@9/lib/gcc/9/libquadmath.0.dylib 
-        ln -fs /usr/local/opt/gcc@${GCC_V}/lib/gcc/${GCC_V}/libgfortran.5.dylib /usr/local/opt/gcc@9/lib/gcc/9/libgfortran.5.dylib
-        ln -fs /usr/local/lib/gcc/${GCC_V}/libgcc_s.1.dylib /usr/local/lib/gcc/9/libgcc_s.1.dylib
+        # mkdir /usr/local/opt/gcc@9
+        # mkdir /usr/local/opt/gcc@9/lib
+        # mkdir /usr/local/opt/gcc@9/lib/gcc
+        # mkdir /usr/local/opt/gcc@9/lib/gcc/9
+        # mkdir /usr/local/lib/gcc/9
+        # ln -fs /usr/local/opt/gcc@${GCC_V}/lib/gcc/${GCC_V}/libquadmath.0.dylib /usr/local/opt/gcc@9/lib/gcc/9/libquadmath.0.dylib 
+        # ln -fs /usr/local/opt/gcc@${GCC_V}/lib/gcc/${GCC_V}/libgfortran.5.dylib /usr/local/opt/gcc@9/lib/gcc/9/libgfortran.5.dylib
+        # ln -fs /usr/local/lib/gcc/${GCC_V}/libgcc_s.1.dylib /usr/local/lib/gcc/9/libgcc_s.1.dylib
 
     - name: Install GFortran Linux
       if: contains(matrix.os, 'ubuntu')
