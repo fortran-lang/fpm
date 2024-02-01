@@ -199,7 +199,7 @@ jobs:
 
     # Phase 1: Bootstrap fpm with existing version
     - name: Install fpm
-      uses: fortran-lang/setup-fpm@v3
+      uses: fortran-lang/setup-fpm@v5
       with:
         fpm-version: 'v0.8.0'
 
