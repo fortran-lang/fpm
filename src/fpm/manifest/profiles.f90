@@ -758,8 +758,8 @@ module fpm_manifest_profile
               & new_profile('debug', &
                 & 'gfortran', &
                 & OS_ALL, &
-                & flags = ' -Wall -Wextra -Wimplicit-interface -fPIC -fmax-errors=1 -g -fcheck=bounds&
-                          & -fcheck=array-temps -fbacktrace -fcoarray=single', &
+                & flags = ' -Wall -Wextra -Wimplicit-interface -fPIC -fmax-errors=1 -g -fcheck=all&
+                          & -fbacktrace -fcoarray=single', &
                 & is_built_in=.true.), &
               & new_profile('debug', &
                 & 'f95', &
