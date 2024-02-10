@@ -675,7 +675,7 @@ logical function package_is_same(this,that)
               end do
            end if
 
-           if (.not.(this%macros==other%macros)) return
+           if (.not.(this%preprocess==other%preprocess)) return
            if (.not.(this%version==other%version)) return
 
            !> Module naming
@@ -723,7 +723,10 @@ subroutine package_dump_to_toml(self, table, error)
     call set_string(table, "module-prefix", self%module_prefix, error, 'package_t')
     if (allocated(error)) return
 
-    call set_list(table, "macros", self%macros, error)
+    !> Create a preprocessor table
+    call add_table(table, "preprocess", ptr, error, 'package_t')
+    if (allocated(error)) return
+    call self%preprocess%dump_to_toml(ptr, error)
     if (allocated(error)) return
 
     !> Create a fortran table
@@ -768,7 +771,7 @@ subroutine package_load_from_toml(self, table, error)
 
     integer :: ierr,ii,jj
     type(toml_key), allocatable :: keys(:),src_keys(:)
-    type(toml_table), pointer :: ptr_sources,ptr,ptr_fortran
+    type(toml_table), pointer :: ptr_sources,ptr,ptr_fortran,ptr_preprocess
     type(error_t), allocatable :: new_error
 
     call get_value(table, "name", self%name)
@@ -779,9 +782,6 @@ subroutine package_load_from_toml(self, table, error)
 
     ! Return unallocated value if not present
     call get_value(table, "module-prefix", self%module_prefix%s)
-
-    call get_list(table, "macros", self%macros, error)
-    if (allocated(error)) return
 
     ! Sources
     call table%get_keys(keys)
@@ -797,6 +797,17 @@ subroutine package_load_from_toml(self, table, error)
                end if
 
                call self%features%load_from_toml(ptr_fortran,error)
+               if (allocated(error)) return
+
+           case ("preprocess")
+
+               call get_value(table, keys(ii), ptr_preprocess)
+               if (.not.associated(ptr_preprocess)) then
+                  call fatal_error(error,'package_t: error retrieving preprocess table from TOML table')
+                  return
+               end if
+
+               call self%preprocess%load_from_toml(ptr_preprocess,error)
                if (allocated(error)) return
 
            case ("sources")
