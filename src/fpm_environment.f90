@@ -56,11 +56,11 @@ contains
         !! found on specific system types only.
         !!
         !! Returns OS_UNKNOWN if the operating system cannot be determined.
-        character(len=32) :: val
-        integer           :: length, rc
-        logical           :: file_exists
-        logical, save     :: first_run = .true.
-        integer, save     :: ret = OS_UNKNOWN
+        character(len=255) :: val
+        integer            :: length, rc
+        logical            :: file_exists
+        logical, save      :: first_run = .true.
+        integer, save      :: ret = OS_UNKNOWN
         !$omp threadprivate(ret, first_run)
 
         if (.not. first_run) then

@@ -200,6 +200,9 @@ character(*), parameter :: &
     flag_intel_standard_compliance = " -standard-semantics"
 
 character(*), parameter :: &
+    flag_intel_llvm_check = " -check all,nouninit"
+
+character(*), parameter :: &
     flag_intel_backtrace_win = " /traceback", &
     flag_intel_warn_win = " /warn:all", &
     flag_intel_check_win = " /check:all", &
@@ -435,7 +438,7 @@ subroutine get_debug_compile_flags(id, flags)
     case(id_intel_llvm_nix)
         flags = &
             flag_intel_warn//&
-            flag_intel_check//&
+            flag_intel_llvm_check//&
             flag_intel_limit//&
             flag_intel_debug//&
             flag_intel_byterecl//&

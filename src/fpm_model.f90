@@ -42,6 +42,7 @@ use fpm_strings, only: string_t, str, len_trim, upper, operator(==)
 use fpm_toml, only: serializable_t, toml_table, toml_stat, set_value, set_list, get_value, &
                     & get_list, add_table, toml_key, add_array, set_string
 use fpm_error, only: error_t, fatal_error
+use fpm_manifest_preprocess, only: preprocess_config_t
 implicit none
 
 private
@@ -155,7 +156,7 @@ type, extends(serializable_t) :: package_t
     type(srcfile_t), allocatable :: sources(:)
 
     !> List of macros.
-    type(string_t), allocatable :: macros(:)
+    type(preprocess_config_t) :: preprocess
 
     !> Package version number.
     character(:), allocatable :: version

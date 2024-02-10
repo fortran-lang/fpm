@@ -15,6 +15,7 @@ module fpm_manifest_preprocess
    use fpm_strings, only : string_t, operator(==)
    use fpm_toml, only : toml_table, toml_key, toml_stat, get_value, get_list, serializable_t, set_value, set_list, &
                         set_string
+   use,intrinsic :: iso_fortran_env, only : stderr=>error_unit
    implicit none
    private
 
@@ -44,6 +45,14 @@ module fpm_manifest_preprocess
       procedure :: serializable_is_same => preprocess_is_same
       procedure :: dump_to_toml
       procedure :: load_from_toml
+
+      !> Operations
+      procedure :: destroy
+      procedure :: add_config
+
+      !> Properties
+      procedure :: is_cpp
+      procedure :: is_fypp
 
    end type preprocess_config_t
 
@@ -267,5 +276,72 @@ contains
         if (allocated(error)) return
 
      end subroutine load_from_toml
+
+    !> Clean preprocessor structure
+    elemental subroutine destroy(this)
+       class(preprocess_config_t), intent(inout) :: this
+
+       if (allocated(this%name))deallocate(this%name)
+       if (allocated(this%suffixes))deallocate(this%suffixes)
+       if (allocated(this%directories))deallocate(this%directories)
+       if (allocated(this%macros))deallocate(this%macros)
+
+    end subroutine destroy
+
+    !> Add preprocessor settings
+    subroutine add_config(this,that)
+       class(preprocess_config_t), intent(inout) :: this
+        type(preprocess_config_t), intent(in) :: that
+
+        if (.not.that%is_cpp()) then
+            write(stderr, '(a)') 'Warning: Preprocessor ' // that%name // &
+                                 ' is not supported; will ignore it'
+            return
+        end if
+
+        if (.not.allocated(this%name)) this%name = that%name
+
+        ! Add macros
+        if (allocated(that%macros)) then
+            if (allocated(this%macros)) then
+                this%macros = [this%macros, that%macros]
+            else
+                allocate(this%macros, source = that%macros)
+            end if
+        endif
+
+        ! Add suffixes
+        if (allocated(that%suffixes)) then
+            if (allocated(this%suffixes)) then
+                this%suffixes = [this%suffixes, that%suffixes]
+            else
+                allocate(this%suffixes, source = that%suffixes)
+            end if
+        endif
+
+        ! Add directories
+        if (allocated(that%directories)) then
+            if (allocated(this%directories)) then
+                this%directories = [this%directories, that%directories]
+            else
+                allocate(this%directories, source = that%directories)
+            end if
+        endif
+
+    end subroutine add_config
+
+    ! Check cpp
+    logical function is_cpp(this)
+       class(preprocess_config_t), intent(in) :: this
+       is_cpp = .false.
+       if (allocated(this%name)) is_cpp = this%name == "cpp"
+    end function is_cpp
+
+    ! Check cpp
+    logical function is_fypp(this)
+       class(preprocess_config_t), intent(in) :: this
+       is_fypp = .false.
+       if (allocated(this%name)) is_fypp = this%name == "fypp"
+    end function is_fypp
 
 end module fpm_manifest_preprocess

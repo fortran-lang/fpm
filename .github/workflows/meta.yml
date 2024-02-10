@@ -35,8 +35,6 @@ jobs:
             mpi: openmpi
           - os: ubuntu-latest
             mpi: mpich
-          - os: windows-latest
-            mpi: msmpi
           - os: macos-latest
             mpi: openmpi
           - os: macos-latest
@@ -45,7 +43,7 @@ jobs:
 
     steps:
     - name: Checkout code
-      uses: actions/checkout@v1
+      uses: actions/checkout@v4
 
     - name: (Ubuntu) setup gcc version
       if: contains(matrix.os,'ubuntu')
@@ -106,16 +104,14 @@ jobs:
       if: contains(matrix.os,'ubuntu') && contains(matrix.mpi,'intel')
       timeout-minutes: 1
       run: |
-        wget https://apt.repos.intel.com/intel-gpg-keys/GPG-PUB-KEY-INTEL-SW-PRODUCTS-2023.PUB
-        sudo apt-key add GPG-PUB-KEY-INTEL-SW-PRODUCTS-2023.PUB
-        rm GPG-PUB-KEY-INTEL-SW-PRODUCTS-2023.PUB
-        echo "deb https://apt.repos.intel.com/oneapi all main" | sudo tee /etc/apt/sources.list.d/oneAPI.list
+        wget -O- https://apt.repos.intel.com/intel-gpg-keys/GPG-PUB-KEY-INTEL-SW-PRODUCTS.PUB | gpg --dearmor | sudo tee /usr/share/keyrings/oneapi-archive-keyring.gpg > /dev/null
+        echo "deb [signed-by=/usr/share/keyrings/oneapi-archive-keyring.gpg] https://apt.repos.intel.com/oneapi all main" | sudo tee /etc/apt/sources.list.d/oneAPI.list
         sudo apt-get update
 
     - name: (Ubuntu) Install Intel oneAPI
       if: contains(matrix.os,'ubuntu') && contains(matrix.mpi,'intel')
-      timeout-minutes: 5
-      run: sudo apt-get install intel-oneapi-compiler-fortran intel-oneapi-compiler-dpcpp-cpp-and-cpp-classic intel-oneapi-mpi intel-oneapi-mpi-devel intel-oneapi-mkl ninja-build
+      timeout-minutes: 15
+      run: sudo apt-get install intel-oneapi-compiler-dpcpp-cpp-2023.1.0 intel-oneapi-compiler-fortran-2023.1.0 intel-oneapi-mpi-devel ninja-build
 
     - name: (Ubuntu) Setup Intel oneAPI environment
       if: contains(matrix.os,'ubuntu') && contains(matrix.mpi,'intel')
@@ -152,6 +148,7 @@ jobs:
       if: contains(matrix.os,'windows') && contains(matrix.mpi,'msmpi')
       run: |
         echo "C:\Program Files\Microsoft MPI\Bin\" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
+        echo "/c/Program Files/Microsoft MPI/Bin/" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
         echo "MSMPI_BIN=C:\Program Files\Microsoft MPI\Bin\" | Out-File -FilePath $env:GITHUB_ENV -Append
 
     - name: (Windows) load OneAPI environment variables
@@ -216,9 +213,9 @@ jobs:
       if: contains(matrix.mpi,'intel')
       shell: bash
       run: |
-        echo "FPM_FC=ifort" >> $GITHUB_ENV
-        echo "FPM_CC=icc"   >> $GITHUB_ENV
-        echo "FPM_CXX=icpc" >> $GITHUB_ENV
+        echo "FPM_FC=ifx" >> $GITHUB_ENV
+        echo "FPM_CC=icx"   >> $GITHUB_ENV
+        echo "FPM_CXX=icpx" >> $GITHUB_ENV
 
     - name: (macOS) Use gcc/g++ instead of Clang for C/C++
       if: contains(matrix.os,'macOS')
