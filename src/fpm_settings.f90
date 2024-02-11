@@ -3,7 +3,7 @@ module fpm_settings
   use fpm_filesystem, only: exists, join_path, get_local_prefix, is_absolute_path, mkdir
   use fpm_environment, only: os_is_unix
   use fpm_error, only: error_t, fatal_error
-  use fpm_toml, only: ttable=>toml_table, toml_error, toml_stat, get_value, toml_load, check_keys
+  use fpm_toml, only: toml_table, toml_error, toml_stat, get_value, toml_load, check_keys
   use fpm_os, only: get_current_directory, change_directory, get_absolute_path, convert_to_absolute_path
 
   implicit none
@@ -47,11 +47,11 @@ contains
     !> Error reading config file.
     type(error_t), allocatable, intent(out) :: error
     !> TOML table to be filled with global config settings.
-    type(ttable), allocatable :: table
+    type(toml_table), allocatable :: table
     !> Error parsing to TOML table.
     type(toml_error), allocatable :: parse_error
 
-    type(ttable), pointer :: registry_table
+    type(toml_table), pointer :: registry_table
     integer :: stat
 
     ! Use custom path to the config file if it was specified.
@@ -122,7 +122,7 @@ contains
   !> Read registry settings from the global config file.
   subroutine get_registry_settings(table, global_settings, error)
     !> The [registry] subtable from the global config file.
-    type(ttable), target, intent(inout) :: table
+    type(toml_table), target, intent(inout) :: table
     !> The global settings which can be filled with the registry settings.
     type(fpm_global_settings), intent(inout) :: global_settings
     !> Error handling.
