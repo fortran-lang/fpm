@@ -84,7 +84,7 @@ jobs:
         Remove-Item "oneAPI" -Force -Recurse
 
     - name: (Ubuntu) Install gfortran
-      if: contains(matrix.os,'ubuntu') && (!contains(matrix.mpi,'intel'))
+      if: contains(matrix.os,'ubuntu') 
       run: |
         sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-${GCC_V} 100 \
         --slave /usr/bin/gfortran gfortran /usr/bin/gfortran-${GCC_V} \
@@ -209,14 +209,6 @@ jobs:
         mv $(which fpm) fpm-bootstrap${{ matrix.exe }}
         echo "BOOTSTRAP=$PWD/fpm-bootstrap" >> $GITHUB_ENV
 
-    - name: Use Intel compiler for the metapackage tests
-      if: contains(matrix.mpi,'intel')
-      shell: bash
-      run: |
-        echo "FPM_FC=ifx" >> $GITHUB_ENV
-        echo "FPM_CC=icx"   >> $GITHUB_ENV
-        echo "FPM_CXX=icpx" >> $GITHUB_ENV
-
     - name: (macOS) Use gcc/g++ instead of Clang for C/C++
       if: contains(matrix.os,'macOS')
       shell: bash
@@ -299,6 +291,14 @@ jobs:
         echo "FPM_RELEASE=${{ env.EXE }}" >> $GITHUB_ENV
       env:
         EXE: fpm-${{ env.VERSION }}-${{ matrix.os-arch }}${{ matrix.exe }}
+
+    - name: Use Intel compiler for the metapackage tests
+      if: contains(matrix.mpi,'intel')
+      shell: bash
+      run: |
+        echo "FPM_FC=ifx" >> $GITHUB_ENV
+        echo "FPM_CC=icx"   >> $GITHUB_ENV
+        echo "FPM_CXX=icpx" >> $GITHUB_ENV
 
     - name: Run metapackage tests using the release version
       shell: bash
