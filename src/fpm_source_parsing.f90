@@ -82,9 +82,7 @@ function parse_f_source(f_filename,error) result(f_source)
 
     f_source%file_name = f_filename
 
-    open(newunit=fh,file=f_filename,status='old')
-    file_lines = read_lines_expanded(fh)
-    close(fh)
+    file_lines = read_lines_expanded(f_filename)
 
     ! for efficiency in parsing make a lowercase left-adjusted copy of the file
     ! Need a copy because INCLUDE (and #include) file arguments are case-sensitive
@@ -427,9 +425,7 @@ function parse_c_source(c_filename,error) result(c_source)
     allocate(c_source%modules_provided(0))
     allocate(c_source%parent_modules(0))
 
-    open(newunit=fh,file=c_filename,status='old')
-    file_lines = read_lines(fh)
-    close(fh)
+    file_lines = read_lines(c_filename)
 
     ! Ignore empty files, returned as FPM_UNIT_UNKNOWN
     if (len_trim(file_lines) < 1) then
