@@ -448,13 +448,10 @@ contains
       call fatal_error(error, "Cannot find a suitable archive format for 'git archive'."); return
     end if
 
-    call run('fpm build --dump fpm_model.json', echo=verbose, exitstat=stat)
     call run('git archive ' &
          // ref // &
          ' --format=' // archive_format // &
-         ' -o ' // destination // &
-         ' --add-file=fpm_model.json', echo=verbose, exitstat=stat)
-    call run('rm fpm_model.json', echo=verbose, exitstat=stat)
+         ' -o ' // destination , echo=verbose, exitstat=stat)
     if (stat /= 0) then
       call fatal_error(error, "Error packing '"//source//"'."); return
     end if

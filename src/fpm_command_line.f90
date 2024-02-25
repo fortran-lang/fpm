@@ -134,7 +134,6 @@ type, extends(fpm_build_settings) :: fpm_publish_settings
     logical :: show_upload_data = .false.
     logical :: is_dry_run = .false.
     character(len=:), allocatable :: token
-    character(len=:),allocatable  :: dump_model
 end type
 
 character(len=:),allocatable :: name
@@ -723,7 +722,6 @@ contains
             & show_model=lget('show-model'),&
             & build_tests=lget('tests'),&
             & verbose=lget('verbose'),&
-            & dump_model = 'fpm_model.json',&
             & token=token_s)
 
         case default
