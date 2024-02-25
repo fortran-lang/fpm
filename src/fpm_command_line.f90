@@ -170,7 +170,8 @@ character(len=80), parameter :: help_text_flag(*) = [character(len=80) :: &
     ' --flag  FFLAGS    selects compile arguments for the build, the default value is',&
     '                   set by the FPM_FFLAGS environment variable. These are added  ',&
     '                   to the profile options if --profile is specified, else these ',&
-    '                   options override the defaults. Note object and .mod          ',&
+    '                   are added to the defaults. To override the defaults, use the ',&
+    '                   keyword [fortran] in the manifest. Note object and .mod      ',&
     '                   directory locations are always built in.                     ',&
     ' --c-flag CFLAGS   selects compile arguments specific for C source in the build.',&
     '                   The default value is set by the FPM_CFLAGS environment       ',&
@@ -972,7 +973,7 @@ contains
     ' + The fpm(1) home page is at https://github.com/fortran-lang/fpm               ', &
     ' + Registered fpm(1) packages are at https://fortran-lang.org/packages          ', &
     ' + The fpm(1) TOML file format is described at                                  ', &
-    '   https://fpm.fortran-lang.org/en/spec/manifest.html                           ', &
+    '   https://fpm.fortran-lang.org/spec/manifest.html                              ', &
     '']
     help_list=[character(len=80) :: &
     'NAME                                                                   ', &
@@ -1404,10 +1405,10 @@ contains
     ' See documentation for more information regarding package upload and usage:', &
     '', &
     ' Package upload:', &
-    ' https://fpm.fortran-lang.org/en/spec/publish.html', &
+    ' https://fpm.fortran-lang.org/spec/publish.html', &
     '', &
     ' Package usage:', &
-    ' https://fpm.fortran-lang.org/en/spec/manifest.html#dependencies-from-a-registry', &
+    ' https://fpm.fortran-lang.org/spec/manifest.html#dependencies-from-a-registry', &
     '', &
     'OPTIONS', &
     ' --show-package-version   show package version without publishing', &
