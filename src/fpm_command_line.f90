@@ -972,7 +972,7 @@ contains
     ' + The fpm(1) home page is at https://github.com/fortran-lang/fpm               ', &
     ' + Registered fpm(1) packages are at https://fortran-lang.org/packages          ', &
     ' + The fpm(1) TOML file format is described at                                  ', &
-    '   https://fpm.fortran-lang.org/en/spec/manifest.html                           ', &
+    '   https://fpm.fortran-lang.org/spec/manifest.html                              ', &
     '']
     help_list=[character(len=80) :: &
     'NAME                                                                   ', &
@@ -1404,10 +1404,10 @@ contains
     ' See documentation for more information regarding package upload and usage:', &
     '', &
     ' Package upload:', &
-    ' https://fpm.fortran-lang.org/en/spec/publish.html', &
+    ' https://fpm.fortran-lang.org/spec/publish.html', &
     '', &
     ' Package usage:', &
-    ' https://fpm.fortran-lang.org/en/spec/manifest.html#dependencies-from-a-registry', &
+    ' https://fpm.fortran-lang.org/spec/manifest.html#dependencies-from-a-registry', &
     '', &
     'OPTIONS', &
     ' --show-package-version   show package version without publishing', &
