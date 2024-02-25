@@ -119,7 +119,7 @@
         <div class="list-group list-group-flush">
             <a class="list-group-item" href="../module/fpm_manifest_profile.html#variable-default_compiler">DEFAULT_COMPILER</a>
             <a class="list-group-item" href="../module/fpm_manifest_profile.html#variable-os_all">OS_ALL</a>
-            <a class="list-group-item" href="../module/fpm_manifest_profile.html#variable-path~20">path</a>
+            <a class="list-group-item" href="../module/fpm_manifest_profile.html#variable-path~3">path</a>
         </div>
       </div>
     </div>
@@ -168,7 +168,7 @@
         <div class="list-group list-group-flush">
             <a class="list-group-item" href="../module/fpm_manifest_profile.html#proc-find_profile">find_profile</a>
             <a class="list-group-item" href="../module/fpm_manifest_profile.html#proc-get_flags">get_flags</a>
-            <a class="list-group-item" href="../module/fpm_manifest_profile.html#proc-info~9">info</a>
+            <a class="list-group-item" href="../module/fpm_manifest_profile.html#proc-info~5">info</a>
             <a class="list-group-item" href="../module/fpm_manifest_profile.html#proc-match_os_type">match_os_type</a>
             <a class="list-group-item" href="../module/fpm_manifest_profile.html#proc-new_profiles">new_profiles</a>
             <a class="list-group-item" href="../module/fpm_manifest_profile.html#proc-traverse_compilers">traverse_compilers</a>
@@ -242,10 +242,10 @@
             <li class="list-group-item">
               <ul class="list-inline">
                   <li class="list-inline-item"><a href='fpm_toml.html'>fpm_toml</a></li>
-                  <li class="list-inline-item"><a href='fpm_strings.html'>fpm_strings</a></li>
+                  <li class="list-inline-item"><a href='fpm_error.html'>fpm_error</a></li>
                   <li class="list-inline-item"><a href='fpm_environment.html'>fpm_environment</a></li>
                   <li class="list-inline-item"><a href='fpm_filesystem.html'>fpm_filesystem</a></li>
-                  <li class="list-inline-item"><a href='fpm_error.html'>fpm_error</a></li>
+                  <li class="list-inline-item"><a href='fpm_strings.html'>fpm_strings</a></li>
               </ul>
             </li>
         </ul>
@@ -304,7 +304,7 @@ parameter
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-path~20"></span>
+              <span class="anchor" id="variable-path~3"></span>
               character(len=:),
             </td>
               <td>public,</td>
@@ -372,7 +372,7 @@ parameter
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-flags~13"></span>
+              <span class="anchor" id="variable-flags~3"></span>
               character(len=:),
             </td>
               <td>public,</td>
@@ -438,7 +438,7 @@ parameter
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-compiler~22"></span>
+              <span class="anchor" id="variable-compiler~18"></span>
               character(len=:),
             </td>
               <td>public,</td>
@@ -489,7 +489,7 @@ parameter
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-flags~14"></span>
+              <span class="anchor" id="variable-flags~4"></span>
               character(len=:),
             </td>
               <td>public,</td>
@@ -540,7 +540,7 @@ parameter
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-os_type~2"></span>
+              <span class="anchor" id="variable-os_type"></span>
               integer,
             </td>
               <td>public</td>
@@ -583,7 +583,7 @@ parameter
           <tbody>
               <tr>
                 <td>  procedure, public ::
-  <strong><a href='../type/profile_config_t.html#boundprocedure-info~9'>info</a></strong></td>
+  <strong><a href='../type/profile_config_t.html#boundprocedure-info~5'>info</a></strong></td>
                 <td>../../<p>Print information on this instance</p></td>
               </tr>
           </tbody>
@@ -616,7 +616,7 @@ parameter
     <tbody>
         <tr>
             <td>
-              <span class="anchor" id="variable-error~118"></span>
+              <span class="anchor" id="variable-error~55"></span>
               type(<a href='../type/error_t.html'>error_t</a>),
             </td>
 <td>intent(out),</td>
@@ -721,7 +721,7 @@ parameter
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-compiler~23"></span>
+              <span class="anchor" id="variable-compiler~19"></span>
               character(len=*),
             </td>
 <td>intent(in)</td>
@@ -736,7 +736,7 @@ parameter
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-os_type~3"></span>
+              <span class="anchor" id="variable-os_type~2"></span>
               integer,
             </td>
 <td>intent(in)</td>
@@ -751,7 +751,7 @@ parameter
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-flags~15"></span>
+              <span class="anchor" id="variable-flags~5"></span>
               character(len=*),
             </td>
 <td>intent(in),</td>
@@ -906,7 +906,7 @@ parameter
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-compiler~24"></span>
+              <span class="anchor" id="variable-compiler~20"></span>
               character(len=:),
             </td>
 <td>intent(in),</td>
@@ -921,7 +921,7 @@ parameter
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-os_type~7"></span>
+              <span class="anchor" id="variable-os_type~6"></span>
               integer,
             </td>
 <td>intent(in)</td>
@@ -1022,7 +1022,7 @@ and files table in a given table and create new profiles</p>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-os_type~5"></span>
+              <span class="anchor" id="variable-os_type~4"></span>
               integer,
             </td>
 <td>intent(in)</td>
@@ -1052,7 +1052,7 @@ and files table in a given table and create new profiles</p>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-table~30"></span>
+              <span class="anchor" id="variable-table~14"></span>
               type(toml_table),
             </td>
 <td>intent(in),</td>
@@ -1118,7 +1118,7 @@ and files table in a given table and create new profiles</p>
   </div>
 
               <div class="card">
-    <div class="card-header codesum"><span class="anchor" id="proc-info~9"></span> <h3>public  subroutine <a href='../proc/info~9.html'>info</a>(self, unit, verbosity)  
+    <div class="card-header codesum"><span class="anchor" id="proc-info~5"></span> <h3>public  subroutine <a href='../proc/info~5.html'>info</a>(self, unit, verbosity)  
 </h3></div>
     <div class="card-body">
           
@@ -1137,7 +1137,7 @@ and files table in a given table and create new profiles</p>
     <tbody>
         <tr>
             <td>
-              <span class="anchor" id="variable-self~85"></span>
+              <span class="anchor" id="variable-self~14"></span>
               class(<a href='../type/profile_config_t.html'>profile_config_t</a>),
             </td>
 <td>intent(in)</td>
@@ -1152,7 +1152,7 @@ and files table in a given table and create new profiles</p>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-unit~19"></span>
+              <span class="anchor" id="variable-unit~6"></span>
               integer,
             </td>
 <td>intent(in)</td>
@@ -1167,7 +1167,7 @@ and files table in a given table and create new profiles</p>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-verbosity~15"></span>
+              <span class="anchor" id="variable-verbosity~5"></span>
               integer,
             </td>
 <td>intent(in),</td>
@@ -1222,7 +1222,7 @@ and files table in a given table and create new profiles</p>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-os_type~4"></span>
+              <span class="anchor" id="variable-os_type~3"></span>
               integer,
             </td>
 <td>intent(out)</td>
@@ -1277,7 +1277,7 @@ and files table in a given table and create new profiles</p>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-table~34"></span>
+              <span class="anchor" id="variable-table~18"></span>
               type(toml_table),
             </td>
 <td>intent(inout),</td>
@@ -1292,7 +1292,7 @@ and files table in a given table and create new profiles</p>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-error~117"></span>
+              <span class="anchor" id="variable-error~54"></span>
               type(<a href='../type/error_t.html'>error_t</a>),
             </td>
 <td>intent(out),</td>
@@ -1362,7 +1362,7 @@ and files table in a given table and create new profiles</p>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-table~33"></span>
+              <span class="anchor" id="variable-table~17"></span>
               type(toml_table),
             </td>
 <td>intent(in),</td>
@@ -1377,7 +1377,7 @@ and files table in a given table and create new profiles</p>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-error~116"></span>
+              <span class="anchor" id="variable-error~53"></span>
               type(<a href='../type/error_t.html'>error_t</a>),
             </td>
 <td>intent(out),</td>
@@ -1507,7 +1507,7 @@ and files table in a given table and create new profiles</p>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-table~32"></span>
+              <span class="anchor" id="variable-table~16"></span>
               type(toml_table),
             </td>
 <td>intent(in),</td>
@@ -1552,7 +1552,7 @@ and files table in a given table and create new profiles</p>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-error~115"></span>
+              <span class="anchor" id="variable-error~52"></span>
               type(<a href='../type/error_t.html'>error_t</a>),
             </td>
 <td>intent(out),</td>
@@ -1637,7 +1637,7 @@ and files table in a given table and create new profiles</p>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-table~31"></span>
+              <span class="anchor" id="variable-table~15"></span>
               type(toml_table),
             </td>
 <td>intent(in),</td>
@@ -1667,7 +1667,7 @@ and files table in a given table and create new profiles</p>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-error~114"></span>
+              <span class="anchor" id="variable-error~51"></span>
               type(<a href='../type/error_t.html'>error_t</a>),
             </td>
 <td>intent(out),</td>
@@ -1862,7 +1862,7 @@ and files table in a given table and create new profiles</p>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-table~29"></span>
+              <span class="anchor" id="variable-table~13"></span>
               type(toml_table),
             </td>
 <td>intent(in),</td>
@@ -1877,7 +1877,7 @@ and files table in a given table and create new profiles</p>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-error~113"></span>
+              <span class="anchor" id="variable-error~50"></span>
               type(<a href='../type/error_t.html'>error_t</a>),
             </td>
 <td>intent(out),</td>
@@ -1932,7 +1932,7 @@ and files table in a given table and create new profiles</p>
             <p class="text-end">
               Documentation generated by
               <a href="https://github.com/Fortran-FOSS-Programmers/ford">FORD</a>
- on 2024-02-18 08:24              </p>
+ on 2024-02-25 08:31              </p>
           </div>
         </div>
         <br>
