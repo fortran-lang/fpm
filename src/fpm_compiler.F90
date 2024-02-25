@@ -40,7 +40,9 @@ use fpm_environment, only: &
 use fpm_filesystem, only: join_path, basename, get_temp_filename, delete_file, unix_path, &
     & getline, run
 use fpm_strings, only: split, string_cat, string_t, str_ends_with, str_begins_with_str
-use fpm_error, only: error_t
+use fpm_manifest, only : package_config_t
+use fpm_error, only: error_t, fatal_error
+use fpm_toml, only: serializable_t, toml_table, set_string, set_value, toml_stat, get_value
 implicit none
 public :: compiler_t, new_compiler, archiver_t, new_archiver, get_macros
 public :: debug
@@ -72,7 +74,7 @@ integer, parameter :: compiler_enum = kind(id_unknown)
 
 
 !> Definition of compiler object
-type :: compiler_t
+type, extends(serializable_t) :: compiler_t
     !> Identifier of the compiler
     integer(compiler_enum) :: id = id_unknown
     !> Path to the Fortran compiler
@@ -112,13 +114,19 @@ contains
     procedure :: is_gnu
     !> Enumerate libraries, based on compiler and platform
     procedure :: enumerate_libraries
+
+    !> Serialization interface
+    procedure :: serializable_is_same => compiler_is_same
+    procedure :: dump_to_toml => compiler_dump
+    procedure :: load_from_toml => compiler_load
     !> Return compiler name
     procedure :: name => compiler_name
+
 end type compiler_t
 
 
 !> Definition of archiver object
-type :: archiver_t
+type, extends(serializable_t) :: archiver_t
     !> Path to archiver
     character(len=:), allocatable :: ar
     !> Use response files to pass arguments
@@ -130,6 +138,12 @@ type :: archiver_t
 contains
     !> Create static archive
     procedure :: make_archive
+
+    !> Serialization interface
+    procedure :: serializable_is_same => ar_is_same
+    procedure :: dump_to_toml
+    procedure :: load_from_toml
+
 end type archiver_t
 
 
@@ -1226,6 +1240,158 @@ pure function debug_archiver(self) result(repr)
 
     repr = 'ar="'//self%ar//'"'
 end function debug_archiver
+
+!> Check that two archiver_t objects are equal
+logical function ar_is_same(this,that)
+    class(archiver_t), intent(in) :: this
+    class(serializable_t), intent(in) :: that
+
+    ar_is_same = .false.
+
+    select type (other=>that)
+       type is (archiver_t)
+
+          if (.not.(this%ar==other%ar)) return
+          if (.not.(this%use_response_file.eqv.other%use_response_file)) return
+          if (.not.(this%echo.eqv.other%echo)) return
+          if (.not.(this%verbose.eqv.other%verbose)) return
+
+       class default
+          ! Not the same type
+          return
+    end select
+
+    !> All checks passed!
+    ar_is_same = .true.
+
+end function ar_is_same
+
+!> Dump dependency to toml table
+subroutine dump_to_toml(self, table, error)
+
+    !> Instance of the serializable object
+    class(archiver_t), intent(inout) :: self
+
+    !> Data structure
+    type(toml_table), intent(inout) :: table
+
+    !> Error handling
+    type(error_t), allocatable, intent(out) :: error
+
+    !> Path to archiver
+    call set_string(table, "ar", self%ar, error, 'archiver_t')
+    if (allocated(error)) return
+    call set_value(table, "use-response-file", self%use_response_file, error, 'archiver_t')
+    if (allocated(error)) return
+    call set_value(table, "echo", self%echo, error, 'archiver_t')
+    if (allocated(error)) return
+    call set_value(table, "verbose", self%verbose, error, 'archiver_t')
+    if (allocated(error)) return
+
+end subroutine dump_to_toml
+
+!> Read dependency from toml table (no checks made at this stage)
+subroutine load_from_toml(self, table, error)
+
+    !> Instance of the serializable object
+    class(archiver_t), intent(inout) :: self
+
+    !> Data structure
+    type(toml_table), intent(inout) :: table
+
+    !> Error handling
+    type(error_t), allocatable, intent(out) :: error
+
+    call get_value(table, "ar", self%ar)
+
+    call get_value(table, "use-response-file", self%use_response_file, error, 'archiver_t')
+    if (allocated(error)) return
+    call get_value(table, "echo", self%echo, error, 'archiver_t')
+    if (allocated(error)) return
+    call get_value(table, "verbose", self%verbose, error, 'archiver_t')
+    if (allocated(error)) return
+
+end subroutine load_from_toml
+
+!> Check that two compiler_t objects are equal
+logical function compiler_is_same(this,that)
+    class(compiler_t), intent(in) :: this
+    class(serializable_t), intent(in) :: that
+
+    compiler_is_same = .false.
+
+    select type (other=>that)
+       type is (compiler_t)
+
+          if (.not.(this%id==other%id)) return
+          if (.not.(this%fc==other%fc)) return
+          if (.not.(this%cc==other%cc)) return
+          if (.not.(this%cxx==other%cxx)) return
+          if (.not.(this%echo.eqv.other%echo)) return
+          if (.not.(this%verbose.eqv.other%verbose)) return
+
+       class default
+          ! Not the same type
+          return
+    end select
+
+    !> All checks passed!
+    compiler_is_same = .true.
+
+end function compiler_is_same
+
+!> Dump dependency to toml table
+subroutine compiler_dump(self, table, error)
+
+    !> Instance of the serializable object
+    class(compiler_t), intent(inout) :: self
+
+    !> Data structure
+    type(toml_table), intent(inout) :: table
+
+    !> Error handling
+    type(error_t), allocatable, intent(out) :: error
+
+    integer :: ierr
+
+    call set_value(table, "id", self%id, error, 'compiler_t')
+    if (allocated(error)) return
+    call set_string(table, "fc", self%fc, error, 'compiler_t')
+    if (allocated(error)) return
+    call set_string(table, "cc", self%cc, error, 'compiler_t')
+    if (allocated(error)) return
+    call set_string(table, "cxx", self%cxx, error, 'compiler_t')
+    if (allocated(error)) return
+    call set_value(table, "echo", self%echo, error, 'compiler_t')
+    if (allocated(error)) return
+    call set_value(table, "verbose", self%verbose, error, 'compiler_t')
+    if (allocated(error)) return
+
+end subroutine compiler_dump
+
+!> Read dependency from toml table (no checks made at this stage)
+subroutine compiler_load(self, table, error)
+
+    !> Instance of the serializable object
+    class(compiler_t), intent(inout) :: self
+
+    !> Data structure
+    type(toml_table), intent(inout) :: table
+
+    !> Error handling
+    type(error_t), allocatable, intent(out) :: error
+
+    call get_value(table, "id", self%id, error, 'compiler_t')
+    if (allocated(error)) return
+    call get_value(table, "fc", self%fc)
+    call get_value(table, "cc", self%cc)
+    call get_value(table, "cxx", self%cxx)
+    call get_value(table, "echo", self%echo, error, 'compiler_t')
+    if (allocated(error)) return
+    call get_value(table, "verbose", self%verbose, error, 'compiler_t')
+    if (allocated(error)) return
+
+end subroutine compiler_load
 
 !> Return a compiler name string
 pure function compiler_name(self) result(name)

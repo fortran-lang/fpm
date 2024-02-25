@@ -108,13 +108,13 @@ contains
     call new_dependency_node(deps%dep(3), dep, proj_dir=dep%path)
 
     open (newunit=unit, status='scratch')
-    call deps%dump(unit, error)
+    call deps%dump_cache(unit, error)
     if (.not. allocated(error)) then
       rewind (unit)
 
       call new_dependency_tree(deps)
       call resize(deps%dep, 2)
-      call deps%load(unit, error)
+      call deps%load_cache(unit, error)
       close (unit)
     end if
     if (allocated(error)) return
@@ -155,7 +155,7 @@ contains
     call set_value(ptr, "proj-dir", "fpm-tmp4-dir")
 
     call new_dependency_tree(deps)
-    call deps%load(table, error)
+    call deps%load_cache(table, error)
     if (allocated(error)) return
 
     if (deps%ndep /= 4) then
@@ -166,7 +166,7 @@ contains
     call table%destroy
     table = toml_table()
 
-    call deps%dump(table, error)
+    call deps%dump_cache(table, error)
     if (allocated(error)) return
 
     call table%get_keys(list)
@@ -197,7 +197,7 @@ contains
     call set_value(ptr, "git", "https://github.com/fortran-lang/dep2")
 
     call new_dependency_tree(deps)
-    call deps%load(table, error)
+    call deps%load_cache(table, error)
     if (allocated(error)) return
 
     if (deps%finished()) then
@@ -289,7 +289,7 @@ contains
 
     ! Load into a dependency tree
     call new_dependency_tree(cached)
-    call cached%load(cache, error)
+    call cached%load_cache(cache, error)
     if (allocated(error)) return
     ! Mark all dependencies as "cached"
     do ii=1,cached%ndep
@@ -313,7 +313,7 @@ contains
 
     ! Load dependencies from manifest
     call new_dependency_tree(manifest_deps)
-    call manifest_deps%load(manifest, error)
+    call manifest_deps%load_cache(manifest, error)
     call manifest%destroy()
     if (allocated(error)) return
 
@@ -372,7 +372,7 @@ contains
 
     ! Load into a dependency tree
     call new_dependency_tree(cached)
-    call cached%load(cache, error)
+    call cached%load_cache(cache, error)
     if (allocated(error)) return
     ! Mark all dependencies as "cached"
     do ii=1,cached%ndep
@@ -396,7 +396,7 @@ contains
 
     ! Load dependencies from manifest
     call new_dependency_tree(manifest_deps)
-    call manifest_deps%load(manifest, error)
+    call manifest_deps%load_cache(manifest, error)
     call manifest%destroy()
     if (allocated(error)) return
 

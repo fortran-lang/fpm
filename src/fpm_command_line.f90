@@ -25,7 +25,7 @@
 module fpm_command_line
 use fpm_environment,  only : get_os_type, get_env, &
                              OS_UNKNOWN, OS_LINUX, OS_MACOS, OS_WINDOWS, &
-                             OS_CYGWIN, OS_SOLARIS, OS_FREEBSD, OS_OPENBSD
+                             OS_CYGWIN, OS_SOLARIS, OS_FREEBSD, OS_OPENBSD, OS_NAME
 use M_CLI2,           only : set_args, lget, sget, unnamed, remaining, specified
 use M_CLI2,           only : get_subcommand, CLI_RESPONSE_FILE
 use fpm_strings,      only : lower, split, to_fortran_name, is_fortran_name, remove_characters_in_set, string_t
@@ -44,6 +44,7 @@ private
 public :: fpm_cmd_settings, &
           fpm_build_settings, &
           fpm_install_settings, &
+          fpm_export_settings, &
           fpm_new_settings, &
           fpm_run_settings, &
           fpm_test_settings, &
@@ -75,6 +76,7 @@ type, extends(fpm_cmd_settings)  :: fpm_build_settings
     logical                      :: show_model=.false.
     logical                      :: build_tests=.false.
     logical                      :: prune=.true.
+    character(len=:),allocatable :: dump
     character(len=:),allocatable :: compiler
     character(len=:),allocatable :: c_compiler
     character(len=:),allocatable :: cxx_compiler
@@ -110,8 +112,16 @@ end type
 !> Settings for interacting and updating with project dependencies
 type, extends(fpm_cmd_settings)  :: fpm_update_settings
     character(len=ibug),allocatable :: name(:)
-    logical :: fetch_only
-    logical :: clean
+    character(len=:),allocatable    :: dump
+    logical                         :: fetch_only
+    logical                         :: clean
+end type
+
+!> Settings for exporting model data
+type, extends(fpm_build_settings) :: fpm_export_settings
+    character(len=:),allocatable  :: dump_manifest
+    character(len=:),allocatable  :: dump_dependencies
+    character(len=:),allocatable  :: dump_model
 end type
 
 type, extends(fpm_cmd_settings)   :: fpm_clean_settings
@@ -142,7 +152,8 @@ character(len=20),parameter :: manual(*)=[ character(len=20) ::&
 &  'test',  'runner', 'install', 'update', 'list',   'help',   'version', 'publish' ]
 
 character(len=:), allocatable :: val_runner, val_compiler, val_flag, val_cflag, val_cxxflag, val_ldflag, &
-    val_profile, val_runner_args
+    val_profile, val_runner_args, val_dump
+
 
 !   '12345678901234567890123456789012345678901234567890123456789012345678901234567890',&
 character(len=80), parameter :: help_text_build_common(*) = [character(len=80) ::      &
@@ -170,7 +181,8 @@ character(len=80), parameter :: help_text_flag(*) = [character(len=80) :: &
     ' --flag  FFLAGS    selects compile arguments for the build, the default value is',&
     '                   set by the FPM_FFLAGS environment variable. These are added  ',&
     '                   to the profile options if --profile is specified, else these ',&
-    '                   options override the defaults. Note object and .mod          ',&
+    '                   are added to the defaults. To override the defaults, use the ',&
+    '                   keyword [fortran] in the manifest. Note object and .mod      ',&
     '                   directory locations are always built in.                     ',&
     ' --c-flag CFLAGS   selects compile arguments specific for C source in the build.',&
     '                   The default value is set by the FPM_CFLAGS environment       ',&
@@ -219,6 +231,8 @@ contains
         integer                       :: i
         integer                       :: os
         type(fpm_install_settings), allocatable :: install_settings
+        type(fpm_publish_settings), allocatable :: publish_settings
+        type(fpm_export_settings) , allocatable :: export_settings
         type(version_t) :: version
         character(len=:), allocatable :: common_args, compiler_args, run_args, working_dir, &
             & c_compiler, cxx_compiler, archiver, version_s, token_s
@@ -353,6 +367,7 @@ contains
             call set_args(common_args // compiler_args //'&
             & --list F &
             & --show-model F &
+            & --dump " " &
             & --tests F &
             & --',help_build,version_text)
 
@@ -361,9 +376,14 @@ contains
             c_compiler = sget('c-compiler')
             cxx_compiler = sget('cxx-compiler')
             archiver = sget('archiver')
+
+            val_dump = sget('dump')
+            if (specified('dump') .and. val_dump=='')val_dump='fpm_model.toml'
+
             allocate( fpm_build_settings :: cmd_settings )
             cmd_settings=fpm_build_settings(  &
             & profile=val_profile,&
+            & dump=val_dump,&
             & prune=.not.lget('no-prune'), &
             & compiler=val_compiler, &
             & c_compiler=c_compiler, &
@@ -605,7 +625,7 @@ contains
             & verbose=lget('verbose'))
 
         case('update')
-            call set_args(common_args // ' --fetch-only F --clean F', &
+            call set_args(common_args // ' --fetch-only F --clean F --dump " " ', &
                 help_update, version_text)
 
             if( size(unnamed) > 1 )then
@@ -614,10 +634,45 @@ contains
                 names=[character(len=len(names)) :: ]
             endif
 
+            val_dump = sget('dump')
+            if (specified('dump') .and. val_dump=='')val_dump='fpm_dependencies.toml'
+
             allocate(fpm_update_settings :: cmd_settings)
-            cmd_settings=fpm_update_settings(name=names, &
+            cmd_settings=fpm_update_settings(name=names, dump=val_dump, &
                 fetch_only=lget('fetch-only'), verbose=lget('verbose'), &
                 clean=lget('clean'))
+
+        case('export')
+
+            call set_args(common_args // compiler_args // '&
+                & --manifest "filename"  &
+                & --model "filename" &
+                & --dependencies "filename" ', &
+                help_build, version_text)
+
+            call check_build_vals()
+
+            c_compiler = sget('c-compiler')
+            cxx_compiler = sget('cxx-compiler')
+            archiver = sget('archiver')
+            allocate(export_settings, source=fpm_export_settings(&
+                profile=val_profile,&
+                prune=.not.lget('no-prune'), &
+                compiler=val_compiler, &
+                c_compiler=c_compiler, &
+                cxx_compiler=cxx_compiler, &
+                archiver=archiver, &
+                flag=val_flag, &
+                cflag=val_cflag, &
+                show_model=.true., &
+                cxxflag=val_cxxflag, &
+                ldflag=val_ldflag, &
+                verbose=lget('verbose')))
+            call get_char_arg(export_settings%dump_model, 'model')
+            call get_char_arg(export_settings%dump_manifest, 'manifest')
+            call get_char_arg(export_settings%dump_dependencies, 'dependencies')
+            call move_alloc(export_settings, cmd_settings)
+
 
         case('clean')
             call set_args(common_args // &
@@ -756,11 +811,11 @@ contains
    help_list_dash = [character(len=80) :: &
    '                                                                                ', &
    ' build [--compiler COMPILER_NAME] [--profile PROF] [--flag FFLAGS] [--list]     ', &
-   '       [--tests] [--no-prune]                                                   ', &
+   '       [--tests] [--no-prune] [--dump [FILENAME]]                               ', &
    ' help [NAME(s)]                                                                 ', &
    ' new NAME [[--lib|--src] [--app] [--test] [--example]]|                         ', &
    '          [--full|--bare][--backfill]                                           ', &
-   ' update [NAME(s)] [--fetch-only] [--clean] [--verbose]                          ', &
+   ' update [NAME(s)] [--fetch-only] [--clean] [--verbose] [--dump [FILENAME]]      ', &
    ' list [--list]                                                                  ', &
    ' run  [[--target] NAME(s) [--example] [--profile PROF] [--flag FFLAGS] [--all]  ', &
    '      [--runner "CMD"] [--compiler COMPILER_NAME] [--list] [-- ARGS]            ', &
@@ -884,10 +939,10 @@ contains
     '  Their syntax is                                                      ', &
     '                                                                                ', &
     '    build [--profile PROF] [--flag FFLAGS] [--list] [--compiler COMPILER_NAME]  ', &
-    '          [--tests] [--no-prune]                                                ', &
+    '          [--tests] [--no-prune] [--dump [FILENAME]]                            ', &
     '    new NAME [[--lib|--src] [--app] [--test] [--example]]|                      ', &
     '             [--full|--bare][--backfill]                                        ', &
-    '    update [NAME(s)] [--fetch-only] [--clean]                                   ', &
+    '    update [NAME(s)] [--fetch-only] [--clean] [--dump [FILENAME]]               ', &
     '    run [[--target] NAME(s)] [--profile PROF] [--flag FFLAGS] [--list] [--all]  ', &
     '        [--example] [--runner "CMD"] [--compiler COMPILER_NAME]                 ', &
     '        [--no-prune] [-- ARGS]                                                  ', &
@@ -972,7 +1027,7 @@ contains
     ' + The fpm(1) home page is at https://github.com/fortran-lang/fpm               ', &
     ' + Registered fpm(1) packages are at https://fortran-lang.org/packages          ', &
     ' + The fpm(1) TOML file format is described at                                  ', &
-    '   https://fpm.fortran-lang.org/en/spec/manifest.html                           ', &
+    '   https://fpm.fortran-lang.org/spec/manifest.html                              ', &
     '']
     help_list=[character(len=80) :: &
     'NAME                                                                   ', &
@@ -1072,7 +1127,7 @@ contains
     '                                                                       ', &
     'SYNOPSIS                                                               ', &
     ' fpm build [--profile PROF] [--flag FFLAGS] [--compiler COMPILER_NAME] ', &
-    '           [--list] [--tests]                                          ', &
+    '           [--list] [--tests] [--dump [FILENAME]]                      ', &
     '                                                                       ', &
     ' fpm build --help|--version                                            ', &
     '                                                                       ', &
@@ -1100,6 +1155,9 @@ contains
     ' --list        list candidates instead of building or running them     ', &
     ' --tests       build all tests (otherwise only if needed)              ', &
     ' --show-model  show the model and exit (do not build)                  ', &
+    ' --dump [FILENAME] save model representation to file. use JSON format  ', &
+    '                   if file name is *.json; use TOML format otherwise   ', &
+    '                   (default file name: model.toml)                     ', &
     ' --help        print this help and exit                                ', &
     ' --version     print program version information and exit              ', &
     '                                                                       ', &
@@ -1301,7 +1359,7 @@ contains
     ' update(1) - manage project dependencies', &
     '', &
     'SYNOPSIS', &
-    ' fpm update [--fetch-only] [--clean] [--verbose] [NAME(s)]', &
+    ' fpm update [--fetch-only] [--clean] [--verbose] [--dump [FILENAME]] [NAME(s)]', &
     '', &
     'DESCRIPTION', &
     ' Manage and update project dependencies. If no dependency names are', &
@@ -1311,6 +1369,9 @@ contains
     ' --fetch-only  Only fetch dependencies, do not update existing projects', &
     ' --clean       Do not use previous dependency cache', &
     ' --verbose     Show additional printout', &
+    ' --dump [FILENAME] Dump updated dependency tree to file. use JSON format  ', &
+    '                   if file name is *.json; use TOML format otherwise      ', &
+    '                   (default file name: fpm_dependencies.toml)             ', &
     '', &
     'SEE ALSO', &
     ' The fpm(1) home page at https://github.com/fortran-lang/fpm', &
@@ -1404,10 +1465,10 @@ contains
     ' See documentation for more information regarding package upload and usage:', &
     '', &
     ' Package upload:', &
-    ' https://fpm.fortran-lang.org/en/spec/publish.html', &
+    ' https://fpm.fortran-lang.org/spec/publish.html', &
     '', &
     ' Package usage:', &
-    ' https://fpm.fortran-lang.org/en/spec/manifest.html#dependencies-from-a-registry', &
+    ' https://fpm.fortran-lang.org/spec/manifest.html#dependencies-from-a-registry', &
     '', &
     'OPTIONS', &
     ' --show-package-version   show package version without publishing', &
