@@ -77,7 +77,7 @@
             <li class="list-inline-item" id="statements"><i class="fa fa-list-ol"></i>
               <a data-bs-toggle="tooltip"
                  data-bs-placement="bottom" data-html="true"
-                 title="100.0% of total for programs.">94 statements</a>
+                 title="100.0% of total for programs.">97 statements</a>
             </li>
 
             <li class="list-inline-item" id="source-file">
@@ -117,7 +117,7 @@
       <div id="vars-0" class="collapse">
         <div class="list-group list-group-flush">
             <a class="list-group-item" href="../program/main.html#variable-cmd_settings~2">cmd_settings</a>
-            <a class="list-group-item" href="../program/main.html#variable-error~98">error</a>
+            <a class="list-group-item" href="../program/main.html#variable-error~182">error</a>
             <a class="list-group-item" href="../program/main.html#variable-project_root">project_root</a>
             <a class="list-group-item" href="../program/main.html#variable-pwd_start">pwd_start</a>
             <a class="list-group-item" href="../program/main.html#variable-pwd_working">pwd_working</a>
@@ -155,7 +155,7 @@
       <div id="subs-0" class="collapse">
         <div class="list-group list-group-flush">
             <a class="list-group-item" href="../program/main.html#proc-get_working_dir">get_working_dir</a>
-            <a class="list-group-item" href="../program/main.html#proc-handle_error">handle_error</a>
+            <a class="list-group-item" href="../program/main.html#proc-handle_error~4">handle_error</a>
         </div>
       </div>
     </div>
@@ -187,15 +187,16 @@
             <li class="list-group-item">
               <ul class="list-inline">
                   <li class="list-inline-item"><a href='../module/fpm_os.html'>fpm_os</a></li>
-                  <li class="list-inline-item"><a href='../module/fpm_command_line.html'>fpm_command_line</a></li>
                   <li class="list-inline-item"><a href='../module/fpm_cmd_update.html'>fpm_cmd_update</a></li>
-                  <li class="list-inline-item"><a href='../module/fpm_error.html'>fpm_error</a></li>
-                  <li class="list-inline-item"><a href='../module/fpm_filesystem.html'>fpm_filesystem</a></li>
+                  <li class="list-inline-item"><a href='../module/fpm_cmd_export.html'>fpm_cmd_export</a></li>
                   <li class="list-inline-item"><a href='../module/fpm_cmd_publish.html'>fpm_cmd_publish</a></li>
+                  <li class="list-inline-item"><a href='../module/fpm_filesystem.html'>fpm_filesystem</a></li>
+                  <li class="list-inline-item"><a href='../module/fpm_command_line.html'>fpm_command_line</a></li>
+                  <li class="list-inline-item"><a href='../module/fpm_cmd_new.html'>fpm_cmd_new</a></li>
                   <li class="list-inline-item"><a href='http://fortranwiki.org/fortran/show/iso_fortran_env'>iso_fortran_env</a></li>
                   <li class="list-inline-item"><a href='../module/fpm_cmd_install.html'>fpm_cmd_install</a></li>
+                  <li class="list-inline-item"><a href='../module/fpm_error.html'>fpm_error</a></li>
                   <li class="list-inline-item"><a href='../module/fpm.html'>fpm</a></li>
-                  <li class="list-inline-item"><a href='../module/fpm_cmd_new.html'>fpm_cmd_new</a></li>
               </ul>
             </li>
         </ul>
@@ -235,7 +236,7 @@
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-error~98"></span>
+              <span class="anchor" id="variable-error~182"></span>
               type(<a href='../type/error_t.html'>error_t</a>),
             </td>
             <td>
@@ -346,7 +347,7 @@
     <tbody>
         <tr>
             <td>
-              <span class="anchor" id="variable-dir~13"></span>
+              <span class="anchor" id="variable-dir~3"></span>
               character(len=*),
             </td>
 <td>intent(in)</td>
@@ -397,7 +398,7 @@
     <tbody>
         <tr>
             <td>
-              <span class="anchor" id="variable-settings~9"></span>
+              <span class="anchor" id="variable-settings~14"></span>
               class(<a href='../type/fpm_cmd_settings.html'>fpm_cmd_settings</a>),
             </td>
 <td>intent(in),</td>
@@ -433,7 +434,7 @@
   </div>
 
       <div class="card">
-    <div class="card-header codesum"><span class="anchor" id="proc-handle_error"></span> <h3> subroutine <a href='../proc/handle_error.html'>handle_error</a>(error_)  
+    <div class="card-header codesum"><span class="anchor" id="proc-handle_error~4"></span> <h3> subroutine <a href='../proc/handle_error~4.html'>handle_error</a>(error_)  
 </h3></div>
     <div class="card-body">
           
@@ -483,6 +484,7 @@
 <span class="w">        </span><span class="n">fpm_cmd_settings</span><span class="p">,</span><span class="w"> </span><span class="p">&amp;</span>
 <span class="w">        </span><span class="n">fpm_new_settings</span><span class="p">,</span><span class="w"> </span><span class="p">&amp;</span>
 <span class="w">        </span><span class="n">fpm_build_settings</span><span class="p">,</span><span class="w"> </span><span class="p">&amp;</span>
+<span class="w">        </span><span class="n">fpm_export_settings</span><span class="p">,</span><span class="w"> </span><span class="p">&amp;</span>
 <span class="w">        </span><span class="n">fpm_run_settings</span><span class="p">,</span><span class="w"> </span><span class="p">&amp;</span>
 <span class="w">        </span><span class="n">fpm_test_settings</span><span class="p">,</span><span class="w"> </span><span class="p">&amp;</span>
 <span class="w">        </span><span class="n">fpm_install_settings</span><span class="p">,</span><span class="w"> </span><span class="p">&amp;</span>
@@ -494,6 +496,7 @@
 <span class="k">use </span><span class="n">fpm_filesystem</span><span class="p">,</span><span class="w"> </span><span class="k">only</span><span class="p">:</span><span class="w"> </span><span class="n">exists</span><span class="p">,</span><span class="w"> </span><span class="n">parent_dir</span><span class="p">,</span><span class="w"> </span><span class="n">join_path</span>
 <span class="k">use </span><span class="n">fpm</span><span class="p">,</span><span class="w"> </span><span class="k">only</span><span class="p">:</span><span class="w"> </span><span class="n">cmd_build</span><span class="p">,</span><span class="w"> </span><span class="n">cmd_run</span><span class="p">,</span><span class="w"> </span><span class="n">cmd_clean</span>
 <span class="k">use </span><span class="n">fpm_cmd_install</span><span class="p">,</span><span class="w"> </span><span class="k">only</span><span class="p">:</span><span class="w"> </span><span class="n">cmd_install</span>
+<span class="k">use </span><span class="n">fpm_cmd_export</span><span class="p">,</span><span class="w"> </span><span class="k">only</span><span class="p">:</span><span class="w"> </span><span class="n">cmd_export</span>
 <span class="k">use </span><span class="n">fpm_cmd_new</span><span class="p">,</span><span class="w"> </span><span class="k">only</span><span class="p">:</span><span class="w"> </span><span class="n">cmd_new</span>
 <span class="k">use </span><span class="n">fpm_cmd_update</span><span class="p">,</span><span class="w"> </span><span class="k">only</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="n">cmd_update</span>
 <span class="k">use </span><span class="n">fpm_cmd_publish</span><span class="p">,</span><span class="w"> </span><span class="k">only</span><span class="p">:</span><span class="w"> </span><span class="n">cmd_publish</span>
@@ -555,6 +558,8 @@
 <span class="w">    </span><span class="k">call </span><span class="n">cmd_run</span><span class="p">(</span><span class="n">settings</span><span class="p">,</span><span class="n">test</span><span class="o">=</span><span class="p">.</span><span class="n">false</span><span class="p">.)</span>
 <span class="k">type is</span><span class="w"> </span><span class="p">(</span><span class="n">fpm_test_settings</span><span class="p">)</span>
 <span class="w">    </span><span class="k">call </span><span class="n">cmd_run</span><span class="p">(</span><span class="n">settings</span><span class="p">,</span><span class="n">test</span><span class="o">=</span><span class="p">.</span><span class="n">true</span><span class="p">.)</span>
+<span class="k">type is</span><span class="w"> </span><span class="p">(</span><span class="n">fpm_export_settings</span><span class="p">)</span>
+<span class="w">    </span><span class="k">call </span><span class="n">cmd_export</span><span class="p">(</span><span class="n">settings</span><span class="p">)</span>
 <span class="k">type is</span><span class="w"> </span><span class="p">(</span><span class="n">fpm_install_settings</span><span class="p">)</span>
 <span class="w">    </span><span class="k">call </span><span class="n">cmd_install</span><span class="p">(</span><span class="n">settings</span><span class="p">)</span>
 <span class="k">type is</span><span class="w"> </span><span class="p">(</span><span class="n">fpm_update_settings</span><span class="p">)</span>
@@ -619,7 +624,7 @@
             <p class="text-end">
               Documentation generated by
               <a href="https://github.com/Fortran-FOSS-Programmers/ford">FORD</a>
- on 2024-02-25 08:31              </p>
+ on 2024-02-25 08:37              </p>
           </div>
         </div>
         <br>

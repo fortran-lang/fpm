@@ -78,7 +78,7 @@
             <li class="list-inline-item" id="statements"><i class="fa fa-list-ol"></i>
               <a data-bs-toggle="tooltip"
                  data-bs-placement="bottom" data-html="true"
-                 title=" 3.1% of total for modules and submodules.">329 statements</a>
+                 title=" 5.8% of total for modules and submodules.">746 statements</a>
             </li>
 
             <li class="list-inline-item" id="source-file">
@@ -194,21 +194,21 @@
         <ul class="list-group list-group-flush">
             <li class="list-group-item">
               <ul class="list-inline">
-                  <li class="list-inline-item"><a href='fpm_manifest_build.html'>fpm_manifest_build</a></li>
-                  <li class="list-inline-item"><a href='fpm_manifest_preprocess.html'>fpm_manifest_preprocess</a></li>
-                  <li class="list-inline-item"><a href='fpm_manifest_executable.html'>fpm_manifest_executable</a></li>
-                  <li class="list-inline-item"><a href='fpm_manifest_profile.html'>fpm_manifest_profile</a></li>
-                  <li class="list-inline-item"><a href='fpm_manifest_dependency.html'>fpm_manifest_dependency</a></li>
-                  <li class="list-inline-item"><a href='fpm_manifest_test.html'>fpm_manifest_test</a></li>
                   <li class="list-inline-item"><a href='fpm_manifest_library.html'>fpm_manifest_library</a></li>
-                  <li class="list-inline-item"><a href='fpm_toml.html'>fpm_toml</a></li>
+                  <li class="list-inline-item"><a href='fpm_manifest_preprocess.html'>fpm_manifest_preprocess</a></li>
                   <li class="list-inline-item"><a href='fpm_error.html'>fpm_error</a></li>
-                  <li class="list-inline-item"><a href='fpm_filesystem.html'>fpm_filesystem</a></li>
-                  <li class="list-inline-item"><a href='fpm_manifest_metapackages.html'>fpm_manifest_metapackages</a></li>
                   <li class="list-inline-item"><a href='fpm_manifest_example.html'>fpm_manifest_example</a></li>
-                  <li class="list-inline-item"><a href='fpm_manifest_fortran.html'>fpm_manifest_fortran</a></li>
+                  <li class="list-inline-item"><a href='fpm_filesystem.html'>fpm_filesystem</a></li>
+                  <li class="list-inline-item"><a href='fpm_manifest_dependency.html'>fpm_manifest_dependency</a></li>
                   <li class="list-inline-item"><a href='fpm_versioning.html'>fpm_versioning</a></li>
                   <li class="list-inline-item"><a href='fpm_manifest_install.html'>fpm_manifest_install</a></li>
+                  <li class="list-inline-item"><a href='fpm_manifest_metapackages.html'>fpm_manifest_metapackages</a></li>
+                  <li class="list-inline-item"><a href='fpm_toml.html'>fpm_toml</a></li>
+                  <li class="list-inline-item"><a href='fpm_manifest_executable.html'>fpm_manifest_executable</a></li>
+                  <li class="list-inline-item"><a href='fpm_manifest_build.html'>fpm_manifest_build</a></li>
+                  <li class="list-inline-item"><a href='fpm_manifest_test.html'>fpm_manifest_test</a></li>
+                  <li class="list-inline-item"><a href='fpm_manifest_fortran.html'>fpm_manifest_fortran</a></li>
+                  <li class="list-inline-item"><a href='fpm_manifest_profile.html'>fpm_manifest_profile</a></li>
               </ul>
             </li>
         </ul>
@@ -229,7 +229,7 @@
     <div class="card-header codesum">
       <span class="anchor" id="type-package_config_t"></span>
       <h3>
-        type, public&nbsp;::&nbsp;
+        type, public, extends(<a href='../type/serializable_t.html'>serializable_t</a>)&nbsp;::&nbsp;
         <a href='../type/package_config_t.html'>package_config_t</a>
         
       </h3>
@@ -250,6 +250,23 @@
     <tbody>
         <tr>
             <td>
+              <span class="anchor" id="variable-author"></span>
+              character(len=:),
+            </td>
+              <td>public,</td>
+            <td>
+              allocatable
+            </td>
+            <td>::</td>
+            <td><strong>author</strong></td>
+                <td></td>
+                <td></td>
+            <td>
+<p>Author meta data</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
               <span class="anchor" id="variable-build"></span>
               type(<a href='../type/build_config_t.html'>build_config_t</a>),
             </td>
@@ -263,6 +280,23 @@
                 <td></td>
             <td>
 <p>Build configuration data</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-copyright"></span>
+              character(len=:),
+            </td>
+              <td>public,</td>
+            <td>
+              allocatable
+            </td>
+            <td>::</td>
+            <td><strong>copyright</strong></td>
+                <td></td>
+                <td></td>
+            <td>
+<p>Copyright meta data</p>
             </td>
         </tr>
         <tr>
@@ -403,6 +437,23 @@
         </tr>
         <tr>
             <td>
+              <span class="anchor" id="variable-maintainer"></span>
+              character(len=:),
+            </td>
+              <td>public,</td>
+            <td>
+              allocatable
+            </td>
+            <td>::</td>
+            <td><strong>maintainer</strong></td>
+                <td></td>
+                <td></td>
+            <td>
+<p>Maintainer meta data</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
               <span class="anchor" id="variable-meta"></span>
               type(<a href='../type/metapackage_config_t.html'>metapackage_config_t</a>),
             </td>
@@ -513,9 +564,44 @@
         <table class="table table-striped varlist">
           <tbody>
               <tr>
+                <td>  generic, public ::
+  <strong><a href='../type/package_config_t.html#boundprocedure-dump~4'>dump</a></strong> => <a href='/home/runner/work/fpm/fpm/fpm-doc/type/srcfile_t.html#boundprocedure-dump_to_toml~9'>dump_to_toml</a>, dump_to_file, dump_to_unit</td>
+                <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/package_config_t.html#boundprocedure-dump_to_toml'>dump_to_toml</a></strong></td>
+                <td></td>
+              </tr>
+              <tr>
                 <td>  procedure, public ::
   <strong><a href='../type/package_config_t.html#boundprocedure-info'>info</a></strong></td>
                 <td>../../<p>Print information on this instance</p></td>
+              </tr>
+              <tr>
+                <td>  generic, public ::
+  <strong><a href='../type/package_config_t.html#boundprocedure-load~2'>load</a></strong> => <a href='/home/runner/work/fpm/fpm/fpm-doc/type/srcfile_t.html#boundprocedure-load_from_toml~9'>load_from_toml</a>, load_from_file, load_from_unit</td>
+                <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/package_config_t.html#boundprocedure-load_from_toml'>load_from_toml</a></strong></td>
+                <td></td>
+              </tr>
+              <tr>
+                <td>  generic, public ::
+  <strong><a href='../type/package_config_t.html#boundprocedure-operator%28%3D%3D%29~3'>operator(==)</a></strong> => <a href='/home/runner/work/fpm/fpm/fpm-doc/type/srcfile_t.html#boundprocedure-serializable_is_same~9'>serializable_is_same</a></td>
+                <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/package_config_t.html#boundprocedure-serializable_is_same'>serializable_is_same</a></strong> => manifest_is_same</td>
+                <td>../../<p>Serialization interface</p></td>
+              </tr>
+              <tr>
+                <td>  procedure, public, non_overridable ::
+  <strong><a href='../type/serializable_t.html#boundprocedure-test_serialization'>test_serialization</a></strong></td>
+                <td>../../<p>Test load/write roundtrip</p></td>
               </tr>
           </tbody>
         </table>
@@ -593,7 +679,7 @@
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-error~2"></span>
+              <span class="anchor" id="variable-error"></span>
               type(<a href='../type/error_t.html'>error_t</a>),
             </td>
 <td>intent(out),</td>
@@ -633,7 +719,7 @@
             <p class="text-end">
               Documentation generated by
               <a href="https://github.com/Fortran-FOSS-Programmers/ford">FORD</a>
- on 2024-02-25 08:31              </p>
+ on 2024-02-25 08:37              </p>
           </div>
         </div>
         <br>

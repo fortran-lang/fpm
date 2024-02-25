@@ -78,7 +78,7 @@
             <li class="list-inline-item" id="statements"><i class="fa fa-list-ol"></i>
               <a data-bs-toggle="tooltip"
                  data-bs-placement="bottom" data-html="true"
-                 title="<p> 7.8% of total for derived types.</p>Including implementation: 410 statements, 18.9% of total for derived types.">34 statements</a>
+                 title="<p> 6.9% of total for derived types.</p>Including implementation: 542 statements, 11.2% of total for derived types.">37 statements</a>
             </li>
 
             <li class="list-inline-item" id="source-file">
@@ -119,11 +119,11 @@
       <div id="vars-0" class="collapse">
         <div class="list-group list-group-flush">
             <a class="list-group-item" href="../type/dependency_tree_t.html#variable-cache~2">cache</a>
-            <a class="list-group-item" href="../type/dependency_tree_t.html#variable-dep">dep</a>
+            <a class="list-group-item" href="../type/dependency_tree_t.html#variable-dep~2">dep</a>
             <a class="list-group-item" href="../type/dependency_tree_t.html#variable-dep_dir">dep_dir</a>
             <a class="list-group-item" href="../type/dependency_tree_t.html#variable-ndep">ndep</a>
-            <a class="list-group-item" href="../type/dependency_tree_t.html#variable-unit~13">unit</a>
-            <a class="list-group-item" href="../type/dependency_tree_t.html#variable-verbosity~8">verbosity</a>
+            <a class="list-group-item" href="../type/dependency_tree_t.html#variable-unit~5">unit</a>
+            <a class="list-group-item" href="../type/dependency_tree_t.html#variable-verbosity~6">verbosity</a>
         </div>
       </div>
     </div>
@@ -151,12 +151,19 @@
       <div id="boundprocs-0" class="collapse">
         <div class="list-group list-group-flush">
             <a class="list-group-item" href="../type/dependency_tree_t.html#boundprocedure-add">add</a>
-            <a class="list-group-item" href="../type/dependency_tree_t.html#boundprocedure-dump">dump</a>
+            <a class="list-group-item" href="../type/dependency_tree_t.html#boundprocedure-dump~9">dump</a>
+            <a class="list-group-item" href="../type/dependency_tree_t.html#boundprocedure-dump_cache">dump_cache</a>
+            <a class="list-group-item" href="../type/dependency_tree_t.html#boundprocedure-dump_to_toml~6">dump_to_toml</a>
             <a class="list-group-item" href="../type/dependency_tree_t.html#boundprocedure-find">find</a>
             <a class="list-group-item" href="../type/dependency_tree_t.html#boundprocedure-finished">finished</a>
             <a class="list-group-item" href="../type/dependency_tree_t.html#boundprocedure-has">has</a>
-            <a class="list-group-item" href="../type/dependency_tree_t.html#boundprocedure-load">load</a>
+            <a class="list-group-item" href="../type/dependency_tree_t.html#boundprocedure-load~7">load</a>
+            <a class="list-group-item" href="../type/dependency_tree_t.html#boundprocedure-load_cache">load_cache</a>
+            <a class="list-group-item" href="../type/dependency_tree_t.html#boundprocedure-load_from_toml~6">load_from_toml</a>
+            <a class="list-group-item" href="../type/dependency_tree_t.html#boundprocedure-operator%28%3D%3D%29~8">operator(==)</a>
             <a class="list-group-item" href="../type/dependency_tree_t.html#boundprocedure-resolve~2">resolve</a>
+            <a class="list-group-item" href="../type/dependency_tree_t.html#boundprocedure-serializable_is_same~6">serializable_is_same</a>
+            <a class="list-group-item" href="../type/dependency_tree_t.html#boundprocedure-test_serialization">test_serialization</a>
             <a class="list-group-item" href="../type/dependency_tree_t.html#boundprocedure-update~2">update</a>
         </div>
       </div>
@@ -178,7 +185,7 @@
     
     <div class="col-md-9" id='text'>
       <h2>
-        type, public :: dependency_tree_t</h2>
+        type, public, extends(<a href='serializable_t.html'>serializable_t</a>) :: dependency_tree_t</h2>
     <p>Respresentation of a projects dependencies</p>
 <p>The dependencies are stored in a simple array for now, this can be replaced
 with a binary-search tree or a hash table in the future.</p>
@@ -215,7 +222,7 @@ with a binary-search tree or a hash table in the future.</p>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-dep"></span>
+              <span class="anchor" id="variable-dep~2"></span>
               type(<a href='dependency_node_t.html'>dependency_node_t</a>),
             </td>
               <td>public,</td>
@@ -266,7 +273,7 @@ with a binary-search tree or a hash table in the future.</p>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-unit~13"></span>
+              <span class="anchor" id="variable-unit~5"></span>
               integer,
             </td>
               <td>public</td>
@@ -283,7 +290,7 @@ with a binary-search tree or a hash table in the future.</p>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-verbosity~8"></span>
+              <span class="anchor" id="variable-verbosity~6"></span>
               integer,
             </td>
               <td>public</td>
@@ -703,10 +710,259 @@ Dependency nodes contain additional information (version, git, revision)</p>
           <div class="row">
               <div class="card mt-3">
     <div class="card-header codesum">
-      <span class="anchor" id="boundprocedure-dump"></span>
+      <span class="anchor" id="boundprocedure-dump~9"></span>
       <h3>
           generic, public ::
-  <strong>dump</strong> => dump_to_file, dump_to_unit, dump_to_toml
+  <strong>dump</strong> => <a href='/home/runner/work/fpm/fpm/fpm-doc/type/srcfile_t.html#boundprocedure-dump_to_toml~9'>dump_to_toml</a>, dump_to_file, dump_to_unit
+        
+      </h3>
+    </div>
+    <ul class="list-group">
+        <li class="list-group-item">
+                  <h3>
+    private  subroutine srcfile_dump_to_toml(self, table, error)  
+</h3>
+
+  <p>Dump dependency to toml table</p>
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" ></span>
+              class(<a href='srcfile_t.html'>srcfile_t</a>),
+            </td>
+<td>intent(inout)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>self</strong></td>
+            <td>
+                <p>Instance of the serializable object</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" ></span>
+              type(toml_table),
+            </td>
+<td>intent(inout)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>table</strong></td>
+            <td>
+                <p>Data structure</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" ></span>
+              type(<a href='error_t.html'>error_t</a>),
+            </td>
+<td>intent(out),</td>
+              <td></td>            <td>
+              allocatable
+            </td>
+            <td>::</td>
+            <td><strong>error</strong></td>
+            <td>
+                <p>Error handling</p>
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+
+        </li>
+        <li class="list-group-item">
+                  <h3>
+    private  subroutine dump_to_file(self, file, error, json)  
+</h3>
+
+  <p>Write serializable object to file</p>
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" ></span>
+              class(<a href='serializable_t.html'>serializable_t</a>),
+            </td>
+<td>intent(inout)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>self</strong></td>
+            <td>
+                <p>Instance of the dependency tree</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" ></span>
+              character(len=*),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>file</strong></td>
+            <td>
+                <p>File name</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" ></span>
+              type(<a href='error_t.html'>error_t</a>),
+            </td>
+<td>intent(out),</td>
+              <td></td>            <td>
+              allocatable
+            </td>
+            <td>::</td>
+            <td><strong>error</strong></td>
+            <td>
+                <p>Error handling</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" ></span>
+              logical,
+            </td>
+<td>intent(in),</td>
+              <td>optional</td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>json</strong></td>
+            <td>
+                <p>Optional JSON format</p>
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+
+        </li>
+        <li class="list-group-item">
+                  <h3>
+    private  subroutine dump_to_unit(self, unit, error, json)  
+</h3>
+
+  <p>Write serializable object to a formatted Fortran unit</p>
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" ></span>
+              class(<a href='serializable_t.html'>serializable_t</a>),
+            </td>
+<td>intent(inout)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>self</strong></td>
+            <td>
+                <p>Instance of the dependency tree</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" ></span>
+              integer,
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>unit</strong></td>
+            <td>
+                <p>Formatted unit</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" ></span>
+              type(<a href='error_t.html'>error_t</a>),
+            </td>
+<td>intent(out),</td>
+              <td></td>            <td>
+              allocatable
+            </td>
+            <td>::</td>
+            <td><strong>error</strong></td>
+            <td>
+                <p>Error handling</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" ></span>
+              logical,
+            </td>
+<td>intent(in),</td>
+              <td>optional</td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>json</strong></td>
+            <td>
+                <p>Optional JSON format requested?</p>
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+
+        </li>
+    </ul>
+  </div>
+
+          </div>
+          <div class="row">
+              <div class="card mt-3">
+    <div class="card-header codesum">
+      <span class="anchor" id="boundprocedure-dump_cache"></span>
+      <h3>
+          generic, public ::
+  <strong>dump_cache</strong> => dump_cache_to_file, dump_cache_to_unit, dump_cache_to_toml
         
       </h3>
     </div>
@@ -717,7 +973,7 @@ Dependency nodes contain additional information (version, git, revision)</p>
     <ul class="list-group">
         <li class="list-group-item">
                   <h3>
-    private  subroutine dump_to_file(self, file, error)  
+    private  subroutine dump_cache_to_file(self, file, error)  
 </h3>
 
   <p>Write dependency tree to file</p>
@@ -785,7 +1041,7 @@ Dependency nodes contain additional information (version, git, revision)</p>
         </li>
         <li class="list-group-item">
                   <h3>
-    private  subroutine dump_to_unit(self, unit, error)  
+    private  subroutine dump_cache_to_unit(self, unit, error)  
 </h3>
 
   <p>Write dependency tree to file</p>
@@ -853,7 +1109,7 @@ Dependency nodes contain additional information (version, git, revision)</p>
         </li>
         <li class="list-group-item">
                   <h3>
-    private  subroutine dump_to_toml(self, table, error)  
+    private  subroutine dump_cache_to_toml(self, table, error)  
 </h3>
 
   <p>Write dependency tree to TOML datastructure</p>
@@ -882,6 +1138,91 @@ Dependency nodes contain additional information (version, git, revision)</p>
             <td><strong>self</strong></td>
             <td>
                 <p>Instance of the dependency tree</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" ></span>
+              type(toml_table),
+            </td>
+<td>intent(inout)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>table</strong></td>
+            <td>
+                <p>Data structure</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" ></span>
+              type(<a href='error_t.html'>error_t</a>),
+            </td>
+<td>intent(out),</td>
+              <td></td>            <td>
+              allocatable
+            </td>
+            <td>::</td>
+            <td><strong>error</strong></td>
+            <td>
+                <p>Error handling</p>
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+
+        </li>
+    </ul>
+  </div>
+
+          </div>
+          <div class="row">
+              <div class="card mt-3">
+    <div class="card-header codesum">
+      <span class="anchor" id="boundprocedure-dump_to_toml~6"></span>
+      <h3>
+          procedure, public ::
+  <strong>dump_to_toml</strong> => tree_dump_to_toml
+        
+      </h3>
+    </div>
+    <ul class="list-group">
+        <li class="list-group-item">
+                  <h3>
+    private  subroutine tree_dump_to_toml(self, table, error)  
+</h3>
+
+  <p>Dump dependency to toml table</p>
+<p>Because dependencies are named, fallback if this has no name
+So, serialization will work regardless of size(self%dep) == self%ndep</p>
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" ></span>
+              class(<a href='dependency_tree_t.html'>dependency_tree_t</a>),
+            </td>
+<td>intent(inout)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>self</strong></td>
+            <td>
+                <p>Instance of the serializable object</p>
             </td>
         </tr>
         <tr>
@@ -1142,10 +1483,263 @@ Dependency nodes contain additional information (version, git, revision)</p>
           <div class="row">
               <div class="card mt-3">
     <div class="card-header codesum">
-      <span class="anchor" id="boundprocedure-load"></span>
+      <span class="anchor" id="boundprocedure-load~7"></span>
       <h3>
           generic, public ::
-  <strong>load</strong> => load_from_file, load_from_unit, load_from_toml
+  <strong>load</strong> => <a href='/home/runner/work/fpm/fpm/fpm-doc/type/srcfile_t.html#boundprocedure-load_from_toml~9'>load_from_toml</a>, load_from_file, load_from_unit
+        
+      </h3>
+    </div>
+    <ul class="list-group">
+        <li class="list-group-item">
+                  <h3>
+    private  subroutine srcfile_load_from_toml(self, table, error)  
+</h3>
+
+  <p>Read dependency from toml table (no checks made at this stage)</p>
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" ></span>
+              class(<a href='srcfile_t.html'>srcfile_t</a>),
+            </td>
+<td>intent(inout)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>self</strong></td>
+            <td>
+                <p>Instance of the serializable object</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" ></span>
+              type(toml_table),
+            </td>
+<td>intent(inout)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>table</strong></td>
+            <td>
+                <p>Data structure</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" ></span>
+              type(<a href='error_t.html'>error_t</a>),
+            </td>
+<td>intent(out),</td>
+              <td></td>            <td>
+              allocatable
+            </td>
+            <td>::</td>
+            <td><strong>error</strong></td>
+            <td>
+                <p>Error handling</p>
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+
+        </li>
+        <li class="list-group-item">
+                  <h3>
+    private  subroutine load_from_file(self, file, error, json)  
+</h3>
+
+  <p>Read dependency tree from file</p>
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" ></span>
+              class(<a href='serializable_t.html'>serializable_t</a>),
+            </td>
+<td>intent(inout)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>self</strong></td>
+            <td>
+                <p>Instance of the dependency tree</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" ></span>
+              character(len=*),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>file</strong></td>
+            <td>
+                <p>File name</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" ></span>
+              type(<a href='error_t.html'>error_t</a>),
+            </td>
+<td>intent(out),</td>
+              <td></td>            <td>
+              allocatable
+            </td>
+            <td>::</td>
+            <td><strong>error</strong></td>
+            <td>
+                <p>Error handling</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" ></span>
+              logical,
+            </td>
+<td>intent(in),</td>
+              <td>optional</td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>json</strong></td>
+            <td>
+                <p>Optional JSON format</p>
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+
+        </li>
+        <li class="list-group-item">
+                  <h3>
+    private  subroutine load_from_unit(self, unit, error, json)  
+</h3>
+
+  <p>Read dependency tree from file
+init JSON interpreter
+Read object from TOML table</p>
+<p>use default TOML parser</p>
+<p>Read object from TOML table</p>
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" ></span>
+              class(<a href='serializable_t.html'>serializable_t</a>),
+            </td>
+<td>intent(inout)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>self</strong></td>
+            <td>
+                <p>Instance of the dependency tree</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" ></span>
+              integer,
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>unit</strong></td>
+            <td>
+                <p>File name</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" ></span>
+              type(<a href='error_t.html'>error_t</a>),
+            </td>
+<td>intent(out),</td>
+              <td></td>            <td>
+              allocatable
+            </td>
+            <td>::</td>
+            <td><strong>error</strong></td>
+            <td>
+                <p>Error handling</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" ></span>
+              logical,
+            </td>
+<td>intent(in),</td>
+              <td>optional</td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>json</strong></td>
+            <td>
+                <p>Optional JSON format</p>
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+
+        </li>
+    </ul>
+  </div>
+
+          </div>
+          <div class="row">
+              <div class="card mt-3">
+    <div class="card-header codesum">
+      <span class="anchor" id="boundprocedure-load_cache"></span>
+      <h3>
+          generic, public ::
+  <strong>load_cache</strong> => load_cache_from_file, load_cache_from_unit, load_cache_from_toml
         
       </h3>
     </div>
@@ -1156,7 +1750,7 @@ Dependency nodes contain additional information (version, git, revision)</p>
     <ul class="list-group">
         <li class="list-group-item">
                   <h3>
-    private  subroutine load_from_file(self, file, error)  
+    private  subroutine load_cache_from_file(self, file, error)  
 </h3>
 
   <p>Read dependency tree from file</p>
@@ -1224,7 +1818,7 @@ Dependency nodes contain additional information (version, git, revision)</p>
         </li>
         <li class="list-group-item">
                   <h3>
-    private  subroutine load_from_unit(self, unit, error)  
+    private  subroutine load_cache_from_unit(self, unit, error)  
 </h3>
 
   <p>Read dependency tree from file</p>
@@ -1292,7 +1886,7 @@ Dependency nodes contain additional information (version, git, revision)</p>
         </li>
         <li class="list-group-item">
                   <h3>
-    private  subroutine load_from_toml(self, table, error)  
+    private  subroutine load_cache_from_toml(self, table, error)  
 </h3>
 
   <p>Read dependency tree from TOML data structure</p>
@@ -1356,6 +1950,164 @@ Dependency nodes contain additional information (version, git, revision)</p>
     </tbody>
   </table>
 
+
+        </li>
+    </ul>
+  </div>
+
+          </div>
+          <div class="row">
+              <div class="card mt-3">
+    <div class="card-header codesum">
+      <span class="anchor" id="boundprocedure-load_from_toml~6"></span>
+      <h3>
+          procedure, public ::
+  <strong>load_from_toml</strong> => tree_load_from_toml
+        
+      </h3>
+    </div>
+    <ul class="list-group">
+        <li class="list-group-item">
+                  <h3>
+    private  subroutine tree_load_from_toml(self, table, error)  
+</h3>
+
+  <p>Read dependency from toml table (no checks made at this stage)</p>
+<p>Read all dependencies</p>
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" ></span>
+              class(<a href='dependency_tree_t.html'>dependency_tree_t</a>),
+            </td>
+<td>intent(inout)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>self</strong></td>
+            <td>
+                <p>Instance of the serializable object</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" ></span>
+              type(toml_table),
+            </td>
+<td>intent(inout)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>table</strong></td>
+            <td>
+                <p>Data structure</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" ></span>
+              type(<a href='error_t.html'>error_t</a>),
+            </td>
+<td>intent(out),</td>
+              <td></td>            <td>
+              allocatable
+            </td>
+            <td>::</td>
+            <td><strong>error</strong></td>
+            <td>
+                <p>Error handling</p>
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+
+        </li>
+    </ul>
+  </div>
+
+          </div>
+          <div class="row">
+              <div class="card mt-3">
+    <div class="card-header codesum">
+      <span class="anchor" id="boundprocedure-operator%28%3D%3D%29~8"></span>
+      <h3>
+          generic, public ::
+  <strong>operator(==)</strong> => <a href='/home/runner/work/fpm/fpm/fpm-doc/type/srcfile_t.html#boundprocedure-serializable_is_same~9'>serializable_is_same</a>
+        
+      </h3>
+    </div>
+    <ul class="list-group">
+        <li class="list-group-item">
+                  <h3>
+    private  function srcfile_is_same(this, that)  
+</h3>
+
+  <p>Check that two source files are equal
+All checks passed!</p>
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" ></span>
+              class(<a href='srcfile_t.html'>srcfile_t</a>),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>this</strong></td>
+            <td>
+                
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" ></span>
+              class(<a href='serializable_t.html'>serializable_t</a>),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>that</strong></td>
+            <td>
+                
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+    <h4>
+    Return Value
+    <small>logical</small>
+    </h4>
+    
 
         </li>
     </ul>
@@ -1550,6 +2302,174 @@ Dependency nodes contain additional information (version, git, revision)</p>
           <div class="row">
               <div class="card mt-3">
     <div class="card-header codesum">
+      <span class="anchor" id="boundprocedure-serializable_is_same~6"></span>
+      <h3>
+          procedure, public ::
+  <strong>serializable_is_same</strong> => dependency_tree_is_same
+        
+      </h3>
+    </div>
+      <div class="card-body">
+        
+        <p>Serialization interface</p>
+      </div>
+    <ul class="list-group">
+        <li class="list-group-item">
+                  <h3>
+    private  function dependency_tree_is_same(this, that)  
+</h3>
+
+  <p>Check that two dependency trees are equal
+All checks passed!</p>
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" ></span>
+              class(<a href='dependency_tree_t.html'>dependency_tree_t</a>),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>this</strong></td>
+            <td>
+                
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" ></span>
+              class(<a href='serializable_t.html'>serializable_t</a>),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>that</strong></td>
+            <td>
+                
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+    <h4>
+    Return Value
+    <small>logical</small>
+    </h4>
+    
+
+        </li>
+    </ul>
+  </div>
+
+          </div>
+          <div class="row">
+              <div class="card mt-3">
+    <div class="card-header codesum">
+      <span class="anchor" id="boundprocedure-test_serialization"></span>
+      <h3>
+          procedure, public, non_overridable ::
+  <strong>test_serialization</strong>
+        
+      </h3>
+    </div>
+      <div class="card-body">
+        
+        <p>Test load/write roundtrip</p>
+      </div>
+    <ul class="list-group">
+        <li class="list-group-item">
+                  <h3>
+    private  subroutine test_serialization(self, message, error)  
+</h3>
+
+  <p>Test serialization of a serializable object
+Dump to scratch file
+Load from scratch file
+Check same</p>
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" ></span>
+              class(<a href='serializable_t.html'>serializable_t</a>),
+            </td>
+<td>intent(inout)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>self</strong></td>
+            <td>
+                
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" ></span>
+              character(len=*),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>message</strong></td>
+            <td>
+                
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" ></span>
+              type(<a href='error_t.html'>error_t</a>),
+            </td>
+<td>intent(out),</td>
+              <td></td>            <td>
+              allocatable
+            </td>
+            <td>::</td>
+            <td><strong>error</strong></td>
+            <td>
+                
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+
+        </li>
+    </ul>
+  </div>
+
+          </div>
+          <div class="row">
+              <div class="card mt-3">
+    <div class="card-header codesum">
       <span class="anchor" id="boundprocedure-update~2"></span>
       <h3>
           generic, public ::
@@ -1691,7 +2611,7 @@ Dependency nodes contain additional information (version, git, revision)</p>
 
     <section>
     <h3><span class="anchor" id="src"></span>Source Code</h3>
-    <div class="hl codehilite"><pre><span></span><span class="w">  </span><span class="k">type</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">dependency_tree_t</span>
+    <div class="hl codehilite"><pre><span></span><span class="w">  </span><span class="k">type</span><span class="p">,</span><span class="w"> </span><span class="k">extends</span><span class="p">(</span><span class="n">serializable_t</span><span class="p">)</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">dependency_tree_t</span>
 <span class="w">    </span><span class="c">!&gt; Unit for IO</span>
 <span class="w">    </span><span class="kt">integer</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">unit</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">output_unit</span>
 <span class="w">    </span><span class="c">!&gt; Verbosity of printout</span>
@@ -1737,27 +2657,33 @@ Dependency nodes contain additional information (version, git, revision)</p>
 <span class="w">    </span><span class="c">!&gt; Depedendncy resolution finished</span>
 <span class="w">    </span><span class="k">procedure</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">finished</span>
 <span class="w">    </span><span class="c">!&gt; Reading of dependency tree</span>
-<span class="w">    </span><span class="k">generic</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">load</span><span class="w"> </span><span class="o">=&gt;</span><span class="w"> </span><span class="n">load_from_file</span><span class="p">,</span><span class="w"> </span><span class="n">load_from_unit</span><span class="p">,</span><span class="w"> </span><span class="n">load_from_toml</span>
+<span class="w">    </span><span class="k">generic</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">load_cache</span><span class="w"> </span><span class="o">=&gt;</span><span class="w"> </span><span class="n">load_cache_from_file</span><span class="p">,</span><span class="w"> </span><span class="n">load_cache_from_unit</span><span class="p">,</span><span class="w"> </span><span class="n">load_cache_from_toml</span>
 <span class="w">    </span><span class="c">!&gt; Read dependency tree from file</span>
-<span class="w">    </span><span class="k">procedure</span><span class="p">,</span><span class="w"> </span><span class="k">private</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">load_from_file</span>
+<span class="w">    </span><span class="k">procedure</span><span class="p">,</span><span class="w"> </span><span class="k">private</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">load_cache_from_file</span>
 <span class="w">    </span><span class="c">!&gt; Read dependency tree from formatted unit</span>
-<span class="w">    </span><span class="k">procedure</span><span class="p">,</span><span class="w"> </span><span class="k">private</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">load_from_unit</span>
+<span class="w">    </span><span class="k">procedure</span><span class="p">,</span><span class="w"> </span><span class="k">private</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">load_cache_from_unit</span>
 <span class="w">    </span><span class="c">!&gt; Read dependency tree from TOML data structure</span>
-<span class="w">    </span><span class="k">procedure</span><span class="p">,</span><span class="w"> </span><span class="k">private</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">load_from_toml</span>
+<span class="w">    </span><span class="k">procedure</span><span class="p">,</span><span class="w"> </span><span class="k">private</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">load_cache_from_toml</span>
 <span class="w">    </span><span class="c">!&gt; Writing of dependency tree</span>
-<span class="w">    </span><span class="k">generic</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">dump</span><span class="w"> </span><span class="o">=&gt;</span><span class="w"> </span><span class="n">dump_to_file</span><span class="p">,</span><span class="w"> </span><span class="n">dump_to_unit</span><span class="p">,</span><span class="w"> </span><span class="n">dump_to_toml</span>
+<span class="w">    </span><span class="k">generic</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">dump_cache</span><span class="w"> </span><span class="o">=&gt;</span><span class="w"> </span><span class="n">dump_cache_to_file</span><span class="p">,</span><span class="w"> </span><span class="n">dump_cache_to_unit</span><span class="p">,</span><span class="w"> </span><span class="n">dump_cache_to_toml</span>
 <span class="w">    </span><span class="c">!&gt; Write dependency tree to file</span>
-<span class="w">    </span><span class="k">procedure</span><span class="p">,</span><span class="w"> </span><span class="k">private</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">dump_to_file</span>
+<span class="w">    </span><span class="k">procedure</span><span class="p">,</span><span class="w"> </span><span class="k">private</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">dump_cache_to_file</span>
 <span class="w">    </span><span class="c">!&gt; Write dependency tree to formatted unit</span>
-<span class="w">    </span><span class="k">procedure</span><span class="p">,</span><span class="w"> </span><span class="k">private</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">dump_to_unit</span>
+<span class="w">    </span><span class="k">procedure</span><span class="p">,</span><span class="w"> </span><span class="k">private</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">dump_cache_to_unit</span>
 <span class="w">    </span><span class="c">!&gt; Write dependency tree to TOML data structure</span>
-<span class="w">    </span><span class="k">procedure</span><span class="p">,</span><span class="w"> </span><span class="k">private</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">dump_to_toml</span>
+<span class="w">    </span><span class="k">procedure</span><span class="p">,</span><span class="w"> </span><span class="k">private</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">dump_cache_to_toml</span>
 <span class="w">    </span><span class="c">!&gt; Update dependency tree</span>
 <span class="w">    </span><span class="k">generic</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">update</span><span class="w"> </span><span class="o">=&gt;</span><span class="w"> </span><span class="n">update_dependency</span><span class="p">,</span><span class="w"> </span><span class="n">update_tree</span>
 <span class="w">    </span><span class="c">!&gt; Update a list of dependencies</span>
 <span class="w">    </span><span class="k">procedure</span><span class="p">,</span><span class="w"> </span><span class="k">private</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">update_dependency</span>
 <span class="w">    </span><span class="c">!&gt; Update all dependencies in the tree</span>
 <span class="w">    </span><span class="k">procedure</span><span class="p">,</span><span class="w"> </span><span class="k">private</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">update_tree</span>
+
+<span class="w">    </span><span class="c">!&gt; Serialization interface</span>
+<span class="w">    </span><span class="k">procedure</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">serializable_is_same</span><span class="w"> </span><span class="o">=&gt;</span><span class="w"> </span><span class="n">dependency_tree_is_same</span>
+<span class="w">    </span><span class="k">procedure</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">dump_to_toml</span><span class="w">   </span><span class="o">=&gt;</span><span class="w"> </span><span class="n">tree_dump_to_toml</span>
+<span class="w">    </span><span class="k">procedure</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">load_from_toml</span><span class="w"> </span><span class="o">=&gt;</span><span class="w"> </span><span class="n">tree_load_from_toml</span>
+
 <span class="w">  </span><span class="k">end type </span><span class="n">dependency_tree_t</span>
 </pre></div>
 
@@ -1778,7 +2704,7 @@ Dependency nodes contain additional information (version, git, revision)</p>
             <p class="text-end">
               Documentation generated by
               <a href="https://github.com/Fortran-FOSS-Programmers/ford">FORD</a>
- on 2024-02-25 08:31              </p>
+ on 2024-02-25 08:37              </p>
           </div>
         </div>
         <br>

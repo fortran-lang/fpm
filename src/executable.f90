@@ -11,10 +11,11 @@
 !>[executable.dependencies]
 !>```
 module fpm_manifest_executable
-    use fpm_manifest_dependency, only : dependency_config_t, new_dependencies
-    use fpm_error, only : error_t, syntax_error, bad_name_error
-    use fpm_strings, only : string_t
-    use fpm_toml, only : toml_table, toml_key, toml_stat, get_value, get_list
+    use fpm_manifest_dependency, only : dependency_config_t, new_dependencies, resize
+    use fpm_error, only : error_t, syntax_error, bad_name_error, fatal_error
+    use fpm_strings, only : string_t, operator(==)
+    use fpm_toml, only : toml_table, toml_key, toml_stat, get_value, get_list, serializable_t, add_table, &
+                          set_string, set_list
     implicit none
     private
 
@@ -22,7 +23,7 @@ module fpm_manifest_executable
 
 
     !> Configuation meta data for an executable
-    type :: executable_config_t
+    type, extends(serializable_t) :: executable_config_t
 
         !> Name of the resulting executable
         character(len=:), allocatable :: name
@@ -44,7 +45,14 @@ module fpm_manifest_executable
         !> Print information on this instance
         procedure :: info
 
+        !> Serialization interface
+        procedure :: serializable_is_same => exe_is_same
+        procedure :: dump_to_toml
+        procedure :: load_from_toml
+
     end type executable_config_t
+
+    character(*), parameter, private :: class_name = 'executable_config_t'
 
 
 contains
@@ -184,6 +192,158 @@ contains
         end if
 
     end subroutine info
+
+
+    logical function exe_is_same(this,that)
+        class(executable_config_t), intent(in) :: this
+        class(serializable_t), intent(in) :: that
+
+        integer :: ii
+
+        exe_is_same = .false.
+
+        select type (other=>that)
+           type is (executable_config_t)
+              if (.not.this%link==other%link) return
+              if (.not.allocated(this%name).eqv.allocated(other%name)) return
+              if (.not.this%name==other%name) return
+              if (.not.allocated(this%source_dir).eqv.allocated(other%source_dir)) return
+              if (.not.this%source_dir==other%source_dir) return
+              if (.not.allocated(this%main).eqv.allocated(other%main)) return
+              if (.not.this%main==other%main) return
+              if (.not.allocated(this%dependency).eqv.allocated(other%dependency)) return
+              if (allocated(this%dependency)) then
+                 if (.not.(size(this%dependency)==size(other%dependency))) return
+                 do ii = 1, size(this%dependency)
+                    if (.not.(this%dependency(ii)==other%dependency(ii))) return
+                 end do
+              end if
+           class default
+              ! Not the same type
+              return
+        end select
+
+        !> All checks passed!
+        exe_is_same = .true.
+
+    end function exe_is_same
+
+    !> Dump install config to toml table
+    subroutine dump_to_toml(self, table, error)
+
+        !> Instance of the serializable object
+        class(executable_config_t), intent(inout) :: self
+
+        !> Data structure
+        type(toml_table), intent(inout) :: table
+
+        !> Error handling
+        type(error_t), allocatable, intent(out) :: error
+
+        !> Local variables
+        integer :: ierr, ii
+        type(toml_table), pointer :: ptr_deps,ptr
+        character(27) :: unnamed
+
+        call set_string(table, "name", self%name, error)
+        if (allocated(error)) return
+        call set_string(table, "source-dir", self%source_dir, error)
+        if (allocated(error)) return
+        call set_string(table, "main", self%main, error)
+        if (allocated(error)) return
+
+        if (allocated(self%dependency)) then
+
+           ! Create dependency table
+           call add_table(table, "dependencies", ptr_deps)
+           if (.not. associated(ptr_deps)) then
+              call fatal_error(error, class_name//" cannot create dependency table ")
+              return
+           end if
+
+           do ii = 1, size(self%dependency)
+              associate (dep => self%dependency(ii))
+
+                 !> Because dependencies are named, fallback if this has no name
+                 !> So, serialization will work regardless of size(self%dep) == self%ndep
+                 if (len_trim(dep%name)==0) then
+                    write(unnamed,1) ii
+                    call add_table(ptr_deps, trim(unnamed), ptr)
+                 else
+                    call add_table(ptr_deps, dep%name, ptr)
+                 end if
+                 if (.not. associated(ptr)) then
+                    call fatal_error(error, class_name//" cannot create entry for dependency "//dep%name)
+                    return
+                 end if
+                 call dep%dump_to_toml(ptr, error)
+                 if (allocated(error)) return
+              end associate
+           end do
+
+        endif
+
+        call set_list(table, "link", self%link, error)
+        if (allocated(error)) return
+
+        1 format('UNNAMED_DEPENDENCY_',i0)
+
+    end subroutine dump_to_toml
+
+    !> Read install config from toml table (no checks made at this stage)
+    subroutine load_from_toml(self, table, error)
+
+        !> Instance of the serializable object
+        class(executable_config_t), intent(inout) :: self
+
+        !> Data structure
+        type(toml_table), intent(inout) :: table
+
+        !> Error handling
+        type(error_t), allocatable, intent(out) :: error
+
+        !> Local variables
+        type(toml_key), allocatable :: keys(:),dep_keys(:)
+        type(toml_table), pointer :: ptr_deps,ptr
+        integer :: ii, jj, ierr
+
+        call table%get_keys(keys)
+
+        call get_value(table, "name", self%name)
+        if (allocated(error)) return
+        call get_value(table, "source-dir", self%source_dir)
+        if (allocated(error)) return
+        call get_value(table, "main", self%main)
+        if (allocated(error)) return
+        call get_list(table, "link", self%link, error)
+
+        find_deps_table: do ii = 1, size(keys)
+            if (keys(ii)%key=="dependencies") then
+
+               call get_value(table, keys(ii), ptr_deps)
+               if (.not.associated(ptr_deps)) then
+                  call fatal_error(error,class_name//': error retrieving dependency table from TOML table')
+                  return
+               end if
+
+               !> Read all dependencies
+               call ptr_deps%get_keys(dep_keys)
+               call resize(self%dependency, size(dep_keys))
+
+               do jj = 1, size(dep_keys)
+
+                   call get_value(ptr_deps, dep_keys(jj), ptr)
+                   call self%dependency(jj)%load_from_toml(ptr, error)
+                   if (allocated(error)) return
+
+               end do
+
+               exit find_deps_table
+
+            endif
+        end do find_deps_table
+
+    end subroutine load_from_toml
 
 
 end module fpm_manifest_executable

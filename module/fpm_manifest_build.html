@@ -78,7 +78,7 @@
             <li class="list-inline-item" id="statements"><i class="fa fa-list-ol"></i>
               <a data-bs-toggle="tooltip"
                  data-bs-placement="bottom" data-html="true"
-                 title=" 1.0% of total for modules and submodules.">111 statements</a>
+                 title=" 1.4% of total for modules and submodules.">181 statements</a>
             </li>
 
             <li class="list-inline-item" id="source-file">
@@ -173,8 +173,8 @@
             <li class="list-group-item">
               <ul class="list-inline">
                   <li class="list-inline-item"><a href='fpm_error.html'>fpm_error</a></li>
-                  <li class="list-inline-item"><a href='fpm_toml.html'>fpm_toml</a></li>
                   <li class="list-inline-item"><a href='fpm_strings.html'>fpm_strings</a></li>
+                  <li class="list-inline-item"><a href='fpm_toml.html'>fpm_toml</a></li>
               </ul>
             </li>
         </ul>
@@ -195,7 +195,7 @@
     <div class="card-header codesum">
       <span class="anchor" id="type-build_config_t"></span>
       <h3>
-        type, public&nbsp;::&nbsp;
+        type, public, extends(<a href='../type/serializable_t.html'>serializable_t</a>)&nbsp;::&nbsp;
         <a href='../type/build_config_t.html'>build_config_t</a>
         
       </h3>
@@ -225,8 +225,8 @@
             </td>
             <td>::</td>
             <td><strong>auto_examples</strong></td>
-                <td></td>
-                <td></td>
+<td> =</td>
+                <td>.true.</td>
             <td>
 <p>Automatic discovery of examples</p>
             </td>
@@ -242,8 +242,8 @@
             </td>
             <td>::</td>
             <td><strong>auto_executables</strong></td>
-                <td></td>
-                <td></td>
+<td> =</td>
+                <td>.true.</td>
             <td>
 <p>Automatic discovery of executables</p>
             </td>
@@ -259,15 +259,15 @@
             </td>
             <td>::</td>
             <td><strong>auto_tests</strong></td>
-                <td></td>
-                <td></td>
+<td> =</td>
+                <td>.true.</td>
             <td>
 <p>Automatic discovery of tests</p>
             </td>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-external_modules~4"></span>
+              <span class="anchor" id="variable-external_modules"></span>
               type(<a href='../type/string_t.html'>string_t</a>),
             </td>
               <td>public,</td>
@@ -284,7 +284,7 @@
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-link~3"></span>
+              <span class="anchor" id="variable-link"></span>
               type(<a href='../type/string_t.html'>string_t</a>),
             </td>
               <td>public,</td>
@@ -318,7 +318,7 @@
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-module_prefix~4"></span>
+              <span class="anchor" id="variable-module_prefix"></span>
               type(<a href='../type/string_t.html'>string_t</a>),
             </td>
               <td>public</td>
@@ -343,9 +343,44 @@
         <table class="table table-striped varlist">
           <tbody>
               <tr>
+                <td>  generic, public ::
+  <strong><a href='../type/build_config_t.html#boundprocedure-dump~5'>dump</a></strong> => <a href='/home/runner/work/fpm/fpm/fpm-doc/type/srcfile_t.html#boundprocedure-dump_to_toml~9'>dump_to_toml</a>, dump_to_file, dump_to_unit</td>
+                <td></td>
+              </tr>
+              <tr>
                 <td>  procedure, public ::
-  <strong><a href='../type/build_config_t.html#boundprocedure-info~12'>info</a></strong></td>
+  <strong><a href='../type/build_config_t.html#boundprocedure-dump_to_toml~2'>dump_to_toml</a></strong></td>
+                <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/build_config_t.html#boundprocedure-info~2'>info</a></strong></td>
                 <td>../../<p>Print information on this instance</p></td>
+              </tr>
+              <tr>
+                <td>  generic, public ::
+  <strong><a href='../type/build_config_t.html#boundprocedure-load~3'>load</a></strong> => <a href='/home/runner/work/fpm/fpm/fpm-doc/type/srcfile_t.html#boundprocedure-load_from_toml~9'>load_from_toml</a>, load_from_file, load_from_unit</td>
+                <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/build_config_t.html#boundprocedure-load_from_toml~2'>load_from_toml</a></strong></td>
+                <td></td>
+              </tr>
+              <tr>
+                <td>  generic, public ::
+  <strong><a href='../type/build_config_t.html#boundprocedure-operator%28%3D%3D%29~4'>operator(==)</a></strong> => <a href='/home/runner/work/fpm/fpm/fpm-doc/type/srcfile_t.html#boundprocedure-serializable_is_same~9'>serializable_is_same</a></td>
+                <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/build_config_t.html#boundprocedure-serializable_is_same~2'>serializable_is_same</a></strong> => build_conf_is_same</td>
+                <td>../../<p>Serialization interface</p></td>
+              </tr>
+              <tr>
+                <td>  procedure, public, non_overridable ::
+  <strong><a href='../type/serializable_t.html#boundprocedure-test_serialization'>test_serialization</a></strong></td>
+                <td>../../<p>Test load/write roundtrip</p></td>
               </tr>
           </tbody>
         </table>
@@ -378,7 +413,7 @@
     <tbody>
         <tr>
             <td>
-              <span class="anchor" id="variable-self~94"></span>
+              <span class="anchor" id="variable-self~5"></span>
               type(<a href='../type/build_config_t.html'>build_config_t</a>),
             </td>
 <td>intent(out)</td>
@@ -393,7 +428,7 @@
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-table~41"></span>
+              <span class="anchor" id="variable-table~5"></span>
               type(toml_table),
             </td>
 <td>intent(inout)</td>
@@ -408,7 +443,7 @@
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-package_name~6"></span>
+              <span class="anchor" id="variable-package_name"></span>
               character(len=*),
             </td>
 <td>intent(in)</td>
@@ -423,7 +458,7 @@
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-error~127"></span>
+              <span class="anchor" id="variable-error~7"></span>
               type(<a href='../type/error_t.html'>error_t</a>),
             </td>
 <td>intent(out),</td>
@@ -463,7 +498,7 @@
             <p class="text-end">
               Documentation generated by
               <a href="https://github.com/Fortran-FOSS-Programmers/ford">FORD</a>
- on 2024-02-25 08:31              </p>
+ on 2024-02-25 08:37              </p>
           </div>
         </div>
         <br>
