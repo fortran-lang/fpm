@@ -23,10 +23,11 @@
 !> Resolving a dependency will result in obtaining a new package configuration
 !> data for the respective project.
 module fpm_manifest_dependency
-    use fpm_error, only: error_t, syntax_error
+    use fpm_error, only: error_t, syntax_error, fatal_error
     use fpm_git, only: git_target_t, git_target_tag, git_target_branch, &
         & git_target_revision, git_target_default, operator(==), git_matches_manifest
-    use fpm_toml, only: toml_table, toml_key, toml_stat, get_value, check_keys
+    use fpm_toml, only: toml_table, toml_key, toml_stat, get_value, check_keys, serializable_t, add_table, &
+        & set_value, set_string
     use fpm_filesystem, only: windows_path, join_path
     use fpm_environment, only: get_os_type, OS_WINDOWS
     use fpm_manifest_metapackages, only: metapackage_config_t, is_meta_package, new_meta_config, &
@@ -37,10 +38,11 @@ module fpm_manifest_dependency
     implicit none
     private
 
-    public :: dependency_config_t, new_dependency, new_dependencies, manifest_has_changed
+    public :: dependency_config_t, new_dependency, new_dependencies, manifest_has_changed, &
+        & dependency_destroy, resize
 
     !> Configuration meta data for a dependency
-    type :: dependency_config_t
+    type, extends(serializable_t) :: dependency_config_t
 
         !> Name of the dependency
         character(len=:), allocatable :: name
@@ -68,10 +70,19 @@ module fpm_manifest_dependency
         !> Print information on this instance
         procedure :: info
 
+        !> Serialization interface
+        procedure :: serializable_is_same => dependency_is_same
+        procedure :: dump_to_toml
+        procedure :: load_from_toml
+
     end type dependency_config_t
 
     !> Common output format for writing to the command line
     character(len=*), parameter :: out_fmt = '("#", *(1x, g0))'
+
+    interface resize
+        module procedure resize_dependency_config
+    end interface resize
 
 contains
 
@@ -376,6 +387,170 @@ contains
         has_changed = .false.
 
     end function manifest_has_changed
+
+    !> Clean memory
+    elemental subroutine dependency_destroy(self)
+        class(dependency_config_t), intent(inout) :: self
+
+        if (allocated(self%name)) deallocate(self%name)
+        if (allocated(self%path)) deallocate(self%path)
+        if (allocated(self%namespace)) deallocate(self%namespace)
+        if (allocated(self%requested_version)) deallocate(self%requested_version)
+        if (allocated(self%git)) deallocate(self%git)
+
+    end subroutine dependency_destroy
+
+    !> Check that two dependency configs are equal
+    logical function dependency_is_same(this,that)
+        class(dependency_config_t), intent(in) :: this
+        class(serializable_t), intent(in) :: that
+
+        dependency_is_same = .false.
+
+        select type (other=>that)
+           type is (dependency_config_t)
+
+              if (.not.(this%name==other%name)) return
+              if (.not.(this%path==other%path)) return
+              if (.not.(this%namespace==other%namespace)) return
+              if (.not.(allocated(this%requested_version).eqv.allocated(other%requested_version))) return
+              if (allocated(this%requested_version)) then
+                if (.not.(this%requested_version==other%requested_version)) return
+              endif
+
+              if (.not.(allocated(this%git).eqv.allocated(other%git))) return
+              if (allocated(this%git)) then
+                if (.not.(this%git==other%git)) return
+              endif
+
+           class default
+              ! Not the same type
+              return
+        end select
+
+        !> All checks passed!
+        dependency_is_same = .true.
+
+    end function dependency_is_same
+
+    !> Dump dependency to toml table
+    subroutine dump_to_toml(self, table, error)
+
+        !> Instance of the serializable object
+        class(dependency_config_t), intent(inout) :: self
+
+        !> Data structure
+        type(toml_table), intent(inout) :: table
+
+        !> Error handling
+        type(toml_table), pointer :: ptr
+        type(error_t), allocatable, intent(out) :: error
+
+        integer :: ierr
+
+        call set_string(table, "name", self%name, error, 'dependency_config_t')
+        if (allocated(error)) return
+        call set_string(table, "path", self%path, error, 'dependency_config_t')
+        if (allocated(error)) return
+        call set_string(table, "namespace", self%namespace, error, 'dependency_config_t')
+        if (allocated(error)) return
+        if (allocated(self%requested_version)) then
+             call set_string(table, "requested_version", self%requested_version%s(), error, 'dependency_config_t')
+             if (allocated(error)) return
+        endif
+
+        if (allocated(self%git)) then
+            call add_table(table, "git", ptr, error)
+            if (allocated(error)) return
+            call self%git%dump_to_toml(ptr, error)
+            if (allocated(error)) return
+        endif
+
+    end subroutine dump_to_toml
+
+    !> Read dependency from toml table (no checks made at this stage)
+    subroutine load_from_toml(self, table, error)
+
+        !> Instance of the serializable object
+        class(dependency_config_t), intent(inout) :: self
+
+        !> Data structure
+        type(toml_table), intent(inout) :: table
+
+        !> Error handling
+        type(error_t), allocatable, intent(out) :: error
+
+        !> Local variables
+        type(toml_key), allocatable :: list(:)
+        type(toml_table), pointer :: ptr
+        character(len=:), allocatable :: requested_version
+        integer :: ierr,ii
+
+        call dependency_destroy(self)
+
+        call get_value(table, "name", self%name)
+        call get_value(table, "path", self%path)
+        call get_value(table, "namespace", self%namespace)
+        call get_value(table, "requested_version", requested_version)
+        if (allocated(requested_version)) then
+            allocate(self%requested_version)
+            call new_version(self%requested_version, requested_version, error)
+            if (allocated(error)) then
+                error%message = 'dependency_config_t: version error from TOML table - '//error%message
+                return
+            endif
+        end if
+
+        call table%get_keys(list)
+        add_git: do ii = 1, size(list)
+            if (list(ii)%key=="git") then
+               call get_value(table, list(ii)%key, ptr, stat=ierr)
+               if (ierr /= toml_stat%success) then
+                   call fatal_error(error,'dependency_config_t: cannot retrieve git from TOML table')
+                   exit
+               endif
+               allocate(self%git)
+               call self%git%load_from_toml(ptr, error)
+               if (allocated(error)) return
+               exit add_git
+            end if
+        end do add_git
+
+    end subroutine load_from_toml
+
+    !> Reallocate a list of dependencies
+    pure subroutine resize_dependency_config(var, n)
+        !> Instance of the array to be resized
+        type(dependency_config_t), allocatable, intent(inout) :: var(:)
+        !> Dimension of the final array size
+        integer, intent(in), optional :: n
+
+        type(dependency_config_t), allocatable :: tmp(:)
+        integer :: this_size, new_size
+        integer, parameter :: initial_size = 16
+
+        if (allocated(var)) then
+          this_size = size(var, 1)
+          call move_alloc(var, tmp)
+        else
+          this_size = initial_size
+        end if
+
+        if (present(n)) then
+          new_size = n
+        else
+          new_size = this_size + this_size/2 + 1
+        end if
+
+        allocate (var(new_size))
+
+        if (allocated(tmp)) then
+          this_size = min(size(tmp, 1), size(var, 1))
+          var(:this_size) = tmp(:this_size)
+          deallocate (tmp)
+        end if
+
+    end subroutine resize_dependency_config
 
 
 end module fpm_manifest_dependency

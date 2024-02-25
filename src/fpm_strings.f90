@@ -40,11 +40,12 @@ use iso_c_binding, only: c_char, c_ptr, c_int, c_null_char, c_associated, c_f_po
 implicit none
 
 private
-public :: f_string, lower, split, str_ends_with, string_t, str_begins_with_str
+public :: f_string, lower, upper, split, str_ends_with, string_t, str_begins_with_str
 public :: to_fortran_name, is_fortran_name
 public :: string_array_contains, string_cat, len_trim, operator(.in.), fnv_1a
 public :: replace, resize, str, join, glob
 public :: notabs, dilate, remove_newline_characters, remove_characters_in_set
+public :: operator(==)
 
 !> Module naming
 public :: is_valid_module_name, is_valid_module_prefix, &
@@ -90,6 +91,11 @@ end interface string_t
 interface f_string
     module procedure f_string, f_string_cptr, f_string_cptr_n
 end interface f_string
+
+interface operator(==)
+    module procedure string_is_same
+    module procedure string_arrays_same
+end interface
 
 contains
 
@@ -286,6 +292,37 @@ elemental pure function lower(str,begin,end) result (string)
     end do
 
 end function lower
+
+  !!License: Public Domain
+ !! Changes a string to upprtcase over optional specified column range
+elemental pure function upper(str,begin,end) result (string)
+
+    character(*), intent(In)     :: str
+    character(len(str))          :: string
+    integer,intent(in),optional  :: begin, end
+    integer                      :: i
+    integer                      :: ibegin, iend
+    string = str
+
+    ibegin = 1
+    if (present(begin))then
+        ibegin = max(ibegin,begin)
+    endif
+
+    iend = len_trim(str)
+    if (present(end))then
+        iend= min(iend,end)
+    endif
+
+    do i = ibegin, iend                               ! step thru each letter in the string in specified range
+        select case (str(i:i))
+        case ('a':'z')
+            string(i:i) = char(iachar(str(i:i))-32)   ! change letter to capitalized
+        case default
+        end select
+    end do
+
+end function upper
 
 !> Helper function to generate a new string_t instance
 !>  (Required due to the allocatable component)
@@ -1238,6 +1275,53 @@ logical function has_valid_standard_prefix(module_name,package_name) result(vali
     end if
 
 end function has_valid_standard_prefix
+
+!> Check that two string _objects_ are exactly identical
+pure logical function string_is_same(this,that)
+   !> two strings to be compared
+   type(string_t), intent(in) :: this, that
+
+   integer :: i
+
+   string_is_same = .false.
+
+   if (allocated(this%s).neqv.allocated(that%s)) return
+   if (allocated(this%s)) then
+      if (.not.len(this%s)==len(that%s)) return
+      if (.not.len_trim(this%s)==len_trim(that%s)) return
+      do i=1,len_trim(this%s)
+         if (.not.(this%s(i:i)==that%s(i:i))) return
+      end do
+   end if
+
+   ! All checks passed
+   string_is_same = .true.
+
+end function string_is_same
+
+!> Check that two allocatable string _object_ arrays are exactly identical
+pure logical function string_arrays_same(this,that)
+   !> two string arrays to be compared
+   type(string_t), allocatable, intent(in) :: this(:), that(:)
+
+   integer :: i
+
+   string_arrays_same = .false.
+
+   if (allocated(this).neqv.allocated(that)) return
+   if (allocated(this)) then
+      if (.not.(size(this)==size(that))) return
+      if (.not.(ubound(this,1)==ubound(that,1))) return
+      if (.not.(lbound(this,1)==lbound(that,1))) return
+      do i=lbound(this,1),ubound(this,1)
+         if (.not.string_is_same(this(i),that(i))) return
+      end do
+   end if
+
+   ! All checks passed
+   string_arrays_same = .true.
+
+end function string_arrays_same
 
 ! Remove all characters from a set from a string
 subroutine remove_characters_in_set(string,set,replace_with)
