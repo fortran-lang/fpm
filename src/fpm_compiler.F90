@@ -310,7 +310,7 @@ subroutine get_release_compile_flags(id, flags)
 
     case(id_intel_classic_mac)
         flags = &
-          !  flag_intel_opt//&   ! commented to debug #980
+            flag_intel_opt//&
             flag_intel_fp//&
             flag_intel_align//&
             flag_intel_limit//&
