@@ -406,6 +406,9 @@ contains
       end if
     end if
 
+    !> Ensure allocation fits
+    call resize(self%dep,self%ndep)
+
   end subroutine add_project_dependencies
 
   !> Add a list of dependencies to the dependency tree
@@ -429,6 +432,9 @@ contains
       if (allocated(error)) exit
     end do
     if (allocated(error)) return
+
+    !> Ensure allocation fits ndep
+    call resize(self%dep,self%ndep)
 
   end subroutine add_dependencies
 
@@ -464,6 +470,10 @@ contains
         end if
       end if
     else
+
+      !> Safety: reallocate if necessary
+      if (size(self%dep)==self%ndep) call resize(self%dep,self%ndep+1)
+
       ! New dependency: add from scratch
       self%ndep = self%ndep + 1
       self%dep(self%ndep) = dependency
