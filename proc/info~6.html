@@ -78,20 +78,20 @@
             <li class="list-inline-item" id="statements"><i class="fa fa-list-ol"></i>
               <a data-bs-toggle="tooltip"
                  data-bs-placement="bottom" data-html="true"
-                 title=" 0.5% of total for procedures.">29 statements</a>
+                 title=" 0.4% of total for procedures.">23 statements</a>
             </li>
 
             <li class="list-inline-item" id="source-file">
               <i class="fa fa-code"></i>
-              <a href="../src/git.f90"> Source File</a>
+              <a href="../src/profiles.f90"> Source File</a>
             </li>
         </ul>
       </div>
       <div class="col">
         <nav aria-label="breadcrumb">
           <ol class="breadcrumb justify-content-end mb-0">
-                <li class="breadcrumb-item"><a href='../sourcefile/git.f90.html'>git.f90</a></li>
-                <li class="breadcrumb-item"><a href='../module/fpm_git.html'>fpm_git</a></li>
+                <li class="breadcrumb-item"><a href='../sourcefile/profiles.f90.html'>profiles.f90</a></li>
+                <li class="breadcrumb-item"><a href='../module/fpm_manifest_profile.html'>fpm_manifest_profile</a></li>
             <li class="breadcrumb-item active" aria-current="page">info</li>
           </ol>
         </nav>
@@ -159,10 +159,10 @@
 </h2>
     
 
-    <p>Show information on git target</p>
+    <p>Write information on instance</p>
 
     <h3>Type Bound</h3>
-    <p><a href='../type/git_target_t.html'>git_target_t</a></p>
+    <p><a href='../type/profile_config_t.html'>profile_config_t</a></p>
 
     <h3>Arguments</h3>
         <table class="table table-striped varlist">
@@ -177,8 +177,8 @@
     <tbody>
         <tr>
             <td>
-              <span class="anchor" id="variable-self~90"></span>
-              class(<a href='../type/git_target_t.html'>git_target_t</a>),
+              <span class="anchor" id="variable-self~100"></span>
+              class(<a href='../type/profile_config_t.html'>profile_config_t</a>),
             </td>
 <td>intent(in)</td>
               <td></td>            <td>
@@ -187,12 +187,12 @@
             <td>::</td>
             <td><strong>self</strong></td>
             <td>
-                <p>Instance of the git target</p>
+                <p>Instance of the profile configuration</p>
             </td>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-unit~23"></span>
+              <span class="anchor" id="variable-unit~22"></span>
               integer,
             </td>
 <td>intent(in)</td>
@@ -207,7 +207,7 @@
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-verbosity~12"></span>
+              <span class="anchor" id="variable-verbosity~11"></span>
               integer,
             </td>
 <td>intent(in),</td>
@@ -288,10 +288,10 @@ parameter
     
     <section>
     <h2><span class="anchor" id="src"></span>Source Code</h2>
-    <div class="hl codehilite"><pre><span></span><span class="w">    </span><span class="k">subroutine </span><span class="n">info</span><span class="p">(</span><span class="n">self</span><span class="p">,</span><span class="w"> </span><span class="n">unit</span><span class="p">,</span><span class="w"> </span><span class="n">verbosity</span><span class="p">)</span>
+    <div class="hl codehilite"><pre><span></span><span class="w">      </span><span class="k">subroutine </span><span class="n">info</span><span class="p">(</span><span class="n">self</span><span class="p">,</span><span class="w"> </span><span class="n">unit</span><span class="p">,</span><span class="w"> </span><span class="n">verbosity</span><span class="p">)</span>
 
-<span class="w">        </span><span class="c">!&gt; Instance of the git target</span>
-<span class="w">        </span><span class="k">class</span><span class="p">(</span><span class="n">git_target_t</span><span class="p">),</span><span class="w"> </span><span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">)</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">self</span>
+<span class="w">        </span><span class="c">!&gt; Instance of the profile configuration</span>
+<span class="w">        </span><span class="k">class</span><span class="p">(</span><span class="n">profile_config_t</span><span class="p">),</span><span class="w"> </span><span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">)</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">self</span>
 
 <span class="w">        </span><span class="c">!&gt; Unit for IO</span>
 <span class="w">        </span><span class="kt">integer</span><span class="p">,</span><span class="w"> </span><span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">)</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">unit</span>
@@ -308,26 +308,22 @@ parameter
 <span class="k">            </span><span class="n">pr</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">1</span>
 <span class="w">        </span><span class="k">end if</span>
 
-<span class="k">        if</span><span class="w"> </span><span class="p">(</span><span class="n">pr</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="mi">1</span><span class="p">)</span><span class="w"> </span><span class="k">return</span>
-
-<span class="k">        write</span><span class="p">(</span><span class="n">unit</span><span class="p">,</span><span class="w"> </span><span class="n">fmt</span><span class="p">)</span><span class="w"> </span><span class="s2">&quot;Git target&quot;</span>
-<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="nb">allocated</span><span class="p">(</span><span class="n">self</span><span class="p">%</span><span class="n">url</span><span class="p">))</span><span class="w"> </span><span class="k">then</span>
-<span class="k">            write</span><span class="p">(</span><span class="n">unit</span><span class="p">,</span><span class="w"> </span><span class="n">fmt</span><span class="p">)</span><span class="w"> </span><span class="s2">&quot;- URL&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">self</span><span class="p">%</span><span class="n">url</span>
+<span class="k">        write</span><span class="p">(</span><span class="n">unit</span><span class="p">,</span><span class="w"> </span><span class="n">fmt</span><span class="p">)</span><span class="w"> </span><span class="s2">&quot;Profile&quot;</span>
+<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="nb">allocated</span><span class="p">(</span><span class="n">self</span><span class="p">%</span><span class="n">profile_name</span><span class="p">))</span><span class="w"> </span><span class="k">then</span>
+<span class="k">            write</span><span class="p">(</span><span class="n">unit</span><span class="p">,</span><span class="w"> </span><span class="n">fmt</span><span class="p">)</span><span class="w"> </span><span class="s2">&quot;- profile name&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">self</span><span class="p">%</span><span class="n">profile_name</span>
 <span class="w">        </span><span class="k">end if</span>
-<span class="k">        if</span><span class="w"> </span><span class="p">(</span><span class="nb">allocated</span><span class="p">(</span><span class="n">self</span><span class="p">%</span><span class="n">object</span><span class="p">))</span><span class="w"> </span><span class="k">then</span>
-<span class="k">            select case</span><span class="p">(</span><span class="n">self</span><span class="p">%</span><span class="n">descriptor</span><span class="p">)</span>
-<span class="w">            </span><span class="k">case </span><span class="n">default</span>
-<span class="w">                </span><span class="k">write</span><span class="p">(</span><span class="n">unit</span><span class="p">,</span><span class="w"> </span><span class="n">fmt</span><span class="p">)</span><span class="w"> </span><span class="s2">&quot;- object&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">self</span><span class="p">%</span><span class="n">object</span>
-<span class="w">            </span><span class="k">case</span><span class="p">(</span><span class="n">git_descriptor</span><span class="p">%</span><span class="n">tag</span><span class="p">)</span>
-<span class="w">                </span><span class="k">write</span><span class="p">(</span><span class="n">unit</span><span class="p">,</span><span class="w"> </span><span class="n">fmt</span><span class="p">)</span><span class="w"> </span><span class="s2">&quot;- tag&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">self</span><span class="p">%</span><span class="n">object</span>
-<span class="w">            </span><span class="k">case</span><span class="p">(</span><span class="n">git_descriptor</span><span class="p">%</span><span class="n">branch</span><span class="p">)</span>
-<span class="w">                </span><span class="k">write</span><span class="p">(</span><span class="n">unit</span><span class="p">,</span><span class="w"> </span><span class="n">fmt</span><span class="p">)</span><span class="w"> </span><span class="s2">&quot;- branch&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">self</span><span class="p">%</span><span class="n">object</span>
-<span class="w">            </span><span class="k">case</span><span class="p">(</span><span class="n">git_descriptor</span><span class="p">%</span><span class="n">revision</span><span class="p">)</span>
-<span class="w">                </span><span class="k">write</span><span class="p">(</span><span class="n">unit</span><span class="p">,</span><span class="w"> </span><span class="n">fmt</span><span class="p">)</span><span class="w"> </span><span class="s2">&quot;- sha1&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">self</span><span class="p">%</span><span class="n">object</span>
-<span class="w">            </span><span class="k">end select</span>
-<span class="k">        end if</span>
 
-<span class="k">    end subroutine </span><span class="n">info</span>
+<span class="k">        if</span><span class="w"> </span><span class="p">(</span><span class="nb">allocated</span><span class="p">(</span><span class="n">self</span><span class="p">%</span><span class="n">compiler</span><span class="p">))</span><span class="w"> </span><span class="k">then</span>
+<span class="k">            write</span><span class="p">(</span><span class="n">unit</span><span class="p">,</span><span class="w"> </span><span class="n">fmt</span><span class="p">)</span><span class="w"> </span><span class="s2">&quot;- compiler&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">self</span><span class="p">%</span><span class="n">compiler</span>
+<span class="w">        </span><span class="k">end if</span>
+
+<span class="k">        write</span><span class="p">(</span><span class="n">unit</span><span class="p">,</span><span class="w"> </span><span class="n">fmt</span><span class="p">)</span><span class="w"> </span><span class="s2">&quot;- os&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">os_type_name</span><span class="p">(</span><span class="n">self</span><span class="p">%</span><span class="n">os_type</span><span class="p">)</span>
+
+<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="nb">allocated</span><span class="p">(</span><span class="n">self</span><span class="p">%</span><span class="n">flags</span><span class="p">))</span><span class="w"> </span><span class="k">then</span>
+<span class="k">            write</span><span class="p">(</span><span class="n">unit</span><span class="p">,</span><span class="w"> </span><span class="n">fmt</span><span class="p">)</span><span class="w"> </span><span class="s2">&quot;- compiler flags&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">self</span><span class="p">%</span><span class="n">flags</span>
+<span class="w">        </span><span class="k">end if</span>
+
+<span class="k">      end subroutine </span><span class="n">info</span>
 </pre></div>
 
     </section>
@@ -348,7 +344,7 @@ parameter
             <p class="text-end">
               Documentation generated by
               <a href="https://github.com/Fortran-FOSS-Programmers/ford">FORD</a>
- on 2024-02-26 13:27              </p>
+ on 2024-03-09 18:49              </p>
           </div>
         </div>
         <br>
