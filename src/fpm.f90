@@ -534,7 +534,8 @@ subroutine cmd_run(settings,test)
 
                     do j=1,size(settings%name)
 
-                        if (glob(trim(exe_source%exe_name),trim(settings%name(j)))) then
+                        if (glob(trim(exe_source%exe_name),trim(settings%name(j))) .and. .not.found(j)) then
+
 
                             found(j) = .true.
                             exe_cmd%s = exe_target%output_file
