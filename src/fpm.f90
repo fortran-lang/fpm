@@ -511,7 +511,7 @@ subroutine cmd_run(settings,test)
     ! Enumerate executable targets to run
     col_width = -1
     found(:) = .false.
-    allocate(executables(0))
+    allocate(executables(size(settings%name)))
     do i=1,size(targets)
 
         exe_target => targets(i)%ptr
@@ -538,7 +538,7 @@ subroutine cmd_run(settings,test)
 
                             found(j) = .true.
                             exe_cmd%s = exe_target%output_file
-                            executables = [executables, exe_cmd]
+                            executables(j) = exe_cmd
 
                         end if
 
