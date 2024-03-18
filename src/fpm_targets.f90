@@ -40,7 +40,8 @@ private
 
 public FPM_TARGET_UNKNOWN, FPM_TARGET_EXECUTABLE, &
        FPM_TARGET_ARCHIVE, FPM_TARGET_OBJECT, &
-       FPM_TARGET_C_OBJECT, FPM_TARGET_CPP_OBJECT
+       FPM_TARGET_C_OBJECT, FPM_TARGET_CPP_OBJECT, &
+       FPM_TARGET_NAME
 public build_target_t, build_target_ptr
 public targets_from_sources, resolve_module_dependencies
 public add_target, add_dependency
@@ -136,6 +137,22 @@ end type build_target_t
 
 
 contains
+
+!> Target type name
+pure function FPM_TARGET_NAME(type) result(msg)
+   integer, intent(in) :: type
+   character(:), allocatable :: msg
+
+   select case (type)
+      case (FPM_TARGET_ARCHIVE);    msg = 'Archive'
+      case (FPM_TARGET_CPP_OBJECT); msg = 'C++ object'
+      case (FPM_TARGET_C_OBJECT);   msg = 'C Object'
+      case (FPM_TARGET_EXECUTABLE); msg = 'Executable'
+      case (FPM_TARGET_OBJECT);     msg = 'Object'
+      case default;                 msg = 'Unknown'
+   end select
+
+end function FPM_TARGET_NAME
 
 !> High-level wrapper to generate build target information
 subroutine targets_from_sources(targets,model,prune,error)

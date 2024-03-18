@@ -149,7 +149,8 @@
 
     <p>Add to <code>sources</code> using the executable and test entries in the manifest and
 applies any executable-specific overrides such as <code>executable%name</code>.
-Adds all sources (including modules) from each <code>executable%source_dir</code></p>
+Adds all sources (including modules) from each <code>executable%source_dir</code>
+Compare lowercase strings to allow auto-discovery of pre-processed extensions</p>
 
 
     <h3>Arguments</h3>
@@ -165,7 +166,7 @@ Adds all sources (including modules) from each <code>executable%source_dir</code
     <tbody>
         <tr>
             <td>
-              <span class="anchor" id="variable-sources~3"></span>
+              <span class="anchor" id="variable-sources~2"></span>
               type(<a href='../type/srcfile_t.html'>srcfile_t</a>),
             </td>
 <td>intent(inout),</td>
@@ -180,7 +181,7 @@ Adds all sources (including modules) from each <code>executable%source_dir</code
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-executables"></span>
+              <span class="anchor" id="variable-executables~2"></span>
               class(<a href='../type/executable_config_t.html'>executable_config_t</a>),
             </td>
 <td>intent(in)</td>
@@ -195,7 +196,7 @@ Adds all sources (including modules) from each <code>executable%source_dir</code
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-scope~3"></span>
+              <span class="anchor" id="variable-scope~4"></span>
               integer,
             </td>
 <td>intent(in)</td>
@@ -240,7 +241,7 @@ Adds all sources (including modules) from each <code>executable%source_dir</code
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-error~68"></span>
+              <span class="anchor" id="variable-error~94"></span>
               type(<a href='../type/error_t.html'>error_t</a>),
             </td>
 <td>intent(out),</td>
@@ -306,7 +307,8 @@ Adds all sources (including modules) from each <code>executable%source_dir</code
 <span class="w">        </span><span class="c">!  and apply any overrides</span>
 <span class="w">        </span><span class="k">do </span><span class="n">j</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span><span class="n">size</span><span class="p">(</span><span class="n">sources</span><span class="p">)</span>
 
-<span class="w">            </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">basename</span><span class="p">(</span><span class="n">sources</span><span class="p">(</span><span class="n">j</span><span class="p">)%</span><span class="n">file_name</span><span class="p">,</span><span class="n">suffix</span><span class="o">=</span><span class="p">.</span><span class="n">true</span><span class="p">.)</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="n">executables</span><span class="p">(</span><span class="n">i</span><span class="p">)%</span><span class="n">main</span><span class="w"> </span><span class="p">.</span><span class="nb">and</span><span class="p">.&amp;</span>
+<span class="w">            </span><span class="c">!&gt; Compare lowercase strings to allow auto-discovery of pre-processed extensions</span>
+<span class="w">            </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">lower</span><span class="p">(</span><span class="n">basename</span><span class="p">(</span><span class="n">sources</span><span class="p">(</span><span class="n">j</span><span class="p">)%</span><span class="n">file_name</span><span class="p">,</span><span class="n">suffix</span><span class="o">=</span><span class="p">.</span><span class="n">true</span><span class="p">.))</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="n">lower</span><span class="p">(</span><span class="n">executables</span><span class="p">(</span><span class="n">i</span><span class="p">)%</span><span class="n">main</span><span class="p">)</span><span class="w"> </span><span class="p">.</span><span class="nb">and</span><span class="p">.&amp;</span>
 <span class="w">                 </span><span class="n">canon_path</span><span class="p">(</span><span class="n">dirname</span><span class="p">(</span><span class="n">sources</span><span class="p">(</span><span class="n">j</span><span class="p">)%</span><span class="n">file_name</span><span class="p">))</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="p">&amp;</span>
 <span class="w">                 </span><span class="n">canon_path</span><span class="p">(</span><span class="n">executables</span><span class="p">(</span><span class="n">i</span><span class="p">)%</span><span class="n">source_dir</span><span class="p">)</span><span class="w"> </span><span class="p">)</span><span class="w"> </span><span class="k">then</span>
 
@@ -363,7 +365,7 @@ Adds all sources (including modules) from each <code>executable%source_dir</code
             <p class="text-end">
               Documentation generated by
               <a href="https://github.com/Fortran-FOSS-Programmers/ford">FORD</a>
- on 2024-03-09 18:49              </p>
+ on 2024-03-18 18:23              </p>
           </div>
         </div>
         <br>
