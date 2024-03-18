@@ -199,7 +199,8 @@ subroutine add_executable_sources(sources,executables,scope,auto_discover,with_f
         !  and apply any overrides
         do j=1,size(sources)
 
-            if (basename(sources(j)%file_name,suffix=.true.) == executables(i)%main .and.&
+            !> Compare lowercase strings to allow auto-discovery of pre-processed extensions
+            if (lower(basename(sources(j)%file_name,suffix=.true.)) == lower(executables(i)%main) .and.&
                  canon_path(dirname(sources(j)%file_name)) == &
                  canon_path(executables(i)%source_dir) ) then
 
