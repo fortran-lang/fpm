@@ -78,7 +78,7 @@
             <li class="list-inline-item" id="statements"><i class="fa fa-list-ol"></i>
               <a data-bs-toggle="tooltip"
                  data-bs-placement="bottom" data-html="true"
-                 title=" 0.3% of total for procedures.">19 statements</a>
+                 title=" 0.4% of total for procedures.">25 statements</a>
             </li>
 
             <li class="list-inline-item" id="source-file">
@@ -147,7 +147,8 @@
 </h2>
     
 
-    <p>Delete the build directory including or excluding dependencies.</p>
+    <p>Delete the build directory including or excluding dependencies. Can be used
+to clear the registry cache.</p>
 
 
     <h3>Arguments</h3>
@@ -163,7 +164,7 @@
     <tbody>
         <tr>
             <td>
-              <span class="anchor" id="variable-settings~9"></span>
+              <span class="anchor" id="variable-settings~14"></span>
               class(<a href='../type/fpm_clean_settings.html'>fpm_clean_settings</a>),
             </td>
 <td>intent(in)</td>
@@ -198,15 +199,23 @@
 <span class="w">    </span><span class="k">class</span><span class="p">(</span><span class="n">fpm_clean_settings</span><span class="p">),</span><span class="w"> </span><span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">)</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">settings</span>
 
 <span class="w">    </span><span class="kt">character</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">user_response</span>
+<span class="w">    </span><span class="k">type</span><span class="p">(</span><span class="n">fpm_global_settings</span><span class="p">)</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">global_settings</span>
+<span class="w">    </span><span class="k">type</span><span class="p">(</span><span class="n">error_t</span><span class="p">),</span><span class="w"> </span><span class="k">allocatable</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">error</span>
 
-<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">is_dir</span><span class="p">(</span><span class="s1">&#39;build&#39;</span><span class="p">))</span><span class="w"> </span><span class="k">then</span>
+<span class="w">    </span><span class="c">! Clear registry cache</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">settings</span><span class="p">%</span><span class="n">registry_cache</span><span class="p">)</span><span class="w"> </span><span class="k">then</span>
+<span class="k">        call </span><span class="n">get_global_settings</span><span class="p">(</span><span class="n">global_settings</span><span class="p">,</span><span class="w"> </span><span class="n">error</span><span class="p">)</span><span class="w"> </span>
+<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="nb">allocated</span><span class="p">(</span><span class="n">error</span><span class="p">))</span><span class="w"> </span><span class="k">return</span>
+
+<span class="k">        call </span><span class="n">os_delete_dir</span><span class="p">(</span><span class="n">os_is_unix</span><span class="p">(),</span><span class="w"> </span><span class="n">global_settings</span><span class="p">%</span><span class="n">registry_settings</span><span class="p">%</span><span class="n">cache_path</span><span class="p">)</span>
+<span class="w">    </span><span class="k">end if</span>
+
+<span class="k">    if</span><span class="w"> </span><span class="p">(</span><span class="n">is_dir</span><span class="p">(</span><span class="s1">&#39;build&#39;</span><span class="p">))</span><span class="w"> </span><span class="k">then</span>
 <span class="w">        </span><span class="c">! Remove the entire build directory</span>
-<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">settings</span><span class="p">%</span><span class="n">clean_call</span><span class="p">)</span><span class="w"> </span><span class="k">then</span>
+<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">settings</span><span class="p">%</span><span class="n">clean_all</span><span class="p">)</span><span class="w"> </span><span class="k">then</span>
 <span class="k">            call </span><span class="n">os_delete_dir</span><span class="p">(</span><span class="n">os_is_unix</span><span class="p">(),</span><span class="w"> </span><span class="s1">&#39;build&#39;</span><span class="p">);</span><span class="w"> </span><span class="k">return</span>
-<span class="k">        end if</span>
-
 <span class="w">        </span><span class="c">! Remove the build directory but skip dependencies</span>
-<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">settings</span><span class="p">%</span><span class="n">clean_skip</span><span class="p">)</span><span class="w"> </span><span class="k">then</span>
+<span class="w">        </span><span class="k">else if</span><span class="w"> </span><span class="p">(</span><span class="n">settings</span><span class="p">%</span><span class="n">clean_skip</span><span class="p">)</span><span class="w"> </span><span class="k">then</span>
 <span class="k">            call </span><span class="n">delete_skip</span><span class="p">(</span><span class="n">os_is_unix</span><span class="p">());</span><span class="w"> </span><span class="k">return</span>
 <span class="k">        end if</span>
 
@@ -238,7 +247,7 @@
             <p class="text-end">
               Documentation generated by
               <a href="https://github.com/Fortran-FOSS-Programmers/ford">FORD</a>
- on 2024-03-23 06:31              </p>
+ on 2024-03-23 07:37              </p>
           </div>
         </div>
         <br>

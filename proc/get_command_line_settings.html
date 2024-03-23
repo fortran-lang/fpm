@@ -78,7 +78,7 @@
             <li class="list-inline-item" id="statements"><i class="fa fa-list-ol"></i>
               <a data-bs-toggle="tooltip"
                  data-bs-placement="bottom" data-html="true"
-                 title=" 4.8% of total for procedures.">294 statements</a>
+                 title=" 4.9% of total for procedures.">301 statements</a>
             </li>
 
             <li class="list-inline-item" id="source-file">
@@ -164,7 +164,7 @@
     <tbody>
         <tr>
             <td>
-              <span class="anchor" id="variable-cmd_settings~2"></span>
+              <span class="anchor" id="variable-cmd_settings"></span>
               class(<a href='../type/fpm_cmd_settings.html'>fpm_cmd_settings</a>),
             </td>
 <td>intent(out),</td>
@@ -647,16 +647,29 @@
 
 <span class="w">        </span><span class="k">case</span><span class="p">(</span><span class="s1">&#39;clean&#39;</span><span class="p">)</span>
 <span class="w">            </span><span class="k">call </span><span class="n">set_args</span><span class="p">(</span><span class="n">common_args</span><span class="w"> </span><span class="o">//</span><span class="w"> </span><span class="p">&amp;</span>
+<span class="w">            </span><span class="p">&amp;</span><span class="w">   </span><span class="s1">&#39; --registry-cache&#39;</span><span class="w">   </span><span class="o">//</span><span class="w"> </span><span class="p">&amp;</span>
 <span class="w">            </span><span class="p">&amp;</span><span class="w">   </span><span class="s1">&#39; --skip&#39;</span><span class="w">             </span><span class="o">//</span><span class="w"> </span><span class="p">&amp;</span>
 <span class="w">            </span><span class="p">&amp;</span><span class="w">   </span><span class="s1">&#39; --all&#39;</span><span class="p">,</span><span class="w">                </span><span class="p">&amp;</span>
 <span class="w">                </span><span class="n">help_clean</span><span class="p">,</span><span class="w"> </span><span class="n">version_text</span><span class="p">)</span>
-<span class="w">            </span><span class="k">allocate</span><span class="p">(</span><span class="n">fpm_clean_settings</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">cmd_settings</span><span class="p">)</span>
-<span class="w">            </span><span class="k">call </span><span class="n">get_current_directory</span><span class="p">(</span><span class="n">working_dir</span><span class="p">,</span><span class="w"> </span><span class="n">error</span><span class="p">)</span>
-<span class="w">            </span><span class="n">cmd_settings</span><span class="o">=</span><span class="n">fpm_clean_settings</span><span class="p">(</span><span class="w"> </span><span class="p">&amp;</span>
-<span class="w">            </span><span class="p">&amp;</span><span class="w">   </span><span class="n">clean_skip</span><span class="o">=</span><span class="n">lget</span><span class="p">(</span><span class="s1">&#39;skip&#39;</span><span class="p">),</span><span class="w">     </span><span class="p">&amp;</span>
-<span class="w">            </span><span class="p">&amp;</span><span class="w">   </span><span class="n">clean_call</span><span class="o">=</span><span class="n">lget</span><span class="p">(</span><span class="s1">&#39;all&#39;</span><span class="p">))</span>
 
-<span class="w">        </span><span class="k">case</span><span class="p">(</span><span class="s1">&#39;publish&#39;</span><span class="p">)</span>
+<span class="w">            </span><span class="k">block</span>
+<span class="k">                </span><span class="kt">logical</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">skip</span><span class="p">,</span><span class="w"> </span><span class="n">clean_all</span>
+
+<span class="w">                </span><span class="n">skip</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">lget</span><span class="p">(</span><span class="s1">&#39;skip&#39;</span><span class="p">)</span>
+<span class="w">                </span><span class="n">clean_all</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">lget</span><span class="p">(</span><span class="s1">&#39;all&#39;</span><span class="p">)</span>
+
+<span class="w">                </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="k">all</span><span class="p">([</span><span class="n">skip</span><span class="p">,</span><span class="w"> </span><span class="n">clean_all</span><span class="p">]))</span><span class="w"> </span><span class="k">then</span>
+<span class="k">                    call </span><span class="n">fpm_stop</span><span class="p">(</span><span class="mi">6</span><span class="p">,</span><span class="w"> </span><span class="s1">&#39;Do not specify both --skip and --all options on the clean subcommand.&#39;</span><span class="p">)</span>
+<span class="w">                </span><span class="k">end if</span>
+
+<span class="k">                allocate</span><span class="p">(</span><span class="n">fpm_clean_settings</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">cmd_settings</span><span class="p">)</span>
+<span class="w">                </span><span class="n">cmd_settings</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">fpm_clean_settings</span><span class="p">(</span><span class="w"> </span><span class="p">&amp;</span>
+<span class="w">                </span><span class="p">&amp;</span><span class="w">   </span><span class="n">registry_cache</span><span class="o">=</span><span class="n">lget</span><span class="p">(</span><span class="s1">&#39;registry-cache&#39;</span><span class="p">),</span><span class="w"> </span><span class="p">&amp;</span>
+<span class="w">                </span><span class="p">&amp;</span><span class="w">   </span><span class="n">clean_skip</span><span class="o">=</span><span class="n">skip</span><span class="p">,</span><span class="w"> </span><span class="p">&amp;</span>
+<span class="w">                </span><span class="p">&amp;</span><span class="w">   </span><span class="n">clean_all</span><span class="o">=</span><span class="n">clean_all</span><span class="p">)</span>
+<span class="w">            </span><span class="k">end block</span>
+
+<span class="k">        case</span><span class="p">(</span><span class="s1">&#39;publish&#39;</span><span class="p">)</span>
 <span class="w">            </span><span class="k">call </span><span class="n">set_args</span><span class="p">(</span><span class="n">common_args</span><span class="w"> </span><span class="o">//</span><span class="w"> </span><span class="n">compiler_args</span><span class="w"> </span><span class="o">//</span><span class="s1">&#39;&amp;</span>
 <span class="s1">            &amp; --show-package-version F &amp;</span>
 <span class="s1">            &amp; --show-upload-data F &amp;</span>
@@ -777,7 +790,7 @@
             <p class="text-end">
               Documentation generated by
               <a href="https://github.com/Fortran-FOSS-Programmers/ford">FORD</a>
- on 2024-03-23 06:31              </p>
+ on 2024-03-23 07:37              </p>
           </div>
         </div>
         <br>
