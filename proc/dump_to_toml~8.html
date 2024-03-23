@@ -10,7 +10,7 @@
     <meta name="author" content="fortran-lang/fpm contributors" >
     <link rel="icon" href="../favicon.png">
 
-    <title>match_os_type &ndash; Fortran-lang/fpm</title>
+    <title>dump_to_toml &ndash; Fortran-lang/fpm</title>
 
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet"
           integrity="sha384-1BmE4kWBq78iYhFldvKuhfTAU6auU8tT94WrHftjDbrCEXSU1oBoqyl2QvZ6jIW3" crossorigin="anonymous">
@@ -66,7 +66,7 @@
 
     <div class="container">
   <div class="row">
-    <h1>match_os_type
+    <h1>dump_to_toml
       <small>Subroutine</small>
       
     </h1>
@@ -78,21 +78,21 @@
             <li class="list-inline-item" id="statements"><i class="fa fa-list-ol"></i>
               <a data-bs-toggle="tooltip"
                  data-bs-placement="bottom" data-html="true"
-                 title=" 0.4% of total for procedures.">24 statements</a>
+                 title=" 0.2% of total for procedures.">13 statements</a>
             </li>
 
             <li class="list-inline-item" id="source-file">
               <i class="fa fa-code"></i>
-              <a href="../src/profiles.f90"> Source File</a>
+              <a href="../src/fpm_compiler.F90"> Source File</a>
             </li>
         </ul>
       </div>
       <div class="col">
         <nav aria-label="breadcrumb">
           <ol class="breadcrumb justify-content-end mb-0">
-                <li class="breadcrumb-item"><a href='../sourcefile/profiles.f90.html'>profiles.f90</a></li>
-                <li class="breadcrumb-item"><a href='../module/fpm_manifest_profile.html'>fpm_manifest_profile</a></li>
-            <li class="breadcrumb-item active" aria-current="page">match_os_type</li>
+                <li class="breadcrumb-item"><a href='../sourcefile/fpm_compiler.f90.html'>fpm_compiler.F90</a></li>
+                <li class="breadcrumb-item"><a href='../module/fpm_compiler.html'>fpm_compiler</a></li>
+            <li class="breadcrumb-item active" aria-current="page">dump_to_toml</li>
           </ol>
         </nav>
       </div>
@@ -133,7 +133,7 @@
     <div class="card card-primary">
       <div class="card-header text-left"><h3 class="card-title">Source Code</h3></div>
       <div class="list-group">
-        <a class="list-group-item" href="../proc/match_os_type.html#src">match_os_type</a>
+        <a class="list-group-item" href="../proc/dump_to_toml~8.html#src">dump_to_toml</a>
       </div>
     </div>
 
@@ -143,12 +143,15 @@
     </div>
     
     <div class="col-md-9" id='text'>
-    <h2>public  subroutine match_os_type(os_name, os_type)  
+    <h2>public  subroutine dump_to_toml(self, table, error)  
 </h2>
     
 
-    <p>Match os_type enum to a lowercase string with name of OS</p>
+    <p>Dump dependency to toml table</p>
+<p>Path to archiver</p>
 
+    <h3>Type Bound</h3>
+    <p><a href='../type/archiver_t.html'>archiver_t</a></p>
 
     <h3>Arguments</h3>
         <table class="table table-striped varlist">
@@ -163,32 +166,47 @@
     <tbody>
         <tr>
             <td>
-              <span class="anchor" id="variable-os_name~2"></span>
-              character(len=:),
+              <span class="anchor" id="variable-self~117"></span>
+              class(<a href='../type/archiver_t.html'>archiver_t</a>),
             </td>
-<td>intent(in),</td>
-              <td></td>            <td>
-              allocatable
-            </td>
-            <td>::</td>
-            <td><strong>os_name</strong></td>
-            <td>
-                <p>Name of operating system</p>
-            </td>
-        </tr>
-        <tr>
-            <td>
-              <span class="anchor" id="variable-os_type~3"></span>
-              integer,
-            </td>
-<td>intent(out)</td>
+<td>intent(inout)</td>
               <td></td>            <td>
               
             </td>
             <td>::</td>
-            <td><strong>os_type</strong></td>
+            <td><strong>self</strong></td>
             <td>
-                <p>Enum representing type of OS</p>
+                <p>Instance of the serializable object</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-table~81"></span>
+              type(toml_table),
+            </td>
+<td>intent(inout)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>table</strong></td>
+            <td>
+                <p>Data structure</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-error~151"></span>
+              type(<a href='../type/error_t.html'>error_t</a>),
+            </td>
+<td>intent(out),</td>
+              <td></td>            <td>
+              allocatable
+            </td>
+            <td>::</td>
+            <td><strong>error</strong></td>
+            <td>
+                <p>Error handling</p>
             </td>
         </tr>
     </tbody>
@@ -208,27 +226,28 @@
     
     <section>
     <h2><span class="anchor" id="src"></span>Source Code</h2>
-    <div class="hl codehilite"><pre><span></span><span class="w">      </span><span class="k">subroutine </span><span class="n">match_os_type</span><span class="p">(</span><span class="n">os_name</span><span class="p">,</span><span class="w"> </span><span class="n">os_type</span><span class="p">)</span>
+    <div class="hl codehilite"><pre><span></span><span class="k">subroutine </span><span class="n">dump_to_toml</span><span class="p">(</span><span class="n">self</span><span class="p">,</span><span class="w"> </span><span class="n">table</span><span class="p">,</span><span class="w"> </span><span class="n">error</span><span class="p">)</span>
 
-<span class="w">        </span><span class="c">!&gt; Name of operating system</span>
-<span class="w">        </span><span class="kt">character</span><span class="p">(</span><span class="nb">len</span><span class="o">=</span><span class="p">:),</span><span class="w"> </span><span class="k">allocatable</span><span class="p">,</span><span class="w"> </span><span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">)</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">os_name</span>
+<span class="w">    </span><span class="c">!&gt; Instance of the serializable object</span>
+<span class="w">    </span><span class="k">class</span><span class="p">(</span><span class="n">archiver_t</span><span class="p">),</span><span class="w"> </span><span class="k">intent</span><span class="p">(</span><span class="n">inout</span><span class="p">)</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">self</span>
 
-<span class="w">        </span><span class="c">!&gt; Enum representing type of OS</span>
-<span class="w">        </span><span class="kt">integer</span><span class="p">,</span><span class="w"> </span><span class="k">intent</span><span class="p">(</span><span class="n">out</span><span class="p">)</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">os_type</span>
+<span class="w">    </span><span class="c">!&gt; Data structure</span>
+<span class="w">    </span><span class="k">type</span><span class="p">(</span><span class="n">toml_table</span><span class="p">),</span><span class="w"> </span><span class="k">intent</span><span class="p">(</span><span class="n">inout</span><span class="p">)</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">table</span>
 
-<span class="w">        </span><span class="k">select case</span><span class="w"> </span><span class="p">(</span><span class="n">os_name</span><span class="p">)</span>
-<span class="w">          </span><span class="k">case</span><span class="w"> </span><span class="p">(</span><span class="s2">&quot;linux&quot;</span><span class="p">);</span><span class="w">   </span><span class="n">os_type</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">OS_LINUX</span>
-<span class="w">          </span><span class="k">case</span><span class="w"> </span><span class="p">(</span><span class="s2">&quot;macos&quot;</span><span class="p">);</span><span class="w">   </span><span class="n">os_type</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">OS_MACOS</span>
-<span class="w">          </span><span class="k">case</span><span class="w"> </span><span class="p">(</span><span class="s2">&quot;windows&quot;</span><span class="p">);</span><span class="w"> </span><span class="n">os_type</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">OS_WINDOWS</span>
-<span class="w">          </span><span class="k">case</span><span class="w"> </span><span class="p">(</span><span class="s2">&quot;cygwin&quot;</span><span class="p">);</span><span class="w">  </span><span class="n">os_type</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">OS_CYGWIN</span>
-<span class="w">          </span><span class="k">case</span><span class="w"> </span><span class="p">(</span><span class="s2">&quot;solaris&quot;</span><span class="p">);</span><span class="w"> </span><span class="n">os_type</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">OS_SOLARIS</span>
-<span class="w">          </span><span class="k">case</span><span class="w"> </span><span class="p">(</span><span class="s2">&quot;freebsd&quot;</span><span class="p">);</span><span class="w"> </span><span class="n">os_type</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">OS_FREEBSD</span>
-<span class="w">          </span><span class="k">case</span><span class="w"> </span><span class="p">(</span><span class="s2">&quot;openbsd&quot;</span><span class="p">);</span><span class="w"> </span><span class="n">os_type</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">OS_OPENBSD</span>
-<span class="w">          </span><span class="k">case</span><span class="w"> </span><span class="p">(</span><span class="s2">&quot;all&quot;</span><span class="p">);</span><span class="w">     </span><span class="n">os_type</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">OS_ALL</span>
-<span class="w">          </span><span class="k">case </span><span class="n">default</span><span class="p">;</span><span class="w">     </span><span class="n">os_type</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">OS_UNKNOWN</span>
-<span class="w">        </span><span class="k">end select</span>
+<span class="w">    </span><span class="c">!&gt; Error handling</span>
+<span class="w">    </span><span class="k">type</span><span class="p">(</span><span class="n">error_t</span><span class="p">),</span><span class="w"> </span><span class="k">allocatable</span><span class="p">,</span><span class="w"> </span><span class="k">intent</span><span class="p">(</span><span class="n">out</span><span class="p">)</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">error</span>
 
-<span class="k">      end subroutine </span><span class="n">match_os_type</span>
+<span class="w">    </span><span class="c">!&gt; Path to archiver</span>
+<span class="w">    </span><span class="k">call </span><span class="n">set_string</span><span class="p">(</span><span class="n">table</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;ar&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">self</span><span class="p">%</span><span class="n">ar</span><span class="p">,</span><span class="w"> </span><span class="n">error</span><span class="p">,</span><span class="w"> </span><span class="s1">&#39;archiver_t&#39;</span><span class="p">)</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="nb">allocated</span><span class="p">(</span><span class="n">error</span><span class="p">))</span><span class="w"> </span><span class="k">return</span>
+<span class="k">    call </span><span class="n">set_value</span><span class="p">(</span><span class="n">table</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;use-response-file&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">self</span><span class="p">%</span><span class="n">use_response_file</span><span class="p">,</span><span class="w"> </span><span class="n">error</span><span class="p">,</span><span class="w"> </span><span class="s1">&#39;archiver_t&#39;</span><span class="p">)</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="nb">allocated</span><span class="p">(</span><span class="n">error</span><span class="p">))</span><span class="w"> </span><span class="k">return</span>
+<span class="k">    call </span><span class="n">set_value</span><span class="p">(</span><span class="n">table</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;echo&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">self</span><span class="p">%</span><span class="n">echo</span><span class="p">,</span><span class="w"> </span><span class="n">error</span><span class="p">,</span><span class="w"> </span><span class="s1">&#39;archiver_t&#39;</span><span class="p">)</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="nb">allocated</span><span class="p">(</span><span class="n">error</span><span class="p">))</span><span class="w"> </span><span class="k">return</span>
+<span class="k">    call </span><span class="n">set_value</span><span class="p">(</span><span class="n">table</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;verbose&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">self</span><span class="p">%</span><span class="n">verbose</span><span class="p">,</span><span class="w"> </span><span class="n">error</span><span class="p">,</span><span class="w"> </span><span class="s1">&#39;archiver_t&#39;</span><span class="p">)</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="nb">allocated</span><span class="p">(</span><span class="n">error</span><span class="p">))</span><span class="w"> </span><span class="k">return</span>
+
+<span class="k">end subroutine </span><span class="n">dump_to_toml</span>
 </pre></div>
 
     </section>

@@ -162,7 +162,7 @@
     <tbody>
         <tr>
             <td>
-              <span class="anchor" id="variable-settings~4"></span>
+              <span class="anchor" id="variable-settings~8"></span>
               class(<a href='../type/fpm_run_settings.html'>fpm_run_settings</a>),
             </td>
 <td>intent(inout)</td>
@@ -250,7 +250,7 @@
 <span class="w">    </span><span class="c">! Enumerate executable targets to run</span>
 <span class="w">    </span><span class="n">col_width</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="o">-</span><span class="mi">1</span>
 <span class="w">    </span><span class="n">found</span><span class="p">(:)</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">.</span><span class="n">false</span><span class="p">.</span>
-<span class="w">    </span><span class="k">allocate</span><span class="p">(</span><span class="n">executables</span><span class="p">(</span><span class="mi">0</span><span class="p">))</span>
+<span class="w">    </span><span class="k">allocate</span><span class="p">(</span><span class="n">executables</span><span class="p">(</span><span class="n">size</span><span class="p">(</span><span class="n">settings</span><span class="p">%</span><span class="n">name</span><span class="p">)))</span>
 <span class="w">    </span><span class="k">do </span><span class="n">i</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span><span class="n">size</span><span class="p">(</span><span class="n">targets</span><span class="p">)</span>
 
 <span class="w">        </span><span class="n">exe_target</span><span class="w"> </span><span class="o">=&gt;</span><span class="w"> </span><span class="n">targets</span><span class="p">(</span><span class="n">i</span><span class="p">)%</span><span class="n">ptr</span>
@@ -273,11 +273,12 @@
 
 <span class="k">                    do </span><span class="n">j</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span><span class="n">size</span><span class="p">(</span><span class="n">settings</span><span class="p">%</span><span class="n">name</span><span class="p">)</span>
 
-<span class="w">                        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">glob</span><span class="p">(</span><span class="nb">trim</span><span class="p">(</span><span class="n">exe_source</span><span class="p">%</span><span class="n">exe_name</span><span class="p">),</span><span class="nb">trim</span><span class="p">(</span><span class="n">settings</span><span class="p">%</span><span class="n">name</span><span class="p">(</span><span class="n">j</span><span class="p">))))</span><span class="w"> </span><span class="k">then</span>
+<span class="w">                        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">glob</span><span class="p">(</span><span class="nb">trim</span><span class="p">(</span><span class="n">exe_source</span><span class="p">%</span><span class="n">exe_name</span><span class="p">),</span><span class="nb">trim</span><span class="p">(</span><span class="n">settings</span><span class="p">%</span><span class="n">name</span><span class="p">(</span><span class="n">j</span><span class="p">)))</span><span class="w"> </span><span class="p">.</span><span class="nb">and</span><span class="p">.</span><span class="w"> </span><span class="p">.</span><span class="nb">not</span><span class="p">.</span><span class="n">found</span><span class="p">(</span><span class="n">j</span><span class="p">))</span><span class="w"> </span><span class="k">then</span>
+
 
 <span class="k">                            </span><span class="n">found</span><span class="p">(</span><span class="n">j</span><span class="p">)</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">.</span><span class="n">true</span><span class="p">.</span>
 <span class="w">                            </span><span class="n">exe_cmd</span><span class="p">%</span><span class="n">s</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">exe_target</span><span class="p">%</span><span class="n">output_file</span>
-<span class="w">                            </span><span class="n">executables</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">[</span><span class="n">executables</span><span class="p">,</span><span class="w"> </span><span class="n">exe_cmd</span><span class="p">]</span>
+<span class="w">                            </span><span class="n">executables</span><span class="p">(</span><span class="n">j</span><span class="p">)</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">exe_cmd</span>
 
 <span class="w">                        </span><span class="k">end if</span>
 
@@ -440,7 +441,7 @@
             <p class="text-end">
               Documentation generated by
               <a href="https://github.com/Fortran-FOSS-Programmers/ford">FORD</a>
- on 2024-03-18 18:23              </p>
+ on 2024-03-23 06:31              </p>
           </div>
         </div>
         <br>
