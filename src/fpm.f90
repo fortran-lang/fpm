@@ -691,7 +691,7 @@ subroutine cmd_clean(settings)
 
     ! Clear registry cache
     if (settings%registry_cache) then
-        call get_global_settings(global_settings, error)
+        call get_global_settings(global_settings, error) 
         if (allocated(error)) return
 
         call os_delete_dir(os_is_unix(), global_settings%registry_settings%cache_path)
