@@ -10,7 +10,7 @@ module fpm_settings
   private
   public :: fpm_global_settings, get_global_settings, get_registry_settings, official_registry_base_url
 
-  character(*), parameter :: official_registry_base_url = 'https://registry-apis.vercel.app'
+  character(*), parameter :: official_registry_base_url = 'https://fpm-registry.vercel.app'
   character(*), parameter :: default_config_file_name = 'config.toml'
 
   type :: fpm_global_settings
