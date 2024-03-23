@@ -173,7 +173,7 @@ jobs:
         rm -v ${{ env.FPM }}
         echo "FPM_RELEASE=${{ env.EXE }}" >> $GITHUB_ENV
       env:
-        EXE: fpm-${{ env.VERSION }}-${{ matrix.os-arch }}${{ matrix.exe }}
+        EXE: fpm-${{ env.VERSION }}-${{ matrix.os-arch }}-gcc-${{ matrix.gcc_v }}${{ matrix.exe }}
 
     - name: Run release version
       shell: bash
@@ -181,7 +181,7 @@ jobs:
         ci/run_tests.sh "$PWD/${{ env.FPM_RELEASE }}"
 
     - name: Upload artifact
-      uses: actions/upload-artifact@v2
+      uses: actions/upload-artifact@v4
       with:
         name: ${{ env.FPM_RELEASE }}
         path: ${{ env.FPM_RELEASE }}
@@ -197,9 +197,10 @@ jobs:
     - uses: actions/checkout@v4
 
     - name: Download Artifacts
-      uses: actions/download-artifact@v2
+      uses: actions/download-artifact@v4
       with:
-        path: ${{ github.workspace }} # This will download all files
+        path: ${{ github.workspace }}
+        merge-multiple: true
 
     - name: Get version (normal)
       if: github.event_name != 'release'
@@ -229,6 +230,12 @@ jobs:
     - name: Fetch Windows executable
       shell: msys2 {0}
       run: |
+        ls -l fpm-*
+        echo "================================================================="
+        ls -l fpm-*/fpm*
+        echo "================================================================="
+        find . | sed -e "s/[^-][^\/]*\// |/g" -e "s/|\([^ ]\)/|-\1/"
+        echo "================================================================="
         cp fpm-*/fpm*.exe ./ci/fpm.exe
 
     - name: Fetch Git for Windows
@@ -257,7 +264,7 @@ jobs:
         move fpm-installer.exe fpm-installer-${{ env.VERSION }}.exe
 
     - name: Upload artifact
-      uses: actions/upload-artifact@v2
+      uses: actions/upload-artifact@v4
       with:
         name: fpm-installer
         path: ci/fpm-installer-${{ env.VERSION }}.exe
@@ -281,9 +288,10 @@ jobs:
       if: ${{ github.event_name == 'push' }}
 
     - name: Download Artifacts
-      uses: actions/download-artifact@v2
+      uses: actions/download-artifact@v4
       with:
-        path: ${{ github.workspace }} # This will download all files
+        path: ${{ github.workspace }}
+        merge-multiple: true
 
     - name: Normalize file names for continuous delivery
       if: ${{ github.event_name == 'push' }}

@@ -35,7 +35,7 @@ jobs:
         PREFIX: fpm-${{ env.VERSION }}/
 
     - name: Upload artifact
-      uses: actions/upload-artifact@v2
+      uses: actions/upload-artifact@v4
       with:
         name: ${{ env.OUTPUT }}
         path: ${{ env.OUTPUT }}
@@ -104,7 +104,7 @@ jobs:
         ${{ env.EXE }} build 
 
     - name: Upload artifact
-      uses: actions/upload-artifact@v2
+      uses: actions/upload-artifact@v4
       with:
         name: ${{ env.OUTPUT }}
         path: ${{ env.OUTPUT }}
@@ -128,9 +128,10 @@ jobs:
       if: ${{ github.event_name == 'push' }}
 
     - name: Download Artifacts
-      uses: actions/download-artifact@v2
+      uses: actions/download-artifact@v4
       with:
-        path: ${{ github.workspace }} # This will download all files
+        path: ${{ github.workspace }}
+        merge-multiple: true
 
     - name: Normalize file names for continuous delivery
       if: ${{ github.event_name == 'push' }}
