@@ -78,20 +78,20 @@
             <li class="list-inline-item" id="statements"><i class="fa fa-list-ol"></i>
               <a data-bs-toggle="tooltip"
                  data-bs-placement="bottom" data-html="true"
-                 title="<p> 0.1% of total for procedures.</p>Including implementation: 33 statements,  0.5% of total for procedures.">4 statements</a>
+                 title="<p> 0.0% of total for procedures.</p>Including implementation: 7 statements,  0.1% of total for procedures.">3 statements</a>
             </li>
 
             <li class="list-inline-item" id="source-file">
               <i class="fa fa-code"></i>
-              <a href="../src/fpm_strings.f90"> Source File</a>
+              <a href="../src/git.f90"> Source File</a>
             </li>
         </ul>
       </div>
       <div class="col">
         <nav aria-label="breadcrumb">
           <ol class="breadcrumb justify-content-end mb-0">
-                <li class="breadcrumb-item"><a href='../sourcefile/fpm_strings.f90.html'>fpm_strings.f90</a></li>
-                <li class="breadcrumb-item"><a href='../module/fpm_strings.html'>fpm_strings</a></li>
+                <li class="breadcrumb-item"><a href='../sourcefile/git.f90.html'>git.f90</a></li>
+                <li class="breadcrumb-item"><a href='../module/fpm_git.html'>fpm_git</a></li>
             <li class="breadcrumb-item active" aria-current="page">operator(==)</li>
           </ol>
         </nav>
@@ -135,8 +135,7 @@
       </a>
       <div id="modprocs-0" class="collapse">
         <div class="list-group list-group-flush">
-            <a class="list-group-item" href="../interface/operator(==).html#moduleprocedure-string_is_same~2">string_is_same</a>
-            <a class="list-group-item" href="../interface/operator(==).html#moduleprocedure-string_arrays_same~2">string_arrays_same</a>
+            <a class="list-group-item" href="../interface/operator(==).html#moduleprocedure-git_target_eq">git_target_eq</a>
         </div>
       </div>
     </div>
@@ -156,10 +155,11 @@
 
         <h2>Module Procedures</h2>
             <div class="card">
-    <div class="card-header codesum"><span class="anchor" id="proc-string_is_same"></span> <h3>private pure function string_is_same(this, that)  
+    <div class="card-header codesum"><span class="anchor" id="proc-git_target_eq"></span> <h3>public  function <a href='../proc/git_target_eq.html'>git_target_eq</a>(this, that) result(is_equal)  
 </h3></div>
     <div class="card-body">
-        <p>Check that two string <em>objects</em> are exactly identical</p>
+          
+  <p>Check that two git targets are equal</p>
 
   <h4>Arguments</h4>
       <table class="table table-striped varlist">
@@ -174,8 +174,8 @@
     <tbody>
         <tr>
             <td>
-              <span class="anchor" id="variable-this~5"></span>
-              type(<a href='../type/string_t.html'>string_t</a>),
+              <span class="anchor" id="variable-this~3"></span>
+              type(<a href='../type/git_target_t.html'>git_target_t</a>),
             </td>
 <td>intent(in)</td>
               <td></td>            <td>
@@ -184,13 +184,13 @@
             <td>::</td>
             <td><strong>this</strong></td>
             <td>
-                <p>two strings to be compared</p>
+<p>Two input git targets</p>
             </td>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-that~5"></span>
-              type(<a href='../type/string_t.html'>string_t</a>),
+              <span class="anchor" id="variable-that~3"></span>
+              type(<a href='../type/git_target_t.html'>git_target_t</a>),
             </td>
 <td>intent(in)</td>
               <td></td>            <td>
@@ -199,66 +199,7 @@
             <td>::</td>
             <td><strong>that</strong></td>
             <td>
-                <p>two strings to be compared</p>
-            </td>
-        </tr>
-    </tbody>
-  </table>
-
-    <h4>
-    Return Value
-    <small>logical</small>
-    </h4>
-    
-
-    </div>
-  </div>
-
-            <div class="card">
-    <div class="card-header codesum"><span class="anchor" id="proc-string_arrays_same"></span> <h3>private pure function string_arrays_same(this, that)  
-</h3></div>
-    <div class="card-body">
-        <p>Check that two allocatable string <em>object</em> arrays are exactly identical</p>
-
-  <h4>Arguments</h4>
-      <table class="table table-striped varlist">
-    <thead>
-      <tr>
-        <th scope="col">Type</th>
-<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
-        <th scope="col"></th>
-        <th scope="col">Name</th>
-        <th scope="col"></th>
-    </thead>
-    <tbody>
-        <tr>
-            <td>
-              <span class="anchor" id="variable-this~6"></span>
-              type(<a href='../type/string_t.html'>string_t</a>),
-            </td>
-<td>intent(in),</td>
-              <td></td>            <td>
-              allocatable
-            </td>
-            <td>::</td>
-            <td><strong>this</strong>(:)</td>
-            <td>
-                <p>two string arrays to be compared</p>
-            </td>
-        </tr>
-        <tr>
-            <td>
-              <span class="anchor" id="variable-that~6"></span>
-              type(<a href='../type/string_t.html'>string_t</a>),
-            </td>
-<td>intent(in),</td>
-              <td></td>            <td>
-              allocatable
-            </td>
-            <td>::</td>
-            <td><strong>that</strong>(:)</td>
-            <td>
-                <p>two string arrays to be compared</p>
+<p>Two input git targets</p>
             </td>
         </tr>
     </tbody>
@@ -287,7 +228,7 @@
             <p class="text-end">
               Documentation generated by
               <a href="https://github.com/Fortran-FOSS-Programmers/ford">FORD</a>
- on 2024-03-24 13:42              </p>
+ on 2024-03-24 13:45              </p>
           </div>
         </div>
         <br>
