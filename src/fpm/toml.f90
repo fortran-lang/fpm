@@ -256,7 +256,7 @@ contains
         !> Optional JSON format
         logical, optional, intent(in) :: json
 
-        type(toml_error), allocatable :: toml_error
+        type(toml_error), allocatable :: local_error
         type(toml_table), allocatable :: table
         type(toml_table), pointer     :: jtable
         class(toml_value), allocatable :: object
@@ -267,10 +267,10 @@ contains
         if (is_json) then
 
            !> init JSON interpreter
-           call json_load(object, unit, error=toml_error)
-           if (allocated(toml_error)) then
+           call json_load(object, unit, error=local_error)
+           if (allocated(local_error)) then
               allocate (error)
-              call move_alloc(toml_error%message, error%message)
+              call move_alloc(local_error%message, error%message)
               return
            end if
 
@@ -286,11 +286,11 @@ contains
         else
 
            !> use default TOML parser
-           call toml_load(table, unit, error=toml_error)
+           call toml_load(table, unit, error=local_error)
 
-           if (allocated(toml_error)) then
+           if (allocated(local_error)) then
               allocate (error)
-              call move_alloc(toml_error%message, error%message)
+              call move_alloc(local_error%message, error%message)
               return
            end if
 
