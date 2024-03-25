@@ -451,7 +451,7 @@ contains
     end if
 
     allocate(character(len=0) :: add_files)
-    if (present(additional_files) then 
+    if (present(additional_files)) then 
        do i=1,size(additional_files)
           add_files = trim(add_files)//' --add-file='//adjustl(additional_files(i))
        end do
