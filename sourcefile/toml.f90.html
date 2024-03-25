@@ -413,7 +413,7 @@
 <a id="ln-256" name="ln-256" href="#ln-256"></a><span class="w">        </span><span class="c">!&gt; Optional JSON format</span>
 <a id="ln-257" name="ln-257" href="#ln-257"></a><span class="w">        </span><span class="kt">logical</span><span class="p">,</span><span class="w"> </span><span class="k">optional</span><span class="p">,</span><span class="w"> </span><span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">)</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">json</span>
 <a id="ln-258" name="ln-258" href="#ln-258"></a>
-<a id="ln-259" name="ln-259" href="#ln-259"></a><span class="w">        </span><span class="k">type</span><span class="p">(</span><span class="n">toml_error</span><span class="p">),</span><span class="w"> </span><span class="k">allocatable</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">toml_error</span>
+<a id="ln-259" name="ln-259" href="#ln-259"></a><span class="w">        </span><span class="k">type</span><span class="p">(</span><span class="n">toml_error</span><span class="p">),</span><span class="w"> </span><span class="k">allocatable</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">local_error</span>
 <a id="ln-260" name="ln-260" href="#ln-260"></a><span class="w">        </span><span class="k">type</span><span class="p">(</span><span class="n">toml_table</span><span class="p">),</span><span class="w"> </span><span class="k">allocatable</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">table</span>
 <a id="ln-261" name="ln-261" href="#ln-261"></a><span class="w">        </span><span class="k">type</span><span class="p">(</span><span class="n">toml_table</span><span class="p">),</span><span class="w"> </span><span class="k">pointer</span><span class="w">     </span><span class="kd">::</span><span class="w"> </span><span class="n">jtable</span>
 <a id="ln-262" name="ln-262" href="#ln-262"></a><span class="w">        </span><span class="k">class</span><span class="p">(</span><span class="n">toml_value</span><span class="p">),</span><span class="w"> </span><span class="k">allocatable</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">object</span>
@@ -424,10 +424,10 @@
 <a id="ln-267" name="ln-267" href="#ln-267"></a><span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">is_json</span><span class="p">)</span><span class="w"> </span><span class="k">then</span>
 <a id="ln-268" name="ln-268" href="#ln-268"></a>
 <a id="ln-269" name="ln-269" href="#ln-269"></a><span class="w">           </span><span class="c">!&gt; init JSON interpreter</span>
-<a id="ln-270" name="ln-270" href="#ln-270"></a><span class="w">           </span><span class="k">call </span><span class="n">json_load</span><span class="p">(</span><span class="n">object</span><span class="p">,</span><span class="w"> </span><span class="n">unit</span><span class="p">,</span><span class="w"> </span><span class="n">error</span><span class="o">=</span><span class="n">toml_error</span><span class="p">)</span>
-<a id="ln-271" name="ln-271" href="#ln-271"></a><span class="w">           </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="nb">allocated</span><span class="p">(</span><span class="n">toml_error</span><span class="p">))</span><span class="w"> </span><span class="k">then</span>
+<a id="ln-270" name="ln-270" href="#ln-270"></a><span class="w">           </span><span class="k">call </span><span class="n">json_load</span><span class="p">(</span><span class="n">object</span><span class="p">,</span><span class="w"> </span><span class="n">unit</span><span class="p">,</span><span class="w"> </span><span class="n">error</span><span class="o">=</span><span class="n">local_error</span><span class="p">)</span>
+<a id="ln-271" name="ln-271" href="#ln-271"></a><span class="w">           </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="nb">allocated</span><span class="p">(</span><span class="n">local_error</span><span class="p">))</span><span class="w"> </span><span class="k">then</span>
 <a id="ln-272" name="ln-272" href="#ln-272"></a><span class="k">              allocate</span><span class="w"> </span><span class="p">(</span><span class="n">error</span><span class="p">)</span>
-<a id="ln-273" name="ln-273" href="#ln-273"></a><span class="w">              </span><span class="k">call </span><span class="nb">move_alloc</span><span class="p">(</span><span class="n">toml_error</span><span class="p">%</span><span class="n">message</span><span class="p">,</span><span class="w"> </span><span class="n">error</span><span class="p">%</span><span class="n">message</span><span class="p">)</span>
+<a id="ln-273" name="ln-273" href="#ln-273"></a><span class="w">              </span><span class="k">call </span><span class="nb">move_alloc</span><span class="p">(</span><span class="n">local_error</span><span class="p">%</span><span class="n">message</span><span class="p">,</span><span class="w"> </span><span class="n">error</span><span class="p">%</span><span class="n">message</span><span class="p">)</span>
 <a id="ln-274" name="ln-274" href="#ln-274"></a><span class="w">              </span><span class="k">return</span>
 <a id="ln-275" name="ln-275" href="#ln-275"></a><span class="k">           end if</span>
 <a id="ln-276" name="ln-276" href="#ln-276"></a>
@@ -443,11 +443,11 @@
 <a id="ln-286" name="ln-286" href="#ln-286"></a><span class="w">        </span><span class="k">else</span>
 <a id="ln-287" name="ln-287" href="#ln-287"></a>
 <a id="ln-288" name="ln-288" href="#ln-288"></a><span class="w">           </span><span class="c">!&gt; use default TOML parser</span>
-<a id="ln-289" name="ln-289" href="#ln-289"></a><span class="w">           </span><span class="k">call </span><span class="n">toml_load</span><span class="p">(</span><span class="n">table</span><span class="p">,</span><span class="w"> </span><span class="n">unit</span><span class="p">,</span><span class="w"> </span><span class="n">error</span><span class="o">=</span><span class="n">toml_error</span><span class="p">)</span>
+<a id="ln-289" name="ln-289" href="#ln-289"></a><span class="w">           </span><span class="k">call </span><span class="n">toml_load</span><span class="p">(</span><span class="n">table</span><span class="p">,</span><span class="w"> </span><span class="n">unit</span><span class="p">,</span><span class="w"> </span><span class="n">error</span><span class="o">=</span><span class="n">local_error</span><span class="p">)</span>
 <a id="ln-290" name="ln-290" href="#ln-290"></a>
-<a id="ln-291" name="ln-291" href="#ln-291"></a><span class="w">           </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="nb">allocated</span><span class="p">(</span><span class="n">toml_error</span><span class="p">))</span><span class="w"> </span><span class="k">then</span>
+<a id="ln-291" name="ln-291" href="#ln-291"></a><span class="w">           </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="nb">allocated</span><span class="p">(</span><span class="n">local_error</span><span class="p">))</span><span class="w"> </span><span class="k">then</span>
 <a id="ln-292" name="ln-292" href="#ln-292"></a><span class="k">              allocate</span><span class="w"> </span><span class="p">(</span><span class="n">error</span><span class="p">)</span>
-<a id="ln-293" name="ln-293" href="#ln-293"></a><span class="w">              </span><span class="k">call </span><span class="nb">move_alloc</span><span class="p">(</span><span class="n">toml_error</span><span class="p">%</span><span class="n">message</span><span class="p">,</span><span class="w"> </span><span class="n">error</span><span class="p">%</span><span class="n">message</span><span class="p">)</span>
+<a id="ln-293" name="ln-293" href="#ln-293"></a><span class="w">              </span><span class="k">call </span><span class="nb">move_alloc</span><span class="p">(</span><span class="n">local_error</span><span class="p">%</span><span class="n">message</span><span class="p">,</span><span class="w"> </span><span class="n">error</span><span class="p">%</span><span class="n">message</span><span class="p">)</span>
 <a id="ln-294" name="ln-294" href="#ln-294"></a><span class="w">              </span><span class="k">return</span>
 <a id="ln-295" name="ln-295" href="#ln-295"></a><span class="k">           end if</span>
 <a id="ln-296" name="ln-296" href="#ln-296"></a>
@@ -952,7 +952,7 @@
             <p class="text-end">
               Documentation generated by
               <a href="https://github.com/Fortran-FOSS-Programmers/ford">FORD</a>
- on 2024-03-24 13:45              </p>
+ on 2024-03-25 18:07              </p>
           </div>
         </div>
         <br>
