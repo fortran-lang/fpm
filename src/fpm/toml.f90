@@ -36,19 +36,19 @@ module fpm_toml
         contains
 
         !> Dump to TOML table, unit, file
-        procedure(to_toml), deferred, private :: dump_to_toml
+        procedure(to_toml), deferred :: dump_to_toml
         procedure, non_overridable, private :: dump_to_file
         procedure, non_overridable, private :: dump_to_unit
         generic :: dump => dump_to_toml, dump_to_file, dump_to_unit
 
         !> Load from TOML table, unit, file
-        procedure(from_toml), deferred, private :: load_from_toml
+        procedure(from_toml), deferred :: load_from_toml
         procedure, non_overridable, private :: load_from_file
         procedure, non_overridable, private :: load_from_unit
         generic :: load => load_from_toml, load_from_file, load_from_unit
 
         !> Serializable entities need a way to check that they're equal
-        procedure(is_equal), deferred, private :: serializable_is_same
+        procedure(is_equal), deferred :: serializable_is_same
         generic :: operator(==) => serializable_is_same
 
         !> Test load/write roundtrip
@@ -256,7 +256,7 @@ contains
         !> Optional JSON format
         logical, optional, intent(in) :: json
 
-        type(toml_error), allocatable :: toml_error
+        type(toml_error), allocatable :: local_error
         type(toml_table), allocatable :: table
         type(toml_table), pointer     :: jtable
         class(toml_value), allocatable :: object
@@ -267,10 +267,10 @@ contains
         if (is_json) then
 
            !> init JSON interpreter
-           call json_load(object, unit, error=toml_error)
-           if (allocated(toml_error)) then
+           call json_load(object, unit, error=local_error)
+           if (allocated(local_error)) then
               allocate (error)
-              call move_alloc(toml_error%message, error%message)
+              call move_alloc(local_error%message, error%message)
               return
            end if
 
@@ -286,11 +286,11 @@ contains
         else
 
            !> use default TOML parser
-           call toml_load(table, unit, error=toml_error)
+           call toml_load(table, unit, error=local_error)
 
-           if (allocated(toml_error)) then
+           if (allocated(local_error)) then
               allocate (error)
-              call move_alloc(toml_error%message, error%message)
+              call move_alloc(local_error%message, error%message)
               return
            end if
 
@@ -454,7 +454,7 @@ contains
         character(len=*), intent(in) :: key
 
         !> The character variable
-        character(len=:), allocatable, intent(in) :: var
+        character(len=*), optional, intent(in) :: var
 
         !> Error handling
         type(error_t), allocatable, intent(out) :: error
@@ -471,7 +471,7 @@ contains
             return
         end if
 
-        if (allocated(var)) then
+        if (present(var)) then
             call set_value(table, key, var, ierr)
             if (ierr/=toml_stat%success) then
                 call fatal_error(error,'cannot set character key <'//key//'> in TOML table')
