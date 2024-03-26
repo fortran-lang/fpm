@@ -62,11 +62,6 @@ module fpm_git
 
     end type git_target_t
 
-
-    interface operator(==)
-        module procedure git_target_eq
-    end interface
-
     !> Common output format for writing to the command line
     character(len=*), parameter :: out_fmt = '("#", *(1x, g0))'
 
@@ -143,18 +138,6 @@ contains
         self%object = tag
 
     end function git_target_tag
-
-    !> Check that two git targets are equal
-    logical function git_target_eq(this,that) result(is_equal)
-
-        !> Two input git targets
-        type(git_target_t), intent(in) :: this,that
-
-        is_equal = this%descriptor == that%descriptor .and. &
-                   this%url        == that%url        .and. &
-                   this%object     == that%object
-
-    end function git_target_eq
 
     !> Check that two git targets are equal
     logical function git_is_same(this,that)
