@@ -36,19 +36,19 @@ module fpm_toml
         contains
 
         !> Dump to TOML table, unit, file
-        procedure(to_toml), deferred, private :: dump_to_toml
+        procedure(to_toml), deferred :: dump_to_toml
         procedure, non_overridable, private :: dump_to_file
         procedure, non_overridable, private :: dump_to_unit
         generic :: dump => dump_to_toml, dump_to_file, dump_to_unit
 
         !> Load from TOML table, unit, file
-        procedure(from_toml), deferred, private :: load_from_toml
+        procedure(from_toml), deferred :: load_from_toml
         procedure, non_overridable, private :: load_from_file
         procedure, non_overridable, private :: load_from_unit
         generic :: load => load_from_toml, load_from_file, load_from_unit
 
         !> Serializable entities need a way to check that they're equal
-        procedure(is_equal), deferred, private :: serializable_is_same
+        procedure(is_equal), deferred :: serializable_is_same
         generic :: operator(==) => serializable_is_same
 
         !> Test load/write roundtrip
