@@ -65,7 +65,7 @@ contains
     end do
 
     tmp_file = get_temp_filename()
-    call git_archive('.', tmp_file, 'HEAD', settings%verbose, error)
+    call git_archive('.', tmp_file, 'HEAD', additional_files=['fpm_model.json'], verbose=settings%verbose, error=error)
     if (allocated(error)) call fpm_stop(1, '*cmd_publish* Archive error: '//error%message)
     call model%dump('fpm_model.json', error, json=.true.)
     if (allocated(error)) call fpm_stop(1, '*cmd_publish* Model dump error: '//error%message)
