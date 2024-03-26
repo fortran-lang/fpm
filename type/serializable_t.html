@@ -134,9 +134,12 @@
       </a>
       <div id="boundprocs-0" class="collapse">
         <div class="list-group list-group-flush">
-            <a class="list-group-item" href="../type/serializable_t.html#boundprocedure-dump~3">dump</a>
+            <a class="list-group-item" href="../type/serializable_t.html#boundprocedure-dump">dump</a>
+            <a class="list-group-item" href="../type/serializable_t.html#boundprocedure-dump_to_toml~11">dump_to_toml</a>
             <a class="list-group-item" href="../type/serializable_t.html#boundprocedure-load">load</a>
-            <a class="list-group-item" href="../type/serializable_t.html#boundprocedure-operator%28%3D%3D%29~2">operator(==)</a>
+            <a class="list-group-item" href="../type/serializable_t.html#boundprocedure-load_from_toml~11">load_from_toml</a>
+            <a class="list-group-item" href="../type/serializable_t.html#boundprocedure-operator%28%3D%3D%29">operator(==)</a>
+            <a class="list-group-item" href="../type/serializable_t.html#boundprocedure-serializable_is_same~11">serializable_is_same</a>
             <a class="list-group-item" href="../type/serializable_t.html#boundprocedure-test_serialization">test_serialization</a>
         </div>
       </div>
@@ -170,10 +173,10 @@
           <div class="row">
               <div class="card mt-3">
     <div class="card-header codesum">
-      <span class="anchor" id="boundprocedure-dump~3"></span>
+      <span class="anchor" id="boundprocedure-dump"></span>
       <h3>
           generic, public ::
-  <strong>dump</strong> => <a href='/home/runner/work/fpm/fpm/fpm-doc/type/srcfile_t.html#boundprocedure-dump_to_toml~18'>dump_to_toml</a>, dump_to_file, dump_to_unit
+  <strong>dump</strong> => <a href='/home/runner/work/fpm/fpm/fpm-doc/type/srcfile_t.html#boundprocedure-dump_to_toml~4'>dump_to_toml</a>, dump_to_file, dump_to_unit
         
       </h3>
     </div>
@@ -419,10 +422,97 @@
           <div class="row">
               <div class="card mt-3">
     <div class="card-header codesum">
+      <span class="anchor" id="boundprocedure-dump_to_toml~11"></span>
+      <h3>
+          procedure(to_toml), public, deferred ::
+  <strong>dump_to_toml</strong>
+        
+      </h3>
+    </div>
+      <div class="card-body">
+        
+        <p>Dump to TOML table, unit, file</p>
+      </div>
+    <ul class="list-group">
+        <li class="list-group-item">
+                  <h3>
+     subroutine to_toml(self, table, error)  
+<small>Prototype</small></h3>
+
+  <p>Write object to TOML datastructure</p>
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" ></span>
+              class(<a href='serializable_t.html'>serializable_t</a>),
+            </td>
+<td>intent(inout)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>self</strong></td>
+            <td>
+                <p>Instance of the serializable object</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" ></span>
+              type(toml_table),
+            </td>
+<td>intent(inout)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>table</strong></td>
+            <td>
+                <p>Data structure</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" ></span>
+              type(<a href='error_t.html'>error_t</a>),
+            </td>
+<td>intent(out),</td>
+              <td></td>            <td>
+              allocatable
+            </td>
+            <td>::</td>
+            <td><strong>error</strong></td>
+            <td>
+                <p>Error handling</p>
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+
+        </li>
+    </ul>
+  </div>
+
+          </div>
+          <div class="row">
+              <div class="card mt-3">
+    <div class="card-header codesum">
       <span class="anchor" id="boundprocedure-load"></span>
       <h3>
           generic, public ::
-  <strong>load</strong> => <a href='/home/runner/work/fpm/fpm/fpm-doc/type/srcfile_t.html#boundprocedure-load_from_toml~18'>load_from_toml</a>, load_from_file, load_from_unit
+  <strong>load</strong> => <a href='/home/runner/work/fpm/fpm/fpm-doc/type/srcfile_t.html#boundprocedure-load_from_toml~4'>load_from_toml</a>, load_from_file, load_from_unit
         
       </h3>
     </div>
@@ -672,10 +762,97 @@ Read object from TOML table</p>
           <div class="row">
               <div class="card mt-3">
     <div class="card-header codesum">
-      <span class="anchor" id="boundprocedure-operator%28%3D%3D%29~2"></span>
+      <span class="anchor" id="boundprocedure-load_from_toml~11"></span>
+      <h3>
+          procedure(from_toml), public, deferred ::
+  <strong>load_from_toml</strong>
+        
+      </h3>
+    </div>
+      <div class="card-body">
+        
+        <p>Load from TOML table, unit, file</p>
+      </div>
+    <ul class="list-group">
+        <li class="list-group-item">
+                  <h3>
+     subroutine from_toml(self, table, error)  
+<small>Prototype</small></h3>
+
+  <p>Read dependency tree from TOML data structure</p>
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" ></span>
+              class(<a href='serializable_t.html'>serializable_t</a>),
+            </td>
+<td>intent(inout)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>self</strong></td>
+            <td>
+                <p>Instance of the serializable object</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" ></span>
+              type(toml_table),
+            </td>
+<td>intent(inout)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>table</strong></td>
+            <td>
+                <p>Data structure</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" ></span>
+              type(<a href='error_t.html'>error_t</a>),
+            </td>
+<td>intent(out),</td>
+              <td></td>            <td>
+              allocatable
+            </td>
+            <td>::</td>
+            <td><strong>error</strong></td>
+            <td>
+                <p>Error handling</p>
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+
+        </li>
+    </ul>
+  </div>
+
+          </div>
+          <div class="row">
+              <div class="card mt-3">
+    <div class="card-header codesum">
+      <span class="anchor" id="boundprocedure-operator%28%3D%3D%29"></span>
       <h3>
           generic, public ::
-  <strong>operator(==)</strong> => <a href='/home/runner/work/fpm/fpm/fpm-doc/type/srcfile_t.html#boundprocedure-serializable_is_same~18'>serializable_is_same</a>
+  <strong>operator(==)</strong> => <a href='/home/runner/work/fpm/fpm/fpm-doc/type/srcfile_t.html#boundprocedure-serializable_is_same~4'>serializable_is_same</a>
         
       </h3>
     </div>
@@ -703,6 +880,83 @@ All checks passed!</p>
             <td>
               <span class="anchor" ></span>
               class(<a href='srcfile_t.html'>srcfile_t</a>),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>this</strong></td>
+            <td>
+                
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" ></span>
+              class(<a href='serializable_t.html'>serializable_t</a>),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>that</strong></td>
+            <td>
+                
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+    <h4>
+    Return Value
+    <small>logical</small>
+    </h4>
+    
+
+        </li>
+    </ul>
+  </div>
+
+          </div>
+          <div class="row">
+              <div class="card mt-3">
+    <div class="card-header codesum">
+      <span class="anchor" id="boundprocedure-serializable_is_same~11"></span>
+      <h3>
+          procedure(is_equal), public, deferred ::
+  <strong>serializable_is_same</strong>
+        
+      </h3>
+    </div>
+      <div class="card-body">
+        
+        <p>Serializable entities need a way to check that they&rsquo;re equal</p>
+      </div>
+    <ul class="list-group">
+        <li class="list-group-item">
+                  <h3>
+     function is_equal(this, that)  
+<small>Prototype</small></h3>
+
+  <p>Compare two serializable objects</p>
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" ></span>
+              class(<a href='serializable_t.html'>serializable_t</a>),
             </td>
 <td>intent(in)</td>
               <td></td>            <td>
@@ -842,19 +1096,19 @@ Check same</p>
 <span class="w">        </span><span class="k">contains</span>
 
 <span class="w">        </span><span class="c">!&gt; Dump to TOML table, unit, file</span>
-<span class="w">        </span><span class="k">procedure</span><span class="p">(</span><span class="n">to_toml</span><span class="p">),</span><span class="w"> </span><span class="k">deferred</span><span class="p">,</span><span class="w"> </span><span class="k">private</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">dump_to_toml</span>
+<span class="w">        </span><span class="k">procedure</span><span class="p">(</span><span class="n">to_toml</span><span class="p">),</span><span class="w"> </span><span class="k">deferred</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">dump_to_toml</span>
 <span class="w">        </span><span class="k">procedure</span><span class="p">,</span><span class="w"> </span><span class="k">non_overridable</span><span class="p">,</span><span class="w"> </span><span class="k">private</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">dump_to_file</span>
 <span class="w">        </span><span class="k">procedure</span><span class="p">,</span><span class="w"> </span><span class="k">non_overridable</span><span class="p">,</span><span class="w"> </span><span class="k">private</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">dump_to_unit</span>
 <span class="w">        </span><span class="k">generic</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">dump</span><span class="w"> </span><span class="o">=&gt;</span><span class="w"> </span><span class="n">dump_to_toml</span><span class="p">,</span><span class="w"> </span><span class="n">dump_to_file</span><span class="p">,</span><span class="w"> </span><span class="n">dump_to_unit</span>
 
 <span class="w">        </span><span class="c">!&gt; Load from TOML table, unit, file</span>
-<span class="w">        </span><span class="k">procedure</span><span class="p">(</span><span class="n">from_toml</span><span class="p">),</span><span class="w"> </span><span class="k">deferred</span><span class="p">,</span><span class="w"> </span><span class="k">private</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">load_from_toml</span>
+<span class="w">        </span><span class="k">procedure</span><span class="p">(</span><span class="n">from_toml</span><span class="p">),</span><span class="w"> </span><span class="k">deferred</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">load_from_toml</span>
 <span class="w">        </span><span class="k">procedure</span><span class="p">,</span><span class="w"> </span><span class="k">non_overridable</span><span class="p">,</span><span class="w"> </span><span class="k">private</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">load_from_file</span>
 <span class="w">        </span><span class="k">procedure</span><span class="p">,</span><span class="w"> </span><span class="k">non_overridable</span><span class="p">,</span><span class="w"> </span><span class="k">private</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">load_from_unit</span>
 <span class="w">        </span><span class="k">generic</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">load</span><span class="w"> </span><span class="o">=&gt;</span><span class="w"> </span><span class="n">load_from_toml</span><span class="p">,</span><span class="w"> </span><span class="n">load_from_file</span><span class="p">,</span><span class="w"> </span><span class="n">load_from_unit</span>
 
 <span class="w">        </span><span class="c">!&gt; Serializable entities need a way to check that they&#39;re equal</span>
-<span class="w">        </span><span class="k">procedure</span><span class="p">(</span><span class="n">is_equal</span><span class="p">),</span><span class="w"> </span><span class="k">deferred</span><span class="p">,</span><span class="w"> </span><span class="k">private</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">serializable_is_same</span>
+<span class="w">        </span><span class="k">procedure</span><span class="p">(</span><span class="n">is_equal</span><span class="p">),</span><span class="w"> </span><span class="k">deferred</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">serializable_is_same</span>
 <span class="w">        </span><span class="k">generic</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">operator</span><span class="p">(</span><span class="o">==</span><span class="p">)</span><span class="w"> </span><span class="o">=&gt;</span><span class="w"> </span><span class="n">serializable_is_same</span>
 
 <span class="w">        </span><span class="c">!&gt; Test load/write roundtrip</span>
@@ -880,7 +1134,7 @@ Check same</p>
             <p class="text-end">
               Documentation generated by
               <a href="https://github.com/Fortran-FOSS-Programmers/ford">FORD</a>
- on 2024-03-25 18:07              </p>
+ on 2024-03-26 12:53              </p>
           </div>
         </div>
         <br>

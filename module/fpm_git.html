@@ -78,7 +78,7 @@
             <li class="list-inline-item" id="statements"><i class="fa fa-list-ol"></i>
               <a data-bs-toggle="tooltip"
                  data-bs-placement="bottom" data-html="true"
-                 title=" 2.0% of total for modules and submodules.">257 statements</a>
+                 title=" 1.9% of total for modules and submodules.">250 statements</a>
             </li>
 
             <li class="list-inline-item" id="source-file">
@@ -119,7 +119,7 @@
         <div class="list-group list-group-flush">
             <a class="list-group-item" href="../module/fpm_git.html#variable-compressed_package_name">compressed_package_name</a>
             <a class="list-group-item" href="../module/fpm_git.html#variable-git_descriptor">git_descriptor</a>
-            <a class="list-group-item" href="../module/fpm_git.html#variable-out_fmt~3">out_fmt</a>
+            <a class="list-group-item" href="../module/fpm_git.html#variable-out_fmt~2">out_fmt</a>
         </div>
       </div>
     </div>
@@ -130,18 +130,7 @@
   
   
   
-      <div class="card mb-4">
-      <a data-bs-toggle="collapse" href="#inters-0"
-         aria-expanded="false" aria-controls="inters-0">
-         <h4 class="card-header bg-primary text-white">Interfaces</h4>
-      </a>
-      <div id="inters-0" class="collapse">
-        <div class="list-group list-group-flush">
-            <a class="list-group-item" href="../module/fpm_git.html#interface-operator%28%3D%3D%29~3">operator(==)</a>
-        </div>
-      </div>
-    </div>
-
+  
   
       <div class="card mb-4">
       <a data-bs-toggle="collapse" href="#types-0"
@@ -168,7 +157,6 @@
             <a class="list-group-item" href="../module/fpm_git.html#proc-git_matches_manifest">git_matches_manifest</a>
             <a class="list-group-item" href="../module/fpm_git.html#proc-git_target_branch">git_target_branch</a>
             <a class="list-group-item" href="../module/fpm_git.html#proc-git_target_default">git_target_default</a>
-            <a class="list-group-item" href="../module/fpm_git.html#proc-git_target_eq">git_target_eq</a>
             <a class="list-group-item" href="../module/fpm_git.html#proc-git_target_revision">git_target_revision</a>
             <a class="list-group-item" href="../module/fpm_git.html#proc-git_target_tag">git_target_tag</a>
             <a class="list-group-item" href="../module/fpm_git.html#proc-parse_descriptor">parse_descriptor</a>
@@ -184,11 +172,11 @@
       <div id="subs-0" class="collapse">
         <div class="list-group list-group-flush">
             <a class="list-group-item" href="../module/fpm_git.html#proc-checkout">checkout</a>
-            <a class="list-group-item" href="../module/fpm_git.html#proc-dump_to_toml~10">dump_to_toml</a>
+            <a class="list-group-item" href="../module/fpm_git.html#proc-dump_to_toml~7">dump_to_toml</a>
             <a class="list-group-item" href="../module/fpm_git.html#proc-git_archive">git_archive</a>
             <a class="list-group-item" href="../module/fpm_git.html#proc-git_revision">git_revision</a>
-            <a class="list-group-item" href="../module/fpm_git.html#proc-info~12">info</a>
-            <a class="list-group-item" href="../module/fpm_git.html#proc-load_from_toml~10">load_from_toml</a>
+            <a class="list-group-item" href="../module/fpm_git.html#proc-info~7">info</a>
+            <a class="list-group-item" href="../module/fpm_git.html#proc-load_from_toml~7">load_from_toml</a>
         </div>
       </div>
     </div>
@@ -214,9 +202,9 @@
         <ul class="list-group list-group-flush">
             <li class="list-group-item">
               <ul class="list-inline">
-                  <li class="list-inline-item"><a href='fpm_error.html'>fpm_error</a></li>
                   <li class="list-inline-item"><a href='fpm_filesystem.html'>fpm_filesystem</a></li>
                   <li class="list-inline-item"><a href='fpm_toml.html'>fpm_toml</a></li>
+                  <li class="list-inline-item"><a href='fpm_error.html'>fpm_error</a></li>
               </ul>
             </li>
         </ul>
@@ -275,7 +263,7 @@ parameter
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-out_fmt~3"></span>
+              <span class="anchor" id="variable-out_fmt~2"></span>
               character(len=*),
             </td>
               <td>public,</td>
@@ -297,79 +285,6 @@ parameter
         <br>
 
 
-        <section>
-          <h2>Interfaces</h2>
-              <div class="card">
-    <div class="card-header bg-light codesum">
-      <span class="anchor" id="interface-operator%28%3D%3D%29~3"></span>
-      <h3>public        interface <a href='../interface/operator(==)~3.html'>operator(==)</a> 
-      </h3>
-    </div>
-    <ul class="list-group">
-          <li class="list-group-item">
-                <h3>
-    public  function <a href='../proc/git_target_eq.html'>git_target_eq</a>(this, that) result(is_equal)  
-
-    </h3>
-    
-  <p>Check that two git targets are equal</p>
-
-  <h4>Arguments</h4>
-      <table class="table table-striped varlist">
-    <thead>
-      <tr>
-        <th scope="col">Type</th>
-<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
-        <th scope="col"></th>
-        <th scope="col">Name</th>
-        <th scope="col"></th>
-    </thead>
-    <tbody>
-        <tr>
-            <td>
-              <span class="anchor" id="variable-this~30"></span>
-              type(<a href='../type/git_target_t.html'>git_target_t</a>),
-            </td>
-<td>intent(in)</td>
-              <td></td>            <td>
-              
-            </td>
-            <td>::</td>
-            <td><strong>this</strong></td>
-            <td>
-<p>Two input git targets</p>
-            </td>
-        </tr>
-        <tr>
-            <td>
-              <span class="anchor" id="variable-that~19"></span>
-              type(<a href='../type/git_target_t.html'>git_target_t</a>),
-            </td>
-<td>intent(in)</td>
-              <td></td>            <td>
-              
-            </td>
-            <td>::</td>
-            <td><strong>that</strong></td>
-            <td>
-<p>Two input git targets</p>
-            </td>
-        </tr>
-    </tbody>
-  </table>
-
-    <h4>
-    Return Value
-    <small>logical</small>
-    </h4>
-    
-
-          </li>
-    </ul>
-  </div>
-
-        </section>
-        <br>
 
 
         <section>
@@ -416,7 +331,7 @@ parameter
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-default~2"></span>
+              <span class="anchor" id="variable-default"></span>
               integer,
             </td>
               <td>public</td>
@@ -433,7 +348,7 @@ parameter
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-error~178"></span>
+              <span class="anchor" id="variable-error~132"></span>
               integer,
             </td>
               <td>public</td>
@@ -450,7 +365,7 @@ parameter
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-revision~4"></span>
+              <span class="anchor" id="variable-revision"></span>
               integer,
             </td>
               <td>public</td>
@@ -550,7 +465,7 @@ parameter
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-url~6"></span>
+              <span class="anchor" id="variable-url~5"></span>
               character(len=:),
             </td>
               <td>public,</td>
@@ -581,37 +496,37 @@ parameter
               </tr>
               <tr>
                 <td>  generic, public ::
-  <strong><a href='../type/git_target_t.html#boundprocedure-dump~20'>dump</a></strong> => <a href='/home/runner/work/fpm/fpm/fpm-doc/type/srcfile_t.html#boundprocedure-dump_to_toml~18'>dump_to_toml</a>, dump_to_file, dump_to_unit</td>
+  <strong><a href='../type/git_target_t.html#boundprocedure-dump~16'>dump</a></strong> => <a href='/home/runner/work/fpm/fpm/fpm-doc/type/srcfile_t.html#boundprocedure-dump_to_toml~4'>dump_to_toml</a>, dump_to_file, dump_to_unit</td>
                 <td></td>
               </tr>
               <tr>
                 <td>  procedure, public ::
-  <strong><a href='../type/git_target_t.html#boundprocedure-dump_to_toml~16'>dump_to_toml</a></strong></td>
+  <strong><a href='../type/git_target_t.html#boundprocedure-dump_to_toml~14'>dump_to_toml</a></strong></td>
                 <td></td>
               </tr>
               <tr>
                 <td>  procedure, public ::
-  <strong><a href='../type/git_target_t.html#boundprocedure-info~12'>info</a></strong></td>
+  <strong><a href='../type/git_target_t.html#boundprocedure-info~7'>info</a></strong></td>
                 <td>../../<p>Show information on instance</p></td>
               </tr>
               <tr>
                 <td>  generic, public ::
-  <strong><a href='../type/git_target_t.html#boundprocedure-load~18'>load</a></strong> => <a href='/home/runner/work/fpm/fpm/fpm-doc/type/srcfile_t.html#boundprocedure-load_from_toml~18'>load_from_toml</a>, load_from_file, load_from_unit</td>
+  <strong><a href='../type/git_target_t.html#boundprocedure-load~14'>load</a></strong> => <a href='/home/runner/work/fpm/fpm/fpm-doc/type/srcfile_t.html#boundprocedure-load_from_toml~4'>load_from_toml</a>, load_from_file, load_from_unit</td>
                 <td></td>
               </tr>
               <tr>
                 <td>  procedure, public ::
-  <strong><a href='../type/git_target_t.html#boundprocedure-load_from_toml~16'>load_from_toml</a></strong></td>
+  <strong><a href='../type/git_target_t.html#boundprocedure-load_from_toml~14'>load_from_toml</a></strong></td>
                 <td></td>
               </tr>
               <tr>
                 <td>  generic, public ::
-  <strong><a href='../type/git_target_t.html#boundprocedure-operator%28%3D%3D%29~19'>operator(==)</a></strong> => <a href='/home/runner/work/fpm/fpm/fpm-doc/type/srcfile_t.html#boundprocedure-serializable_is_same~18'>serializable_is_same</a></td>
+  <strong><a href='../type/git_target_t.html#boundprocedure-operator%28%3D%3D%29~15'>operator(==)</a></strong> => <a href='/home/runner/work/fpm/fpm/fpm-doc/type/srcfile_t.html#boundprocedure-serializable_is_same~4'>serializable_is_same</a></td>
                 <td></td>
               </tr>
               <tr>
                 <td>  procedure, public ::
-  <strong><a href='../type/git_target_t.html#boundprocedure-serializable_is_same~16'>serializable_is_same</a></strong> => <a href='/home/runner/work/fpm/fpm/fpm-doc/proc/git_is_same.html'>git_is_same</a></td>
+  <strong><a href='../type/git_target_t.html#boundprocedure-serializable_is_same~14'>serializable_is_same</a></strong> => <a href='/home/runner/work/fpm/fpm/fpm-doc/proc/git_is_same.html'>git_is_same</a></td>
                 <td>../../<p>Serialization interface</p></td>
               </tr>
               <tr>
@@ -695,7 +610,7 @@ All checks passed!</p>
     <tbody>
         <tr>
             <td>
-              <span class="anchor" id="variable-this~31"></span>
+              <span class="anchor" id="variable-this~28"></span>
               class(<a href='../type/git_target_t.html'>git_target_t</a>),
             </td>
 <td>intent(in)</td>
@@ -710,7 +625,7 @@ All checks passed!</p>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-that~20"></span>
+              <span class="anchor" id="variable-that~17"></span>
               class(<a href='../type/serializable_t.html'>serializable_t</a>),
             </td>
 <td>intent(in)</td>
@@ -755,7 +670,7 @@ All checks passed!</p>
     <tbody>
         <tr>
             <td>
-              <span class="anchor" id="variable-cached~5"></span>
+              <span class="anchor" id="variable-cached~2"></span>
               type(<a href='../type/git_target_t.html'>git_target_t</a>),
             </td>
 <td>intent(in)</td>
@@ -770,7 +685,7 @@ All checks passed!</p>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-manifest~6"></span>
+              <span class="anchor" id="variable-manifest~4"></span>
               type(<a href='../type/git_target_t.html'>git_target_t</a>),
             </td>
 <td>intent(in)</td>
@@ -785,7 +700,7 @@ All checks passed!</p>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-verbosity~18"></span>
+              <span class="anchor" id="variable-verbosity~10"></span>
               integer,
             </td>
 <td>intent(in)</td>
@@ -845,7 +760,7 @@ All checks passed!</p>
     <tbody>
         <tr>
             <td>
-              <span class="anchor" id="variable-url~8"></span>
+              <span class="anchor" id="variable-url~7"></span>
               character(len=*),
             </td>
 <td>intent(in)</td>
@@ -905,7 +820,7 @@ All checks passed!</p>
     <tbody>
         <tr>
             <td>
-              <span class="anchor" id="variable-url~7"></span>
+              <span class="anchor" id="variable-url~6"></span>
               character(len=*),
             </td>
 <td>intent(in)</td>
@@ -931,66 +846,6 @@ All checks passed!</p>
   </div>
 
               <div class="card">
-    <div class="card-header codesum"><span class="anchor" id="proc-git_target_eq"></span> <h3>public  function <a href='../proc/git_target_eq.html'>git_target_eq</a>(this, that) result(is_equal)  
-</h3></div>
-    <div class="card-body">
-          
-  <p>Check that two git targets are equal</p>
-
-  <h4>Arguments</h4>
-      <table class="table table-striped varlist">
-    <thead>
-      <tr>
-        <th scope="col">Type</th>
-<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
-        <th scope="col"></th>
-        <th scope="col">Name</th>
-        <th scope="col"></th>
-    </thead>
-    <tbody>
-        <tr>
-            <td>
-              <span class="anchor" id="variable-this~30"></span>
-              type(<a href='../type/git_target_t.html'>git_target_t</a>),
-            </td>
-<td>intent(in)</td>
-              <td></td>            <td>
-              
-            </td>
-            <td>::</td>
-            <td><strong>this</strong></td>
-            <td>
-<p>Two input git targets</p>
-            </td>
-        </tr>
-        <tr>
-            <td>
-              <span class="anchor" id="variable-that~19"></span>
-              type(<a href='../type/git_target_t.html'>git_target_t</a>),
-            </td>
-<td>intent(in)</td>
-              <td></td>            <td>
-              
-            </td>
-            <td>::</td>
-            <td><strong>that</strong></td>
-            <td>
-<p>Two input git targets</p>
-            </td>
-        </tr>
-    </tbody>
-  </table>
-
-    <h4>
-    Return Value
-    <small>logical</small>
-    </h4>
-    
-
-    </div>
-  </div>
-
-              <div class="card">
     <div class="card-header codesum"><span class="anchor" id="proc-git_target_revision"></span> <h3>public  function <a href='../proc/git_target_revision.html'>git_target_revision</a>(url, sha1) result(self)  
 </h3></div>
     <div class="card-body">
@@ -1010,7 +865,7 @@ All checks passed!</p>
     <tbody>
         <tr>
             <td>
-              <span class="anchor" id="variable-url~9"></span>
+              <span class="anchor" id="variable-url~8"></span>
               character(len=*),
             </td>
 <td>intent(in)</td>
@@ -1070,7 +925,7 @@ All checks passed!</p>
     <tbody>
         <tr>
             <td>
-              <span class="anchor" id="variable-url~10"></span>
+              <span class="anchor" id="variable-url~9"></span>
               character(len=*),
             </td>
 <td>intent(in)</td>
@@ -1130,7 +985,7 @@ All checks passed!</p>
     <tbody>
         <tr>
             <td>
-              <span class="anchor" id="variable-name~29"></span>
+              <span class="anchor" id="variable-name~18"></span>
               character(len=*),
             </td>
 <td>intent(in)</td>
@@ -1180,7 +1035,7 @@ All checks passed!</p>
     <tbody>
         <tr>
             <td>
-              <span class="anchor" id="variable-self~132"></span>
+              <span class="anchor" id="variable-self~72"></span>
               class(<a href='../type/git_target_t.html'>git_target_t</a>),
             </td>
 <td>intent(in)</td>
@@ -1210,7 +1065,7 @@ All checks passed!</p>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-error~179"></span>
+              <span class="anchor" id="variable-error~133"></span>
               type(<a href='../type/error_t.html'>error_t</a>),
             </td>
 <td>intent(out),</td>
@@ -1231,7 +1086,7 @@ All checks passed!</p>
   </div>
 
               <div class="card">
-    <div class="card-header codesum"><span class="anchor" id="proc-dump_to_toml~10"></span> <h3>public  subroutine <a href='../proc/dump_to_toml~10.html'>dump_to_toml</a>(self, table, error)  
+    <div class="card-header codesum"><span class="anchor" id="proc-dump_to_toml~7"></span> <h3>public  subroutine <a href='../proc/dump_to_toml~7.html'>dump_to_toml</a>(self, table, error)  
 </h3></div>
     <div class="card-body">
           
@@ -1250,7 +1105,7 @@ All checks passed!</p>
     <tbody>
         <tr>
             <td>
-              <span class="anchor" id="variable-self~134"></span>
+              <span class="anchor" id="variable-self~74"></span>
               class(<a href='../type/git_target_t.html'>git_target_t</a>),
             </td>
 <td>intent(inout)</td>
@@ -1265,7 +1120,7 @@ All checks passed!</p>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-table~85"></span>
+              <span class="anchor" id="variable-table~68"></span>
               type(toml_table),
             </td>
 <td>intent(inout)</td>
@@ -1280,7 +1135,7 @@ All checks passed!</p>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-error~181"></span>
+              <span class="anchor" id="variable-error~135"></span>
               type(<a href='../type/error_t.html'>error_t</a>),
             </td>
 <td>intent(out),</td>
@@ -1320,7 +1175,7 @@ All checks passed!</p>
     <tbody>
         <tr>
             <td>
-              <span class="anchor" id="variable-source~7"></span>
+              <span class="anchor" id="variable-source~6"></span>
               character(len=*),
             </td>
 <td>intent(in)</td>
@@ -1365,7 +1220,7 @@ All checks passed!</p>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-verbose~17"></span>
+              <span class="anchor" id="variable-verbose~14"></span>
               logical,
             </td>
 <td>intent(in)</td>
@@ -1380,7 +1235,7 @@ All checks passed!</p>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-error~183"></span>
+              <span class="anchor" id="variable-error~137"></span>
               type(<a href='../type/error_t.html'>error_t</a>),
             </td>
 <td>intent(out),</td>
@@ -1450,7 +1305,7 @@ All checks passed!</p>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-error~180"></span>
+              <span class="anchor" id="variable-error~134"></span>
               type(<a href='../type/error_t.html'>error_t</a>),
             </td>
 <td>intent(out),</td>
@@ -1471,7 +1326,7 @@ All checks passed!</p>
   </div>
 
               <div class="card">
-    <div class="card-header codesum"><span class="anchor" id="proc-info~12"></span> <h3>public  subroutine <a href='../proc/info~12.html'>info</a>(self, unit, verbosity)  
+    <div class="card-header codesum"><span class="anchor" id="proc-info~7"></span> <h3>public  subroutine <a href='../proc/info~7.html'>info</a>(self, unit, verbosity)  
 </h3></div>
     <div class="card-body">
           
@@ -1490,7 +1345,7 @@ All checks passed!</p>
     <tbody>
         <tr>
             <td>
-              <span class="anchor" id="variable-self~133"></span>
+              <span class="anchor" id="variable-self~73"></span>
               class(<a href='../type/git_target_t.html'>git_target_t</a>),
             </td>
 <td>intent(in)</td>
@@ -1505,7 +1360,7 @@ All checks passed!</p>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-unit~28"></span>
+              <span class="anchor" id="variable-unit~19"></span>
               integer,
             </td>
 <td>intent(in)</td>
@@ -1520,7 +1375,7 @@ All checks passed!</p>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-verbosity~19"></span>
+              <span class="anchor" id="variable-verbosity~11"></span>
               integer,
             </td>
 <td>intent(in),</td>
@@ -1541,11 +1396,11 @@ All checks passed!</p>
   </div>
 
               <div class="card">
-    <div class="card-header codesum"><span class="anchor" id="proc-load_from_toml~10"></span> <h3>public  subroutine <a href='../proc/load_from_toml~10.html'>load_from_toml</a>(self, table, error)  
+    <div class="card-header codesum"><span class="anchor" id="proc-load_from_toml~7"></span> <h3>public  subroutine <a href='../proc/load_from_toml~7.html'>load_from_toml</a>(self, table, error)  
 </h3></div>
     <div class="card-body">
           
-  <p>Read dependency from toml table (no checks made at this stage)</p><a href="../proc/load_from_toml~10.html" class="pull-right"><emph>Read more&hellip;</emph></a>
+  <p>Read dependency from toml table (no checks made at this stage)</p><a href="../proc/load_from_toml~7.html" class="pull-right"><emph>Read more&hellip;</emph></a>
 
   <h4>Arguments</h4>
       <table class="table table-striped varlist">
@@ -1560,7 +1415,7 @@ All checks passed!</p>
     <tbody>
         <tr>
             <td>
-              <span class="anchor" id="variable-self~135"></span>
+              <span class="anchor" id="variable-self~75"></span>
               class(<a href='../type/git_target_t.html'>git_target_t</a>),
             </td>
 <td>intent(inout)</td>
@@ -1575,7 +1430,7 @@ All checks passed!</p>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-table~86"></span>
+              <span class="anchor" id="variable-table~69"></span>
               type(toml_table),
             </td>
 <td>intent(inout)</td>
@@ -1590,7 +1445,7 @@ All checks passed!</p>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-error~182"></span>
+              <span class="anchor" id="variable-error~136"></span>
               type(<a href='../type/error_t.html'>error_t</a>),
             </td>
 <td>intent(out),</td>
@@ -1630,7 +1485,7 @@ All checks passed!</p>
             <p class="text-end">
               Documentation generated by
               <a href="https://github.com/Fortran-FOSS-Programmers/ford">FORD</a>
- on 2024-03-25 18:07              </p>
+ on 2024-03-26 12:53              </p>
           </div>
         </div>
         <br>
