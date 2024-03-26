@@ -407,20 +407,22 @@ contains
     end function descriptor_name
 
   !> Archive a folder using `git archive`.
-  subroutine git_archive(source, destination, ref, verbose, error)
+  subroutine git_archive(source, destination, ref, additional_files, verbose, error)
     !> Directory to archive.
     character(*), intent(in) :: source
     !> Destination of the archive.
     character(*), intent(in) :: destination
     !> (Symbolic) Reference to be archived.
     character(*), intent(in) :: ref
+    !> (Optional) list of additional untracked files to be added to the archive.
+    character(*), optional, intent(in) :: additional_files(:)
     !> Print additional information if true.
     logical, intent(in) :: verbose
     !> Error handling.
     type(error_t), allocatable, intent(out) :: error
 
-    integer :: stat
-    character(len=:), allocatable :: cmd_output, archive_format
+    integer :: stat,i
+    character(len=:), allocatable :: cmd_output, archive_format, add_files
 
     call execute_and_read_output('git archive -l', cmd_output, error, verbose)
     if (allocated(error)) return
@@ -431,7 +433,19 @@ contains
       call fatal_error(error, "Cannot find a suitable archive format for 'git archive'."); return
     end if
 
-    call run('git archive '//ref//' --format='//archive_format//' -o '//destination, echo=verbose, exitstat=stat)
+    allocate(character(len=0) :: add_files)
+    if (present(additional_files)) then 
+       do i=1,size(additional_files)
+          add_files = trim(add_files)//' --add-file='//adjustl(additional_files(i))
+       end do
+    endif
+
+    call run('git archive '//ref//' &
+        --format='//archive_format// &
+        add_files//' \
+        -o '//destination, \
+        echo=verbose, \
+        exitstat=stat)
     if (stat /= 0) then
       call fatal_error(error, "Error packing '"//source//"'."); return
     end if
