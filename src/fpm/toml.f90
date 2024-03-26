@@ -454,7 +454,7 @@ contains
         character(len=*), intent(in) :: key
 
         !> The character variable
-        character(len=:), allocatable, intent(in) :: var
+        character(len=*), optional, intent(in) :: var
 
         !> Error handling
         type(error_t), allocatable, intent(out) :: error
@@ -471,7 +471,7 @@ contains
             return
         end if
 
-        if (allocated(var)) then
+        if (present(var)) then
             call set_value(table, key, var, ierr)
             if (ierr/=toml_stat%success) then
                 call fatal_error(error,'cannot set character key <'//key//'> in TOML table')
