@@ -695,7 +695,7 @@ contains
     end if
 
     ! Include namespace and package name in the target url and download package data.
-    target_url = global_settings%registry_settings%url//'packages/'//self%namespace//'/'//self%name
+    target_url = global_settings%registry_settings%url//'/packages/'//self%namespace//'/'//self%name
     call downloader%get_pkg_data(target_url, self%requested_version, tmp_file, json, error)
     close (unit, status='delete')
     if (allocated(error)) return
