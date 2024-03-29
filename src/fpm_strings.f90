@@ -13,6 +13,8 @@
 !! - [[LOWER]]  Changes a string to lowercase over optional specified column range
 !!### Parsing and joining
 !! - [[SPLIT]]  parse string on delimiter characters and store tokens into an allocatable array
+!! - [[SPLIT_FIRST_LAST]]  Computes the first and last indices of tokens in input string, delimited by the characters in set,
+!!                         and stores them into first and last output arrays.
 !! - [[STRING_CAT]]  Concatenate an array of **type(string_t)** into a single **CHARACTER** variable
 !! - [[JOIN]]  append an array of **CHARACTER** variables into a single **CHARACTER** variable
 !!### Testing
@@ -40,7 +42,7 @@ use iso_c_binding, only: c_char, c_ptr, c_int, c_null_char, c_associated, c_f_po
 implicit none
 
 private
-public :: f_string, lower, upper, split, str_ends_with, string_t, str_begins_with_str
+public :: f_string, lower, upper, split, split_first_last, str_ends_with, string_t, str_begins_with_str
 public :: to_fortran_name, is_fortran_name
 public :: string_array_contains, string_cat, len_trim, operator(.in.), fnv_1a
 public :: replace, resize, str, join, glob
@@ -517,6 +519,73 @@ subroutine split(input_line,array,delimiters,order,nulls)
         endif
     enddo
 end subroutine split
+
+!! Author: Milan Curcic
+!! Computes the first and last indices of tokens in input string, delimited
+!! by the characters in set, and stores them into first and last output
+!! arrays.
+pure subroutine split_first_last(string, set, first, last)
+    character(*), intent(in) :: string
+    character(*), intent(in) :: set
+    integer, allocatable, intent(out) :: first(:)
+    integer, allocatable, intent(out) :: last(:)
+
+    integer, dimension(len(string) + 1) :: istart, iend
+    integer :: p, n, slen
+
+    slen = len(string)
+
+    n = 0
+    if (slen > 0) then
+        p = 0
+        do while (p < slen)
+            n = n + 1
+            istart(n) = min(p + 1, slen)
+            call split_pos(string, set, p)
+            iend(n) = p - 1
+        end do
+    end if
+
+    first = istart(:n)
+    last = iend(:n)
+
+end subroutine split_first_last
+
+!! Author: Milan Curcic
+!! If back is absent, computes the leftmost token delimiter in string whose
+!! position is > pos. If back is present and true, computes the rightmost
+!! token delimiter in string whose position is < pos. The result is stored
+!! in pos.
+pure subroutine split_pos(string, set, pos, back)
+    character(*), intent(in) :: string
+    character(*), intent(in) :: set
+    integer, intent(in out) :: pos
+    logical, intent(in), optional :: back
+
+    logical :: backward
+    integer :: result_pos, bound
+
+    if (len(string) == 0) then
+        pos = 1
+        return
+    end if
+
+    !TODO use optval when implemented in stdlib
+    !backward = optval(back, .false.)
+    backward = .false.
+    if (present(back)) backward = back
+
+    if (backward) then
+        bound = min(len(string), max(pos - 1, 0))
+        result_pos = scan(string(:bound), set, back=.true.)
+    else
+        result_pos = scan(string(min(pos + 1, len(string)):), set) + pos
+        if (result_pos < pos + 1) result_pos = len(string) + 1
+    end if
+
+    pos = result_pos
+
+end subroutine split_pos
 
 !> Returns string with characters in charset replaced with target_char.
 pure function replace(string, charset, target_char) result(res)
@@ -1371,7 +1440,7 @@ subroutine remove_newline_characters(string)
 
     integer :: feed,length
 
-    character(*), parameter :: CRLF  = new_line('a')//achar(13)
+    character(*), parameter :: CRLF  = achar(13)//new_line('a')
     character(*), parameter :: SPACE = ' '
 
     call remove_characters_in_set(string%s,set=CRLF,replace_with=SPACE)
