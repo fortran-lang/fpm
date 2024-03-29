@@ -78,7 +78,7 @@
             <li class="list-inline-item" id="statements"><i class="fa fa-list-ol"></i>
               <a data-bs-toggle="tooltip"
                  data-bs-placement="bottom" data-html="true"
-                 title=" 6.1% of total for modules and submodules.">793 statements</a>
+                 title=" 6.4% of total for modules and submodules.">836 statements</a>
             </li>
 
             <li class="list-inline-item" id="source-file">
@@ -189,6 +189,7 @@
             <a class="list-group-item" href="../module/fpm_strings.html#proc-remove_characters_in_set">remove_characters_in_set</a>
             <a class="list-group-item" href="../module/fpm_strings.html#proc-remove_newline_characters">remove_newline_characters</a>
             <a class="list-group-item" href="../module/fpm_strings.html#proc-split">split</a>
+            <a class="list-group-item" href="../module/fpm_strings.html#proc-split_first_last">split_first_last</a>
         </div>
       </div>
     </div>
@@ -227,6 +228,8 @@
 <h3 id="parsing-and-joining">Parsing and joining</h3>
 <ul>
 <li><a>SPLIT</a>  parse string on delimiter characters and store tokens into an allocatable array</li>
+<li><a>SPLIT_FIRST_LAST</a>  Computes the first and last indices of tokens in input string, delimited by the characters in set,
+                         and stores them into first and last output arrays.</li>
 <li><a>STRING_CAT</a>  Concatenate an array of <strong>type(string_t)</strong> into a single <strong>CHARACTER</strong> variable</li>
 <li><a>JOIN</a>  append an array of <strong>CHARACTER</strong> variables into a single <strong>CHARACTER</strong> variable</li>
 </ul>
@@ -253,15 +256,24 @@
 </ul>
 <p>Module naming</p>
 <p>License: Public Domain
- Changes a string to upprtcase over optional specified column range</p>
+ Changes a string to upprtcase over optional specified column range
+ Author: Milan Curcic
+ Computes the first and last indices of tokens in input string, delimited
+ by the characters in set, and stores them into first and last output
+ arrays.
+ Author: Milan Curcic
+ If back is absent, computes the leftmost token delimiter in string whose
+ position is &gt; pos. If back is present and true, computes the rightmost
+ token delimiter in string whose position is &lt; pos. The result is stored
+ in pos.</p>
 <br>          <div class="card mb-4">
       <h3 class="card-header card-title bg-light">Uses</h3>
       <div class="card-body">
         <ul class="list-group list-group-flush">
             <li class="list-group-item">
               <ul class="list-inline">
-                  <li class="list-inline-item"><a href='http://fortranwiki.org/fortran/show/iso_fortran_env'>iso_fortran_env</a></li>
                   <li class="list-inline-item"><a href='http://fortranwiki.org/fortran/show/iso_c_binding'>iso_c_binding</a></li>
+                  <li class="list-inline-item"><a href='http://fortranwiki.org/fortran/show/iso_fortran_env'>iso_fortran_env</a></li>
               </ul>
             </li>
         </ul>
@@ -303,7 +315,7 @@
     <tbody>
         <tr>
             <td>
-              <span class="anchor" id="variable-input~4"></span>
+              <span class="anchor" id="variable-input"></span>
               character(len=*),
             </td>
 <td>intent(in)</td>
@@ -361,7 +373,7 @@
     <tbody>
         <tr>
             <td>
-              <span class="anchor" id="variable-input~5"></span>
+              <span class="anchor" id="variable-input~2"></span>
               type(<a href='../type/string_t.html'>string_t</a>),
             </td>
 <td>intent(in)</td>
@@ -429,7 +441,7 @@
     <tbody>
         <tr>
             <td>
-              <span class="anchor" id="variable-string~8"></span>
+              <span class="anchor" id="variable-string~12"></span>
               type(<a href='../type/string_t.html'>string_t</a>),
             </td>
 <td>intent(in)</td>
@@ -594,7 +606,7 @@
     <tbody>
         <tr>
             <td>
-              <span class="anchor" id="variable-this~17"></span>
+              <span class="anchor" id="variable-this~13"></span>
               type(<a href='../type/string_t.html'>string_t</a>),
             </td>
 <td>intent(in)</td>
@@ -609,7 +621,7 @@
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-that~9"></span>
+              <span class="anchor" id="variable-that~5"></span>
               type(<a href='../type/string_t.html'>string_t</a>),
             </td>
 <td>intent(in)</td>
@@ -652,7 +664,7 @@
     <tbody>
         <tr>
             <td>
-              <span class="anchor" id="variable-this~18"></span>
+              <span class="anchor" id="variable-this~14"></span>
               type(<a href='../type/string_t.html'>string_t</a>),
             </td>
 <td>intent(in),</td>
@@ -667,7 +679,7 @@
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-that~10"></span>
+              <span class="anchor" id="variable-that~6"></span>
               type(<a href='../type/string_t.html'>string_t</a>),
             </td>
 <td>intent(in),</td>
@@ -720,7 +732,7 @@
     <tbody>
         <tr>
             <td>
-              <span class="anchor" id="variable-list~13"></span>
+              <span class="anchor" id="variable-list~10"></span>
               type(<a href='../type/string_t.html'>string_t</a>),
             </td>
 <td>intent(inout),</td>
@@ -735,7 +747,7 @@
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-n~15"></span>
+              <span class="anchor" id="variable-n~16"></span>
               integer,
             </td>
 <td>intent(in),</td>
@@ -783,7 +795,7 @@
     <tbody>
         <tr>
             <td>
-              <span class="anchor" id="variable-i~51"></span>
+              <span class="anchor" id="variable-i~48"></span>
               integer,
             </td>
 <td>intent(in)</td>
@@ -826,7 +838,7 @@
     <tbody>
         <tr>
             <td>
-              <span class="anchor" id="variable-i~53"></span>
+              <span class="anchor" id="variable-i~50"></span>
               integer(kind=int64),
             </td>
 <td>intent(in)</td>
@@ -869,7 +881,7 @@
     <tbody>
         <tr>
             <td>
-              <span class="anchor" id="variable-l~3"></span>
+              <span class="anchor" id="variable-l~5"></span>
               logical,
             </td>
 <td>intent(in)</td>
@@ -1394,7 +1406,7 @@ single characters terminated with a C_NULL_CHAR character</p>
     <tbody>
         <tr>
             <td>
-              <span class="anchor" id="variable-module_name~4"></span>
+              <span class="anchor" id="variable-module_name~5"></span>
               type(<a href='../type/string_t.html'>string_t</a>),
             </td>
 <td>intent(in)</td>
@@ -1457,7 +1469,7 @@ single characters terminated with a C_NULL_CHAR character</p>
     <tbody>
         <tr>
             <td>
-              <span class="anchor" id="variable-module_name~5"></span>
+              <span class="anchor" id="variable-module_name~6"></span>
               type(<a href='../type/string_t.html'>string_t</a>),
             </td>
 <td>intent(in)</td>
@@ -1472,7 +1484,7 @@ single characters terminated with a C_NULL_CHAR character</p>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-package_name~5"></span>
+              <span class="anchor" id="variable-package_name~6"></span>
               type(<a href='../type/string_t.html'>string_t</a>),
             </td>
 <td>intent(in)</td>
@@ -1517,7 +1529,7 @@ single characters terminated with a C_NULL_CHAR character</p>
     <tbody>
         <tr>
             <td>
-              <span class="anchor" id="variable-line~6"></span>
+              <span class="anchor" id="variable-line~7"></span>
               character(len=*),
             </td>
 <td>intent(in)</td>
@@ -1565,7 +1577,7 @@ single characters terminated with a C_NULL_CHAR character</p>
     <tbody>
         <tr>
             <td>
-              <span class="anchor" id="variable-module_name~3"></span>
+              <span class="anchor" id="variable-module_name~4"></span>
               type(<a href='../type/string_t.html'>string_t</a>),
             </td>
 <td>intent(in)</td>
@@ -1580,7 +1592,7 @@ single characters terminated with a C_NULL_CHAR character</p>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-package_name~4"></span>
+              <span class="anchor" id="variable-package_name~5"></span>
               type(<a href='../type/string_t.html'>string_t</a>),
             </td>
 <td>intent(in)</td>
@@ -2043,7 +2055,7 @@ single characters terminated with a C_NULL_CHAR character</p>
     <tbody>
         <tr>
             <td>
-              <span class="anchor" id="variable-string~9"></span>
+              <span class="anchor" id="variable-string~15"></span>
               character(len=*),
             </td>
 <td>intent(in)</td>
@@ -2316,7 +2328,7 @@ expanded to other characters if needed.</p>
     <tbody>
         <tr>
             <td>
-              <span class="anchor" id="variable-string~11"></span>
+              <span class="anchor" id="variable-string~17"></span>
               character(len=*),
             </td>
 <td>intent(in)</td>
@@ -2516,7 +2528,7 @@ expanded to other characters if needed.</p>
     <tbody>
         <tr>
             <td>
-              <span class="anchor" id="variable-string~12"></span>
+              <span class="anchor" id="variable-string~18"></span>
               character(len=:),
             </td>
 <td>intent(inout),</td>
@@ -2531,7 +2543,7 @@ expanded to other characters if needed.</p>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-set"></span>
+              <span class="anchor" id="variable-set~3"></span>
               character(len=*),
             </td>
 <td>intent(in)</td>
@@ -2586,7 +2598,7 @@ expanded to other characters if needed.</p>
     <tbody>
         <tr>
             <td>
-              <span class="anchor" id="variable-string~13"></span>
+              <span class="anchor" id="variable-string~19"></span>
               type(<a href='../type/string_t.html'>string_t</a>),
             </td>
 <td>intent(inout)</td>
@@ -2711,6 +2723,91 @@ given a line of structure &rdquo; par1 par2 par3 &hellip; parn &rdquo; store eac
     </div>
   </div>
 
+              <div class="card">
+    <div class="card-header codesum"><span class="anchor" id="proc-split_first_last"></span> <h3>public pure subroutine <a href='../proc/split_first_last.html'>split_first_last</a>(string, set, first, last)  
+</h3></div>
+    <div class="card-body">
+          
+  
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-string~13"></span>
+              character(len=*),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>string</strong></td>
+            <td>
+
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-set"></span>
+              character(len=*),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>set</strong></td>
+            <td>
+
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-first"></span>
+              integer,
+            </td>
+<td>intent(out),</td>
+              <td></td>            <td>
+              allocatable
+            </td>
+            <td>::</td>
+            <td><strong>first</strong>(:)</td>
+            <td>
+
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-last"></span>
+              integer,
+            </td>
+<td>intent(out),</td>
+              <td></td>            <td>
+              allocatable
+            </td>
+            <td>::</td>
+            <td><strong>last</strong>(:)</td>
+            <td>
+
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+
+    </div>
+  </div>
+
         </section>
         <br>
 
@@ -2731,7 +2828,7 @@ given a line of structure &rdquo; par1 par2 par3 &hellip; parn &rdquo; store eac
             <p class="text-end">
               Documentation generated by
               <a href="https://github.com/Fortran-FOSS-Programmers/ford">FORD</a>
- on 2024-03-26 23:23              </p>
+ on 2024-03-29 06:55              </p>
           </div>
         </div>
         <br>

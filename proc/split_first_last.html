@@ -10,7 +10,7 @@
     <meta name="author" content="fortran-lang/fpm contributors" >
     <link rel="icon" href="../favicon.png">
 
-    <title>targets_from_sources &ndash; Fortran-lang/fpm</title>
+    <title>split_first_last &ndash; Fortran-lang/fpm</title>
 
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet"
           integrity="sha384-1BmE4kWBq78iYhFldvKuhfTAU6auU8tT94WrHftjDbrCEXSU1oBoqyl2QvZ6jIW3" crossorigin="anonymous">
@@ -66,7 +66,7 @@
 
     <div class="container">
   <div class="row">
-    <h1>targets_from_sources
+    <h1>split_first_last
       <small>Subroutine</small>
       
     </h1>
@@ -78,21 +78,21 @@
             <li class="list-inline-item" id="statements"><i class="fa fa-list-ol"></i>
               <a data-bs-toggle="tooltip"
                  data-bs-placement="bottom" data-html="true"
-                 title=" 0.2% of total for procedures.">14 statements</a>
+                 title=" 0.3% of total for procedures.">21 statements</a>
             </li>
 
             <li class="list-inline-item" id="source-file">
               <i class="fa fa-code"></i>
-              <a href="../src/fpm_targets.f90"> Source File</a>
+              <a href="../src/fpm_strings.f90"> Source File</a>
             </li>
         </ul>
       </div>
       <div class="col">
         <nav aria-label="breadcrumb">
           <ol class="breadcrumb justify-content-end mb-0">
-                <li class="breadcrumb-item"><a href='../sourcefile/fpm_targets.f90.html'>fpm_targets.f90</a></li>
-                <li class="breadcrumb-item"><a href='../module/fpm_targets.html'>fpm_targets</a></li>
-            <li class="breadcrumb-item active" aria-current="page">targets_from_sources</li>
+                <li class="breadcrumb-item"><a href='../sourcefile/fpm_strings.f90.html'>fpm_strings.f90</a></li>
+                <li class="breadcrumb-item"><a href='../module/fpm_strings.html'>fpm_strings</a></li>
+            <li class="breadcrumb-item active" aria-current="page">split_first_last</li>
           </ol>
         </nav>
       </div>
@@ -133,7 +133,7 @@
     <div class="card card-primary">
       <div class="card-header text-left"><h3 class="card-title">Source Code</h3></div>
       <div class="list-group">
-        <a class="list-group-item" href="../proc/targets_from_sources.html#src">targets_from_sources</a>
+        <a class="list-group-item" href="../proc/split_first_last.html#src">split_first_last</a>
       </div>
     </div>
 
@@ -143,11 +143,10 @@
     </div>
     
     <div class="col-md-9" id='text'>
-    <h2>public  subroutine targets_from_sources(targets, model, prune, error)  
+    <h2>public pure subroutine split_first_last(string, set, first, last)  
 </h2>
     
 
-    <p>High-level wrapper to generate build target information</p>
 
 
     <h3>Arguments</h3>
@@ -163,62 +162,62 @@
     <tbody>
         <tr>
             <td>
-              <span class="anchor" id="variable-targets"></span>
-              type(<a href='../type/build_target_ptr.html'>build_target_ptr</a>),
-            </td>
-<td>intent(out),</td>
-              <td></td>            <td>
-              allocatable
-            </td>
-            <td>::</td>
-            <td><strong>targets</strong>(:)</td>
-            <td>
-                <p>The generated list of build targets</p>
-            </td>
-        </tr>
-        <tr>
-            <td>
-              <span class="anchor" id="variable-model~4"></span>
-              type(<a href='../type/fpm_model_t.html'>fpm_model_t</a>),
-            </td>
-<td>intent(inout),</td>
-              <td></td>            <td>
-              target
-            </td>
-            <td>::</td>
-            <td><strong>model</strong></td>
-            <td>
-                <p>The package model from which to construct the target list</p>
-            </td>
-        </tr>
-        <tr>
-            <td>
-              <span class="anchor" id="variable-prune~2"></span>
-              logical,
+              <span class="anchor" id="variable-string~13"></span>
+              character(len=*),
             </td>
 <td>intent(in)</td>
               <td></td>            <td>
               
             </td>
             <td>::</td>
-            <td><strong>prune</strong></td>
+            <td><strong>string</strong></td>
             <td>
-                <p>Enable tree-shaking/pruning of module dependencies</p>
+                
             </td>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-error~30"></span>
-              type(<a href='../type/error_t.html'>error_t</a>),
+              <span class="anchor" id="variable-set"></span>
+              character(len=*),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>set</strong></td>
+            <td>
+                
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-first"></span>
+              integer,
             </td>
 <td>intent(out),</td>
               <td></td>            <td>
               allocatable
             </td>
             <td>::</td>
-            <td><strong>error</strong></td>
+            <td><strong>first</strong>(:)</td>
             <td>
-                <p>Error structure</p>
+                
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-last"></span>
+              integer,
+            </td>
+<td>intent(out),</td>
+              <td></td>            <td>
+              allocatable
+            </td>
+            <td>::</td>
+            <td><strong>last</strong>(:)</td>
+            <td>
+                
             </td>
         </tr>
     </tbody>
@@ -238,34 +237,32 @@
     
     <section>
     <h2><span class="anchor" id="src"></span>Source Code</h2>
-    <div class="hl codehilite"><pre><span></span><span class="k">subroutine </span><span class="n">targets_from_sources</span><span class="p">(</span><span class="n">targets</span><span class="p">,</span><span class="n">model</span><span class="p">,</span><span class="n">prune</span><span class="p">,</span><span class="n">error</span><span class="p">)</span>
+    <div class="hl codehilite"><pre><span></span><span class="k">pure subroutine </span><span class="n">split_first_last</span><span class="p">(</span><span class="n">string</span><span class="p">,</span><span class="w"> </span><span class="n">set</span><span class="p">,</span><span class="w"> </span><span class="n">first</span><span class="p">,</span><span class="w"> </span><span class="n">last</span><span class="p">)</span>
+<span class="w">    </span><span class="kt">character</span><span class="p">(</span><span class="o">*</span><span class="p">),</span><span class="w"> </span><span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">)</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">string</span>
+<span class="w">    </span><span class="kt">character</span><span class="p">(</span><span class="o">*</span><span class="p">),</span><span class="w"> </span><span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">)</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">set</span>
+<span class="w">    </span><span class="kt">integer</span><span class="p">,</span><span class="w"> </span><span class="k">allocatable</span><span class="p">,</span><span class="w"> </span><span class="k">intent</span><span class="p">(</span><span class="n">out</span><span class="p">)</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">first</span><span class="p">(:)</span>
+<span class="w">    </span><span class="kt">integer</span><span class="p">,</span><span class="w"> </span><span class="k">allocatable</span><span class="p">,</span><span class="w"> </span><span class="k">intent</span><span class="p">(</span><span class="n">out</span><span class="p">)</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">last</span><span class="p">(:)</span>
 
-<span class="w">    </span><span class="c">!&gt; The generated list of build targets</span>
-<span class="w">    </span><span class="k">type</span><span class="p">(</span><span class="n">build_target_ptr</span><span class="p">),</span><span class="w"> </span><span class="k">intent</span><span class="p">(</span><span class="n">out</span><span class="p">),</span><span class="w"> </span><span class="k">allocatable</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">targets</span><span class="p">(:)</span>
+<span class="w">    </span><span class="kt">integer</span><span class="p">,</span><span class="w"> </span><span class="k">dimension</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">string</span><span class="p">)</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="mi">1</span><span class="p">)</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">istart</span><span class="p">,</span><span class="w"> </span><span class="n">iend</span>
+<span class="w">    </span><span class="kt">integer</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">p</span><span class="p">,</span><span class="w"> </span><span class="n">n</span><span class="p">,</span><span class="w"> </span><span class="n">slen</span>
 
-<span class="w">    </span><span class="c">!&gt; The package model from which to construct the target list</span>
-<span class="w">    </span><span class="k">type</span><span class="p">(</span><span class="n">fpm_model_t</span><span class="p">),</span><span class="w"> </span><span class="k">intent</span><span class="p">(</span><span class="n">inout</span><span class="p">),</span><span class="w"> </span><span class="k">target</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">model</span>
+<span class="w">    </span><span class="n">slen</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">len</span><span class="p">(</span><span class="n">string</span><span class="p">)</span>
 
-<span class="w">    </span><span class="c">!&gt; Enable tree-shaking/pruning of module dependencies</span>
-<span class="w">    </span><span class="kt">logical</span><span class="p">,</span><span class="w"> </span><span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">)</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">prune</span>
+<span class="w">    </span><span class="n">n</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">slen</span><span class="w"> </span><span class="o">&gt;</span><span class="w"> </span><span class="mi">0</span><span class="p">)</span><span class="w"> </span><span class="k">then</span>
+<span class="k">        </span><span class="n">p</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span>
+<span class="w">        </span><span class="k">do while</span><span class="w"> </span><span class="p">(</span><span class="n">p</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="n">slen</span><span class="p">)</span>
+<span class="w">            </span><span class="n">n</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">n</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="mi">1</span>
+<span class="w">            </span><span class="n">istart</span><span class="p">(</span><span class="n">n</span><span class="p">)</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">min</span><span class="p">(</span><span class="n">p</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="n">slen</span><span class="p">)</span>
+<span class="w">            </span><span class="k">call </span><span class="n">split_pos</span><span class="p">(</span><span class="n">string</span><span class="p">,</span><span class="w"> </span><span class="n">set</span><span class="p">,</span><span class="w"> </span><span class="n">p</span><span class="p">)</span>
+<span class="w">            </span><span class="n">iend</span><span class="p">(</span><span class="n">n</span><span class="p">)</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">p</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="mi">1</span>
+<span class="w">        </span><span class="k">end do</span>
+<span class="k">    end if</span>
 
-<span class="w">    </span><span class="c">!&gt; Error structure</span>
-<span class="w">    </span><span class="k">type</span><span class="p">(</span><span class="n">error_t</span><span class="p">),</span><span class="w"> </span><span class="k">intent</span><span class="p">(</span><span class="n">out</span><span class="p">),</span><span class="w"> </span><span class="k">allocatable</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">error</span>
+<span class="k">    </span><span class="n">first</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">istart</span><span class="p">(:</span><span class="n">n</span><span class="p">)</span>
+<span class="w">    </span><span class="n">last</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">iend</span><span class="p">(:</span><span class="n">n</span><span class="p">)</span>
 
-<span class="w">    </span><span class="k">call </span><span class="n">build_target_list</span><span class="p">(</span><span class="n">targets</span><span class="p">,</span><span class="n">model</span><span class="p">)</span>
-
-<span class="w">    </span><span class="k">call </span><span class="n">collect_exe_link_dependencies</span><span class="p">(</span><span class="n">targets</span><span class="p">)</span>
-
-<span class="w">    </span><span class="k">call </span><span class="n">resolve_module_dependencies</span><span class="p">(</span><span class="n">targets</span><span class="p">,</span><span class="n">model</span><span class="p">%</span><span class="n">external_modules</span><span class="p">,</span><span class="n">error</span><span class="p">)</span>
-<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="nb">allocated</span><span class="p">(</span><span class="n">error</span><span class="p">))</span><span class="w"> </span><span class="k">return</span>
-
-<span class="k">    if</span><span class="w"> </span><span class="p">(</span><span class="n">prune</span><span class="p">)</span><span class="w"> </span><span class="k">then</span>
-<span class="k">        call </span><span class="n">prune_build_targets</span><span class="p">(</span><span class="n">targets</span><span class="p">,</span><span class="n">root_package</span><span class="o">=</span><span class="n">model</span><span class="p">%</span><span class="n">package_name</span><span class="p">)</span>
-<span class="w">    </span><span class="k">end if</span>
-
-<span class="k">    call </span><span class="n">resolve_target_linking</span><span class="p">(</span><span class="n">targets</span><span class="p">,</span><span class="n">model</span><span class="p">)</span>
-
-<span class="k">end subroutine </span><span class="n">targets_from_sources</span>
+<span class="k">end subroutine </span><span class="n">split_first_last</span>
 </pre></div>
 
     </section>

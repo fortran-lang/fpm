@@ -10,7 +10,7 @@
     <meta name="author" content="fortran-lang/fpm contributors" >
     <link rel="icon" href="../favicon.png">
 
-    <title>checkout &ndash; Fortran-lang/fpm</title>
+    <title>dump_to_toml &ndash; Fortran-lang/fpm</title>
 
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet"
           integrity="sha384-1BmE4kWBq78iYhFldvKuhfTAU6auU8tT94WrHftjDbrCEXSU1oBoqyl2QvZ6jIW3" crossorigin="anonymous">
@@ -66,7 +66,7 @@
 
     <div class="container">
   <div class="row">
-    <h1>checkout
+    <h1>dump_to_toml
       <small>Subroutine</small>
       
     </h1>
@@ -78,7 +78,7 @@
             <li class="list-inline-item" id="statements"><i class="fa fa-list-ol"></i>
               <a data-bs-toggle="tooltip"
                  data-bs-placement="bottom" data-html="true"
-                 title=" 0.5% of total for procedures.">28 statements</a>
+                 title=" 0.2% of total for procedures.">12 statements</a>
             </li>
 
             <li class="list-inline-item" id="source-file">
@@ -92,7 +92,7 @@
           <ol class="breadcrumb justify-content-end mb-0">
                 <li class="breadcrumb-item"><a href='../sourcefile/git.f90.html'>git.f90</a></li>
                 <li class="breadcrumb-item"><a href='../module/fpm_git.html'>fpm_git</a></li>
-            <li class="breadcrumb-item active" aria-current="page">checkout</li>
+            <li class="breadcrumb-item active" aria-current="page">dump_to_toml</li>
           </ol>
         </nav>
       </div>
@@ -118,9 +118,7 @@
       </a>
       <div id="vars-0" class="collapse">
         <div class="list-group list-group-flush">
-            <a class="list-group-item" href="../proc/checkout.html#variable-object~2">object</a>
-            <a class="list-group-item" href="../proc/checkout.html#variable-stat~16">stat</a>
-            <a class="list-group-item" href="../proc/checkout.html#variable-workdir">workdir</a>
+            <a class="list-group-item" href="../proc/dump_to_toml~3.html#variable-ierr~3">ierr</a>
         </div>
       </div>
     </div>
@@ -146,7 +144,7 @@
     <div class="card card-primary">
       <div class="card-header text-left"><h3 class="card-title">Source Code</h3></div>
       <div class="list-group">
-        <a class="list-group-item" href="../proc/checkout.html#src">checkout</a>
+        <a class="list-group-item" href="../proc/dump_to_toml~3.html#src">dump_to_toml</a>
       </div>
     </div>
 
@@ -156,10 +154,11 @@
     </div>
     
     <div class="col-md-9" id='text'>
-    <h2>public  subroutine checkout(self, local_path, error)  
+    <h2>public  subroutine dump_to_toml(self, table, error)  
 </h2>
     
 
+    <p>Dump dependency to toml table</p>
 
     <h3>Type Bound</h3>
     <p><a href='../type/git_target_t.html'>git_target_t</a></p>
@@ -177,37 +176,37 @@
     <tbody>
         <tr>
             <td>
-              <span class="anchor" id="variable-self~23"></span>
+              <span class="anchor" id="variable-self~25"></span>
               class(<a href='../type/git_target_t.html'>git_target_t</a>),
             </td>
-<td>intent(in)</td>
+<td>intent(inout)</td>
               <td></td>            <td>
               
             </td>
             <td>::</td>
             <td><strong>self</strong></td>
             <td>
-                <p>Instance of the git target</p>
+                <p>Instance of the serializable object</p>
             </td>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-local_path"></span>
-              character(len=*),
+              <span class="anchor" id="variable-table~10"></span>
+              type(toml_table),
             </td>
-<td>intent(in)</td>
+<td>intent(inout)</td>
               <td></td>            <td>
               
             </td>
             <td>::</td>
-            <td><strong>local_path</strong></td>
+            <td><strong>table</strong></td>
             <td>
-                <p>Local path to checkout in</p>
+                <p>Data structure</p>
             </td>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-error~51"></span>
+              <span class="anchor" id="variable-error~53"></span>
               type(<a href='../type/error_t.html'>error_t</a>),
             </td>
 <td>intent(out),</td>
@@ -217,7 +216,7 @@
             <td>::</td>
             <td><strong>error</strong></td>
             <td>
-                <p>Error</p>
+                <p>Error handling</p>
             </td>
         </tr>
     </tbody>
@@ -240,24 +239,7 @@
     <tbody>
         <tr>
             <td>
-              <span class="anchor" id="variable-object~2"></span>
-              character(len=:),
-            </td>
-              <td>public,</td>
-            <td>
-              allocatable
-            </td>
-            <td>::</td>
-            <td><strong>object</strong></td>
-                <td></td>
-                <td></td>
-            <td>
-                
-            </td>
-        </tr>
-        <tr>
-            <td>
-              <span class="anchor" id="variable-stat~16"></span>
+              <span class="anchor" id="variable-ierr~3"></span>
               integer,
             </td>
               <td>public</td>
@@ -265,24 +247,7 @@
               
             </td>
             <td>::</td>
-            <td><strong>stat</strong></td>
-                <td></td>
-                <td></td>
-            <td>
-                
-            </td>
-        </tr>
-        <tr>
-            <td>
-              <span class="anchor" id="variable-workdir"></span>
-              character(len=:),
-            </td>
-              <td>public,</td>
-            <td>
-              allocatable
-            </td>
-            <td>::</td>
-            <td><strong>workdir</strong></td>
+            <td><strong>ierr</strong></td>
                 <td></td>
                 <td></td>
             <td>
@@ -305,50 +270,27 @@
     
     <section>
     <h2><span class="anchor" id="src"></span>Source Code</h2>
-    <div class="hl codehilite"><pre><span></span><span class="w">    </span><span class="k">subroutine </span><span class="n">checkout</span><span class="p">(</span><span class="n">self</span><span class="p">,</span><span class="w"> </span><span class="n">local_path</span><span class="p">,</span><span class="w"> </span><span class="n">error</span><span class="p">)</span>
+    <div class="hl codehilite"><pre><span></span><span class="w">    </span><span class="k">subroutine </span><span class="n">dump_to_toml</span><span class="p">(</span><span class="n">self</span><span class="p">,</span><span class="w"> </span><span class="n">table</span><span class="p">,</span><span class="w"> </span><span class="n">error</span><span class="p">)</span>
 
-<span class="w">        </span><span class="c">!&gt; Instance of the git target</span>
-<span class="w">        </span><span class="k">class</span><span class="p">(</span><span class="n">git_target_t</span><span class="p">),</span><span class="w"> </span><span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">)</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">self</span>
+<span class="w">        </span><span class="c">!&gt; Instance of the serializable object</span>
+<span class="w">        </span><span class="k">class</span><span class="p">(</span><span class="n">git_target_t</span><span class="p">),</span><span class="w"> </span><span class="k">intent</span><span class="p">(</span><span class="n">inout</span><span class="p">)</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">self</span>
 
-<span class="w">        </span><span class="c">!&gt; Local path to checkout in</span>
-<span class="w">        </span><span class="kt">character</span><span class="p">(</span><span class="o">*</span><span class="p">),</span><span class="w"> </span><span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">)</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">local_path</span>
+<span class="w">        </span><span class="c">!&gt; Data structure</span>
+<span class="w">        </span><span class="k">type</span><span class="p">(</span><span class="n">toml_table</span><span class="p">),</span><span class="w"> </span><span class="k">intent</span><span class="p">(</span><span class="n">inout</span><span class="p">)</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">table</span>
 
-<span class="w">        </span><span class="c">!&gt; Error</span>
+<span class="w">        </span><span class="c">!&gt; Error handling</span>
 <span class="w">        </span><span class="k">type</span><span class="p">(</span><span class="n">error_t</span><span class="p">),</span><span class="w"> </span><span class="k">allocatable</span><span class="p">,</span><span class="w"> </span><span class="k">intent</span><span class="p">(</span><span class="n">out</span><span class="p">)</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">error</span>
 
-<span class="w">        </span><span class="kt">integer</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="nb">stat</span>
-<span class="nb">        </span><span class="kt">character</span><span class="p">(</span><span class="nb">len</span><span class="o">=</span><span class="p">:),</span><span class="w"> </span><span class="k">allocatable</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">object</span><span class="p">,</span><span class="w"> </span><span class="n">workdir</span>
+<span class="w">        </span><span class="kt">integer</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">ierr</span>
 
-<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="nb">allocated</span><span class="p">(</span><span class="n">self</span><span class="p">%</span><span class="n">object</span><span class="p">))</span><span class="w"> </span><span class="k">then</span>
-<span class="k">            </span><span class="n">object</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">self</span><span class="p">%</span><span class="n">object</span>
-<span class="w">        </span><span class="k">else</span>
-<span class="k">            </span><span class="n">object</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">&#39;HEAD&#39;</span>
-<span class="w">        </span><span class="k">end if</span>
-<span class="k">        </span><span class="n">workdir</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;--work-tree=&quot;</span><span class="o">//</span><span class="n">local_path</span><span class="o">//</span><span class="s2">&quot; --git-dir=&quot;</span><span class="o">//</span><span class="n">join_path</span><span class="p">(</span><span class="n">local_path</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;.git&quot;</span><span class="p">)</span>
+<span class="w">        </span><span class="k">call </span><span class="n">set_string</span><span class="p">(</span><span class="n">table</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;descriptor&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">descriptor_name</span><span class="p">(</span><span class="n">self</span><span class="p">%</span><span class="n">descriptor</span><span class="p">),</span><span class="w"> </span><span class="n">error</span><span class="p">,</span><span class="w"> </span><span class="s1">&#39;git_target_t&#39;</span><span class="p">)</span>
+<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="nb">allocated</span><span class="p">(</span><span class="n">error</span><span class="p">))</span><span class="w"> </span><span class="k">return</span>
+<span class="k">        call </span><span class="n">set_string</span><span class="p">(</span><span class="n">table</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;url&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">self</span><span class="p">%</span><span class="n">url</span><span class="p">,</span><span class="w"> </span><span class="n">error</span><span class="p">,</span><span class="w"> </span><span class="s1">&#39;git_target_t&#39;</span><span class="p">)</span>
+<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="nb">allocated</span><span class="p">(</span><span class="n">error</span><span class="p">))</span><span class="w"> </span><span class="k">return</span>
+<span class="k">        call </span><span class="n">set_string</span><span class="p">(</span><span class="n">table</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;object&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">self</span><span class="p">%</span><span class="n">object</span><span class="p">,</span><span class="w"> </span><span class="n">error</span><span class="p">,</span><span class="w"> </span><span class="s1">&#39;git_target_t&#39;</span><span class="p">)</span>
+<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="nb">allocated</span><span class="p">(</span><span class="n">error</span><span class="p">))</span><span class="w"> </span><span class="k">return</span>
 
-<span class="w">        </span><span class="k">call </span><span class="nb">execute_command_line</span><span class="p">(</span><span class="s2">&quot;git init &quot;</span><span class="o">//</span><span class="n">local_path</span><span class="p">,</span><span class="w"> </span><span class="n">exitstat</span><span class="o">=</span><span class="nb">stat</span><span class="p">)</span>
-
-<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="nb">stat</span><span class="w"> </span><span class="o">/=</span><span class="w"> </span><span class="mi">0</span><span class="p">)</span><span class="w"> </span><span class="k">then</span>
-<span class="k">            call </span><span class="n">fatal_error</span><span class="p">(</span><span class="n">error</span><span class="p">,</span><span class="s1">&#39;Error while initiating git repository for remote dependency&#39;</span><span class="p">)</span>
-<span class="w">            </span><span class="k">return</span>
-<span class="k">        end if</span>
-
-<span class="k">        call </span><span class="nb">execute_command_line</span><span class="p">(</span><span class="s2">&quot;git &quot;</span><span class="o">//</span><span class="n">workdir</span><span class="o">//</span><span class="s2">&quot; fetch --depth=1 &quot;</span><span class="o">//</span><span class="w"> </span><span class="p">&amp;</span>
-<span class="w">                                  </span><span class="n">self</span><span class="p">%</span><span class="n">url</span><span class="o">//</span><span class="s2">&quot; &quot;</span><span class="o">//</span><span class="n">object</span><span class="p">,</span><span class="w"> </span><span class="n">exitstat</span><span class="o">=</span><span class="nb">stat</span><span class="p">)</span>
-
-<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="nb">stat</span><span class="w"> </span><span class="o">/=</span><span class="w"> </span><span class="mi">0</span><span class="p">)</span><span class="w"> </span><span class="k">then</span>
-<span class="k">            call </span><span class="n">fatal_error</span><span class="p">(</span><span class="n">error</span><span class="p">,</span><span class="s1">&#39;Error while fetching git repository for remote dependency&#39;</span><span class="p">)</span>
-<span class="w">            </span><span class="k">return</span>
-<span class="k">        end if</span>
-
-<span class="k">        call </span><span class="nb">execute_command_line</span><span class="p">(</span><span class="s2">&quot;git &quot;</span><span class="o">//</span><span class="n">workdir</span><span class="o">//</span><span class="s2">&quot; checkout -qf FETCH_HEAD&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">exitstat</span><span class="o">=</span><span class="nb">stat</span><span class="p">)</span>
-
-<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="nb">stat</span><span class="w"> </span><span class="o">/=</span><span class="w"> </span><span class="mi">0</span><span class="p">)</span><span class="w"> </span><span class="k">then</span>
-<span class="k">            call </span><span class="n">fatal_error</span><span class="p">(</span><span class="n">error</span><span class="p">,</span><span class="s1">&#39;Error while checking out git repository for remote dependency&#39;</span><span class="p">)</span>
-<span class="w">            </span><span class="k">return</span>
-<span class="k">        end if</span>
-
-<span class="k">    end subroutine </span><span class="n">checkout</span>
+<span class="k">    end subroutine </span><span class="n">dump_to_toml</span>
 </pre></div>
 
     </section>
