@@ -21,11 +21,13 @@ use fpm_targets, only: targets_from_sources, build_target_t, build_target_ptr, &
 use fpm_manifest, only : get_package_data, package_config_t
 use fpm_meta, only : resolve_metapackages
 use fpm_error, only : error_t, fatal_error, fpm_stop
+use fpm_toml, only: name_is_json
 use, intrinsic :: iso_fortran_env, only : stdin => input_unit, &
                                         & stdout => output_unit, &
                                         & stderr => error_unit
 use iso_c_binding, only: c_char, c_ptr, c_int, c_null_char, c_associated, c_f_pointer
 use fpm_environment, only: os_is_unix
+use fpm_settings, only: fpm_global_settings, get_global_settings
 
 implicit none
 private
@@ -110,36 +112,22 @@ subroutine build_model(model, settings, package, error)
             model%packages(i)%version = package%version%s()
 
             !> Add this dependency's manifest macros
-            allocate(model%packages(i)%macros(0))
+            call model%packages(i)%preprocess%destroy()
 
             if (allocated(dependency%preprocess)) then
                 do j = 1, size(dependency%preprocess)
-                    if (dependency%preprocess(j)%name == "cpp") then
-                        if (.not. has_cpp) has_cpp = .true.
-                        if (allocated(dependency%preprocess(j)%macros)) then
-                            model%packages(i)%macros = [model%packages(i)%macros, dependency%preprocess(j)%macros]
-                        end if
-                    else
-                        write(stderr, '(a)') 'Warning: Preprocessor ' // package%preprocess(i)%name // &
-                            ' is not supported; will ignore it'
-                    end if
+                    call model%packages(i)%preprocess%add_config(dependency%preprocess(j))
                 end do
             end if
 
             !> Add this dependency's package-level macros
             if (allocated(dep%preprocess)) then
                 do j = 1, size(dep%preprocess)
-                    if (dep%preprocess(j)%name == "cpp") then
-                        if (.not. has_cpp) has_cpp = .true.
-                        if (allocated(dep%preprocess(j)%macros)) then
-                            model%packages(i)%macros = [model%packages(i)%macros, dep%preprocess(j)%macros]
-                        end if
-                    else
-                        write(stderr, '(a)') 'Warning: Preprocessor ' // package%preprocess(i)%name // &
-                            ' is not supported; will ignore it'
-                    end if
+                    call model%packages(i)%preprocess%add_config(dep%preprocess(j))
                 end do
             end if
+
+            if (model%packages(i)%preprocess%is_cpp()) has_cpp = .true.
 
             if (.not.allocated(model%packages(i)%sources)) allocate(model%packages(i)%sources(0))
 
@@ -149,7 +137,7 @@ subroutine build_model(model, settings, package, error)
                     lib_dir = join_path(dep%proj_dir, dependency%library%source_dir)
                     if (is_dir(lib_dir)) then
                         call add_sources_from_dir(model%packages(i)%sources, lib_dir, FPM_SCOPE_LIB, &
-                            error=error)
+                            with_f_ext=model%packages(i)%preprocess%suffixes, error=error)
                         if (allocated(error)) exit
                     end if
                 end if
@@ -187,7 +175,8 @@ subroutine build_model(model, settings, package, error)
     ! Add sources from executable directories
     if (is_dir('app') .and. package%build%auto_executables) then
         call add_sources_from_dir(model%packages(1)%sources,'app', FPM_SCOPE_APP, &
-                                   with_executables=.true., error=error)
+                                   with_executables=.true., with_f_ext=model%packages(1)%preprocess%suffixes,&
+                                   error=error)
 
         if (allocated(error)) then
             return
@@ -196,7 +185,8 @@ subroutine build_model(model, settings, package, error)
     end if
     if (is_dir('example') .and. package%build%auto_examples) then
         call add_sources_from_dir(model%packages(1)%sources,'example', FPM_SCOPE_EXAMPLE, &
-                                   with_executables=.true., error=error)
+                                  with_executables=.true., &
+                                  with_f_ext=model%packages(1)%preprocess%suffixes,error=error)
 
         if (allocated(error)) then
             return
@@ -205,7 +195,8 @@ subroutine build_model(model, settings, package, error)
     end if
     if (is_dir('test') .and. package%build%auto_tests) then
         call add_sources_from_dir(model%packages(1)%sources,'test', FPM_SCOPE_TEST, &
-                                   with_executables=.true., error=error)
+                                  with_executables=.true., &
+                                  with_f_ext=model%packages(1)%preprocess%suffixes,error=error)
 
         if (allocated(error)) then
             return
@@ -215,6 +206,7 @@ subroutine build_model(model, settings, package, error)
     if (allocated(package%executable)) then
         call add_executable_sources(model%packages(1)%sources, package%executable, FPM_SCOPE_APP, &
                                      auto_discover=package%build%auto_executables, &
+                                     with_f_ext=model%packages(1)%preprocess%suffixes, &
                                      error=error)
 
         if (allocated(error)) then
@@ -225,6 +217,7 @@ subroutine build_model(model, settings, package, error)
     if (allocated(package%example)) then
         call add_executable_sources(model%packages(1)%sources, package%example, FPM_SCOPE_EXAMPLE, &
                                      auto_discover=package%build%auto_examples, &
+                                     with_f_ext=model%packages(1)%preprocess%suffixes, &
                                      error=error)
 
         if (allocated(error)) then
@@ -235,6 +228,7 @@ subroutine build_model(model, settings, package, error)
     if (allocated(package%test)) then
         call add_executable_sources(model%packages(1)%sources, package%test, FPM_SCOPE_TEST, &
                                      auto_discover=package%build%auto_tests, &
+                                     with_f_ext=model%packages(1)%preprocess%suffixes, &
                                      error=error)
 
         if (allocated(error)) then
@@ -457,6 +451,12 @@ if (allocated(error)) then
     call fpm_stop(1,'*cmd_build* Target error: '//error%message)
 end if
 
+!> Dump model to file
+if (len_trim(settings%dump)>0) then
+    call model%dump(trim(settings%dump),error,json=name_is_json(trim(settings%dump)))
+    if (allocated(error)) call fpm_stop(1,'*cmd_build* Model dump error: '//error%message)
+endif
+
 if(settings%list)then
     do i=1,size(targets)
         write(stderr,*) targets(i)%ptr%output_file
@@ -512,7 +512,7 @@ subroutine cmd_run(settings,test)
     ! Enumerate executable targets to run
     col_width = -1
     found(:) = .false.
-    allocate(executables(0))
+    allocate(executables(size(settings%name)))
     do i=1,size(targets)
 
         exe_target => targets(i)%ptr
@@ -535,11 +535,12 @@ subroutine cmd_run(settings,test)
 
                     do j=1,size(settings%name)
 
-                        if (glob(trim(exe_source%exe_name),trim(settings%name(j)))) then
+                        if (glob(trim(exe_source%exe_name),trim(settings%name(j))) .and. .not.found(j)) then
+
 
                             found(j) = .true.
                             exe_cmd%s = exe_target%output_file
-                            executables = [executables, exe_cmd]
+                            executables(j) = exe_cmd
 
                         end if
 
@@ -698,21 +699,30 @@ subroutine delete_skip(is_unix)
     end do
 end subroutine delete_skip
 
-!> Delete the build directory including or excluding dependencies.
+!> Delete the build directory including or excluding dependencies. Can be used
+!> to clear the registry cache.
 subroutine cmd_clean(settings)
     !> Settings for the clean command.
     class(fpm_clean_settings), intent(in) :: settings
 
     character :: user_response
+    type(fpm_global_settings) :: global_settings
+    type(error_t), allocatable :: error
+
+    ! Clear registry cache
+    if (settings%registry_cache) then
+        call get_global_settings(global_settings, error) 
+        if (allocated(error)) return
+
+        call os_delete_dir(os_is_unix(), global_settings%registry_settings%cache_path)
+    end if
 
     if (is_dir('build')) then
         ! Remove the entire build directory
-        if (settings%clean_call) then
+        if (settings%clean_all) then
             call os_delete_dir(os_is_unix(), 'build'); return
-        end if
-
         ! Remove the build directory but skip dependencies
-        if (settings%clean_skip) then
+        else if (settings%clean_skip) then
             call delete_skip(os_is_unix()); return
         end if
 

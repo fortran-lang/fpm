@@ -60,13 +60,13 @@ module fpm_dependency
   use fpm_error, only: error_t, fatal_error
   use fpm_filesystem, only: exists, join_path, mkdir, canon_path, windows_path, list_files, is_dir, basename, &
                             os_delete_dir, get_temp_filename
-  use fpm_git, only: git_target_revision, git_target_default, git_revision, operator(==)
+  use fpm_git, only: git_target_revision, git_target_default, git_revision, serializable_t
   use fpm_manifest, only: package_config_t, dependency_config_t, get_package_data
-  use fpm_manifest_dependency, only: manifest_has_changed
+  use fpm_manifest_dependency, only: manifest_has_changed, dependency_destroy
   use fpm_manifest_preprocess, only: operator(==)
   use fpm_strings, only: string_t, operator(.in.)
   use fpm_toml, only: toml_table, toml_key, toml_error, toml_serialize, &
-                      get_value, set_value, add_table, toml_load, toml_stat
+                      get_value, set_value, add_table, toml_load, toml_stat, set_string
   use fpm_versioning, only: version_t, new_version
   use fpm_settings, only: fpm_global_settings, get_global_settings, official_registry_base_url
   use fpm_downloader, only: downloader_t
@@ -76,7 +76,7 @@ module fpm_dependency
   private
 
   public :: dependency_tree_t, new_dependency_tree, dependency_node_t, new_dependency_node, resize, &
-            & check_and_read_pkg_data
+            & check_and_read_pkg_data, destroy_dependency_node
 
   !> Overloaded reallocation interface
   interface resize
@@ -105,13 +105,19 @@ module fpm_dependency
     procedure, private :: get_from_local_registry
     !> Print information on this instance
     procedure :: info
+
+    !> Serialization interface
+    procedure :: serializable_is_same => dependency_node_is_same
+    procedure :: dump_to_toml => node_dump_to_toml
+    procedure :: load_from_toml => node_load_from_toml
+
   end type dependency_node_t
 
   !> Respresentation of a projects dependencies
   !>
   !> The dependencies are stored in a simple array for now, this can be replaced
   !> with a binary-search tree or a hash table in the future.
-  type :: dependency_tree_t
+  type, extends(serializable_t) :: dependency_tree_t
     !> Unit for IO
     integer :: unit = output_unit
     !> Verbosity of printout
@@ -157,27 +163,33 @@ module fpm_dependency
     !> Depedendncy resolution finished
     procedure :: finished
     !> Reading of dependency tree
-    generic :: load => load_from_file, load_from_unit, load_from_toml
+    generic :: load_cache => load_cache_from_file, load_cache_from_unit, load_cache_from_toml
     !> Read dependency tree from file
-    procedure, private :: load_from_file
+    procedure, private :: load_cache_from_file
     !> Read dependency tree from formatted unit
-    procedure, private :: load_from_unit
+    procedure, private :: load_cache_from_unit
     !> Read dependency tree from TOML data structure
-    procedure, private :: load_from_toml
+    procedure, private :: load_cache_from_toml
     !> Writing of dependency tree
-    generic :: dump => dump_to_file, dump_to_unit, dump_to_toml
+    generic :: dump_cache => dump_cache_to_file, dump_cache_to_unit, dump_cache_to_toml
     !> Write dependency tree to file
-    procedure, private :: dump_to_file
+    procedure, private :: dump_cache_to_file
     !> Write dependency tree to formatted unit
-    procedure, private :: dump_to_unit
+    procedure, private :: dump_cache_to_unit
     !> Write dependency tree to TOML data structure
-    procedure, private :: dump_to_toml
+    procedure, private :: dump_cache_to_toml
     !> Update dependency tree
     generic :: update => update_dependency, update_tree
     !> Update a list of dependencies
     procedure, private :: update_dependency
     !> Update all dependencies in the tree
     procedure, private :: update_tree
+
+    !> Serialization interface
+    procedure :: serializable_is_same => dependency_tree_is_same
+    procedure :: dump_to_toml   => tree_dump_to_toml
+    procedure :: load_from_toml => tree_load_from_toml
+
   end type dependency_tree_t
 
   !> Common output format for writing to the command line
@@ -310,8 +322,8 @@ contains
 
     ! After resolving all dependencies, check if we have cached ones to avoid updates
     if (allocated(self%cache)) then
-      call new_dependency_tree(cached, verbosity=self%verbosity, cache=self%cache)
-      call cached%load(self%cache, error)
+      call new_dependency_tree(cached, verbosity=self%verbosity,cache=self%cache)
+      call cached%load_cache(self%cache, error)
       if (allocated(error)) return
 
       ! Skip root node
@@ -330,7 +342,7 @@ contains
     if (allocated(error)) return
 
     if (allocated(self%cache)) then
-      call self%dump(self%cache, error)
+      call self%dump_cache(self%cache, error)
       if (allocated(error)) return
     end if
 
@@ -393,6 +405,9 @@ contains
       end if
     end if
 
+    !> Ensure allocation fits
+    call resize(self%dep,self%ndep)
+
   end subroutine add_project_dependencies
 
   !> Add a list of dependencies to the dependency tree
@@ -416,6 +431,9 @@ contains
       if (allocated(error)) exit
     end do
     if (allocated(error)) return
+
+    !> Ensure allocation fits ndep
+    call resize(self%dep,self%ndep)
 
   end subroutine add_dependencies
 
@@ -451,6 +469,10 @@ contains
         end if
       end if
     else
+
+      !> Safety: reallocate if necessary
+      if (size(self%dep)==self%ndep) call resize(self%dep,self%ndep+1)
+
       ! New dependency: add from scratch
       self%ndep = self%ndep + 1
       self%dep(self%ndep) = dependency
@@ -673,7 +695,7 @@ contains
     end if
 
     ! Include namespace and package name in the target url and download package data.
-    target_url = global_settings%registry_settings%url//'/packages/'//self%namespace//'/'//self%name
+    target_url = global_settings%registry_settings%url//'packages/'//self%namespace//'/'//self%name
     call downloader%get_pkg_data(target_url, self%requested_version, tmp_file, json, error)
     close (unit, status='delete')
     if (allocated(error)) return
@@ -961,7 +983,7 @@ contains
   end subroutine register
 
   !> Read dependency tree from file
-  subroutine load_from_file(self, file, error)
+  subroutine load_cache_from_file(self, file, error)
     !> Instance of the dependency tree
     class(dependency_tree_t), intent(inout) :: self
     !> File name
@@ -976,12 +998,12 @@ contains
     if (.not. exist) return
 
     open (file=file, newunit=unit)
-    call self%load(unit, error)
+    call self%load_cache(unit, error)
     close (unit)
-  end subroutine load_from_file
+  end subroutine load_cache_from_file
 
   !> Read dependency tree from file
-  subroutine load_from_unit(self, unit, error)
+  subroutine load_cache_from_unit(self, unit, error)
     !> Instance of the dependency tree
     class(dependency_tree_t), intent(inout) :: self
     !> File name
@@ -1000,13 +1022,13 @@ contains
       return
     end if
 
-    call self%load(table, error)
+    call self%load_cache(table, error)
     if (allocated(error)) return
 
-  end subroutine load_from_unit
+  end subroutine load_cache_from_unit
 
   !> Read dependency tree from TOML data structure
-  subroutine load_from_toml(self, table, error)
+  subroutine load_cache_from_toml(self, table, error)
     !> Instance of the dependency tree
     class(dependency_tree_t), intent(inout) :: self
     !> Data structure
@@ -1068,10 +1090,10 @@ contains
     if (allocated(error)) return
 
     self%ndep = size(list)
-  end subroutine load_from_toml
+  end subroutine load_cache_from_toml
 
   !> Write dependency tree to file
-  subroutine dump_to_file(self, file, error)
+  subroutine dump_cache_to_file(self, file, error)
     !> Instance of the dependency tree
     class(dependency_tree_t), intent(inout) :: self
     !> File name
@@ -1082,14 +1104,14 @@ contains
     integer :: unit
 
     open (file=file, newunit=unit)
-    call self%dump(unit, error)
+    call self%dump_cache(unit, error)
     close (unit)
     if (allocated(error)) return
 
-  end subroutine dump_to_file
+  end subroutine dump_cache_to_file
 
   !> Write dependency tree to file
-  subroutine dump_to_unit(self, unit, error)
+  subroutine dump_cache_to_unit(self, unit, error)
     !> Instance of the dependency tree
     class(dependency_tree_t), intent(inout) :: self
     !> Formatted unit
@@ -1100,14 +1122,14 @@ contains
     type(toml_table) :: table
 
     table = toml_table()
-    call self%dump(table, error)
+    call self%dump_cache(table, error)
 
     write (unit, '(a)') toml_serialize(table)
 
-  end subroutine dump_to_unit
+  end subroutine dump_cache_to_unit
 
   !> Write dependency tree to TOML datastructure
-  subroutine dump_to_toml(self, table, error)
+  subroutine dump_cache_to_toml(self, table, error)
     !> Instance of the dependency tree
     class(dependency_tree_t), intent(inout) :: self
     !> Data structure
@@ -1144,7 +1166,7 @@ contains
     end do
     if (allocated(error)) return
 
-  end subroutine dump_to_toml
+  end subroutine dump_cache_to_toml
 
   !> Reallocate a list of dependencies
   pure subroutine resize_dependency_node(var, n)
@@ -1244,5 +1266,291 @@ contains
     has_changed = .false.
 
   end function dependency_has_changed
+
+  !> Check that two dependency nodes are equal
+  logical function dependency_node_is_same(this,that)
+      class(dependency_node_t), intent(in) :: this
+      class(serializable_t), intent(in) :: that
+
+      dependency_node_is_same = .false.
+
+      select type (other=>that)
+         type is (dependency_node_t)
+
+            ! Base class must match
+            if (.not.(this%dependency_config_t==other%dependency_config_t)) return
+
+            ! Extension must match
+            if (.not.(this%done  .eqv.other%done)) return
+            if (.not.(this%update.eqv.other%update)) return
+            if (.not.(this%cached.eqv.other%cached)) return
+            if (.not.(this%proj_dir==other%proj_dir)) return
+            if (.not.(this%revision==other%revision)) return
+
+            if (.not.(allocated(this%version).eqv.allocated(other%version))) return
+               if (allocated(this%version)) then
+              if (.not.(this%version==other%version)) return
+            endif
+
+         class default
+            ! Not the same type
+            return
+      end select
+
+      !> All checks passed!
+      dependency_node_is_same = .true.
+
+  end function dependency_node_is_same
+
+    !> Dump dependency to toml table
+    subroutine node_dump_to_toml(self, table, error)
+
+        !> Instance of the serializable object
+        class(dependency_node_t), intent(inout) :: self
+
+        !> Data structure
+        type(toml_table), intent(inout) :: table
+
+        !> Error handling
+        type(error_t), allocatable, intent(out) :: error
+
+        integer :: ierr
+
+        ! Dump parent class
+        call self%dependency_config_t%dump_to_toml(table, error)
+        if (allocated(error)) return
+
+        if (allocated(self%version)) then
+            call set_string(table, "version", self%version%s(), error,'dependency_node_t')
+            if (allocated(error)) return
+        endif
+        call set_string(table, "proj-dir", self%proj_dir, error, 'dependency_node_t')
+        if (allocated(error)) return
+        call set_string(table, "revision", self%revision, error, 'dependency_node_t')
+        if (allocated(error)) return
+        call set_value(table, "done", self%done, error, 'dependency_node_t')
+        if (allocated(error)) return
+        call set_value(table, "update", self%update, error, 'dependency_node_t')
+        if (allocated(error)) return
+        call set_value(table, "cached", self%cached, error, 'dependency_node_t')
+        if (allocated(error)) return
+
+    end subroutine node_dump_to_toml
+
+    !> Read dependency from toml table (no checks made at this stage)
+    subroutine node_load_from_toml(self, table, error)
+
+        !> Instance of the serializable object
+        class(dependency_node_t), intent(inout) :: self
+
+        !> Data structure
+        type(toml_table), intent(inout) :: table
+
+        !> Error handling
+        type(error_t), allocatable, intent(out) :: error
+
+        !> Local variables
+        character(len=:), allocatable :: version
+        integer :: ierr
+
+        call destroy_dependency_node(self)
+
+        ! Load parent class
+        call self%dependency_config_t%load_from_toml(table, error)
+        if (allocated(error)) return
+
+        call get_value(table, "done", self%done, error, 'dependency_node_t')
+        if (allocated(error)) return
+        call get_value(table, "update", self%update, error, 'dependency_node_t')
+        if (allocated(error)) return
+        call get_value(table, "cached", self%cached, error, 'dependency_node_t')
+        if (allocated(error)) return
+
+        call get_value(table, "proj-dir", self%proj_dir)
+        call get_value(table, "revision", self%revision)
+
+        call get_value(table, "version", version)
+        if (allocated(version)) then
+            allocate(self%version)
+            call new_version(self%version, version, error)
+            if (allocated(error)) then
+                error%message = 'dependency_node_t: version error from TOML table - '//error%message
+                return
+            endif
+        end if
+
+    end subroutine node_load_from_toml
+
+    !> Destructor
+    elemental subroutine destroy_dependency_node(self)
+
+        class(dependency_node_t), intent(inout) :: self
+
+        integer :: ierr
+
+        call dependency_destroy(self)
+
+        deallocate(self%version,stat=ierr)
+        deallocate(self%proj_dir,stat=ierr)
+        deallocate(self%revision,stat=ierr)
+        self%done = .false.
+        self%update = .false.
+        self%cached = .false.
+
+    end subroutine destroy_dependency_node
+
+  !> Check that two dependency trees are equal
+  logical function dependency_tree_is_same(this,that)
+    class(dependency_tree_t), intent(in) :: this
+    class(serializable_t), intent(in) :: that
+
+    integer :: ii
+
+    dependency_tree_is_same = .false.
+
+    select type (other=>that)
+       type is (dependency_tree_t)
+
+          if (.not.(this%unit==other%unit)) return
+          if (.not.(this%verbosity==other%verbosity)) return
+          if (.not.(this%dep_dir==other%dep_dir)) return
+          if (.not.(this%ndep==other%ndep)) return
+          if (.not.(allocated(this%dep).eqv.allocated(other%dep))) return
+          if (allocated(this%dep)) then
+             if (.not.(size(this%dep)==size(other%dep))) return
+             do ii = 1, size(this%dep)
+                if (.not.(this%dep(ii)==other%dep(ii))) return
+             end do
+          endif
+          if (.not.(this%cache==other%cache)) return
+
+       class default
+          ! Not the same type
+          return
+    end select
+
+    !> All checks passed!
+    dependency_tree_is_same = .true.
+
+  end function dependency_tree_is_same
+
+    !> Dump dependency to toml table
+    subroutine tree_dump_to_toml(self, table, error)
+
+        !> Instance of the serializable object
+        class(dependency_tree_t), intent(inout) :: self
+
+        !> Data structure
+        type(toml_table), intent(inout) :: table
+
+        !> Error handling
+        type(error_t), allocatable, intent(out) :: error
+
+        integer :: ierr, ii
+        type(toml_table), pointer :: ptr_deps,ptr
+        character(27) :: unnamed
+
+        call set_value(table, "unit", self%unit, error, 'dependency_tree_t')
+        if (allocated(error)) return
+        call set_value(table, "verbosity", self%verbosity, error, 'dependency_tree_t')
+        if (allocated(error)) return
+        call set_string(table, "dep-dir", self%dep_dir, error, 'dependency_tree_t')
+        if (allocated(error)) return
+        call set_string(table, "cache", self%cache, error, 'dependency_tree_t')
+        if (allocated(error)) return
+        call set_value(table, "ndep", self%ndep, error, 'dependency_tree_t')
+        if (allocated(error)) return
+
+        if (allocated(self%dep)) then
+
+           ! Create dependency table
+           call add_table(table, "dependencies", ptr_deps)
+           if (.not. associated(ptr_deps)) then
+              call fatal_error(error, "dependency_tree_t cannot create dependency table ")
+              return
+           end if
+
+           do ii = 1, size(self%dep)
+              associate (dep => self%dep(ii))
+
+                 !> Because dependencies are named, fallback if this has no name
+                 !> So, serialization will work regardless of size(self%dep) == self%ndep
+                 if (len_trim(dep%name)==0) then
+                    write(unnamed,1) ii
+                    call add_table(ptr_deps, trim(unnamed), ptr)
+                 else
+                    call add_table(ptr_deps, dep%name, ptr)
+                 end if
+                 if (.not. associated(ptr)) then
+                    call fatal_error(error, "dependency_tree_t cannot create entry for dependency "//dep%name)
+                    return
+                 end if
+                 call dep%dump_to_toml(ptr, error)
+                 if (allocated(error)) return
+              end associate
+           end do
+
+        endif
+
+        1 format('UNNAMED_DEPENDENCY_',i0)
+
+    end subroutine tree_dump_to_toml
+
+    !> Read dependency from toml table (no checks made at this stage)
+    subroutine tree_load_from_toml(self, table, error)
+
+        !> Instance of the serializable object
+        class(dependency_tree_t), intent(inout) :: self
+
+        !> Data structure
+        type(toml_table), intent(inout) :: table
+
+        !> Error handling
+        type(error_t), allocatable, intent(out) :: error
+
+        !> Local variables
+        type(toml_key), allocatable :: keys(:),dep_keys(:)
+        type(toml_table), pointer :: ptr_deps,ptr
+        integer :: ii, jj, ierr
+
+        call table%get_keys(keys)
+
+        call get_value(table, "unit", self%unit, error, 'dependency_tree_t')
+        if (allocated(error)) return
+        call get_value(table, "verbosity", self%verbosity, error, 'dependency_tree_t')
+        if (allocated(error)) return
+        call get_value(table, "ndep", self%ndep, error, 'dependency_tree_t')
+        if (allocated(error)) return
+        call get_value(table, "dep-dir", self%dep_dir)
+        call get_value(table, "cache", self%cache)
+
+        find_deps_table: do ii = 1, size(keys)
+            if (keys(ii)%key=="dependencies") then
+
+               call get_value(table, keys(ii), ptr_deps)
+               if (.not.associated(ptr_deps)) then
+                  call fatal_error(error,'dependency_tree_t: error retrieving dependency table from TOML table')
+                  return
+               end if
+
+               !> Read all dependencies
+               call ptr_deps%get_keys(dep_keys)
+               call resize(self%dep, size(dep_keys))
+
+               do jj = 1, size(dep_keys)
+
+                   call get_value(ptr_deps, dep_keys(jj), ptr)
+                   call self%dep(jj)%load_from_toml(ptr, error)
+                   if (allocated(error)) return
+
+               end do
+
+               exit find_deps_table
+
+            endif
+        end do find_deps_table
+
+    end subroutine tree_load_from_toml
+
 
 end module fpm_dependency

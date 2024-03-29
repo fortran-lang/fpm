@@ -12,15 +12,17 @@
 
 module fpm_manifest_preprocess
    use fpm_error, only : error_t, syntax_error
-   use fpm_strings, only : string_t
-   use fpm_toml, only : toml_table, toml_key, toml_stat, get_value, get_list
+   use fpm_strings, only : string_t, operator(==)
+   use fpm_toml, only : toml_table, toml_key, toml_stat, get_value, get_list, serializable_t, set_value, set_list, &
+                        set_string
+   use,intrinsic :: iso_fortran_env, only : stderr=>error_unit
    implicit none
    private
 
    public :: preprocess_config_t, new_preprocess_config, new_preprocessors, operator(==)
 
    !> Configuration meta data for a preprocessor
-   type :: preprocess_config_t
+   type, extends(serializable_t) :: preprocess_config_t
 
       !> Name of the preprocessor
       character(len=:), allocatable :: name
@@ -39,7 +41,22 @@ module fpm_manifest_preprocess
       !> Print information on this instance
       procedure :: info
 
+      !> Serialization interface
+      procedure :: serializable_is_same => preprocess_is_same
+      procedure :: dump_to_toml
+      procedure :: load_from_toml
+
+      !> Operations
+      procedure :: destroy
+      procedure :: add_config
+
+      !> Properties
+      procedure :: is_cpp
+      procedure :: is_fypp
+
    end type preprocess_config_t
+
+   character(*), parameter, private :: class_name = 'preprocess_config_t'
 
    interface operator(==)
        module procedure preprocess_is_same
@@ -187,9 +204,10 @@ contains
 
    logical function preprocess_is_same(this,that)
       class(preprocess_config_t), intent(in) :: this
-      class(preprocess_config_t), intent(in) :: that
+      class(serializable_t), intent(in) :: that
 
       integer :: istr
+
 
       preprocess_is_same = .false.
 
@@ -199,24 +217,10 @@ contains
             if (allocated(this%name)) then
                 if (.not.(this%name==other%name)) return
             endif
-            if (.not.(allocated(this%suffixes).eqv.allocated(other%suffixes))) return
-            if (allocated(this%suffixes)) then
-               do istr=1,size(this%suffixes)
-                  if (.not.(this%suffixes(istr)%s==other%suffixes(istr)%s)) return
-               end do
-            end if
-            if (.not.(allocated(this%directories).eqv.allocated(other%directories))) return
-            if (allocated(this%directories)) then
-               do istr=1,size(this%directories)
-                  if (.not.(this%directories(istr)%s==other%directories(istr)%s)) return
-               end do
-            end if
-            if (.not.(allocated(this%macros).eqv.allocated(other%macros))) return
-            if (allocated(this%macros)) then
-               do istr=1,size(this%macros)
-                  if (.not.(this%macros(istr)%s==other%macros(istr)%s)) return
-               end do
-            end if
+
+            if (.not.(this%suffixes==other%suffixes)) return
+            if (.not.(this%directories==other%directories)) return
+            if (.not.(this%macros==other%macros)) return
 
          class default
             ! Not the same type
@@ -227,5 +231,117 @@ contains
       preprocess_is_same = .true.
 
     end function preprocess_is_same
+
+    !> Dump install config to toml table
+    subroutine dump_to_toml(self, table, error)
+
+       !> Instance of the serializable object
+       class(preprocess_config_t), intent(inout) :: self
+
+       !> Data structure
+       type(toml_table), intent(inout) :: table
+
+       !> Error handling
+       type(error_t), allocatable, intent(out) :: error
+
+       call set_string(table, "name", self%name, error)
+       if (allocated(error)) return
+       call set_list(table, "suffixes", self%suffixes, error)
+       if (allocated(error)) return
+       call set_list(table, "directories", self%directories, error)
+       if (allocated(error)) return
+       call set_list(table, "macros", self%macros, error)
+       if (allocated(error)) return
+
+     end subroutine dump_to_toml
+
+     !> Read install config from toml table (no checks made at this stage)
+     subroutine load_from_toml(self, table, error)
+
+        !> Instance of the serializable object
+        class(preprocess_config_t), intent(inout) :: self
+
+        !> Data structure
+        type(toml_table), intent(inout) :: table
+
+        !> Error handling
+        type(error_t), allocatable, intent(out) :: error
+
+        call get_value(table, "name", self%name)
+        call get_list(table, "suffixes", self%suffixes, error)
+        if (allocated(error)) return
+        call get_list(table, "directories", self%directories, error)
+        if (allocated(error)) return
+        call get_list(table, "macros", self%macros, error)
+        if (allocated(error)) return
+
+     end subroutine load_from_toml
+
+    !> Clean preprocessor structure
+    elemental subroutine destroy(this)
+       class(preprocess_config_t), intent(inout) :: this
+
+       if (allocated(this%name))deallocate(this%name)
+       if (allocated(this%suffixes))deallocate(this%suffixes)
+       if (allocated(this%directories))deallocate(this%directories)
+       if (allocated(this%macros))deallocate(this%macros)
+
+    end subroutine destroy
+
+    !> Add preprocessor settings
+    subroutine add_config(this,that)
+       class(preprocess_config_t), intent(inout) :: this
+        type(preprocess_config_t), intent(in) :: that
+
+        if (.not.that%is_cpp()) then
+            write(stderr, '(a)') 'Warning: Preprocessor ' // that%name // &
+                                 ' is not supported; will ignore it'
+            return
+        end if
+
+        if (.not.allocated(this%name)) this%name = that%name
+
+        ! Add macros
+        if (allocated(that%macros)) then
+            if (allocated(this%macros)) then
+                this%macros = [this%macros, that%macros]
+            else
+                allocate(this%macros, source = that%macros)
+            end if
+        endif
+
+        ! Add suffixes
+        if (allocated(that%suffixes)) then
+            if (allocated(this%suffixes)) then
+                this%suffixes = [this%suffixes, that%suffixes]
+            else
+                allocate(this%suffixes, source = that%suffixes)
+            end if
+        endif
+
+        ! Add directories
+        if (allocated(that%directories)) then
+            if (allocated(this%directories)) then
+                this%directories = [this%directories, that%directories]
+            else
+                allocate(this%directories, source = that%directories)
+            end if
+        endif
+
+    end subroutine add_config
+
+    ! Check cpp
+    logical function is_cpp(this)
+       class(preprocess_config_t), intent(in) :: this
+       is_cpp = .false.
+       if (allocated(this%name)) is_cpp = this%name == "cpp"
+    end function is_cpp
+
+    ! Check cpp
+    logical function is_fypp(this)
+       class(preprocess_config_t), intent(in) :: this
+       is_fypp = .false.
+       if (allocated(this%name)) is_fypp = this%name == "fypp"
+    end function is_fypp
 
 end module fpm_manifest_preprocess

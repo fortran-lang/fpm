@@ -33,13 +33,15 @@ use fpm_filesystem, only: dirname, join_path, canon_path
 use fpm_strings, only: string_t, operator(.in.), string_cat, fnv_1a, resize, lower, str_ends_with
 use fpm_compiler, only: get_macros
 use fpm_sources, only: get_exe_name_with_suffix
+use fpm_manifest_preprocess, only: preprocess_config_t
 implicit none
 
 private
 
 public FPM_TARGET_UNKNOWN, FPM_TARGET_EXECUTABLE, &
        FPM_TARGET_ARCHIVE, FPM_TARGET_OBJECT, &
-       FPM_TARGET_C_OBJECT, FPM_TARGET_CPP_OBJECT
+       FPM_TARGET_C_OBJECT, FPM_TARGET_CPP_OBJECT, &
+       FPM_TARGET_NAME
 public build_target_t, build_target_ptr
 public targets_from_sources, resolve_module_dependencies
 public add_target, add_dependency
@@ -135,6 +137,22 @@ end type build_target_t
 
 
 contains
+
+!> Target type name
+pure function FPM_TARGET_NAME(type) result(msg)
+   integer, intent(in) :: type
+   character(:), allocatable :: msg
+
+   select case (type)
+      case (FPM_TARGET_ARCHIVE);    msg = 'Archive'
+      case (FPM_TARGET_CPP_OBJECT); msg = 'C++ object'
+      case (FPM_TARGET_C_OBJECT);   msg = 'C Object'
+      case (FPM_TARGET_EXECUTABLE); msg = 'Executable'
+      case (FPM_TARGET_OBJECT);     msg = 'Object'
+      case default;                 msg = 'Unknown'
+   end select
+
+end function FPM_TARGET_NAME
 
 !> High-level wrapper to generate build target information
 subroutine targets_from_sources(targets,model,prune,error)
@@ -233,7 +251,7 @@ subroutine build_target_list(targets,model)
                                                sources(i)%unit_type==FPM_UNIT_CSOURCE), &
                                 output_name = get_object_name(sources(i)), &
                                 features = model%packages(j)%features, &
-                                macros = model%packages(j)%macros, &
+                                preprocess = model%packages(j)%preprocess, &
                                 version = model%packages(j)%version)
 
 
@@ -247,7 +265,7 @@ subroutine build_target_list(targets,model)
                     call add_target(targets,package=model%packages(j)%name,source = sources(i), &
                                 type = FPM_TARGET_CPP_OBJECT, &
                                 output_name = get_object_name(sources(i)), &
-                                macros = model%packages(j)%macros, &
+                                preprocess = model%packages(j)%preprocess, &
                                 version = model%packages(j)%version)
 
                     if (with_lib .and. sources(i)%unit_scope == FPM_SCOPE_LIB) then
@@ -280,7 +298,7 @@ subroutine build_target_list(targets,model)
                                 output_name = get_object_name(sources(i)), &
                                 source = sources(i), &
                                 features = model%packages(j)%features, &
-                                macros = model%packages(j)%macros &
+                                preprocess = model%packages(j)%preprocess &
                                 )
 
                     if (sources(i)%unit_scope == FPM_SCOPE_APP) then
@@ -413,7 +431,7 @@ end subroutine collect_exe_link_dependencies
 
 !> Allocate a new target and append to target list
 subroutine add_target(targets, package, type, output_name, source, link_libraries, &
-        & features, macros, version)
+        & features, preprocess, version)
     type(build_target_ptr), allocatable, intent(inout) :: targets(:)
     character(*), intent(in) :: package
     integer, intent(in) :: type
@@ -421,7 +439,7 @@ subroutine add_target(targets, package, type, output_name, source, link_librarie
     type(srcfile_t), intent(in), optional :: source
     type(string_t), intent(in), optional :: link_libraries(:)
     type(fortran_features_t), intent(in), optional :: features
-    type(string_t), intent(in), optional :: macros(:)
+    type(preprocess_config_t), intent(in), optional :: preprocess
     character(*), intent(in), optional :: version
 
     integer :: i
@@ -450,7 +468,9 @@ subroutine add_target(targets, package, type, output_name, source, link_librarie
     if (present(source)) new_target%source = source
     if (present(link_libraries)) new_target%link_libraries = link_libraries
     if (present(features)) new_target%features = features
-    if (present(macros)) new_target%macros = macros
+    if (present(preprocess)) then
+        if (allocated(preprocess%macros)) new_target%macros = preprocess%macros
+    endif
     if (present(version)) new_target%version = version
     allocate(new_target%dependencies(0))
 
