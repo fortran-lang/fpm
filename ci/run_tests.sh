@@ -58,6 +58,13 @@ pushd with_examples
 "$fpm" run --target demo-prog
 popd
 
+pushd many_examples
+"$fpm" build
+"$fpm" run --example --all
+test -e demo1.txt
+test -e demo2.txt
+popd
+
 pushd auto_discovery_off
 "$fpm" build
 "$fpm" run --target auto_discovery_off
