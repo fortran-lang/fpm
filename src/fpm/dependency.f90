@@ -60,7 +60,7 @@ module fpm_dependency
   use fpm_error, only: error_t, fatal_error
   use fpm_filesystem, only: exists, join_path, mkdir, canon_path, windows_path, list_files, is_dir, basename, &
                             os_delete_dir, get_temp_filename, parent_dir
-  use fpm_git, only: git_target_revision, git_target_default, git_revision, operator(==), serializable_t
+  use fpm_git, only: git_target_revision, git_target_default, git_revision, serializable_t
   use fpm_manifest, only: package_config_t, dependency_config_t, get_package_data
   use fpm_manifest_dependency, only: manifest_has_changed, dependency_destroy
   use fpm_manifest_preprocess, only: operator(==)
