@@ -663,7 +663,6 @@ contains
             cmd_settings=fpm_update_settings(name=names, &
             & fetch_only=lget('fetch-only'), &
             & dump=val_dump, &
-            & fetch_only=lget('fetch-only'), &
             & verbose=lget('verbose'), &
             & path_to_config=config_file, &
             & clean=lget('clean'))
