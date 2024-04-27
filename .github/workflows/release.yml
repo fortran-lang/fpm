@@ -17,7 +17,7 @@ jobs:
       FORMAT: ${{ matrix.format }}
     steps:
     - name: Checkout code
-      uses: actions/checkout@v2
+      uses: actions/checkout@v4
       with:
         fetch-depth: 0
 
@@ -44,7 +44,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - name: Checkout code
-      uses: actions/checkout@v2
+      uses: actions/checkout@v4
       with:
         fetch-depth: 0
 
@@ -67,7 +67,7 @@ jobs:
         patch -p1 < ./ci/single-file.patch
 
     - name: Install fpm
-      uses: fortran-lang/setup-fpm@v3
+      uses: fortran-lang/setup-fpm@v5
       with:
         fpm-version: 'v0.8.0'
 
@@ -124,7 +124,7 @@ jobs:
       env:
         DEPLOY_BRANCH: ${{ secrets.DEPLOY_BRANCH && contains(github.ref, secrets.DEPLOY_BRANCH) && 1 || 0 }}
 
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v4
       if: ${{ github.event_name == 'push' }}
 
     - name: Download Artifacts

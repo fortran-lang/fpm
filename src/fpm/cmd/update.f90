@@ -4,6 +4,7 @@ module fpm_cmd_update
   use fpm_error, only : error_t, fpm_stop
   use fpm_filesystem, only : exists, mkdir, join_path, delete_file, filewrite
   use fpm_manifest, only : package_config_t, get_package_data
+  use fpm_toml, only: name_is_json
   implicit none
   private
   public :: cmd_update
@@ -14,10 +15,10 @@ contains
   subroutine cmd_update(settings)
     !> Representation of the command line arguments
     type(fpm_update_settings), intent(in) :: settings
+
     type(package_config_t) :: package
     type(dependency_tree_t) :: deps
     type(error_t), allocatable :: error
-
     integer :: ii
     character(len=:), allocatable :: cache
 
@@ -57,6 +58,11 @@ contains
       end do
     end if
 
+    if (len_trim(settings%dump)>0) then
+        call deps%dump(trim(settings%dump), error, json=name_is_json(trim(settings%dump)))
+        call handle_error(error)
+    end if
+
   end subroutine cmd_update
 
   !> Error handling for this command
@@ -64,7 +70,7 @@ contains
     !> Potential error
     type(error_t), intent(in), optional :: error
     if (present(error)) then
-      call fpm_stop(1, error%message)
+      call fpm_stop(1, '*cmd_update* error: '//error%message)
     end if
   end subroutine handle_error
 

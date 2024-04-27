@@ -3,21 +3,22 @@
 !> This is a wrapper data type that encapsulate all pre-processing information
 !> (compiler flags, linker libraries, etc.) required to correctly enable a package
 !> to use a core library.
-!>        
 !>
-!>### Available core libraries   
+!>
+!>### Available core libraries
 !>
 !> - OpenMP
 !> - MPI
 !> - fortran-lang stdlib
 !> - fortran-lang minpack
-!> 
+!>
 !>
 !> @note Core libraries are enabled in the [build] section of the fpm.toml manifest
 !>
 !>
 module fpm_meta
-use fpm_strings, only: string_t, len_trim, remove_newline_characters
+use fpm_strings, only: string_t, len_trim, remove_newline_characters, str_begins_with_str, &
+                       str_ends_with
 use fpm_error, only: error_t, fatal_error, syntax_error, fpm_stop
 use fpm_compiler
 use fpm_model
@@ -29,6 +30,8 @@ use fpm_environment, only: get_env,os_is_unix
 use fpm_filesystem, only: run, get_temp_filename, getline, exists, canon_path, is_dir, get_dos_path
 use fpm_versioning, only: version_t, new_version, regex_version_from_text
 use fpm_os, only: get_absolute_path
+use shlex_module, only: shlex_split => split
+use regex_module, only: regex
 use iso_fortran_env, only: stdout => output_unit
 
 implicit none
@@ -105,6 +108,8 @@ logical, parameter, private :: verbose = .false.
 integer, parameter, private :: LANG_FORTRAN = 1
 integer, parameter, private :: LANG_C       = 2
 integer, parameter, private :: LANG_CXX     = 3
+
+character(*), parameter :: LANG_NAME(*) = [character(7) :: 'Fortran','C','C++']
 
 contains
 
@@ -293,11 +298,8 @@ subroutine resolve_cmd(self,settings,error)
         select type (cmd=>settings)
            class is (fpm_run_settings) ! includes fpm_test_settings
 
-              if (.not.allocated(cmd%runner)) then
-                  cmd%runner = self%run_command%s
-              else
-                  cmd%runner = self%run_command%s//' '//cmd%runner
-              end if
+              ! Only override runner if user has not provided a custom one
+              if (.not.len_trim(cmd%runner)>0) cmd%runner = self%run_command%s
 
         end select
 
@@ -416,6 +418,15 @@ subroutine add_metapackage_model(model,package,settings,name,error)
     call meta%resolve(settings,error)
     if (allocated(error)) return
 
+    ! If we need to run executables, there should be an MPI runner
+    if (name=="mpi") then
+        select type (settings)
+           class is (fpm_run_settings) ! run, test
+              if (.not.meta%has_run_command) &
+              call fatal_error(error,"cannot find a valid mpi runner on the local host")
+        end select
+    endif
+
 end subroutine add_metapackage_model
 
 !> Resolve all metapackages into the package config
@@ -428,10 +439,8 @@ subroutine resolve_metapackage_model(model,package,settings,error)
     ! Dependencies are added to the package config, so they're properly resolved
     ! into the dependency tree later.
     ! Flags are added to the model (whose compiler needs to be already initialized)
-    if (model%compiler%is_unknown()) then
-        call fatal_error(error,"compiler not initialized: cannot build metapackages")
-        return
-    end if
+    if (model%compiler%is_unknown()) &
+    write(stdout,'(a)') '<WARNING> compiler not initialized: metapackages may not be available'
 
     ! OpenMP
     if (package%meta%openmp%on) then
@@ -628,7 +637,13 @@ logical function msmpi_init(this,compiler,error) result(found)
             call get_absolute_path('C:\Program Files\Microsoft MPI\Bin\mpiexec.exe',bindir,error)
         endif
 
-        ! Do a third attempt: search for mpiexec.exe in PATH location
+        ! Third attempt for bash-style shell
+        if (len_trim(bindir)<=0 .or. allocated(error)) then
+            if (verbose) print *, '+ %MSMPI_BIN% empty, searching /c/Program Files/Microsoft MPI/Bin/ ...'
+            call get_absolute_path('/c/Program Files/Microsoft MPI/Bin/mpiexec.exe',bindir,error)
+        endif
+
+        ! Do a fourth attempt: search for mpiexec.exe in PATH location
         if (len_trim(bindir)<=0 .or. allocated(error)) then
             if (verbose) print *, '+ C:\Program Files\Microsoft MPI\Bin\ not found. searching %PATH%...'
 
@@ -641,7 +656,7 @@ logical function msmpi_init(this,compiler,error) result(found)
 
         endif
 
-        if (allocated(error) .or. .not.exists(bindir)) then
+        if (allocated(error)) then
             call fatal_error(error,'MS-MPI error: MS-MPI Runtime directory is missing. '//&
                                    'check environment variable %MSMPI_BIN% or that the folder is in %PATH%.')
             return
@@ -859,7 +874,7 @@ subroutine get_mpi_runner(command,verbose,error)
 
     ! Try several commands
     do itri=1,size(try)
-       call find_command_location(trim(try(itri)),command%s,verbose=.true.,error=error)
+       call find_command_location(trim(try(itri)),command%s,verbose=verbose,error=error)
        if (allocated(error)) cycle
 
        ! Success!
@@ -971,33 +986,31 @@ subroutine init_mpi_from_wrappers(this,compiler,mpilib,fort_wrapper,c_wrapper,cx
     type(error_t), allocatable, intent(out) :: error
 
     type(version_t) :: version
+    type(error_t), allocatable :: runner_error
 
     ! Cleanup structure
     call destroy(this)
 
     ! Get linking flags
-    if (mpilib/=MPI_TYPE_INTEL) then
-        this%link_flags = mpi_wrapper_query(mpilib,fort_wrapper,'link',verbose,error)
+    this%link_flags = mpi_wrapper_query(mpilib,fort_wrapper,'link',verbose,error)
+    if (allocated(error)) return
 
-        ! We fix OpenMPI's Fortran wrapper bug (https://github.com/open-mpi/ompi/issues/11636)
-        !call fix_openmpi_link_flags(this%link_flags,compiler,mpilib,fort_wrapper,c_wrapper,cxx_wrapper,error)
+    ! Remove useless/dangerous flags
+    call filter_link_arguments(compiler,this%link_flags)
 
-        if (allocated(error)) return
-        this%has_link_flags = len_trim(this%link_flags)>0
-    endif
+    this%has_link_flags = len_trim(this%link_flags)>0
 
     ! Request to use libs in arbitrary order
     if (this%has_link_flags .and. compiler%is_gnu() .and. os_is_unix() .and. get_os_type()/=OS_MACOS) then
         this%link_flags = string_t(' -Wl,--start-group '//this%link_flags%s)
     end if
 
-
     ! Add language-specific flags
-    call set_language_flags(mpilib,fort_wrapper,this%has_fortran_flags,this%fflags,verbose,error)
+    call set_language_flags(compiler,mpilib,fort_wrapper,this%has_fortran_flags,this%fflags,verbose,error)
     if (allocated(error)) return
-    call set_language_flags(mpilib,c_wrapper,this%has_c_flags,this%cflags,verbose,error)
+    call set_language_flags(compiler,mpilib,c_wrapper,this%has_c_flags,this%cflags,verbose,error)
     if (allocated(error)) return
-    call set_language_flags(mpilib,cxx_wrapper,this%has_cxx_flags,this%cxxflags,verbose,error)
+    call set_language_flags(compiler,mpilib,cxx_wrapper,this%has_cxx_flags,this%cxxflags,verbose,error)
     if (allocated(error)) return
 
     ! Get library version
@@ -1009,13 +1022,13 @@ subroutine init_mpi_from_wrappers(this,compiler,mpilib,fort_wrapper,c_wrapper,cx
     end if
 
     !> Add default run command, if present
-    this%run_command = mpi_wrapper_query(mpilib,fort_wrapper,'runner',verbose,error)
-    if (allocated(error)) return
-    this%has_run_command = len_trim(this%run_command)>0
+    this%run_command = mpi_wrapper_query(mpilib,fort_wrapper,'runner',verbose,runner_error)
+    this%has_run_command = (len_trim(this%run_command)>0) .and. .not.allocated(runner_error)
 
     contains
 
-    subroutine set_language_flags(mpilib,wrapper,has_flags,flags,verbose,error)
+    subroutine set_language_flags(compiler,mpilib,wrapper,has_flags,flags,verbose,error)
+        type(compiler_t), intent(in) :: compiler
         integer, intent(in) :: mpilib
         type(string_t), intent(in) :: wrapper
         logical, intent(inout) :: has_flags
@@ -1035,6 +1048,8 @@ subroutine init_mpi_from_wrappers(this,compiler,mpilib,fort_wrapper,c_wrapper,cx
 
             if (verbose) print *, '+ MPI language flags from wrapper <',wrapper%s,'>: flags=',flags%s
 
+            call filter_build_arguments(compiler,flags)
+
         endif
 
     end subroutine set_language_flags
@@ -1049,13 +1064,16 @@ subroutine mpi_compiler_match(language,wrappers,compiler,which_one,mpilib,error)
     integer, intent(out) :: which_one, mpilib
     type(error_t), allocatable, intent(out) :: error
 
-    integer :: i
+    integer :: i, same_vendor, vendor_mpilib
     type(string_t) :: screen
     character(128) :: msg_out
     type(compiler_t) :: mpi_compiler
 
-    which_one = 0
-    mpilib = MPI_TYPE_NONE
+    which_one   = 0
+    same_vendor = 0
+    mpilib      = MPI_TYPE_NONE
+
+    if (verbose) print *, '+ Trying to match available ',LANG_NAME(language),' MPI wrappers to ',compiler%fc,'...'
 
     do i=1,size(wrappers)
 
@@ -1064,17 +1082,18 @@ subroutine mpi_compiler_match(language,wrappers,compiler,which_one,mpilib,error)
         screen = mpi_wrapper_query(mpilib,wrappers(i),'compiler',verbose=.false.,error=error)
         if (allocated(error)) return
 
+        if (verbose) print *, '  Wrapper ',wrappers(i)%s,' lib=',MPI_TYPE_NAME(mpilib),' uses ',screen%s
+
         select case (language)
            case (LANG_FORTRAN)
                ! Build compiler type. The ID is created based on the Fortran name
-               call new_compiler(mpi_compiler,screen%s,'','',echo=.true.,verbose=.true.)
+               call new_compiler(mpi_compiler,screen%s,'','',echo=.true.,verbose=.false.)
 
                ! Fortran match found!
                if (mpi_compiler%id == compiler%id) then
                    which_one = i
                    return
                end if
-
            case (LANG_C)
                ! For other languages, we can only hope that the name matches the expected one
                if (screen%s==compiler%cc .or. screen%s==compiler%fc) then
@@ -1088,7 +1107,19 @@ subroutine mpi_compiler_match(language,wrappers,compiler,which_one,mpilib,error)
                end if
         end select
 
+        ! Because the intel mpi library does not support llvm_ compiler wrappers yet,
+        ! we must check for that manually
+        if (is_intel_classic_option(language,same_vendor,screen,compiler,mpi_compiler)) then
+            same_vendor = i
+            vendor_mpilib = mpilib
+        end if
     end do
+
+    ! Intel compiler: if an exact match is not found, attempt closest wrapper
+    if (which_one==0 .and. same_vendor>0) then
+        which_one = same_vendor
+        mpilib    = vendor_mpilib
+    end if
 
     ! None of the available wrappers matched the current Fortran compiler
     write(msg_out,1) size(wrappers),compiler%fc
@@ -1096,6 +1127,28 @@ subroutine mpi_compiler_match(language,wrappers,compiler,which_one,mpilib,error)
     1 format('<ERROR> None out of ',i0,' valid MPI wrappers matches compiler ',a)
 
 end subroutine mpi_compiler_match
+
+!> Because the Intel mpi library does not support llvm_ compiler wrappers yet,
+!> we must save the Intel-classic option and later manually replace it
+logical function is_intel_classic_option(language,same_vendor_ID,screen_out,compiler,mpi_compiler)
+    integer, intent(in) :: language,same_vendor_ID
+    type(string_t), intent(in) :: screen_out
+    type(compiler_t), intent(in) :: compiler,mpi_compiler
+
+    if (same_vendor_ID/=0) then
+        is_intel_classic_option = .false.
+    else
+        select case (language)
+           case (LANG_FORTRAN)
+               is_intel_classic_option = mpi_compiler%is_intel() .and. compiler%is_intel()
+           case (LANG_C)
+               is_intel_classic_option = screen_out%s=='icc' .and. compiler%cc=='icx'
+           case (LANG_CXX)
+               is_intel_classic_option = screen_out%s=='icpc' .and. compiler%cc=='icpx'
+        end select
+    end if
+
+end function is_intel_classic_option
 
 !> Return library version from the MPI wrapper command
 type(version_t) function mpi_version_get(mpilib,wrapper,error)
@@ -1389,6 +1442,7 @@ type(string_t) function mpi_wrapper_query(mpilib,wrapper,command,verbose,error) 
            end if
 
            ! Take out the first command from the whole line
+           call remove_newline_characters(screen)
            call split(screen%s,tokens,delimiters=' ')
            screen%s = trim(adjustl(tokens(1)))
 
@@ -1435,6 +1489,7 @@ type(string_t) function mpi_wrapper_query(mpilib,wrapper,command,verbose,error) 
            select case (mpilib)
               case (MPI_TYPE_OPENMPI); cmdstr = string_t('--showme:link')
               case (MPI_TYPE_MPICH);   cmdstr = string_t('-link-info')
+              case (MPI_TYPE_INTEL);   cmdstr = string_t('-show')
               case default
                  call fatal_error(error,unsupported_msg)
                  return
@@ -1452,7 +1507,7 @@ type(string_t) function mpi_wrapper_query(mpilib,wrapper,command,verbose,error) 
            select case (mpilib)
               case (MPI_TYPE_OPENMPI)
                  call remove_newline_characters(screen)
-              case (MPI_TYPE_MPICH)
+              case (MPI_TYPE_MPICH,MPI_TYPE_INTEL)
                  ! MPICH reports the full command including the compiler name. Remove it if so
                  call remove_newline_characters(screen)
                  call split(screen%s,tokens)
@@ -1591,5 +1646,124 @@ type(string_t) function mpi_wrapper_query(mpilib,wrapper,command,verbose,error) 
 
 
 end function mpi_wrapper_query
+
+!> Check if input is a useful linker argument
+logical function is_link_argument(compiler,string)
+   type(compiler_t), intent(in) :: compiler
+   character(*), intent(in) :: string
+
+   select case (compiler%id)
+      case (id_intel_classic_windows,id_intel_llvm_windows)
+          is_link_argument = string=='/link' &
+                             .or. str_begins_with_str(string,'/LIBPATH')&
+                             .or. str_ends_with(string,'.lib') ! always .lib whether static or dynamic
+      case default
+
+          ! fix OpenMPI's Fortran wrapper bug (https://github.com/open-mpi/ompi/issues/11636) here
+          is_link_argument = (    str_begins_with_str(string,'-L') &
+                             .or. str_begins_with_str(string,'-l') &
+                             .or. str_begins_with_str(string,'-Xlinker') &
+                             .or. string=='-pthread' &
+                             .or. (str_begins_with_str(string,'-W') .and. &
+                                   (string/='-Wall') .and. (.not.str_begins_with_str(string,'-Werror'))) ) &
+                             .and. .not. ( &
+                                 (get_os_type()==OS_MACOS .and. index(string,'-commons,use_dylibs')>0) )
+   end select
+
+end function is_link_argument
+
+!> From build, remove optimization and other unnecessary flags
+subroutine filter_build_arguments(compiler,command)
+    type(compiler_t), intent(in) :: compiler
+    type(string_t), intent(inout) :: command
+    character(len=:), allocatable :: tokens(:)
+
+    integer :: i,n,re_i,re_l
+    logical, allocatable :: keep(:)
+    logical :: keep_next
+    character(len=:), allocatable :: module_flag,include_flag
+
+    if (len_trim(command)<=0) return
+
+    ! Split command into arguments
+    tokens = shlex_split(command%s)
+
+    module_flag  = get_module_flag(compiler,"")
+    include_flag = get_include_flag(compiler,"")
+
+    n = size(tokens)
+    allocate(keep(n),source=.false.)
+    keep_next = .false.
+
+    do i=1,n
+
+        if (get_os_type()==OS_MACOS .and. index(tokens(i),'-commons,use_dylibs')>0) then
+            keep(i) = .false.
+            keep_next = .false.
+        elseif (str_begins_with_str(tokens(i),'-D') .or. &
+                str_begins_with_str(tokens(i),'-f') .or. &
+                str_begins_with_str(tokens(i),'-I') .or. &
+                str_begins_with_str(tokens(i),module_flag) .or. &
+                str_begins_with_str(tokens(i),include_flag) .or. &
+                tokens(i)=='-pthread' .or. &
+                (str_begins_with_str(tokens(i),'-W') .and. tokens(i)/='-Wall' .and. .not.str_begins_with_str(tokens(i),'-Werror')) &
+                ) then
+                   keep(i) = .true.
+                   if (tokens(i)==module_flag .or. tokens(i)==include_flag .or. tokens(i)=='-I') keep_next = .true.
+        elseif (keep_next) then
+            keep(i) = .true.
+            keep_next = .false.
+        end if
+    end do
+
+    ! Backfill
+    command = string_t("")
+    do i=1,n
+        if (.not.keep(i)) cycle
+
+        command%s = command%s//' '//trim(tokens(i))
+    end do
+
+
+end subroutine filter_build_arguments
+
+!> From the linker flags, remove optimization and other unnecessary flags
+subroutine filter_link_arguments(compiler,command)
+    type(compiler_t), intent(in) :: compiler
+    type(string_t), intent(inout) :: command
+    character(len=:), allocatable :: tokens(:)
+
+    integer :: i,n
+    logical, allocatable :: keep(:)
+    logical :: keep_next
+
+    if (len_trim(command)<=0) return
+
+    ! Split command into arguments
+    tokens = shlex_split(command%s)
+
+    n = size(tokens)
+    allocate(keep(n),source=.false.)
+    keep_next = .false.
+
+    do i=1,n
+       if (is_link_argument(compiler,tokens(i))) then
+           keep(i) = .true.
+           if (tokens(i)=='-L' .or. tokens(i)=='-Xlinker') keep_next = .true.
+       elseif (keep_next) then
+           keep(i) = .true.
+           keep_next = .false.
+       end if
+    end do
+
+    ! Backfill
+    command = string_t("")
+    do i=1,n
+        if (.not.keep(i)) cycle
+        command%s = command%s//' '//trim(tokens(i))
+    end do
+
+end subroutine filter_link_arguments
+
 
 end module fpm_meta

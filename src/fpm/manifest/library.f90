@@ -10,8 +10,9 @@
 !>```
 module fpm_manifest_library
     use fpm_error, only : error_t, syntax_error
-    use fpm_strings, only: string_t, string_cat
-    use fpm_toml, only : toml_table, toml_key, toml_stat, get_value, get_list
+    use fpm_strings, only: string_t, string_cat, operator(==)
+    use fpm_toml, only : toml_table, toml_key, toml_stat, get_value, get_list, serializable_t, set_value, &
+                          set_list, set_string, get_value, get_list
     implicit none
     private
 
@@ -19,7 +20,7 @@ module fpm_manifest_library
 
 
     !> Configuration meta data for a library
-    type :: library_config_t
+    type, extends(serializable_t) :: library_config_t
 
         !> Source path prefix
         character(len=:), allocatable :: source_dir
@@ -35,7 +36,14 @@ module fpm_manifest_library
         !> Print information on this instance
         procedure :: info
 
+        !> Serialization interface
+        procedure :: serializable_is_same => library_is_same
+        procedure :: dump_to_toml
+        procedure :: load_from_toml
+
     end type library_config_t
+
+    character(*), parameter, private :: class_name = 'library_config_t'
 
 
 contains
@@ -137,6 +145,70 @@ contains
         end if
 
     end subroutine info
+
+    logical function library_is_same(this,that)
+       class(library_config_t), intent(in) :: this
+       class(serializable_t), intent(in) :: that
+
+        library_is_same = .false.
+
+        select type (other=>that)
+           type is (library_config_t)
+              if (.not.this%include_dir==other%include_dir) return
+              if (.not.allocated(this%source_dir).eqv.allocated(other%source_dir)) return
+              if (.not.this%source_dir==other%source_dir) return
+              if (.not.allocated(this%build_script).eqv.allocated(other%build_script)) return
+              if (.not.this%build_script==other%build_script) return
+           class default
+              ! Not the same type
+              return
+        end select
+
+        !> All checks passed!
+        library_is_same = .true.
+
+    end function library_is_same
+
+    !> Dump install config to toml table
+    subroutine dump_to_toml(self, table, error)
+
+        !> Instance of the serializable object
+        class(library_config_t), intent(inout) :: self
+
+        !> Data structure
+        type(toml_table), intent(inout) :: table
+
+        !> Error handling
+        type(error_t), allocatable, intent(out) :: error
+
+        call set_string(table, "source-dir", self%source_dir, error, class_name)
+        if (allocated(error)) return
+        call set_string(table, "build-script", self%build_script, error, class_name)
+        if (allocated(error)) return
+        call set_list(table, "include-dir", self%include_dir, error)
+        if (allocated(error)) return
+
+    end subroutine dump_to_toml
+
+    !> Read install config from toml table (no checks made at this stage)
+    subroutine load_from_toml(self, table, error)
+
+        !> Instance of the serializable object
+        class(library_config_t), intent(inout) :: self
+
+        !> Data structure
+        type(toml_table), intent(inout) :: table
+
+        !> Error handling
+        type(error_t), allocatable, intent(out) :: error
+
+        call get_value(table, "source-dir", self%source_dir)
+        if (allocated(error)) return
+        call get_value(table, "build-script", self%build_script)
+        if (allocated(error)) return
+        call get_list(table, "include-dir", self%include_dir, error)
+
+    end subroutine load_from_toml
 
 
 end module fpm_manifest_library

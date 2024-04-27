@@ -13,6 +13,8 @@
 !! - [[LOWER]]  Changes a string to lowercase over optional specified column range
 !!### Parsing and joining
 !! - [[SPLIT]]  parse string on delimiter characters and store tokens into an allocatable array
+!! - [[SPLIT_FIRST_LAST]]  Computes the first and last indices of tokens in input string, delimited by the characters in set,
+!!                         and stores them into first and last output arrays.
 !! - [[STRING_CAT]]  Concatenate an array of **type(string_t)** into a single **CHARACTER** variable
 !! - [[JOIN]]  append an array of **CHARACTER** variables into a single **CHARACTER** variable
 !!### Testing
@@ -40,11 +42,12 @@ use iso_c_binding, only: c_char, c_ptr, c_int, c_null_char, c_associated, c_f_po
 implicit none
 
 private
-public :: f_string, lower, split, str_ends_with, string_t, str_begins_with_str
+public :: f_string, lower, upper, split, split_first_last, str_ends_with, string_t, str_begins_with_str
 public :: to_fortran_name, is_fortran_name
 public :: string_array_contains, string_cat, len_trim, operator(.in.), fnv_1a
 public :: replace, resize, str, join, glob
-public :: notabs, dilate, remove_newline_characters
+public :: notabs, dilate, remove_newline_characters, remove_characters_in_set
+public :: operator(==)
 
 !> Module naming
 public :: is_valid_module_name, is_valid_module_prefix, &
@@ -76,6 +79,7 @@ end interface fnv_1a
 interface str_ends_with
     procedure :: str_ends_with_str
     procedure :: str_ends_with_any
+    procedure :: str_ends_with_any_string
 end interface str_ends_with
 
 interface str
@@ -89,6 +93,11 @@ end interface string_t
 interface f_string
     module procedure f_string, f_string_cptr, f_string_cptr_n
 end interface f_string
+
+interface operator(==)
+    module procedure string_is_same
+    module procedure string_arrays_same
+end interface
 
 contains
 
@@ -121,6 +130,23 @@ pure logical function str_ends_with_any(s, e) result(r)
     r = .false.
 
 end function str_ends_with_any
+
+!> Test if a CHARACTER string ends with any of an array of string suffixs
+pure logical function str_ends_with_any_string(s, e) result(r)
+    character(*), intent(in) :: s
+    type(string_t), intent(in) :: e(:)
+
+    integer :: i
+
+    r = .true.
+    do i=1,size(e)
+
+        if (str_ends_with(s,trim(e(i)%s))) return
+
+    end do
+    r = .false.
+
+end function str_ends_with_any_string
 
 !> test if a CHARACTER string begins with a specified prefix
 pure logical function str_begins_with_str(s, e, case_sensitive) result(r)
@@ -268,6 +294,37 @@ elemental pure function lower(str,begin,end) result (string)
     end do
 
 end function lower
+
+  !!License: Public Domain
+ !! Changes a string to upprtcase over optional specified column range
+elemental pure function upper(str,begin,end) result (string)
+
+    character(*), intent(In)     :: str
+    character(len(str))          :: string
+    integer,intent(in),optional  :: begin, end
+    integer                      :: i
+    integer                      :: ibegin, iend
+    string = str
+
+    ibegin = 1
+    if (present(begin))then
+        ibegin = max(ibegin,begin)
+    endif
+
+    iend = len_trim(str)
+    if (present(end))then
+        iend= min(iend,end)
+    endif
+
+    do i = ibegin, iend                               ! step thru each letter in the string in specified range
+        select case (str(i:i))
+        case ('a':'z')
+            string(i:i) = char(iachar(str(i:i))-32)   ! change letter to capitalized
+        case default
+        end select
+    end do
+
+end function upper
 
 !> Helper function to generate a new string_t instance
 !>  (Required due to the allocatable component)
@@ -462,6 +519,73 @@ subroutine split(input_line,array,delimiters,order,nulls)
         endif
     enddo
 end subroutine split
+
+!! Author: Milan Curcic
+!! Computes the first and last indices of tokens in input string, delimited
+!! by the characters in set, and stores them into first and last output
+!! arrays.
+pure subroutine split_first_last(string, set, first, last)
+    character(*), intent(in) :: string
+    character(*), intent(in) :: set
+    integer, allocatable, intent(out) :: first(:)
+    integer, allocatable, intent(out) :: last(:)
+
+    integer, dimension(len(string) + 1) :: istart, iend
+    integer :: p, n, slen
+
+    slen = len(string)
+
+    n = 0
+    if (slen > 0) then
+        p = 0
+        do while (p < slen)
+            n = n + 1
+            istart(n) = min(p + 1, slen)
+            call split_pos(string, set, p)
+            iend(n) = p - 1
+        end do
+    end if
+
+    first = istart(:n)
+    last = iend(:n)
+
+end subroutine split_first_last
+
+!! Author: Milan Curcic
+!! If back is absent, computes the leftmost token delimiter in string whose
+!! position is > pos. If back is present and true, computes the rightmost
+!! token delimiter in string whose position is < pos. The result is stored
+!! in pos.
+pure subroutine split_pos(string, set, pos, back)
+    character(*), intent(in) :: string
+    character(*), intent(in) :: set
+    integer, intent(in out) :: pos
+    logical, intent(in), optional :: back
+
+    logical :: backward
+    integer :: result_pos, bound
+
+    if (len(string) == 0) then
+        pos = 1
+        return
+    end if
+
+    !TODO use optval when implemented in stdlib
+    !backward = optval(back, .false.)
+    backward = .false.
+    if (present(back)) backward = back
+
+    if (backward) then
+        bound = min(len(string), max(pos - 1, 0))
+        result_pos = scan(string(:bound), set, back=.true.)
+    else
+        result_pos = scan(string(min(pos + 1, len(string)):), set) + pos
+        if (result_pos < pos + 1) result_pos = len(string) + 1
+    end if
+
+    pos = result_pos
+
+end subroutine split_pos
 
 !> Returns string with characters in charset replaced with target_char.
 pure function replace(string, charset, target_char) result(res)
@@ -1221,43 +1345,105 @@ logical function has_valid_standard_prefix(module_name,package_name) result(vali
 
 end function has_valid_standard_prefix
 
+!> Check that two string _objects_ are exactly identical
+pure logical function string_is_same(this,that)
+   !> two strings to be compared
+   type(string_t), intent(in) :: this, that
+
+   integer :: i
+
+   string_is_same = .false.
+
+   if (allocated(this%s).neqv.allocated(that%s)) return
+   if (allocated(this%s)) then
+      if (.not.len(this%s)==len(that%s)) return
+      if (.not.len_trim(this%s)==len_trim(that%s)) return
+      do i=1,len_trim(this%s)
+         if (.not.(this%s(i:i)==that%s(i:i))) return
+      end do
+   end if
+
+   ! All checks passed
+   string_is_same = .true.
+
+end function string_is_same
+
+!> Check that two allocatable string _object_ arrays are exactly identical
+pure logical function string_arrays_same(this,that)
+   !> two string arrays to be compared
+   type(string_t), allocatable, intent(in) :: this(:), that(:)
+
+   integer :: i
+
+   string_arrays_same = .false.
+
+   if (allocated(this).neqv.allocated(that)) return
+   if (allocated(this)) then
+      if (.not.(size(this)==size(that))) return
+      if (.not.(ubound(this,1)==ubound(that,1))) return
+      if (.not.(lbound(this,1)==lbound(that,1))) return
+      do i=lbound(this,1),ubound(this,1)
+         if (.not.string_is_same(this(i),that(i))) return
+      end do
+   end if
+
+   ! All checks passed
+   string_arrays_same = .true.
+
+end function string_arrays_same
+
+! Remove all characters from a set from a string
+subroutine remove_characters_in_set(string,set,replace_with)
+    character(len=:), allocatable, intent(inout) :: string
+    character(*), intent(in) :: set
+    character, optional, intent(in) :: replace_with ! Replace with this character instead of removing
+
+    integer :: feed,length
+
+    if (.not.allocated(string)) return
+    if (len(set)<=0) return
+
+    length = len(string)
+    feed   = scan(string,set)
+
+    do while (length>0 .and. feed>0)
+
+        ! Remove heading
+        if (length==1) then
+            string = ""
+
+        elseif (feed==1) then
+            string = string(2:length)
+
+        ! Remove trailing
+        elseif (feed==length) then
+            string = string(1:length-1)
+
+        ! In between: replace with given character
+        elseif (present(replace_with)) then
+            string(feed:feed) = replace_with
+        ! Or just remove
+        else
+            string = string(1:feed-1)//string(feed+1:length)
+        end if
+
+        length = len(string)
+        feed   = scan(string,set)
+
+    end do
+
+end subroutine remove_characters_in_set
+
 ! Remove all new line characters from the current string, replace them with spaces
 subroutine remove_newline_characters(string)
     type(string_t), intent(inout) :: string
 
     integer :: feed,length
 
-    character(*), parameter :: CRLF  = new_line('a')//achar(13)
+    character(*), parameter :: CRLF  = achar(13)//new_line('a')
     character(*), parameter :: SPACE = ' '
 
-    if (.not.allocated(string%s)) return
-
-
-    length = len(string%s)
-    feed   = scan(string%s,CRLF)
-
-    do while (length>0 .and. feed>0)
-
-        ! Remove heading
-        if (length==1) then
-            string = string_t("")
-
-        elseif (feed==1) then
-            string%s = string%s(2:length)
-
-        ! Remove trailing
-        elseif (feed==length) then
-            string%s = string%s(1:length-1)
-
-        ! In between: replace with space
-        else
-            string%s(feed:feed) = SPACE
-        end if
-
-        length = len(string%s)
-        feed   = scan(string%s,CRLF)
-
-    end do
+    call remove_characters_in_set(string%s,set=CRLF,replace_with=SPACE)
 
 end subroutine remove_newline_characters
 

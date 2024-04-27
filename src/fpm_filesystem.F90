@@ -2,11 +2,12 @@
 !!
 module fpm_filesystem
     use,intrinsic :: iso_fortran_env, only : stdin=>input_unit, stdout=>output_unit, stderr=>error_unit
+    use,intrinsic :: iso_c_binding, only: c_new_line
     use fpm_environment, only: get_os_type, &
                                OS_UNKNOWN, OS_LINUX, OS_MACOS, OS_WINDOWS, &
                                OS_CYGWIN, OS_SOLARIS, OS_FREEBSD, OS_OPENBSD
     use fpm_environment, only: separator, get_env, os_is_unix
-    use fpm_strings, only: f_string, replace, string_t, split, dilate, str_begins_with_str
+    use fpm_strings, only: f_string, replace, string_t, split, split_first_last, dilate, str_begins_with_str
     use iso_c_binding, only: c_char, c_ptr, c_int, c_null_char, c_associated, c_f_pointer
     use fpm_error, only : fpm_stop, error_t, fatal_error
     implicit none
@@ -49,6 +50,8 @@ module fpm_filesystem
         end function c_is_dir
     end interface
 #endif
+
+    character(*), parameter :: eol = new_line('a')    !! End of line
 
 contains
 
@@ -302,36 +305,70 @@ integer function number_of_rows(s) result(nrows)
 end function number_of_rows
 
 !> read lines into an array of TYPE(STRING_T) variables expanding tabs
-function read_lines_expanded(fh) result(lines)
-    integer, intent(in) :: fh
+function read_lines_expanded(filename) result(lines)
+    character(len=*), intent(in) :: filename
     type(string_t), allocatable :: lines(:)
 
     integer :: i
-    integer :: iostat
-    character(len=:),allocatable :: line_buffer_read
+    character(len=:), allocatable :: content
+    integer, allocatable :: first(:), last(:)
 
-    allocate(lines(number_of_rows(fh)))
-    do i = 1, size(lines)
-        call getline(fh, line_buffer_read, iostat)
-        lines(i)%s = dilate(line_buffer_read)
+    content = read_text_file(filename)
+    if (len(content) == 0) then
+        allocate (lines(0))
+        return
+    end if
+
+    call split_first_last(content, eol, first, last)  ! TODO: \r (< macOS X), \n (>=macOS X/Linux/Unix), \r\n (Windows)
+
+    ! allocate lines from file content string
+    allocate (lines(size(first)))
+    do i = 1, size(first)
+        allocate(lines(i)%s, source=dilate(content(first(i):last(i))))
     end do
 
 end function read_lines_expanded
 
 !> read lines into an array of TYPE(STRING_T) variables
-function read_lines(fh) result(lines)
-    integer, intent(in) :: fh
+function read_lines(filename) result(lines)
+    character(len=*), intent(in) :: filename
     type(string_t), allocatable :: lines(:)
 
     integer :: i
-    integer :: iostat
+    character(len=:), allocatable :: content
+    integer, allocatable :: first(:), last(:)
 
-    allocate(lines(number_of_rows(fh)))
-    do i = 1, size(lines)
-        call getline(fh, lines(i)%s, iostat)
+    content = read_text_file(filename)
+    if (len(content) == 0) then
+        allocate (lines(0))
+        return
+    end if
+
+    call split_first_last(content, eol, first, last)  ! TODO: \r (< macOS X), \n (>=macOS X/Linux/Unix), \r\n (Windows)
+
+    ! allocate lines from file content string
+    allocate (lines(size(first)))
+    do i = 1, size(first)
+        allocate(lines(i)%s, source=content(first(i):last(i)))
     end do
 
 end function read_lines
+
+!> read text file into a string
+function read_text_file(filename) result(string)
+    character(len=*), intent(in) :: filename
+    character(len=:), allocatable :: string
+    integer :: fh, length
+
+    open (newunit=fh, file=filename, status='old', action='read', &
+            access='stream', form='unformatted')
+    inquire (fh, size=length)
+    allocate (character(len=length) :: string)
+    if (length == 0) return
+    read (fh) string
+    close (fh)
+
+end function read_text_file
 
 !> Create a directory. Create subdirectories as needed
 subroutine mkdir(dir, echo)
@@ -480,9 +517,8 @@ recursive subroutine list_files(dir, files, recurse)
         call fpm_stop(2,'*list_files*:directory listing failed')
     end if
 
-    open (newunit=fh, file=temp_file, status='old')
-    files = read_lines(fh)
-    close(fh,status="delete")
+    files = read_lines(temp_file)
+    call delete_file(temp_file)
 
     do i=1,size(files)
         files(i)%s = join_path(dir,files(i)%s)
@@ -654,7 +690,7 @@ end function unix_path
 !!    integer :: iostat
 !!    character(len=:),allocatable :: line, iomsg
 !!       open(unit=stdin,pad='yes')
-!!       INFINITE: do 
+!!       INFINITE: do
 !!          call getline(stdin,line,iostat,iomsg)
 !!          if(iostat /= 0) exit INFINITE
 !!          write(*,'(a)')'['//line//']'
@@ -678,7 +714,7 @@ subroutine getline(unit, line, iostat, iomsg)
     !> Error message
     character(len=:), allocatable, optional :: iomsg
 
-    integer, parameter :: BUFFER_SIZE = 32768
+    integer, parameter :: BUFFER_SIZE = 1024
     character(len=BUFFER_SIZE)       :: buffer
     character(len=256)               :: msg
     integer :: size

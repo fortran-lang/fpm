@@ -33,10 +33,10 @@ non-Fortran related package manager.
 
 **Website: <https://fpm.fortran-lang.org/>**
 
-## [Download](https://fpm.fortran-lang.org/en/install/index.html)
+## [Download](https://fpm.fortran-lang.org/install/index.html)
 
 Fpm is available on many platforms and through multiple package managers, see our Documentation
-webpage for a list of **[All Supported Installations](https://fpm.fortran-lang.org/en/install/index.html)**.
+webpage for a list of **[All Supported Installations](https://fpm.fortran-lang.org/install/index.html)**.
 
 The easiest installation routes are shown below.
 
@@ -86,9 +86,9 @@ Binary distributions are available for MacOS 11 (Catalina) and 12 (Big Sur) for 
 Fpm should be available and functional after those steps.
 For more details checkout the tap [here](https://github.com/fortran-lang/homebrew-fortran).
 
-## [Get started](https://fpm.fortran-lang.org/en/tutorial/index.html)
+## [Get started](https://fpm.fortran-lang.org/tutorial/index.html)
 
-**Follow our [Quickstart Tutorial](https://fpm.fortran-lang.org/en/tutorial/hello-fpm.html) to get familiar with fpm**.
+**Follow our [Quickstart Tutorial](https://fpm.fortran-lang.org/tutorial/hello-fpm.html) to get familiar with fpm**.
 
 ### Start a new project
 
@@ -118,7 +118,7 @@ arguments can also be passed to the executable(s) or test(s) with the option
 `-- some arguments`.
 
 See additional instructions in the [Packaging guide](PACKAGING.md) or
-the [manifest reference](https://fpm.fortran-lang.org/en/spec/manifest.html).
+the [manifest reference](https://fpm.fortran-lang.org/spec/manifest.html).
 
 <!-- 
 ### Bootstrapping instructions

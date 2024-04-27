@@ -1,0 +1,5 @@
+name = "utils"
+
+[preprocess]
+[preprocess.cpp]
+macros = ["X=1"]
