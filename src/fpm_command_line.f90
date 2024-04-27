@@ -722,6 +722,7 @@ contains
                 cmd_settings = fpm_clean_settings( &
                 &   working_dir=working_dir, &
                 &   clean_skip=skip, &
+                &   registry_cache=lget('registry-cache'), &
                 &   clean_all=clean_all, &
                 &   path_to_config=config_file)
             end block
