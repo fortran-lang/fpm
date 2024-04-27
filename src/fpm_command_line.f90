@@ -708,7 +708,6 @@ contains
 
             block
                 logical :: skip, clean_all
-                character(len=256) :: config_file
 
                 skip = lget('skip')
                 clean_all = lget('all')
@@ -721,7 +720,6 @@ contains
                 allocate(fpm_clean_settings :: cmd_settings)
                 call get_current_directory(working_dir, error)
                 cmd_settings = fpm_clean_settings( &
-                &   is_unix=is_unix, &
                 &   calling_dir=working_dir, &
                 &   clean_skip=skip, &
                 &   clean_all=clean_all, &
