@@ -1011,6 +1011,8 @@ subroutine run(cmd,echo,exitstat,verbose,redirect)
     if (present(redirect)) then
         if(redirect /= '')then
            redirect_str =  ">"//redirect//" 2>&1"
+        else
+           redirect_str = "" 
         endif
     else
         if(verbose_local)then
