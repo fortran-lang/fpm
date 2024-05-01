@@ -76,8 +76,7 @@
         <ul class="list-inline" style="margin-bottom:0px;display:inline">
 
             <li class="list-inline-item" id="statements"><i class="fa fa-list-ol"></i>
-              <a data-bs-toggle="tooltip"
-                 data-bs-placement="bottom" data-html="true"
+              <a data-bs-toggle="tooltip" data-bs-placement="bottom" data-bs-html="true"
                  title="<p> 2.6% of total for derived types.</p>Including implementation: 121 statements,  2.5% of total for derived types.">14 statements</a>
             </li>
 
@@ -134,12 +133,12 @@
       </a>
       <div id="boundprocs-0" class="collapse">
         <div class="list-group list-group-flush">
-            <a class="list-group-item" href="../type/serializable_t.html#boundprocedure-dump~3">dump</a>
-            <a class="list-group-item" href="../type/serializable_t.html#boundprocedure-dump_to_toml~14">dump_to_toml</a>
+            <a class="list-group-item" href="../type/serializable_t.html#boundprocedure-dump">dump</a>
+            <a class="list-group-item" href="../type/serializable_t.html#boundprocedure-dump_to_toml~10">dump_to_toml</a>
             <a class="list-group-item" href="../type/serializable_t.html#boundprocedure-load">load</a>
-            <a class="list-group-item" href="../type/serializable_t.html#boundprocedure-load_from_toml~14">load_from_toml</a>
-            <a class="list-group-item" href="../type/serializable_t.html#boundprocedure-operator%28%3D%3D%29~2">operator(==)</a>
-            <a class="list-group-item" href="../type/serializable_t.html#boundprocedure-serializable_is_same~14">serializable_is_same</a>
+            <a class="list-group-item" href="../type/serializable_t.html#boundprocedure-load_from_toml~10">load_from_toml</a>
+            <a class="list-group-item" href="../type/serializable_t.html#boundprocedure-operator%28%3D%3D%29">operator(==)</a>
+            <a class="list-group-item" href="../type/serializable_t.html#boundprocedure-serializable_is_same~10">serializable_is_same</a>
             <a class="list-group-item" href="../type/serializable_t.html#boundprocedure-test_serialization">test_serialization</a>
         </div>
       </div>
@@ -160,8 +159,8 @@
     </div>
     
     <div class="col-md-9" id='text'>
-      <h2>
-        type, public :: serializable_t</h2>
+      <h2 id="type-def-statement">
+        type, public, abstract :: serializable_t</h2>
     <p>An abstract interface for any fpm class that should be fully serializable to/from TOML/JSON</p>
     <br>
 
@@ -173,10 +172,10 @@
           <div class="row">
               <div class="card mt-3">
     <div class="card-header codesum">
-      <span class="anchor" id="boundprocedure-dump~3"></span>
+      <span class="anchor" id="boundprocedure-dump"></span>
       <h3>
           generic, public ::
-  <strong>dump</strong> => <a href='/home/runner/work/fpm/fpm/fpm-doc/type/srcfile_t.html#boundprocedure-dump_to_toml~17'>dump_to_toml</a>, dump_to_file, dump_to_unit
+  <strong>dump</strong> => <a href='/home/runner/work/fpm/fpm/fpm-doc/type/srcfile_t.html#boundprocedure-dump_to_toml~7'>dump_to_toml</a>, dump_to_file, dump_to_unit
         
       </h3>
     </div>
@@ -422,7 +421,7 @@
           <div class="row">
               <div class="card mt-3">
     <div class="card-header codesum">
-      <span class="anchor" id="boundprocedure-dump_to_toml~14"></span>
+      <span class="anchor" id="boundprocedure-dump_to_toml~10"></span>
       <h3>
           procedure(to_toml), public, deferred ::
   <strong>dump_to_toml</strong>
@@ -512,7 +511,7 @@
       <span class="anchor" id="boundprocedure-load"></span>
       <h3>
           generic, public ::
-  <strong>load</strong> => <a href='/home/runner/work/fpm/fpm/fpm-doc/type/srcfile_t.html#boundprocedure-load_from_toml~17'>load_from_toml</a>, load_from_file, load_from_unit
+  <strong>load</strong> => <a href='/home/runner/work/fpm/fpm/fpm-doc/type/srcfile_t.html#boundprocedure-load_from_toml~7'>load_from_toml</a>, load_from_file, load_from_unit
         
       </h3>
     </div>
@@ -762,7 +761,7 @@ Read object from TOML table</p>
           <div class="row">
               <div class="card mt-3">
     <div class="card-header codesum">
-      <span class="anchor" id="boundprocedure-load_from_toml~14"></span>
+      <span class="anchor" id="boundprocedure-load_from_toml~10"></span>
       <h3>
           procedure(from_toml), public, deferred ::
   <strong>load_from_toml</strong>
@@ -849,10 +848,10 @@ Read object from TOML table</p>
           <div class="row">
               <div class="card mt-3">
     <div class="card-header codesum">
-      <span class="anchor" id="boundprocedure-operator%28%3D%3D%29~2"></span>
+      <span class="anchor" id="boundprocedure-operator%28%3D%3D%29"></span>
       <h3>
           generic, public ::
-  <strong>operator(==)</strong> => <a href='/home/runner/work/fpm/fpm/fpm-doc/type/srcfile_t.html#boundprocedure-serializable_is_same~17'>serializable_is_same</a>
+  <strong>operator(==)</strong> => <a href='/home/runner/work/fpm/fpm/fpm-doc/type/srcfile_t.html#boundprocedure-serializable_is_same~7'>serializable_is_same</a>
         
       </h3>
     </div>
@@ -923,7 +922,7 @@ All checks passed!</p>
           <div class="row">
               <div class="card mt-3">
     <div class="card-header codesum">
-      <span class="anchor" id="boundprocedure-serializable_is_same~14"></span>
+      <span class="anchor" id="boundprocedure-serializable_is_same~10"></span>
       <h3>
           procedure(is_equal), public, deferred ::
   <strong>serializable_is_same</strong>
@@ -1127,14 +1126,17 @@ Check same</p>
     <footer>
       <div class="container">
         <div class="row justify-content-between">
-          <div class="col"><p>Fortran-lang/fpm was developed by fortran-lang/fpm contributors<br>&copy; 2024 
+          <div class="col">
+            <p>
+              Fortran-lang/fpm
+ was developed by fortran-lang/fpm contributors<br>              &copy; 2024 
 </p>
           </div>
           <div class="col">
             <p class="text-end">
               Documentation generated by
               <a href="https://github.com/Fortran-FOSS-Programmers/ford">FORD</a>
- on 2024-03-29 06:55              </p>
+ on 2024-05-01 07:11              </p>
           </div>
         </div>
         <br>

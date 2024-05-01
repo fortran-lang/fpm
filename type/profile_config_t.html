@@ -76,8 +76,7 @@
         <ul class="list-inline" style="margin-bottom:0px;display:inline">
 
             <li class="list-inline-item" id="statements"><i class="fa fa-list-ol"></i>
-              <a data-bs-toggle="tooltip"
-                 data-bs-placement="bottom" data-html="true"
+              <a data-bs-toggle="tooltip" data-bs-placement="bottom" data-bs-html="true"
                  title="<p> 3.0% of total for derived types.</p>Including implementation: 200 statements,  4.1% of total for derived types.">16 statements</a>
             </li>
 
@@ -119,14 +118,14 @@
       <div id="vars-0" class="collapse">
         <div class="list-group list-group-flush">
             <a class="list-group-item" href="../type/profile_config_t.html#variable-c_flags">c_flags</a>
-            <a class="list-group-item" href="../type/profile_config_t.html#variable-compiler~20">compiler</a>
+            <a class="list-group-item" href="../type/profile_config_t.html#variable-compiler~24">compiler</a>
             <a class="list-group-item" href="../type/profile_config_t.html#variable-cxx_flags">cxx_flags</a>
             <a class="list-group-item" href="../type/profile_config_t.html#variable-file_scope_flags">file_scope_flags</a>
-            <a class="list-group-item" href="../type/profile_config_t.html#variable-flags~6">flags</a>
+            <a class="list-group-item" href="../type/profile_config_t.html#variable-flags~14">flags</a>
             <a class="list-group-item" href="../type/profile_config_t.html#variable-is_built_in">is_built_in</a>
             <a class="list-group-item" href="../type/profile_config_t.html#variable-link_time_flags">link_time_flags</a>
-            <a class="list-group-item" href="../type/profile_config_t.html#variable-os_type~2">os_type</a>
-            <a class="list-group-item" href="../type/profile_config_t.html#variable-profile_name~2">profile_name</a>
+            <a class="list-group-item" href="../type/profile_config_t.html#variable-os_type~3">os_type</a>
+            <a class="list-group-item" href="../type/profile_config_t.html#variable-profile_name">profile_name</a>
         </div>
       </div>
     </div>
@@ -153,13 +152,13 @@
       </a>
       <div id="boundprocs-0" class="collapse">
         <div class="list-group list-group-flush">
-            <a class="list-group-item" href="../type/profile_config_t.html#boundprocedure-dump~11">dump</a>
-            <a class="list-group-item" href="../type/profile_config_t.html#boundprocedure-dump_to_toml~7">dump_to_toml</a>
-            <a class="list-group-item" href="../type/profile_config_t.html#boundprocedure-info~7">info</a>
-            <a class="list-group-item" href="../type/profile_config_t.html#boundprocedure-load~9">load</a>
-            <a class="list-group-item" href="../type/profile_config_t.html#boundprocedure-load_from_toml~7">load_from_toml</a>
-            <a class="list-group-item" href="../type/profile_config_t.html#boundprocedure-operator%28%3D%3D%29~10">operator(==)</a>
-            <a class="list-group-item" href="../type/profile_config_t.html#boundprocedure-serializable_is_same~7">serializable_is_same</a>
+            <a class="list-group-item" href="../type/profile_config_t.html#boundprocedure-dump~19">dump</a>
+            <a class="list-group-item" href="../type/profile_config_t.html#boundprocedure-dump_to_toml~16">dump_to_toml</a>
+            <a class="list-group-item" href="../type/profile_config_t.html#boundprocedure-info~8">info</a>
+            <a class="list-group-item" href="../type/profile_config_t.html#boundprocedure-load~17">load</a>
+            <a class="list-group-item" href="../type/profile_config_t.html#boundprocedure-load_from_toml~16">load_from_toml</a>
+            <a class="list-group-item" href="../type/profile_config_t.html#boundprocedure-operator%28%3D%3D%29~18">operator(==)</a>
+            <a class="list-group-item" href="../type/profile_config_t.html#boundprocedure-serializable_is_same~16">serializable_is_same</a>
             <a class="list-group-item" href="../type/profile_config_t.html#boundprocedure-test_serialization">test_serialization</a>
         </div>
       </div>
@@ -180,7 +179,7 @@
     </div>
     
     <div class="col-md-9" id='text'>
-      <h2>
+      <h2 id="type-def-statement">
         type, public, extends(<a href='serializable_t.html'>serializable_t</a>) :: profile_config_t</h2>
     <p>Configuration meta data for a profile</p>
     <br>
@@ -216,7 +215,7 @@
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-compiler~20"></span>
+              <span class="anchor" id="variable-compiler~24"></span>
               character(len=:),
             </td>
               <td>public,</td>
@@ -267,7 +266,7 @@
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-flags~6"></span>
+              <span class="anchor" id="variable-flags~14"></span>
               character(len=:),
             </td>
               <td>public,</td>
@@ -318,7 +317,7 @@
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-os_type~2"></span>
+              <span class="anchor" id="variable-os_type~3"></span>
               integer,
             </td>
               <td>public</td>
@@ -335,7 +334,7 @@
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-profile_name~2"></span>
+              <span class="anchor" id="variable-profile_name"></span>
               character(len=:),
             </td>
               <td>public,</td>
@@ -363,10 +362,10 @@
           <div class="row">
               <div class="card mt-3">
     <div class="card-header codesum">
-      <span class="anchor" id="boundprocedure-dump~11"></span>
+      <span class="anchor" id="boundprocedure-dump~19"></span>
       <h3>
           generic, public ::
-  <strong>dump</strong> => <a href='/home/runner/work/fpm/fpm/fpm-doc/type/srcfile_t.html#boundprocedure-dump_to_toml~17'>dump_to_toml</a>, dump_to_file, dump_to_unit
+  <strong>dump</strong> => <a href='/home/runner/work/fpm/fpm/fpm-doc/type/srcfile_t.html#boundprocedure-dump_to_toml~7'>dump_to_toml</a>, dump_to_file, dump_to_unit
         
       </h3>
     </div>
@@ -612,7 +611,7 @@
           <div class="row">
               <div class="card mt-3">
     <div class="card-header codesum">
-      <span class="anchor" id="boundprocedure-dump_to_toml~7"></span>
+      <span class="anchor" id="boundprocedure-dump_to_toml~16"></span>
       <h3>
           procedure, public ::
   <strong>dump_to_toml</strong> => <a href='/home/runner/work/fpm/fpm/fpm-doc/proc/profile_dump.html'>profile_dump</a>
@@ -696,7 +695,7 @@
           <div class="row">
               <div class="card mt-3">
     <div class="card-header codesum">
-      <span class="anchor" id="boundprocedure-info~7"></span>
+      <span class="anchor" id="boundprocedure-info~8"></span>
       <h3>
           procedure, public ::
   <strong>info</strong>
@@ -710,7 +709,7 @@
     <ul class="list-group">
         <li class="list-group-item">
                   <h3>
-    public  subroutine <a href='../proc/info~7.html'>info</a>(self, unit, verbosity)  
+    public  subroutine <a href='../proc/info~8.html'>info</a>(self, unit, verbosity)  
 </h3>
     
 
@@ -784,10 +783,10 @@
           <div class="row">
               <div class="card mt-3">
     <div class="card-header codesum">
-      <span class="anchor" id="boundprocedure-load~9"></span>
+      <span class="anchor" id="boundprocedure-load~17"></span>
       <h3>
           generic, public ::
-  <strong>load</strong> => <a href='/home/runner/work/fpm/fpm/fpm-doc/type/srcfile_t.html#boundprocedure-load_from_toml~17'>load_from_toml</a>, load_from_file, load_from_unit
+  <strong>load</strong> => <a href='/home/runner/work/fpm/fpm/fpm-doc/type/srcfile_t.html#boundprocedure-load_from_toml~7'>load_from_toml</a>, load_from_file, load_from_unit
         
       </h3>
     </div>
@@ -1037,7 +1036,7 @@ Read object from TOML table</p>
           <div class="row">
               <div class="card mt-3">
     <div class="card-header codesum">
-      <span class="anchor" id="boundprocedure-load_from_toml~7"></span>
+      <span class="anchor" id="boundprocedure-load_from_toml~16"></span>
       <h3>
           procedure, public ::
   <strong>load_from_toml</strong> => <a href='/home/runner/work/fpm/fpm/fpm-doc/proc/profile_load.html'>profile_load</a>
@@ -1121,10 +1120,10 @@ Read object from TOML table</p>
           <div class="row">
               <div class="card mt-3">
     <div class="card-header codesum">
-      <span class="anchor" id="boundprocedure-operator%28%3D%3D%29~10"></span>
+      <span class="anchor" id="boundprocedure-operator%28%3D%3D%29~18"></span>
       <h3>
           generic, public ::
-  <strong>operator(==)</strong> => <a href='/home/runner/work/fpm/fpm/fpm-doc/type/srcfile_t.html#boundprocedure-serializable_is_same~17'>serializable_is_same</a>
+  <strong>operator(==)</strong> => <a href='/home/runner/work/fpm/fpm/fpm-doc/type/srcfile_t.html#boundprocedure-serializable_is_same~7'>serializable_is_same</a>
         
       </h3>
     </div>
@@ -1195,7 +1194,7 @@ All checks passed!</p>
           <div class="row">
               <div class="card mt-3">
     <div class="card-header codesum">
-      <span class="anchor" id="boundprocedure-serializable_is_same~7"></span>
+      <span class="anchor" id="boundprocedure-serializable_is_same~16"></span>
       <h3>
           procedure, public ::
   <strong>serializable_is_same</strong> => <a href='/home/runner/work/fpm/fpm/fpm-doc/proc/profile_same.html'>profile_same</a>
@@ -1415,14 +1414,17 @@ Check same</p>
     <footer>
       <div class="container">
         <div class="row justify-content-between">
-          <div class="col"><p>Fortran-lang/fpm was developed by fortran-lang/fpm contributors<br>&copy; 2024 
+          <div class="col">
+            <p>
+              Fortran-lang/fpm
+ was developed by fortran-lang/fpm contributors<br>              &copy; 2024 
 </p>
           </div>
           <div class="col">
             <p class="text-end">
               Documentation generated by
               <a href="https://github.com/Fortran-FOSS-Programmers/ford">FORD</a>
- on 2024-03-29 06:55              </p>
+ on 2024-05-01 07:11              </p>
           </div>
         </div>
         <br>

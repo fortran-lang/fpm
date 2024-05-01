@@ -76,8 +76,7 @@
         <ul class="list-inline" style="margin-bottom:0px;display:inline">
 
             <li class="list-inline-item" id="statements"><i class="fa fa-list-ol"></i>
-              <a data-bs-toggle="tooltip"
-                 data-bs-placement="bottom" data-html="true"
+              <a data-bs-toggle="tooltip" data-bs-placement="bottom" data-bs-html="true"
                  title="<p> 2.2% of total for derived types.</p>Including implementation: 175 statements,  3.6% of total for derived types.">12 statements</a>
             </li>
 
@@ -118,10 +117,10 @@
       </a>
       <div id="vars-0" class="collapse">
         <div class="list-group list-group-flush">
-            <a class="list-group-item" href="../type/executable_config_t.html#variable-dependency~5">dependency</a>
+            <a class="list-group-item" href="../type/executable_config_t.html#variable-dependency~4">dependency</a>
             <a class="list-group-item" href="../type/executable_config_t.html#variable-link~2">link</a>
             <a class="list-group-item" href="../type/executable_config_t.html#variable-main">main</a>
-            <a class="list-group-item" href="../type/executable_config_t.html#variable-name~16">name</a>
+            <a class="list-group-item" href="../type/executable_config_t.html#variable-name~24">name</a>
             <a class="list-group-item" href="../type/executable_config_t.html#variable-source_dir~2">source_dir</a>
         </div>
       </div>
@@ -149,13 +148,13 @@
       </a>
       <div id="boundprocs-0" class="collapse">
         <div class="list-group list-group-flush">
-            <a class="list-group-item" href="../type/executable_config_t.html#boundprocedure-dump~12">dump</a>
-            <a class="list-group-item" href="../type/executable_config_t.html#boundprocedure-dump_to_toml~8">dump_to_toml</a>
-            <a class="list-group-item" href="../type/executable_config_t.html#boundprocedure-info~8">info</a>
-            <a class="list-group-item" href="../type/executable_config_t.html#boundprocedure-load~10">load</a>
-            <a class="list-group-item" href="../type/executable_config_t.html#boundprocedure-load_from_toml~8">load_from_toml</a>
-            <a class="list-group-item" href="../type/executable_config_t.html#boundprocedure-operator%28%3D%3D%29~11">operator(==)</a>
-            <a class="list-group-item" href="../type/executable_config_t.html#boundprocedure-serializable_is_same~8">serializable_is_same</a>
+            <a class="list-group-item" href="../type/executable_config_t.html#boundprocedure-dump~17">dump</a>
+            <a class="list-group-item" href="../type/executable_config_t.html#boundprocedure-dump_to_toml~14">dump_to_toml</a>
+            <a class="list-group-item" href="../type/executable_config_t.html#boundprocedure-info~7">info</a>
+            <a class="list-group-item" href="../type/executable_config_t.html#boundprocedure-load~15">load</a>
+            <a class="list-group-item" href="../type/executable_config_t.html#boundprocedure-load_from_toml~14">load_from_toml</a>
+            <a class="list-group-item" href="../type/executable_config_t.html#boundprocedure-operator%28%3D%3D%29~16">operator(==)</a>
+            <a class="list-group-item" href="../type/executable_config_t.html#boundprocedure-serializable_is_same~14">serializable_is_same</a>
             <a class="list-group-item" href="../type/executable_config_t.html#boundprocedure-test_serialization">test_serialization</a>
         </div>
       </div>
@@ -176,7 +175,7 @@
     </div>
     
     <div class="col-md-9" id='text'>
-      <h2>
+      <h2 id="type-def-statement">
         type, public, extends(<a href='serializable_t.html'>serializable_t</a>) :: executable_config_t</h2>
     <p>Configuation meta data for an executable</p>
     <br>
@@ -195,7 +194,7 @@
     <tbody>
         <tr>
             <td>
-              <span class="anchor" id="variable-dependency~5"></span>
+              <span class="anchor" id="variable-dependency~4"></span>
               type(<a href='dependency_config_t.html'>dependency_config_t</a>),
             </td>
               <td>public,</td>
@@ -246,7 +245,7 @@
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-name~16"></span>
+              <span class="anchor" id="variable-name~24"></span>
               character(len=:),
             </td>
               <td>public,</td>
@@ -291,10 +290,10 @@
           <div class="row">
               <div class="card mt-3">
     <div class="card-header codesum">
-      <span class="anchor" id="boundprocedure-dump~12"></span>
+      <span class="anchor" id="boundprocedure-dump~17"></span>
       <h3>
           generic, public ::
-  <strong>dump</strong> => <a href='/home/runner/work/fpm/fpm/fpm-doc/type/srcfile_t.html#boundprocedure-dump_to_toml~17'>dump_to_toml</a>, dump_to_file, dump_to_unit
+  <strong>dump</strong> => <a href='/home/runner/work/fpm/fpm/fpm-doc/type/srcfile_t.html#boundprocedure-dump_to_toml~7'>dump_to_toml</a>, dump_to_file, dump_to_unit
         
       </h3>
     </div>
@@ -540,7 +539,7 @@
           <div class="row">
               <div class="card mt-3">
     <div class="card-header codesum">
-      <span class="anchor" id="boundprocedure-dump_to_toml~8"></span>
+      <span class="anchor" id="boundprocedure-dump_to_toml~14"></span>
       <h3>
           procedure, public ::
   <strong>dump_to_toml</strong>
@@ -625,7 +624,7 @@ So, serialization will work regardless of size(self%dep) == self%ndep</p>
           <div class="row">
               <div class="card mt-3">
     <div class="card-header codesum">
-      <span class="anchor" id="boundprocedure-info~8"></span>
+      <span class="anchor" id="boundprocedure-info~7"></span>
       <h3>
           procedure, public ::
   <strong>info</strong>
@@ -712,10 +711,10 @@ So, serialization will work regardless of size(self%dep) == self%ndep</p>
           <div class="row">
               <div class="card mt-3">
     <div class="card-header codesum">
-      <span class="anchor" id="boundprocedure-load~10"></span>
+      <span class="anchor" id="boundprocedure-load~15"></span>
       <h3>
           generic, public ::
-  <strong>load</strong> => <a href='/home/runner/work/fpm/fpm/fpm-doc/type/srcfile_t.html#boundprocedure-load_from_toml~17'>load_from_toml</a>, load_from_file, load_from_unit
+  <strong>load</strong> => <a href='/home/runner/work/fpm/fpm/fpm-doc/type/srcfile_t.html#boundprocedure-load_from_toml~7'>load_from_toml</a>, load_from_file, load_from_unit
         
       </h3>
     </div>
@@ -965,7 +964,7 @@ Read object from TOML table</p>
           <div class="row">
               <div class="card mt-3">
     <div class="card-header codesum">
-      <span class="anchor" id="boundprocedure-load_from_toml~8"></span>
+      <span class="anchor" id="boundprocedure-load_from_toml~14"></span>
       <h3>
           procedure, public ::
   <strong>load_from_toml</strong>
@@ -1049,10 +1048,10 @@ Read object from TOML table</p>
           <div class="row">
               <div class="card mt-3">
     <div class="card-header codesum">
-      <span class="anchor" id="boundprocedure-operator%28%3D%3D%29~11"></span>
+      <span class="anchor" id="boundprocedure-operator%28%3D%3D%29~16"></span>
       <h3>
           generic, public ::
-  <strong>operator(==)</strong> => <a href='/home/runner/work/fpm/fpm/fpm-doc/type/srcfile_t.html#boundprocedure-serializable_is_same~17'>serializable_is_same</a>
+  <strong>operator(==)</strong> => <a href='/home/runner/work/fpm/fpm/fpm-doc/type/srcfile_t.html#boundprocedure-serializable_is_same~7'>serializable_is_same</a>
         
       </h3>
     </div>
@@ -1123,7 +1122,7 @@ All checks passed!</p>
           <div class="row">
               <div class="card mt-3">
     <div class="card-header codesum">
-      <span class="anchor" id="boundprocedure-serializable_is_same~8"></span>
+      <span class="anchor" id="boundprocedure-serializable_is_same~14"></span>
       <h3>
           procedure, public ::
   <strong>serializable_is_same</strong> => exe_is_same
@@ -1331,14 +1330,17 @@ Check same</p>
     <footer>
       <div class="container">
         <div class="row justify-content-between">
-          <div class="col"><p>Fortran-lang/fpm was developed by fortran-lang/fpm contributors<br>&copy; 2024 
+          <div class="col">
+            <p>
+              Fortran-lang/fpm
+ was developed by fortran-lang/fpm contributors<br>              &copy; 2024 
 </p>
           </div>
           <div class="col">
             <p class="text-end">
               Documentation generated by
               <a href="https://github.com/Fortran-FOSS-Programmers/ford">FORD</a>
- on 2024-03-29 06:55              </p>
+ on 2024-05-01 07:11              </p>
           </div>
         </div>
         <br>

@@ -76,8 +76,7 @@
         <ul class="list-inline" style="margin-bottom:0px;display:inline">
 
             <li class="list-inline-item" id="statements"><i class="fa fa-list-ol"></i>
-              <a data-bs-toggle="tooltip"
-                 data-bs-placement="bottom" data-html="true"
+              <a data-bs-toggle="tooltip" data-bs-placement="bottom" data-bs-html="true"
                  title="<p> 3.0% of total for derived types.</p>Including implementation: 117 statements,  2.4% of total for derived types.">16 statements</a>
             </li>
 
@@ -120,7 +119,7 @@
         <div class="list-group list-group-flush">
             <a class="list-group-item" href="../type/srcfile_t.html#variable-digest">digest</a>
             <a class="list-group-item" href="../type/srcfile_t.html#variable-exe_name">exe_name</a>
-            <a class="list-group-item" href="../type/srcfile_t.html#variable-file_name~4">file_name</a>
+            <a class="list-group-item" href="../type/srcfile_t.html#variable-file_name~3">file_name</a>
             <a class="list-group-item" href="../type/srcfile_t.html#variable-include_dependencies">include_dependencies</a>
             <a class="list-group-item" href="../type/srcfile_t.html#variable-link_libraries~3">link_libraries</a>
             <a class="list-group-item" href="../type/srcfile_t.html#variable-modules_provided">modules_provided</a>
@@ -154,12 +153,12 @@
       </a>
       <div id="boundprocs-0" class="collapse">
         <div class="list-group list-group-flush">
-            <a class="list-group-item" href="../type/srcfile_t.html#boundprocedure-dump~22">dump</a>
-            <a class="list-group-item" href="../type/srcfile_t.html#boundprocedure-dump_to_toml~17">dump_to_toml</a>
-            <a class="list-group-item" href="../type/srcfile_t.html#boundprocedure-load~20">load</a>
-            <a class="list-group-item" href="../type/srcfile_t.html#boundprocedure-load_from_toml~17">load_from_toml</a>
-            <a class="list-group-item" href="../type/srcfile_t.html#boundprocedure-operator%28%3D%3D%29~21">operator(==)</a>
-            <a class="list-group-item" href="../type/srcfile_t.html#boundprocedure-serializable_is_same~17">serializable_is_same</a>
+            <a class="list-group-item" href="../type/srcfile_t.html#boundprocedure-dump~12">dump</a>
+            <a class="list-group-item" href="../type/srcfile_t.html#boundprocedure-dump_to_toml~7">dump_to_toml</a>
+            <a class="list-group-item" href="../type/srcfile_t.html#boundprocedure-load~10">load</a>
+            <a class="list-group-item" href="../type/srcfile_t.html#boundprocedure-load_from_toml~7">load_from_toml</a>
+            <a class="list-group-item" href="../type/srcfile_t.html#boundprocedure-operator%28%3D%3D%29~11">operator(==)</a>
+            <a class="list-group-item" href="../type/srcfile_t.html#boundprocedure-serializable_is_same~7">serializable_is_same</a>
             <a class="list-group-item" href="../type/srcfile_t.html#boundprocedure-test_serialization">test_serialization</a>
         </div>
       </div>
@@ -180,7 +179,7 @@
     </div>
     
     <div class="col-md-9" id='text'>
-      <h2>
+      <h2 id="type-def-statement">
         type, public, extends(<a href='serializable_t.html'>serializable_t</a>) :: srcfile_t</h2>
     <p>Type for describing a source file</p>
     <br>
@@ -233,7 +232,7 @@
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-file_name~4"></span>
+              <span class="anchor" id="variable-file_name~3"></span>
               character(len=:),
             </td>
               <td>public,</td>
@@ -380,10 +379,10 @@
           <div class="row">
               <div class="card mt-3">
     <div class="card-header codesum">
-      <span class="anchor" id="boundprocedure-dump~22"></span>
+      <span class="anchor" id="boundprocedure-dump~12"></span>
       <h3>
           generic, public ::
-  <strong>dump</strong> => <a href='/home/runner/work/fpm/fpm/fpm-doc/type/srcfile_t.html#boundprocedure-dump_to_toml~17'>dump_to_toml</a>, dump_to_file, dump_to_unit
+  <strong>dump</strong> => <a href='/home/runner/work/fpm/fpm/fpm-doc/type/srcfile_t.html#boundprocedure-dump_to_toml~7'>dump_to_toml</a>, dump_to_file, dump_to_unit
         
       </h3>
     </div>
@@ -629,7 +628,7 @@
           <div class="row">
               <div class="card mt-3">
     <div class="card-header codesum">
-      <span class="anchor" id="boundprocedure-dump_to_toml~17"></span>
+      <span class="anchor" id="boundprocedure-dump_to_toml~7"></span>
       <h3>
           procedure, public ::
   <strong>dump_to_toml</strong> => srcfile_dump_to_toml
@@ -712,10 +711,10 @@
           <div class="row">
               <div class="card mt-3">
     <div class="card-header codesum">
-      <span class="anchor" id="boundprocedure-load~20"></span>
+      <span class="anchor" id="boundprocedure-load~10"></span>
       <h3>
           generic, public ::
-  <strong>load</strong> => <a href='/home/runner/work/fpm/fpm/fpm-doc/type/srcfile_t.html#boundprocedure-load_from_toml~17'>load_from_toml</a>, load_from_file, load_from_unit
+  <strong>load</strong> => <a href='/home/runner/work/fpm/fpm/fpm-doc/type/srcfile_t.html#boundprocedure-load_from_toml~7'>load_from_toml</a>, load_from_file, load_from_unit
         
       </h3>
     </div>
@@ -965,7 +964,7 @@ Read object from TOML table</p>
           <div class="row">
               <div class="card mt-3">
     <div class="card-header codesum">
-      <span class="anchor" id="boundprocedure-load_from_toml~17"></span>
+      <span class="anchor" id="boundprocedure-load_from_toml~7"></span>
       <h3>
           procedure, public ::
   <strong>load_from_toml</strong> => srcfile_load_from_toml
@@ -1048,10 +1047,10 @@ Read object from TOML table</p>
           <div class="row">
               <div class="card mt-3">
     <div class="card-header codesum">
-      <span class="anchor" id="boundprocedure-operator%28%3D%3D%29~21"></span>
+      <span class="anchor" id="boundprocedure-operator%28%3D%3D%29~11"></span>
       <h3>
           generic, public ::
-  <strong>operator(==)</strong> => <a href='/home/runner/work/fpm/fpm/fpm-doc/type/srcfile_t.html#boundprocedure-serializable_is_same~17'>serializable_is_same</a>
+  <strong>operator(==)</strong> => <a href='/home/runner/work/fpm/fpm/fpm-doc/type/srcfile_t.html#boundprocedure-serializable_is_same~7'>serializable_is_same</a>
         
       </h3>
     </div>
@@ -1122,7 +1121,7 @@ All checks passed!</p>
           <div class="row">
               <div class="card mt-3">
     <div class="card-header codesum">
-      <span class="anchor" id="boundprocedure-serializable_is_same~17"></span>
+      <span class="anchor" id="boundprocedure-serializable_is_same~7"></span>
       <h3>
           procedure, public ::
   <strong>serializable_is_same</strong> => srcfile_is_same
@@ -1342,14 +1341,17 @@ Check same</p>
     <footer>
       <div class="container">
         <div class="row justify-content-between">
-          <div class="col"><p>Fortran-lang/fpm was developed by fortran-lang/fpm contributors<br>&copy; 2024 
+          <div class="col">
+            <p>
+              Fortran-lang/fpm
+ was developed by fortran-lang/fpm contributors<br>              &copy; 2024 
 </p>
           </div>
           <div class="col">
             <p class="text-end">
               Documentation generated by
               <a href="https://github.com/Fortran-FOSS-Programmers/ford">FORD</a>
- on 2024-03-29 06:55              </p>
+ on 2024-05-01 07:11              </p>
           </div>
         </div>
         <br>

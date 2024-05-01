@@ -76,9 +76,8 @@
         <ul class="list-inline" style="margin-bottom:0px;display:inline">
 
             <li class="list-inline-item" id="statements"><i class="fa fa-list-ol"></i>
-              <a data-bs-toggle="tooltip"
-                 data-bs-placement="bottom" data-html="true"
-                 title=" 2.0% of total for source files.">260 statements</a>
+              <a data-bs-toggle="tooltip" data-bs-placement="bottom" data-bs-html="true"
+                 title=" 2.0% of total for source files.">257 statements</a>
             </li>
 
             <li class="list-inline-item" id="source-file">
@@ -598,17 +597,18 @@
 <a id="ln-441" name="ln-441" href="#ln-441"></a><span class="k">    endif</span>
 <a id="ln-442" name="ln-442" href="#ln-442"></a>
 <a id="ln-443" name="ln-443" href="#ln-443"></a><span class="k">    call </span><span class="n">run</span><span class="p">(</span><span class="s1">&#39;git archive &#39;</span><span class="o">//</span><span class="n">ref</span><span class="o">//</span><span class="s1">&#39; &amp;</span>
-<a id="ln-444" name="ln-444" href="#ln-444"></a><span class="s1">        --format=&#39;</span><span class="o">//</span><span class="n">archive_format</span><span class="o">//</span><span class="w"> </span><span class="p">&amp;</span>
-<a id="ln-445" name="ln-445" href="#ln-445"></a><span class="w">        </span><span class="n">add_files</span><span class="o">//</span><span class="s1">&#39; \</span>
-<a id="ln-446" name="ln-446" href="#ln-446"></a><span class="s1">        -o &#39;</span><span class="o">//</span><span class="n">destination</span><span class="p">,</span><span class="w"> </span><span class="err">\</span>
-<a id="ln-447" name="ln-447" href="#ln-447"></a><span class="w">        </span><span class="n">echo</span><span class="o">=</span><span class="n">verbose</span><span class="p">,</span><span class="w"> </span><span class="err">\</span>
-<a id="ln-448" name="ln-448" href="#ln-448"></a><span class="w">        </span><span class="n">exitstat</span><span class="o">=</span><span class="nb">stat</span><span class="p">)</span>
-<a id="ln-449" name="ln-449" href="#ln-449"></a><span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="nb">stat</span><span class="w"> </span><span class="o">/=</span><span class="w"> </span><span class="mi">0</span><span class="p">)</span><span class="w"> </span><span class="k">then</span>
-<a id="ln-450" name="ln-450" href="#ln-450"></a><span class="k">      call </span><span class="n">fatal_error</span><span class="p">(</span><span class="n">error</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;Error packing &#39;&quot;</span><span class="o">//</span><span class="n">source</span><span class="o">//</span><span class="s2">&quot;&#39;.&quot;</span><span class="p">);</span><span class="w"> </span><span class="k">return</span>
-<a id="ln-451" name="ln-451" href="#ln-451"></a><span class="k">    end if</span>
-<a id="ln-452" name="ln-452" href="#ln-452"></a><span class="k">  end</span>
-<a id="ln-453" name="ln-453" href="#ln-453"></a>
-<a id="ln-454" name="ln-454" href="#ln-454"></a><span class="k">end module </span><span class="n">fpm_git</span>
+<a id="ln-444" name="ln-444" href="#ln-444"></a><span class="s1">        &amp; --format=&#39;</span><span class="o">//</span><span class="n">archive_format</span><span class="o">//</span><span class="w"> </span><span class="p">&amp;</span>
+<a id="ln-445" name="ln-445" href="#ln-445"></a><span class="w">        </span><span class="p">&amp;</span><span class="w"> </span><span class="n">add_files</span><span class="o">//</span><span class="s1">&#39; &amp;</span>
+<a id="ln-446" name="ln-446" href="#ln-446"></a><span class="s1">        &amp; -o &#39;</span><span class="o">//</span><span class="n">destination</span><span class="p">,</span><span class="w"> </span><span class="p">&amp;</span>
+<a id="ln-447" name="ln-447" href="#ln-447"></a><span class="w">        </span><span class="p">&amp;</span><span class="w"> </span><span class="n">echo</span><span class="o">=</span><span class="n">verbose</span><span class="p">,</span><span class="w"> </span><span class="p">&amp;</span>
+<a id="ln-448" name="ln-448" href="#ln-448"></a><span class="w">        </span><span class="p">&amp;</span><span class="w"> </span><span class="n">exitstat</span><span class="o">=</span><span class="nb">stat</span><span class="p">)</span>
+<a id="ln-449" name="ln-449" href="#ln-449"></a><span class="w">        </span>
+<a id="ln-450" name="ln-450" href="#ln-450"></a><span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="nb">stat</span><span class="w"> </span><span class="o">/=</span><span class="w"> </span><span class="mi">0</span><span class="p">)</span><span class="w"> </span><span class="k">then</span>
+<a id="ln-451" name="ln-451" href="#ln-451"></a><span class="k">      call </span><span class="n">fatal_error</span><span class="p">(</span><span class="n">error</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;Error packing &#39;&quot;</span><span class="o">//</span><span class="n">source</span><span class="o">//</span><span class="s2">&quot;&#39;.&quot;</span><span class="p">);</span><span class="w"> </span><span class="k">return</span>
+<a id="ln-452" name="ln-452" href="#ln-452"></a><span class="k">    end if</span>
+<a id="ln-453" name="ln-453" href="#ln-453"></a><span class="k">  end</span>
+<a id="ln-454" name="ln-454" href="#ln-454"></a>
+<a id="ln-455" name="ln-455" href="#ln-455"></a><span class="k">end module </span><span class="n">fpm_git</span>
 </pre></div>
 
       </section>
@@ -620,14 +620,17 @@
     <footer>
       <div class="container">
         <div class="row justify-content-between">
-          <div class="col"><p>Fortran-lang/fpm was developed by fortran-lang/fpm contributors<br>&copy; 2024 
+          <div class="col">
+            <p>
+              Fortran-lang/fpm
+ was developed by fortran-lang/fpm contributors<br>              &copy; 2024 
 </p>
           </div>
           <div class="col">
             <p class="text-end">
               Documentation generated by
               <a href="https://github.com/Fortran-FOSS-Programmers/ford">FORD</a>
- on 2024-03-29 06:55              </p>
+ on 2024-05-01 07:11              </p>
           </div>
         </div>
         <br>

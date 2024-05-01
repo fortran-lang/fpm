@@ -76,8 +76,7 @@
         <ul class="list-inline" style="margin-bottom:0px;display:inline">
 
             <li class="list-inline-item" id="statements"><i class="fa fa-list-ol"></i>
-              <a data-bs-toggle="tooltip"
-                 data-bs-placement="bottom" data-html="true"
+              <a data-bs-toggle="tooltip" data-bs-placement="bottom" data-bs-html="true"
                  title="<p> 2.4% of total for derived types.</p>Including implementation: 153 statements,  3.2% of total for derived types.">13 statements</a>
             </li>
 
@@ -118,13 +117,13 @@
       </a>
       <div id="vars-0" class="collapse">
         <div class="list-group list-group-flush">
-            <a class="list-group-item" href="../type/package_t.html#variable-enforce_module_names~2">enforce_module_names</a>
+            <a class="list-group-item" href="../type/package_t.html#variable-enforce_module_names">enforce_module_names</a>
             <a class="list-group-item" href="../type/package_t.html#variable-features~4">features</a>
-            <a class="list-group-item" href="../type/package_t.html#variable-module_prefix~3">module_prefix</a>
-            <a class="list-group-item" href="../type/package_t.html#variable-name~27">name</a>
-            <a class="list-group-item" href="../type/package_t.html#variable-preprocess~4">preprocess</a>
+            <a class="list-group-item" href="../type/package_t.html#variable-module_prefix">module_prefix</a>
+            <a class="list-group-item" href="../type/package_t.html#variable-name~9">name</a>
+            <a class="list-group-item" href="../type/package_t.html#variable-preprocess~3">preprocess</a>
             <a class="list-group-item" href="../type/package_t.html#variable-sources">sources</a>
-            <a class="list-group-item" href="../type/package_t.html#variable-version~18">version</a>
+            <a class="list-group-item" href="../type/package_t.html#variable-version~4">version</a>
         </div>
       </div>
     </div>
@@ -151,12 +150,12 @@
       </a>
       <div id="boundprocs-0" class="collapse">
         <div class="list-group list-group-flush">
-            <a class="list-group-item" href="../type/package_t.html#boundprocedure-dump~21">dump</a>
-            <a class="list-group-item" href="../type/package_t.html#boundprocedure-dump_to_toml~18">dump_to_toml</a>
-            <a class="list-group-item" href="../type/package_t.html#boundprocedure-load~19">load</a>
-            <a class="list-group-item" href="../type/package_t.html#boundprocedure-load_from_toml~18">load_from_toml</a>
-            <a class="list-group-item" href="../type/package_t.html#boundprocedure-operator%28%3D%3D%29~20">operator(==)</a>
-            <a class="list-group-item" href="../type/package_t.html#boundprocedure-serializable_is_same~18">serializable_is_same</a>
+            <a class="list-group-item" href="../type/package_t.html#boundprocedure-dump~11">dump</a>
+            <a class="list-group-item" href="../type/package_t.html#boundprocedure-dump_to_toml~8">dump_to_toml</a>
+            <a class="list-group-item" href="../type/package_t.html#boundprocedure-load~9">load</a>
+            <a class="list-group-item" href="../type/package_t.html#boundprocedure-load_from_toml~8">load_from_toml</a>
+            <a class="list-group-item" href="../type/package_t.html#boundprocedure-operator%28%3D%3D%29~10">operator(==)</a>
+            <a class="list-group-item" href="../type/package_t.html#boundprocedure-serializable_is_same~8">serializable_is_same</a>
             <a class="list-group-item" href="../type/package_t.html#boundprocedure-test_serialization">test_serialization</a>
         </div>
       </div>
@@ -177,7 +176,7 @@
     </div>
     
     <div class="col-md-9" id='text'>
-      <h2>
+      <h2 id="type-def-statement">
         type, public, extends(<a href='serializable_t.html'>serializable_t</a>) :: package_t</h2>
     <p>Type for describing a single package</p>
     <br>
@@ -196,7 +195,7 @@
     <tbody>
         <tr>
             <td>
-              <span class="anchor" id="variable-enforce_module_names~2"></span>
+              <span class="anchor" id="variable-enforce_module_names"></span>
               logical,
             </td>
               <td>public</td>
@@ -230,7 +229,7 @@
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-module_prefix~3"></span>
+              <span class="anchor" id="variable-module_prefix"></span>
               type(<a href='string_t.html'>string_t</a>),
             </td>
               <td>public</td>
@@ -247,7 +246,7 @@
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-name~27"></span>
+              <span class="anchor" id="variable-name~9"></span>
               character(len=:),
             </td>
               <td>public,</td>
@@ -264,7 +263,7 @@
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-preprocess~4"></span>
+              <span class="anchor" id="variable-preprocess~3"></span>
               type(<a href='preprocess_config_t.html'>preprocess_config_t</a>),
             </td>
               <td>public</td>
@@ -298,7 +297,7 @@
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-version~18"></span>
+              <span class="anchor" id="variable-version~4"></span>
               character(len=:),
             </td>
               <td>public,</td>
@@ -326,10 +325,10 @@
           <div class="row">
               <div class="card mt-3">
     <div class="card-header codesum">
-      <span class="anchor" id="boundprocedure-dump~21"></span>
+      <span class="anchor" id="boundprocedure-dump~11"></span>
       <h3>
           generic, public ::
-  <strong>dump</strong> => <a href='/home/runner/work/fpm/fpm/fpm-doc/type/srcfile_t.html#boundprocedure-dump_to_toml~17'>dump_to_toml</a>, dump_to_file, dump_to_unit
+  <strong>dump</strong> => <a href='/home/runner/work/fpm/fpm/fpm-doc/type/srcfile_t.html#boundprocedure-dump_to_toml~7'>dump_to_toml</a>, dump_to_file, dump_to_unit
         
       </h3>
     </div>
@@ -575,7 +574,7 @@
           <div class="row">
               <div class="card mt-3">
     <div class="card-header codesum">
-      <span class="anchor" id="boundprocedure-dump_to_toml~18"></span>
+      <span class="anchor" id="boundprocedure-dump_to_toml~8"></span>
       <h3>
           procedure, public ::
   <strong>dump_to_toml</strong> => package_dump_to_toml
@@ -661,10 +660,10 @@ Create a sources table</p>
           <div class="row">
               <div class="card mt-3">
     <div class="card-header codesum">
-      <span class="anchor" id="boundprocedure-load~19"></span>
+      <span class="anchor" id="boundprocedure-load~9"></span>
       <h3>
           generic, public ::
-  <strong>load</strong> => <a href='/home/runner/work/fpm/fpm/fpm-doc/type/srcfile_t.html#boundprocedure-load_from_toml~17'>load_from_toml</a>, load_from_file, load_from_unit
+  <strong>load</strong> => <a href='/home/runner/work/fpm/fpm/fpm-doc/type/srcfile_t.html#boundprocedure-load_from_toml~7'>load_from_toml</a>, load_from_file, load_from_unit
         
       </h3>
     </div>
@@ -914,7 +913,7 @@ Read object from TOML table</p>
           <div class="row">
               <div class="card mt-3">
     <div class="card-header codesum">
-      <span class="anchor" id="boundprocedure-load_from_toml~18"></span>
+      <span class="anchor" id="boundprocedure-load_from_toml~8"></span>
       <h3>
           procedure, public ::
   <strong>load_from_toml</strong> => package_load_from_toml
@@ -998,10 +997,10 @@ Read object from TOML table</p>
           <div class="row">
               <div class="card mt-3">
     <div class="card-header codesum">
-      <span class="anchor" id="boundprocedure-operator%28%3D%3D%29~20"></span>
+      <span class="anchor" id="boundprocedure-operator%28%3D%3D%29~10"></span>
       <h3>
           generic, public ::
-  <strong>operator(==)</strong> => <a href='/home/runner/work/fpm/fpm/fpm-doc/type/srcfile_t.html#boundprocedure-serializable_is_same~17'>serializable_is_same</a>
+  <strong>operator(==)</strong> => <a href='/home/runner/work/fpm/fpm/fpm-doc/type/srcfile_t.html#boundprocedure-serializable_is_same~7'>serializable_is_same</a>
         
       </h3>
     </div>
@@ -1072,7 +1071,7 @@ All checks passed!</p>
           <div class="row">
               <div class="card mt-3">
     <div class="card-header codesum">
-      <span class="anchor" id="boundprocedure-serializable_is_same~18"></span>
+      <span class="anchor" id="boundprocedure-serializable_is_same~8"></span>
       <h3>
           procedure, public ::
   <strong>serializable_is_same</strong> => package_is_same
@@ -1286,14 +1285,17 @@ Check same</p>
     <footer>
       <div class="container">
         <div class="row justify-content-between">
-          <div class="col"><p>Fortran-lang/fpm was developed by fortran-lang/fpm contributors<br>&copy; 2024 
+          <div class="col">
+            <p>
+              Fortran-lang/fpm
+ was developed by fortran-lang/fpm contributors<br>              &copy; 2024 
 </p>
           </div>
           <div class="col">
             <p class="text-end">
               Documentation generated by
               <a href="https://github.com/Fortran-FOSS-Programmers/ford">FORD</a>
- on 2024-03-29 06:55              </p>
+ on 2024-05-01 07:11              </p>
           </div>
         </div>
         <br>

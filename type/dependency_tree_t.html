@@ -76,8 +76,7 @@
         <ul class="list-inline" style="margin-bottom:0px;display:inline">
 
             <li class="list-inline-item" id="statements"><i class="fa fa-list-ol"></i>
-              <a data-bs-toggle="tooltip"
-                 data-bs-placement="bottom" data-html="true"
+              <a data-bs-toggle="tooltip" data-bs-placement="bottom" data-bs-html="true"
                  title="<p> 6.9% of total for derived types.</p>Including implementation: 545 statements, 11.3% of total for derived types.">37 statements</a>
             </li>
 
@@ -122,7 +121,7 @@
             <a class="list-group-item" href="../type/dependency_tree_t.html#variable-dep~2">dep</a>
             <a class="list-group-item" href="../type/dependency_tree_t.html#variable-dep_dir">dep_dir</a>
             <a class="list-group-item" href="../type/dependency_tree_t.html#variable-ndep~2">ndep</a>
-            <a class="list-group-item" href="../type/dependency_tree_t.html#variable-unit~17">unit</a>
+            <a class="list-group-item" href="../type/dependency_tree_t.html#variable-unit~23">unit</a>
             <a class="list-group-item" href="../type/dependency_tree_t.html#variable-verbosity~12">verbosity</a>
         </div>
       </div>
@@ -151,18 +150,18 @@
       <div id="boundprocs-0" class="collapse">
         <div class="list-group list-group-flush">
             <a class="list-group-item" href="../type/dependency_tree_t.html#boundprocedure-add">add</a>
-            <a class="list-group-item" href="../type/dependency_tree_t.html#boundprocedure-dump~17">dump</a>
+            <a class="list-group-item" href="../type/dependency_tree_t.html#boundprocedure-dump~22">dump</a>
             <a class="list-group-item" href="../type/dependency_tree_t.html#boundprocedure-dump_cache">dump_cache</a>
-            <a class="list-group-item" href="../type/dependency_tree_t.html#boundprocedure-dump_to_toml~13">dump_to_toml</a>
+            <a class="list-group-item" href="../type/dependency_tree_t.html#boundprocedure-dump_to_toml~19">dump_to_toml</a>
             <a class="list-group-item" href="../type/dependency_tree_t.html#boundprocedure-find">find</a>
             <a class="list-group-item" href="../type/dependency_tree_t.html#boundprocedure-finished">finished</a>
             <a class="list-group-item" href="../type/dependency_tree_t.html#boundprocedure-has">has</a>
-            <a class="list-group-item" href="../type/dependency_tree_t.html#boundprocedure-load~15">load</a>
+            <a class="list-group-item" href="../type/dependency_tree_t.html#boundprocedure-load~20">load</a>
             <a class="list-group-item" href="../type/dependency_tree_t.html#boundprocedure-load_cache">load_cache</a>
-            <a class="list-group-item" href="../type/dependency_tree_t.html#boundprocedure-load_from_toml~13">load_from_toml</a>
-            <a class="list-group-item" href="../type/dependency_tree_t.html#boundprocedure-operator%28%3D%3D%29~16">operator(==)</a>
+            <a class="list-group-item" href="../type/dependency_tree_t.html#boundprocedure-load_from_toml~19">load_from_toml</a>
+            <a class="list-group-item" href="../type/dependency_tree_t.html#boundprocedure-operator%28%3D%3D%29~21">operator(==)</a>
             <a class="list-group-item" href="../type/dependency_tree_t.html#boundprocedure-resolve~2">resolve</a>
-            <a class="list-group-item" href="../type/dependency_tree_t.html#boundprocedure-serializable_is_same~13">serializable_is_same</a>
+            <a class="list-group-item" href="../type/dependency_tree_t.html#boundprocedure-serializable_is_same~19">serializable_is_same</a>
             <a class="list-group-item" href="../type/dependency_tree_t.html#boundprocedure-test_serialization">test_serialization</a>
             <a class="list-group-item" href="../type/dependency_tree_t.html#boundprocedure-update~2">update</a>
         </div>
@@ -184,7 +183,7 @@
     </div>
     
     <div class="col-md-9" id='text'>
-      <h2>
+      <h2 id="type-def-statement">
         type, public, extends(<a href='serializable_t.html'>serializable_t</a>) :: dependency_tree_t</h2>
     <p>Respresentation of a projects dependencies</p>
 <p>The dependencies are stored in a simple array for now, this can be replaced
@@ -273,7 +272,7 @@ with a binary-search tree or a hash table in the future.</p>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-unit~17"></span>
+              <span class="anchor" id="variable-unit~23"></span>
               integer,
             </td>
               <td>public</td>
@@ -713,10 +712,10 @@ Safety: reallocate if necessary</p>
           <div class="row">
               <div class="card mt-3">
     <div class="card-header codesum">
-      <span class="anchor" id="boundprocedure-dump~17"></span>
+      <span class="anchor" id="boundprocedure-dump~22"></span>
       <h3>
           generic, public ::
-  <strong>dump</strong> => <a href='/home/runner/work/fpm/fpm/fpm-doc/type/srcfile_t.html#boundprocedure-dump_to_toml~17'>dump_to_toml</a>, dump_to_file, dump_to_unit
+  <strong>dump</strong> => <a href='/home/runner/work/fpm/fpm/fpm-doc/type/srcfile_t.html#boundprocedure-dump_to_toml~7'>dump_to_toml</a>, dump_to_file, dump_to_unit
         
       </h3>
     </div>
@@ -1185,7 +1184,7 @@ Safety: reallocate if necessary</p>
           <div class="row">
               <div class="card mt-3">
     <div class="card-header codesum">
-      <span class="anchor" id="boundprocedure-dump_to_toml~13"></span>
+      <span class="anchor" id="boundprocedure-dump_to_toml~19"></span>
       <h3>
           procedure, public ::
   <strong>dump_to_toml</strong> => tree_dump_to_toml
@@ -1486,10 +1485,10 @@ So, serialization will work regardless of size(self%dep) == self%ndep</p>
           <div class="row">
               <div class="card mt-3">
     <div class="card-header codesum">
-      <span class="anchor" id="boundprocedure-load~15"></span>
+      <span class="anchor" id="boundprocedure-load~20"></span>
       <h3>
           generic, public ::
-  <strong>load</strong> => <a href='/home/runner/work/fpm/fpm/fpm-doc/type/srcfile_t.html#boundprocedure-load_from_toml~17'>load_from_toml</a>, load_from_file, load_from_unit
+  <strong>load</strong> => <a href='/home/runner/work/fpm/fpm/fpm-doc/type/srcfile_t.html#boundprocedure-load_from_toml~7'>load_from_toml</a>, load_from_file, load_from_unit
         
       </h3>
     </div>
@@ -1962,7 +1961,7 @@ Read object from TOML table</p>
           <div class="row">
               <div class="card mt-3">
     <div class="card-header codesum">
-      <span class="anchor" id="boundprocedure-load_from_toml~13"></span>
+      <span class="anchor" id="boundprocedure-load_from_toml~19"></span>
       <h3>
           procedure, public ::
   <strong>load_from_toml</strong> => tree_load_from_toml
@@ -2046,10 +2045,10 @@ Read object from TOML table</p>
           <div class="row">
               <div class="card mt-3">
     <div class="card-header codesum">
-      <span class="anchor" id="boundprocedure-operator%28%3D%3D%29~16"></span>
+      <span class="anchor" id="boundprocedure-operator%28%3D%3D%29~21"></span>
       <h3>
           generic, public ::
-  <strong>operator(==)</strong> => <a href='/home/runner/work/fpm/fpm/fpm-doc/type/srcfile_t.html#boundprocedure-serializable_is_same~17'>serializable_is_same</a>
+  <strong>operator(==)</strong> => <a href='/home/runner/work/fpm/fpm/fpm-doc/type/srcfile_t.html#boundprocedure-serializable_is_same~7'>serializable_is_same</a>
         
       </h3>
     </div>
@@ -2305,7 +2304,7 @@ All checks passed!</p>
           <div class="row">
               <div class="card mt-3">
     <div class="card-header codesum">
-      <span class="anchor" id="boundprocedure-serializable_is_same~13"></span>
+      <span class="anchor" id="boundprocedure-serializable_is_same~19"></span>
       <h3>
           procedure, public ::
   <strong>serializable_is_same</strong> => dependency_tree_is_same
@@ -2700,14 +2699,17 @@ Check same</p>
     <footer>
       <div class="container">
         <div class="row justify-content-between">
-          <div class="col"><p>Fortran-lang/fpm was developed by fortran-lang/fpm contributors<br>&copy; 2024 
+          <div class="col">
+            <p>
+              Fortran-lang/fpm
+ was developed by fortran-lang/fpm contributors<br>              &copy; 2024 
 </p>
           </div>
           <div class="col">
             <p class="text-end">
               Documentation generated by
               <a href="https://github.com/Fortran-FOSS-Programmers/ford">FORD</a>
- on 2024-03-29 06:55              </p>
+ on 2024-05-01 07:11              </p>
           </div>
         </div>
         <br>
