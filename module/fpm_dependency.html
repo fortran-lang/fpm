@@ -226,20 +226,20 @@ requires updating the respective dependencies as well.</p>
         <ul class="list-group list-group-flush">
             <li class="list-group-item">
               <ul class="list-inline">
-                  <li class="list-inline-item"><a href='fpm_manifest_preprocess.html'>fpm_manifest_preprocess</a></li>
                   <li class="list-inline-item"><a href='fpm_versioning.html'>fpm_versioning</a></li>
                   <li class="list-inline-item"><a href='fpm_git.html'>fpm_git</a></li>
-                  <li class="list-inline-item"><a href='fpm_filesystem.html'>fpm_filesystem</a></li>
-                  <li class="list-inline-item">jonquil</li>
                   <li class="list-inline-item"><a href='fpm_error.html'>fpm_error</a></li>
-                  <li class="list-inline-item"><a href='fpm_settings.html'>fpm_settings</a></li>
-                  <li class="list-inline-item"><a href='http://fortranwiki.org/fortran/show/iso_fortran_env'>iso_fortran_env</a></li>
                   <li class="list-inline-item"><a href='fpm_environment.html'>fpm_environment</a></li>
-                  <li class="list-inline-item"><a href='fpm_manifest.html'>fpm_manifest</a></li>
                   <li class="list-inline-item"><a href='fpm_downloader.html'>fpm_downloader</a></li>
-                  <li class="list-inline-item"><a href='fpm_toml.html'>fpm_toml</a></li>
+                  <li class="list-inline-item">jonquil</li>
                   <li class="list-inline-item"><a href='fpm_strings.html'>fpm_strings</a></li>
+                  <li class="list-inline-item"><a href='http://fortranwiki.org/fortran/show/iso_fortran_env'>iso_fortran_env</a></li>
+                  <li class="list-inline-item"><a href='fpm_manifest_preprocess.html'>fpm_manifest_preprocess</a></li>
                   <li class="list-inline-item"><a href='fpm_manifest_dependency.html'>fpm_manifest_dependency</a></li>
+                  <li class="list-inline-item"><a href='fpm_filesystem.html'>fpm_filesystem</a></li>
+                  <li class="list-inline-item"><a href='fpm_manifest.html'>fpm_manifest</a></li>
+                  <li class="list-inline-item"><a href='fpm_settings.html'>fpm_settings</a></li>
+                  <li class="list-inline-item"><a href='fpm_toml.html'>fpm_toml</a></li>
               </ul>
             </li>
         </ul>
@@ -402,7 +402,7 @@ requires updating the respective dependencies as well.</p>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-name~26"></span>
+              <span class="anchor" id="variable-name~11"></span>
               character(len=:),
             </td>
               <td>public,</td>
@@ -438,7 +438,7 @@ Required for dependencies that are obtained via the official registry.</p>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-path~6"></span>
+              <span class="anchor" id="variable-path~15"></span>
               character(len=:),
             </td>
               <td>public,</td>
@@ -455,7 +455,7 @@ Required for dependencies that are obtained via the official registry.</p>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-preprocess~4"></span>
+              <span class="anchor" id="variable-preprocess~2"></span>
               type(<a href='../type/preprocess_config_t.html'>preprocess_config_t</a>),
             </td>
               <td>public,</td>
@@ -567,12 +567,12 @@ The latest version is used if not specified.</p>
           <tbody>
               <tr>
                 <td>  generic, public ::
-  <strong><a href='../type/dependency_node_t.html#boundprocedure-dump~19'>dump</a></strong> => <a href='/home/runner/work/fpm/fpm/fpm-doc/type/srcfile_t.html#boundprocedure-dump_to_toml~7'>dump_to_toml</a>, dump_to_file, dump_to_unit</td>
+  <strong><a href='../type/dependency_node_t.html#boundprocedure-dump~21'>dump</a></strong> => <a href='/home/runner/work/fpm/fpm/fpm-doc/type/srcfile_t.html#boundprocedure-dump_to_toml~15'>dump_to_toml</a>, dump_to_file, dump_to_unit</td>
                 <td></td>
               </tr>
               <tr>
                 <td>  procedure, public ::
-  <strong><a href='../type/dependency_node_t.html#boundprocedure-dump_to_toml~17'>dump_to_toml</a></strong> => node_dump_to_toml</td>
+  <strong><a href='../type/dependency_node_t.html#boundprocedure-dump_to_toml~19'>dump_to_toml</a></strong> => node_dump_to_toml</td>
                 <td></td>
               </tr>
               <tr>
@@ -582,22 +582,22 @@ The latest version is used if not specified.</p>
               </tr>
               <tr>
                 <td>  procedure, public ::
-  <strong><a href='../type/dependency_node_t.html#boundprocedure-info~8'>info</a></strong></td>
+  <strong><a href='../type/dependency_node_t.html#boundprocedure-info~10'>info</a></strong></td>
                 <td>../../<p>Print information on this instance</p></td>
               </tr>
               <tr>
                 <td>  generic, public ::
-  <strong><a href='../type/dependency_node_t.html#boundprocedure-load~17'>load</a></strong> => <a href='/home/runner/work/fpm/fpm/fpm-doc/type/srcfile_t.html#boundprocedure-load_from_toml~7'>load_from_toml</a>, load_from_file, load_from_unit</td>
+  <strong><a href='../type/dependency_node_t.html#boundprocedure-load~19'>load</a></strong> => <a href='/home/runner/work/fpm/fpm/fpm-doc/type/srcfile_t.html#boundprocedure-load_from_toml~15'>load_from_toml</a>, load_from_file, load_from_unit</td>
                 <td></td>
               </tr>
               <tr>
                 <td>  procedure, public ::
-  <strong><a href='../type/dependency_node_t.html#boundprocedure-load_from_toml~17'>load_from_toml</a></strong> => node_load_from_toml</td>
+  <strong><a href='../type/dependency_node_t.html#boundprocedure-load_from_toml~19'>load_from_toml</a></strong> => node_load_from_toml</td>
                 <td></td>
               </tr>
               <tr>
                 <td>  generic, public ::
-  <strong><a href='../type/dependency_node_t.html#boundprocedure-operator%28%3D%3D%29~18'>operator(==)</a></strong> => <a href='/home/runner/work/fpm/fpm/fpm-doc/type/srcfile_t.html#boundprocedure-serializable_is_same~7'>serializable_is_same</a></td>
+  <strong><a href='../type/dependency_node_t.html#boundprocedure-operator%28%3D%3D%29~20'>operator(==)</a></strong> => <a href='/home/runner/work/fpm/fpm/fpm-doc/type/srcfile_t.html#boundprocedure-serializable_is_same~15'>serializable_is_same</a></td>
                 <td></td>
               </tr>
               <tr>
@@ -607,7 +607,7 @@ The latest version is used if not specified.</p>
               </tr>
               <tr>
                 <td>  procedure, public ::
-  <strong><a href='../type/dependency_node_t.html#boundprocedure-serializable_is_same~17'>serializable_is_same</a></strong> => dependency_node_is_same</td>
+  <strong><a href='../type/dependency_node_t.html#boundprocedure-serializable_is_same~19'>serializable_is_same</a></strong> => dependency_node_is_same</td>
                 <td>../../<p>Serialization interface</p></td>
               </tr>
               <tr>
@@ -713,7 +713,7 @@ The latest version is used if not specified.</p>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-unit~22"></span>
+              <span class="anchor" id="variable-unit~23"></span>
               integer,
             </td>
               <td>public</td>
@@ -761,7 +761,7 @@ The latest version is used if not specified.</p>
               </tr>
               <tr>
                 <td>  generic, public ::
-  <strong><a href='../type/dependency_tree_t.html#boundprocedure-dump~20'>dump</a></strong> => <a href='/home/runner/work/fpm/fpm/fpm-doc/type/srcfile_t.html#boundprocedure-dump_to_toml~7'>dump_to_toml</a>, dump_to_file, dump_to_unit</td>
+  <strong><a href='../type/dependency_tree_t.html#boundprocedure-dump~22'>dump</a></strong> => <a href='/home/runner/work/fpm/fpm/fpm-doc/type/srcfile_t.html#boundprocedure-dump_to_toml~15'>dump_to_toml</a>, dump_to_file, dump_to_unit</td>
                 <td></td>
               </tr>
               <tr>
@@ -771,7 +771,7 @@ The latest version is used if not specified.</p>
               </tr>
               <tr>
                 <td>  procedure, public ::
-  <strong><a href='../type/dependency_tree_t.html#boundprocedure-dump_to_toml~18'>dump_to_toml</a></strong> => tree_dump_to_toml</td>
+  <strong><a href='../type/dependency_tree_t.html#boundprocedure-dump_to_toml~20'>dump_to_toml</a></strong> => tree_dump_to_toml</td>
                 <td></td>
               </tr>
               <tr>
@@ -791,7 +791,7 @@ The latest version is used if not specified.</p>
               </tr>
               <tr>
                 <td>  generic, public ::
-  <strong><a href='../type/dependency_tree_t.html#boundprocedure-load~18'>load</a></strong> => <a href='/home/runner/work/fpm/fpm/fpm-doc/type/srcfile_t.html#boundprocedure-load_from_toml~7'>load_from_toml</a>, load_from_file, load_from_unit</td>
+  <strong><a href='../type/dependency_tree_t.html#boundprocedure-load~20'>load</a></strong> => <a href='/home/runner/work/fpm/fpm/fpm-doc/type/srcfile_t.html#boundprocedure-load_from_toml~15'>load_from_toml</a>, load_from_file, load_from_unit</td>
                 <td></td>
               </tr>
               <tr>
@@ -801,12 +801,12 @@ The latest version is used if not specified.</p>
               </tr>
               <tr>
                 <td>  procedure, public ::
-  <strong><a href='../type/dependency_tree_t.html#boundprocedure-load_from_toml~18'>load_from_toml</a></strong> => tree_load_from_toml</td>
+  <strong><a href='../type/dependency_tree_t.html#boundprocedure-load_from_toml~20'>load_from_toml</a></strong> => tree_load_from_toml</td>
                 <td></td>
               </tr>
               <tr>
                 <td>  generic, public ::
-  <strong><a href='../type/dependency_tree_t.html#boundprocedure-operator%28%3D%3D%29~19'>operator(==)</a></strong> => <a href='/home/runner/work/fpm/fpm/fpm-doc/type/srcfile_t.html#boundprocedure-serializable_is_same~7'>serializable_is_same</a></td>
+  <strong><a href='../type/dependency_tree_t.html#boundprocedure-operator%28%3D%3D%29~21'>operator(==)</a></strong> => <a href='/home/runner/work/fpm/fpm/fpm-doc/type/srcfile_t.html#boundprocedure-serializable_is_same~15'>serializable_is_same</a></td>
                 <td></td>
               </tr>
               <tr>
@@ -816,7 +816,7 @@ The latest version is used if not specified.</p>
               </tr>
               <tr>
                 <td>  procedure, public ::
-  <strong><a href='../type/dependency_tree_t.html#boundprocedure-serializable_is_same~18'>serializable_is_same</a></strong> => dependency_tree_is_same</td>
+  <strong><a href='../type/dependency_tree_t.html#boundprocedure-serializable_is_same~20'>serializable_is_same</a></strong> => dependency_tree_is_same</td>
                 <td>../../<p>Serialization interface</p></td>
               </tr>
               <tr>
@@ -875,7 +875,7 @@ The latest version is used if not specified.</p>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-node~4"></span>
+              <span class="anchor" id="variable-node~5"></span>
               class(<a href='../type/dependency_node_t.html'>dependency_node_t</a>),
             </td>
 <td>intent(in)</td>
@@ -920,7 +920,7 @@ The latest version is used if not specified.</p>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-error~150"></span>
+              <span class="anchor" id="variable-error~172"></span>
               type(<a href='../type/error_t.html'>error_t</a>),
             </td>
 <td>intent(out),</td>
@@ -960,7 +960,7 @@ The latest version is used if not specified.</p>
     <tbody>
         <tr>
             <td>
-              <span class="anchor" id="variable-self~122"></span>
+              <span class="anchor" id="variable-self~130"></span>
               class(<a href='../type/dependency_node_t.html'>dependency_node_t</a>),
             </td>
 <td>intent(inout)</td>
@@ -1000,7 +1000,7 @@ The latest version is used if not specified.</p>
     <tbody>
         <tr>
             <td>
-              <span class="anchor" id="variable-self~97"></span>
+              <span class="anchor" id="variable-self~105"></span>
               type(<a href='../type/dependency_node_t.html'>dependency_node_t</a>),
             </td>
 <td>intent(out)</td>
@@ -1100,7 +1100,7 @@ The latest version is used if not specified.</p>
     <tbody>
         <tr>
             <td>
-              <span class="anchor" id="variable-self~96"></span>
+              <span class="anchor" id="variable-self~104"></span>
               type(<a href='../type/dependency_tree_t.html'>dependency_tree_t</a>),
             </td>
 <td>intent(out)</td>
@@ -1173,7 +1173,7 @@ The latest version is used if not specified.</p>
             <p class="text-end">
               Documentation generated by
               <a href="https://github.com/Fortran-FOSS-Programmers/ford">FORD</a>
- on 2024-05-01 07:12              </p>
+ on 2024-05-01 07:38              </p>
           </div>
         </div>
         <br>

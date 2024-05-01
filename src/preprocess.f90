@@ -58,10 +58,6 @@ module fpm_manifest_preprocess
 
    character(*), parameter, private :: class_name = 'preprocess_config_t'
 
-   interface operator(==)
-       module procedure preprocess_is_same
-   end interface
-
 contains
 
    !> Construct a new preprocess configuration from TOML data structure
@@ -207,7 +203,6 @@ contains
       class(serializable_t), intent(in) :: that
 
       integer :: istr
-
 
       preprocess_is_same = .false.
 
