@@ -77,7 +77,7 @@
 
             <li class="list-inline-item" id="statements"><i class="fa fa-list-ol"></i>
               <a data-bs-toggle="tooltip" data-bs-placement="bottom" data-bs-html="true"
-                 title=" 2.5% of total for procedures.">154 statements</a>
+                 title=" 2.4% of total for procedures.">148 statements</a>
             </li>
 
             <li class="list-inline-item" id="source-file">
@@ -161,7 +161,7 @@
     <tbody>
         <tr>
             <td>
-              <span class="anchor" id="variable-settings~5"></span>
+              <span class="anchor" id="variable-settings~4"></span>
               class(<a href='../type/fpm_run_settings.html'>fpm_run_settings</a>),
             </td>
 <td>intent(inout)</td>
@@ -221,7 +221,7 @@
 <span class="w">    </span><span class="k">type</span><span class="p">(</span><span class="n">build_target_t</span><span class="p">),</span><span class="w"> </span><span class="k">pointer</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">exe_target</span>
 <span class="w">    </span><span class="k">type</span><span class="p">(</span><span class="n">srcfile_t</span><span class="p">),</span><span class="w"> </span><span class="k">pointer</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">exe_source</span>
 <span class="w">    </span><span class="kt">integer</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">run_scope</span><span class="p">,</span><span class="n">firsterror</span>
-<span class="w">    </span><span class="kt">integer</span><span class="p">,</span><span class="w"> </span><span class="k">allocatable</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="nb">stat</span><span class="p">(:)</span>
+<span class="w">    </span><span class="kt">integer</span><span class="p">,</span><span class="w"> </span><span class="k">allocatable</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="nb">stat</span><span class="p">(:),</span><span class="n">target_ID</span><span class="p">(:)</span>
 <span class="w">    </span><span class="kt">character</span><span class="p">(</span><span class="nb">len</span><span class="o">=</span><span class="p">:),</span><span class="k">allocatable</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">line</span>
 <span class="w">    </span><span class="kt">logical</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">toomany</span>
 
@@ -249,48 +249,31 @@
 <span class="w">    </span><span class="c">! Enumerate executable targets to run</span>
 <span class="w">    </span><span class="n">col_width</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="o">-</span><span class="mi">1</span>
 <span class="w">    </span><span class="n">found</span><span class="p">(:)</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">.</span><span class="n">false</span><span class="p">.</span>
-<span class="w">    </span><span class="k">allocate</span><span class="p">(</span><span class="n">executables</span><span class="p">(</span><span class="n">size</span><span class="p">(</span><span class="n">settings</span><span class="p">%</span><span class="n">name</span><span class="p">)))</span>
-<span class="w">    </span><span class="k">do </span><span class="n">i</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span><span class="n">size</span><span class="p">(</span><span class="n">targets</span><span class="p">)</span>
-
+<span class="w">    </span><span class="k">allocate</span><span class="p">(</span><span class="n">executables</span><span class="p">(</span><span class="n">size</span><span class="p">(</span><span class="n">targets</span><span class="p">)),</span><span class="n">target_ID</span><span class="p">(</span><span class="n">size</span><span class="p">(</span><span class="n">targets</span><span class="p">)))</span>
+<span class="w">    </span><span class="n">enumerate</span><span class="p">:</span><span class="w"> </span><span class="k">do </span><span class="n">i</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span><span class="n">size</span><span class="p">(</span><span class="n">targets</span><span class="p">)</span>
 <span class="w">        </span><span class="n">exe_target</span><span class="w"> </span><span class="o">=&gt;</span><span class="w"> </span><span class="n">targets</span><span class="p">(</span><span class="n">i</span><span class="p">)%</span><span class="n">ptr</span>
-
-<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">exe_target</span><span class="p">%</span><span class="n">target_type</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="n">FPM_TARGET_EXECUTABLE</span><span class="w"> </span><span class="p">.</span><span class="nb">and</span><span class="p">.</span><span class="w"> </span><span class="p">&amp;</span>
-<span class="w">             </span><span class="nb">allocated</span><span class="p">(</span><span class="n">exe_target</span><span class="p">%</span><span class="n">dependencies</span><span class="p">))</span><span class="w"> </span><span class="k">then</span>
-
+<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">should_be_run</span><span class="p">(</span><span class="n">settings</span><span class="p">,</span><span class="n">run_scope</span><span class="p">,</span><span class="n">exe_target</span><span class="p">))</span><span class="w"> </span><span class="k">then  </span>
+<span class="k">            </span>
 <span class="k">            </span><span class="n">exe_source</span><span class="w"> </span><span class="o">=&gt;</span><span class="w"> </span><span class="n">exe_target</span><span class="p">%</span><span class="n">dependencies</span><span class="p">(</span><span class="mi">1</span><span class="p">)%</span><span class="n">ptr</span><span class="p">%</span><span class="n">source</span>
-
-<span class="w">            </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">exe_source</span><span class="p">%</span><span class="n">unit_scope</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="n">run_scope</span><span class="p">)</span><span class="w"> </span><span class="k">then</span>
-
-<span class="k">                </span><span class="n">col_width</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">max</span><span class="p">(</span><span class="n">col_width</span><span class="p">,</span><span class="nb">len</span><span class="p">(</span><span class="n">basename</span><span class="p">(</span><span class="n">exe_target</span><span class="p">%</span><span class="n">output_file</span><span class="p">))</span><span class="o">+</span><span class="mi">2</span><span class="p">)</span>
-
-<span class="w">                </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">size</span><span class="p">(</span><span class="n">settings</span><span class="p">%</span><span class="n">name</span><span class="p">)</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="mi">0</span><span class="p">)</span><span class="w"> </span><span class="k">then</span>
-
-<span class="k">                    </span><span class="n">exe_cmd</span><span class="p">%</span><span class="n">s</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">exe_target</span><span class="p">%</span><span class="n">output_file</span>
-<span class="w">                    </span><span class="n">executables</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">[</span><span class="n">executables</span><span class="p">,</span><span class="w"> </span><span class="n">exe_cmd</span><span class="p">]</span>
-
-<span class="w">                </span><span class="k">else</span>
-
-<span class="k">                    do </span><span class="n">j</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span><span class="n">size</span><span class="p">(</span><span class="n">settings</span><span class="p">%</span><span class="n">name</span><span class="p">)</span>
-
-<span class="w">                        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">glob</span><span class="p">(</span><span class="nb">trim</span><span class="p">(</span><span class="n">exe_source</span><span class="p">%</span><span class="n">exe_name</span><span class="p">),</span><span class="nb">trim</span><span class="p">(</span><span class="n">settings</span><span class="p">%</span><span class="n">name</span><span class="p">(</span><span class="n">j</span><span class="p">)))</span><span class="w"> </span><span class="p">.</span><span class="nb">and</span><span class="p">.</span><span class="w"> </span><span class="p">.</span><span class="nb">not</span><span class="p">.</span><span class="n">found</span><span class="p">(</span><span class="n">j</span><span class="p">))</span><span class="w"> </span><span class="k">then</span>
-
-
-<span class="k">                            </span><span class="n">found</span><span class="p">(</span><span class="n">j</span><span class="p">)</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">.</span><span class="n">true</span><span class="p">.</span>
-<span class="w">                            </span><span class="n">exe_cmd</span><span class="p">%</span><span class="n">s</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">exe_target</span><span class="p">%</span><span class="n">output_file</span>
-<span class="w">                            </span><span class="n">executables</span><span class="p">(</span><span class="n">j</span><span class="p">)</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">exe_cmd</span>
-
-<span class="w">                        </span><span class="k">end if</span>
-
-<span class="k">                    end do</span>
-
-<span class="k">                end if</span>
-
-<span class="k">            end if</span>
-
-<span class="k">        end if</span>
-
-<span class="k">    end do</span>
-
+<span class="w">                </span>
+<span class="w">            </span><span class="n">col_width</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">max</span><span class="p">(</span><span class="n">col_width</span><span class="p">,</span><span class="nb">len</span><span class="p">(</span><span class="n">basename</span><span class="p">(</span><span class="n">exe_target</span><span class="p">%</span><span class="n">output_file</span><span class="p">))</span><span class="o">+</span><span class="mi">2</span><span class="p">)</span>
+<span class="w">            </span>
+<span class="w">            </span><span class="c">! Priority by name ID, or 0 if no name present (run first)</span>
+<span class="w">            </span><span class="n">j</span><span class="w">              </span><span class="o">=</span><span class="w"> </span><span class="n">settings</span><span class="p">%</span><span class="n">name_ID</span><span class="p">(</span><span class="n">exe_source</span><span class="p">%</span><span class="n">exe_name</span><span class="p">)</span>
+<span class="w">            </span><span class="n">target_ID</span><span class="p">(</span><span class="n">i</span><span class="p">)</span><span class="w">   </span><span class="o">=</span><span class="w"> </span><span class="n">j</span>
+<span class="w">            </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">j</span><span class="o">&gt;</span><span class="mi">0</span><span class="p">)</span><span class="w"> </span><span class="n">found</span><span class="p">(</span><span class="n">j</span><span class="p">)</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">.</span><span class="n">true</span><span class="p">.</span>
+<span class="w">            </span>
+<span class="w">            </span><span class="n">exe_cmd</span><span class="p">%</span><span class="n">s</span><span class="w">      </span><span class="o">=</span><span class="w"> </span><span class="n">exe_target</span><span class="p">%</span><span class="n">output_file</span>
+<span class="w">            </span><span class="n">executables</span><span class="p">(</span><span class="n">i</span><span class="p">)</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">exe_cmd</span>
+<span class="w">            </span>
+<span class="w">        </span><span class="k">else</span>
+<span class="k">            </span><span class="n">target_ID</span><span class="p">(</span><span class="n">i</span><span class="p">)</span><span class="w">   </span><span class="o">=</span><span class="w"> </span><span class="nb">huge</span><span class="p">(</span><span class="n">target_ID</span><span class="p">(</span><span class="n">i</span><span class="p">))</span>
+<span class="w">        </span><span class="k">endif</span>
+<span class="k">    end do </span><span class="n">enumerate</span>
+<span class="w">    </span>
+<span class="w">    </span><span class="c">! sort executables by ascending name ID, resize</span>
+<span class="w">    </span><span class="k">call </span><span class="n">sort_executables</span><span class="p">(</span><span class="n">target_ID</span><span class="p">,</span><span class="n">executables</span><span class="p">)</span>
+<span class="w">    </span>
 <span class="w">    </span><span class="c">! Check if any apps/tests were found</span>
 <span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">col_width</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="mi">0</span><span class="p">)</span><span class="w"> </span><span class="k">then</span>
 <span class="k">        if</span><span class="w"> </span><span class="p">(</span><span class="n">test</span><span class="p">)</span><span class="w"> </span><span class="k">then</span>
@@ -299,8 +282,6 @@
 <span class="k">            call </span><span class="n">fpm_stop</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="s1">&#39;No executables to run&#39;</span><span class="p">)</span>
 <span class="w">        </span><span class="k">end if</span>
 <span class="k">    end if</span>
-
-
 
 <span class="w">    </span><span class="c">! Check all names are valid</span>
 <span class="w">    </span><span class="c">! or no name and found more than one file</span>
@@ -443,7 +424,7 @@
             <p class="text-end">
               Documentation generated by
               <a href="https://github.com/Fortran-FOSS-Programmers/ford">FORD</a>
- on 2024-05-01 07:11              </p>
+ on 2024-05-01 07:12              </p>
           </div>
         </div>
         <br>
