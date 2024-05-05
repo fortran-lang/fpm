@@ -446,7 +446,7 @@ contains
         & -o '//destination, &
         & echo=verbose, &
         & exitstat=stat)
-         
+        
     if (stat /= 0) then
       call fatal_error(error, "Error packing '"//source//"'."); return
     end if
