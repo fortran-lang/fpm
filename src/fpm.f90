@@ -485,7 +485,7 @@ subroutine cmd_run(settings,test)
     type(build_target_t), pointer :: exe_target
     type(srcfile_t), pointer :: exe_source
     integer :: run_scope,firsterror
-    integer, allocatable :: stat(:)
+    integer, allocatable :: stat(:),target_ID(:)
     character(len=:),allocatable :: line
     logical :: toomany
 
@@ -513,48 +513,31 @@ subroutine cmd_run(settings,test)
     ! Enumerate executable targets to run
     col_width = -1
     found(:) = .false.
-    allocate(executables(size(settings%name)))
-    do i=1,size(targets)
-
+    allocate(executables(size(targets)),target_ID(size(targets)))
+    enumerate: do i=1,size(targets)
         exe_target => targets(i)%ptr
-
-        if (exe_target%target_type == FPM_TARGET_EXECUTABLE .and. &
-             allocated(exe_target%dependencies)) then
-
+        if (should_be_run(settings,run_scope,exe_target)) then  
+            
             exe_source => exe_target%dependencies(1)%ptr%source
-
-            if (exe_source%unit_scope == run_scope) then
-
-                col_width = max(col_width,len(basename(exe_target%output_file))+2)
-
-                if (size(settings%name) == 0) then
-
-                    exe_cmd%s = exe_target%output_file
-                    executables = [executables, exe_cmd]
-
-                else
-
-                    do j=1,size(settings%name)
-
-                        if (glob(trim(exe_source%exe_name),trim(settings%name(j))) .and. .not.found(j)) then
-
-
-                            found(j) = .true.
-                            exe_cmd%s = exe_target%output_file
-                            executables(j) = exe_cmd
-
-                        end if
-
-                    end do
-
-                end if
-
-            end if
-
-        end if
-
-    end do
-
+                
+            col_width = max(col_width,len(basename(exe_target%output_file))+2)
+            
+            ! Priority by name ID, or 0 if no name present (run first)
+            j              = settings%name_ID(exe_source%exe_name)
+            target_ID(i)   = j
+            if (j>0) found(j) = .true.
+            
+            exe_cmd%s      = exe_target%output_file
+            executables(i) = exe_cmd
+            
+        else
+            target_ID(i)   = huge(target_ID(i))
+        endif
+    end do enumerate
+    
+    ! sort executables by ascending name ID, resize
+    call sort_executables(target_ID,executables)
+    
     ! Check if any apps/tests were found
     if (col_width < 0) then
         if (test) then
@@ -563,8 +546,6 @@ subroutine cmd_run(settings,test)
             call fpm_stop(0,'No executables to run')
         end if
     end if
-
-
 
     ! Check all names are valid
     ! or no name and found more than one file
@@ -735,5 +716,87 @@ subroutine cmd_clean(settings)
         write (stdout, '(A)') "fpm: No build directory found."
     end if
 end subroutine cmd_clean
+
+!> Sort executables by namelist ID, and trim unused values
+pure subroutine sort_executables(target_ID,executables)
+    integer, allocatable, intent(inout) :: target_ID(:)
+    type(string_t), allocatable, intent(inout) :: executables(:)
+    
+    integer :: i,j,n,used
+    
+    n = size(target_ID)
+    used = 0
+    
+    sort: do i=1,n
+       do j=i+1,n
+          if (target_ID(j)<target_ID(i)) &
+          call swap(target_ID(i),target_ID(j),executables(i),executables(j))
+       end do
+       if (target_ID(i)<huge(target_ID(i))) used = i
+    end do sort   
+    
+    if (used>0 .and. used<n) then 
+        target_ID = target_ID(1:used)
+        executables = executables(1:used)
+    end if
+    
+    contains
+    
+    elemental subroutine swap(t1,t2,e1,e2)
+       integer, intent(inout) :: t1,t2
+       type(string_t), intent(inout) :: e1,e2
+       integer :: tmp
+       type(string_t) :: etmp
+       
+       tmp = t1
+       t1  = t2
+       t2  = tmp 
+       etmp = e1
+       e1  = e2
+       e2  = etmp        
+    end subroutine swap
+    
+end subroutine sort_executables
+
+!> Check if an executable should be run 
+logical function should_be_run(settings,run_scope,exe_target)
+    class(fpm_run_settings), intent(in) :: settings
+    integer, intent(in) :: run_scope
+    type(build_target_t), intent(in) :: exe_target
+    
+    integer :: j
+    
+    if (exe_target%target_type == FPM_TARGET_EXECUTABLE .and. &
+        allocated(exe_target%dependencies)) then
+        
+        associate(exe_source => exe_target%dependencies(1)%ptr%source)
+            
+            if (exe_source%unit_scope/=run_scope) then 
+                
+                ! Other scope
+                should_be_run = .false.
+                
+            elseif (size(settings%name) == 0 .or. .not.settings%list) then
+
+                ! No list of targets
+                should_be_run = .true.
+
+            else
+
+                ! Is found in list
+                should_be_run = settings%name_ID(exe_source%exe_name)>0
+                
+            end if            
+            
+        end associate
+                        
+    else
+        
+        !> Invalid target
+        should_be_run = .false.
+        
+    endif
+    
+end function should_be_run
 
 end module fpm

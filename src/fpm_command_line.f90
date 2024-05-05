@@ -28,7 +28,8 @@ use fpm_environment,  only : get_os_type, get_env, &
                              OS_CYGWIN, OS_SOLARIS, OS_FREEBSD, OS_OPENBSD, OS_NAME
 use M_CLI2,           only : set_args, lget, sget, unnamed, remaining, specified
 use M_CLI2,           only : get_subcommand, CLI_RESPONSE_FILE
-use fpm_strings,      only : lower, split, to_fortran_name, is_fortran_name, remove_characters_in_set, string_t
+use fpm_strings,      only : lower, split, to_fortran_name, is_fortran_name, remove_characters_in_set, &
+                             string_t, glob
 use fpm_filesystem,   only : basename, canon_path, which, run
 use fpm_environment,  only : get_command_arguments_quoted
 use fpm_error,        only : fpm_stop, error_t
@@ -97,6 +98,7 @@ type, extends(fpm_build_settings)  :: fpm_run_settings
     logical :: example
     contains
        procedure :: runner_command
+       procedure :: name_ID
 end type
 
 type, extends(fpm_run_settings)  :: fpm_test_settings
@@ -1582,6 +1584,28 @@ contains
         !> Append command-line arguments
         if (len_trim(cmd%runner_args)>0) run_cmd = run_cmd//' '//trim(cmd%runner_args)
     end function runner_command
+
+    !> Check name in list ID. return 0 if not found
+    integer function name_ID(cmd,name)
+       class(fpm_run_settings), intent(in) :: cmd
+       character(*), intent(in) :: name
+       
+       integer :: j
+       
+       !> Default: not found
+       name_ID = 0
+       if (.not.allocated(cmd%name)) return
+       
+       do j=1,size(cmd%name)
+          
+          if (glob(trim(name),trim(cmd%name(j)))) then 
+              name_ID = j
+              return
+          end if
+          
+       end do
+    
+    end function name_ID
 
 
 end module fpm_command_line

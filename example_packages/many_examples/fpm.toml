@@ -1,0 +1,12 @@
+name = "many_examples"
+build.auto-examples = false
+
+[[example]]
+name = "demo-1"
+source-dir = "demo1"
+main = "prog.f90"
+
+[[example]]
+name = "demo-2"
+source-dir = "demo2"
+main = "prog.f90"
