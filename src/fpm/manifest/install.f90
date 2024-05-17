@@ -19,6 +19,9 @@ module fpm_manifest_install
     !> Install library with this project
     logical :: library = .false.
 
+    !> Tells fpm to generate shared library.
+    logical :: shared = .false.
+
   contains
 
     !> Print information on this instance
@@ -51,6 +54,7 @@ contains
     if (allocated(error)) return
 
     call get_value(table, "library", self%library, .false.)
+    call get_value(table, "shared", self%shared, .false.)
 
   end subroutine new_install_config
 
@@ -76,6 +80,8 @@ contains
         call syntax_error(error, "Key "//list(ikey)%key//" is not allowed in install table")
         exit
       case("library")
+        continue
+      case("shared")
         continue
       end select
     end do
@@ -109,6 +115,8 @@ contains
     write(unit, fmt) "Install configuration"
     write(unit, fmt) " - library install", &
       & trim(merge("enabled ", "disabled", self%library))
+    write(unit, fmt) " - shared library", &
+      & trim(merge("enabled ", "disabled", self%shared))
 
   end subroutine info
 
@@ -118,9 +126,11 @@ contains
 
     install_conf_same = .false.
 
+
     select type (other=>that)
        type is (install_config_t)
           if (this%library.neqv.other%library) return
+          if (this%shared.neqv.other%shared) return
        class default
           ! Not the same type
           return
@@ -144,6 +154,7 @@ contains
     type(error_t), allocatable, intent(out) :: error
 
     call set_value(table, "library", self%library, error, class_name)
+    call set_value(table, "shared", self%shared, error, class_name)
 
   end subroutine dump_to_toml
 
@@ -162,6 +173,7 @@ contains
     integer :: stat
 
     call get_value(table, "library", self%library, error, class_name)
+    call get_value(table, "shared", self%shared, error, class_name)
     if (allocated(error)) return
 
   end subroutine load_from_toml
