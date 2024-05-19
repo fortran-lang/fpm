@@ -21,11 +21,11 @@ use fpm_targets, only: targets_from_sources, build_target_t, build_target_ptr, &
 use fpm_manifest, only : get_package_data, package_config_t
 use fpm_meta, only : resolve_metapackages
 use fpm_error, only : error_t, fatal_error, fpm_stop
-use fpm_toml, only: name_is_json, get_value, toml_table, toml_key, toml_error, toml_serialize, &
+use fpm_toml, only: name_is_json, toml_table, toml_key, toml_error, toml_serialize, &
                     set_value, add_table, toml_load, toml_stat, set_string
 use fpm_downloader, only: downloader_t
 use fpm_versioning, only: version_t
-use tomlf, only : toml_array
+use tomlf, only : toml_array, get_value, len,toml_key
 use, intrinsic :: iso_fortran_env, only : stdin => input_unit, &
                                         & stdout => output_unit, &
                                         & stderr => error_unit
@@ -728,15 +728,15 @@ subroutine cmd_search(settings)
 
     ! character :: user_response
     type(fpm_global_settings) :: global_settings
-    character(:), allocatable :: cache_path, target_url, tmp_file,name
-    integer :: stat, unit, ii
+    character(:), allocatable :: tmp_file,name, version_p, description
+    type(toml_key), allocatable :: list(:)
+    integer :: stat, unit, ii,ikey
     type(json_object) :: json
     type(json_object), pointer :: p, q
     !> Error handling.
     type(error_t), allocatable :: error
     type(toml_array), pointer :: array
     type(version_t), allocatable :: version
-    ! type(toml_array), pointer :: packages
 
     !> Downloader instance.
     class(downloader_t), allocatable :: downloader
@@ -758,14 +758,16 @@ subroutine cmd_search(settings)
     if (json%has_key("packages")) then
         print *, "Found packages"
         call get_value(json, 'packages', array)
-        call get_value(array, 2, p)
-        ! print *, len(p)
-        do ii=1, 100
+        do ii=1, len(array)
             call get_value(array, ii, p)
             call get_value(p, 'name', name)
-            print *, name
+            call get_value(p, 'version', version_p)
+            call get_value(p, 'description', description)
+            print *, "Name: ", name
+            print *, "Version: ", version_p
+            print *, "Description: ", description
+            print *, "\n"
         end do
-        
     end if
 end subroutine cmd_search
 
