@@ -759,28 +759,14 @@ subroutine cmd_search(settings)
         print *, "Found packages"
         call get_value(json, 'packages', array)
         call get_value(array, 2, p)
-        ! print *, size(array)
-        call get_value(p, 'name', name)
-        print *, name
+        ! print *, len(p)
+        do ii=1, 100
+            call get_value(array, ii, p)
+            call get_value(p, 'name', name)
+            print *, name
+        end do
         
     end if
-   
-    ! print *, json%get_keys()
-    ! call get_value(json,"packages", array)
-    ! do i =1, size(array)
-    !     call json_loads(packages, array(i) , error=error)
-    !     if (allocated(error)) return
-    !     print *, packages%get_keys()
-    ! end do
-    ! print *, array
-
-    ! Verify package data and read relevant information.
-    ! call check_and_read_pkg_data(json, self, target_url, version, error)
-    ! if (allocated(error)) return
-    ! call get_pkg_data(global_settings%official_registry_base_url//'/packages?query=c', settings%query)
-    ! subroutine get_pkg_data(url, version, tmp_pkg_file, json, error)
-    ! call os_delete_dir(os_is_unix(), global_settings%registry_settings%cache_path)
-    ! end if
 end subroutine cmd_search
 
 !> Sort executables by namelist ID, and trim unused values
