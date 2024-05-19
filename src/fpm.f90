@@ -723,7 +723,7 @@ end subroutine cmd_clean
 !> Search the fpm registry for a package
 subroutine cmd_search(settings)
     !> Settings for the search command.
-    class(fpm_search_settings), intent(in) :: settings
+    class(fpm_search_settings), intent(inout) :: settings
     character(:), allocatable :: tmp_file, name, namespace, description, query_url
     type(toml_key), allocatable :: list(:)
     integer :: stat, unit, ii
@@ -744,7 +744,10 @@ subroutine cmd_search(settings)
     if (stat /= 0) then
       call fatal_error(error, "Error creating temporary file for downloading package."); return
     end if
-
+    
+    if (settings%page == ' ') then
+        settings%page = '1'          
+    end if
     query_url = official_registry_base_url//'/packages?query='//settings%query//'&page='//settings%page
 
     !> Get the package data from the registry
