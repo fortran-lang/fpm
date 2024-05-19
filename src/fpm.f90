@@ -30,9 +30,7 @@ use, intrinsic :: iso_fortran_env, only : stdin => input_unit, &
                                         & stderr => error_unit
 use iso_c_binding, only: c_char, c_ptr, c_int, c_null_char, c_associated, c_f_pointer
 use fpm_environment, only: os_is_unix
-use fpm_toml, only: toml_table, toml_key, toml_error, toml_serialize, &
-                      get_value
-use jonquil, only : json_object!, json_loads, json_object, json_error
+use jonquil, only : json_object
 use fpm_settings, only: fpm_global_settings, get_global_settings, official_registry_base_url
 
 implicit none
@@ -730,7 +728,7 @@ subroutine cmd_search(settings)
     ! character :: user_response
     type(fpm_global_settings) :: global_settings
     character(:), allocatable :: cache_path, target_url, tmp_file
-    integer :: stat, unit, i
+    integer :: stat, unit, ii
     type(json_object) :: json, packages
     !> Error handling.
     type(error_t), allocatable :: error
@@ -755,10 +753,22 @@ subroutine cmd_search(settings)
     if (allocated(error)) return
     print *, tmp_file
     print *, settings%query
-    ! call get_value(json, 'packages', packages, stat=stat)
+    call get_value(json, 'packages', packages, stat=stat)
+    ! do ii = 1, size(list)
+    !     call get_value(table, list(ii)%key, ptr)
+    !     call get_value(ptr, "version", version)
+    !     call get_value(ptr, "proj-dir", proj_dir)
+    !     call get_value(ptr, "git", url)
 
 
-    ! if (json%has_key("packages")) then
+    if (json%has_key("packages")) then
+        print *, "Found packages"
+        call get_value(json, 'packages', packages)
+        do ii = 1, size(packages)
+            ! print *, json%get("packages")%get(i)%get("name")%get_string()
+            print *,"hi"
+        end do
+    end if
     !     ! call get_value(packages, "packages", error=error)
     !     call get_value(json, 'packages', packages, error=error)
     !     if (allocated(error)) return
