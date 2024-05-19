@@ -24,7 +24,7 @@ use fpm_error, only : error_t, fatal_error, fpm_stop
 use fpm_toml, only: name_is_json
 use fpm_downloader, only: downloader_t
 use fpm_versioning, only: version_t
-use tomlf, only : toml_array, get_value, len,toml_key
+use tomlf, only : toml_array, get_value, len, toml_key
 use, intrinsic :: iso_fortran_env, only : stdin => input_unit, &
                                         & stdout => output_unit, &
                                         & stderr => error_unit
@@ -724,13 +724,11 @@ end subroutine cmd_clean
 subroutine cmd_search(settings)
     !> Settings for the search command.
     class(fpm_search_settings), intent(in) :: settings
-
-    type(fpm_global_settings) :: global_settings
-    character(:), allocatable :: tmp_file,name, namespace, description
+    character(:), allocatable :: tmp_file, name, namespace, description
     type(toml_key), allocatable :: list(:)
     integer :: stat, unit, ii
     type(json_object) :: json
-    type(json_object), pointer :: p, q
+    type(json_object), pointer :: p
     !> Error handling.
     type(error_t), allocatable :: error
     type(toml_array), pointer :: array
@@ -751,11 +749,10 @@ subroutine cmd_search(settings)
     call downloader%get_pkg_data(official_registry_base_url//'/packages?query='//settings%query, version, tmp_file, json, error)
     close (unit, status='delete')
     if (allocated(error)) return
-    print *, settings%query
 
     if (json%has_key("packages")) then
-        print *, "Found packages"
         call get_value(json, 'packages', array)
+        print '(A,I0,A)', ' Found ', len(array), ' packages:'
         do ii=1, len(array)
             call get_value(array, ii, p)
             call get_value(p, 'name', name)
