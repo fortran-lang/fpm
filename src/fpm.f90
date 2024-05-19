@@ -5,10 +5,10 @@ use fpm_strings, only: string_t, operator(.in.), glob, join, string_cat, &
 use fpm_backend, only: build_package
 use fpm_command_line, only: fpm_build_settings, fpm_new_settings, &
                       fpm_run_settings, fpm_install_settings, fpm_test_settings, &
-                      fpm_clean_settings
+                      fpm_clean_settings, fpm_search_settings
 use fpm_dependency, only : new_dependency_tree
 use fpm_filesystem, only: is_dir, join_path, list_files, exists, &
-                   basename, filewrite, mkdir, run, os_delete_dir
+                   basename, filewrite, mkdir, run, os_delete_dir, get_temp_filename
 use fpm_model, only: fpm_model_t, srcfile_t, show_model, fortran_features_t, &
                     FPM_SCOPE_UNKNOWN, FPM_SCOPE_LIB, FPM_SCOPE_DEP, &
                     FPM_SCOPE_APP, FPM_SCOPE_EXAMPLE, FPM_SCOPE_TEST
@@ -21,17 +21,23 @@ use fpm_targets, only: targets_from_sources, build_target_t, build_target_ptr, &
 use fpm_manifest, only : get_package_data, package_config_t
 use fpm_meta, only : resolve_metapackages
 use fpm_error, only : error_t, fatal_error, fpm_stop
-use fpm_toml, only: name_is_json
+use fpm_toml, only: name_is_json, get_value
+use fpm_downloader, only: downloader_t
+use fpm_versioning, only: version_t
+use tomlf, only : toml_array
 use, intrinsic :: iso_fortran_env, only : stdin => input_unit, &
                                         & stdout => output_unit, &
                                         & stderr => error_unit
 use iso_c_binding, only: c_char, c_ptr, c_int, c_null_char, c_associated, c_f_pointer
 use fpm_environment, only: os_is_unix
-use fpm_settings, only: fpm_global_settings, get_global_settings
+use fpm_toml, only: toml_table, toml_key, toml_error, toml_serialize, &
+                      get_value
+use jonquil, only : json_object!, json_loads, json_object, json_error
+use fpm_settings, only: fpm_global_settings, get_global_settings, official_registry_base_url
 
 implicit none
 private
-public :: cmd_build, cmd_run, cmd_clean
+public :: cmd_build, cmd_run, cmd_clean, cmd_search
 public :: build_model, check_modules_for_duplicates
 
 contains
@@ -715,6 +721,69 @@ subroutine cmd_clean(settings)
         write (stdout, '(A)') "fpm: No build directory found."
     end if
 end subroutine cmd_clean
+
+!> Search the fpm registry for a package
+subroutine cmd_search(settings)
+    !> Settings for the search command.
+    class(fpm_search_settings), intent(in) :: settings
+
+    ! character :: user_response
+    type(fpm_global_settings) :: global_settings
+    character(:), allocatable :: cache_path, target_url, tmp_file
+    integer :: stat, unit, i
+    type(json_object) :: json, packages
+    !> Error handling.
+    type(error_t), allocatable :: error
+    ! type(toml_array), pointer :: array
+    type(version_t), allocatable :: version
+
+    !> Downloader instance.
+    class(downloader_t), allocatable :: downloader
+    allocate (downloader)
+
+    tmp_file = get_temp_filename()
+    open (newunit=unit, file=tmp_file, action='readwrite', iostat=stat)
+    if (stat /= 0) then
+      call fatal_error(error, "Error creating temporary file for downloading package."); return
+    end if
+
+    ! Clear registry cache
+    call get_global_settings(global_settings, error) 
+    if (allocated(error)) return
+    call downloader%get_pkg_data(official_registry_base_url//'/packages?query='//settings%query, version, tmp_file, json, error)
+    close (unit)
+    if (allocated(error)) return
+    print *, tmp_file
+    print *, settings%query
+    ! call get_value(json, 'packages', packages, stat=stat)
+
+
+    ! if (json%has_key("packages")) then
+    !     ! call get_value(packages, "packages", error=error)
+    !     call get_value(json, 'packages', packages, error=error)
+    !     if (allocated(error)) return
+    !     do i = 1, size(packages)
+    !         print *, packages%get_keys()
+    !     end do
+    ! end if
+
+    ! print *, json%get_keys()
+    ! call get_value(json,"packages", array)
+    ! do i =1, size(array)
+    !     call json_loads(packages, array(i) , error=error)
+    !     if (allocated(error)) return
+    !     print *, packages%get_keys()
+    ! end do
+    ! print *, array
+
+    ! Verify package data and read relevant information.
+    ! call check_and_read_pkg_data(json, self, target_url, version, error)
+    ! if (allocated(error)) return
+    ! call get_pkg_data(global_settings%official_registry_base_url//'/packages?query=c', settings%query)
+    ! subroutine get_pkg_data(url, version, tmp_pkg_file, json, error)
+    ! call os_delete_dir(os_is_unix(), global_settings%registry_settings%cache_path)
+    ! end if
+end subroutine cmd_search
 
 !> Sort executables by namelist ID, and trim unused values
 pure subroutine sort_executables(target_ID,executables)

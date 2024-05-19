@@ -52,7 +52,8 @@ public :: fpm_cmd_settings, &
           fpm_update_settings, &
           fpm_clean_settings, &
           fpm_publish_settings, &
-          get_command_line_settings
+          get_command_line_settings, &
+          fpm_search_settings
 
 type, abstract :: fpm_cmd_settings
     character(len=:), allocatable :: working_dir
@@ -130,6 +131,10 @@ type, extends(fpm_cmd_settings)   :: fpm_clean_settings
     logical                       :: clean_skip = .false.
     logical                       :: clean_all = .false.
     logical                       :: registry_cache = .false.
+end type
+
+type, extends(fpm_cmd_settings)   :: fpm_search_settings
+    character(len=:),allocatable  :: query
 end type
 
 type, extends(fpm_build_settings) :: fpm_publish_settings
@@ -238,7 +243,7 @@ contains
         type(fpm_export_settings) , allocatable :: export_settings
         type(version_t) :: version
         character(len=:), allocatable :: common_args, compiler_args, run_args, working_dir, &
-            & c_compiler, cxx_compiler, archiver, version_s, token_s
+            & c_compiler, cxx_compiler, archiver, version_s, token_s, query
 
         character(len=*), parameter :: fc_env = "FC", cc_env = "CC", ar_env = "AR", &
             & fflags_env = "FFLAGS", cflags_env = "CFLAGS", cxxflags_env = "CXXFLAGS", ldflags_env = "LDFLAGS", &
@@ -699,6 +704,18 @@ contains
                 &   registry_cache=lget('registry-cache'), &
                 &   clean_skip=skip, &
                 &   clean_all=clean_all)
+            end block
+
+        case('search')
+            call set_args(common_args // &
+            &   ' --query',              &
+                help_clean, version_text)
+             query = sget('query')
+
+            block
+                allocate(fpm_search_settings :: cmd_settings)
+                cmd_settings = fpm_search_settings( &
+                &   query=query)
             end block
 
         case('publish')
