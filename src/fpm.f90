@@ -726,7 +726,7 @@ subroutine cmd_search(settings)
     class(fpm_search_settings), intent(in) :: settings
 
     type(fpm_global_settings) :: global_settings
-    character(:), allocatable :: tmp_file,name, version_p, description
+    character(:), allocatable :: tmp_file,name, namespace, description
     type(toml_key), allocatable :: list(:)
     integer :: stat, unit, ii
     type(json_object) :: json
@@ -740,13 +740,14 @@ subroutine cmd_search(settings)
     class(downloader_t), allocatable :: downloader
     allocate (downloader)
 
+    !> Generate a temporary file to store the downloaded package search data
     tmp_file = get_temp_filename()
     open (newunit=unit, file=tmp_file, action='readwrite', iostat=stat)
     if (stat /= 0) then
       call fatal_error(error, "Error creating temporary file for downloading package."); return
     end if
 
-    !> Get the package data from the registry.
+    !> Get the package data from the registry
     call downloader%get_pkg_data(official_registry_base_url//'/packages?query='//settings%query, version, tmp_file, json, error)
     close (unit, status='delete')
     if (allocated(error)) return
@@ -758,10 +759,10 @@ subroutine cmd_search(settings)
         do ii=1, len(array)
             call get_value(array, ii, p)
             call get_value(p, 'name', name)
-            call get_value(p, 'version', version_p)
+            call get_value(p, 'namespace', namespace)
             call get_value(p, 'description', description)
             print *, "Name: ", name
-            ! print *, "Version: ", version_p
+            print *, "namespace: ", namespace
             print *, "Description: ", description
             print *, ""
         end do

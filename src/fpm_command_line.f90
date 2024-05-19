@@ -707,15 +707,15 @@ contains
             end block
 
         case('search')
-            call set_args(common_args // &
-            &   ' --query',              &
-                help_clean, version_text)
+            call set_args(common_args //'&
+            & --query " " &
+            & --', help_clean, version_text)
              query = sget('query')
 
             block
                 allocate(fpm_search_settings :: cmd_settings)
                 cmd_settings = fpm_search_settings( &
-                &   query=query)
+                & query=query)
             end block
 
         case('publish')
