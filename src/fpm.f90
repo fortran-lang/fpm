@@ -21,8 +21,7 @@ use fpm_targets, only: targets_from_sources, build_target_t, build_target_ptr, &
 use fpm_manifest, only : get_package_data, package_config_t
 use fpm_meta, only : resolve_metapackages
 use fpm_error, only : error_t, fatal_error, fpm_stop
-use fpm_toml, only: name_is_json, toml_table, toml_key, toml_error, toml_serialize, &
-                    set_value, add_table, toml_load, toml_stat, set_string
+use fpm_toml, only: name_is_json
 use fpm_downloader, only: downloader_t
 use fpm_versioning, only: version_t
 use tomlf, only : toml_array, get_value, len,toml_key
@@ -726,11 +725,10 @@ subroutine cmd_search(settings)
     !> Settings for the search command.
     class(fpm_search_settings), intent(in) :: settings
 
-    ! character :: user_response
     type(fpm_global_settings) :: global_settings
     character(:), allocatable :: tmp_file,name, version_p, description
     type(toml_key), allocatable :: list(:)
-    integer :: stat, unit, ii,ikey
+    integer :: stat, unit, ii
     type(json_object) :: json
     type(json_object), pointer :: p, q
     !> Error handling.
@@ -752,7 +750,6 @@ subroutine cmd_search(settings)
     call downloader%get_pkg_data(official_registry_base_url//'/packages?query='//settings%query, version, tmp_file, json, error)
     close (unit, status='delete')
     if (allocated(error)) return
-    print *, tmp_file
     print *, settings%query
 
     if (json%has_key("packages")) then
@@ -764,10 +761,12 @@ subroutine cmd_search(settings)
             call get_value(p, 'version', version_p)
             call get_value(p, 'description', description)
             print *, "Name: ", name
-            print *, "Version: ", version_p
+            ! print *, "Version: ", version_p
             print *, "Description: ", description
-            print *, "\n"
+            print *, ""
         end do
+    else 
+        call fatal_error(error, "Error Searching Packages"); return
     end if
 end subroutine cmd_search
 
