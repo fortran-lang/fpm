@@ -21,7 +21,8 @@ use fpm_targets, only: targets_from_sources, build_target_t, build_target_ptr, &
 use fpm_manifest, only : get_package_data, package_config_t
 use fpm_meta, only : resolve_metapackages
 use fpm_error, only : error_t, fatal_error, fpm_stop
-use fpm_toml, only: name_is_json, get_value
+use fpm_toml, only: name_is_json, get_value, toml_table, toml_key, toml_error, toml_serialize, &
+                    set_value, add_table, toml_load, toml_stat, set_string
 use fpm_downloader, only: downloader_t
 use fpm_versioning, only: version_t
 use tomlf, only : toml_array
@@ -727,13 +728,15 @@ subroutine cmd_search(settings)
 
     ! character :: user_response
     type(fpm_global_settings) :: global_settings
-    character(:), allocatable :: cache_path, target_url, tmp_file
+    character(:), allocatable :: cache_path, target_url, tmp_file,name
     integer :: stat, unit, ii
-    type(json_object) :: json, packages
+    type(json_object) :: json
+    type(json_object), pointer :: p, q
     !> Error handling.
     type(error_t), allocatable :: error
-    ! type(toml_array), pointer :: array
+    type(toml_array), pointer :: array
     type(version_t), allocatable :: version
+    ! type(toml_array), pointer :: packages
 
     !> Downloader instance.
     class(downloader_t), allocatable :: downloader
@@ -745,38 +748,23 @@ subroutine cmd_search(settings)
       call fatal_error(error, "Error creating temporary file for downloading package."); return
     end if
 
-    ! Clear registry cache
-    call get_global_settings(global_settings, error) 
-    if (allocated(error)) return
+    !> Get the package data from the registry.
     call downloader%get_pkg_data(official_registry_base_url//'/packages?query='//settings%query, version, tmp_file, json, error)
-    close (unit)
+    close (unit, status='delete')
     if (allocated(error)) return
     print *, tmp_file
     print *, settings%query
-    call get_value(json, 'packages', packages, stat=stat)
-    ! do ii = 1, size(list)
-    !     call get_value(table, list(ii)%key, ptr)
-    !     call get_value(ptr, "version", version)
-    !     call get_value(ptr, "proj-dir", proj_dir)
-    !     call get_value(ptr, "git", url)
-
 
     if (json%has_key("packages")) then
         print *, "Found packages"
-        call get_value(json, 'packages', packages)
-        do ii = 1, size(packages)
-            ! print *, json%get("packages")%get(i)%get("name")%get_string()
-            print *,"hi"
-        end do
+        call get_value(json, 'packages', array)
+        call get_value(array, 2, p)
+        ! print *, size(array)
+        call get_value(p, 'name', name)
+        print *, name
+        
     end if
-    !     ! call get_value(packages, "packages", error=error)
-    !     call get_value(json, 'packages', packages, error=error)
-    !     if (allocated(error)) return
-    !     do i = 1, size(packages)
-    !         print *, packages%get_keys()
-    !     end do
-    ! end if
-
+   
     ! print *, json%get_keys()
     ! call get_value(json,"packages", array)
     ! do i =1, size(array)
