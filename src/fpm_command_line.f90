@@ -135,6 +135,7 @@ end type
 
 type, extends(fpm_cmd_settings)   :: fpm_search_settings
     character(len=:),allocatable  :: query
+    character(len=:),allocatable  :: page
 end type
 
 type, extends(fpm_build_settings) :: fpm_publish_settings
@@ -243,7 +244,7 @@ contains
         type(fpm_export_settings) , allocatable :: export_settings
         type(version_t) :: version
         character(len=:), allocatable :: common_args, compiler_args, run_args, working_dir, &
-            & c_compiler, cxx_compiler, archiver, version_s, token_s, query
+            & c_compiler, cxx_compiler, archiver, version_s, token_s, query, page
 
         character(len=*), parameter :: fc_env = "FC", cc_env = "CC", ar_env = "AR", &
             & fflags_env = "FFLAGS", cflags_env = "CFLAGS", cxxflags_env = "CXXFLAGS", ldflags_env = "LDFLAGS", &
@@ -709,13 +710,15 @@ contains
         case('search')
             call set_args(common_args //'&
             & --query " " &
+            & --page " " &
             & --', help_clean, version_text)
-             query = sget('query')
+            query = sget('query')
+            page = sget('page')
 
             block
                 allocate(fpm_search_settings :: cmd_settings)
                 cmd_settings = fpm_search_settings( &
-                & query=query)
+                & query=query, page=page)
             end block
 
         case('publish')

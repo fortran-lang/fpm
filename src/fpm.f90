@@ -724,7 +724,7 @@ end subroutine cmd_clean
 subroutine cmd_search(settings)
     !> Settings for the search command.
     class(fpm_search_settings), intent(in) :: settings
-    character(:), allocatable :: tmp_file, name, namespace, description
+    character(:), allocatable :: tmp_file, name, namespace, description, query_url
     type(toml_key), allocatable :: list(:)
     integer :: stat, unit, ii
     type(json_object) :: json
@@ -745,9 +745,11 @@ subroutine cmd_search(settings)
       call fatal_error(error, "Error creating temporary file for downloading package."); return
     end if
 
+    query_url = official_registry_base_url//'/packages?query='//settings%query//'&page='//settings%page
+
     !> Get the package data from the registry
-    call downloader%get_pkg_data(official_registry_base_url//'/packages?query='//settings%query, version, tmp_file, json, error)
-    close (unit, status='delete')
+    call downloader%get_pkg_data(query_url, version, tmp_file, json, error)
+    close (unit)
     if (allocated(error)) return
 
     if (json%has_key("packages")) then
