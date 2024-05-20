@@ -1,0 +1,5 @@
+name = "auto_with_nondefault_main"
+[build]
+auto-executables = true
+[library]
+

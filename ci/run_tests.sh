@@ -73,6 +73,12 @@ test ! -x ./build/gfortran_*/app/unused
 test ! -x ./build/gfortran_*/test/unused_test
 popd
 
+pushd auto_with_nondefault_main
+"$fpm" build
+"$fpm" install --prefix=./installed
+test -x ./installed/bin/non_default_name
+popd
+
 pushd tree_shake
 "$fpm" build
 "$fpm" run
