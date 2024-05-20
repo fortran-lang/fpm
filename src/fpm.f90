@@ -765,17 +765,11 @@ logical function should_be_run(settings,run_scope,exe_target)
     
     integer :: j
     
-    if (exe_target%target_type == FPM_TARGET_EXECUTABLE .and. &
-        allocated(exe_target%dependencies)) then
+    if (exe_target%is_executable_target(run_scope)) then
         
         associate(exe_source => exe_target%dependencies(1)%ptr%source)
             
-            if (exe_source%unit_scope/=run_scope) then 
-                
-                ! Other scope
-                should_be_run = .false.
-                
-            elseif (size(settings%name) == 0 .or. .not.settings%list) then
+            if (size(settings%name) == 0 .or. .not.settings%list) then
 
                 ! No list of targets
                 should_be_run = .true.
