@@ -151,7 +151,7 @@ contains
   subroutine handle_error(error)
     type(error_t), intent(in), optional :: error
     if (present(error)) then
-      call fpm_stop(1,error%message)
+      call fpm_stop(1,'*cmd_install* error: '//error%message)
     end if
   end subroutine handle_error
 
