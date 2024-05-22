@@ -77,7 +77,7 @@
 
             <li class="list-inline-item" id="statements"><i class="fa fa-list-ol"></i>
               <a data-bs-toggle="tooltip" data-bs-placement="bottom" data-bs-html="true"
-                 title=" 4.1% of total for source files.">535 statements</a>
+                 title=" 4.0% of total for source files.">533 statements</a>
             </li>
 
             <li class="list-inline-item" id="source-file">
@@ -921,40 +921,34 @@
 <a id="ln-765" name="ln-765" href="#ln-765"></a><span class="w">    </span>
 <a id="ln-766" name="ln-766" href="#ln-766"></a><span class="w">    </span><span class="kt">integer</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">j</span>
 <a id="ln-767" name="ln-767" href="#ln-767"></a><span class="w">    </span>
-<a id="ln-768" name="ln-768" href="#ln-768"></a><span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">exe_target</span><span class="p">%</span><span class="n">target_type</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="n">FPM_TARGET_EXECUTABLE</span><span class="w"> </span><span class="p">.</span><span class="nb">and</span><span class="p">.</span><span class="w"> </span><span class="p">&amp;</span>
-<a id="ln-769" name="ln-769" href="#ln-769"></a><span class="w">        </span><span class="nb">allocated</span><span class="p">(</span><span class="n">exe_target</span><span class="p">%</span><span class="n">dependencies</span><span class="p">))</span><span class="w"> </span><span class="k">then</span>
-<a id="ln-770" name="ln-770" href="#ln-770"></a><span class="k">        </span>
-<a id="ln-771" name="ln-771" href="#ln-771"></a><span class="k">        associate</span><span class="p">(</span><span class="n">exe_source</span><span class="w"> </span><span class="o">=&gt;</span><span class="w"> </span><span class="n">exe_target</span><span class="p">%</span><span class="n">dependencies</span><span class="p">(</span><span class="mi">1</span><span class="p">)%</span><span class="n">ptr</span><span class="p">%</span><span class="n">source</span><span class="p">)</span>
-<a id="ln-772" name="ln-772" href="#ln-772"></a><span class="w">            </span>
-<a id="ln-773" name="ln-773" href="#ln-773"></a><span class="w">            </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">exe_source</span><span class="p">%</span><span class="n">unit_scope</span><span class="o">/=</span><span class="n">run_scope</span><span class="p">)</span><span class="w"> </span><span class="k">then</span><span class="w"> </span>
-<a id="ln-774" name="ln-774" href="#ln-774"></a><span class="w">                </span>
-<a id="ln-775" name="ln-775" href="#ln-775"></a><span class="w">                </span><span class="c">! Other scope</span>
-<a id="ln-776" name="ln-776" href="#ln-776"></a><span class="w">                </span><span class="n">should_be_run</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">.</span><span class="n">false</span><span class="p">.</span>
-<a id="ln-777" name="ln-777" href="#ln-777"></a><span class="w">                </span>
-<a id="ln-778" name="ln-778" href="#ln-778"></a><span class="w">            </span><span class="k">elseif</span><span class="w"> </span><span class="p">(</span><span class="n">size</span><span class="p">(</span><span class="n">settings</span><span class="p">%</span><span class="n">name</span><span class="p">)</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="mi">0</span><span class="w"> </span><span class="p">.</span><span class="nb">or</span><span class="p">.</span><span class="w"> </span><span class="p">.</span><span class="nb">not</span><span class="p">.</span><span class="n">settings</span><span class="p">%</span><span class="n">list</span><span class="p">)</span><span class="w"> </span><span class="k">then</span>
-<a id="ln-779" name="ln-779" href="#ln-779"></a>
-<a id="ln-780" name="ln-780" href="#ln-780"></a><span class="w">                </span><span class="c">! No list of targets</span>
-<a id="ln-781" name="ln-781" href="#ln-781"></a><span class="w">                </span><span class="n">should_be_run</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">.</span><span class="n">true</span><span class="p">.</span>
-<a id="ln-782" name="ln-782" href="#ln-782"></a>
-<a id="ln-783" name="ln-783" href="#ln-783"></a><span class="w">            </span><span class="k">else</span>
-<a id="ln-784" name="ln-784" href="#ln-784"></a>
-<a id="ln-785" name="ln-785" href="#ln-785"></a><span class="w">                </span><span class="c">! Is found in list</span>
-<a id="ln-786" name="ln-786" href="#ln-786"></a><span class="w">                </span><span class="n">should_be_run</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">settings</span><span class="p">%</span><span class="n">name_ID</span><span class="p">(</span><span class="n">exe_source</span><span class="p">%</span><span class="n">exe_name</span><span class="p">)</span><span class="o">&gt;</span><span class="mi">0</span>
-<a id="ln-787" name="ln-787" href="#ln-787"></a><span class="w">                </span>
-<a id="ln-788" name="ln-788" href="#ln-788"></a><span class="w">            </span><span class="k">end if            </span>
-<a id="ln-789" name="ln-789" href="#ln-789"></a><span class="k">            </span>
-<a id="ln-790" name="ln-790" href="#ln-790"></a><span class="k">        end associate</span>
-<a id="ln-791" name="ln-791" href="#ln-791"></a><span class="k">                        </span>
-<a id="ln-792" name="ln-792" href="#ln-792"></a><span class="k">    else</span>
-<a id="ln-793" name="ln-793" href="#ln-793"></a><span class="w">        </span>
-<a id="ln-794" name="ln-794" href="#ln-794"></a><span class="w">        </span><span class="c">!&gt; Invalid target</span>
-<a id="ln-795" name="ln-795" href="#ln-795"></a><span class="w">        </span><span class="n">should_be_run</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">.</span><span class="n">false</span><span class="p">.</span>
-<a id="ln-796" name="ln-796" href="#ln-796"></a><span class="w">        </span>
-<a id="ln-797" name="ln-797" href="#ln-797"></a><span class="w">    </span><span class="k">endif</span>
-<a id="ln-798" name="ln-798" href="#ln-798"></a><span class="k">    </span>
-<a id="ln-799" name="ln-799" href="#ln-799"></a><span class="k">end function </span><span class="n">should_be_run</span>
-<a id="ln-800" name="ln-800" href="#ln-800"></a>
-<a id="ln-801" name="ln-801" href="#ln-801"></a><span class="k">end module </span><span class="n">fpm</span>
+<a id="ln-768" name="ln-768" href="#ln-768"></a><span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">exe_target</span><span class="p">%</span><span class="n">is_executable_target</span><span class="p">(</span><span class="n">run_scope</span><span class="p">))</span><span class="w"> </span><span class="k">then</span>
+<a id="ln-769" name="ln-769" href="#ln-769"></a><span class="k">        </span>
+<a id="ln-770" name="ln-770" href="#ln-770"></a><span class="k">        associate</span><span class="p">(</span><span class="n">exe_source</span><span class="w"> </span><span class="o">=&gt;</span><span class="w"> </span><span class="n">exe_target</span><span class="p">%</span><span class="n">dependencies</span><span class="p">(</span><span class="mi">1</span><span class="p">)%</span><span class="n">ptr</span><span class="p">%</span><span class="n">source</span><span class="p">)</span>
+<a id="ln-771" name="ln-771" href="#ln-771"></a><span class="w">            </span>
+<a id="ln-772" name="ln-772" href="#ln-772"></a><span class="w">            </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">size</span><span class="p">(</span><span class="n">settings</span><span class="p">%</span><span class="n">name</span><span class="p">)</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="mi">0</span><span class="w"> </span><span class="p">.</span><span class="nb">or</span><span class="p">.</span><span class="w"> </span><span class="p">.</span><span class="nb">not</span><span class="p">.</span><span class="n">settings</span><span class="p">%</span><span class="n">list</span><span class="p">)</span><span class="w"> </span><span class="k">then</span>
+<a id="ln-773" name="ln-773" href="#ln-773"></a>
+<a id="ln-774" name="ln-774" href="#ln-774"></a><span class="w">                </span><span class="c">! No list of targets</span>
+<a id="ln-775" name="ln-775" href="#ln-775"></a><span class="w">                </span><span class="n">should_be_run</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">.</span><span class="n">true</span><span class="p">.</span>
+<a id="ln-776" name="ln-776" href="#ln-776"></a>
+<a id="ln-777" name="ln-777" href="#ln-777"></a><span class="w">            </span><span class="k">else</span>
+<a id="ln-778" name="ln-778" href="#ln-778"></a>
+<a id="ln-779" name="ln-779" href="#ln-779"></a><span class="w">                </span><span class="c">! Is found in list</span>
+<a id="ln-780" name="ln-780" href="#ln-780"></a><span class="w">                </span><span class="n">should_be_run</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">settings</span><span class="p">%</span><span class="n">name_ID</span><span class="p">(</span><span class="n">exe_source</span><span class="p">%</span><span class="n">exe_name</span><span class="p">)</span><span class="o">&gt;</span><span class="mi">0</span>
+<a id="ln-781" name="ln-781" href="#ln-781"></a><span class="w">                </span>
+<a id="ln-782" name="ln-782" href="#ln-782"></a><span class="w">            </span><span class="k">end if            </span>
+<a id="ln-783" name="ln-783" href="#ln-783"></a><span class="k">            </span>
+<a id="ln-784" name="ln-784" href="#ln-784"></a><span class="k">        end associate</span>
+<a id="ln-785" name="ln-785" href="#ln-785"></a><span class="k">                        </span>
+<a id="ln-786" name="ln-786" href="#ln-786"></a><span class="k">    else</span>
+<a id="ln-787" name="ln-787" href="#ln-787"></a><span class="w">        </span>
+<a id="ln-788" name="ln-788" href="#ln-788"></a><span class="w">        </span><span class="c">!&gt; Invalid target</span>
+<a id="ln-789" name="ln-789" href="#ln-789"></a><span class="w">        </span><span class="n">should_be_run</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">.</span><span class="n">false</span><span class="p">.</span>
+<a id="ln-790" name="ln-790" href="#ln-790"></a><span class="w">        </span>
+<a id="ln-791" name="ln-791" href="#ln-791"></a><span class="w">    </span><span class="k">endif</span>
+<a id="ln-792" name="ln-792" href="#ln-792"></a><span class="k">    </span>
+<a id="ln-793" name="ln-793" href="#ln-793"></a><span class="k">end function </span><span class="n">should_be_run</span>
+<a id="ln-794" name="ln-794" href="#ln-794"></a>
+<a id="ln-795" name="ln-795" href="#ln-795"></a><span class="k">end module </span><span class="n">fpm</span>
 </pre></div>
 
       </section>
@@ -976,7 +970,7 @@
             <p class="text-end">
               Documentation generated by
               <a href="https://github.com/Fortran-FOSS-Programmers/ford">FORD</a>
- on 2024-05-02 05:54              </p>
+ on 2024-05-22 05:27              </p>
           </div>
         </div>
         <br>
