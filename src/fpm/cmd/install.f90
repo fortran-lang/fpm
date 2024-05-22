@@ -30,6 +30,7 @@ contains
     type(installer_t) :: installer
     type(string_t), allocatable :: list(:)
     logical :: installable
+    integer :: ntargets
 
     call get_package_data(package, "fpm.toml", error, apply_defaults=.true.)
     call handle_error(error)
@@ -40,16 +41,15 @@ contains
     call targets_from_sources(targets, model, settings%prune, error)
     call handle_error(error)
 
+    call install_info(output_unit, settings%list, targets, ntargets)
+    if (settings%list) return
+
     installable = (allocated(package%library) .and. package%install%library) &
-      .or. allocated(package%executable)
+                   .or. allocated(package%executable) .or. ntargets>0
+    
     if (.not.installable) then
       call fatal_error(error, "Project does not contain any installable targets")
       call handle_error(error)
-    end if
-
-    if (settings%list) then
-      call install_info(output_unit, targets)
-      return
     end if
 
     if (.not.settings%no_rebuild) then
@@ -73,18 +73,20 @@ contains
       end if
     end if
 
-    if (allocated(package%executable)) then
+    if (allocated(package%executable) .or. ntargets>0) then
       call install_executables(installer, targets, error)
       call handle_error(error)
     end if
 
   end subroutine cmd_install
 
-  subroutine install_info(unit, targets)
+  subroutine install_info(unit, verbose, targets, ntargets)
     integer, intent(in) :: unit
+    logical, intent(in) :: verbose
     type(build_target_ptr), intent(in) :: targets(:)
+    integer, intent(out) :: ntargets
 
-    integer :: ii, ntargets
+    integer :: ii
     type(string_t), allocatable :: install_target(:), temp(:)
 
     allocate(install_target(0))
@@ -96,12 +98,16 @@ contains
     install_target = [install_target, temp]
 
     ntargets = size(install_target)
+    
+    if (verbose) then 
 
-    write(unit, '("#", *(1x, g0))') &
-      "total number of installable targets:", ntargets
-    do ii = 1, ntargets
-      write(unit, '("-", *(1x, g0))') install_target(ii)%s
-    end do
+        write(unit, '("#", *(1x, g0))') &
+          "total number of installable targets:", ntargets
+        do ii = 1, ntargets
+          write(unit, '("-", *(1x, g0))') install_target(ii)%s
+        end do
+    
+    endif
 
   end subroutine install_info
 
@@ -129,7 +135,7 @@ contains
     integer :: ii
 
     do ii = 1, size(targets)
-      if (is_executable_target(targets(ii)%ptr)) then
+      if (targets(ii)%ptr%is_executable_target(FPM_SCOPE_APP)) then
         call installer%install_executable(targets(ii)%ptr%output_file, error)
         if (allocated(error)) exit
       end if
@@ -138,20 +144,10 @@ contains
 
   end subroutine install_executables
 
-  elemental function is_executable_target(target_ptr) result(is_exe)
-    type(build_target_t), intent(in) :: target_ptr
-    logical :: is_exe
-    is_exe = target_ptr%target_type == FPM_TARGET_EXECUTABLE .and. &
-      allocated(target_ptr%dependencies)
-    if (is_exe) then
-      is_exe = target_ptr%dependencies(1)%ptr%source%unit_scope == FPM_SCOPE_APP
-    end if
-  end function is_executable_target
-
   subroutine handle_error(error)
     type(error_t), intent(in), optional :: error
     if (present(error)) then
-      call fpm_stop(1,error%message)
+      call fpm_stop(1,'*cmd_install* error: '//error%message)
     end if
   end subroutine handle_error
 
