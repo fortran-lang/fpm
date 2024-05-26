@@ -136,15 +136,5 @@ module fpm_cmd_search
         end if
 
     end subroutine search_namespace
-  
-    ! subroutine print_upload_data(upload_data)
-    !   type(string_t), intent(in) :: upload_data(:)
-    !   integer :: i
-  
-    !   print *, 'Upload data:'
-    !   do i = 1, size(upload_data)
-    !     print *, upload_data(i)%s
-    !   end do
-    ! end
   end
   
