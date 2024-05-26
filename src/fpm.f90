@@ -22,13 +22,11 @@ use fpm_manifest, only : get_package_data, package_config_t
 use fpm_meta, only : resolve_metapackages
 use fpm_error, only : error_t, fatal_error, fpm_stop
 use fpm_toml, only: name_is_json
-use tomlf, only : len
 use, intrinsic :: iso_fortran_env, only : stdin => input_unit, &
                                         & stdout => output_unit, &
                                         & stderr => error_unit
 use iso_c_binding, only: c_char, c_ptr, c_int, c_null_char, c_associated, c_f_pointer
 use fpm_environment, only: os_is_unix
-use jonquil, only : json_object
 use fpm_settings, only: fpm_global_settings, get_global_settings
 
 implicit none
