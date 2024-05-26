@@ -126,14 +126,13 @@ module fpm_cmd_search
             do i=1,size(file_names)
                 if (.not.is_hidden_file(file_names(i)%s)) then
                     call split(file_names(i)%s,array,'/')
-                    print *,"Package: ", array(size(array))
+                    print *, "Package: ", array(size(array))
                     print *, "Add as Dependency: "
                     print *, array(size(array)), " = { namespace = '", namespace, "' }"
                 end if
             end do
         else 
             print *, "Namespace not found in local registry. Searching remote registry."
-            
         end if
 
     end subroutine search_namespace
