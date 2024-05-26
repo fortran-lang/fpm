@@ -80,7 +80,7 @@ module fpm_cmd_search
         end if
 
         call search_namespace(settings%namespace)
-        if (.not.json%has_key("packages")) then
+        if (json%has_key("packages")) then
             call get_value(json, 'packages', array)
             print '(A,I0,A)', ' Found ', len(array), ' packages:'
             do ii=1, len(array)
