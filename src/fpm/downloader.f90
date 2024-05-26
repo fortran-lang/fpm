@@ -129,11 +129,5 @@ contains
       call fatal_error(error, "Error unpacking '"//tmp_pkg_file//"'."); return
     end if
     
-    open (newunit=unit, file=destination//'cache.data', action='readwrite', iostat=stat)
-    if (stat /= 0) then
-      call fatal_error(error, "Error creating temporary file for downloading package."); return
-    end if
-    write(unit, '(A)') destination
-    close(unit)
   end
 end
