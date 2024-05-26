@@ -116,7 +116,7 @@ contains
     !> Error handling.
     type(error_t), allocatable, intent(out) :: error
 
-    integer :: stat,unit
+    integer :: stat
 
     if (which('tar') == '') then
       call fatal_error(error, "'tar' not installed."); return
@@ -128,6 +128,5 @@ contains
     if (stat /= 0) then
       call fatal_error(error, "Error unpacking '"//tmp_pkg_file//"'."); return
     end if
-    
   end
 end
