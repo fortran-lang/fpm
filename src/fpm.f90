@@ -5,10 +5,10 @@ use fpm_strings, only: string_t, operator(.in.), glob, join, string_cat, &
 use fpm_backend, only: build_package
 use fpm_command_line, only: fpm_build_settings, fpm_new_settings, &
                       fpm_run_settings, fpm_install_settings, fpm_test_settings, &
-                      fpm_clean_settings, fpm_search_settings
+                      fpm_clean_settings
 use fpm_dependency, only : new_dependency_tree
 use fpm_filesystem, only: is_dir, join_path, list_files, exists, &
-                   basename, filewrite, mkdir, run, os_delete_dir, get_temp_filename
+                   basename, filewrite, mkdir, run, os_delete_dir
 use fpm_model, only: fpm_model_t, srcfile_t, show_model, fortran_features_t, &
                     FPM_SCOPE_UNKNOWN, FPM_SCOPE_LIB, FPM_SCOPE_DEP, &
                     FPM_SCOPE_APP, FPM_SCOPE_EXAMPLE, FPM_SCOPE_TEST
@@ -22,20 +22,18 @@ use fpm_manifest, only : get_package_data, package_config_t
 use fpm_meta, only : resolve_metapackages
 use fpm_error, only : error_t, fatal_error, fpm_stop
 use fpm_toml, only: name_is_json
-use fpm_downloader, only: downloader_t
-use fpm_versioning, only: version_t
-use tomlf, only : toml_array, get_value, len, toml_key
+use tomlf, only : len
 use, intrinsic :: iso_fortran_env, only : stdin => input_unit, &
                                         & stdout => output_unit, &
                                         & stderr => error_unit
 use iso_c_binding, only: c_char, c_ptr, c_int, c_null_char, c_associated, c_f_pointer
 use fpm_environment, only: os_is_unix
 use jonquil, only : json_object
-use fpm_settings, only: fpm_global_settings, get_global_settings, official_registry_base_url
+use fpm_settings, only: fpm_global_settings, get_global_settings
 
 implicit none
 private
-public :: cmd_build, cmd_run, cmd_clean, cmd_search
+public :: cmd_build, cmd_run, cmd_clean
 public :: build_model, check_modules_for_duplicates
 
 contains
@@ -719,59 +717,6 @@ subroutine cmd_clean(settings)
         write (stdout, '(A)') "fpm: No build directory found."
     end if
 end subroutine cmd_clean
-
-!> Search the fpm registry for a package
-subroutine cmd_search(settings)
-    !> Settings for the search command.
-    class(fpm_search_settings), intent(inout) :: settings
-    character(:), allocatable :: tmp_file, name, namespace, description, query_url
-    type(toml_key), allocatable :: list(:)
-    integer :: stat, unit, ii
-    type(json_object) :: json
-    type(json_object), pointer :: p
-    !> Error handling.
-    type(error_t), allocatable :: error
-    type(toml_array), pointer :: array
-    type(version_t), allocatable :: version
-
-    !> Downloader instance.
-    class(downloader_t), allocatable :: downloader
-    allocate (downloader)
-
-    !> Generate a temporary file to store the downloaded package search data
-    tmp_file = get_temp_filename()
-    open (newunit=unit, file=tmp_file, action='readwrite', iostat=stat)
-    if (stat /= 0) then
-      call fatal_error(error, "Error creating temporary file for downloading package."); return
-    end if
-    
-    if (settings%page == ' ') then
-        settings%page = '1'          
-    end if
-    query_url = official_registry_base_url//'/packages?query='//settings%query//'&page='//settings%page
-
-    !> Get the package data from the registry
-    call downloader%get_pkg_data(query_url, version, tmp_file, json, error)
-    close (unit)
-    if (allocated(error)) return
-
-    if (json%has_key("packages")) then
-        call get_value(json, 'packages', array)
-        print '(A,I0,A)', ' Found ', len(array), ' packages:'
-        do ii=1, len(array)
-            call get_value(array, ii, p)
-            call get_value(p, 'name', name)
-            call get_value(p, 'namespace', namespace)
-            call get_value(p, 'description', description)
-            print *, "Name: ", name
-            print *, "namespace: ", namespace
-            print *, "Description: ", description
-            print *, ""
-        end do
-    else 
-        call fatal_error(error, "Error Searching Packages"); return
-    end if
-end subroutine cmd_search
 
 !> Sort executables by namelist ID, and trim unused values
 pure subroutine sort_executables(target_ID,executables)
