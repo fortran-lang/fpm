@@ -141,6 +141,9 @@ type, extends(fpm_cmd_settings)   :: fpm_search_settings
     character(len=:),allocatable  :: namespace
     character(len=:),allocatable  :: package
     character(len=:),allocatable  :: license
+    character(len=:),allocatable  :: limit
+    character(len=:),allocatable  :: sort_by
+    character(len=:),allocatable  :: sort
 end type
 
 type, extends(fpm_build_settings) :: fpm_publish_settings
@@ -250,7 +253,7 @@ contains
         type(version_t) :: version
         character(len=:), allocatable :: common_args, compiler_args, run_args, working_dir, &
             & c_compiler, cxx_compiler, archiver, version_s, token_s, query, page, registry, & 
-            & namespace, license, package
+            & namespace, license, package, limit, sort_by, sort
 
         character(len=*), parameter :: fc_env = "FC", cc_env = "CC", ar_env = "AR", &
             & fflags_env = "FFLAGS", cflags_env = "CFLAGS", cxxflags_env = "CXXFLAGS", ldflags_env = "LDFLAGS", &
@@ -723,6 +726,9 @@ contains
             & --namespace " " &
             & --package " " &
             & --license " " &
+            & --limit " " &
+            & --sort-by " " &
+            & --sort " " &
             & --', help_search, version_text)
             query = sget('query')
             page = sget('page')
@@ -730,12 +736,15 @@ contains
             namespace = sget('namespace')
             package = sget('package')
             license = sget('license')
+            limit = sget('limit')
+            sort_by = sget('sort-by')
+            sort= sget('sort')
 
             block
                 if (query=='') then
                     call fpm_stop(2, 'Query must be specified on the search subcommand.')
                 end if
-                if (page=='') page='1'
+                if (page=='') page='0'
                 if (.not. registry=='') then
                     print *, 'Using custom registry for seaching packages: ', registry
                     registry = trim(adjustl(registry))
@@ -746,7 +755,8 @@ contains
                 cmd_settings = fpm_search_settings( &
                 & query=query, page=page, registry=registry, &
                 & namespace=namespace, package=package, &
-                & license=license)
+                & license=license, limit=limit, sort_by=sort_by, &
+                & sort=sort)
             end block
 
         case('publish')
