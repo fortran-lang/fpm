@@ -87,7 +87,7 @@ module fpm_cmd_search
             call fpm_stop(1, "Error retrieving package data from registry: "//settings%registry); return
         end if
 
-        call search_namespace(settings%namespace)
+        ! call search_namespace(settings%namespace)
         if (json%has_key("packages")) then
             call get_value(json, 'packages', array)
             print '(A,I0,A)', ' Found ', len(array), ' packages:'
@@ -104,6 +104,7 @@ module fpm_cmd_search
         else 
             call fpm_stop(1, "Invalid package data returned"); return
         end if
+        print *, "Searching in local registry is not implemented yet for all parameters."
     end subroutine cmd_search
 
     subroutine search_namespace(namespace)
