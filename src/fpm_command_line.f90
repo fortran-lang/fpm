@@ -723,7 +723,7 @@ contains
             & --namespace " " &
             & --package " " &
             & --license " " &
-            & --', help_clean, version_text)
+            & --', help_search, version_text)
             query = sget('query')
             page = sget('page')
             registry = sget('registry')
