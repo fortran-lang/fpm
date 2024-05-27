@@ -70,7 +70,15 @@ module fpm_cmd_search
         call fatal_error(error, "Error creating temporary file for downloading package."); return
         end if
         
-        query_url = settings%registry//'/packages_cli?query='//settings%query//'&page='//settings%page
+        query_url =  settings%registry//'/packages_cli' &
+                    // '?query='//settings%query &
+                    // '&page='//settings%page &
+                    // '&package='//settings%package &
+                    // '&namespace='//settings%namespace &
+                    // '&license='//settings%license &
+                    // '&limit='//settings%limit &
+                    // '&sort_by='//settings%sort_by &
+                    // '&sort='//settings%sort
 
         !> Get the package data from the registry
         call downloader%get_pkg_data(query_url, version, tmp_file, json, error)

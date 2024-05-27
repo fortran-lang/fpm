@@ -744,7 +744,11 @@ contains
                 if (query=='') then
                     call fpm_stop(2, 'Query must be specified on the search subcommand.')
                 end if
-                if (page=='') page='0'
+                if (page=='') page='1'
+                if (package==' ') package=''
+                if (license==' ') license=''
+                if (sort_by==' ') sort_by='name'
+                if (sort==' ') sort='asc'
                 if (.not. registry=='') then
                     print *, 'Using custom registry for seaching packages: ', registry
                     registry = trim(adjustl(registry))
