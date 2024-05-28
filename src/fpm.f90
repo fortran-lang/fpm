@@ -769,9 +769,14 @@ logical function should_be_run(settings,run_scope,exe_target)
         
         associate(exe_source => exe_target%dependencies(1)%ptr%source)
             
-            if (size(settings%name) == 0 .or. .not.settings%list) then
+            if (exe_source%unit_scope/=run_scope) then 
+                
+                ! Other scope
+                should_be_run = .false.
+                
+            elseif (size(settings%name) == 0 .or. settings%list) then
 
-                ! No list of targets
+                ! Run all or list all
                 should_be_run = .true.
 
             else
