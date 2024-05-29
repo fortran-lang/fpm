@@ -140,6 +140,7 @@ type, extends(fpm_cmd_settings)   :: fpm_search_settings
     character(len=:),allocatable  :: registry
     character(len=:),allocatable  :: namespace
     character(len=:),allocatable  :: package
+    character(len=:),allocatable  :: version
     character(len=:),allocatable  :: license
     character(len=:),allocatable  :: limit
     character(len=:),allocatable  :: sort_by
@@ -253,7 +254,7 @@ contains
         type(version_t) :: version
         character(len=:), allocatable :: common_args, compiler_args, run_args, working_dir, &
             & c_compiler, cxx_compiler, archiver, version_s, token_s, query, page, registry, & 
-            & namespace, license, package, limit, sort_by, sort
+            & namespace, license, package, package_version, limit, sort_by, sort
 
         character(len=*), parameter :: fc_env = "FC", cc_env = "CC", ar_env = "AR", &
             & fflags_env = "FFLAGS", cflags_env = "CFLAGS", cxxflags_env = "CXXFLAGS", ldflags_env = "LDFLAGS", &
@@ -734,11 +735,12 @@ contains
             page = sget('page')
             registry = sget('registry')
             namespace = sget('namespace')
+            package_version = sget('version')
             package = sget('package')
             license = sget('license')
             limit = sget('limit')
             sort_by = sget('sort-by')
-            sort= sget('sort')
+            sort = sget('sort')
 
             block
                 if (query=='') then
@@ -749,6 +751,7 @@ contains
                 if (license==' ') license=''
                 if (sort_by==' ') sort_by='name'
                 if (sort==' ') sort='asc'
+                if (package_version==' ') package_version=''
                 if (.not. registry=='') then
                     print *, 'Using custom registry for seaching packages: ', registry
                     registry = trim(adjustl(registry))
@@ -758,7 +761,7 @@ contains
                 allocate(fpm_search_settings :: cmd_settings)
                 cmd_settings = fpm_search_settings( &
                 & query=query, page=page, registry=registry, &
-                & namespace=namespace, package=package, &
+                & namespace=namespace, package=package, version=package_version, &
                 & license=license, limit=limit, sort_by=sort_by, &
                 & sort=sort)
             end block

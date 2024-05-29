@@ -65,20 +65,28 @@ module fpm_cmd_search
 
         !> Generate a temporary file to store the downloaded package search data
         tmp_file = get_temp_filename()
-        open (newunit=unit, file=tmp_file, action='readwrite', iostat=stat)
+        open (newunit=unit, file=tmp_file, action='readwrite', iostat=stat,status='write')
         if (stat /= 0) then
         call fatal_error(error, "Error creating temporary file for downloading package."); return
         end if
         
         query_url =  settings%registry//'/packages_cli' &
-                    // '?query='//settings%query &
-                    // '&page='//settings%page &
-                    // '&package='//settings%package &
-                    // '&namespace='//settings%namespace &
-                    // '&license='//settings%license &
-                    // '&limit='//settings%limit &
-                    // '&sort_by='//settings%sort_by &
-                    // '&sort='//settings%sort
+                    & // '?query='//settings%query &
+                    & // '&page='//settings%page &
+                    & // '&package='//settings%package &
+                    & // '&namespace='//settings%namespace &
+                    & // '&version='//settings%version &
+                    & // '&license='//settings%license &
+                    & // '&limit='//settings%limit &
+                    & // '&sort_by='//settings%sort_by &
+                    & // '&sort='//settings%sort
+
+        ! also add version
+        !> name,license,version, description1 from fpm.toml
+        !> description2 from README.md
+        !> manipulation parameters: page, sort, sort_by, limit
+        !> search parameters: name, namespace, license, query -> (description1, description2)
+
 
         !> Get the package data from the registry
         call downloader%get_pkg_data(query_url, version, tmp_file, json, error)
