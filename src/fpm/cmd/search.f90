@@ -62,7 +62,6 @@ module fpm_cmd_search
         ! from fpm.toml -> description and license
         ! README.md -> description
 
-
         !> Generate a temporary file to store the downloaded package search data
         tmp_file = get_temp_filename()
         open (newunit=unit, file=tmp_file, action='readwrite', iostat=stat,status='write')
@@ -70,7 +69,7 @@ module fpm_cmd_search
         call fatal_error(error, "Error creating temporary file for downloading package."); return
         end if
         
-        query_url =  settings%registry//'/packages_cli' &
+        query_url = settings%registry//'/packages_cli' &
                     & // '?query='//settings%query &
                     & // '&page='//settings%page &
                     & // '&package='//settings%package &
@@ -80,13 +79,11 @@ module fpm_cmd_search
                     & // '&limit='//settings%limit &
                     & // '&sort_by='//settings%sort_by &
                     & // '&sort='//settings%sort
-
-        ! also add version
-        !> name,license,version, description1 from fpm.toml
-        !> description2 from README.md
-        !> manipulation parameters: page, sort, sort_by, limit
-        !> search parameters: name, namespace, license, query -> (description1, description2)
-
+        
+        !> search parameters: name, namespace, version, license, query -> (description1, description2)
+        !> name, license, version, description1 from fpm.toml
+        !> description2 from README.md (if exists)
+        !> order manipulation parameters: page, sort, sort_by, limit
 
         !> Get the package data from the registry
         call downloader%get_pkg_data(query_url, version, tmp_file, json, error)
@@ -97,18 +94,19 @@ module fpm_cmd_search
 
         ! call search_namespace(settings%namespace)
         if (json%has_key("packages")) then
-            call get_value(json, 'packages', array)
-            print '(A,I0,A)', ' Found ', len(array), ' packages:'
-            do ii=1, len(array)
-                call get_value(array, ii, p)
-                call get_value(p, 'name', name)
-                call get_value(p, 'namespace', namespace)
-                call get_value(p, 'description', description)
-                print *, "Name: ", name
-                print *, "namespace: ", namespace
-                print *, "Description: ", description
-                print *, ""
-            end do
+            !> Better method to display the package data
+            ! call get_value(json, 'packages', array)
+            ! print '(A,I0,A)', ' Found ', len(array), ' packages:'
+            ! do ii=1, len(array)
+            !     call get_value(array, ii, p)
+            !     call get_value(p, 'name', name)
+            !     call get_value(p, 'namespace', namespace)
+            !     call get_value(p, 'description', description)
+            !     print *, "Name: ", name
+            !     print *, "namespace: ", namespace
+            !     print *, "Description: ", description
+            !     print *, ""
+            ! end do
         else 
             call fpm_stop(1, "Invalid package data returned"); return
         end if
