@@ -145,11 +145,9 @@ module fpm_cmd_search
                 if (.not.is_hidden_file(file_names(i)%s)) then
                     call split(file_names(i)%s,array,'/')
                     if (array(size(array)) == "fpm.toml") then
-                        print *, "Package: ", array(size(array)-3), array(size(array)-2), array(size(array)-1)
+                        print *, "Package: ", array(size(array)-3), array(size(array)-2), array(size(array)-1), file_names(i)%s
                         !> read the toml file from the path file_names(i)%s
                     end if
-                        ! print *, "Add as Dependency: "
-                        ! print *, array(size(array)-1), " = { namespace = '", namespace, "' }"
                     ! end if
                     ! print *, "Package: ", array(size(array))
                     ! print *, "Add as Dependency: "
