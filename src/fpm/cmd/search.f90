@@ -50,7 +50,7 @@ module fpm_cmd_search
             call fpm_stop(1, "Error retrieving global settings"); return
         end if
 
-        print *,global_settings%registry_settings%cache_path
+        ! print *,global_settings%registry_settings%cache_path
         ! print *,global_settings%registry_settings%path
         ! print *,global_settings%registry_settings%url
         ! print *,global_settings%path_to_config_folder
@@ -68,7 +68,6 @@ module fpm_cmd_search
         if (stat /= 0) then
         call fatal_error(error, "Error creating temporary file for downloading package."); return
         end if
-        
         query_url = settings%registry//'/packages_cli' &
                     & // '?query='//settings%query &
                     & // '&page='//settings%page &
@@ -84,29 +83,32 @@ module fpm_cmd_search
         !> name, license, version, description1 from fpm.toml
         !> description2 from README.md (if exists)
         !> order manipulation parameters: page, sort, sort_by, limit
+        !> show page number and total_pages
 
         !> Get the package data from the registry
+        ! print *, settings%namespace
         call downloader%get_pkg_data(query_url, version, tmp_file, json, error)
         close (unit)
         if (allocated(error)) then
             call fpm_stop(1, "Error retrieving package data from registry: "//settings%registry); return
         end if
+        
 
-        ! call search_namespace(settings%namespace)
+        call search_namespace(settings%namespace)
         if (json%has_key("packages")) then
             !> Better method to display the package data
-            ! call get_value(json, 'packages', array)
-            ! print '(A,I0,A)', ' Found ', len(array), ' packages:'
-            ! do ii=1, len(array)
-            !     call get_value(array, ii, p)
-            !     call get_value(p, 'name', name)
-            !     call get_value(p, 'namespace', namespace)
-            !     call get_value(p, 'description', description)
-            !     print *, "Name: ", name
-            !     print *, "namespace: ", namespace
-            !     print *, "Description: ", description
-            !     print *, ""
-            ! end do
+            call get_value(json, 'packages', array)
+            print '(A,I0,A)', ' Found ', len(array), ' packages:'
+            do ii=1, len(array)
+                call get_value(array, ii, p)
+                call get_value(p, 'name', name)
+                call get_value(p, 'namespace', namespace)
+                call get_value(p, 'description', description)
+                print *, "Name: ", name
+                print *, "namespace: ", namespace
+                print *, "Description: ", description
+                print *, ""
+            end do
         else 
             call fpm_stop(1, "Invalid package data returned"); return
         end if
@@ -127,6 +129,7 @@ module fpm_cmd_search
         if (allocated(error)) then
             call fpm_stop(1, "Error retrieving global settings"); return
         end if
+        print *, "called search_namespace"
 
         ! print *,global_settings%registry_settings%cache_path
         print *, "Searching for namespace: ", namespace
@@ -136,14 +139,21 @@ module fpm_cmd_search
             path = join_path(global_settings%registry_settings%cache_path, namespace)
 
             ! Scan directory for sources
-            call list_files(path, file_names,recurse=.false.)
+            call list_files(path, file_names,recurse=.true.)
             print *, "Found "//str(size(file_names))//" package(s) in namespace in the local registry."
             do i=1,size(file_names)
                 if (.not.is_hidden_file(file_names(i)%s)) then
                     call split(file_names(i)%s,array,'/')
-                    print *, "Package: ", array(size(array))
-                    print *, "Add as Dependency: "
-                    print *, array(size(array)), " = { namespace = '", namespace, "' }"
+                    if (array(size(array)) == "fpm.toml") then
+                        print *, "Package: ", array(size(array)-1)
+                        print *, array(size(array)-2)
+                    end if
+                        ! print *, "Add as Dependency: "
+                        ! print *, array(size(array)-1), " = { namespace = '", namespace, "' }"
+                    ! end if
+                    ! print *, "Package: ", array(size(array))
+                    ! print *, "Add as Dependency: "
+                    ! print *, array(size(array)), " = { namespace = '", namespace, "' }"
                 end if
             end do
         else 
