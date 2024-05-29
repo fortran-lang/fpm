@@ -751,6 +751,8 @@ contains
                 if (license==' ') license=''
                 if (sort_by==' ') sort_by='name'
                 if (sort==' ') sort='asc'
+                if (limit==' ') limit='10'
+                if (namespace==' ') namespace=''
                 if (package_version==' ') package_version=''
                 if (.not. registry=='') then
                     print *, 'Using custom registry for seaching packages: ', registry

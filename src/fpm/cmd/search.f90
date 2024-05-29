@@ -64,7 +64,7 @@ module fpm_cmd_search
 
         !> Generate a temporary file to store the downloaded package search data
         tmp_file = get_temp_filename()
-        open (newunit=unit, file=tmp_file, action='readwrite', iostat=stat,status='write')
+        open (newunit=unit, file=tmp_file, action='readwrite', iostat=stat)
         if (stat /= 0) then
         call fatal_error(error, "Error creating temporary file for downloading package."); return
         end if
@@ -97,18 +97,18 @@ module fpm_cmd_search
         call search_namespace(settings%namespace)
         if (json%has_key("packages")) then
             !> Better method to display the package data
-            call get_value(json, 'packages', array)
-            print '(A,I0,A)', ' Found ', len(array), ' packages:'
-            do ii=1, len(array)
-                call get_value(array, ii, p)
-                call get_value(p, 'name', name)
-                call get_value(p, 'namespace', namespace)
-                call get_value(p, 'description', description)
-                print *, "Name: ", name
-                print *, "namespace: ", namespace
-                print *, "Description: ", description
-                print *, ""
-            end do
+            ! call get_value(json, 'packages', array)
+            ! print '(A,I0,A)', ' Found ', len(array), ' packages:'
+            ! do ii=1, len(array)
+            !     call get_value(array, ii, p)
+            !     call get_value(p, 'name', name)
+            !     call get_value(p, 'namespace', namespace)
+            !     call get_value(p, 'description', description)
+            !     print *, "Name: ", name
+            !     print *, "namespace: ", namespace
+            !     print *, "Description: ", description
+            !     print *, ""
+            ! end do
         else 
             call fpm_stop(1, "Invalid package data returned"); return
         end if
@@ -129,24 +129,24 @@ module fpm_cmd_search
         if (allocated(error)) then
             call fpm_stop(1, "Error retrieving global settings"); return
         end if
-        print *, "called search_namespace"
 
         ! print *,global_settings%registry_settings%cache_path
         print *, "Searching for namespace: ", namespace
 
         if (exists(join_path(global_settings%registry_settings%cache_path, namespace))) then
             ! print *, "Namespace: ", namespace
-            path = join_path(global_settings%registry_settings%cache_path, namespace)
+            ! path = join_path(global_settings%registry_settings%cache_path, namespace)
+            path = global_settings%registry_settings%cache_path
 
             ! Scan directory for sources
             call list_files(path, file_names,recurse=.true.)
-            print *, "Found "//str(size(file_names))//" package(s) in namespace in the local registry."
+            ! print *, "Found "//str(size(file_names))//" package(s) in namespace in the local registry."
             do i=1,size(file_names)
                 if (.not.is_hidden_file(file_names(i)%s)) then
                     call split(file_names(i)%s,array,'/')
                     if (array(size(array)) == "fpm.toml") then
-                        print *, "Package: ", array(size(array)-1)
-                        print *, array(size(array)-2)
+                        print *, "Package: ", array(size(array)-3), array(size(array)-2), array(size(array)-1)
+                        !> read the toml file from the path file_names(i)%s
                     end if
                         ! print *, "Add as Dependency: "
                         ! print *, array(size(array)-1), " = { namespace = '", namespace, "' }"
