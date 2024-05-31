@@ -31,7 +31,7 @@ module fpm_cmd_search
         !> Settings for the search command.
         class(fpm_search_settings), intent(in) :: settings
         type(fpm_global_settings) :: global_settings
-        character(:), allocatable :: tmp_file, name, namespace, description, query_url
+        character(:), allocatable :: tmp_file, name, namespace, description, query_url,package_version
         type(toml_key), allocatable :: list(:)
         integer :: stat, unit, ii
         type(json_object) :: json
@@ -81,6 +81,9 @@ module fpm_cmd_search
         
         !> search parameters: name, namespace, version, license, query -> (description1, description2)
         !> namespace,version,package from url. 
+        !> add to search only in the local/global registry
+        !> for description search
+        !> fix all the version search in global and add docs for parameters.
         !> description1 from fpm.toml and description2 from README.md
         !> name, license, version, description1 from fpm.toml
         !> description2 from README.md (if exists)
@@ -88,7 +91,6 @@ module fpm_cmd_search
         !> show page number and total_pages
 
         !> Get the package data from the registry
-        ! print *, settings%namespace
         call downloader%get_pkg_data(query_url, version, tmp_file, json, error)
         close (unit)
         if (allocated(error)) then
@@ -107,9 +109,11 @@ module fpm_cmd_search
                 call get_value(p, 'name', name)
                 call get_value(p, 'namespace', namespace)
                 call get_value(p, 'description', description)
+                call get_value(p, 'version', package_version)
                 print *, "Name: ", name
                 print *, "namespace: ", namespace
                 print *, "Description: ", description
+                print *, "version: ", package_version
                 print *, ""
             end do
         else 
@@ -152,6 +156,8 @@ module fpm_cmd_search
             wild = wild//"/?.?.?"
         end if
         wild = wild//"/fpm.toml"
+        ! print *, wild
+        print *, "Package Search in Local Registry:"
 
         ! Scan directory for packages
         call list_files(path, file_names,recurse=.true.)
