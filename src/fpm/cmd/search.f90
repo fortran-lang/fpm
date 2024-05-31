@@ -19,6 +19,7 @@ module fpm_cmd_search
     use jonquil, only : json_object
     use tomlf, only : toml_array, get_value, len, toml_key
     use fpm_settings, only: fpm_global_settings, get_global_settings, official_registry_base_url
+    use fpm_versioning, only: version_t, new_version
   
     implicit none
     private
@@ -100,7 +101,7 @@ module fpm_cmd_search
         ! print *, settings%version
 
         call search_package(settings%namespace, settings%package, settings%version)
-        if (json%has_key("packages")) then
+        if (.not.json%has_key("packages")) then
             !> Better method to display the package data
             call get_value(json, 'packages', array)
             print *, ""
@@ -125,6 +126,8 @@ module fpm_cmd_search
     subroutine search_package(namespace,package,version)
         type(fpm_global_settings)             :: global_settings
         type(error_t), allocatable            :: error
+        ! type(version_t)                       :: version_check
+        ! type(new_version)                     :: version_check
         character(:), allocatable, intent(in) :: namespace, package, version
         character(:), allocatable             :: path,array(:)
         character(:), allocatable             :: wild
@@ -158,6 +161,8 @@ module fpm_cmd_search
         wild = wild//"/fpm.toml"
         print *, "Searching packages in Local Registry:"
 
+        !> globbing breaks for 2digit version numbers 2.10.1
+
         ! Scan directory for packages
         call list_files(path, file_names,recurse=.true.)
         do i=1,size(file_names)
@@ -165,6 +170,11 @@ module fpm_cmd_search
                 call split(file_names(i)%s,array,'/')
                 if (array(size(array)) == "fpm.toml") then
                     result = glob(file_names(i)%s,wild)
+                    ! call new_version_from_string(version_check,array(size(array)-1), error)
+                    ! call version_check%new_version_from_string(array(size(array)-1), error)
+                    if (allocated(error)) then
+                        call fpm_stop(1, "Error parsing version"); return
+                    end if
                     if (result) then
                         ! print *, "Matched results" !> add count
                         print *, "Package Found: ", array(size(array)-3), array(size(array)-2), array(size(array)-1)
