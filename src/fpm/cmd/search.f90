@@ -84,6 +84,7 @@ module fpm_cmd_search
         !> add to search only in the local/global registry
         !> for description search
         !> fix all the version search in global and add docs for parameters.
+        !> add globbing support for global search   
         !> description1 from fpm.toml and description2 from README.md
         !> name, license, version, description1 from fpm.toml
         !> description2 from README.md (if exists)
@@ -119,13 +120,12 @@ module fpm_cmd_search
         else 
             call fpm_stop(1, "Invalid package data returned"); return
         end if
-        ! print *, "Searching in local registry is not implemented yet for all parameters."
     end subroutine cmd_search
 
     subroutine search_package(namespace,package,version)
         type(fpm_global_settings)             :: global_settings
         type(error_t), allocatable            :: error
-        character(:), allocatable, intent(in) :: namespace,package,version
+        character(:), allocatable, intent(in) :: namespace, package, version
         character(:), allocatable             :: path,array(:)
         character(:), allocatable             :: wild
         type(string_t), allocatable           :: file_names(:)
@@ -156,8 +156,7 @@ module fpm_cmd_search
             wild = wild//"/?.?.?"
         end if
         wild = wild//"/fpm.toml"
-        ! print *, wild
-        print *, "Package Search in Local Registry:"
+        print *, "Searching packages in Local Registry:"
 
         ! Scan directory for packages
         call list_files(path, file_names,recurse=.true.)

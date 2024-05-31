@@ -732,21 +732,21 @@ contains
             & --sort-by " " &
             & --sort " " &
             & --', help_search, version_text)
+
             query = sget('query')
-            page = sget('page')
-            registry = sget('registry')
             namespace = sget('namespace')
-            package_version = sget('package_version')
             package = sget('package')
+            package_version = sget('package_version')
             license = sget('license')
+            registry = sget('registry')
+            page = sget('page')
             limit = sget('limit')
             sort_by = sget('sort-by')
             sort = sget('sort')
 
             block
-                if (query=='') then
-                    call fpm_stop(2, 'Query must be specified on the search subcommand.')
-                end if
+                
+                if (query==' ') query=''
                 if (page=='') page='1'
                 if (package==' ') package=''
                 if (license==' ') license=''
