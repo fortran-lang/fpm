@@ -726,6 +726,7 @@ contains
             & --registry " " &
             & --namespace " " &
             & --package " " &
+            & --package_version " " &
             & --license " " &
             & --limit " " &
             & --sort-by " " &
@@ -735,7 +736,7 @@ contains
             page = sget('page')
             registry = sget('registry')
             namespace = sget('namespace')
-            package_version = sget('version')
+            package_version = sget('package_version')
             package = sget('package')
             license = sget('license')
             limit = sget('limit')

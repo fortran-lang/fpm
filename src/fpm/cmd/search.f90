@@ -13,7 +13,7 @@ module fpm_cmd_search
                             canon_path, dirname, list_files, is_hidden_file
     use fpm_git, only: git_archive
     use fpm_downloader, only: downloader_t
-    use fpm_strings, only: string_t, string_array_contains, split, str
+    use fpm_strings, only: string_t, string_array_contains, split, str,glob
     use fpm, only: build_model
     use fpm_error, only : error_t, fatal_error, fpm_stop
     use jonquil, only : json_object
@@ -80,6 +80,8 @@ module fpm_cmd_search
                     & // '&sort='//settings%sort
         
         !> search parameters: name, namespace, version, license, query -> (description1, description2)
+        !> namespace,version,package from url. 
+        !> description1 from fpm.toml and description2 from README.md
         !> name, license, version, description1 from fpm.toml
         !> description2 from README.md (if exists)
         !> order manipulation parameters: page, sort, sort_by, limit
@@ -92,9 +94,9 @@ module fpm_cmd_search
         if (allocated(error)) then
             call fpm_stop(1, "Error retrieving package data from registry: "//settings%registry); return
         end if
-        
+        ! print *, settings%version
 
-        call search_namespace(settings%namespace)
+        call search_package(settings%namespace, settings%package, settings%version)
         if (json%has_key("packages")) then
             !> Better method to display the package data
             ! call get_value(json, 'packages', array)
@@ -112,17 +114,18 @@ module fpm_cmd_search
         else 
             call fpm_stop(1, "Invalid package data returned"); return
         end if
-        print *, "Searching in local registry is not implemented yet for all parameters."
+        ! print *, "Searching in local registry is not implemented yet for all parameters."
     end subroutine cmd_search
 
-    subroutine search_namespace(namespace)
+    subroutine search_package(namespace,package,version)
         type(fpm_global_settings)             :: global_settings
         type(error_t), allocatable            :: error
-        character(:), allocatable, intent(in) :: namespace
-        character(:), allocatable             :: path
-        character(:), allocatable             :: array(:)
+        character(:), allocatable, intent(in) :: namespace,package,version
+        character(:), allocatable             :: path,array(:)
+        character(:), allocatable             :: wild
         type(string_t), allocatable           :: file_names(:)
         integer :: i,j
+        logical :: result
         
 
         call get_global_settings(global_settings, error)
@@ -131,33 +134,43 @@ module fpm_cmd_search
         end if
 
         ! print *,global_settings%registry_settings%cache_path
-        print *, "Searching for namespace: ", namespace
+        path = global_settings%registry_settings%cache_path
 
-        if (exists(join_path(global_settings%registry_settings%cache_path, namespace))) then
-            ! print *, "Namespace: ", namespace
-            ! path = join_path(global_settings%registry_settings%cache_path, namespace)
-            path = global_settings%registry_settings%cache_path
-
-            ! Scan directory for sources
-            call list_files(path, file_names,recurse=.true.)
-            ! print *, "Found "//str(size(file_names))//" package(s) in namespace in the local registry."
-            do i=1,size(file_names)
-                if (.not.is_hidden_file(file_names(i)%s)) then
-                    call split(file_names(i)%s,array,'/')
-                    if (array(size(array)) == "fpm.toml") then
-                        print *, "Package: ", array(size(array)-3), array(size(array)-2), array(size(array)-1), file_names(i)%s
-                        !> read the toml file from the path file_names(i)%s
-                    end if
-                    ! end if
-                    ! print *, "Package: ", array(size(array))
-                    ! print *, "Add as Dependency: "
-                    ! print *, array(size(array)), " = { namespace = '", namespace, "' }"
-                end if
-            end do
+        if (namespace /= "") then
+            wild = path//"/"//namespace
         else 
-            print *, "Namespace not found in local registry. Searching remote registry."
+            wild = path//"/*"
         end if
+        if (package /= "") then
+            wild = wild//"/"//package
+        else 
+            wild = wild//"/*"
+        end if
+        if (version /= "") then
+            wild = wild//"/"//version
+        else 
+            wild = wild//"/?.?.?"
+        end if
+        wild = wild//"/fpm.toml"
+        ! print *, "Path: ", wild
 
-    end subroutine search_namespace
+        ! Scan directory for sources
+        call list_files(path, file_names,recurse=.true.)
+        do i=1,size(file_names)
+            if (.not.is_hidden_file(file_names(i)%s)) then
+                call split(file_names(i)%s,array,'/')
+                if (array(size(array)) == "fpm.toml") then
+                    result = glob(file_names(i)%s,wild)
+                    if (result) then
+                        ! print *, "Matched results" !> add count
+                        print *, "Package: ", array(size(array)-3), array(size(array)-2), array(size(array)-1)
+                    end if
+                    !> read the toml file from the path file_names(i)%s for data and path
+                end if
+                ! print *, "Add as Dependency: "
+                ! print *, array(size(array)), " = { namespace = '", namespace, "' }"
+            end if
+        end do
+    end subroutine search_package
   end
   
