@@ -99,18 +99,19 @@ module fpm_cmd_search
         call search_package(settings%namespace, settings%package, settings%version)
         if (json%has_key("packages")) then
             !> Better method to display the package data
-            ! call get_value(json, 'packages', array)
-            ! print '(A,I0,A)', ' Found ', len(array), ' packages:'
-            ! do ii=1, len(array)
-            !     call get_value(array, ii, p)
-            !     call get_value(p, 'name', name)
-            !     call get_value(p, 'namespace', namespace)
-            !     call get_value(p, 'description', description)
-            !     print *, "Name: ", name
-            !     print *, "namespace: ", namespace
-            !     print *, "Description: ", description
-            !     print *, ""
-            ! end do
+            call get_value(json, 'packages', array)
+            print *, ""
+            print '(A,I0,A)', ' Found ', len(array), ' packages:'
+            do ii=1, len(array)
+                call get_value(array, ii, p)
+                call get_value(p, 'name', name)
+                call get_value(p, 'namespace', namespace)
+                call get_value(p, 'description', description)
+                print *, "Name: ", name
+                print *, "namespace: ", namespace
+                print *, "Description: ", description
+                print *, ""
+            end do
         else 
             call fpm_stop(1, "Invalid package data returned"); return
         end if
