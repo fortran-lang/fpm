@@ -133,7 +133,6 @@ module fpm_cmd_search
             call fpm_stop(1, "Error retrieving global settings"); return
         end if
 
-        ! print *,global_settings%registry_settings%cache_path
         path = global_settings%registry_settings%cache_path
 
         if (namespace /= "") then
@@ -152,9 +151,8 @@ module fpm_cmd_search
             wild = wild//"/?.?.?"
         end if
         wild = wild//"/fpm.toml"
-        ! print *, "Path: ", wild
 
-        ! Scan directory for sources
+        ! Scan directory for packages
         call list_files(path, file_names,recurse=.true.)
         do i=1,size(file_names)
             if (.not.is_hidden_file(file_names(i)%s)) then
@@ -163,12 +161,10 @@ module fpm_cmd_search
                     result = glob(file_names(i)%s,wild)
                     if (result) then
                         ! print *, "Matched results" !> add count
-                        print *, "Package: ", array(size(array)-3), array(size(array)-2), array(size(array)-1)
+                        print *, "Package Found: ", array(size(array)-3), array(size(array)-2), array(size(array)-1)
                     end if
                     !> read the toml file from the path file_names(i)%s for data and path
                 end if
-                ! print *, "Add as Dependency: "
-                ! print *, array(size(array)), " = { namespace = '", namespace, "' }"
             end if
         end do
     end subroutine search_package
