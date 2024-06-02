@@ -467,7 +467,7 @@ subroutine resolve_metapackage_model(model,package,settings,error)
     end if
 
     ! MPI
-    if (package%meta%mpi%on) then
+    if (package%meta%mpi%on .and. any(model%compiler%fc==["mpifort","mpif90 ","mpif77 "])) then
         call add_metapackage_model(model,package,settings,"mpi",error)
         if (allocated(error)) return
     endif
