@@ -255,13 +255,13 @@ jobs:
       run: |
         cd ./ci
         makensis fpm-installer.nsi
-        move fpm-installer.exe fpm-installer-${{ env.VERSION }}.exe
+        move fpm-installer.exe fpm-installer-${{ env.VERSION }}-gcc-${{ matrix.gcc_v }}.exe
 
     - name: Upload artifact
       uses: actions/upload-artifact@v4
       with:
-        name: fpm-installer
-        path: ci/fpm-installer-${{ env.VERSION }}.exe
+        name: fpm-installer-gcc-${{ matrix.gcc_v }}
+        path: ci/fpm-installer-${{ env.VERSION }}-gcc-${{ matrix.gcc_v }}.exe
 
   upload-artifacts:
     if: ${{ github.event_name == 'release' && contains(github.ref, 'v') || github.event_name == 'push' }}
