@@ -17,9 +17,10 @@ module fpm_cmd_search
     use fpm, only: build_model
     use fpm_error, only : error_t, fatal_error, fpm_stop
     use jonquil, only : json_object
-    use tomlf, only : toml_array, get_value, len, toml_key
+    use tomlf, only : toml_array, get_value, len, toml_key, toml_loads, toml_table, &
+                    toml_serializer,toml_value
+    use tomlf_utils_io, only : read_whole_file
     use fpm_settings, only: fpm_global_settings, get_global_settings, official_registry_base_url
-    use fpm_versioning, only: version_t, new_version
   
     implicit none
     private
@@ -32,7 +33,7 @@ module fpm_cmd_search
         !> Settings for the search command.
         class(fpm_search_settings), intent(in) :: settings
         type(fpm_global_settings) :: global_settings
-        character(:), allocatable :: tmp_file, name, namespace, description, query_url,package_version
+        character(:), allocatable :: tmp_file, name, namespace, description, query_url, package_version
         type(toml_key), allocatable :: list(:)
         integer :: stat, unit, ii
         type(json_object) :: json
@@ -80,61 +81,55 @@ module fpm_cmd_search
                     & // '&sort_by='//settings%sort_by &
                     & // '&sort='//settings%sort
         
-        !> search parameters: name, namespace, version, license, query -> (description1, description2)
-        !> namespace,version,package from url. 
+        !> search parameters: name, namespace, version, license, query -> description
         !> add to search only in the local/global registry
-        !> for description search
-        !> fix all the version search in global and add docs for parameters.
-        !> add globbing support for global search   
-        !> description1 from fpm.toml and description2 from README.md
-        !> name, license, version, description1 from fpm.toml
-        !> description2 from README.md (if exists)
+        !> add docs for parameters.
+        !> add globbing support for global search
+        !> name, license, version, description from fpm.toml
         !> order manipulation parameters: page, sort, sort_by, limit
         !> show page number and total_pages
 
         !> Get the package data from the registry
-        call downloader%get_pkg_data(query_url, version, tmp_file, json, error)
-        close (unit)
-        if (allocated(error)) then
-            call fpm_stop(1, "Error retrieving package data from registry: "//settings%registry); return
-        end if
+        ! call downloader%get_pkg_data(query_url, version, tmp_file, json, error)
+        ! close (unit)
+        ! if (allocated(error)) then
+        !     call fpm_stop(1, "Error retrieving package data from registry: "//settings%registry); return
+        ! end if
         ! print *, settings%version
 
-        call search_package(settings%namespace, settings%package, settings%version)
-        if (.not.json%has_key("packages")) then
-            !> Better method to display the package data
-            call get_value(json, 'packages', array)
-            print *, ""
-            print '(A,I0,A)', ' Found ', len(array), ' packages:'
-            do ii=1, len(array)
-                call get_value(array, ii, p)
-                call get_value(p, 'name', name)
-                call get_value(p, 'namespace', namespace)
-                call get_value(p, 'description', description)
-                call get_value(p, 'version', package_version)
-                print *, "Name: ", name
-                print *, "namespace: ", namespace
-                print *, "Description: ", description
-                print *, "version: ", package_version
-                print *, ""
-            end do
-        else 
-            call fpm_stop(1, "Invalid package data returned"); return
-        end if
+        call search_package(settings%query, settings%namespace, settings%package, settings%version)
+        ! if (.not.json%has_key("packages")) then
+        !     !> Better method to display the package data
+        !     call get_value(json, 'packages', array)
+        !     print *, ""
+        !     print '(A,I0,A)', ' Found ', len(array), ' packages:'
+        !     do ii=1, len(array)
+        !         call get_value(array, ii, p)
+        !         call get_value(p, 'name', name)
+        !         call get_value(p, 'namespace', namespace)
+        !         call get_value(p, 'description', description)
+        !         call get_value(p, 'version', package_version)
+        !         print *, "Name: ", name
+        !         print *, "namespace: ", namespace
+        !         print *, "Description: ", description
+        !         print *, "version: ", package_version
+        !         print *, ""
+        !     end do
+        ! else 
+        !     call fpm_stop(1, "Invalid package data returned"); return
+        ! end if
     end subroutine cmd_search
 
-    subroutine search_package(namespace,package,version)
+    subroutine search_package(query,namespace,package,version)
         type(fpm_global_settings)             :: global_settings
         type(error_t), allocatable            :: error
-        ! type(version_t)                       :: version_check
-        ! type(new_version)                     :: version_check
-        character(:), allocatable, intent(in) :: namespace, package, version
-        character(:), allocatable             :: path,array(:)
-        character(:), allocatable             :: wild
+        character(:), allocatable, intent(in) :: namespace, package, version, query
+        character(:), allocatable             :: path,array(:), versioncheck(:), toml_package_data
+        character(:), allocatable             :: description, wild
         type(string_t), allocatable           :: file_names(:)
-        integer :: i,j
+        type(toml_table), allocatable         :: table
+        integer :: i, j, unit, stat
         logical :: result
-        
 
         call get_global_settings(global_settings, error)
         if (allocated(error)) then
@@ -161,8 +156,6 @@ module fpm_cmd_search
         wild = wild//"/fpm.toml"
         print *, "Searching packages in Local Registry:"
 
-        !> globbing breaks for 2digit version numbers 2.10.1
-
         ! Scan directory for packages
         call list_files(path, file_names,recurse=.true.)
         do i=1,size(file_names)
@@ -170,16 +163,30 @@ module fpm_cmd_search
                 call split(file_names(i)%s,array,'/')
                 if (array(size(array)) == "fpm.toml") then
                     result = glob(file_names(i)%s,wild)
-                    ! call new_version_from_string(version_check,array(size(array)-1), error)
-                    ! call version_check%new_version_from_string(array(size(array)-1), error)
-                    if (allocated(error)) then
-                        call fpm_stop(1, "Error parsing version"); return
-                    end if
-                    if (result) then
-                        ! print *, "Matched results" !> add count
+                    call split(array(size(array)-1),versioncheck,'.')
+                    if (size(versioncheck) > 2) then
                         print *, "Package Found: ", array(size(array)-3), array(size(array)-2), array(size(array)-1)
+                        
+                        !> query search for description
+                        call read_whole_file(file_names(i)%s, toml_package_data, stat)
+                        if (stat /= 0) then
+                        call fatal_error(error, "Error reading file: "//file_names(i)%s); return
+                        end if
+                        ! Load TOML data into a table
+                        call toml_loads(table,toml_package_data)
+                        if (allocated(error)) then
+                        call fpm_stop(1, "Error loading toml file"); return
+                        end if
+                        if (allocated(table)) then
+                            call get_value(table, 'description', description)
+                            print *, "Description: ", description
+                            if (query /="") then
+
+                            end if
+                        else 
+                            call fpm_stop(1, "Error Searching for the query"); return
+                        end if
                     end if
-                    !> read the toml file from the path file_names(i)%s for data and path
                 end if
             end if
         end do
