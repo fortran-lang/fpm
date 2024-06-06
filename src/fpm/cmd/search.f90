@@ -165,7 +165,7 @@ module fpm_cmd_search
                     result = glob(file_names(i)%s,wild)
                     call split(array(size(array)-1),versioncheck,'.')
                     if (size(versioncheck) > 2) then
-                        print *, "Package Found: ", array(size(array)-3), array(size(array)-2), array(size(array)-1)
+                        ! print *, "Package Found: ", array(size(array)-3), array(size(array)-2), array(size(array)-1)
                         
                         !> query search for description
                         call read_whole_file(file_names(i)%s, toml_package_data, stat)
@@ -179,9 +179,16 @@ module fpm_cmd_search
                         end if
                         if (allocated(table)) then
                             call get_value(table, 'description', description)
-                            print *, "Description: ", description
+                            ! print *, "Description: ", description
                             if (query /="") then
-
+                                result = glob(description,query)
+                                if (result) then
+                                    print *, "Package Found: ", array(size(array)-3), array(size(array)-2), array(size(array)-1)
+                                    print *, "Description: ", description
+                                end if
+                            else
+                                print *, "Package Found: ", array(size(array)-3), array(size(array)-2), array(size(array)-1)
+                                print *, "Description: ", description
                             end if
                         else 
                             call fpm_stop(1, "Error Searching for the query"); return
