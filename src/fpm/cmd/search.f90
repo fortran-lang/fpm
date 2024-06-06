@@ -88,19 +88,20 @@ module fpm_cmd_search
         if (json%has_key("packages")) then
             !> Shift to better method to display the package data
             call get_value(json, 'packages', array)
-            print *, ""
-            print '(A,I0,A)', ' Found ', len(array), ' packages:'
+            print *
+            print '(A,I0,A)', ' Found ', len(array), ' packages in fpm - registry:'
+            print *
             do ii=1, len(array)
                 call get_value(array, ii, p)
                 call get_value(p, 'name', name)
                 call get_value(p, 'namespace', namespace)
                 call get_value(p, 'description', description)
-                ! call get_value(p, 'version', package_version)
+                call get_value(p, 'version', package_version)
                 print *, "Name: ", name
                 print *, "namespace: ", namespace
                 print *, "Description: ", description
-                ! print *, "version: ", package_version
-                print *, ""
+                print *, "version: ", package_version
+                print *
             end do
         else 
             call fpm_stop(1, "Invalid package data returned"); return
@@ -141,7 +142,9 @@ module fpm_cmd_search
             wild = wild//"/?.?.?"
         end if
         wild = wild//"/fpm.toml"
+        print *
         print *, "Searching packages in Local Registry:"
+        print *
 
         ! Scan directory for packages
         call list_files(path, file_names,recurse=.true.)
@@ -162,22 +165,29 @@ module fpm_cmd_search
                         if (allocated(error)) then
                         call fpm_stop(1, "Error loading toml file"); return
                         end if
+
                         if (allocated(table)) then
                             call get_value(table, 'description', description)
                             if (query /="") then
                                 result = glob(description,query)
                                 if (result) then
-                                    print *, "Package Found: ", array(size(array)-3), array(size(array)-2), array(size(array)-1)
+                                    print *, "Name: ", array(size(array)-2)
+                                    print *, "Namespace: ", array(size(array)-3)
                                     print *, "Description: ", description
+                                    print *, "Version: ", array(size(array)-1)
                                 end if
                             else
-                                print *, "Package Found: ", array(size(array)-3), array(size(array)-2), array(size(array)-1)
+                                print *, "Name: ", array(size(array)-2)
+                                print *, "Namespace: ", array(size(array)-3)
                                 print *, "Description: ", description
+                                print *, "Version: ", array(size(array)-1)
                             end if
+                            print *
                         else 
                             call fpm_stop(1, "Error Searching for the query"); return
                         end if
                     end if
+                    
                 end if
             end if
         end do
