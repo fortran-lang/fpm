@@ -551,9 +551,7 @@ subroutine cmd_run(settings,test)
     toomany= size(settings%name)==0 .and. size(executables)>1
     if ( any(.not.found) &
     & .or. &
-    & ( (toomany .and. .not.test) .or.  (toomany .and. settings%runner /= '') ) &
-    & .and. &
-    & .not.settings%list) then
+    &   (toomany .and. .not.test) .and. .not. settings%list) then
         line=join(settings%name)
         if(line/='.')then ! do not report these special strings
            if(any(.not.found))then
