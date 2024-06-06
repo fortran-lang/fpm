@@ -52,18 +52,6 @@ module fpm_cmd_search
             call fpm_stop(1, "Error retrieving global settings"); return
         end if
 
-        ! print *,global_settings%registry_settings%cache_path
-        ! print *,global_settings%registry_settings%path
-        ! print *,global_settings%registry_settings%url
-        ! print *,global_settings%path_to_config_folder
-        
-        ! new function to search package names, namespace.
-        ! query general term for description (both toml and readme)
-        ! search by namespace, package, license
-        ! search by namespace , package.
-        ! from fpm.toml -> description and license
-        ! README.md -> description
-
         !> Generate a temporary file to store the downloaded package search data
         tmp_file = get_temp_filename()
         open (newunit=unit, file=tmp_file, action='readwrite', iostat=stat)
@@ -90,34 +78,33 @@ module fpm_cmd_search
         !> show page number and total_pages
 
         !> Get the package data from the registry
-        ! call downloader%get_pkg_data(query_url, version, tmp_file, json, error)
-        ! close (unit)
-        ! if (allocated(error)) then
-        !     call fpm_stop(1, "Error retrieving package data from registry: "//settings%registry); return
-        ! end if
-        ! print *, settings%version
+        call downloader%get_pkg_data(query_url, version, tmp_file, json, error)
+        close (unit)
+        if (allocated(error)) then
+            call fpm_stop(1, "Error retrieving package data from registry: "//settings%registry); return
+        end if
 
         call search_package(settings%query, settings%namespace, settings%package, settings%version)
-        ! if (.not.json%has_key("packages")) then
-        !     !> Better method to display the package data
-        !     call get_value(json, 'packages', array)
-        !     print *, ""
-        !     print '(A,I0,A)', ' Found ', len(array), ' packages:'
-        !     do ii=1, len(array)
-        !         call get_value(array, ii, p)
-        !         call get_value(p, 'name', name)
-        !         call get_value(p, 'namespace', namespace)
-        !         call get_value(p, 'description', description)
-        !         call get_value(p, 'version', package_version)
-        !         print *, "Name: ", name
-        !         print *, "namespace: ", namespace
-        !         print *, "Description: ", description
-        !         print *, "version: ", package_version
-        !         print *, ""
-        !     end do
-        ! else 
-        !     call fpm_stop(1, "Invalid package data returned"); return
-        ! end if
+        if (json%has_key("packages")) then
+            !> Shift to better method to display the package data
+            call get_value(json, 'packages', array)
+            print *, ""
+            print '(A,I0,A)', ' Found ', len(array), ' packages:'
+            do ii=1, len(array)
+                call get_value(array, ii, p)
+                call get_value(p, 'name', name)
+                call get_value(p, 'namespace', namespace)
+                call get_value(p, 'description', description)
+                ! call get_value(p, 'version', package_version)
+                print *, "Name: ", name
+                print *, "namespace: ", namespace
+                print *, "Description: ", description
+                ! print *, "version: ", package_version
+                print *, ""
+            end do
+        else 
+            call fpm_stop(1, "Invalid package data returned"); return
+        end if
     end subroutine cmd_search
 
     subroutine search_package(query,namespace,package,version)
@@ -164,9 +151,7 @@ module fpm_cmd_search
                 if (array(size(array)) == "fpm.toml") then
                     result = glob(file_names(i)%s,wild)
                     call split(array(size(array)-1),versioncheck,'.')
-                    if (size(versioncheck) > 2) then
-                        ! print *, "Package Found: ", array(size(array)-3), array(size(array)-2), array(size(array)-1)
-                        
+                    if (size(versioncheck) > 2) then             
                         !> query search for description
                         call read_whole_file(file_names(i)%s, toml_package_data, stat)
                         if (stat /= 0) then
@@ -179,7 +164,6 @@ module fpm_cmd_search
                         end if
                         if (allocated(table)) then
                             call get_value(table, 'description', description)
-                            ! print *, "Description: ", description
                             if (query /="") then
                                 result = glob(description,query)
                                 if (result) then
