@@ -235,7 +235,7 @@ character(*), parameter :: &
     flag_lfortran_opt = " --fast", &
     flag_lfortran_openmp = " --openmp", &
     flag_lfortran_implicit_typing = " --implicit-typing", &
-    flag_lfortran_implicit_external = " --allow-implicit-interface", &
+    flag_lfortran_implicit_external = " --implicit-interface", &
     flag_lfortran_fixed_form = " --fixed-form"
 
 character(*), parameter :: &
