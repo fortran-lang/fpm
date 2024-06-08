@@ -192,6 +192,10 @@ jobs:
     runs-on: windows-latest
     needs:
       - build
+    strategy:
+      fail-fast: false
+      matrix:
+        gcc_v: [10,11,12]
     
     steps:
     - uses: actions/checkout@v4
@@ -200,7 +204,7 @@ jobs:
       uses: actions/download-artifact@v4
       with:
         path: ${{ github.workspace }}
-        merge-multiple: true
+        pattern: fpm-*-windows-*-gcc-${{ matrix.gcc_v }}.exe
 
     - name: Get version (normal)
       if: github.event_name != 'release'
@@ -230,7 +234,7 @@ jobs:
     - name: Fetch Windows executable
       shell: msys2 {0}
       run: |
-        cp fpm-*/fpm*.exe ./ci/fpm.exe
+        cp fpm-*/fpm-*-windows-*-gcc-${{ matrix.gcc_v }}.exe ./ci/fpm.exe
 
     - name: Fetch Git for Windows
       shell: msys2 {0}
