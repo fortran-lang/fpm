@@ -83,7 +83,9 @@ module fpm_cmd_search
         if (allocated(error)) then
             call fpm_stop(1, "Error retrieving package data from registry: "//settings%registry); return
         end if
-
+        print *
+        print *, "Searching packages in Local Registry:"
+        print *
         call search_package(settings%query, settings%namespace, settings%package, settings%version)
         if (json%has_key("packages")) then
             !> Shift to better method to display the package data
@@ -91,6 +93,7 @@ module fpm_cmd_search
             print *
             print '(A,I0,A)', ' Found ', len(array), ' packages in fpm - registry:'
             print *
+            ! call print_packages(array)
             do ii=1, len(array)
                 call get_value(array, ii, p)
                 call get_value(p, 'name', name)
@@ -124,27 +127,8 @@ module fpm_cmd_search
             call fpm_stop(1, "Error retrieving global settings"); return
         end if
 
-        path = global_settings%registry_settings%cache_path
-
-        if (namespace /= "") then
-            wild = path//"/"//namespace
-        else 
-            wild = path//"/*"
-        end if
-        if (package /= "") then
-            wild = wild//"/"//package
-        else 
-            wild = wild//"/*"
-        end if
-        if (version /= "") then
-            wild = wild//"/"//version
-        else 
-            wild = wild//"/?.?.?"
-        end if
-        wild = wild//"/fpm.toml"
-        print *
-        print *, "Searching packages in Local Registry:"
-        print *
+        path = global_settings%registry_settings%cache_path        
+        wild = package_search_wild(path,namespace,package,version)
 
         ! Scan directory for packages
         call list_files(path, file_names,recurse=.true.)
@@ -187,10 +171,31 @@ module fpm_cmd_search
                             call fpm_stop(1, "Error Searching for the query"); return
                         end if
                     end if
-                    
                 end if
             end if
         end do
     end subroutine search_package
+
+    function package_search_wild(path,namespace,package,version) result(wild)
+        character(:), allocatable, intent(in) :: namespace, package, version, path
+        character(:), allocatable :: wild
+        character(:), allocatable :: array(:)
+        if (namespace /= "") then
+            wild = path//"/"//namespace
+        else 
+            wild = path//"/*"
+        end if
+        if (package /= "") then
+            wild = wild//"/"//package
+        else 
+            wild = wild//"/*"
+        end if
+        if (version /= "") then
+            wild = wild//"/"//version
+        else 
+            wild = wild//"/?.?.?"
+        end if
+        wild = wild//"/fpm.toml"
+    end function package_search_wild
   end
   
