@@ -81,13 +81,29 @@ do
       echo "$filename"
       "$fpm" ${cmdrun[$j]} $filename 
       test -e $filename.txt
+      # non-i-th tests should not have run
       for k in ${others[@]}
       do
          test ! -e ${targets[$k]}$k.txt   
       done
    done
 done
+
+# Test building all test targets
+cmdrun=( "test" "test --runner time" ) 
+for j in {0..1}
+do
+  rm -f *.txt
+  "$fpm" ${cmdrun[$j]} 
+  # all tests should have run
+  for k in ${cases[@]}
+  do
+     test -e test$k.txt   
+  done
+done
+
 popd 
+
 
 pushd auto_discovery_off
 "$fpm" build
