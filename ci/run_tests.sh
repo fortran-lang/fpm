@@ -89,7 +89,8 @@ do
    done
 done
 
-# Test building all test targets
+# Test building all test targets and with runner
+if [[ "$(which time)" ]]; then
 cmdrun=( "test" "test --runner time" ) 
 for j in {0..1}
 do
@@ -101,6 +102,7 @@ do
      test -e test$k.txt   
   done
 done
+fi
 
 popd 
 
