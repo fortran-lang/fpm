@@ -29,11 +29,11 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - os: ubuntu-24.04
+          - os: ubuntu-latest
             mpi: intel
-          - os: ubuntu-24.04
+          - os: ubuntu-latest
             mpi: openmpi
-          - os: ubuntu-24.04
+          - os: ubuntu-latest
             mpi: mpich
           - os: macos-12
             mpi: openmpi
