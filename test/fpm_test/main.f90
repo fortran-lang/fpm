@@ -3,6 +3,7 @@ program fpm_testing
     use, intrinsic :: iso_fortran_env, only : error_unit
     use testsuite, only : run_testsuite, new_testsuite, testsuite_t, select_suite, run_selected
     use test_toml, only : collect_toml
+    use test_compiler, only : collect_compiler
     use test_manifest, only : collect_manifest
     use test_filesystem, only : collect_filesystem
     use test_source_parsing, only : collect_source_parsing
@@ -24,6 +25,7 @@ program fpm_testing
 
     suite = [ &
         & new_testsuite("fpm_toml", collect_toml), &
+        & new_testsuite("fpm_compiler", collect_compiler), &
         & new_testsuite("fpm_manifest", collect_manifest), &
         & new_testsuite("fpm_filesystem", collect_filesystem), &
         & new_testsuite("fpm_source_parsing", collect_source_parsing), &
