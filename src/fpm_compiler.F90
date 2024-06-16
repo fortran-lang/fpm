@@ -1038,14 +1038,7 @@ subroutine new_compiler(self, fc, cc, cxx, echo, verbose)
     else
       call get_default_cxx_compiler(self%fc, self%cxx)
     end if
-    
-    
-    quad = has_quad_precision(self)
-    
-    print *, 'has quad=',quad
-    
-    stop 'temporary: new compiler'
-    
+        
 end subroutine new_compiler
 
 
