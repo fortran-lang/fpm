@@ -1021,8 +1021,6 @@ subroutine new_compiler(self, fc, cc, cxx, echo, verbose)
     logical, intent(in) :: echo
     !> Verbose mode: dump compiler output
     logical, intent(in) :: verbose
-    
-    logical :: quad
 
     self%id = get_compiler_id(fc)
 
@@ -1040,7 +1038,7 @@ subroutine new_compiler(self, fc, cc, cxx, echo, verbose)
     else
       call get_default_cxx_compiler(self%fc, self%cxx)
     end if
-        
+
 end subroutine new_compiler
 
 
