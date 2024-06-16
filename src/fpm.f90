@@ -470,7 +470,7 @@ else
 endif
 
 do i=1, size(targets)
-    if (targets(i)%ptr%target_type == FPM_TARGET_OBJECT .and. package%build%shared_library) then
+    if (targets(i)%ptr%target_type == FPM_TARGET_ARCHIVE .and. package%build%shared_library) then
         !> Build directory for saving object files.
         call model%compiler%generate_shared_library(model%package_name, targets(i)%ptr%output_dir)
         exit

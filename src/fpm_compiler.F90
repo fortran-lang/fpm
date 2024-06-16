@@ -1115,8 +1115,9 @@ subroutine generate_shared_library(self, package_name, output_dir)
     !> Output directory of object files.
     character(len=*), intent(in) :: output_dir
 
-    call run(self%fc // " --shared " // output_dir// "/" // package_name // "/*.o" // " -o " // "lib" // &
-        package_name // ".so", echo=self%echo, verbose=self%verbose)
+    call run(self%fc // " --shared " // " -o " // "lib" // package_name // ".so" // " " &
+        // output_dir // "/" // package_name // "/" // "lib" // package_name &
+            // ".a", echo=self%echo, verbose=self%verbose)
 end subroutine generate_shared_library
 
 
