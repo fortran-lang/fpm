@@ -46,6 +46,7 @@ use fpm_toml, only: serializable_t, toml_table, set_string, set_value, toml_stat
 implicit none
 public :: compiler_t, new_compiler, archiver_t, new_archiver, get_macros
 public :: debug
+public :: generate_shared_library
 
 enum, bind(C)
     enumerator :: &
@@ -114,6 +115,8 @@ contains
     procedure :: is_gnu
     !> Enumerate libraries, based on compiler and platform
     procedure :: enumerate_libraries
+    !> Function for generating shared library.
+    procedure :: generate_shared_library
 
     !> Serialization interface
     procedure :: serializable_is_same => compiler_is_same
@@ -1103,6 +1106,18 @@ subroutine compile_fortran(self, input, output, args, log_file, stat)
     call run(self%fc // " -c " // input // " " // args // " -o " // output, &
         & echo=self%echo, verbose=self%verbose, redirect=log_file, exitstat=stat)
 end subroutine compile_fortran
+
+subroutine generate_shared_library(self, package_name, output_dir)
+    !> Instance of the compiler object
+    class(compiler_t), intent(in) :: self
+    !> Name of the package.
+    character(len=*), intent(in) :: package_name
+    !> Output directory of object files.
+    character(len=*), intent(in) :: output_dir
+
+    call run(self%fc // " --shared " // output_dir// "/" // package_name // "/*.o" // " -o " // "lib" // &
+        package_name // ".so", echo=self%echo, verbose=self%verbose)
+end subroutine generate_shared_library
 
 
 !> Compile a C object

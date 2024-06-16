@@ -12,12 +12,14 @@ use fpm_filesystem, only: is_dir, join_path, list_files, exists, &
 use fpm_model, only: fpm_model_t, srcfile_t, show_model, fortran_features_t, &
                     FPM_SCOPE_UNKNOWN, FPM_SCOPE_LIB, FPM_SCOPE_DEP, &
                     FPM_SCOPE_APP, FPM_SCOPE_EXAMPLE, FPM_SCOPE_TEST
-use fpm_compiler, only: new_compiler, new_archiver, set_cpp_preprocessor_flags
+use fpm_compiler, only: new_compiler, new_archiver, set_cpp_preprocessor_flags, &
+                        generate_shared_library
 
 
 use fpm_sources, only: add_executable_sources, add_sources_from_dir
 use fpm_targets, only: targets_from_sources, build_target_t, build_target_ptr, &
-                        FPM_TARGET_EXECUTABLE, FPM_TARGET_ARCHIVE
+                        FPM_TARGET_EXECUTABLE, FPM_TARGET_ARCHIVE, &
+                        FPM_TARGET_OBJECT
 use fpm_manifest, only : get_package_data, package_config_t
 use fpm_meta, only : resolve_metapackages
 use fpm_error, only : error_t, fatal_error, fpm_stop
@@ -467,6 +469,13 @@ else
     call build_package(targets,model,verbose=settings%verbose)
 endif
 
+do i=1, size(targets)
+    if (targets(i)%ptr%target_type == FPM_TARGET_OBJECT .and. package%build%shared_library) then
+        !> Build directory for saving object files.
+        call model%compiler%generate_shared_library(model%package_name, targets(i)%ptr%output_dir)
+        exit
+    end if
+enddo
 end subroutine cmd_build
 
 subroutine cmd_run(settings,test)
