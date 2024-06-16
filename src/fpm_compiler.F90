@@ -1461,7 +1461,7 @@ logical function check_fortran_source_runs(self, input) result(success)
         
     !> Run and retrieve exit code 
     if (stat==0) &
-    call run(exe,echo=.false., exitstat=stat)
+    call run(exe,echo=.false., exitstat=stat, verbose=.false., redirect=logf)
     
     !> Successful exit on 0 exit code
     success = stat==0
