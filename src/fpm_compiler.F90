@@ -119,6 +119,8 @@ contains
     procedure :: serializable_is_same => compiler_is_same
     procedure :: dump_to_toml => compiler_dump
     procedure :: load_from_toml => compiler_load
+    !> Fortran feature support
+    procedure :: check_fortran_source_runs
     !> Return compiler name
     procedure :: name => compiler_name
 
@@ -1017,6 +1019,8 @@ subroutine new_compiler(self, fc, cc, cxx, echo, verbose)
     logical, intent(in) :: echo
     !> Verbose mode: dump compiler output
     logical, intent(in) :: verbose
+    
+    logical :: quad
 
     self%id = get_compiler_id(fc)
 
@@ -1034,6 +1038,14 @@ subroutine new_compiler(self, fc, cc, cxx, echo, verbose)
     else
       call get_default_cxx_compiler(self%fc, self%cxx)
     end if
+    
+    
+    quad = has_quad_precision(self)
+    
+    print *, 'has quad=',quad
+    
+    stop 'temporary: new compiler'
+    
 end subroutine new_compiler
 
 
@@ -1424,6 +1436,53 @@ pure function compiler_name(self) result(name)
    end select
 end function compiler_name
 
-
+!> Run a single-source Fortran program using the current compiler
+!> Compile a Fortran object
+logical function check_fortran_source_runs(self, input) result(success)
+    !> Instance of the compiler object
+    class(compiler_t), intent(in) :: self
+    !> Program Source 
+    character(len=*), intent(in) :: input
+    
+    integer :: stat,unit
+    character(:), allocatable :: source,object,logf,exe
+    
+    success = .false.
+   
+    !> Create temporary source file
+    exe    = get_temp_filename()
+    source = exe//'.f90'
+    object = exe//'.o'
+    logf   = exe//'.log'
+    open(newunit=unit, file=source, action='readwrite', iostat=stat)
+    if (stat/=0) return
+   
+    !> Write contents
+    write(unit,*) input
+    close(unit)  
+    
+    !> Compile and link program 
+    call self%compile_fortran(source, object, self%get_default_flags(release=.false.), logf, stat)
+    if (stat==0) &
+    call self%link(exe, self%get_default_flags(release=.false.)//" "//object, logf, stat)
+        
+    !> Run and retrieve exit code 
+    if (stat==0) &
+    call run(exe,echo=.false., exitstat=stat)
+    
+    !> Successful exit on 0 exit code
+    success = stat==0
+    
+    !> Delete files
+    open(newunit=unit, file=source, action='readwrite', iostat=stat)
+    close(unit,status='delete')
+    open(newunit=unit, file=object, action='readwrite', iostat=stat)
+    close(unit,status='delete')
+    open(newunit=unit, file=logf, action='readwrite', iostat=stat)
+    close(unit,status='delete')
+    open(newunit=unit, file=exe, action='readwrite', iostat=stat)
+    close(unit,status='delete')
+            
+end function check_fortran_source_runs
 
 end module fpm_compiler
