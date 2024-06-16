@@ -24,8 +24,7 @@ program fpm_testing
     stat = 0
 
     suite = [ &
-        & new_testsuite("fpm_toml", collect_toml), &
-        & new_testsuite("fpm_compiler", collect_compiler), &
+        & new_testsuite("fpm_toml", collect_toml), &        
         & new_testsuite("fpm_manifest", collect_manifest), &
         & new_testsuite("fpm_filesystem", collect_filesystem), &
         & new_testsuite("fpm_source_parsing", collect_source_parsing), &
@@ -35,7 +34,8 @@ program fpm_testing
         & new_testsuite("fpm_installer", collect_installer), &
         & new_testsuite("fpm_versioning", collect_versioning), &
         & new_testsuite("fpm_settings", collect_settings), &
-        & new_testsuite("fpm_os", collect_os) &
+        & new_testsuite("fpm_os", collect_os), &
+        & new_testsuite("fpm_compiler", collect_compiler) &
         & ]
 
     call get_argument(1, suite_name)
