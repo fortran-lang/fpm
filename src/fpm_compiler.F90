@@ -121,6 +121,8 @@ contains
     procedure :: load_from_toml => compiler_load
     !> Fortran feature support
     procedure :: check_fortran_source_runs
+    procedure :: with_xdp
+    procedure :: with_qp
     !> Return compiler name
     procedure :: name => compiler_name
 
@@ -1477,5 +1479,21 @@ logical function check_fortran_source_runs(self, input) result(success)
     close(unit,status='delete')
             
 end function check_fortran_source_runs
+
+!> Check if the current compiler supports 128-bit real precision 
+logical function with_qp(self)
+    !> Instance of the compiler object
+    class(compiler_t), intent(in) :: self
+    with_qp = self%check_fortran_source_runs &
+              ('if (selected_real_kind(33) == -1) stop 1; end')
+end function with_qp
+
+!> Check if the current compiler supports 80-bit "extended" real precision 
+logical function with_xdp(self)
+    !> Instance of the compiler object
+    class(compiler_t), intent(in) :: self
+    with_xdp = self%check_fortran_source_runs &
+               ('if (any(selected_real_kind(18) == [-1, selected_real_kind(33)])) stop 1; end')
+end function with_xdp
 
 end module fpm_compiler
