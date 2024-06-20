@@ -89,21 +89,25 @@ do
    done
 done
 
-# Test building all test targets and with runner
+# Test building all targets and with runner
 if [[ "$(which time)" ]]; then
-cmdrun=( "test" "test --runner time" ) 
-for j in {0..1}
+targets=( "run" "run --example" "test" )
+names=( "run" "example" "test" )
+cmdrun=( " " " --runner time" ) 
+for j in {0..2}
 do
-  rm -f *.txt
-  "$fpm" ${cmdrun[$j]} 
-  # all tests should have run
-  for k in ${cases[@]}
+  for i in {0..1}
   do
-     test -e test$k.txt   
+    rm -f *.txt
+    "$fpm" ${targets[$j]}${cmdrun[$i]} 
+    # all targets should have run
+    for k in ${cases[@]}
+    do
+       test -e ${names[$j]}$k.txt   
+    done
   done
 done
 fi
-
 popd 
 
 
