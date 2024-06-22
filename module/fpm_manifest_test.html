@@ -175,10 +175,10 @@
         <ul class="list-group list-group-flush">
             <li class="list-group-item">
               <ul class="list-inline">
-                  <li class="list-inline-item"><a href='fpm_toml.html'>fpm_toml</a></li>
-                  <li class="list-inline-item"><a href='fpm_manifest_executable.html'>fpm_manifest_executable</a></li>
                   <li class="list-inline-item"><a href='fpm_manifest_dependency.html'>fpm_manifest_dependency</a></li>
+                  <li class="list-inline-item"><a href='fpm_manifest_executable.html'>fpm_manifest_executable</a></li>
                   <li class="list-inline-item"><a href='fpm_error.html'>fpm_error</a></li>
+                  <li class="list-inline-item"><a href='fpm_toml.html'>fpm_toml</a></li>
               </ul>
             </li>
         </ul>
@@ -220,7 +220,7 @@
     <tbody>
         <tr>
             <td>
-              <span class="anchor" id="variable-dependency~5"></span>
+              <span class="anchor" id="variable-dependency"></span>
               type(<a href='../type/dependency_config_t.html'>dependency_config_t</a>),
             </td>
               <td>public,</td>
@@ -237,7 +237,7 @@
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-link~2"></span>
+              <span class="anchor" id="variable-link"></span>
               type(<a href='../type/string_t.html'>string_t</a>),
             </td>
               <td>public,</td>
@@ -271,7 +271,7 @@
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-name~17"></span>
+              <span class="anchor" id="variable-name~2"></span>
               character(len=:),
             </td>
               <td>public,</td>
@@ -314,37 +314,37 @@
           <tbody>
               <tr>
                 <td>  generic, public ::
-  <strong><a href='../type/test_config_t.html#boundprocedure-dump~7'>dump</a></strong> => <a href='/home/runner/work/fpm/fpm/fpm-doc/type/srcfile_t.html#boundprocedure-dump_to_toml~11'>dump_to_toml</a>, dump_to_file, dump_to_unit</td>
+  <strong><a href='../type/test_config_t.html#boundprocedure-dump~24'>dump</a></strong> => <a href='/home/runner/work/fpm/fpm/fpm-doc/type/srcfile_t.html#boundprocedure-dump_to_toml~7'>dump_to_toml</a>, dump_to_file, dump_to_unit</td>
                 <td></td>
               </tr>
               <tr>
                 <td>  procedure, public ::
-  <strong><a href='../type/executable_config_t.html#boundprocedure-dump_to_toml~9'>dump_to_toml</a></strong></td>
+  <strong><a href='../type/executable_config_t.html#boundprocedure-dump_to_toml'>dump_to_toml</a></strong></td>
                 <td></td>
               </tr>
               <tr>
                 <td>  procedure, public ::
-  <strong><a href='../type/test_config_t.html#boundprocedure-info~3'>info</a></strong></td>
+  <strong><a href='../type/test_config_t.html#boundprocedure-info~12'>info</a></strong></td>
                 <td>../../<p>Print information on this instance</p></td>
               </tr>
               <tr>
                 <td>  generic, public ::
-  <strong><a href='../type/test_config_t.html#boundprocedure-load~5'>load</a></strong> => <a href='/home/runner/work/fpm/fpm/fpm-doc/type/srcfile_t.html#boundprocedure-load_from_toml~11'>load_from_toml</a>, load_from_file, load_from_unit</td>
+  <strong><a href='../type/test_config_t.html#boundprocedure-load~22'>load</a></strong> => <a href='/home/runner/work/fpm/fpm/fpm-doc/type/srcfile_t.html#boundprocedure-load_from_toml~7'>load_from_toml</a>, load_from_file, load_from_unit</td>
                 <td></td>
               </tr>
               <tr>
                 <td>  procedure, public ::
-  <strong><a href='../type/executable_config_t.html#boundprocedure-load_from_toml~9'>load_from_toml</a></strong></td>
+  <strong><a href='../type/executable_config_t.html#boundprocedure-load_from_toml'>load_from_toml</a></strong></td>
                 <td></td>
               </tr>
               <tr>
                 <td>  generic, public ::
-  <strong><a href='../type/test_config_t.html#boundprocedure-operator%28%3D%3D%29~6'>operator(==)</a></strong> => <a href='/home/runner/work/fpm/fpm/fpm-doc/type/srcfile_t.html#boundprocedure-serializable_is_same~11'>serializable_is_same</a></td>
+  <strong><a href='../type/test_config_t.html#boundprocedure-operator%28%3D%3D%29~23'>operator(==)</a></strong> => <a href='/home/runner/work/fpm/fpm/fpm-doc/type/srcfile_t.html#boundprocedure-serializable_is_same~7'>serializable_is_same</a></td>
                 <td></td>
               </tr>
               <tr>
                 <td>  procedure, public ::
-  <strong><a href='../type/executable_config_t.html#boundprocedure-serializable_is_same~9'>serializable_is_same</a></strong> => exe_is_same</td>
+  <strong><a href='../type/executable_config_t.html#boundprocedure-serializable_is_same'>serializable_is_same</a></strong> => exe_is_same</td>
                 <td>../../<p>Serialization interface</p></td>
               </tr>
               <tr>
@@ -383,7 +383,7 @@
     <tbody>
         <tr>
             <td>
-              <span class="anchor" id="variable-self~35"></span>
+              <span class="anchor" id="variable-self~142"></span>
               type(<a href='../type/test_config_t.html'>test_config_t</a>),
             </td>
 <td>intent(out)</td>
@@ -398,7 +398,7 @@
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-table~28"></span>
+              <span class="anchor" id="variable-table~93"></span>
               type(toml_table),
             </td>
 <td>intent(inout)</td>
@@ -413,7 +413,7 @@
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-error~82"></span>
+              <span class="anchor" id="variable-error~191"></span>
               type(<a href='../type/error_t.html'>error_t</a>),
             </td>
 <td>intent(out),</td>
@@ -456,7 +456,7 @@
             <p class="text-end">
               Documentation generated by
               <a href="https://github.com/Fortran-FOSS-Programmers/ford">FORD</a>
- on 2024-06-10 18:32              </p>
+ on 2024-06-22 16:38              </p>
           </div>
         </div>
         <br>
