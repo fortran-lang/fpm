@@ -78,7 +78,8 @@ subroutine build_model(model, settings, package, error)
     if (allocated(error)) return
 
     ! Create dependencies
-    call new_dependency_tree(model%deps, cache=join_path("build", "cache.toml"))
+    call new_dependency_tree(model%deps, cache=join_path("build", "cache.toml"), &
+    & path_to_config=settings%path_to_config)
 
     ! Build and resolve model dependencies
     call model%deps%add(package, error)

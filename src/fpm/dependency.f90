@@ -59,7 +59,7 @@ module fpm_dependency
   use fpm_environment, only: get_os_type, OS_WINDOWS, os_is_unix
   use fpm_error, only: error_t, fatal_error
   use fpm_filesystem, only: exists, join_path, mkdir, canon_path, windows_path, list_files, is_dir, basename, &
-                            os_delete_dir, get_temp_filename
+                            os_delete_dir, get_temp_filename, parent_dir
   use fpm_git, only: git_target_revision, git_target_default, git_revision, serializable_t
   use fpm_manifest, only: package_config_t, dependency_config_t, get_package_data
   use fpm_manifest_dependency, only: manifest_has_changed, dependency_destroy
@@ -130,6 +130,8 @@ module fpm_dependency
     type(dependency_node_t), allocatable :: dep(:)
     !> Cache file
     character(len=:), allocatable :: cache
+    !> Custom path to the global config file
+    character(len=:), allocatable :: path_to_config
 
   contains
 
@@ -198,13 +200,15 @@ module fpm_dependency
 contains
 
   !> Create a new dependency tree
-  subroutine new_dependency_tree(self, verbosity, cache)
+  subroutine new_dependency_tree(self, verbosity, cache, path_to_config)
     !> Instance of the dependency tree
     type(dependency_tree_t), intent(out) :: self
     !> Verbosity of printout
     integer, intent(in), optional :: verbosity
     !> Name of the cache file
     character(len=*), intent(in), optional :: cache
+    !> Path to the global config file.
+    character(len=*), intent(in), optional :: path_to_config
 
     call resize(self%dep)
     self%dep_dir = join_path("build", "dependencies")
@@ -212,6 +216,8 @@ contains
     if (present(verbosity)) self%verbosity = verbosity
 
     if (present(cache)) self%cache = cache
+
+    if (present(path_to_config)) self%path_to_config = path_to_config
 
   end subroutine new_dependency_tree
 
@@ -566,7 +572,23 @@ contains
     type(error_t), allocatable, intent(out) :: error
 
     type(fpm_global_settings) :: global_settings
+    character(:), allocatable :: parent_directory
     integer :: ii
+
+    ! Register path to global config file if it was entered via the command line.
+    if (allocated(self%path_to_config)) then
+      if (len_trim(self%path_to_config) > 0) then
+        parent_directory = parent_dir(self%path_to_config)
+
+        if (len_trim(parent_directory) == 0) then
+          global_settings%path_to_config_folder = "."
+        else
+          global_settings%path_to_config_folder = parent_directory
+        end if
+
+        global_settings%config_file_name = basename(self%path_to_config)
+      end if
+    end if
 
     call get_global_settings(global_settings, error)
     if (allocated(error)) return
@@ -695,7 +717,7 @@ contains
     end if
 
     ! Include namespace and package name in the target url and download package data.
-    target_url = global_settings%registry_settings%url//'packages/'//self%namespace//'/'//self%name
+    target_url = global_settings%registry_settings%url//'/packages/'//self%namespace//'/'//self%name
     call downloader%get_pkg_data(target_url, self%requested_version, tmp_file, json, error)
     close (unit, status='delete')
     if (allocated(error)) return
