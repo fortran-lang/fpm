@@ -33,7 +33,7 @@ module fpm_cmd_search
         !> Settings for the search command.
         class(fpm_search_settings), intent(in) :: settings
         type(fpm_global_settings) :: global_settings
-        character(:), allocatable :: tmp_file, name, namespace, description, query_url, package_version
+        character(:), allocatable :: tmp_file, name, namespace, description, query_url, package_version, package_array(:)
         type(toml_key), allocatable :: list(:)
         integer :: stat, unit, ii
         type(json_object) :: json
@@ -93,18 +93,24 @@ module fpm_cmd_search
             print *
             print '(A,I0,A)', ' Found ', len(array), ' packages in fpm - registry:'
             print *
-            ! call print_packages(array)
+
             do ii=1, len(array)
                 call get_value(array, ii, p)
                 call get_value(p, 'name', name)
                 call get_value(p, 'namespace', namespace)
                 call get_value(p, 'description', description)
                 call get_value(p, 'version', package_version)
-                print *, "Name: ", name
-                print *, "namespace: ", namespace
-                print *, "Description: ", description
-                print *, "version: ", package_version
-                print *
+
+                ! package_array = [name, namespace, package_version]
+
+                ! call print_package_data(package_array,description)
+
+                ! print *, "Name: ", name
+                ! print *, "namespace: ", namespace
+                ! print *, "Description: ", description
+                ! print *, "version: ", package_version
+                ! print *
+
             end do
         else 
             call fpm_stop(1, "Invalid package data returned"); return
@@ -115,7 +121,7 @@ module fpm_cmd_search
         type(fpm_global_settings)             :: global_settings
         type(error_t), allocatable            :: error
         character(:), allocatable, intent(in) :: namespace, package, version, query
-        character(:), allocatable             :: path,array(:), versioncheck(:), toml_package_data
+        character(:), allocatable             :: path, array(:), versioncheck(:), toml_package_data, print_package(:)
         character(:), allocatable             :: description, wild
         type(string_t), allocatable           :: file_names(:)
         type(toml_table), allocatable         :: table
@@ -150,19 +156,10 @@ module fpm_cmd_search
                     call get_value(table, 'description', description)
                     if (query /="") then
                         result = glob(description,query)
-                        if (result) then
-                            print *, "Name: ", array(size(array)-2)
-                            print *, "Namespace: ", array(size(array)-3)
-                            print *, "Description: ", description
-                            print *, "Version: ", array(size(array)-1)
-                        end if
+                        if (result) call print_package_data(array,description)
                     else
-                        print *, "Name: ", array(size(array)-2)
-                        print *, "Namespace: ", array(size(array)-3)
-                        print *, "Description: ", description
-                        print *, "Version: ", array(size(array)-1)
+                        call print_package_data(array,description)
                     end if
-                    print *
                 else 
                     call fpm_stop(1, "Error Searching for the query"); return
                 end if
@@ -178,10 +175,21 @@ module fpm_cmd_search
         call split(file_name,array,'/')
         call split(array(size(array)-1),versioncheck,'.')
         result = array(size(array)) == "fpm.toml"
-        result = result .and. glob(array(size(array)-2),package)
         result = result .and. glob(array(size(array)-3),namespace)
+        result = result .and. glob(array(size(array)-2),package)
         result = result .and. glob(array(size(array)-1),version)
         result = result .and. size(versioncheck) > 2
     end function package_search_wild
+
+    subroutine print_package_data(package_array,description)
+        character(:), allocatable, intent(in) :: package_array(:)
+        character(*), intent(in) :: description
+
+        print *, "Name: ", package_array(size(package_array)-2)
+        print *, "Namespace: ", package_array(size(package_array)-3)
+        print *, "Version: ", package_array(size(package_array)-1)
+        print *, "Description: ", description
+        print *
+    end subroutine print_package_data
   end
   
