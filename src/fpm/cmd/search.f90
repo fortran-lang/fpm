@@ -127,75 +127,61 @@ module fpm_cmd_search
             call fpm_stop(1, "Error retrieving global settings"); return
         end if
 
-        path = global_settings%registry_settings%cache_path        
-        wild = package_search_wild(path,namespace,package,version)
+        path = global_settings%registry_settings%cache_path           
 
         ! Scan directory for packages
         call list_files(path, file_names,recurse=.true.)
         do i=1,size(file_names)
-            if (.not.is_hidden_file(file_names(i)%s)) then
-                call split(file_names(i)%s,array,'/')
-                if (array(size(array)) == "fpm.toml") then
-                    result = glob(file_names(i)%s,wild)
-                    call split(array(size(array)-1),versioncheck,'.')
-                    if (size(versioncheck) > 2) then             
-                        !> query search for description
-                        call read_whole_file(file_names(i)%s, toml_package_data, stat)
-                        if (stat /= 0) then
-                        call fatal_error(error, "Error reading file: "//file_names(i)%s); return
-                        end if
-                        ! Load TOML data into a table
-                        call toml_loads(table,toml_package_data)
-                        if (allocated(error)) then
-                        call fpm_stop(1, "Error loading toml file"); return
-                        end if
-
-                        if (allocated(table)) then
-                            call get_value(table, 'description', description)
-                            if (query /="") then
-                                result = glob(description,query)
-                                if (result) then
-                                    print *, "Name: ", array(size(array)-2)
-                                    print *, "Namespace: ", array(size(array)-3)
-                                    print *, "Description: ", description
-                                    print *, "Version: ", array(size(array)-1)
-                                end if
-                            else
-                                print *, "Name: ", array(size(array)-2)
-                                print *, "Namespace: ", array(size(array)-3)
-                                print *, "Description: ", description
-                                print *, "Version: ", array(size(array)-1)
-                            end if
-                            print *
-                        else 
-                            call fpm_stop(1, "Error Searching for the query"); return
-                        end if
-                    end if
+            result = package_search_wild(namespace,package,version,file_names(i)%s)
+            call split(file_names(i)%s,array,'/')
+            if (result) then            
+                !> query search for description
+                call read_whole_file(file_names(i)%s, toml_package_data, stat)
+                if (stat /= 0) then
+                call fatal_error(error, "Error reading file: "//file_names(i)%s); return
                 end if
-            end if
+                ! Load TOML data into a table
+                call toml_loads(table,toml_package_data)
+                if (allocated(error)) then
+                call fpm_stop(1, "Error loading toml file"); return
+                end if
+
+                if (allocated(table)) then
+                    call get_value(table, 'description', description)
+                    if (query /="") then
+                        result = glob(description,query)
+                        if (result) then
+                            print *, "Name: ", array(size(array)-2)
+                            print *, "Namespace: ", array(size(array)-3)
+                            print *, "Description: ", description
+                            print *, "Version: ", array(size(array)-1)
+                        end if
+                    else
+                        print *, "Name: ", array(size(array)-2)
+                        print *, "Namespace: ", array(size(array)-3)
+                        print *, "Description: ", description
+                        print *, "Version: ", array(size(array)-1)
+                    end if
+                    print *
+                else 
+                    call fpm_stop(1, "Error Searching for the query"); return
+                end if
+            endif
         end do
     end subroutine search_package
 
-    function package_search_wild(path,namespace,package,version) result(wild)
-        character(:), allocatable, intent(in) :: namespace, package, version, path
-        character(:), allocatable :: wild
-        character(:), allocatable :: array(:)
-        if (namespace /= "") then
-            wild = path//"/"//namespace
-        else 
-            wild = path//"/*"
-        end if
-        if (package /= "") then
-            wild = wild//"/"//package
-        else 
-            wild = wild//"/*"
-        end if
-        if (version /= "") then
-            wild = wild//"/"//version
-        else 
-            wild = wild//"/?.?.?"
-        end if
-        wild = wild//"/fpm.toml"
+    function package_search_wild(namespace,package,version, file_name) result(result)
+        character(:), allocatable, intent(in) :: namespace, package, version, file_name
+        character(:), allocatable :: array(:), versioncheck(:)
+        logical :: result
+
+        call split(file_name,array,'/')
+        call split(array(size(array)-1),versioncheck,'.')
+        result = array(size(array)) == "fpm.toml"
+        result = result .and. glob(array(size(array)-2),package)
+        result = result .and. glob(array(size(array)-3),namespace)
+        result = result .and. glob(array(size(array)-1),version)
+        result = result .and. size(versioncheck) > 2
     end function package_search_wild
   end
   
