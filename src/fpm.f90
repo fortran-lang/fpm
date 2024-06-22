@@ -486,7 +486,6 @@ subroutine cmd_run(settings,test)
     integer :: run_scope,firsterror
     integer, allocatable :: stat(:),target_ID(:)
     character(len=:),allocatable :: line
-    logical :: toomany
 
     call get_package_data(package, "fpm.toml", error, apply_defaults=.true.)
     if (allocated(error)) then
@@ -547,13 +546,8 @@ subroutine cmd_run(settings,test)
     end if
 
     ! Check all names are valid
-    ! or no name and found more than one file
-    toomany= size(settings%name)==0 .and. size(executables)>1
-    if ( any(.not.found) &
-    & .or. &
-    & ( (toomany .and. .not.test) .or.  (toomany .and. settings%runner /= '') ) &
-    & .and. &
-    & .not.settings%list) then
+    ! or no name and found more than one file    
+    if ( any(.not.found) ) then
         line=join(settings%name)
         if(line/='.')then ! do not report these special strings
            if(any(.not.found))then
