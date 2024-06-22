@@ -173,7 +173,7 @@ jobs:
         rm -v ${{ env.FPM }}
         echo "FPM_RELEASE=${{ env.EXE }}" >> $GITHUB_ENV
       env:
-        EXE: fpm-${{ env.VERSION }}-${{ matrix.os-arch }}${{ matrix.exe }}
+        EXE: fpm-${{ env.VERSION }}-${{ matrix.os-arch }}-gcc-${{ matrix.gcc_v }}${{ matrix.exe }}
 
     - name: Run release version
       shell: bash
@@ -181,7 +181,7 @@ jobs:
         ci/run_tests.sh "$PWD/${{ env.FPM_RELEASE }}"
 
     - name: Upload artifact
-      uses: actions/upload-artifact@v2
+      uses: actions/upload-artifact@v4
       with:
         name: ${{ env.FPM_RELEASE }}
         path: ${{ env.FPM_RELEASE }}
@@ -192,14 +192,19 @@ jobs:
     runs-on: windows-latest
     needs:
       - build
+    strategy:
+      fail-fast: false
+      matrix:
+        gcc_v: [10,11,12]
     
     steps:
     - uses: actions/checkout@v4
 
     - name: Download Artifacts
-      uses: actions/download-artifact@v2
+      uses: actions/download-artifact@v4
       with:
-        path: ${{ github.workspace }} # This will download all files
+        path: ${{ github.workspace }}
+        pattern: fpm-*-windows-*-gcc-${{ matrix.gcc_v }}.exe
 
     - name: Get version (normal)
       if: github.event_name != 'release'
@@ -229,7 +234,7 @@ jobs:
     - name: Fetch Windows executable
       shell: msys2 {0}
       run: |
-        cp fpm-*/fpm*.exe ./ci/fpm.exe
+        cp fpm-*/fpm-*-windows-*-gcc-${{ matrix.gcc_v }}.exe ./ci/fpm.exe
 
     - name: Fetch Git for Windows
       shell: msys2 {0}
@@ -254,13 +259,13 @@ jobs:
       run: |
         cd ./ci
         makensis fpm-installer.nsi
-        move fpm-installer.exe fpm-installer-${{ env.VERSION }}.exe
+        move fpm-installer.exe fpm-installer-${{ env.VERSION }}-gcc-${{ matrix.gcc_v }}.exe
 
     - name: Upload artifact
-      uses: actions/upload-artifact@v2
+      uses: actions/upload-artifact@v4
       with:
-        name: fpm-installer
-        path: ci/fpm-installer-${{ env.VERSION }}.exe
+        name: fpm-installer-gcc-${{ matrix.gcc_v }}
+        path: ci/fpm-installer-${{ env.VERSION }}-gcc-${{ matrix.gcc_v }}.exe
 
   upload-artifacts:
     if: ${{ github.event_name == 'release' && contains(github.ref, 'v') || github.event_name == 'push' }}
@@ -281,27 +286,27 @@ jobs:
       if: ${{ github.event_name == 'push' }}
 
     - name: Download Artifacts
-      uses: actions/download-artifact@v2
+      uses: actions/download-artifact@v4
       with:
-        path: ${{ github.workspace }} # This will download all files
+        path: fpm-cd-artifacts
+        pattern: 'fpm-*-gcc-12*'
+        merge-multiple: true
 
     - name: Normalize file names for continuous delivery
       if: ${{ github.event_name == 'push' }}
       run: |
-        for output in fpm-*/fpm*; do
-          pushd $(dirname "$output")
+        cd fpm-cd-artifacts
+        for output in fpm-*; do
           mv -v $(basename $output) $(basename $output | sed -E '${{ env.replace }}')
-          popd
         done
       env:
         replace: 's/-([0-9]+\.[0-9]+\.[0-9]+-[0-9]+-g)?[0-9a-f]+//'
 
     - name: Create SHA256 checksums
       run: |
-        for output in fpm-*/fpm*; do
-          pushd $(dirname "$output")
+        cd fpm-cd-artifacts
+        for output in fpm-*; do
           sha256sum $(basename "$output") | tee $(basename "$output").sha256
-          popd
         done
 
     - name: Move/Create continuous tag
@@ -315,7 +320,7 @@ jobs:
       if: ${{ github.event_name == 'release' || steps.deploy-on-push.outputs.result != 0 }}
       with:
         repo_token: ${{ secrets.GITHUB_TOKEN }}
-        file: fpm-*/fpm*
+        file: fpm-cd-artifacts/*
         file_glob: true
         tag: ${{ github.event_name == 'release' && github.ref || 'current'}}
         overwrite: true

@@ -35,7 +35,7 @@ jobs:
         PREFIX: fpm-${{ env.VERSION }}/
 
     - name: Upload artifact
-      uses: actions/upload-artifact@v2
+      uses: actions/upload-artifact@v4
       with:
         name: ${{ env.OUTPUT }}
         path: ${{ env.OUTPUT }}
@@ -104,7 +104,7 @@ jobs:
         ${{ env.EXE }} build 
 
     - name: Upload artifact
-      uses: actions/upload-artifact@v2
+      uses: actions/upload-artifact@v4
       with:
         name: ${{ env.OUTPUT }}
         path: ${{ env.OUTPUT }}
@@ -128,27 +128,26 @@ jobs:
       if: ${{ github.event_name == 'push' }}
 
     - name: Download Artifacts
-      uses: actions/download-artifact@v2
+      uses: actions/download-artifact@v4
       with:
-        path: ${{ github.workspace }} # This will download all files
+        path: fpm-cd-artifacts
+        merge-multiple: true
 
     - name: Normalize file names for continuous delivery
       if: ${{ github.event_name == 'push' }}
       run: |
-        for output in fpm-*/fpm*; do
-          pushd $(dirname "$output")
+        cd fpm-cd-artifacts
+        for output in fpm-*; do
           mv -v $(basename $output) $(basename $output | sed -E '${{ env.replace }}')
-          popd
         done
       env:
         replace: 's/-([0-9]+\.[0-9]+\.[0-9]+-[0-9]+-g)?[0-9a-f]+//'
 
     - name: Create SHA256 checksums
       run: |
-        for output in fpm-*/fpm*; do
-          pushd $(dirname "$output")
+        cd fpm-cd-artifacts
+        for output in fpm-*; do
           sha256sum $(basename "$output") | tee $(basename "$output").sha256
-          popd
         done
 
     - name: Move/Create continuous tag
@@ -162,7 +161,7 @@ jobs:
       uses: svenstaro/upload-release-action@v2
       with:
         repo_token: ${{ secrets.GITHUB_TOKEN }}
-        file: fpm-*/fpm*
+        file: fpm-cd-artifacts/*
         file_glob: true
         tag: ${{ github.event_name == 'release' && github.ref || 'current'}}
         overwrite: true
