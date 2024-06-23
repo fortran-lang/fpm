@@ -73,7 +73,7 @@
 			 <thead><tr><th>Procedure</th><th>Location</th><th>Procedure Type</th><th>Description</th></tr></thead>
 			 <tbody>
 			   <tr>
-                 <td><a href='../proc/add_dependency.html'>add_dependency</a></td>
+                 <td><a href='../proc/add_dependency~2.html'>add_dependency</a></td>
                  <td><a href='../module/fpm_targets.html'>fpm_targets</a></td>
                  <td>Subroutine</td>
                  <td><p>Add pointer to dependeny in target%dependencies</p></td>
@@ -168,6 +168,17 @@ Add this dependency&rsquo;s manifest macros</p><a href="../proc/build_model.html
                  <td><a href='../module/fpm_compiler.html'>fpm_compiler</a></td>
                  <td>Function</td>
                  <td></td>
+               </tr>
+			   <tr>
+                 <td><a href='../proc/check_fortran_source_runs.html'>check_fortran_source_runs</a></td>
+                 <td><a href='../module/fpm_compiler.html'>fpm_compiler</a></td>
+                 <td>Function</td>
+                 <td><p>Run a single-source Fortran program using the current compiler
+Compile a Fortran object
+Create temporary source file
+Write contents
+Compile and link program
+Run and retrieve exit code</p><a href="../proc/check_fortran_source_runs.html" class="pull-right"><emph>Read more&hellip;</emph></a></td>
                </tr>
 			   <tr>
                  <td><a href='../proc/check_keys.html'>check_keys</a></td>
@@ -373,15 +384,15 @@ All checks passed!</p></td>
                </tr>
 			   <tr>
                  <td><a href='../proc/dump_to_toml~3.html'>dump_to_toml</a></td>
+                 <td><a href='../module/fpm_compiler.html'>fpm_compiler</a></td>
+                 <td>Subroutine</td>
+                 <td><p>Dump dependency to toml table</p><a href="../proc/dump_to_toml~3.html" class="pull-right"><emph>Read more&hellip;</emph></a></td>
+               </tr>
+			   <tr>
+                 <td><a href='../proc/dump_to_toml~6.html'>dump_to_toml</a></td>
                  <td><a href='../module/fpm_git.html'>fpm_git</a></td>
                  <td>Subroutine</td>
                  <td><p>Dump dependency to toml table</p></td>
-               </tr>
-			   <tr>
-                 <td><a href='../proc/dump_to_toml~7.html'>dump_to_toml</a></td>
-                 <td><a href='../module/fpm_compiler.html'>fpm_compiler</a></td>
-                 <td>Subroutine</td>
-                 <td><p>Dump dependency to toml table</p><a href="../proc/dump_to_toml~7.html" class="pull-right"><emph>Read more&hellip;</emph></a></td>
                </tr>
 			   <tr>
                  <td><a href='../proc/enumerate_libraries.html'>enumerate_libraries</a></td>
@@ -620,6 +631,13 @@ No need to convert if there are no spaces</p><a href="../proc/get_dos_path.html"
 and files table in a given table and create new profiles</p></td>
                </tr>
 			   <tr>
+                 <td><a href='../proc/get_fpm_env.html'>get_fpm_env</a></td>
+                 <td><a href='../module/fpm_command_line.html'>fpm_command_line</a></td>
+                 <td>Function</td>
+                 <td><p>Get an environment variable for fpm, this routine ensures that every variable
+used by fpm is prefixed with FPM_.</p></td>
+               </tr>
+			   <tr>
                  <td><a href='../proc/get_global_settings.html'>get_global_settings</a></td>
                  <td><a href='../module/fpm_settings.html'>fpm_settings</a></td>
                  <td>Subroutine</td>
@@ -816,16 +834,16 @@ All checks passed!</p></td>
 3) If longer, package name must be followed by default separator plus at least one char</p><a href="../proc/has_valid_standard_prefix.html" class="pull-right"><emph>Read more&hellip;</emph></a></td>
                </tr>
 			   <tr>
-                 <td><a href='../proc/info~4.html'>info</a></td>
-                 <td><a href='../module/fpm_git.html'>fpm_git</a></td>
-                 <td>Subroutine</td>
-                 <td><p>Show information on git target</p></td>
-               </tr>
-			   <tr>
-                 <td><a href='../proc/info~7.html'>info</a></td>
+                 <td><a href='../proc/info.html'>info</a></td>
                  <td><a href='../module/fpm_manifest_profile.html'>fpm_manifest_profile</a></td>
                  <td>Subroutine</td>
                  <td><p>Write information on instance</p></td>
+               </tr>
+			   <tr>
+                 <td><a href='../proc/info~8.html'>info</a></td>
+                 <td><a href='../module/fpm_git.html'>fpm_git</a></td>
+                 <td>Subroutine</td>
+                 <td><p>Show information on git target</p></td>
                </tr>
 			   <tr>
                  <td><a href='../proc/info_profile.html'>info_profile</a></td>
@@ -933,15 +951,15 @@ All checks passed!</p></td>
                </tr>
 			   <tr>
                  <td><a href='../proc/load_from_toml~3.html'>load_from_toml</a></td>
-                 <td><a href='../module/fpm_git.html'>fpm_git</a></td>
-                 <td>Subroutine</td>
-                 <td><p>Read dependency from toml table (no checks made at this stage)</p><a href="../proc/load_from_toml~3.html" class="pull-right"><emph>Read more&hellip;</emph></a></td>
-               </tr>
-			   <tr>
-                 <td><a href='../proc/load_from_toml~7.html'>load_from_toml</a></td>
                  <td><a href='../module/fpm_compiler.html'>fpm_compiler</a></td>
                  <td>Subroutine</td>
                  <td><p>Read dependency from toml table (no checks made at this stage)</p></td>
+               </tr>
+			   <tr>
+                 <td><a href='../proc/load_from_toml~6.html'>load_from_toml</a></td>
+                 <td><a href='../module/fpm_git.html'>fpm_git</a></td>
+                 <td>Subroutine</td>
+                 <td><p>Read dependency from toml table (no checks made at this stage)</p><a href="../proc/load_from_toml~6.html" class="pull-right"><emph>Read more&hellip;</emph></a></td>
                </tr>
 			   <tr>
                  <td><a href='../proc/lower.html'>lower</a></td>
@@ -1272,9 +1290,9 @@ and return .TRUE. if they match and .FALSE. otherwise</p></td>
                </tr>
 			   <tr>
                  <td><a href='../interface/resize.html'>resize</a></td>
-                 <td><a href='../module/fpm_manifest_dependency.html'>fpm_manifest_dependency</a></td>
+                 <td><a href='../module/fpm_dependency.html'>fpm_dependency</a></td>
                  <td>Interface</td>
-                 <td></td>
+                 <td><p>Overloaded reallocation interface</p></td>
                </tr>
 			   <tr>
                  <td><a href='../interface/resize~2.html'>resize</a></td>
@@ -1284,9 +1302,9 @@ and return .TRUE. if they match and .FALSE. otherwise</p></td>
                </tr>
 			   <tr>
                  <td><a href='../interface/resize~3.html'>resize</a></td>
-                 <td><a href='../module/fpm_dependency.html'>fpm_dependency</a></td>
+                 <td><a href='../module/fpm_manifest_dependency.html'>fpm_manifest_dependency</a></td>
                  <td>Interface</td>
-                 <td><p>Overloaded reallocation interface</p></td>
+                 <td></td>
                </tr>
 			   <tr>
                  <td><a href='../interface/resolve_metapackages.html'>resolve_metapackages</a></td>
@@ -1493,6 +1511,18 @@ expanded to other characters if needed.</p></td>
                  <td><p>Replace file system separators for windows</p></td>
                </tr>
 			   <tr>
+                 <td><a href='../proc/with_qp.html'>with_qp</a></td>
+                 <td><a href='../module/fpm_compiler.html'>fpm_compiler</a></td>
+                 <td>Function</td>
+                 <td><p>Check if the current compiler supports 128-bit real precision</p></td>
+               </tr>
+			   <tr>
+                 <td><a href='../proc/with_xdp.html'>with_xdp</a></td>
+                 <td><a href='../module/fpm_compiler.html'>fpm_compiler</a></td>
+                 <td>Function</td>
+                 <td><p>Check if the current compiler supports 80-bit &ldquo;extended&rdquo; real precision</p></td>
+               </tr>
+			   <tr>
                  <td><a href='../proc/write_response_file.html'>write_response_file</a></td>
                  <td><a href='../module/fpm_compiler.html'>fpm_compiler</a></td>
                  <td>Subroutine</td>
@@ -1520,7 +1550,7 @@ in case of errors.</p></td>
             <p class="text-end">
               Documentation generated by
               <a href="https://github.com/Fortran-FOSS-Programmers/ford">FORD</a>
- on 2024-06-22 16:38              </p>
+ on 2024-06-23 13:09              </p>
           </div>
         </div>
         <br>

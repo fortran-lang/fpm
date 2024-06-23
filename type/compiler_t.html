@@ -77,7 +77,7 @@
 
             <li class="list-inline-item" id="statements"><i class="fa fa-list-ol"></i>
               <a data-bs-toggle="tooltip" data-bs-placement="bottom" data-bs-html="true"
-                 title="<p> 4.8% of total for derived types.</p>Including implementation: 357 statements,  7.3% of total for derived types.">26 statements</a>
+                 title="<p> 5.4% of total for derived types.</p>Including implementation: 395 statements,  8.0% of total for derived types.">29 statements</a>
             </li>
 
             <li class="list-inline-item" id="source-file">
@@ -119,9 +119,9 @@
         <div class="list-group list-group-flush">
             <a class="list-group-item" href="../type/compiler_t.html#variable-cc">cc</a>
             <a class="list-group-item" href="../type/compiler_t.html#variable-cxx">cxx</a>
-            <a class="list-group-item" href="../type/compiler_t.html#variable-echo~4">echo</a>
+            <a class="list-group-item" href="../type/compiler_t.html#variable-echo~2">echo</a>
             <a class="list-group-item" href="../type/compiler_t.html#variable-fc">fc</a>
-            <a class="list-group-item" href="../type/compiler_t.html#variable-id">id</a>
+            <a class="list-group-item" href="../type/compiler_t.html#variable-id~4">id</a>
             <a class="list-group-item" href="../type/compiler_t.html#variable-verbose~9">verbose</a>
         </div>
       </div>
@@ -149,6 +149,7 @@
       </a>
       <div id="boundprocs-0" class="collapse">
         <div class="list-group list-group-flush">
+            <a class="list-group-item" href="../type/compiler_t.html#boundprocedure-check_fortran_source_runs">check_fortran_source_runs</a>
             <a class="list-group-item" href="../type/compiler_t.html#boundprocedure-compile_c">compile_c</a>
             <a class="list-group-item" href="../type/compiler_t.html#boundprocedure-compile_cpp">compile_cpp</a>
             <a class="list-group-item" href="../type/compiler_t.html#boundprocedure-compile_fortran">compile_fortran</a>
@@ -163,13 +164,15 @@
             <a class="list-group-item" href="../type/compiler_t.html#boundprocedure-is_gnu">is_gnu</a>
             <a class="list-group-item" href="../type/compiler_t.html#boundprocedure-is_intel">is_intel</a>
             <a class="list-group-item" href="../type/compiler_t.html#boundprocedure-is_unknown">is_unknown</a>
-            <a class="list-group-item" href="../type/compiler_t.html#boundprocedure-link~3">link</a>
+            <a class="list-group-item" href="../type/compiler_t.html#boundprocedure-link~2">link</a>
             <a class="list-group-item" href="../type/compiler_t.html#boundprocedure-load~14">load</a>
             <a class="list-group-item" href="../type/compiler_t.html#boundprocedure-load_from_toml~11">load_from_toml</a>
-            <a class="list-group-item" href="../type/compiler_t.html#boundprocedure-name~19">name</a>
+            <a class="list-group-item" href="../type/compiler_t.html#boundprocedure-name~13">name</a>
             <a class="list-group-item" href="../type/compiler_t.html#boundprocedure-operator%28%3D%3D%29~15">operator(==)</a>
             <a class="list-group-item" href="../type/compiler_t.html#boundprocedure-serializable_is_same~11">serializable_is_same</a>
             <a class="list-group-item" href="../type/compiler_t.html#boundprocedure-test_serialization">test_serialization</a>
+            <a class="list-group-item" href="../type/compiler_t.html#boundprocedure-with_qp">with_qp</a>
+            <a class="list-group-item" href="../type/compiler_t.html#boundprocedure-with_xdp">with_xdp</a>
         </div>
       </div>
     </div>
@@ -242,7 +245,7 @@
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-echo~4"></span>
+              <span class="anchor" id="variable-echo~2"></span>
               logical,
             </td>
               <td>public</td>
@@ -276,7 +279,7 @@
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-id"></span>
+              <span class="anchor" id="variable-id~4"></span>
               integer(kind=compiler_enum),
             </td>
               <td>public</td>
@@ -318,6 +321,89 @@
 
       <section>
         <h2>Type-Bound Procedures</h2>
+          <div class="row">
+              <div class="card mt-3">
+    <div class="card-header codesum">
+      <span class="anchor" id="boundprocedure-check_fortran_source_runs"></span>
+      <h3>
+          procedure, public ::
+  <strong>check_fortran_source_runs</strong>
+        
+      </h3>
+    </div>
+      <div class="card-body">
+        
+        <p>Fortran feature support</p>
+      </div>
+    <ul class="list-group">
+        <li class="list-group-item">
+                  <h3>
+    public  function <a href='../proc/check_fortran_source_runs.html'>check_fortran_source_runs</a>(self, input) result(success)  
+</h3>
+    
+
+  <p>Run a single-source Fortran program using the current compiler
+Compile a Fortran object
+Create temporary source file
+Write contents
+Compile and link program
+Run and retrieve exit code</p><a href="../proc/check_fortran_source_runs.html" class="pull-right"><emph>Read more&hellip;</emph></a>
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" ></span>
+              class(<a href='compiler_t.html'>compiler_t</a>),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>self</strong></td>
+            <td>
+<p>Instance of the compiler object</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" ></span>
+              character(len=*),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>input</strong></td>
+            <td>
+<p>Program Source</p>
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+    <h4>
+    Return Value
+    <small>logical</small>
+    </h4>
+    
+
+        </li>
+    </ul>
+  </div>
+
+          </div>
           <div class="row">
               <div class="card mt-3">
     <div class="card-header codesum">
@@ -1735,7 +1821,7 @@
           <div class="row">
               <div class="card mt-3">
     <div class="card-header codesum">
-      <span class="anchor" id="boundprocedure-link~3"></span>
+      <span class="anchor" id="boundprocedure-link~2"></span>
       <h3>
           procedure, public ::
   <strong>link</strong>
@@ -2190,7 +2276,7 @@ Read object from TOML table</p>
           <div class="row">
               <div class="card mt-3">
     <div class="card-header codesum">
-      <span class="anchor" id="boundprocedure-name~19"></span>
+      <span class="anchor" id="boundprocedure-name~13"></span>
       <h3>
           procedure, public ::
   <strong>name</strong> => <a href='/home/runner/work/fpm/fpm/fpm-doc/proc/compiler_name.html'>compiler_name</a>
@@ -2493,6 +2579,124 @@ Check same</p>
   </div>
 
           </div>
+          <div class="row">
+              <div class="card mt-3">
+    <div class="card-header codesum">
+      <span class="anchor" id="boundprocedure-with_qp"></span>
+      <h3>
+          procedure, public ::
+  <strong>with_qp</strong>
+        
+      </h3>
+    </div>
+    <ul class="list-group">
+        <li class="list-group-item">
+                  <h3>
+    public  function <a href='../proc/with_qp.html'>with_qp</a>(self)  
+</h3>
+    
+
+  <p>Check if the current compiler supports 128-bit real precision</p>
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" ></span>
+              class(<a href='compiler_t.html'>compiler_t</a>),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>self</strong></td>
+            <td>
+<p>Instance of the compiler object</p>
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+    <h4>
+    Return Value
+    <small>logical</small>
+    </h4>
+    
+
+        </li>
+    </ul>
+  </div>
+
+          </div>
+          <div class="row">
+              <div class="card mt-3">
+    <div class="card-header codesum">
+      <span class="anchor" id="boundprocedure-with_xdp"></span>
+      <h3>
+          procedure, public ::
+  <strong>with_xdp</strong>
+        
+      </h3>
+    </div>
+    <ul class="list-group">
+        <li class="list-group-item">
+                  <h3>
+    public  function <a href='../proc/with_xdp.html'>with_xdp</a>(self)  
+</h3>
+    
+
+  <p>Check if the current compiler supports 80-bit &ldquo;extended&rdquo; real precision</p>
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" ></span>
+              class(<a href='compiler_t.html'>compiler_t</a>),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>self</strong></td>
+            <td>
+<p>Instance of the compiler object</p>
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+    <h4>
+    Return Value
+    <small>logical</small>
+    </h4>
+    
+
+        </li>
+    </ul>
+  </div>
+
+          </div>
       </section>
 
     <section>
@@ -2542,6 +2746,10 @@ Check same</p>
 <span class="w">    </span><span class="k">procedure</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">serializable_is_same</span><span class="w"> </span><span class="o">=&gt;</span><span class="w"> </span><span class="n">compiler_is_same</span>
 <span class="w">    </span><span class="k">procedure</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">dump_to_toml</span><span class="w"> </span><span class="o">=&gt;</span><span class="w"> </span><span class="n">compiler_dump</span>
 <span class="w">    </span><span class="k">procedure</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">load_from_toml</span><span class="w"> </span><span class="o">=&gt;</span><span class="w"> </span><span class="n">compiler_load</span>
+<span class="w">    </span><span class="c">!&gt; Fortran feature support</span>
+<span class="w">    </span><span class="k">procedure</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">check_fortran_source_runs</span>
+<span class="w">    </span><span class="k">procedure</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">with_xdp</span>
+<span class="w">    </span><span class="k">procedure</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">with_qp</span>
 <span class="w">    </span><span class="c">!&gt; Return compiler name</span>
 <span class="w">    </span><span class="k">procedure</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">name</span><span class="w"> </span><span class="o">=&gt;</span><span class="w"> </span><span class="n">compiler_name</span>
 
@@ -2568,7 +2776,7 @@ Check same</p>
             <p class="text-end">
               Documentation generated by
               <a href="https://github.com/Fortran-FOSS-Programmers/ford">FORD</a>
- on 2024-06-22 16:38              </p>
+ on 2024-06-23 13:09              </p>
           </div>
         </div>
         <br>
