@@ -1,8 +1,7 @@
-!> Search a package from both local and remote registry using the `search` command.
-!>
+!> Search a package from both local and remote registry using the `search` subcommand.
 !> The package can be searched by packagename, namespace, query (description and README.md), and license from the registries (local and remote).
 !> the remote registry URL can also be specified by the paramter --registry.
-!> It can be used as `fpm search --query fortran --page 2 --name fortran --namespace fortran --license MIT --registry URL`.
+!> It can be used as `fpm search --query q* --page 1 --registry URL --namespace n* --package p* --package_version v* --license l* --limit 10 --sort-by [name] --sort [asc/desc]`
 module fpm_cmd_search
     use fpm_command_line, only: fpm_search_settings
     use fpm_manifest, only: package_config_t, get_package_data
@@ -33,8 +32,7 @@ module fpm_cmd_search
         !> Settings for the search command.
         class(fpm_search_settings), intent(in) :: settings
         type(fpm_global_settings) :: global_settings
-        character(:), allocatable :: tmp_file, name, namespace, description, query_url, package_version, package_array(:)
-        type(toml_key), allocatable :: list(:)
+        character(:), allocatable :: tmp_file, name, namespace, description, query_url, package_version
         integer :: stat, unit, ii
         type(json_object) :: json
         type(json_object), pointer :: p
@@ -68,14 +66,6 @@ module fpm_cmd_search
                     & // '&limit='//settings%limit &
                     & // '&sort_by='//settings%sort_by &
                     & // '&sort='//settings%sort
-        
-        !> search parameters: name, namespace, version, license, query -> description
-        !> add to search only in the local/global registry
-        !> add docs for parameters.
-        !> add globbing support for global search
-        !> name, license, version, description from fpm.toml
-        !> order manipulation parameters: page, sort, sort_by, limit
-        !> show page number and total_pages
 
         !> Get the package data from the registry
         call downloader%get_pkg_data(query_url, version, tmp_file, json, error)
@@ -88,12 +78,10 @@ module fpm_cmd_search
         print *
         call search_package(settings%query, settings%namespace, settings%package, settings%version)
         if (json%has_key("packages")) then
-            !> Shift to better method to display the package data
             call get_value(json, 'packages', array)
             print *
             print '(A,I0,A)', ' Found ', len(array), ' packages in fpm - registry:'
             print *
-
             do ii=1, len(array)
                 call get_value(array, ii, p)
                 call get_value(p, 'name', name)
@@ -101,16 +89,11 @@ module fpm_cmd_search
                 call get_value(p, 'description', description)
                 call get_value(p, 'version', package_version)
 
-                ! package_array = [name, namespace, package_version]
-
-                ! call print_package_data(package_array,description)
-
-                ! print *, "Name: ", name
-                ! print *, "namespace: ", namespace
-                ! print *, "Description: ", description
-                ! print *, "version: ", package_version
-                ! print *
-
+                print *, "Name: ", name
+                print *, "namespace: ", namespace
+                print *, "Description: ", description
+                print *, "version: ", package_version
+                print *
             end do
         else 
             call fpm_stop(1, "Invalid package data returned"); return
