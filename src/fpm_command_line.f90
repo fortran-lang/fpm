@@ -1546,7 +1546,7 @@ contains
     '', &
     'DESCRIPTION', &
     ' Search for packages in the local directory and the fpm-registry, ', &
-    ' supports package search by name, namespace, query (description and README.md)' &
+    ' supports package search by name, namespace, query (description and README.md)', &
     ' and license from the registries (local and remote).', &
     '', &
     'OPTIONS', &
