@@ -910,7 +910,9 @@ contains
    ' install [--profile PROF] [--flag FFLAGS] [--no-rebuild] [--prefix PATH]        ', &
    '         [options]                                                              ', &
    ' clean [--skip] [--all] [--registry-cache]                                      ', &
-   ' search [--query] [--page]                                                      ', &
+   ' search [--query query] [--page page] [--registry URL] [--namespace namespace]  ', &
+   '        [--package package] [--package_version version] [--license license]     ', &
+   '        [--limit <10>] [--sort-by <name>] [--sort <asc/desc>]                   ', &
    ' publish [--token TOKEN] [--show-package-version] [--show-upload-data]          ', &
    '         [--dry-run] [--verbose]                                                ', &
    ' ']
@@ -1041,7 +1043,9 @@ contains
     '    install [--profile PROF] [--flag FFLAGS] [--no-rebuild] [--prefix PATH]     ', &
     '            [options]                                                           ', &
     '    clean [--skip] [--all] [--registry-cache]                                   ', &
-    '    search [--query] [--page]                                                   ', &
+    ' search [--query query] [--page page] [--registry URL] [--namespace namespace]  ', &
+    '        [--package package] [--package_version version] [--license license]     ', &
+    '        [--limit <10>] [--sort-by <name>] [--sort <asc/desc>]                   ', &
     '    publish [--token TOKEN] [--show-package-version] [--show-upload-data]       ', &
     '            [--dry-run] [--verbose]                                             ', &
     '                                                                                ', &
@@ -1541,12 +1545,21 @@ contains
     ' fpm search', &
     '', &
     'DESCRIPTION', &
-    ' Prompts the user to search deletion of the build. If affirmative,', &
-    ' directories in the build/ directory are deleted, except dependencies.', &
-    ' Use the --registry-cache option to delete the registry cache.', &
+    ' Search for packages in the local directory and the fpm-registry, ', &
+    ' supports package search by name, namespace, query (description and README.md)' &
+    ' and license from the registries (local and remote).', &
     '', &
     'OPTIONS', &
-    ' --registry-cache  Delete registry cache.', &
+    ' --query              Search query (supports wildcard).', &
+    ' --page               Page number for results.', &
+    ' --registry           URL of the registry to query.', &
+    ' --namespace          Namespace to filter results.', &
+    ' --package            Package name to filter results.', &
+    ' --package_version    Version of the package to filter results.', &
+    ' --license            License type to filter results.', &
+    ' --limit              Maximum number of results to return.', &
+    ' --sort-by            Field to sort results by (e.g., name).', &
+    ' --sort               Sort order (asc for ascending, desc for descending).', &
     '' ]
     help_publish=[character(len=80) :: &
     'NAME', &
