@@ -747,7 +747,7 @@ contains
             block
                 
                 if (query==' ') query=''
-                if (page=='') page='1'
+                if (page==' ') page='1'
                 if (package==' ') package='*'
                 if (license==' ') license=''
                 if (sort_by==' ') sort_by='name'
@@ -852,7 +852,7 @@ contains
         val_cxxflag = " "// sget('cxx-flag')
         val_ldflag = " " // sget('link-flag')
         val_profile = sget('profile')
-
+        ! conda = sget('conda')
     end subroutine check_build_vals
 
     !> Print help text and stop
