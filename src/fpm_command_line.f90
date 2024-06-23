@@ -52,7 +52,8 @@ public :: fpm_cmd_settings, &
           fpm_update_settings, &
           fpm_clean_settings, &
           fpm_publish_settings, &
-          get_command_line_settings
+          get_command_line_settings, &
+          get_fpm_env
 
 type, abstract :: fpm_cmd_settings
     character(len=:), allocatable :: working_dir
