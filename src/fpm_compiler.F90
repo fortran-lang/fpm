@@ -1107,17 +1107,16 @@ subroutine compile_fortran(self, input, output, args, log_file, stat)
         & echo=self%echo, verbose=self%verbose, redirect=log_file, exitstat=stat)
 end subroutine compile_fortran
 
-subroutine generate_shared_library(self, package_name, output_dir)
+subroutine generate_shared_library(self, package_name, output_file)
     !> Instance of the compiler object
     class(compiler_t), intent(in) :: self
     !> Name of the package.
     character(len=*), intent(in) :: package_name
-    !> Output directory of object files.
-    character(len=*), intent(in) :: output_dir
+    !> Output file of library archive.
+    character(len=*), intent(in) :: output_file
 
     call run(self%fc // " --shared " // " -o " // "lib" // package_name // ".so" // " " &
-        // output_dir // "/" // package_name // "/" // "lib" // package_name &
-            // ".a", echo=self%echo, verbose=self%verbose)
+        // output_file, echo=self%echo, verbose=self%verbose)
 end subroutine generate_shared_library
 
 
