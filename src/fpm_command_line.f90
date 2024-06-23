@@ -787,7 +787,7 @@ contains
             archiver = sget('archiver')
             token_s = sget('token')
 
-            allocate(fpm_publish_settings :: cmd_settings)    ! Use local registry if it was specified in the global config file.
+            allocate(fpm_publish_settings :: cmd_settings)
 
             cmd_settings = fpm_publish_settings( &
             & show_package_version = lget('show-package-version'), &
@@ -852,7 +852,6 @@ contains
         val_cxxflag = " "// sget('cxx-flag')
         val_ldflag = " " // sget('link-flag')
         val_profile = sget('profile')
-        ! conda = sget('conda')
     end subroutine check_build_vals
 
     !> Print help text and stop
@@ -1553,9 +1552,9 @@ contains
     ' --query              Search query (supports wildcard).', &
     ' --page               Page number for results.', &
     ' --registry           URL of the registry to query.', &
-    ' --namespace          Namespace to filter results.', &
+    ' --namespace          Namespace of the package', &
     ' --package            Package name to filter results.', &
-    ' --package_version    Version of the package to filter results.', &
+    ' --package_version    Version of the package', &
     ' --license            License type to filter results.', &
     ' --limit              Maximum number of results to return.', &
     ' --sort-by            Field to sort results by (e.g., name).', &
