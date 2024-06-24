@@ -1,4 +1,5 @@
 #include <stdlib.h>
+#include <stdio.h>
 
 /// @brief Determine the absolute, canonicalized path for a given path.
 /// @param path
@@ -41,12 +42,13 @@ int c_unsetenv(const char *envname) {
 #ifndef _WIN32
    return unsetenv(envname);
 #else
-   char* str = malloc(10*sizeof(char));
-   str = '\0';
-   // _putenv_s returns a non-zero code when deleting a variable
+   char* str = malloc(64*sizeof(char));
+   *str = '\0';
    int errcode = _putenv_s(envname,str);
+   // Windows returns a non-0 code when setting empty variable
+   if (errcode==-1) errcode=0;
    free(str);
-   return 0;
+   return errcode;
 #endif
 }
 
