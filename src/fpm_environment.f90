@@ -14,6 +14,7 @@ module fpm_environment
     public :: os_is_unix
     public :: get_env
     public :: set_env
+    public :: delete_env
     public :: get_command_arguments_quoted
     public :: separator
     
@@ -343,7 +344,6 @@ character(len=:),allocatable :: fname
 end function separator
 
 !> Set an environment variable for the current environment using the C standard library
-
 logical function set_env(name,value,overwrite)
 
    !> Variable name
@@ -361,7 +361,8 @@ logical function set_env(name,value,overwrite)
    character(kind=c_char,len=1), allocatable :: c_value(:),c_name(:)
    
    interface
-      integer(c_int) function c_setenv(envname, envval, overwrite) bind(C,name="c_setenv")
+      integer(c_int) function c_setenv(envname, envval, overwrite) &
+                     bind(C,name="c_setenv")
          import c_int, c_char
          implicit none
          !> Pointer to the name string
@@ -370,7 +371,7 @@ logical function set_env(name,value,overwrite)
          character(kind=c_char,len=1), intent(in) :: envval(*)
          !> Overwrite option
          integer(c_int), intent(in), value :: overwrite
-      end function c_setenv
+      end function c_setenv 
    end interface
    
    !> Overwrite setting
@@ -387,23 +388,51 @@ logical function set_env(name,value,overwrite)
    
    set_env = cerr==0_c_int
    
-   contains
-   
-   pure subroutine f2cs(f,c)
-      use iso_c_binding, only: c_char,c_null_char
-      character(*), intent(in) :: f
-      character(len=1,kind=c_char), allocatable, intent(out) :: c(:)
-      
-      integer :: lf,i
-      
-      lf = len(f)
-      allocate(c(lf+1))
-      c(lf+1) = c_null_char 
-      forall(i=1:lf) c(i) = f(i:i)
-      
-   end subroutine f2cs 
-   
 end function set_env
 
+!> Deletes an environment variable for the current environment using the C standard library
+!> Returns an error if the variable did not exist in the first place
+logical function delete_env(name) result(success)
+
+   !> Variable name
+   character(*), intent(in) :: name
+   
+   ! Local variables
+   integer(c_int) :: cerr
+   character(kind=c_char,len=1), allocatable :: c_name(:)
+   
+   interface
+      integer(c_int) function c_unsetenv(envname) bind(C,name="c_unsetenv")
+         import c_int, c_char
+         implicit none
+         !> Pointer to the name string
+         character(kind=c_char,len=1), intent(in) :: envname(*)
+      end function c_unsetenv      
+   end interface
+   
+   !> C strings
+   call f2cs(name,c_name)
+   
+   !> Call setenv
+   cerr = c_unsetenv(c_name)
+   
+   success = cerr==0_c_int
+   
+end function delete_env
+
+!> Fortran to C allocatable string
+pure subroutine f2cs(f,c)
+  use iso_c_binding, only: c_char,c_null_char
+  character(*), intent(in) :: f
+  character(len=1,kind=c_char), allocatable, intent(out) :: c(:)
+  
+  integer :: lf,i
+  
+  lf = len(f)
+  allocate(c(lf+1))
+  c(lf+1) = c_null_char 
+  forall(i=1:lf) c(i) = f(i:i)
+  
+end subroutine f2cs 
 
 end module fpm_environment

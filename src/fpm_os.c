@@ -23,3 +23,12 @@ char* c_realpath(char* path, char* resolved_path, int maxLength) {
 int c_setenv(const char *envname, const char *envval, int overwrite) {
    return setenv(envname, envval, overwrite);
 } 
+
+/// @brief Delete environment variable using the C standard library
+/// @param envname: points to a string containing the name of an environment variable.
+/// @return success flag, 0 on successful execution
+int c_unsetenv(const char *envname) {
+   return unsetenv(envname);
+} 
+
+
