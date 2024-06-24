@@ -1284,94 +1284,9 @@ logical function assert_pkg_config()
    call run_wrapper(wrapper=string_t('pkg-config'),args=[string_t('-h')], &
                     exitcode=exitcode,cmd_success=success,screen_output=log)
    
-   print *, 'exitcode ',exitcode
-   print *, 'success  ',success
-   print *, 'log: '
-   print *, log%s
-   
-        
    assert_pkg_config = exitcode==0 .and. success 
     
 end function assert_pkg_config
-
-!> Simple call to execute_command_line involving one mpi* wrapper
-subroutine run_pkg_config(args,verbose,exitcode,cmd_success,screen_output)
-    type(string_t), intent(in), optional :: args(:)
-    logical, intent(in), optional :: verbose
-    integer, intent(out), optional :: exitcode
-    logical, intent(out), optional :: cmd_success
-    type(string_t), intent(out), optional :: screen_output
-
-    logical :: echo_local
-    character(:), allocatable :: redirect_str,command,redirect,line
-    integer :: iunit,iarg,stat,cmdstat
-
-
-    if(present(verbose))then
-       echo_local=verbose
-    else
-       echo_local=.false.
-    end if
-
-    ! No redirection and non-verbose output
-    if (present(screen_output)) then
-        redirect = get_temp_filename()
-        redirect_str =  ">"//redirect//" 2>&1"
-    else
-        if (os_is_unix()) then
-            redirect_str = " >/dev/null 2>&1"
-        else
-            redirect_str = " >NUL 2>&1"
-        end if
-    end if
-
-    ! Init command
-    command = 'pkg-config'
-
-    add_arguments: if (present(args)) then
-        do iarg=1,size(args)
-            if (len_trim(args(iarg))<=0) cycle
-            command = trim(command)//' '//args(iarg)%s
-        end do
-    endif add_arguments
-
-    if (echo_local) print *, '+ ', command
-
-    ! Test command
-    call execute_command_line(command//redirect_str,exitstat=stat,cmdstat=cmdstat)
-
-    ! Command successful?
-    if (present(cmd_success)) cmd_success = cmdstat==0
-
-    ! Program exit code?
-    if (present(exitcode)) exitcode = stat
-
-    ! Want screen output?
-    if (present(screen_output) .and. cmdstat==0) then
-
-        allocate(character(len=0) :: screen_output%s)
-
-        open(newunit=iunit,file=redirect,status='old',iostat=stat)
-        if (stat == 0)then
-           do
-               call getline(iunit, line, stat)
-               if (stat /= 0) exit
-
-               screen_output%s = screen_output%s//new_line('a')//line
-
-               if (echo_local) write(*,'(A)') trim(line)
-           end do
-
-           ! Close and delete file
-           close(iunit,status='delete')
-
-        else
-           call fpm_stop(1,'cannot read temporary file from successful pkg-config run')
-        endif
-
-    end if
-
-end subroutine run_pkg_config
 
 !> Simple call to execute_command_line involving one mpi* wrapper
 subroutine run_wrapper(wrapper,args,verbose,exitcode,cmd_success,screen_output)
@@ -1871,11 +1786,46 @@ subroutine filter_link_arguments(compiler,command)
 
 end subroutine filter_link_arguments
 
+!> Query pkg-config for information
+type(string_t) function pkgcfg_query(package,command,error) result(screen)
+    character(*), intent(in) :: package,command
+    type(error_t), allocatable, intent(out) :: error
+
+    integer :: exitcode
+    logical :: success
+    type(string_t) :: log    
+    
+    select case (command)
+       
+       case ('version')        
+            
+            call run_wrapper(wrapper=string_t('pkg-config'), &
+                             args=[string_t(package),string_t('--modversion')], &
+                             exitcode=exitcode,cmd_success=success,screen_output=log)    
+            
+            if (success .and. exitcode==0) then 
+                call remove_newline_characters(log)
+                screen = log
+            else
+                screen = string_t("")
+            end if        
+            
+       case default
+            
+            call fatal_error(error, 'Internal error: invalid pkg-config query '//command)
+            return
+            
+    end select
+
+end function pkgcfg_query
+
 !> Initialize HDF5 metapackage for the current system
 subroutine init_hdf5(this,compiler,error)
     class(metapackage_t), intent(inout) :: this
     type(compiler_t), intent(in) :: compiler
     type(error_t), allocatable, intent(out) :: error
+    
+    type(string_t) :: log
 
     !> Cleanup
     call destroy(this)
@@ -1885,6 +1835,15 @@ subroutine init_hdf5(this,compiler,error)
         call fatal_error(error,'hdf5 metapackage requires pkg-config')
         return
     end if
+    
+    !> Get version
+    log = pkgcfg_query('hdf5','version',error)
+    if (allocated(error)) return
+    allocate(this%version)    
+    call new_version(this%version,log%s,error)
+    if (allocated(error)) return
+    
+    print *, 'version ',this%version%s()
 
     !> minpack is queried as a dependency from the official repository
     this%has_dependencies = .true.
