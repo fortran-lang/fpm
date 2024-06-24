@@ -1690,20 +1690,24 @@ subroutine init_hdf5(this,compiler,error)
     type(compiler_t), intent(in) :: compiler
     type(error_t), allocatable, intent(out) :: error
     
-    integer :: i
-    logical :: s
-    type(string_t) :: log
-    type(string_t), allocatable :: libs(:),flags(:),modules(:)
-    character(len=:), allocatable :: name,module_flag,include_flag
+    character(*), parameter :: find_hl(*) = &
+                 [character(11) :: '_hl_fortran','hl_fortran','_fortran','_hl']
     character(*), parameter :: candidates(5) = &
-                 [character(15) :: 'hdf5_hl_fortran','hdf5_fortran','hdf5_hl','hdf5','hdf5-serial']
+                 [character(15) :: 'hdf5_hl_fortran','hdf5-hl-fortran','hdf5_fortran','hdf5-fortran',&
+                                   'hdf5_hl','hdf5','hdf5-serial']
+
+    integer :: i,j,k
+    logical :: s,found_hl(size(find_hl))
+    type(string_t) :: log
+    type(string_t), allocatable :: libs(:),flags(:),modules(:),non_fortran(:)
+    character(len=:), allocatable :: name,module_flag,include_flag
 
     module_flag  = get_module_flag(compiler,"")
     include_flag = get_include_flag(compiler,"")
 
     !> Cleanup
     call destroy(this)
-    allocate(this%link_libs(0),this%incl_dirs(0),this%external_modules(0))
+    allocate(this%link_libs(0),this%incl_dirs(0),this%external_modules(0),non_fortran(0))
     this%link_flags = string_t("")
     this%flags = string_t("")
     
@@ -1764,6 +1768,80 @@ subroutine init_hdf5(this,compiler,error)
             
         end if
     end do
+    
+    ! Some pkg-config hdf5.pc (e.g. Ubuntu) don't include the commonly-used HL HDF5 libraries,
+    ! so let's add them if they exist
+    do i=1,size(this%link_libs)
+        
+        found_hl = .false.
+                
+        if (.not.str_ends_with(this%link_libs(i)%s, find_hl)) then 
+            
+           finals: do k=1,size(find_hl)
+              do j=1,size(this%link_libs)
+               if (str_begins_with_str(this%link_libs(j)%s,this%link_libs(i)%s) .and. &
+                   str_ends_with(this%link_libs(j)%s,find_hl(k))) then 
+                   found_hl(k) = .true.
+                   cycle finals
+               end if
+              end do
+           end do finals
+           
+           ! For each of the missing libraries, if there is a file, 
+           ! 
+            
+            
+           print *, this%link_libs(i)%s,' does not end: ',found_hl    
+            
+        end if
+        
+!        
+!                for larg in self.get_link_args():
+!            lpath = Path(larg)
+!            # some pkg-config hdf5.pc (e.g. Ubuntu) don't include the commonly-used HL HDF5 libraries,
+!            # so let's add them if they exist
+!            # additionally, some pkgconfig HDF5 HL files are malformed so let's be sure to find HL anyway
+!            if lpath.is_file():
+!                hl = []
+!                if language == 'cpp':
+!                    hl += ['_hl_cpp', '_cpp']
+!                elif language == 'fortran':
+!                    hl += ['_hl_fortran', 'hl_fortran', '_fortran']
+!                hl += ['_hl']  # C HL library, always needed
+!
+!                suffix = '.' + lpath.name.split('.', 1)[1]  # in case of .dll.a
+!                for h in hl:
+!                    hlfn = lpath.parent / (lpath.name.split('.', 1)[0] + h + suffix)
+!                    if hlfn.is_file():
+!                        link_args.append(str(hlfn))
+!                # HDF5 C libs are required by other HDF5 languages
+!                link_args.append(larg)
+!            else:
+!                link_args.append(larg)
+!        
+        
+    end do
+    
+!    
+!            # additionally, some pkgconfig HDF5 HL files are malformed so let's be sure to find HL anyway
+!            if lpath.is_file():
+!                hl = []
+!                if language == 'cpp':
+!                    hl += ['_hl_cpp', '_cpp']
+!                elif language == 'fortran':
+!                    hl += ['_hl_fortran', 'hl_fortran', '_fortran']
+!                hl += ['_hl']  # C HL library, always needed
+!
+!                suffix = '.' + lpath.name.split('.', 1)[1]  # in case of .dll.a
+!                for h in hl:
+!                    hlfn = lpath.parent / (lpath.name.split('.', 1)[0] + h + suffix)
+!                    if hlfn.is_file():
+!                        link_args.append(str(hlfn))
+!                # HDF5 C libs are required by other HDF5 languages
+!                link_args.append(larg)
+!            else:
+!                link_args.append(larg)    
+!                link_args.append(larg)    
     
     !> Get compiler flags
     flags = pkgcfg_get_build_flags(name,.true.,error)
