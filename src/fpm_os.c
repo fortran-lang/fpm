@@ -41,7 +41,9 @@ int c_unsetenv(const char *envname) {
 #ifndef _WIN32    
    return unsetenv(envname);
 #else
-   return _putenv_s(envname,NULL);    
+   // _putenv_s returns a non-zero code when deleting a variable
+   int errcode = _putenv_s(envname,NULL); 
+   return 0;    
 #endif   
 } 
 
