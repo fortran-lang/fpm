@@ -1766,7 +1766,7 @@ subroutine init_hdf5(this,compiler,error)
     end do
     
     !> Get compiler flags
-    flags = pkgcfg_get_build_flags(name,.false.,error)
+    flags = pkgcfg_get_build_flags(name,.true.,error)
     if (allocated(error)) return
 
     do i=1,size(flags)
