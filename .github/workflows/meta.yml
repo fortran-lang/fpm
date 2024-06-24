@@ -108,7 +108,6 @@ jobs:
         wget -O- https://apt.repos.intel.com/intel-gpg-keys/GPG-PUB-KEY-INTEL-SW-PRODUCTS.PUB | gpg --dearmor | sudo tee /usr/share/keyrings/oneapi-archive-keyring.gpg > /dev/null
         echo "deb [signed-by=/usr/share/keyrings/oneapi-archive-keyring.gpg] https://apt.repos.intel.com/oneapi all main" | sudo tee /etc/apt/sources.list.d/oneAPI.list
         sudo apt-get update
-        sudo apt install -y -q hdf5-fortran libhdf5-dev
 
     - name: (Ubuntu) Install Intel oneAPI
       if: contains(matrix.os,'ubuntu') && contains(matrix.mpi,'intel')
@@ -120,6 +119,13 @@ jobs:
       run: |
         source /opt/intel/oneapi/setvars.sh
         printenv >> $GITHUB_ENV
+        # To run HDF5 with oneAPI, we need to build it from source
+        curl -O -L https://github.com/HDFGroup/hdf5/archive/refs/tags/snapshot-1.14.tar.gz
+        tar zxf snapshot-1.14.tar.gz
+        cd hdf5-snapshot-1.14
+        ./configure --prefix=/tmp CC="$(which icx)" FC="$(which ifx)"  --enable-build-mode=production --enable-fortran
+        make -j
+        make check -j
 
     - name: (Windows) Put MSYS2_MinGW64 on PATH
       if: contains(matrix.os,'windows') && (!contains(matrix.mpi,'intel'))
