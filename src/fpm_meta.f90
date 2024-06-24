@@ -9,6 +9,7 @@
 !>
 !> - OpenMP
 !> - MPI
+!> - HDF5
 !> - fortran-lang stdlib
 !> - fortran-lang minpack
 !>
@@ -454,12 +455,11 @@ subroutine resolve_metapackage_model(model,package,settings,error)
         if (allocated(error)) return
     endif
 
-    ! stdlib
+    ! minpack
     if (package%meta%minpack%on) then
         call add_metapackage_model(model,package,settings,"minpack",error)
         if (allocated(error)) return
     endif
-
 
     ! Stdlib is not 100% thread safe. print a warning to the user
     if (package%meta%stdlib%on .and. package%meta%openmp%on) then
@@ -469,6 +469,12 @@ subroutine resolve_metapackage_model(model,package,settings,error)
     ! MPI
     if (package%meta%mpi%on) then
         call add_metapackage_model(model,package,settings,"mpi",error)
+        if (allocated(error)) return
+    endif
+
+    ! hdf5
+    if (package%meta%hdf5%on) then
+        call add_metapackage_model(model,package,settings,"hdf5",error)
         if (allocated(error)) return
     endif
 
