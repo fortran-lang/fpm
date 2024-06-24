@@ -6,14 +6,17 @@ module fpm_environment
     use,intrinsic :: iso_fortran_env, only : stdin=>input_unit,   &
                                            & stdout=>output_unit, &
                                            & stderr=>error_unit
+    use,intrinsic :: iso_c_binding, only: c_char,c_int,c_null_char
     use fpm_error, only : fpm_stop
     implicit none
     private
     public :: get_os_type
     public :: os_is_unix
     public :: get_env
+    public :: set_env
     public :: get_command_arguments_quoted
     public :: separator
+    
 
                         public :: OS_NAME
     integer, parameter, public :: OS_UNKNOWN = 0
@@ -338,4 +341,69 @@ character(len=:),allocatable :: fname
    endif
    !*ifort_bug*!sep_cache=sep
 end function separator
+
+!> Set an environment variable for the current environment using the C standard library
+
+logical function set_env(name,value,overwrite)
+
+   !> Variable name
+   character(*), intent(in) :: name
+   
+   !> Variable value
+   character(*), intent(in) :: value
+   
+   !> Should a former value be overwritten? default = .true.
+   logical, optional, intent(in) :: overwrite
+   
+   ! Local variables
+   logical :: can_overwrite
+   integer(c_int) :: cover,cerr
+   character(kind=c_char,len=1), allocatable :: c_value(:),c_name(:)
+   
+   interface
+      integer(c_int) function c_setenv(envname, envval, overwrite) bind(C,name="c_setenv")
+         import c_int, c_char
+         implicit none
+         !> Pointer to the name string
+         character(kind=c_char,len=1), intent(in) :: envname(*)
+         !> Pointer to the value string 
+         character(kind=c_char,len=1), intent(in) :: envval(*)
+         !> Overwrite option
+         integer(c_int), intent(in), value :: overwrite
+      end function c_setenv
+   end interface
+   
+   !> Overwrite setting
+   can_overwrite = .true.
+   if (present(overwrite)) can_overwrite = overwrite
+   cover = merge(1_c_int,0_c_int,can_overwrite)
+   
+   !> C strings
+   call f2cs(name,c_name)
+   call f2cs(value,c_value)
+   
+   !> Call setenv
+   cerr = c_setenv(c_name,c_value,cover)
+   
+   set_env = cerr==0_c_int
+   
+   contains
+   
+   pure subroutine f2cs(f,c)
+      use iso_c_binding, only: c_char,c_null_char
+      character(*), intent(in) :: f
+      character(len=1,kind=c_char), allocatable, intent(out) :: c(:)
+      
+      integer :: lf,i
+      
+      lf = len(f)
+      allocate(c(lf+1))
+      c(lf+1) = c_null_char 
+      forall(i=1:lf) c(i) = f(i:i)
+      
+   end subroutine f2cs 
+   
+end function set_env
+
+
 end module fpm_environment
