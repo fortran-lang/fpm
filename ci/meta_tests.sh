@@ -42,5 +42,10 @@ pushd metapackage_mpi_c
 "$fpm" run --verbose
 popd
 
+pushd metapackage_hdf5
+"$fpm" build --verbose 
+"$fpm" run --verbose
+popd
+
 # Cleanup
 rm -rf ./*/build

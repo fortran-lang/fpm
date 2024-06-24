@@ -67,6 +67,7 @@ jobs:
           wget
           unzip
           curl
+          hdf5
 
     - name: (Windows) Setup VS Build environment
       if: contains(matrix.os,'windows') && contains(matrix.mpi,'intel')
@@ -93,12 +94,12 @@ jobs:
     - name: (Ubuntu) Install OpenMPI
       if: contains(matrix.os,'ubuntu') && contains(matrix.mpi,'openmpi')
       run: |
-        sudo apt install -y -q openmpi-bin libopenmpi-dev
+        sudo apt install -y -q openmpi-bin libopenmpi-dev libhdf5-openmpi-dev
 
     - name: (Ubuntu) Install MPICH
       if: contains(matrix.os,'ubuntu') && contains(matrix.mpi,'mpich')
       run: |
-        sudo apt install -y -q mpich
+        sudo apt install -y -q mpich libhdf5-mpich-dev
 
     - name: (Ubuntu) Retrieve Intel toolchain
       if: contains(matrix.os,'ubuntu') && contains(matrix.mpi,'intel')
@@ -196,6 +197,11 @@ jobs:
       if: contains(matrix.mpi,'openmpi') && contains(matrix.os,'macos')
       run: |
         brew install openmpi #--cc=gcc-${{ env.GCC_V }} openmpi
+
+    - name: (macOS) Install homebrew HDF5
+      if: contains(matrix.os,'macos')
+      run: | 
+        brew install homebrew/science/hdf5 --with-fortran --with-mpi --with-fortran2003
 
     # Phase 1: Bootstrap fpm with existing version
     - name: Install fpm
