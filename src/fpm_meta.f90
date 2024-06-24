@@ -1684,23 +1684,67 @@ subroutine filter_link_arguments(compiler,command)
 
 end subroutine filter_link_arguments
 
+!> Given a library name and folder, find extension and prefix
+subroutine lib_get_trailing(lib_name,lib_dir,prefix,suffix,found)
+   character(*), intent(in) :: lib_name,lib_dir 
+   character(:), allocatable, intent(out) :: prefix,suffix
+   logical, intent(out) :: found
+   
+   character(*), parameter :: extensions(*) = [character(11) :: '.dll.a','.a','.dylib','.dll']           
+   logical :: is_file
+   character(:), allocatable :: noext,tokens(:),path
+   integer :: l,k
+    
+   ! Extract name with no extension
+   call split(lib_name,tokens,'.')
+   noext = trim(tokens(1))        
+    
+   ! Get library extension: find file name: NAME.a, NAME.dll.a, NAME.dylib, libNAME.a, etc.
+   found = .false.
+   suffix = ""
+   prefix = ""
+   with_pref: do l=1,2
+       if (l==2) then 
+          prefix = "lib"
+       else
+          prefix = ""  
+       end if
+       find_ext: do k=1,size(extensions)                     
+           path = join_path(lib_dir,prefix//noext//trim(extensions(k)))
+           inquire(file=path,exist=is_file)
+           
+           if (is_file) then 
+              suffix = trim(extensions(k))
+              found = .true.
+              exit with_pref
+           end if
+       end do find_ext
+   end do with_pref   
+   
+   if (.not.found) then 
+        prefix = ""
+        suffix = ""
+   end if
+    
+end subroutine lib_get_trailing
+
 !> Initialize HDF5 metapackage for the current system
 subroutine init_hdf5(this,compiler,error)
     class(metapackage_t), intent(inout) :: this
     type(compiler_t), intent(in) :: compiler
     type(error_t), allocatable, intent(out) :: error
-    
+
     character(*), parameter :: find_hl(*) = &
                  [character(11) :: '_hl_fortran','hl_fortran','_fortran','_hl']
-    character(*), parameter :: candidates(5) = &
+    character(*), parameter :: candidates(*) = &
                  [character(15) :: 'hdf5_hl_fortran','hdf5-hl-fortran','hdf5_fortran','hdf5-fortran',&
                                    'hdf5_hl','hdf5','hdf5-serial']
 
-    integer :: i,j,k
-    logical :: s,found_hl(size(find_hl))
-    type(string_t) :: log
+    integer :: i,j,k,l
+    logical :: s,found_hl(size(find_hl)),found
+    type(string_t) :: log,this_lib
     type(string_t), allocatable :: libs(:),flags(:),modules(:),non_fortran(:)
-    character(len=:), allocatable :: name,module_flag,include_flag
+    character(len=:), allocatable :: name,module_flag,include_flag,libdir,ext,pref
 
     module_flag  = get_module_flag(compiler,"")
     include_flag = get_include_flag(compiler,"")
@@ -1752,6 +1796,8 @@ subroutine init_hdf5(this,compiler,error)
     !> Get libraries
     libs = pkgcfg_get_libs(name,error)
     if (allocated(error)) return
+    
+    libdir = ""
     do i=1,size(libs)
         
         if (str_begins_with_str(libs(i)%s,'-l')) then 
@@ -1760,66 +1806,77 @@ subroutine init_hdf5(this,compiler,error)
             
             print *, 'HDF5: add link library '//libs(i)%s(3:)
             
-        else ! -L and other: concatenate
+        else ! -L and others: concatenate
             this%has_link_flags = .true.
             this%link_flags = string_t(trim(this%link_flags%s)//' '//libs(i)%s)
+
+            ! Also save library dir
+            if (str_begins_with_str(libs(i)%s,'-L')) then 
+               libdir = libs(i)%s(3:)  
+            elseif (str_begins_with_str(libs(i)%s,'/LIBPATH')) then
+               libdir = libs(i)%s(9:)
+            endif
             
             print *, 'HDF5: add link flag     '//libs(i)%s
             
         end if
     end do
     
+    print *, 'libdir = ',libdir
+    do i=1,size(this%link_libs)
+        print *, '-l'//this%link_libs(i)%s
+    end do    
+    
+    
     ! Some pkg-config hdf5.pc (e.g. Ubuntu) don't include the commonly-used HL HDF5 libraries,
     ! so let's add them if they exist
-    do i=1,size(this%link_libs)
-        
-        found_hl = .false.
+    if (len_trim(libdir)>0) then 
+        do i=1,size(this%link_libs)
+            
+            found_hl = .false.
+                    
+            if (.not.str_ends_with(this%link_libs(i)%s, find_hl)) then 
                 
-        if (.not.str_ends_with(this%link_libs(i)%s, find_hl)) then 
-            
-           finals: do k=1,size(find_hl)
-              do j=1,size(this%link_libs)
-               if (str_begins_with_str(this%link_libs(j)%s,this%link_libs(i)%s) .and. &
-                   str_ends_with(this%link_libs(j)%s,find_hl(k))) then 
-                   found_hl(k) = .true.
-                   cycle finals
-               end if
-              end do
-           end do finals
-           
-           ! For each of the missing libraries, if there is a file, 
-           ! 
-            
-            
-           print *, this%link_libs(i)%s,' does not end: ',found_hl    
-            
-        end if
-        
-!        
-!                for larg in self.get_link_args():
-!            lpath = Path(larg)
-!            # some pkg-config hdf5.pc (e.g. Ubuntu) don't include the commonly-used HL HDF5 libraries,
-!            # so let's add them if they exist
-!            # additionally, some pkgconfig HDF5 HL files are malformed so let's be sure to find HL anyway
-!            if lpath.is_file():
-!                hl = []
-!                if language == 'cpp':
-!                    hl += ['_hl_cpp', '_cpp']
-!                elif language == 'fortran':
-!                    hl += ['_hl_fortran', 'hl_fortran', '_fortran']
-!                hl += ['_hl']  # C HL library, always needed
-!
-!                suffix = '.' + lpath.name.split('.', 1)[1]  # in case of .dll.a
-!                for h in hl:
-!                    hlfn = lpath.parent / (lpath.name.split('.', 1)[0] + h + suffix)
-!                    if hlfn.is_file():
-!                        link_args.append(str(hlfn))
-!                # HDF5 C libs are required by other HDF5 languages
-!                link_args.append(larg)
-!            else:
-!                link_args.append(larg)
-!        
-        
+               ! Extract name with no extension
+               call lib_get_trailing(this%link_libs(i)%s, libdir, pref, ext, found)
+               
+               ! Search how many versions with the Fortran endings there are
+               finals: do k=1,size(find_hl)
+                  do j=1,size(this%link_libs)
+                    print *, this%link_libs(j)%s,' begins? ',str_begins_with_str(this%link_libs(j)%s,this%link_libs(i)%s), &
+                                                 ' ends? ',str_ends_with(this%link_libs(j)%s,trim(find_hl(k)))
+                   if (str_begins_with_str(this%link_libs(j)%s,this%link_libs(i)%s) .and. &
+                       str_ends_with(this%link_libs(j)%s,trim(find_hl(k)))) then 
+                       found_hl(k) = .true.
+                       cycle finals
+                   end if
+                  end do
+               end do finals
+               
+               print *, 'lib ',this%link_libs(i)%s,' found = ',found_hl
+               
+               ! For each of the missing ones, if there is a file, add it
+               add_missing: do k=1,size(find_hl)
+                  if (found_hl(k)) cycle add_missing
+                  
+                  ! Build file name
+                  this_lib%s = join_path(libdir,pref//this%link_libs(i)%s//trim(find_hl(k))//ext)                  
+                  inquire(file=this_lib%s,exist=found)
+                  
+                  ! File exists, but it is not linked against
+                  if (found) this%link_libs = [this%link_libs, &
+                                               string_t(this%link_libs(i)%s//trim(find_hl(k)))]
+                  
+               end do add_missing
+                
+            end if
+
+        end do
+    endif
+    
+    print *, 'final link libs: '
+    do i=1,size(this%link_libs)
+        print *, '-l'//this%link_libs(i)%s
     end do
     
 !    
