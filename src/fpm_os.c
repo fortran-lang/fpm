@@ -42,7 +42,7 @@ int c_unsetenv(const char *envname) {
    return unsetenv(envname);
 #else
    // _putenv_s returns a non-zero code when deleting a variable
-   int errcode = _putenv_s(envname,NULL); 
+   int errcode = _putenv_s(envname,'\0'); 
    return 0;    
 #endif   
 } 
