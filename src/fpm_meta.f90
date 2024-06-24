@@ -1786,38 +1786,74 @@ subroutine filter_link_arguments(compiler,command)
 
 end subroutine filter_link_arguments
 
-!> Query pkg-config for information
-type(string_t) function pkgcfg_query(package,command,error) result(screen)
-    character(*), intent(in) :: package,command
+!> Get package version from pkg-config
+type(string_t) function pkgcfg_get_version(package,error) result(screen)
+
+    !> Package name
+    character(*), intent(in) :: package
+    
+    !> Error handler
     type(error_t), allocatable, intent(out) :: error
 
     integer :: exitcode
     logical :: success
     type(string_t) :: log    
+        
+    call run_wrapper(wrapper=string_t('pkg-config'), &
+                     args=[string_t(package),string_t('--modversion')], &
+                     exitcode=exitcode,cmd_success=success,screen_output=log)    
     
-    select case (command)
-       
-       case ('version')        
-            
-            call run_wrapper(wrapper=string_t('pkg-config'), &
-                             args=[string_t(package),string_t('--modversion')], &
-                             exitcode=exitcode,cmd_success=success,screen_output=log)    
-            
-            if (success .and. exitcode==0) then 
-                call remove_newline_characters(log)
-                screen = log
-            else
-                screen = string_t("")
-            end if        
-            
-       case default
-            
-            call fatal_error(error, 'Internal error: invalid pkg-config query '//command)
-            return
-            
-    end select
+    if (success .and. exitcode==0) then 
+        call remove_newline_characters(log)
+        screen = log
+    else
+        screen = string_t("")
+    end if      
 
-end function pkgcfg_query
+end function pkgcfg_get_version
+
+!> Get package libraries from pkg-config
+function pkgcfg_get_libs(package,error) result(libraries)
+
+    !> Package name
+    character(*), intent(in) :: package
+    
+    !> Error handler
+    type(error_t), allocatable, intent(out) :: error
+    
+    !> A list of libraries
+    type(string_t), allocatable :: libraries(:)
+
+    integer :: exitcode,nlib,i
+    logical :: success
+    character(len=:), allocatable :: tokens(:)
+    type(string_t) :: log    
+        
+    call run_wrapper(wrapper=string_t('pkg-config'), &
+                     args=[string_t(package),string_t('--libs')], &
+                     exitcode=exitcode,cmd_success=success,screen_output=log)         
+
+    if (success .and. exitcode==0) then 
+        
+        call remove_newline_characters(log)
+        
+        ! Split all arguments
+        tokens = shlex_split(log%s)
+        
+        nlib = size(tokens)
+        allocate(libraries(nlib))
+        do i=1,nlib
+            libraries(i) = string_t(tokens(i))
+        end do
+        
+    else
+        
+        allocate(libraries(0))
+        call fatal_error(error,'cannot get <'//package//'> libraries from pkg-config')
+        
+    end if   
+
+end function pkgcfg_get_libs
 
 !> Initialize HDF5 metapackage for the current system
 subroutine init_hdf5(this,compiler,error)
@@ -1825,10 +1861,14 @@ subroutine init_hdf5(this,compiler,error)
     type(compiler_t), intent(in) :: compiler
     type(error_t), allocatable, intent(out) :: error
     
+    integer :: i
     type(string_t) :: log
+    type(string_t), allocatable :: libs(:)
 
     !> Cleanup
     call destroy(this)
+    allocate(this%link_libs(0),this%incl_dirs(0),this%external_modules(0))
+    this%link_flags = string_t("")
     
     !> Assert pkg-config is installed
     if (.not.assert_pkg_config()) then 
@@ -1837,16 +1877,30 @@ subroutine init_hdf5(this,compiler,error)
     end if
     
     !> Get version
-    log = pkgcfg_query('hdf5','version',error)
+    log = pkgcfg_get_version('hdf5',error)
     if (allocated(error)) return
     allocate(this%version)    
     call new_version(this%version,log%s,error)
     if (allocated(error)) return
     
-    print *, 'version ',this%version%s()
+    !> Get libraries
+    libs = pkgcfg_get_libs('hdf5',error)
+    if (allocated(error)) return
+    do i=1,size(libs)
+        
+        if (str_begins_with_str(libs(i)%s,'-l')) then 
+            this%has_link_libraries = .true.
+            this%link_libs = [this%link_libs, string_t(libs(i)%s(3:))]
+            
+        else ! -L and other: concatenate
+            this%has_link_flags = .true.
+            this%link_flags = string_t(trim(this%link_flags%s)//' '//libs(i)%s)
+        end if
+    end do
+    
+    
+    ! [TODO] manually add High-Level libraries (HL)
 
-    !> minpack is queried as a dependency from the official repository
-    this%has_dependencies = .true.
     
     call fatal_error(error,'hdf5 metapackage not finished')
 
