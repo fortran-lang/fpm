@@ -384,8 +384,9 @@ logical function set_env(name,value,overwrite)
    call f2cs(value,c_value)
    
    !> Call setenv
+#ifndef FPM_BOOTSTRAP   
    cerr = c_setenv(c_name,c_value,cover)
-   
+#endif
    set_env = cerr==0_c_int
    
 end function set_env
@@ -414,8 +415,9 @@ logical function delete_env(name) result(success)
    call f2cs(name,c_name)
    
    !> Call setenv
+#ifndef FPM_BOOTSTRAP   
    cerr = c_unsetenv(c_name)
-   
+#endif
    success = cerr==0_c_int
    
 end function delete_env
