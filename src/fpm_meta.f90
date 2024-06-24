@@ -171,6 +171,7 @@ subroutine init_from_name(this,name,compiler,error)
         case("stdlib");  call init_stdlib (this,compiler,error)
         case("minpack"); call init_minpack(this,compiler,error)
         case("mpi");     call init_mpi    (this,compiler,error)
+        case("hdf5");    call init_hdf5   (this,compiler,error)
         case default
             call syntax_error(error, "Package "//name//" is not supported in [metapackages]")
             return
@@ -1273,8 +1274,107 @@ subroutine assert_mpi_wrappers(wrappers,compiler,verbose)
 
 end subroutine assert_mpi_wrappers
 
+!> Check whether pkg-config is available on the local system
+logical function assert_pkg_config()
+
+   integer :: exitcode
+   logical :: success
+   type(string_t) :: log
+
+   call run_wrapper(wrapper=string_t('pkg-config'),args=[string_t('-h')], &
+                    exitcode=exitcode,cmd_success=success,screen_output=log)
+   
+   print *, 'exitcode ',exitcode
+   print *, 'success  ',success
+   print *, 'log: '
+   print *, log%s
+   
+        
+   assert_pkg_config = exitcode==0 .and. success 
+    
+end function assert_pkg_config
+
 !> Simple call to execute_command_line involving one mpi* wrapper
-subroutine run_mpi_wrapper(wrapper,args,verbose,exitcode,cmd_success,screen_output)
+subroutine run_pkg_config(args,verbose,exitcode,cmd_success,screen_output)
+    type(string_t), intent(in), optional :: args(:)
+    logical, intent(in), optional :: verbose
+    integer, intent(out), optional :: exitcode
+    logical, intent(out), optional :: cmd_success
+    type(string_t), intent(out), optional :: screen_output
+
+    logical :: echo_local
+    character(:), allocatable :: redirect_str,command,redirect,line
+    integer :: iunit,iarg,stat,cmdstat
+
+
+    if(present(verbose))then
+       echo_local=verbose
+    else
+       echo_local=.false.
+    end if
+
+    ! No redirection and non-verbose output
+    if (present(screen_output)) then
+        redirect = get_temp_filename()
+        redirect_str =  ">"//redirect//" 2>&1"
+    else
+        if (os_is_unix()) then
+            redirect_str = " >/dev/null 2>&1"
+        else
+            redirect_str = " >NUL 2>&1"
+        end if
+    end if
+
+    ! Init command
+    command = 'pkg-config'
+
+    add_arguments: if (present(args)) then
+        do iarg=1,size(args)
+            if (len_trim(args(iarg))<=0) cycle
+            command = trim(command)//' '//args(iarg)%s
+        end do
+    endif add_arguments
+
+    if (echo_local) print *, '+ ', command
+
+    ! Test command
+    call execute_command_line(command//redirect_str,exitstat=stat,cmdstat=cmdstat)
+
+    ! Command successful?
+    if (present(cmd_success)) cmd_success = cmdstat==0
+
+    ! Program exit code?
+    if (present(exitcode)) exitcode = stat
+
+    ! Want screen output?
+    if (present(screen_output) .and. cmdstat==0) then
+
+        allocate(character(len=0) :: screen_output%s)
+
+        open(newunit=iunit,file=redirect,status='old',iostat=stat)
+        if (stat == 0)then
+           do
+               call getline(iunit, line, stat)
+               if (stat /= 0) exit
+
+               screen_output%s = screen_output%s//new_line('a')//line
+
+               if (echo_local) write(*,'(A)') trim(line)
+           end do
+
+           ! Close and delete file
+           close(iunit,status='delete')
+
+        else
+           call fpm_stop(1,'cannot read temporary file from successful pkg-config run')
+        endif
+
+    end if
+
+end subroutine run_pkg_config
+
+!> Simple call to execute_command_line involving one mpi* wrapper
+subroutine run_wrapper(wrapper,args,verbose,exitcode,cmd_success,screen_output)
     type(string_t), intent(in) :: wrapper
     type(string_t), intent(in), optional :: args(:)
     logical, intent(in), optional :: verbose
@@ -1360,7 +1460,7 @@ subroutine run_mpi_wrapper(wrapper,args,verbose,exitcode,cmd_success,screen_outp
 
     end if
 
-end subroutine run_mpi_wrapper
+end subroutine run_wrapper
 
 !> Get MPI library type from the wrapper command. Currently, only OpenMPI is supported
 integer function which_mpi_library(wrapper,compiler,verbose)
@@ -1377,7 +1477,7 @@ integer function which_mpi_library(wrapper,compiler,verbose)
     if (len_trim(wrapper)<=0) return
 
     ! Run mpi wrapper first
-    call run_mpi_wrapper(wrapper,verbose=verbose,cmd_success=is_mpi_wrapper)
+    call run_wrapper(wrapper,verbose=verbose,cmd_success=is_mpi_wrapper)
 
     if (is_mpi_wrapper) then
 
@@ -1389,7 +1489,7 @@ integer function which_mpi_library(wrapper,compiler,verbose)
         ! Attempt to decipher which library this wrapper comes from.
 
         ! OpenMPI responds to '--showme' calls
-        call run_mpi_wrapper(wrapper,[string_t('--showme')],verbose,&
+        call run_wrapper(wrapper,[string_t('--showme')],verbose,&
                              exitcode=stat,cmd_success=is_mpi_wrapper)
         if (stat==0 .and. is_mpi_wrapper) then
             which_mpi_library = MPI_TYPE_OPENMPI
@@ -1397,7 +1497,7 @@ integer function which_mpi_library(wrapper,compiler,verbose)
         endif
 
         ! MPICH responds to '-show' calls
-        call run_mpi_wrapper(wrapper,[string_t('-show')],verbose,&
+        call run_wrapper(wrapper,[string_t('-show')],verbose,&
                              exitcode=stat,cmd_success=is_mpi_wrapper)
         if (stat==0 .and. is_mpi_wrapper) then
             which_mpi_library = MPI_TYPE_MPICH
@@ -1438,7 +1538,7 @@ type(string_t) function mpi_wrapper_query(mpilib,wrapper,command,verbose,error) 
                  return
            end select
 
-           call run_mpi_wrapper(wrapper,[cmdstr],verbose=verbose, &
+           call run_wrapper(wrapper,[cmdstr],verbose=verbose, &
                                 exitcode=stat,cmd_success=success,screen_output=screen)
 
            if (stat/=0 .or. .not.success) then
@@ -1464,7 +1564,7 @@ type(string_t) function mpi_wrapper_query(mpilib,wrapper,command,verbose,error) 
                  return
            end select
 
-           call run_mpi_wrapper(wrapper,[cmdstr],verbose=verbose, &
+           call run_wrapper(wrapper,[cmdstr],verbose=verbose, &
                                 exitcode=stat,cmd_success=success,screen_output=screen)
 
            if (stat/=0 .or. .not.success) then
@@ -1501,7 +1601,7 @@ type(string_t) function mpi_wrapper_query(mpilib,wrapper,command,verbose,error) 
                  return
            end select
 
-           call run_mpi_wrapper(wrapper,[cmdstr],verbose=verbose, &
+           call run_wrapper(wrapper,[cmdstr],verbose=verbose, &
                                 exitcode=stat,cmd_success=success,screen_output=screen)
 
            if (stat/=0 .or. .not.success) then
@@ -1531,7 +1631,7 @@ type(string_t) function mpi_wrapper_query(mpilib,wrapper,command,verbose,error) 
               case (MPI_TYPE_OPENMPI)
 
                  ! --showme:command returns the build command of this wrapper
-                 call run_mpi_wrapper(wrapper,[string_t('--showme:libdirs')],verbose=verbose, &
+                 call run_wrapper(wrapper,[string_t('--showme:libdirs')],verbose=verbose, &
                                       exitcode=stat,cmd_success=success,screen_output=screen)
 
                  if (stat/=0 .or. .not.success) then
@@ -1552,7 +1652,7 @@ type(string_t) function mpi_wrapper_query(mpilib,wrapper,command,verbose,error) 
            select case (mpilib)
               case (MPI_TYPE_OPENMPI)
                  ! --showme:command returns the build command of this wrapper
-                 call run_mpi_wrapper(wrapper,[string_t('--showme:incdirs')],verbose=verbose, &
+                 call run_wrapper(wrapper,[string_t('--showme:incdirs')],verbose=verbose, &
                                       exitcode=stat,cmd_success=success,screen_output=screen)
                  if (stat/=0 .or. .not.success) then
                     call syntax_error(error,'local OpenMPI library does not support --showme:incdirs')
@@ -1572,7 +1672,7 @@ type(string_t) function mpi_wrapper_query(mpilib,wrapper,command,verbose,error) 
               case (MPI_TYPE_OPENMPI)
 
                  ! --showme:command returns the build command of this wrapper
-                 call run_mpi_wrapper(wrapper,[string_t('--showme:version')],verbose=verbose, &
+                 call run_wrapper(wrapper,[string_t('--showme:version')],verbose=verbose, &
                                       exitcode=stat,cmd_success=success,screen_output=screen)
 
                  if (stat/=0 .or. .not.success) then
@@ -1587,12 +1687,12 @@ type(string_t) function mpi_wrapper_query(mpilib,wrapper,command,verbose,error) 
                  !> MPICH offers command "mpichversion" in the same system folder as the MPI wrappers.
                  !> So, attempt to run that first
                  cmdstr = string_t('mpichversion')
-                 call run_mpi_wrapper(cmdstr,verbose=verbose, &
+                 call run_wrapper(cmdstr,verbose=verbose, &
                                       exitcode=stat,cmd_success=success,screen_output=screen)
 
                  ! Second option: run mpich wrapper + "-v"
                  if (stat/=0 .or. .not.success) then
-                    call run_mpi_wrapper(wrapper,[string_t('-v')],verbose=verbose, &
+                    call run_wrapper(wrapper,[string_t('-v')],verbose=verbose, &
                                          exitcode=stat,cmd_success=success,screen_output=screen)
                     call remove_newline_characters(screen)
                  endif
@@ -1600,7 +1700,7 @@ type(string_t) function mpi_wrapper_query(mpilib,wrapper,command,verbose,error) 
                  ! Third option: mpiexec --version
                  if (stat/=0 .or. .not.success) then
                      cmdstr = string_t('mpiexec --version')
-                     call run_mpi_wrapper(cmdstr,verbose=verbose, &
+                     call run_wrapper(cmdstr,verbose=verbose, &
                                           exitcode=stat,cmd_success=success,screen_output=screen)
                  endif
 
@@ -1612,7 +1712,7 @@ type(string_t) function mpi_wrapper_query(mpilib,wrapper,command,verbose,error) 
               case (MPI_TYPE_INTEL)
 
                  ! --showme:command returns the build command of this wrapper
-                 call run_mpi_wrapper(wrapper,[string_t('-v')],verbose=verbose, &
+                 call run_wrapper(wrapper,[string_t('-v')],verbose=verbose, &
                                       exitcode=stat,cmd_success=success,screen_output=screen)
 
                  if (stat/=0 .or. .not.success) then
@@ -1771,5 +1871,27 @@ subroutine filter_link_arguments(compiler,command)
 
 end subroutine filter_link_arguments
 
+!> Initialize HDF5 metapackage for the current system
+subroutine init_hdf5(this,compiler,error)
+    class(metapackage_t), intent(inout) :: this
+    type(compiler_t), intent(in) :: compiler
+    type(error_t), allocatable, intent(out) :: error
+
+    !> Cleanup
+    call destroy(this)
+    
+    !> Assert pkg-config is installed
+    if (.not.assert_pkg_config()) then 
+        call fatal_error(error,'hdf5 metapackage requires pkg-config')
+        return
+    end if
+
+    !> minpack is queried as a dependency from the official repository
+    this%has_dependencies = .true.
+    
+    call fatal_error(error,'hdf5 metapackage not finished')
+
+
+end subroutine init_hdf5
 
 end module fpm_meta
