@@ -1879,27 +1879,6 @@ subroutine init_hdf5(this,compiler,error)
         print *, '-l'//this%link_libs(i)%s
     end do
     
-!    
-!            # additionally, some pkgconfig HDF5 HL files are malformed so let's be sure to find HL anyway
-!            if lpath.is_file():
-!                hl = []
-!                if language == 'cpp':
-!                    hl += ['_hl_cpp', '_cpp']
-!                elif language == 'fortran':
-!                    hl += ['_hl_fortran', 'hl_fortran', '_fortran']
-!                hl += ['_hl']  # C HL library, always needed
-!
-!                suffix = '.' + lpath.name.split('.', 1)[1]  # in case of .dll.a
-!                for h in hl:
-!                    hlfn = lpath.parent / (lpath.name.split('.', 1)[0] + h + suffix)
-!                    if hlfn.is_file():
-!                        link_args.append(str(hlfn))
-!                # HDF5 C libs are required by other HDF5 languages
-!                link_args.append(larg)
-!            else:
-!                link_args.append(larg)    
-!                link_args.append(larg)    
-    
     !> Get compiler flags
     flags = pkgcfg_get_build_flags(name,.true.,error)
     if (allocated(error)) return
