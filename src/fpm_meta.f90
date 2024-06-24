@@ -1812,6 +1812,26 @@ type(string_t) function pkgcfg_get_version(package,error) result(screen)
 
 end function pkgcfg_get_version
 
+!> Check if pkgcfg has package
+logical function pkgcfg_has_package(name) result(success)
+
+    !> Package name
+    character(*), intent(in) :: name
+    
+    integer :: exitcode
+    logical :: cmdok
+    type(string_t) :: log    
+        
+    call run_wrapper(wrapper=string_t('pkg-config'), &
+                     args=[string_t(name),string_t('--exists')], &
+                     exitcode=exitcode,cmd_success=cmdok,screen_output=log)    
+    
+    !> pkg-config --exists returns 0 only if the package exists
+    success = cmdok .and. exitcode==0
+            
+end function pkgcfg_has_package
+
+
 !> Get package libraries from pkg-config
 function pkgcfg_get_libs(package,error) result(libraries)
 
@@ -1862,8 +1882,11 @@ subroutine init_hdf5(this,compiler,error)
     type(error_t), allocatable, intent(out) :: error
     
     integer :: i
+    logical :: s
     type(string_t) :: log
     type(string_t), allocatable :: libs(:)
+    character(len=:), allocatable :: name
+    character(*), parameter :: candidates(2) = [character(10) :: 'hdf5','hdf5-serial']
 
     !> Cleanup
     call destroy(this)
@@ -1876,6 +1899,19 @@ subroutine init_hdf5(this,compiler,error)
         return
     end if
     
+    !> Find pkg-config package file (parallel first)
+    name = 'ERROR'
+    do i=1,size(candidates)
+        if (pkgcfg_has_package(trim(candidates(i)))) then 
+            name = trim(candidates(i))
+            exit
+        end if
+    end do
+    if (name=='ERROR') then 
+        call fatal_error(error,'pkg-config could not find a suitable hdf5 package.')
+        return
+    end if
+        
     !> Get version
     log = pkgcfg_get_version('hdf5',error)
     if (allocated(error)) return
