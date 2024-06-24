@@ -201,7 +201,7 @@ jobs:
     - name: (macOS) Install homebrew HDF5
       if: contains(matrix.os,'macos')
       run: | 
-        brew install homebrew/science/hdf5 --with-fortran --with-mpi --with-fortran2003
+        brew install homebrew/science/hdf5 
 
     # Phase 1: Bootstrap fpm with existing version
     - name: Install fpm
