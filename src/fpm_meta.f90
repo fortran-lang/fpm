@@ -27,7 +27,7 @@ use fpm_command_line
 use fpm_manifest_dependency, only: dependency_config_t
 use fpm_git, only : git_target_branch, git_target_tag
 use fpm_manifest, only: package_config_t
-use fpm_environment, only: get_env,os_is_unix
+use fpm_environment, only: get_env,os_is_unix,set_env,delete_env
 use fpm_filesystem, only: run, get_temp_filename, getline, exists, canon_path, is_dir, get_dos_path
 use fpm_versioning, only: version_t, new_version, regex_version_from_text
 use fpm_os, only: get_absolute_path
@@ -1932,6 +1932,78 @@ function pkgcfg_list_all(error,descriptions) result(modules)
     
 end function pkgcfg_list_all
 
+!> 
+function pkgcfg_get_build_flags(name,allow_system,error) result(flags)
+    
+    !> Package name
+    character(*), intent(in) :: name
+    
+    !> Should pkg-config look in system paths? This is necessary for gfortran 
+    !> that doesn't otherwise look into them
+    logical, intent(in) :: allow_system 
+    
+    !> Error flag 
+    type(error_t), allocatable, intent(out) :: error
+    
+    !> List of compile flags
+    type(string_t), allocatable :: flags(:)
+    
+    integer :: exitcode,i,nlib
+    logical :: old_had,success,old_allow
+    character(:), allocatable :: old,tokens(:)
+    type(string_t) :: log    
+    
+    ! Check if the current environment includes system flags
+    old = get_env('PKG_CONFIG_ALLOW_SYSTEM_CFLAGS',default='ERROR')
+    old_had = old/='ERROR'
+    old_allow = merge(old=='1',.false.,old_had)
+    
+    ! Set system flags
+    success = set_env('PKG_CONFIG_ALLOW_SYSTEM_CFLAGS',value=merge('1','0',allow_system))
+    if (.not.success) then 
+        call fatal_error(error,'Cannot get pkg-config build flags: environment variable error.')
+        return
+    end if
+    
+    ! Now run wrapper
+    call run_wrapper(wrapper=string_t('pkg-config'), &
+                     args=[string_t(name),string_t('--cflags')], &
+                     exitcode=exitcode,cmd_success=success,screen_output=log) 
+                     
+    if (success .and. exitcode==0) then 
+        
+        call remove_newline_characters(log)
+        
+        ! Split all arguments
+        tokens = shlex_split(log%s)
+        
+        nlib = size(tokens)
+        allocate(flags(nlib))
+        do i=1,nlib
+            flags(i) = string_t(tokens(i))
+        end do
+        
+    else
+        
+        allocate(flags(0))
+        call fatal_error(error,'cannot get <'//name//'> build flags from pkg-config')
+        
+    end if   
+
+    ! Restore environment variable
+    if (old_had) then 
+        success = set_env('PKG_CONFIG_ALLOW_SYSTEM_CFLAGS',value=old)
+    else
+        success = delete_env('PKG_CONFIG_ALLOW_SYSTEM_CFLAGS')
+    end if
+    if (.not.success) then 
+        call fatal_error(error,'Cannot get pkg-config build flags: environment variable error.')
+        return
+    end if    
+    
+    
+end function pkgcfg_get_build_flags
+
 !> Initialize HDF5 metapackage for the current system
 subroutine init_hdf5(this,compiler,error)
     class(metapackage_t), intent(inout) :: this
@@ -1941,15 +2013,19 @@ subroutine init_hdf5(this,compiler,error)
     integer :: i
     logical :: s
     type(string_t) :: log
-    type(string_t), allocatable :: libs(:),modules(:)
-    character(len=:), allocatable :: name
+    type(string_t), allocatable :: libs(:),flags(:),modules(:)
+    character(len=:), allocatable :: name,module_flag,include_flag
     character(*), parameter :: candidates(5) = &
                  [character(15) :: 'hdf5_hl_fortran','hdf5_fortran','hdf5_hl','hdf5','hdf5-serial']
+
+    module_flag  = get_module_flag(compiler,"")
+    include_flag = get_include_flag(compiler,"")
 
     !> Cleanup
     call destroy(this)
     allocate(this%link_libs(0),this%incl_dirs(0),this%external_modules(0))
     this%link_flags = string_t("")
+    this%flags = string_t("")
     
     !> Assert pkg-config is installed
     if (.not.assert_pkg_config()) then 
@@ -2004,13 +2080,44 @@ subroutine init_hdf5(this,compiler,error)
         end if
     end do
     
-    ! [TODO] manually add High-Level API libraries (HL)
-    
-    
+    !> Get compiler flags
+    flags = pkgcfg_get_build_flags(name,.false.,error)
+    if (allocated(error)) return
 
+    do i=1,size(flags)
+        
+        if (str_begins_with_str(flags(i)%s,include_flag)) then 
+            this%has_include_dirs = .true.
+            this%incl_dirs = [this%incl_dirs, string_t(flags(i)%s(len(include_flag)+1:))]
+        else
+            this%has_build_flags = .true.
+            this%flags = string_t(trim(this%flags%s)//' '//flags(i)%s)
+        end if
+        
+    end do
     
-    call fatal_error(error,'hdf5 metapackage not finished')
-
+    !> Add HDF5 modules as external 
+    this%has_external_modules = .true.
+    this%external_modules = [string_t('h5a'), &
+                             string_t('h5d'), &
+                             string_t('h5es'), &
+                             string_t('h5e'), &
+                             string_t('h5f'), &
+                             string_t('h5g'), &
+                             string_t('h5i'), &
+                             string_t('h5l'), &
+                             string_t('h5o'), &
+                             string_t('h5p'), &
+                             string_t('h5r'), &
+                             string_t('h5s'), &
+                             string_t('h5t'), &
+                             string_t('h5vl'), &
+                             string_t('h5z'), &
+                             string_t('h5lib'), &
+                             string_t('h5global'), &
+                             string_t('h5_gen'), &
+                             string_t('h5fortkit'), &
+                             string_t('hdf5')]
 
 end subroutine init_hdf5
 
