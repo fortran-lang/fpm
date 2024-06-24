@@ -120,14 +120,18 @@ jobs:
     - name: (Ubuntu) finalize oneAPI environment 
       if: contains(matrix.os,'ubuntu') && contains(matrix.mpi,'intel')
       run: |
-        # To run HDF5 with oneAPI, we need to build it from source
+        # Install MPI
+        sudo apt-get install -y -q intel-oneapi-mpi-devel ninja-build cmake
+        source /opt/intel/oneapi/setvars.sh --force
+        printenv >> $GITHUB_ENV        
+        # To run HDF5 with oneAPI, we need to build it from source. Use CMake to generate pkg-config info
         curl -O -L https://github.com/HDFGroup/hdf5/archive/refs/tags/snapshot-1.14.tar.gz
         tar zxf snapshot-1.14.tar.gz
         cd hdf5-snapshot-1.14
-        sh ./autogen.sh
-        sh ./configure --prefix=/tmp CC="$(which icx)" FC="$(which ifx)"  --enable-build-mode=production --enable-fortran
+        cmake -B build -DCMAKE_Fortran_COMPILER=ifx -DCMAKE_C_COMPILER=icx -DCMAKE_CXX_COMPILER=icpx -DHDF5_BUILD_FORTRAN=ON -DCMAKE_INSTALL_PREFIX=/usr
+        cd build
         make -j
-        make check -j
+        sudo make install
 
     - name: (Windows) Put MSYS2_MinGW64 on PATH
       if: contains(matrix.os,'windows') && (!contains(matrix.mpi,'intel'))
@@ -224,8 +228,8 @@ jobs:
         mv $(which fpm) fpm-bootstrap${{ matrix.exe }}
         echo "BOOTSTRAP=$PWD/fpm-bootstrap" >> $GITHUB_ENV
 
-    - name: (macOS) Use gcc/g++ instead of Clang for C/C++
-      if: contains(matrix.os,'macOS')
+    - name: (macOS/Ubuntu) Use gcc/g++ instead of Clang for C/C++ / ifx to build fpm
+      if: contains(matrix.os,'macOS') || contains(matrix.os,'ubuntu')
       shell: bash
       run: |
         echo "FPM_FC=gfortran-${{ env.GCC_V }}" >> $GITHUB_ENV
