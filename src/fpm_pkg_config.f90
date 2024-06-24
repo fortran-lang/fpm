@@ -114,7 +114,7 @@ function pkgcfg_get_libs(package,error) result(libraries)
         nlib = size(tokens)
         allocate(libraries(nlib))
         do i=1,nlib
-            libraries(i) = string_t(trim(tokens(i)))
+            libraries(i) = string_t(string_t(trim(adjustl(tokens(i))))
         end do
         
     else
@@ -232,7 +232,7 @@ function pkgcfg_get_build_flags(name,allow_system,error) result(flags)
         nlib = size(tokens)
         allocate(flags(nlib))
         do i=1,nlib
-            flags(i) = string_t(trim(tokens(i)))
+            flags(i) = string_t(trim(adjustl(tokens(i))))
         end do
         
     else

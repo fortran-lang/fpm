@@ -329,7 +329,7 @@ subroutine resolve_model(self,model,error)
     if (self%has_cxx_flags)     model%cxx_compile_flags     = model%cxx_compile_flags//self%cxxflags%s
 
     if (self%has_link_flags) then
-        model%link_flags            = model%link_flags//self%link_flags%s
+        model%link_flags            = model%link_flags//' '//self%link_flags%s
     end if
 
     if (self%has_link_libraries) then
@@ -1754,9 +1754,14 @@ subroutine init_hdf5(this,compiler,error)
             this%has_link_libraries = .true.
             this%link_libs = [this%link_libs, string_t(libs(i)%s(3:))]
             
+            print *, 'HDF5: add link library '//libs(i)%s(3:)
+            
         else ! -L and other: concatenate
             this%has_link_flags = .true.
             this%link_flags = string_t(trim(this%link_flags%s)//' '//libs(i)%s)
+            
+            print *, 'HDF5: add link flag     '//libs(i)%s
+            
         end if
     end do
     
