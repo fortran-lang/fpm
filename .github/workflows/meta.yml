@@ -94,12 +94,12 @@ jobs:
     - name: (Ubuntu) Install OpenMPI
       if: contains(matrix.os,'ubuntu') && contains(matrix.mpi,'openmpi')
       run: |
-        sudo apt install -y -q openmpi-bin libopenmpi-dev hwloc fabric libhdf5-dev libhdf5-openmpi-dev
+        sudo apt install -y -q openmpi-bin libopenmpi-dev hwloc fabric libhdf5-dev libhdf5-openmpi-dev hdf5-fortran
 
     - name: (Ubuntu) Install MPICH
       if: contains(matrix.os,'ubuntu') && contains(matrix.mpi,'mpich')
       run: |
-        sudo apt install -y -q mpich hwloc fabric libhdf5-dev libhdf5-mpich-dev
+        sudo apt install -y -q mpich hwloc fabric libhdf5-dev libhdf5-mpich-dev hdf5-fortran
 
     - name: (Ubuntu) Retrieve Intel toolchain
       if: contains(matrix.os,'ubuntu') && contains(matrix.mpi,'intel')
@@ -108,7 +108,7 @@ jobs:
         wget -O- https://apt.repos.intel.com/intel-gpg-keys/GPG-PUB-KEY-INTEL-SW-PRODUCTS.PUB | gpg --dearmor | sudo tee /usr/share/keyrings/oneapi-archive-keyring.gpg > /dev/null
         echo "deb [signed-by=/usr/share/keyrings/oneapi-archive-keyring.gpg] https://apt.repos.intel.com/oneapi all main" | sudo tee /etc/apt/sources.list.d/oneAPI.list
         sudo apt-get update
-        sudo apt install -y -q libhdf5-dev
+        sudo apt install -y -q hdf5-fortran libhdf5-dev
 
     - name: (Ubuntu) Install Intel oneAPI
       if: contains(matrix.os,'ubuntu') && contains(matrix.mpi,'intel')
