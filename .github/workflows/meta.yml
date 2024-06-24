@@ -111,14 +111,15 @@ jobs:
 
     - name: (Ubuntu) Install Intel oneAPI
       if: contains(matrix.os,'ubuntu') && contains(matrix.mpi,'intel')
-      timeout-minutes: 15
-      run: sudo apt-get install intel-oneapi-compiler-dpcpp-cpp-2024.1.0-963 intel-oneapi-compiler-fortran-2024.1.0-963 intel-oneapi-mpi-devel ninja-build
+      uses: fortran-lang/setup-fortran@v1.6.1
+      id: setup-fortran
+      with:
+        compiler: intel 
+        version: 2024.1.0 
 
-    - name: (Ubuntu) Setup Intel oneAPI environment
+    - name: (Ubuntu) Build HDF5 for oneAPI 
       if: contains(matrix.os,'ubuntu') && contains(matrix.mpi,'intel')
       run: |
-        source /opt/intel/oneapi/setvars.sh
-        printenv >> $GITHUB_ENV
         # To run HDF5 with oneAPI, we need to build it from source
         curl -O -L https://github.com/HDFGroup/hdf5/archive/refs/tags/snapshot-1.14.tar.gz
         tar zxf snapshot-1.14.tar.gz
