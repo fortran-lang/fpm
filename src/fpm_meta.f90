@@ -1875,6 +1875,63 @@ function pkgcfg_get_libs(package,error) result(libraries)
 
 end function pkgcfg_get_libs
 
+!> Return whole list of available pkg-cfg packages
+function pkgcfg_list_all(error,descriptions) result(modules)
+    
+    !> Error handler
+    type(error_t), allocatable, intent(out) :: error
+    
+    !> A list of all available packages 
+    type(string_t), allocatable :: modules(:)    
+    
+    !> An optional list of package descriptions
+    type(string_t), optional, allocatable, intent(out) :: descriptions(:)
+    
+    integer :: exitcode,i,spc
+    logical :: success
+    character(len=:), allocatable :: lines(:)
+    type(string_t) :: log    
+    type(string_t), allocatable :: mods(:),descr(:)
+    character(*), parameter :: CRLF = achar(13)//new_line('a')
+        
+    call run_wrapper(wrapper=string_t('pkg-config'), &
+                     args=[string_t('--list-all')], &
+                     exitcode=exitcode,cmd_success=success,screen_output=log) 
+                     
+    if (.not.(success .and. exitcode==0)) then 
+        call fatal_error(error,'cannot get pkg-config modules')
+        allocate(modules(0))
+        return
+    end if
+                    
+    !> Extract list 
+    call split(log%s,lines,CRLF)
+    allocate(mods(size(lines)),descr(size(lines)))
+    
+    do i=1,size(lines)
+        
+        ! Module names have no spaces
+        spc = index(lines(i),' ')
+        
+        if (spc>0) then 
+            
+            mods(i)  = string_t(trim(adjustl(lines(i)(1:spc))))
+            descr(i) = string_t(trim(adjustl(lines(i)(spc+1:))))
+            
+        else
+            
+            mods(i)  = string_t(trim(adjustl(lines(i))))
+            descr(i) = string_t("")
+            
+        end if
+        
+    end do
+    
+    call move_alloc(from=mods,to=modules)
+    if (present(descriptions)) call move_alloc(from=descr,to=descriptions)
+    
+end function pkgcfg_list_all
+
 !> Initialize HDF5 metapackage for the current system
 subroutine init_hdf5(this,compiler,error)
     class(metapackage_t), intent(inout) :: this
@@ -1884,9 +1941,10 @@ subroutine init_hdf5(this,compiler,error)
     integer :: i
     logical :: s
     type(string_t) :: log
-    type(string_t), allocatable :: libs(:)
+    type(string_t), allocatable :: libs(:),modules(:)
     character(len=:), allocatable :: name
-    character(*), parameter :: candidates(2) = [character(10) :: 'hdf5','hdf5-serial']
+    character(*), parameter :: candidates(5) = &
+                 [character(15) :: 'hdf5_hl_fortran','hdf5_fortran','hdf5_hl','hdf5','hdf5-serial']
 
     !> Cleanup
     call destroy(this)
@@ -1899,28 +1957,40 @@ subroutine init_hdf5(this,compiler,error)
         return
     end if
     
-    !> Find pkg-config package file (parallel first)
-    name = 'ERROR'
+    !> Find pkg-config package file by priority
+    name = 'NOT_FOUND'
     do i=1,size(candidates)
         if (pkgcfg_has_package(trim(candidates(i)))) then 
             name = trim(candidates(i))
             exit
         end if
     end do
-    if (name=='ERROR') then 
+    
+    !> some distros put hdf5-1.2.3.pc with version number in .pc filename.
+    if (name=='NOT_FOUND') then 
+        modules = pkgcfg_list_all(error) 
+        do i=1,size(modules)
+            if (str_begins_with_str(modules(i)%s,'hdf5')) then 
+                name = modules(i)%s
+                exit        
+            end if
+        end do
+    end if
+    
+    if (name=='NOT_FOUND') then 
         call fatal_error(error,'pkg-config could not find a suitable hdf5 package.')
         return
     end if
-        
+
     !> Get version
-    log = pkgcfg_get_version('hdf5',error)
+    log = pkgcfg_get_version(name,error)
     if (allocated(error)) return
     allocate(this%version)    
     call new_version(this%version,log%s,error)
     if (allocated(error)) return
     
     !> Get libraries
-    libs = pkgcfg_get_libs('hdf5',error)
+    libs = pkgcfg_get_libs(name,error)
     if (allocated(error)) return
     do i=1,size(libs)
         
@@ -1934,8 +2004,9 @@ subroutine init_hdf5(this,compiler,error)
         end if
     end do
     
+    ! [TODO] manually add High-Level API libraries (HL)
     
-    ! [TODO] manually add High-Level libraries (HL)
+    
 
     
     call fatal_error(error,'hdf5 metapackage not finished')
