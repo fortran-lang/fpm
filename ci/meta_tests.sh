@@ -44,12 +44,12 @@ popd
 
 
 # ifx cannot currently build the HDF5 library
-if [ ! "$FPM_FC" == "ifx" ]; then 
+# if [ ! "$FPM_FC" == "ifx" ]; then 
    pushd metapackage_hdf5
    "$fpm" build --verbose 
    "$fpm" run --verbose
    popd
-fi
+#fi
 
 # Cleanup
 rm -rf ./*/build

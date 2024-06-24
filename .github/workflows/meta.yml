@@ -117,7 +117,7 @@ jobs:
         compiler: intel 
         version: 2024.1.0 
 
-    - name: (Ubuntu) Build HDF5 for oneAPI 
+    - name: (Ubuntu) finalize oneAPI environment 
       if: contains(matrix.os,'ubuntu') && contains(matrix.mpi,'intel')
       run: |
         # To run HDF5 with oneAPI, we need to build it from source
