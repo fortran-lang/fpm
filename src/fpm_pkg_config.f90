@@ -114,7 +114,7 @@ function pkgcfg_get_libs(package,error) result(libraries)
         nlib = size(tokens)
         allocate(libraries(nlib))
         do i=1,nlib
-            libraries(i) = string_t(string_t(trim(adjustl(tokens(i))))
+            libraries(i) = string_t(string_t(trim(adjustl(tokens(i)))))
         end do
         
     else
