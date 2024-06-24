@@ -28,7 +28,7 @@ int c_setenv(const char *envname, const char *envval, int overwrite) {
    if(!overwrite) {
        size_t envsize = 0;
        errcode = getenv_s(&envsize, NULL, 0, envname);
-       if(errcode || envsize) return errcode;
+       if (errcode || envsize) return errcode;
    }
    return _putenv_s(envname, envval);    
 #endif
@@ -38,7 +38,11 @@ int c_setenv(const char *envname, const char *envval, int overwrite) {
 /// @param envname: points to a string containing the name of an environment variable.
 /// @return success flag, 0 on successful execution
 int c_unsetenv(const char *envname) {
+#ifndef _WIN32    
    return unsetenv(envname);
+#else
+   return _putenv_s(envname,NULL);    
+#endif   
 } 
 
 
