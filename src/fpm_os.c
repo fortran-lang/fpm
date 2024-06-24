@@ -21,7 +21,17 @@ char* c_realpath(char* path, char* resolved_path, int maxLength) {
 /// @param overwrite: flag to determine whether an old value should be overwritten
 /// @return success flag, 0 on successful execution
 int c_setenv(const char *envname, const char *envval, int overwrite) {
+#ifndef _WIN32    
    return setenv(envname, envval, overwrite);
+#else
+   int errcode = 0;
+   if(!overwrite) {
+       size_t envsize = 0;
+       errcode = getenv_s(&envsize, NULL, 0, envname);
+       if(errcode || envsize) return errcode;
+   }
+   return _putenv_s(envname, envval);    
+#endif
 } 
 
 /// @brief Delete environment variable using the C standard library
