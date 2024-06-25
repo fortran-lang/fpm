@@ -749,25 +749,25 @@ module fpm_manifest_profile
                 & 'ifort', &
                 & OS_ALL, &
                 & flags = ' -fp-model precise -pc64 -align all -error-limit 1 -reentrancy&
-                          & threaded -nogen-interfaces -assume byterecl -standard-semantics', &
+                          & threaded -nogen-interfaces -assume byterecl', &
                 & is_built_in=.true.), &
               & new_profile('release', &
                 & 'ifort', &
                 & OS_WINDOWS, &
                 & flags = ' /fp:precise /align:all /error-limit:1 /reentrancy:threaded&
-                          & /nogen-interfaces /assume:byterecl /standard-semantics', &
+                          & /nogen-interfaces /assume:byterecl', &
                 & is_built_in=.true.), &
               & new_profile('release', &
                 & 'ifx', &
                 & OS_ALL, &
                 & flags = ' -fp-model=precise -pc64 -align all -error-limit 1 -reentrancy&
-                          & threaded -nogen-interfaces -assume byterecl -standard-semantics', &
+                          & threaded -nogen-interfaces -assume byterecl', &
                 & is_built_in=.true.), &
               & new_profile('release', &
                 & 'ifx', &
                 & OS_WINDOWS, &
                 & flags = ' /fp:precise /align:all /error-limit:1 /reentrancy:threaded&
-                          & /nogen-interfaces /assume:byterecl /standard-semantics', &
+                          & /nogen-interfaces /assume:byterecl', &
                 & is_built_in=.true.), &
               & new_profile('release', &
                 &'nagfor', &
@@ -805,28 +805,28 @@ module fpm_manifest_profile
               & new_profile('debug', &
                 & 'ifort', &
                 & OS_ALL, &
-                & flags = ' -warn all -check all -error-limit 1 -O0 -g -assume byterecl -standard-semantics -traceback', &
+                & flags = ' -warn all -check all -error-limit 1 -O0 -g -assume byterecl -traceback', &
                 & is_built_in=.true.), &
               & new_profile('debug', &
                 & 'ifort', &
                 & OS_WINDOWS, &
                 & flags = ' /warn:all /check:all /error-limit:1&
-                          & /Od /Z7 /assume:byterecl /standard-semantics /traceback', &
+                          & /Od /Z7 /assume:byterecl /traceback', &
                 & is_built_in=.true.), &
               & new_profile('debug', &
                 & 'ifx', &
                 & OS_ALL, &
-                & flags = ' -warn all -check all -error-limit 1 -O0 -g -assume byterecl -standard-semantics -traceback', &
+                & flags = ' -warn all -check all -error-limit 1 -O0 -g -assume byterecl -traceback', &
                 & is_built_in=.true.), &
               & new_profile('debug', &
                 & 'ifx', &
                 & OS_WINDOWS, &
-                & flags = ' /warn:all /check:all /error-limit:1 /Od /Z7 /assume:byterecl /standard-semantics', &
+                & flags = ' /warn:all /check:all /error-limit:1 /Od /Z7 /assume:byterecl', &
                 & is_built_in=.true.), &
               & new_profile('debug', &
                 & 'ifx', &
                 & OS_WINDOWS, &
-                & flags = ' /warn:all /check:all /error-limit:1 /Od /Z7 /assume:byterecl /standard-semantics', &
+                & flags = ' /warn:all /check:all /error-limit:1 /Od /Z7 /assume:byterecl', &
                 & is_built_in=.true.), &
               & new_profile('debug', &
                 & 'lfortran', &

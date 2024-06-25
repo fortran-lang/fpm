@@ -67,6 +67,7 @@ jobs:
           wget
           unzip
           curl
+          hdf5
 
     - name: (Windows) Setup VS Build environment
       if: contains(matrix.os,'windows') && contains(matrix.mpi,'intel')
@@ -93,12 +94,12 @@ jobs:
     - name: (Ubuntu) Install OpenMPI
       if: contains(matrix.os,'ubuntu') && contains(matrix.mpi,'openmpi')
       run: |
-        sudo apt install -y -q openmpi-bin libopenmpi-dev
+        sudo apt install -y -q openmpi-bin libopenmpi-dev hwloc fabric libhdf5-dev libhdf5-fortran-102
 
     - name: (Ubuntu) Install MPICH
       if: contains(matrix.os,'ubuntu') && contains(matrix.mpi,'mpich')
       run: |
-        sudo apt install -y -q mpich
+        sudo apt install -y -q mpich hwloc fabric libhdf5-dev libhdf5-fortran-102
 
     - name: (Ubuntu) Retrieve Intel toolchain
       if: contains(matrix.os,'ubuntu') && contains(matrix.mpi,'intel')
@@ -110,14 +111,27 @@ jobs:
 
     - name: (Ubuntu) Install Intel oneAPI
       if: contains(matrix.os,'ubuntu') && contains(matrix.mpi,'intel')
-      timeout-minutes: 15
-      run: sudo apt-get install intel-oneapi-compiler-dpcpp-cpp-2023.1.0 intel-oneapi-compiler-fortran-2023.1.0 intel-oneapi-mpi-devel ninja-build
+      uses: fortran-lang/setup-fortran@v1.6.1
+      id: setup-fortran
+      with:
+        compiler: intel 
+        version: 2024.1.0 
 
-    - name: (Ubuntu) Setup Intel oneAPI environment
+    - name: (Ubuntu) finalize oneAPI environment 
       if: contains(matrix.os,'ubuntu') && contains(matrix.mpi,'intel')
       run: |
-        source /opt/intel/oneapi/setvars.sh
-        printenv >> $GITHUB_ENV
+        # Install MPI
+        sudo apt-get install -y -q intel-oneapi-mpi-devel ninja-build cmake
+        source /opt/intel/oneapi/setvars.sh --force
+        printenv >> $GITHUB_ENV        
+        # To run HDF5 with oneAPI, we need to build it from source. Use CMake to generate pkg-config info
+        curl -O -L https://github.com/HDFGroup/hdf5/archive/refs/tags/snapshot-1.14.tar.gz
+        tar zxf snapshot-1.14.tar.gz
+        cd hdf5-snapshot-1.14
+        cmake -B build -DCMAKE_Fortran_COMPILER=ifx -DCMAKE_C_COMPILER=icx -DCMAKE_CXX_COMPILER=icpx -DHDF5_BUILD_FORTRAN=ON -DCMAKE_INSTALL_PREFIX=/usr
+        cd build
+        make -j
+        sudo make install
 
     - name: (Windows) Put MSYS2_MinGW64 on PATH
       if: contains(matrix.os,'windows') && (!contains(matrix.mpi,'intel'))
@@ -197,6 +211,11 @@ jobs:
       run: |
         brew install openmpi #--cc=gcc-${{ env.GCC_V }} openmpi
 
+    - name: (macOS) Install homebrew HDF5
+      if: contains(matrix.os,'macos')
+      run: | 
+        brew install hdf5 
+
     # Phase 1: Bootstrap fpm with existing version
     - name: Install fpm
       uses: fortran-lang/setup-fpm@v5
@@ -209,8 +228,8 @@ jobs:
         mv $(which fpm) fpm-bootstrap${{ matrix.exe }}
         echo "BOOTSTRAP=$PWD/fpm-bootstrap" >> $GITHUB_ENV
 
-    - name: (macOS) Use gcc/g++ instead of Clang for C/C++
-      if: contains(matrix.os,'macOS')
+    - name: (macOS/Ubuntu) Use gcc/g++ instead of Clang for C/C++ / ifx to build fpm
+      if: contains(matrix.os,'macOS') || contains(matrix.os,'ubuntu')
       shell: bash
       run: |
         echo "FPM_FC=gfortran-${{ env.GCC_V }}" >> $GITHUB_ENV

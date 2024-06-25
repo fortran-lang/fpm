@@ -556,7 +556,7 @@ contains
         compiler = 'ifort'
         call find_profile(package%profiles, profile_name, compiler, 3, profile_found, chosen_profile)
         if (.not.(chosen_profile%flags.eq.&
-            ' /warn:all /check:all /error-limit:1 /Od /Z7 /assume:byterecl /standard-semantics /traceback')) then
+            ' /warn:all /check:all /error-limit:1 /Od /Z7 /assume:byterecl /traceback')) then
             call test_failed(error, "Failed to load built-in profile "//profile_name)
             return
         end if

@@ -9,6 +9,7 @@
 !>
 !> - OpenMP
 !> - MPI
+!> - HDF5
 !> - fortran-lang stdlib
 !> - fortran-lang minpack
 !>
@@ -26,10 +27,11 @@ use fpm_command_line
 use fpm_manifest_dependency, only: dependency_config_t
 use fpm_git, only : git_target_branch, git_target_tag
 use fpm_manifest, only: package_config_t
-use fpm_environment, only: get_env,os_is_unix
+use fpm_environment, only: get_env,os_is_unix,set_env,delete_env
 use fpm_filesystem, only: run, get_temp_filename, getline, exists, canon_path, is_dir, get_dos_path
 use fpm_versioning, only: version_t, new_version, regex_version_from_text
 use fpm_os, only: get_absolute_path
+use fpm_pkg_config
 use shlex_module, only: shlex_split => split
 use regex_module, only: regex
 use iso_fortran_env, only: stdout => output_unit
@@ -170,6 +172,7 @@ subroutine init_from_name(this,name,compiler,error)
         case("stdlib");  call init_stdlib (this,compiler,error)
         case("minpack"); call init_minpack(this,compiler,error)
         case("mpi");     call init_mpi    (this,compiler,error)
+        case("hdf5");    call init_hdf5   (this,compiler,error)
         case default
             call syntax_error(error, "Package "//name//" is not supported in [metapackages]")
             return
@@ -326,7 +329,7 @@ subroutine resolve_model(self,model,error)
     if (self%has_cxx_flags)     model%cxx_compile_flags     = model%cxx_compile_flags//self%cxxflags%s
 
     if (self%has_link_flags) then
-        model%link_flags            = model%link_flags//self%link_flags%s
+        model%link_flags            = model%link_flags//' '//self%link_flags%s
     end if
 
     if (self%has_link_libraries) then
@@ -454,12 +457,11 @@ subroutine resolve_metapackage_model(model,package,settings,error)
         if (allocated(error)) return
     endif
 
-    ! stdlib
+    ! minpack
     if (package%meta%minpack%on) then
         call add_metapackage_model(model,package,settings,"minpack",error)
         if (allocated(error)) return
     endif
-
 
     ! Stdlib is not 100% thread safe. print a warning to the user
     if (package%meta%stdlib%on .and. package%meta%openmp%on) then
@@ -469,6 +471,12 @@ subroutine resolve_metapackage_model(model,package,settings,error)
     ! MPI
     if (package%meta%mpi%on) then
         call add_metapackage_model(model,package,settings,"mpi",error)
+        if (allocated(error)) return
+    endif
+
+    ! hdf5
+    if (package%meta%hdf5%on) then
+        call add_metapackage_model(model,package,settings,"hdf5",error)
         if (allocated(error)) return
     endif
 
@@ -1267,95 +1275,6 @@ subroutine assert_mpi_wrappers(wrappers,compiler,verbose)
 
 end subroutine assert_mpi_wrappers
 
-!> Simple call to execute_command_line involving one mpi* wrapper
-subroutine run_mpi_wrapper(wrapper,args,verbose,exitcode,cmd_success,screen_output)
-    type(string_t), intent(in) :: wrapper
-    type(string_t), intent(in), optional :: args(:)
-    logical, intent(in), optional :: verbose
-    integer, intent(out), optional :: exitcode
-    logical, intent(out), optional :: cmd_success
-    type(string_t), intent(out), optional :: screen_output
-
-    logical :: echo_local
-    character(:), allocatable :: redirect_str,command,redirect,line
-    integer :: iunit,iarg,stat,cmdstat
-
-
-    if(present(verbose))then
-       echo_local=verbose
-    else
-       echo_local=.false.
-    end if
-
-    ! No redirection and non-verbose output
-    if (present(screen_output)) then
-        redirect = get_temp_filename()
-        redirect_str =  ">"//redirect//" 2>&1"
-    else
-        if (os_is_unix()) then
-            redirect_str = " >/dev/null 2>&1"
-        else
-            redirect_str = " >NUL 2>&1"
-        end if
-    end if
-
-    ! Empty command
-    if (len_trim(wrapper)<=0) then
-        if (echo_local) print *, '+ <EMPTY COMMAND>'
-        if (present(exitcode)) exitcode = 0
-        if (present(cmd_success)) cmd_success = .true.
-        if (present(screen_output)) screen_output = string_t("")
-        return
-    end if
-
-    ! Init command
-    command = trim(wrapper%s)
-
-    add_arguments: if (present(args)) then
-        do iarg=1,size(args)
-            if (len_trim(args(iarg))<=0) cycle
-            command = trim(command)//' '//args(iarg)%s
-        end do
-    endif add_arguments
-
-    if (echo_local) print *, '+ ', command
-
-    ! Test command
-    call execute_command_line(command//redirect_str,exitstat=stat,cmdstat=cmdstat)
-
-    ! Command successful?
-    if (present(cmd_success)) cmd_success = cmdstat==0
-
-    ! Program exit code?
-    if (present(exitcode)) exitcode = stat
-
-    ! Want screen output?
-    if (present(screen_output) .and. cmdstat==0) then
-
-        allocate(character(len=0) :: screen_output%s)
-
-        open(newunit=iunit,file=redirect,status='old',iostat=stat)
-        if (stat == 0)then
-           do
-               call getline(iunit, line, stat)
-               if (stat /= 0) exit
-
-               screen_output%s = screen_output%s//new_line('a')//line
-
-               if (echo_local) write(*,'(A)') trim(line)
-           end do
-
-           ! Close and delete file
-           close(iunit,status='delete')
-
-        else
-           call fpm_stop(1,'cannot read temporary file from successful MPI wrapper')
-        endif
-
-    end if
-
-end subroutine run_mpi_wrapper
-
 !> Get MPI library type from the wrapper command. Currently, only OpenMPI is supported
 integer function which_mpi_library(wrapper,compiler,verbose)
     type(string_t), intent(in) :: wrapper
@@ -1371,7 +1290,7 @@ integer function which_mpi_library(wrapper,compiler,verbose)
     if (len_trim(wrapper)<=0) return
 
     ! Run mpi wrapper first
-    call run_mpi_wrapper(wrapper,verbose=verbose,cmd_success=is_mpi_wrapper)
+    call run_wrapper(wrapper,verbose=verbose,cmd_success=is_mpi_wrapper)
 
     if (is_mpi_wrapper) then
 
@@ -1383,7 +1302,7 @@ integer function which_mpi_library(wrapper,compiler,verbose)
         ! Attempt to decipher which library this wrapper comes from.
 
         ! OpenMPI responds to '--showme' calls
-        call run_mpi_wrapper(wrapper,[string_t('--showme')],verbose,&
+        call run_wrapper(wrapper,[string_t('--showme')],verbose,&
                              exitcode=stat,cmd_success=is_mpi_wrapper)
         if (stat==0 .and. is_mpi_wrapper) then
             which_mpi_library = MPI_TYPE_OPENMPI
@@ -1391,7 +1310,7 @@ integer function which_mpi_library(wrapper,compiler,verbose)
         endif
 
         ! MPICH responds to '-show' calls
-        call run_mpi_wrapper(wrapper,[string_t('-show')],verbose,&
+        call run_wrapper(wrapper,[string_t('-show')],verbose,&
                              exitcode=stat,cmd_success=is_mpi_wrapper)
         if (stat==0 .and. is_mpi_wrapper) then
             which_mpi_library = MPI_TYPE_MPICH
@@ -1432,7 +1351,7 @@ type(string_t) function mpi_wrapper_query(mpilib,wrapper,command,verbose,error) 
                  return
            end select
 
-           call run_mpi_wrapper(wrapper,[cmdstr],verbose=verbose, &
+           call run_wrapper(wrapper,[cmdstr],verbose=verbose, &
                                 exitcode=stat,cmd_success=success,screen_output=screen)
 
            if (stat/=0 .or. .not.success) then
@@ -1458,7 +1377,7 @@ type(string_t) function mpi_wrapper_query(mpilib,wrapper,command,verbose,error) 
                  return
            end select
 
-           call run_mpi_wrapper(wrapper,[cmdstr],verbose=verbose, &
+           call run_wrapper(wrapper,[cmdstr],verbose=verbose, &
                                 exitcode=stat,cmd_success=success,screen_output=screen)
 
            if (stat/=0 .or. .not.success) then
@@ -1495,7 +1414,7 @@ type(string_t) function mpi_wrapper_query(mpilib,wrapper,command,verbose,error) 
                  return
            end select
 
-           call run_mpi_wrapper(wrapper,[cmdstr],verbose=verbose, &
+           call run_wrapper(wrapper,[cmdstr],verbose=verbose, &
                                 exitcode=stat,cmd_success=success,screen_output=screen)
 
            if (stat/=0 .or. .not.success) then
@@ -1525,7 +1444,7 @@ type(string_t) function mpi_wrapper_query(mpilib,wrapper,command,verbose,error) 
               case (MPI_TYPE_OPENMPI)
 
                  ! --showme:command returns the build command of this wrapper
-                 call run_mpi_wrapper(wrapper,[string_t('--showme:libdirs')],verbose=verbose, &
+                 call run_wrapper(wrapper,[string_t('--showme:libdirs')],verbose=verbose, &
                                       exitcode=stat,cmd_success=success,screen_output=screen)
 
                  if (stat/=0 .or. .not.success) then
@@ -1546,7 +1465,7 @@ type(string_t) function mpi_wrapper_query(mpilib,wrapper,command,verbose,error) 
            select case (mpilib)
               case (MPI_TYPE_OPENMPI)
                  ! --showme:command returns the build command of this wrapper
-                 call run_mpi_wrapper(wrapper,[string_t('--showme:incdirs')],verbose=verbose, &
+                 call run_wrapper(wrapper,[string_t('--showme:incdirs')],verbose=verbose, &
                                       exitcode=stat,cmd_success=success,screen_output=screen)
                  if (stat/=0 .or. .not.success) then
                     call syntax_error(error,'local OpenMPI library does not support --showme:incdirs')
@@ -1566,7 +1485,7 @@ type(string_t) function mpi_wrapper_query(mpilib,wrapper,command,verbose,error) 
               case (MPI_TYPE_OPENMPI)
 
                  ! --showme:command returns the build command of this wrapper
-                 call run_mpi_wrapper(wrapper,[string_t('--showme:version')],verbose=verbose, &
+                 call run_wrapper(wrapper,[string_t('--showme:version')],verbose=verbose, &
                                       exitcode=stat,cmd_success=success,screen_output=screen)
 
                  if (stat/=0 .or. .not.success) then
@@ -1581,12 +1500,12 @@ type(string_t) function mpi_wrapper_query(mpilib,wrapper,command,verbose,error) 
                  !> MPICH offers command "mpichversion" in the same system folder as the MPI wrappers.
                  !> So, attempt to run that first
                  cmdstr = string_t('mpichversion')
-                 call run_mpi_wrapper(cmdstr,verbose=verbose, &
+                 call run_wrapper(cmdstr,verbose=verbose, &
                                       exitcode=stat,cmd_success=success,screen_output=screen)
 
                  ! Second option: run mpich wrapper + "-v"
                  if (stat/=0 .or. .not.success) then
-                    call run_mpi_wrapper(wrapper,[string_t('-v')],verbose=verbose, &
+                    call run_wrapper(wrapper,[string_t('-v')],verbose=verbose, &
                                          exitcode=stat,cmd_success=success,screen_output=screen)
                     call remove_newline_characters(screen)
                  endif
@@ -1594,7 +1513,7 @@ type(string_t) function mpi_wrapper_query(mpilib,wrapper,command,verbose,error) 
                  ! Third option: mpiexec --version
                  if (stat/=0 .or. .not.success) then
                      cmdstr = string_t('mpiexec --version')
-                     call run_mpi_wrapper(cmdstr,verbose=verbose, &
+                     call run_wrapper(cmdstr,verbose=verbose, &
                                           exitcode=stat,cmd_success=success,screen_output=screen)
                  endif
 
@@ -1606,7 +1525,7 @@ type(string_t) function mpi_wrapper_query(mpilib,wrapper,command,verbose,error) 
               case (MPI_TYPE_INTEL)
 
                  ! --showme:command returns the build command of this wrapper
-                 call run_mpi_wrapper(wrapper,[string_t('-v')],verbose=verbose, &
+                 call run_wrapper(wrapper,[string_t('-v')],verbose=verbose, &
                                       exitcode=stat,cmd_success=success,screen_output=screen)
 
                  if (stat/=0 .or. .not.success) then
@@ -1765,5 +1684,240 @@ subroutine filter_link_arguments(compiler,command)
 
 end subroutine filter_link_arguments
 
+!> Given a library name and folder, find extension and prefix
+subroutine lib_get_trailing(lib_name,lib_dir,prefix,suffix,found)
+   character(*), intent(in) :: lib_name,lib_dir 
+   character(:), allocatable, intent(out) :: prefix,suffix
+   logical, intent(out) :: found
+   
+   character(*), parameter :: extensions(*) = [character(11) :: '.dll.a','.a','.dylib','.dll']           
+   logical :: is_file
+   character(:), allocatable :: noext,tokens(:),path
+   integer :: l,k
+    
+   ! Extract name with no extension
+   call split(lib_name,tokens,'.')
+   noext = trim(tokens(1))        
+    
+   ! Get library extension: find file name: NAME.a, NAME.dll.a, NAME.dylib, libNAME.a, etc.
+   found = .false.
+   suffix = ""
+   prefix = ""
+   with_pref: do l=1,2
+       if (l==2) then 
+          prefix = "lib"
+       else
+          prefix = ""  
+       end if
+       find_ext: do k=1,size(extensions)                     
+           path = join_path(lib_dir,prefix//noext//trim(extensions(k)))
+           inquire(file=path,exist=is_file)
+           
+           if (is_file) then 
+              suffix = trim(extensions(k))
+              found = .true.
+              exit with_pref
+           end if
+       end do find_ext
+   end do with_pref   
+   
+   if (.not.found) then 
+        prefix = ""
+        suffix = ""
+   end if
+    
+end subroutine lib_get_trailing
+
+!> Initialize HDF5 metapackage for the current system
+subroutine init_hdf5(this,compiler,error)
+    class(metapackage_t), intent(inout) :: this
+    type(compiler_t), intent(in) :: compiler
+    type(error_t), allocatable, intent(out) :: error
+
+    character(*), parameter :: find_hl(*) = &
+                 [character(11) :: '_hl_fortran','hl_fortran','_fortran','_hl']
+    character(*), parameter :: candidates(*) = &
+                 [character(15) :: 'hdf5_hl_fortran','hdf5-hl-fortran','hdf5_fortran','hdf5-fortran',&
+                                   'hdf5_hl','hdf5','hdf5-serial']
+
+    integer :: i,j,k,l
+    logical :: s,found_hl(size(find_hl)),found
+    type(string_t) :: log,this_lib
+    type(string_t), allocatable :: libs(:),flags(:),modules(:),non_fortran(:)
+    character(len=:), allocatable :: name,module_flag,include_flag,libdir,ext,pref
+
+    module_flag  = get_module_flag(compiler,"")
+    include_flag = get_include_flag(compiler,"")
+
+    !> Cleanup
+    call destroy(this)
+    allocate(this%link_libs(0),this%incl_dirs(0),this%external_modules(0),non_fortran(0))
+    this%link_flags = string_t("")
+    this%flags = string_t("")
+    
+    !> Assert pkg-config is installed
+    if (.not.assert_pkg_config()) then 
+        call fatal_error(error,'hdf5 metapackage requires pkg-config')
+        return
+    end if
+    
+    !> Find pkg-config package file by priority
+    name = 'NOT_FOUND'
+    do i=1,size(candidates)
+        if (pkgcfg_has_package(trim(candidates(i)))) then 
+            name = trim(candidates(i))
+            exit
+        end if
+    end do
+    
+    !> some distros put hdf5-1.2.3.pc with version number in .pc filename.
+    if (name=='NOT_FOUND') then 
+        modules = pkgcfg_list_all(error) 
+        do i=1,size(modules)
+            if (str_begins_with_str(modules(i)%s,'hdf5')) then 
+                name = modules(i)%s
+                exit        
+            end if
+        end do
+    end if
+    
+    if (name=='NOT_FOUND') then 
+        call fatal_error(error,'pkg-config could not find a suitable hdf5 package.')
+        return
+    end if
+
+    !> Get version
+    log = pkgcfg_get_version(name,error)
+    if (allocated(error)) return
+    allocate(this%version)    
+    call new_version(this%version,log%s,error)
+    if (allocated(error)) return
+    
+    !> Get libraries
+    libs = pkgcfg_get_libs(name,error)
+    if (allocated(error)) return
+    
+    libdir = ""
+    do i=1,size(libs)
+        
+        if (str_begins_with_str(libs(i)%s,'-l')) then 
+            this%has_link_libraries = .true.
+            this%link_libs = [this%link_libs, string_t(libs(i)%s(3:))]
+            
+            print *, 'HDF5: add link library '//libs(i)%s(3:)
+            
+        else ! -L and others: concatenate
+            this%has_link_flags = .true.
+            this%link_flags = string_t(trim(this%link_flags%s)//' '//libs(i)%s)
+
+            ! Also save library dir
+            if (str_begins_with_str(libs(i)%s,'-L')) then 
+               libdir = libs(i)%s(3:)  
+            elseif (str_begins_with_str(libs(i)%s,'/LIBPATH')) then
+               libdir = libs(i)%s(9:)
+            endif
+            
+            print *, 'HDF5: add link flag     '//libs(i)%s
+            
+        end if
+    end do
+    
+    print *, 'libdir = ',libdir
+    do i=1,size(this%link_libs)
+        print *, '-l'//this%link_libs(i)%s
+    end do    
+    
+    
+    ! Some pkg-config hdf5.pc (e.g. Ubuntu) don't include the commonly-used HL HDF5 libraries,
+    ! so let's add them if they exist
+    if (len_trim(libdir)>0) then 
+        do i=1,size(this%link_libs)
+            
+            found_hl = .false.
+                    
+            if (.not.str_ends_with(this%link_libs(i)%s, find_hl)) then 
+                
+               ! Extract name with no extension
+               call lib_get_trailing(this%link_libs(i)%s, libdir, pref, ext, found)
+               
+               ! Search how many versions with the Fortran endings there are
+               finals: do k=1,size(find_hl)
+                  do j=1,size(this%link_libs)
+                    print *, this%link_libs(j)%s,' begins? ',str_begins_with_str(this%link_libs(j)%s,this%link_libs(i)%s), &
+                                                 ' ends? ',str_ends_with(this%link_libs(j)%s,trim(find_hl(k)))
+                   if (str_begins_with_str(this%link_libs(j)%s,this%link_libs(i)%s) .and. &
+                       str_ends_with(this%link_libs(j)%s,trim(find_hl(k)))) then 
+                       found_hl(k) = .true.
+                       cycle finals
+                   end if
+                  end do
+               end do finals
+               
+               print *, 'lib ',this%link_libs(i)%s,' found = ',found_hl
+               
+               ! For each of the missing ones, if there is a file, add it
+               add_missing: do k=1,size(find_hl)
+                  if (found_hl(k)) cycle add_missing
+                  
+                  ! Build file name
+                  this_lib%s = join_path(libdir,pref//this%link_libs(i)%s//trim(find_hl(k))//ext)                  
+                  inquire(file=this_lib%s,exist=found)
+                  
+                  ! File exists, but it is not linked against
+                  if (found) this%link_libs = [this%link_libs, &
+                                               string_t(this%link_libs(i)%s//trim(find_hl(k)))]
+                  
+               end do add_missing
+                
+            end if
+
+        end do
+    endif
+    
+    print *, 'final link libs: '
+    do i=1,size(this%link_libs)
+        print *, '-l'//this%link_libs(i)%s
+    end do
+    
+    !> Get compiler flags
+    flags = pkgcfg_get_build_flags(name,.true.,error)
+    if (allocated(error)) return
+
+    do i=1,size(flags)
+        
+        if (str_begins_with_str(flags(i)%s,include_flag)) then 
+            this%has_include_dirs = .true.
+            this%incl_dirs = [this%incl_dirs, string_t(flags(i)%s(len(include_flag)+1:))]
+        else
+            this%has_build_flags = .true.
+            this%flags = string_t(trim(this%flags%s)//' '//flags(i)%s)
+        end if
+        
+    end do
+    
+    !> Add HDF5 modules as external 
+    this%has_external_modules = .true.
+    this%external_modules = [string_t('h5a'), &
+                             string_t('h5d'), &
+                             string_t('h5es'), &
+                             string_t('h5e'), &
+                             string_t('h5f'), &
+                             string_t('h5g'), &
+                             string_t('h5i'), &
+                             string_t('h5l'), &
+                             string_t('h5o'), &
+                             string_t('h5p'), &
+                             string_t('h5r'), &
+                             string_t('h5s'), &
+                             string_t('h5t'), &
+                             string_t('h5vl'), &
+                             string_t('h5z'), &
+                             string_t('h5lib'), &
+                             string_t('h5global'), &
+                             string_t('h5_gen'), &
+                             string_t('h5fortkit'), &
+                             string_t('hdf5')]
+
+end subroutine init_hdf5
 
 end module fpm_meta
