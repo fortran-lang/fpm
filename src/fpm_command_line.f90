@@ -135,17 +135,18 @@ type, extends(fpm_cmd_settings)   :: fpm_clean_settings
     logical                       :: registry_cache = .false.
 end type
 
+!> Settings for searching for packages in local and remote registries
 type, extends(fpm_cmd_settings)   :: fpm_search_settings
-    character(len=:),allocatable  :: query
-    character(len=:),allocatable  :: page
-    character(len=:),allocatable  :: registry
-    character(len=:),allocatable  :: namespace
-    character(len=:),allocatable  :: package
-    character(len=:),allocatable  :: version
-    character(len=:),allocatable  :: license
-    character(len=:),allocatable  :: limit
-    character(len=:),allocatable  :: sort_by
-    character(len=:),allocatable  :: sort
+    character(len=:),allocatable  :: query     !> search for packages with a specific query (globbing supported) 
+    character(len=:),allocatable  :: page      !> return in a specific page of results of remote registry (default: 1)
+    character(len=:),allocatable  :: registry  !> search in a specific registry (default: official registry), stores the URL of the registry
+    character(len=:),allocatable  :: namespace !> search for packages with a specific namespace (globbing supported)
+    character(len=:),allocatable  :: package   !> search for packages with a specific name (globbing supported)
+    character(len=:),allocatable  :: version   !> search for packages with version (globbing supported)
+    character(len=:),allocatable  :: license   !> search for packages with a specific license (globbing supported)
+    character(len=:),allocatable  :: limit     !> limit the number of results returned (default: 10).
+    character(len=:),allocatable  :: sort_by   !> sort the results by name, author, createdat, updatedat, downloads (default: name)
+    character(len=:),allocatable  :: sort      !> sort the results in ascending or descending (asc or desc) order  (default: asc).
 end type
 
 type, extends(fpm_build_settings) :: fpm_publish_settings
@@ -1550,7 +1551,9 @@ contains
     ' and license from the registries (local and remote).', &
     '', &
     'OPTIONS', &
-    ' --query              Search query (supports wildcard).', &
+    ' --query              Search for any term, can be used for searching across parameters like:', &
+    '                      name, namespace, description, and license, version, keywords, ', &
+    '                      README, maintainer, author. (supports globbing)', &
     ' --page               Page number for results.', &
     ' --registry           URL of the registry to query.', &
     ' --namespace          Namespace of the package', &
