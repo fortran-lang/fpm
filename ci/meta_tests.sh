@@ -42,14 +42,10 @@ pushd metapackage_mpi_c
 "$fpm" run --verbose
 popd
 
-
-# ifx cannot currently build the HDF5 library
-# if [ ! "$FPM_FC" == "ifx" ]; then 
-   pushd metapackage_hdf5
-   "$fpm" build --verbose 
-   "$fpm" run --verbose
-   popd
-#fi
+pushd metapackage_hdf5
+"$fpm" build --verbose 
+"$fpm" run --verbose
+popd
 
 # Cleanup
 rm -rf ./*/build
