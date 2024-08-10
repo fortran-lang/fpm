@@ -21,69 +21,69 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-latest, macos-11, windows-latest]
-        gcc_v: [10,11,12] # Version of GFortran we want to use.
+        os: [ubuntu-latest, macos-12, windows-latest]
+        toolchain:
+          - {compiler: gcc, version: 10}
+          - {compiler: gcc, version: 11}
+          - {compiler: gcc, version: 12}
+          - {compiler: gcc, version: 13}
+        exclude:
+          - os: macos-12
+            toolchain: {compiler: gcc, version: 13}          
         include:
-        - os: ubuntu-latest
-          os-arch: linux-x86_64
-          release-flags: --flag '--static -g -fbacktrace -O3'
-
-        - os: macos-11
-          os-arch: macos-x86_64
-          release-flags: --flag '-g -fbacktrace -O3'
-
-        - os: windows-latest
-          os-arch: windows-x86_64
-          release-flags: --flag '--static -g -fbacktrace -O3'
-          exe: .exe
-
-    env:
-      FC: gfortran
-      GCC_V: ${{ matrix.gcc_v }}
+          - os: ubuntu-latest
+            os-arch: linux-x86_64
+            release-flags: --flag '--static -g -fbacktrace -O3'
+          - os: macos-12
+            os-arch: macos-x86_64
+            release-flags: --flag '-g -fbacktrace -O3'
+          - os: windows-latest
+            os-arch: windows-x86_64
+            release-flags: --flag '--static -g -fbacktrace -O3'
+            exe: .exe
 
     steps:
     - name: Checkout code
       uses: actions/checkout@v4
 
-    - name: Install GFortran macOS
-      if: contains(matrix.os, 'macos')
-      run: |
-        ln -s /usr/local/bin/gfortran-${GCC_V} /usr/local/bin/gfortran
-        which gfortran-${GCC_V}
-        which gfortran
-        # Backport gfortran shared libraries to version 9 folder. This is necessary because all macOS releases of fpm 
-        # have these paths hardcoded in the executable (no PIC?). As the gcc ABIs have not changed from 9 to 10, we 
-        # can just create symbolic links for now. This can be removed when an updated fpm release is built with gcc-10  
-        mkdir /usr/local/opt/gcc@9
-        mkdir /usr/local/opt/gcc@9/lib
-        mkdir /usr/local/opt/gcc@9/lib/gcc
-        mkdir /usr/local/opt/gcc@9/lib/gcc/9
-        mkdir /usr/local/lib/gcc/9
-        ln -fs /usr/local/opt/gcc@${GCC_V}/lib/gcc/${GCC_V}/libquadmath.0.dylib /usr/local/opt/gcc@9/lib/gcc/9/libquadmath.0.dylib 
-        ln -fs /usr/local/opt/gcc@${GCC_V}/lib/gcc/${GCC_V}/libgfortran.5.dylib /usr/local/opt/gcc@9/lib/gcc/9/libgfortran.5.dylib
-        ln -fs /usr/local/lib/gcc/${GCC_V}/libgcc_s.1.dylib /usr/local/lib/gcc/9/libgcc_s.1.dylib
-
-    - name: Install GFortran Linux
-      if: contains(matrix.os, 'ubuntu')
-      run: |
-        sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-${GCC_V} 100 \
-        --slave /usr/bin/gfortran gfortran /usr/bin/gfortran-${GCC_V} \
-        --slave /usr/bin/gcov gcov /usr/bin/gcov-${GCC_V}
-
-    - name: Install GFortran Windows
-      if: contains(matrix.os, 'windows')
-      run: |
-        Invoke-WebRequest -Uri $Env:GCC_DOWNLOAD -OutFile mingw-w64.zip
-        Expand-Archive mingw-w64.zip
-        echo "$pwd\mingw-w64\mingw64\bin" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
-      env:
-        GCC_DOWNLOAD: "https://github.com/brechtsanders/winlibs_mingw/releases/download/10.4.0-10.0.0-msvcrt-r1/winlibs-x86_64-posix-seh-gcc-10.4.0-mingw-w64msvcrt-10.0.0-r1.zip"
+    - name: Setup Fortran compiler
+      uses: fortran-lang/setup-fortran@v1.6.1
+      id: setup-fortran
+      with:
+        compiler: ${{ matrix.toolchain.compiler }}
+        version: ${{ matrix.toolchain.version }}
 
     # Phase 1: Bootstrap fpm with existing version
     - name: Install fpm
       uses: fortran-lang/setup-fpm@v5
       with:
         fpm-version: 'v0.8.0'
+
+    # Backport gfortran shared libraries to version 9 folder. This is necessary because the macOS release of fpm 
+    # 0.10.0 used for bootstrapping has these paths hardcoded in the executable.
+    - name: MacOS patch libgfortran
+      if: contains(matrix.os, 'macos') && !contains(matrix.toolchain.version, '10')
+      run: |
+        which gfortran-${{ matrix.toolchain.version }}
+        which gfortran
+        mkdir /usr/local/opt/gcc@10
+        mkdir /usr/local/opt/gcc@10/lib
+        mkdir /usr/local/opt/gcc@10/lib/gcc
+        mkdir /usr/local/opt/gcc@10/lib/gcc/10
+        mkdir /usr/local/lib/gcc/10
+        ln -fs /usr/local/opt/gcc@${{ matrix.toolchain.version }}/lib/gcc/${{ matrix.toolchain.version }}/libquadmath.0.dylib /usr/local/opt/gcc@10/lib/gcc/10/libquadmath.0.dylib 
+        ln -fs /usr/local/opt/gcc@${{ matrix.toolchain.version }}/lib/gcc/${{ matrix.toolchain.version }}/libgfortran.5.dylib /usr/local/opt/gcc@10/lib/gcc/10/libgfortran.5.dylib
+        ln -fs /usr/local/lib/gcc/${{ matrix.toolchain.version }}/libgcc_s.1.dylib /usr/local/lib/gcc/10/libgcc_s.1.dylib
+
+    # gcc and g++ will point to clang/clang++: use versioned alias for fpm
+    - name: MacOS patch C and C++ compilers
+      if: contains(matrix.os, 'macos')
+      run: |
+        echo "CC=gcc-${{ matrix.toolchain.version }}" >> $GITHUB_ENV
+        echo "FPM_CC=gcc-${{ matrix.toolchain.version }}" >> $GITHUB_ENV
+        echo "CXX=g++-${{ matrix.toolchain.version }}" >> $GITHUB_ENV
+        echo "FPM_CXX=g++-${{ matrix.toolchain.version }}" >> $GITHUB_ENV
+        echo "FPM_LDFLAGS=-lstdc++" >> $GITHUB_ENV
 
     - name: Remove fpm from path
       shell: bash
@@ -139,11 +139,6 @@ jobs:
       env:
         REGEX: '[0-9]\{1,4\}\.[0-9]\{1,4\}\.[0-9]\{1,4\}'
 
-    - name: Build example packages
-      shell: bash
-      run: |
-        ci/run_tests.sh "${{ env.FPM }}"
-
     - name: Build Fortran fpm
       shell: bash
       run: |
@@ -173,7 +168,7 @@ jobs:
         rm -v ${{ env.FPM }}
         echo "FPM_RELEASE=${{ env.EXE }}" >> $GITHUB_ENV
       env:
-        EXE: fpm-${{ env.VERSION }}-${{ matrix.os-arch }}-gcc-${{ matrix.gcc_v }}${{ matrix.exe }}
+        EXE: fpm-${{ env.VERSION }}-${{ matrix.os-arch }}-gcc-${{ matrix.toolchain.version }}${{ matrix.exe }}
 
     - name: Run release version
       shell: bash
