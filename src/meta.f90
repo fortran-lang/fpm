@@ -48,6 +48,9 @@ module fpm_manifest_metapackages
 
         !> fortran-lang minpack
         type(metapackage_request_t) :: minpack
+        
+        !> HDF5
+        type(metapackage_request_t) :: hdf5
 
     end type metapackage_config_t
 
@@ -196,6 +199,9 @@ contains
 
         call new_meta_request(self%mpi, "mpi", table, meta_allowed, error)
         if (allocated(error)) return
+        
+        call new_meta_request(self%hdf5, "hdf5", table, meta_allowed, error)
+        if (allocated(error)) return
 
     end subroutine new_meta_config
 
@@ -208,7 +214,7 @@ contains
         select case (key)
 
             !> Supported metapackages
-            case ("openmp","stdlib","mpi","minpack")
+            case ("openmp","stdlib","mpi","minpack","hdf5")
                 is_meta_package = .true.
 
             case default

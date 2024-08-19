@@ -161,7 +161,7 @@
     <tbody>
         <tr>
             <td>
-              <span class="anchor" id="variable-id~3"></span>
+              <span class="anchor" id="variable-id~6"></span>
               integer(kind=compiler_enum),
             </td>
 <td>intent(in)</td>
@@ -176,7 +176,7 @@
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-flags~5"></span>
+              <span class="anchor" id="variable-flags~9"></span>
               character(len=:),
             </td>
 <td>intent(out),</td>
@@ -255,7 +255,6 @@
 <span class="w">            </span><span class="n">flag_intel_limit</span><span class="o">//</span><span class="p">&amp;</span>
 <span class="w">            </span><span class="n">flag_intel_debug</span><span class="o">//</span><span class="p">&amp;</span>
 <span class="w">            </span><span class="n">flag_intel_byterecl</span><span class="o">//</span><span class="p">&amp;</span>
-<span class="w">            </span><span class="n">flag_intel_standard_compliance</span><span class="o">//</span><span class="p">&amp;</span>
 <span class="w">            </span><span class="n">flag_intel_backtrace</span>
 
 <span class="w">    </span><span class="k">case</span><span class="p">(</span><span class="n">id_intel_classic_mac</span><span class="p">)</span>
@@ -265,7 +264,6 @@
 <span class="w">            </span><span class="n">flag_intel_limit</span><span class="o">//</span><span class="p">&amp;</span>
 <span class="w">            </span><span class="n">flag_intel_debug</span><span class="o">//</span><span class="p">&amp;</span>
 <span class="w">            </span><span class="n">flag_intel_byterecl</span><span class="o">//</span><span class="p">&amp;</span>
-<span class="w">            </span><span class="n">flag_intel_standard_compliance</span><span class="o">//</span><span class="p">&amp;</span>
 <span class="w">            </span><span class="n">flag_intel_backtrace</span>
 <span class="w">    </span><span class="k">case</span><span class="p">(</span><span class="n">id_intel_classic_windows</span><span class="p">)</span>
 <span class="w">        </span><span class="n">flags</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">&amp;</span>
@@ -274,7 +272,6 @@
 <span class="w">            </span><span class="n">flag_intel_limit_win</span><span class="o">//</span><span class="p">&amp;</span>
 <span class="w">            </span><span class="n">flag_intel_debug_win</span><span class="o">//</span><span class="p">&amp;</span>
 <span class="w">            </span><span class="n">flag_intel_byterecl_win</span><span class="o">//</span><span class="p">&amp;</span>
-<span class="w">            </span><span class="n">flag_intel_standard_compliance_win</span><span class="o">//</span><span class="p">&amp;</span>
 <span class="w">            </span><span class="n">flag_intel_backtrace_win</span>
 <span class="w">    </span><span class="k">case</span><span class="p">(</span><span class="n">id_intel_llvm_nix</span><span class="p">)</span>
 <span class="w">        </span><span class="n">flags</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">&amp;</span>
@@ -283,7 +280,6 @@
 <span class="w">            </span><span class="n">flag_intel_limit</span><span class="o">//</span><span class="p">&amp;</span>
 <span class="w">            </span><span class="n">flag_intel_debug</span><span class="o">//</span><span class="p">&amp;</span>
 <span class="w">            </span><span class="n">flag_intel_byterecl</span><span class="o">//</span><span class="p">&amp;</span>
-<span class="w">            </span><span class="n">flag_intel_standard_compliance</span><span class="o">//</span><span class="p">&amp;</span>
 <span class="w">            </span><span class="n">flag_intel_backtrace</span>
 <span class="w">    </span><span class="k">case</span><span class="p">(</span><span class="n">id_intel_llvm_windows</span><span class="p">)</span>
 <span class="w">        </span><span class="n">flags</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">&amp;</span>
@@ -291,8 +287,7 @@
 <span class="w">            </span><span class="n">flag_intel_check_win</span><span class="o">//</span><span class="p">&amp;</span>
 <span class="w">            </span><span class="n">flag_intel_limit_win</span><span class="o">//</span><span class="p">&amp;</span>
 <span class="w">            </span><span class="n">flag_intel_debug_win</span><span class="o">//</span><span class="p">&amp;</span>
-<span class="w">            </span><span class="n">flag_intel_byterecl_win</span><span class="o">//</span><span class="p">&amp;</span>
-<span class="w">            </span><span class="n">flag_intel_standard_compliance_win</span>
+<span class="w">            </span><span class="n">flag_intel_byterecl_win</span>
 <span class="w">    </span><span class="k">case</span><span class="p">(</span><span class="n">id_nag</span><span class="p">)</span>
 <span class="w">        </span><span class="n">flags</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">&amp;</span>
 <span class="w">            </span><span class="n">flag_nag_debug</span><span class="o">//</span><span class="p">&amp;</span>
@@ -328,7 +323,7 @@
             <p class="text-end">
               Documentation generated by
               <a href="https://github.com/Fortran-FOSS-Programmers/ford">FORD</a>
- on 2024-08-10 06:44              </p>
+ on 2024-08-19 12:43              </p>
           </div>
         </div>
         <br>

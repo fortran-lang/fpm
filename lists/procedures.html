@@ -73,7 +73,7 @@
 			 <thead><tr><th>Procedure</th><th>Location</th><th>Procedure Type</th><th>Description</th></tr></thead>
 			 <tbody>
 			   <tr>
-                 <td><a href='../proc/add_dependency.html'>add_dependency</a></td>
+                 <td><a href='../proc/add_dependency~2.html'>add_dependency</a></td>
                  <td><a href='../module/fpm_targets.html'>fpm_targets</a></td>
                  <td>Subroutine</td>
                  <td><p>Add pointer to dependeny in target%dependencies</p></td>
@@ -111,6 +111,12 @@ Compare lowercase strings to allow auto-discovery of pre-processed extensions</p
                  <td>Function</td>
                  <td><p>Check that two archiver_t objects are equal
 All checks passed!</p></td>
+               </tr>
+			   <tr>
+                 <td><a href='../proc/assert_pkg_config.html'>assert_pkg_config</a></td>
+                 <td><a href='../module/fpm_pkg_config.html'>fpm_pkg_config</a></td>
+                 <td>Function</td>
+                 <td><p>Check whether pkg-config is available on the local system</p></td>
                </tr>
 			   <tr>
                  <td><a href='../proc/bad_name_error.html'>bad_name_error</a></td>
@@ -347,6 +353,13 @@ All checks passed!</p></td>
                  <td><p>Populate test in case we find the default test/ directory</p></td>
                </tr>
 			   <tr>
+                 <td><a href='../proc/delete_env.html'>delete_env</a></td>
+                 <td><a href='../module/fpm_environment.html'>fpm_environment</a></td>
+                 <td>Function</td>
+                 <td><p>Deletes an environment variable for the current environment using the C standard library
+Returns an error if the variable did not exist in the first place</p><a href="../proc/delete_env.html" class="pull-right"><emph>Read more&hellip;</emph></a></td>
+               </tr>
+			   <tr>
                  <td><a href='../proc/delete_file.html'>delete_file</a></td>
                  <td><a href='../module/fpm_filesystem.html'>fpm_filesystem</a></td>
                  <td>Subroutine</td>
@@ -383,10 +396,10 @@ All checks passed!</p></td>
                  <td><p>Extract dirname from path</p></td>
                </tr>
 			   <tr>
-                 <td><a href='../proc/dump_to_toml~4.html'>dump_to_toml</a></td>
+                 <td><a href='../proc/dump_to_toml~5.html'>dump_to_toml</a></td>
                  <td><a href='../module/fpm_compiler.html'>fpm_compiler</a></td>
                  <td>Subroutine</td>
-                 <td><p>Dump dependency to toml table</p><a href="../proc/dump_to_toml~4.html" class="pull-right"><emph>Read more&hellip;</emph></a></td>
+                 <td><p>Dump dependency to toml table</p><a href="../proc/dump_to_toml~5.html" class="pull-right"><emph>Read more&hellip;</emph></a></td>
                </tr>
 			   <tr>
                  <td><a href='../proc/dump_to_toml~8.html'>dump_to_toml</a></td>
@@ -804,7 +817,7 @@ All checks passed!</p></td>
    contain wildcard characters.</p><a href="../proc/glob.html" class="pull-right"><emph>Read more&hellip;</emph></a></td>
                </tr>
 			   <tr>
-                 <td><a href='../proc/handle_error~2.html'>handle_error</a></td>
+                 <td><a href='../proc/handle_error~4.html'>handle_error</a></td>
                  <td><a href='../program/main.html'>main</a></td>
                  <td>Subroutine</td>
                  <td></td>
@@ -834,16 +847,16 @@ All checks passed!</p></td>
 3) If longer, package name must be followed by default separator plus at least one char</p><a href="../proc/has_valid_standard_prefix.html" class="pull-right"><emph>Read more&hellip;</emph></a></td>
                </tr>
 			   <tr>
-                 <td><a href='../proc/info~9.html'>info</a></td>
-                 <td><a href='../module/fpm_git.html'>fpm_git</a></td>
-                 <td>Subroutine</td>
-                 <td><p>Show information on git target</p></td>
-               </tr>
-			   <tr>
-                 <td><a href='../proc/info~11.html'>info</a></td>
+                 <td><a href='../proc/info~3.html'>info</a></td>
                  <td><a href='../module/fpm_manifest_profile.html'>fpm_manifest_profile</a></td>
                  <td>Subroutine</td>
                  <td><p>Write information on instance</p></td>
+               </tr>
+			   <tr>
+                 <td><a href='../proc/info~10.html'>info</a></td>
+                 <td><a href='../module/fpm_git.html'>fpm_git</a></td>
+                 <td>Subroutine</td>
+                 <td><p>Show information on git target</p></td>
                </tr>
 			   <tr>
                  <td><a href='../proc/info_profile.html'>info_profile</a></td>
@@ -950,7 +963,7 @@ All checks passed!</p></td>
                  <td><p>Get file &amp; directory names in directory <code>dir</code> using iso_c_binding.</p><a href="../proc/list_files.html" class="pull-right"><emph>Read more&hellip;</emph></a></td>
                </tr>
 			   <tr>
-                 <td><a href='../proc/load_from_toml~4.html'>load_from_toml</a></td>
+                 <td><a href='../proc/load_from_toml~5.html'>load_from_toml</a></td>
                  <td><a href='../module/fpm_compiler.html'>fpm_compiler</a></td>
                  <td>Subroutine</td>
                  <td><p>Read dependency from toml table (no checks made at this stage)</p></td>
@@ -1229,6 +1242,37 @@ and return .TRUE. if they match and .FALSE. otherwise</p></td>
                  <td></td>
                </tr>
 			   <tr>
+                 <td><a href='../proc/pkgcfg_get_build_flags.html'>pkgcfg_get_build_flags</a></td>
+                 <td><a href='../module/fpm_pkg_config.html'>fpm_pkg_config</a></td>
+                 <td>Function</td>
+                 <td><p>Get build flags (option to include flags from system directories, that 
+gfortran does not look into by default)</p></td>
+               </tr>
+			   <tr>
+                 <td><a href='../proc/pkgcfg_get_libs.html'>pkgcfg_get_libs</a></td>
+                 <td><a href='../module/fpm_pkg_config.html'>fpm_pkg_config</a></td>
+                 <td>Function</td>
+                 <td><p>Get package libraries from pkg-config</p></td>
+               </tr>
+			   <tr>
+                 <td><a href='../proc/pkgcfg_get_version.html'>pkgcfg_get_version</a></td>
+                 <td><a href='../module/fpm_pkg_config.html'>fpm_pkg_config</a></td>
+                 <td>Function</td>
+                 <td><p>Get package version from pkg-config</p></td>
+               </tr>
+			   <tr>
+                 <td><a href='../proc/pkgcfg_has_package.html'>pkgcfg_has_package</a></td>
+                 <td><a href='../module/fpm_pkg_config.html'>fpm_pkg_config</a></td>
+                 <td>Function</td>
+                 <td><p>Check if pkgcfg has package</p><a href="../proc/pkgcfg_has_package.html" class="pull-right"><emph>Read more&hellip;</emph></a></td>
+               </tr>
+			   <tr>
+                 <td><a href='../proc/pkgcfg_list_all.html'>pkgcfg_list_all</a></td>
+                 <td><a href='../module/fpm_pkg_config.html'>fpm_pkg_config</a></td>
+                 <td>Function</td>
+                 <td><p>Return whole list of available pkg-cfg packages</p><a href="../proc/pkgcfg_list_all.html" class="pull-right"><emph>Read more&hellip;</emph></a></td>
+               </tr>
+			   <tr>
                  <td><a href='../proc/profile_dump.html'>profile_dump</a></td>
                  <td><a href='../module/fpm_manifest_profile.html'>fpm_manifest_profile</a></td>
                  <td>Subroutine</td>
@@ -1290,13 +1334,13 @@ and return .TRUE. if they match and .FALSE. otherwise</p></td>
                </tr>
 			   <tr>
                  <td><a href='../interface/resize.html'>resize</a></td>
-                 <td><a href='../module/fpm_manifest_dependency.html'>fpm_manifest_dependency</a></td>
+                 <td><a href='../module/fpm_strings.html'>fpm_strings</a></td>
                  <td>Interface</td>
                  <td></td>
                </tr>
 			   <tr>
                  <td><a href='../interface/resize~2.html'>resize</a></td>
-                 <td><a href='../module/fpm_strings.html'>fpm_strings</a></td>
+                 <td><a href='../module/fpm_manifest_dependency.html'>fpm_manifest_dependency</a></td>
                  <td>Interface</td>
                  <td></td>
                </tr>
@@ -1326,6 +1370,12 @@ and return .TRUE. if they match and .FALSE. otherwise</p></td>
                  <td><p>Execute the specified system command. Optionally</p><a href="../proc/run~2.html" class="pull-right"><emph>Read more&hellip;</emph></a></td>
                </tr>
 			   <tr>
+                 <td><a href='../proc/run_wrapper.html'>run_wrapper</a></td>
+                 <td><a href='../module/fpm_pkg_config.html'>fpm_pkg_config</a></td>
+                 <td>Subroutine</td>
+                 <td><p>Simple call to execute_command_line involving one mpi* wrapper</p></td>
+               </tr>
+			   <tr>
                  <td><a href='../proc/schedule_targets.html'>schedule_targets</a></td>
                  <td><a href='../module/fpm_backend.html'>fpm_backend</a></td>
                  <td>Subroutine</td>
@@ -1342,6 +1392,12 @@ and return .TRUE. if they match and .FALSE. otherwise</p></td>
                  <td><a href='../module/fpm_compiler.html'>fpm_compiler</a></td>
                  <td>Subroutine</td>
                  <td><p>Modify the flag_cpp_preprocessor on the basis of the compiler.</p></td>
+               </tr>
+			   <tr>
+                 <td><a href='../proc/set_env.html'>set_env</a></td>
+                 <td><a href='../module/fpm_environment.html'>fpm_environment</a></td>
+                 <td>Function</td>
+                 <td><p>Set an environment variable for the current environment using the C standard library</p><a href="../proc/set_env.html" class="pull-right"><emph>Read more&hellip;</emph></a></td>
                </tr>
 			   <tr>
                  <td><a href='../proc/set_list.html'>set_list</a></td>
@@ -1550,7 +1606,7 @@ in case of errors.</p></td>
             <p class="text-end">
               Documentation generated by
               <a href="https://github.com/Fortran-FOSS-Programmers/ford">FORD</a>
- on 2024-08-10 06:44              </p>
+ on 2024-08-19 12:43              </p>
           </div>
         </div>
         <br>
