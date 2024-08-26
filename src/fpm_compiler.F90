@@ -1065,13 +1065,26 @@ subroutine new_archiver(self, ar, echo, verbose)
       if (os_type /= OS_WINDOWS .and. os_type /= OS_UNKNOWN) then
         self%ar = "ar"//arflags
       else
+        ! Attempt "ar"
         call execute_command_line("ar --version > "//get_temp_filename()//" 2>&1", &
           & exitstat=estat)
-        if (estat /= 0) then
-          self%ar = "lib"//libflags
+          
+        if (estat == 0) then 
+            
+            self%ar = "ar"//arflags
+            
         else
-          self%ar = "ar"//arflags
-        end if
+            
+            ! Then "gcc-ar"
+            call execute_command_line("gcc-ar --version > "//get_temp_filename()//" 2>&1", &
+               & exitstat=estat)            
+            
+            if (estat /= 0) then
+              self%ar = "lib"//libflags
+            else
+              self%ar = "gcc-ar"//arflags
+            end if
+        endif
       end if
     end if
     self%use_response_file = os_type == OS_WINDOWS
