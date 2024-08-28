@@ -1763,22 +1763,22 @@ subroutine init_hdf5(this,compiler,error)
     
     !> Find pkg-config package file by priority
     name = 'NOT_FOUND'
-    do i=1,size(candidates)
+    find_package: do i=1,size(candidates)
         if (pkgcfg_has_package(trim(candidates(i)))) then 
             name = trim(candidates(i))
-            exit
+            exit find_package
         end if
-    end do
+    end do find_package
     
     !> some distros put hdf5-1.2.3.pc with version number in .pc filename.
     if (name=='NOT_FOUND') then 
         modules = pkgcfg_list_all(error) 
-        do i=1,size(modules)
+        find_global_package: do i=1,size(modules)
             if (str_begins_with_str(modules(i)%s,'hdf5')) then 
                 name = modules(i)%s
-                exit        
+                exit find_global_package
             end if
-        end do
+        end do find_global_package
     end if
     
     if (name=='NOT_FOUND') then 
@@ -1804,8 +1804,6 @@ subroutine init_hdf5(this,compiler,error)
             this%has_link_libraries = .true.
             this%link_libs = [this%link_libs, string_t(libs(i)%s(3:))]
             
-            print *, 'HDF5: add link library '//libs(i)%s(3:)
-            
         else ! -L and others: concatenate
             this%has_link_flags = .true.
             this%link_flags = string_t(trim(this%link_flags%s)//' '//libs(i)%s)
@@ -1817,16 +1815,8 @@ subroutine init_hdf5(this,compiler,error)
                libdir = libs(i)%s(9:)
             endif
             
-            print *, 'HDF5: add link flag     '//libs(i)%s
-            
         end if
     end do
-    
-    print *, 'libdir = ',libdir
-    do i=1,size(this%link_libs)
-        print *, '-l'//this%link_libs(i)%s
-    end do    
-    
     
     ! Some pkg-config hdf5.pc (e.g. Ubuntu) don't include the commonly-used HL HDF5 libraries,
     ! so let's add them if they exist
@@ -1843,8 +1833,6 @@ subroutine init_hdf5(this,compiler,error)
                ! Search how many versions with the Fortran endings there are
                finals: do k=1,size(find_hl)
                   do j=1,size(this%link_libs)
-                    print *, this%link_libs(j)%s,' begins? ',str_begins_with_str(this%link_libs(j)%s,this%link_libs(i)%s), &
-                                                 ' ends? ',str_ends_with(this%link_libs(j)%s,trim(find_hl(k)))
                    if (str_begins_with_str(this%link_libs(j)%s,this%link_libs(i)%s) .and. &
                        str_ends_with(this%link_libs(j)%s,trim(find_hl(k)))) then 
                        found_hl(k) = .true.
@@ -1852,8 +1840,6 @@ subroutine init_hdf5(this,compiler,error)
                    end if
                   end do
                end do finals
-               
-               print *, 'lib ',this%link_libs(i)%s,' found = ',found_hl
                
                ! For each of the missing ones, if there is a file, add it
                add_missing: do k=1,size(find_hl)
@@ -1873,11 +1859,6 @@ subroutine init_hdf5(this,compiler,error)
 
         end do
     endif
-    
-    print *, 'final link libs: '
-    do i=1,size(this%link_libs)
-        print *, '-l'//this%link_libs(i)%s
-    end do
     
     !> Get compiler flags
     flags = pkgcfg_get_build_flags(name,.true.,error)
