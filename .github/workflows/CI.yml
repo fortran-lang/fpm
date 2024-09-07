@@ -59,32 +59,6 @@ jobs:
       with:
         fpm-version: 'v0.8.0'
 
-    # Backport gfortran shared libraries to version 9 folder. This is necessary because the macOS release of fpm 
-    # 0.10.0 used for bootstrapping has these paths hardcoded in the executable.
-    - name: MacOS patch libgfortran
-      if: contains(matrix.os, 'macos') && !contains(matrix.toolchain.version, '10')
-      run: |
-        which gfortran-${{ matrix.toolchain.version }}
-        which gfortran
-        mkdir /usr/local/opt/gcc@10
-        mkdir /usr/local/opt/gcc@10/lib
-        mkdir /usr/local/opt/gcc@10/lib/gcc
-        mkdir /usr/local/opt/gcc@10/lib/gcc/10
-        mkdir /usr/local/lib/gcc/10
-        ln -fs /usr/local/opt/gcc@${{ matrix.toolchain.version }}/lib/gcc/${{ matrix.toolchain.version }}/libquadmath.0.dylib /usr/local/opt/gcc@10/lib/gcc/10/libquadmath.0.dylib 
-        ln -fs /usr/local/opt/gcc@${{ matrix.toolchain.version }}/lib/gcc/${{ matrix.toolchain.version }}/libgfortran.5.dylib /usr/local/opt/gcc@10/lib/gcc/10/libgfortran.5.dylib
-        ln -fs /usr/local/lib/gcc/${{ matrix.toolchain.version }}/libgcc_s.1.dylib /usr/local/lib/gcc/10/libgcc_s.1.dylib
-
-    # gcc and g++ will point to clang/clang++: use versioned alias for fpm
-    - name: MacOS patch C and C++ compilers
-      if: contains(matrix.os, 'macos')
-      run: |
-        echo "CC=gcc-${{ matrix.toolchain.version }}" >> $GITHUB_ENV
-        echo "FPM_CC=gcc-${{ matrix.toolchain.version }}" >> $GITHUB_ENV
-        echo "CXX=g++-${{ matrix.toolchain.version }}" >> $GITHUB_ENV
-        echo "FPM_CXX=g++-${{ matrix.toolchain.version }}" >> $GITHUB_ENV
-        echo "FPM_LDFLAGS=-lstdc++" >> $GITHUB_ENV
-
     - name: Remove fpm from path
       shell: bash
       run: |
