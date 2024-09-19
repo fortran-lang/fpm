@@ -60,11 +60,28 @@ contains
 
         !> Error handling
         type(error_t), allocatable, intent(out) :: error
+        
+        type(string_t), allocatable :: source_dirs(:)
 
         call check(table, error)
         if (allocated(error)) return
-
-        call get_value(table, "source-dir", self%source_dir, "src")
+        
+        ! Source dir: attempt list source-dir=["src"]
+        call get_list(table, "source-dir", source_dirs, error)
+        if (allocated(error)) return
+        
+        if (allocated(source_dirs)) then 
+            if (size(source_dirs)==1) then 
+                call move_alloc(from=source_dirs(1)%s,to=self%source_dir)
+                deallocate(source_dirs)
+            else
+                call syntax_error(error, "Manifest key [library.source-dir] does not allow lists")
+                return
+            end if            
+        else
+            call get_value(table, "source-dir", self%source_dir, "src")
+        end if
+        
         call get_value(table, "build-script", self%build_script)
 
         call get_list(table, "include-dir", self%include_dir, error)
