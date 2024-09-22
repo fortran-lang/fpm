@@ -30,6 +30,7 @@ contains
             & new_unittest("module", test_module), &
             & new_unittest("module-with-subprogram", test_module_with_subprogram), &
             & new_unittest("module-with-c-api", test_module_with_c_api), &
+		    & new_unittest("module-with-abstract-interface",test_module_with_abstract_interface), &
             & new_unittest("module-end-stmt", test_module_end_stmt), &
             & new_unittest("program-with-module", test_program_with_module), &
             & new_unittest("submodule", test_submodule), &
@@ -631,6 +632,37 @@ contains
         call f_source%test_serialization('srcfile_t: serialization', error)
 
     end subroutine test_module_with_c_api
+
+	!> Check parsing of module exporting an abstract interface
+    !>   See also https://github.com/fortran-lang/fpm/issues/1073
+    subroutine test_module_with_abstract_interface(error)
+        type(error_t), allocatable, intent(out) :: error
+
+        integer :: unit
+        character(:), allocatable :: temp_file
+        type(srcfile_t) :: f_source
+
+        allocate(temp_file,source=get_temp_filename())
+        open(file=temp_file,newunit=unit)
+        write(unit, '(A)') &
+        & 'module foo', &
+        & 'abstract interface', &
+        & '   subroutine bar1()', &
+        & '   end subroutine', &
+        & '   subroutine bar2() bind(c)', &
+        & '   end subroutine', &
+        & 'end interface', &
+        & 'end module foo'
+        close(unit)
+
+        f_source = parse_f_source(temp_file,error)
+        if (allocated(error)) return
+        if (f_source%unit_type /= FPM_UNIT_MODULE) then
+            call test_failed(error,'Wrong unit type detected - expecting FPM_UNIT_MODULE')
+            return
+        end if
+        call f_source%test_serialization('srcfile_t: serialization', error)
+    end subroutine test_module_with_abstract_interface
 
 
     !> Try to parse combined fortran module and program
