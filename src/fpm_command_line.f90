@@ -108,6 +108,7 @@ type, extends(fpm_build_settings) :: fpm_install_settings
     character(len=:), allocatable :: prefix
     character(len=:), allocatable :: bindir
     character(len=:), allocatable :: libdir
+    character(len=:), allocatable :: testdir
     character(len=:), allocatable :: includedir
     logical :: no_rebuild
 end type
@@ -533,8 +534,8 @@ contains
         case('install')
             call set_args(common_args // compiler_args // '&
                 & --no-rebuild F --prefix " " &
-                & --list F &
-                & --libdir "lib" --bindir "bin" --includedir "include"', &
+                & --list F --test F &
+                & --libdir "lib" --bindir "bin" --testdir "test" --includedir "include"', &
                 help_install, version_text)
 
             call check_build_vals()
@@ -544,6 +545,7 @@ contains
             archiver = sget('archiver')
             allocate(install_settings, source=fpm_install_settings(&
                 list=lget('list'), &
+                build_tests=lget('test'), &
                 profile=val_profile,&
                 prune=.not.lget('no-prune'), &
                 compiler=val_compiler, &
@@ -558,6 +560,7 @@ contains
                 verbose=lget('verbose')))
             call get_char_arg(install_settings%prefix, 'prefix')
             call get_char_arg(install_settings%libdir, 'libdir')
+            call get_char_arg(install_settings%testdir, 'testdir')
             call get_char_arg(install_settings%bindir, 'bindir')
             call get_char_arg(install_settings%includedir, 'includedir')
             call move_alloc(install_settings, cmd_settings)
