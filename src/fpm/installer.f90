@@ -21,6 +21,8 @@ module fpm_installer
     character(len=:), allocatable :: bindir
     !> Library directory relative to the installation prefix
     character(len=:), allocatable :: libdir
+    !> Test program directory relative to the installation prefix
+    character(len=:), allocatable :: testdir
     !> Include directory relative to the installation prefix
     character(len=:), allocatable :: includedir
     !> Output unit for informative printout
@@ -53,6 +55,9 @@ module fpm_installer
 
   !> Default name of the library subdirectory
   character(len=*), parameter :: default_libdir = "lib"
+  
+  !> Default name of the test subdirectory
+  character(len=*), parameter :: default_testdir = "test"
 
   !> Default name of the include subdirectory
   character(len=*), parameter :: default_includedir = "include"
@@ -78,7 +83,7 @@ module fpm_installer
 contains
 
   !> Create a new instance of an installer
-  subroutine new_installer(self, prefix, bindir, libdir, includedir, verbosity, &
+  subroutine new_installer(self, prefix, bindir, libdir, includedir, testdir, verbosity, &
           copy, move)
     !> Instance of the installer
     type(installer_t), intent(out) :: self
@@ -90,6 +95,8 @@ contains
     character(len=*), intent(in), optional :: libdir
     !> Include directory relative to the installation prefix
     character(len=*), intent(in), optional :: includedir
+    !> Test directory relative to the installation prefix
+    character(len=*), intent(in), optional :: testdir    
     !> Verbosity of the installer
     integer, intent(in), optional :: verbosity
     !> Copy command
@@ -124,6 +131,12 @@ contains
       self%includedir = includedir
     else
       self%includedir = default_includedir
+    end if
+    
+    if (present(testdir)) then 
+      self%testdir = testdir
+    else
+      self%testdir = default_testdir  
     end if
 
     if (present(prefix)) then
