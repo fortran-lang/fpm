@@ -4,7 +4,7 @@ module test_manifest
     use testsuite, only : new_unittest, unittest_t, error_t, test_failed, check_string
     use fpm_manifest
     use fpm_manifest_profile, only: profile_config_t, find_profile
-    use fpm_strings, only: operator(.in.)
+    use fpm_strings, only: operator(.in.), string_t
     use fpm_error, only: fatal_error, error_t
     implicit none
     private
@@ -46,6 +46,8 @@ contains
             & new_unittest("build-key-invalid", test_build_invalid_key), &
             & new_unittest("library-empty", test_library_empty), &
             & new_unittest("library-wrongkey", test_library_wrongkey, should_fail=.true.), &
+            & new_unittest("library-list", test_library_list, should_fail=.true.), &
+            & new_unittest("library-list-one", test_library_listone, should_fail=.true.), &
             & new_unittest("package-simple", test_package_simple), &
             & new_unittest("package-empty", test_package_empty, should_fail=.true.), &
             & new_unittest("package-typeerror", test_package_typeerror, should_fail=.true.), &
@@ -887,6 +889,47 @@ contains
 
     end subroutine test_library_wrongkey
 
+   !> Pass a TOML table with not allowed source dirs
+    subroutine test_library_list(error)
+        use fpm_manifest_library
+        use fpm_toml, only : new_table, set_list, toml_table
+
+        !> Error handling
+        type(error_t), allocatable, intent(out) :: error
+
+        type(string_t), allocatable :: source_dirs(:)
+        type(toml_table) :: table
+        type(library_config_t) :: library
+
+        source_dirs = [string_t("src1"),string_t("src2")]
+        call new_table  (table)
+        call set_list   (table, "source-dir", source_dirs, error)
+        call new_library(library, table, error)
+
+    end subroutine test_library_list
+
+    !> Pass a TOML table with a 1-sized source dir list
+    subroutine test_library_listone(error)
+        use fpm_manifest_library
+        use fpm_toml, only : new_table, set_list, toml_table
+
+        !> Error handling
+        type(error_t), allocatable, intent(out) :: error
+
+        type(package_config_t) :: package
+        character(:), allocatable :: temp_file
+        integer :: unit
+
+        open(file=temp_file, newunit=unit)
+        write(unit, '(a)') &
+            & 'name = "example"', &
+            & '[library]', &
+            & 'source-dir = ["my-src"]'
+        close(unit)
+
+        call get_package_data(package, temp_file, error)
+
+    end subroutine test_library_listone
 
     !> Packages cannot be created from empty tables
     subroutine test_package_simple(error)
