@@ -1421,6 +1421,7 @@ contains
     help_text_build_common,&
     help_text_flag, &
     ' --no-rebuild      do not rebuild project before installation', &
+    ' --test            also install test programs', &
     ' --prefix DIR      path to installation directory (requires write access),', &
     '                   the default prefix on Unix systems is $HOME/.local', &
     '                   and %APPDATA%\local on Windows', &
@@ -1429,6 +1430,7 @@ contains
     '                   (default: lib)', &
     ' --includedir DIR  subdirectory to place headers and module files in', &
     '                   (default: include)', &
+    ' --testdir DIR     subdirectory to place test programs in (default: test)', & 
     ' --verbose         print more information', &
     '', &
     help_text_environment, &
@@ -1445,6 +1447,9 @@ contains
     ' 3. Install executables to a custom prefix into the exe directory:', &
     '', &
     '    fpm install --prefix $PWD --bindir exe', &
+    ' 4. Install executables and test programs into the same "exe" directory:', &
+    '', &
+    '    fpm install --prefix $PWD --test --bindir exe --testdir exe', &
     '' ]
     help_clean=[character(len=80) :: &
     'NAME', &
