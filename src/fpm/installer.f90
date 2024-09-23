@@ -21,6 +21,8 @@ module fpm_installer
     character(len=:), allocatable :: bindir
     !> Library directory relative to the installation prefix
     character(len=:), allocatable :: libdir
+    !> Test program directory relative to the installation prefix
+    character(len=:), allocatable :: testdir
     !> Include directory relative to the installation prefix
     character(len=:), allocatable :: includedir
     !> Output unit for informative printout
@@ -40,6 +42,8 @@ module fpm_installer
     procedure :: install_library
     !> Install a header/module in its correct subdirectory
     procedure :: install_header
+    !> Install a test program in its correct subdirectory
+    procedure :: install_test
     !> Install a generic file into a subdirectory in the installation prefix
     procedure :: install
     !> Run an installation command, type-bound for unit testing purposes
@@ -53,6 +57,9 @@ module fpm_installer
 
   !> Default name of the library subdirectory
   character(len=*), parameter :: default_libdir = "lib"
+  
+  !> Default name of the test subdirectory
+  character(len=*), parameter :: default_testdir = "test"
 
   !> Default name of the include subdirectory
   character(len=*), parameter :: default_includedir = "include"
@@ -78,7 +85,7 @@ module fpm_installer
 contains
 
   !> Create a new instance of an installer
-  subroutine new_installer(self, prefix, bindir, libdir, includedir, verbosity, &
+  subroutine new_installer(self, prefix, bindir, libdir, includedir, testdir, verbosity, &
           copy, move)
     !> Instance of the installer
     type(installer_t), intent(out) :: self
@@ -90,6 +97,8 @@ contains
     character(len=*), intent(in), optional :: libdir
     !> Include directory relative to the installation prefix
     character(len=*), intent(in), optional :: includedir
+    !> Test directory relative to the installation prefix
+    character(len=*), intent(in), optional :: testdir    
     !> Verbosity of the installer
     integer, intent(in), optional :: verbosity
     !> Copy command
@@ -124,6 +133,12 @@ contains
       self%includedir = includedir
     else
       self%includedir = default_includedir
+    end if
+    
+    if (present(testdir)) then 
+      self%testdir = testdir
+    else
+      self%testdir = default_testdir  
     end if
 
     if (present(prefix)) then
@@ -185,6 +200,28 @@ contains
 
     call self%install(library, self%libdir, error)
   end subroutine install_library
+
+  !> Install a test program in its correct subdirectory
+  subroutine install_test(self, test, error)
+    !> Instance of the installer
+    class(installer_t), intent(inout) :: self
+    !> Path to the test executable
+    character(len=*), intent(in) :: test
+    !> Error handling
+    type(error_t), allocatable, intent(out) :: error
+    integer :: ll
+
+    if (.not.os_is_unix(self%os)) then
+        ll = len(test)
+        if (test(max(1, ll-3):ll) /= ".exe") then
+            call self%install(test//".exe", self%testdir, error)
+            return
+        end if
+    end if
+
+    call self%install(test, self%testdir, error)
+
+  end subroutine install_test
 
   !> Install a header/module in its correct subdirectory
   subroutine install_header(self, header, error)

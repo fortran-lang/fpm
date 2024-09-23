@@ -7,7 +7,7 @@ module fpm_cmd_install
   use fpm_filesystem, only : join_path, list_files
   use fpm_installer, only : installer_t, new_installer
   use fpm_manifest, only : package_config_t, get_package_data
-  use fpm_model, only : fpm_model_t, FPM_SCOPE_APP
+  use fpm_model, only : fpm_model_t, FPM_SCOPE_APP, FPM_SCOPE_TEST
   use fpm_targets, only: targets_from_sources, build_target_t, &
                          build_target_ptr, FPM_TARGET_EXECUTABLE, &
                          filter_library_targets, filter_executable_targets, filter_modules
@@ -34,7 +34,7 @@ contains
 
     call get_package_data(package, "fpm.toml", error, apply_defaults=.true.)
     call handle_error(error)
-
+    
     call build_model(model, settings, package, error)
     call handle_error(error)
 
@@ -57,7 +57,7 @@ contains
     end if
 
     call new_installer(installer, prefix=settings%prefix, &
-      bindir=settings%bindir, libdir=settings%libdir, &
+      bindir=settings%bindir, libdir=settings%libdir, testdir=settings%testdir, &
       includedir=settings%includedir, &
       verbosity=merge(2, 1, settings%verbose))
 
@@ -72,10 +72,17 @@ contains
         call handle_error(error)
       end if
     end if
-
+    
     if (allocated(package%executable) .or. ntargets>0) then
       call install_executables(installer, targets, error)
       call handle_error(error)
+    end if
+
+    if (allocated(package%test) .and. (package%install%test .or. model%include_tests)) then 
+        
+        call install_tests(installer, targets, error)
+        call handle_error(error)
+        
     end if
 
   end subroutine cmd_install
@@ -95,6 +102,9 @@ contains
     install_target = [install_target, temp]
 
     call filter_executable_targets(targets, FPM_SCOPE_APP, temp)
+    install_target = [install_target, temp]
+
+    call filter_executable_targets(targets, FPM_SCOPE_TEST, temp)
     install_target = [install_target, temp]
 
     ntargets = size(install_target)
@@ -143,6 +153,22 @@ contains
     if (allocated(error)) return
 
   end subroutine install_executables
+
+  subroutine install_tests(installer, targets, error)
+    type(installer_t), intent(inout) :: installer
+    type(build_target_ptr), intent(in) :: targets(:)
+    type(error_t), allocatable, intent(out) :: error
+    integer :: ii
+    
+    do ii = 1, size(targets)
+      if (targets(ii)%ptr%is_executable_target(FPM_SCOPE_TEST)) then
+        call installer%install_test(targets(ii)%ptr%output_file, error)
+        if (allocated(error)) exit
+      end if
+    end do
+    if (allocated(error)) return
+
+  end subroutine install_tests
 
   subroutine handle_error(error)
     type(error_t), intent(in), optional :: error
