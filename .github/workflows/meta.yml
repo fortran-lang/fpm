@@ -94,11 +94,13 @@ jobs:
     - name: (Ubuntu) Install OpenMPI
       if: contains(matrix.os,'ubuntu') && contains(matrix.mpi,'openmpi')
       run: |
+        sudo apt-get update
         sudo apt install -y -q openmpi-bin libopenmpi-dev hwloc fabric libhdf5-dev libhdf5-fortran-102
 
     - name: (Ubuntu) Install MPICH
       if: contains(matrix.os,'ubuntu') && contains(matrix.mpi,'mpich')
       run: |
+        sudo apt-get update
         sudo apt install -y -q mpich hwloc fabric libhdf5-dev libhdf5-fortran-102
 
     - name: (Ubuntu) Retrieve Intel toolchain
