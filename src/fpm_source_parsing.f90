@@ -153,7 +153,8 @@ function parse_f_source(f_filename,error) result(f_source)
             end if
 
             ! Detect beginning of interface block
-            if (index(file_lines_lower(i)%s,'interface') == 1) then
+            if (index(file_lines_lower(i)%s,'interface') == 1 &
+                .or. parse_sequence(file_lines_lower(i)%s,'abstract','interface')) then
 
                 inside_interface = .true.
                 cycle
