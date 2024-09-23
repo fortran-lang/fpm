@@ -407,7 +407,7 @@ contains
             & 'contains', &
             & 'subroutine f()', &
             & 'end subroutine f', &
-            & 'end program my_program'
+            & 'end program'
         close(unit)
 
         f_source = parse_f_source(temp_file,error)
