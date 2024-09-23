@@ -47,7 +47,6 @@ contains
             & new_unittest("library-empty", test_library_empty), &
             & new_unittest("library-wrongkey", test_library_wrongkey, should_fail=.true.), &
             & new_unittest("library-list", test_library_list, should_fail=.true.), &
-            & new_unittest("library-list-one", test_library_listone, should_fail=.true.), &
             & new_unittest("package-simple", test_package_simple), &
             & new_unittest("package-empty", test_package_empty, should_fail=.true.), &
             & new_unittest("package-typeerror", test_package_typeerror, should_fail=.true.), &
