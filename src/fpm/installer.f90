@@ -42,6 +42,8 @@ module fpm_installer
     procedure :: install_library
     !> Install a header/module in its correct subdirectory
     procedure :: install_header
+    !> Install a test program in its correct subdirectory
+    procedure :: install_test
     !> Install a generic file into a subdirectory in the installation prefix
     procedure :: install
     !> Run an installation command, type-bound for unit testing purposes
@@ -198,6 +200,28 @@ contains
 
     call self%install(library, self%libdir, error)
   end subroutine install_library
+
+  !> Install a test program in its correct subdirectory
+  subroutine install_test(self, test, error)
+    !> Instance of the installer
+    class(installer_t), intent(inout) :: self
+    !> Path to the test executable
+    character(len=*), intent(in) :: test
+    !> Error handling
+    type(error_t), allocatable, intent(out) :: error
+    integer :: ll
+
+    if (.not.os_is_unix(self%os)) then
+        ll = len(test)
+        if (test(max(1, ll-3):ll) /= ".exe") then
+            call self%install(test//".exe", self%testdir, error)
+            return
+        end if
+    end if
+
+    call self%install(test, self%testdir, error)
+
+  end subroutine install_test
 
   !> Install a header/module in its correct subdirectory
   subroutine install_header(self, header, error)
