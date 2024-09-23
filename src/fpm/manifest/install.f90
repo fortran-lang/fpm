@@ -54,7 +54,7 @@ contains
     if (allocated(error)) return
 
     call get_value(table, "library", self%library, .false.)
-    call get_value(table, "test", self%library, .false.)
+    call get_value(table, "test", self%test, .false.)
 
   end subroutine new_install_config
 
@@ -172,7 +172,7 @@ contains
 
     call get_value(table, "library", self%library, error, class_name)
     if (allocated(error)) return
-    call get_value(table, "library", self%test, error, class_name)
+    call get_value(table, "test", self%test, error, class_name)
     if (allocated(error)) return
 
   end subroutine load_from_toml
