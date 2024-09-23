@@ -5,7 +5,7 @@ module test_source_parsing
     use fpm_source_parsing, only: parse_f_source, parse_c_source, parse_use_statement
     use fpm_model, only: srcfile_t, FPM_UNIT_PROGRAM, FPM_UNIT_MODULE, &
                          FPM_UNIT_SUBMODULE, FPM_UNIT_SUBPROGRAM, FPM_UNIT_CSOURCE, &
-                         FPM_UNIT_CPPSOURCE
+                         FPM_UNIT_CPPSOURCE, FPM_UNIT_NAME
     use fpm_strings, only: operator(.in.), lower
     use fpm_error, only: file_parse_error, fatal_error
     implicit none
@@ -27,6 +27,8 @@ contains
             & new_unittest("nonintrinsic-modules-used", test_nonintrinsic_modules_used), &
             & new_unittest("include-stmt", test_include_stmt), &
             & new_unittest("program", test_program), &
+            & new_unittest("program-noheader", test_program_noheader), &
+            & new_unittest("program-noheader-2", test_program_noheader_2), &
             & new_unittest("module", test_module), &
             & new_unittest("module-with-subprogram", test_module_with_subprogram), &
             & new_unittest("module-with-c-api", test_module_with_c_api), &
@@ -380,6 +382,96 @@ contains
 
     end subroutine test_program
 
+    !> Try to parse a simple fortran program with no "program" header
+    subroutine test_program_noheader(error)
+
+        !> Error handling
+        type(error_t), allocatable, intent(out) :: error
+
+        integer :: unit
+        character(:), allocatable :: temp_file
+        type(srcfile_t), allocatable :: f_source
+
+        allocate(temp_file, source=get_temp_filename())
+
+        open(file=temp_file, newunit=unit)
+        write(unit, '(a)') &
+            & 'use program_one', &
+            & 'implicit none', &
+            & 'integer :: module, program', &
+            & 'module = 1', &
+            & 'module= 1', &
+            & 'module =1', &
+            & 'module (i) =1', &
+            & 'program = 123', &
+            & 'contains', &
+            & 'subroutine f()', &
+            & 'end subroutine f', &
+            & 'end program my_program'
+        close(unit)
+
+        f_source = parse_f_source(temp_file,error)
+        if (allocated(error)) then
+            return
+        end if
+
+        if (f_source%unit_type /= FPM_UNIT_PROGRAM) then
+            call test_failed(error,'Wrong unit type detected - expecting FPM_UNIT_PROGRAM, found '//&
+                                   FPM_UNIT_NAME(f_source%unit_type))
+            return
+        end if
+
+        if (size(f_source%modules_provided) /= 0) then
+            call test_failed(error,'Unexpected modules_provided - expecting zero')
+            return
+        end if
+
+        if (size(f_source%modules_used) /= 1) then
+            call test_failed(error,'Incorrect number of modules_used - expecting one')
+            return
+        end if
+
+        if (.not.('program_one' .in. f_source%modules_used)) then
+            call test_failed(error,'Missing module in modules_used')
+            return
+        end if
+
+        call f_source%test_serialization('srcfile_t: serialization', error)
+
+    end subroutine test_program_noheader
+
+    !> Try to parse a simple fortran program with no "program" header
+    subroutine test_program_noheader_2(error)
+
+        !> Error handling
+        type(error_t), allocatable, intent(out) :: error
+
+        integer :: unit
+        character(:), allocatable :: temp_file
+        type(srcfile_t), allocatable :: f_source
+
+        allocate(temp_file, source=get_temp_filename())
+
+        open(file=temp_file, newunit=unit)
+        write(unit, '(a)') &
+            & 'print *, "Hello World"', &
+            & 'end program'
+        close(unit)
+
+        f_source = parse_f_source(temp_file,error)
+        if (allocated(error)) then
+            return
+        end if
+
+        if (f_source%unit_type /= FPM_UNIT_PROGRAM) then
+            call test_failed(error,'Wrong unit type detected - expecting FPM_UNIT_PROGRAM, found '//&
+                                   FPM_UNIT_NAME(f_source%unit_type))
+            return
+        end if
+
+        call f_source%test_serialization('srcfile_t: serialization', error)
+
+    end subroutine test_program_noheader_2
 
     !> Try to parse fortran module
     subroutine test_module(error)
