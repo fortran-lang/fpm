@@ -118,6 +118,7 @@ contains
 
     install_conf_same = .false.
 
+
     select type (other=>that)
        type is (install_config_t)
           if (this%library.neqv.other%library) return
