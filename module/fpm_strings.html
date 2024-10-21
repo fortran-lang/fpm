@@ -127,7 +127,7 @@
             <a class="list-group-item" href="../module/fpm_strings.html#interface-len_trim">len_trim</a>
             <a class="list-group-item" href="../module/fpm_strings.html#interface-operator%28.in.%29">operator(.in.)</a>
             <a class="list-group-item" href="../module/fpm_strings.html#interface-operator%28%3D%3D%29">operator(==)</a>
-            <a class="list-group-item" href="../module/fpm_strings.html#interface-resize">resize</a>
+            <a class="list-group-item" href="../module/fpm_strings.html#interface-resize~3">resize</a>
             <a class="list-group-item" href="../module/fpm_strings.html#interface-str">str</a>
             <a class="list-group-item" href="../module/fpm_strings.html#interface-str_ends_with">str_ends_with</a>
             <a class="list-group-item" href="../module/fpm_strings.html#interface-string_t">string_t</a>
@@ -251,7 +251,7 @@
 <ul>
 <li><a href="../interface/fnv_1a.html">fnv_1a</a>  Hash a <strong>CHARACTER(*)</strong> string of default kind or a <strong>TYPE(STRING_T)</strong> array</li>
 <li><a href="../proc/replace.html">replace</a>  Returns string with characters in charset replaced with target_char.</li>
-<li><a href="../interface/resize.html">resize</a>  increase the size of a <strong>TYPE(STRING_T)</strong> array by N elements</li>
+<li><a href="../interface/resize~3.html">resize</a>  increase the size of a <strong>TYPE(STRING_T)</strong> array by N elements</li>
 </ul>
 <p>Module naming</p>
 <p>License: Public Domain
@@ -271,8 +271,8 @@
         <ul class="list-group list-group-flush">
             <li class="list-group-item">
               <ul class="list-inline">
-                  <li class="list-inline-item"><a href='http://fortranwiki.org/fortran/show/iso_c_binding'>iso_c_binding</a></li>
                   <li class="list-inline-item"><a href='http://fortranwiki.org/fortran/show/iso_fortran_env'>iso_fortran_env</a></li>
+                  <li class="list-inline-item"><a href='http://fortranwiki.org/fortran/show/iso_c_binding'>iso_c_binding</a></li>
               </ul>
             </li>
         </ul>
@@ -314,7 +314,7 @@
     <tbody>
         <tr>
             <td>
-              <span class="anchor" id="variable-input"></span>
+              <span class="anchor" id="variable-input~6"></span>
               character(len=*),
             </td>
 <td>intent(in)</td>
@@ -372,7 +372,7 @@
     <tbody>
         <tr>
             <td>
-              <span class="anchor" id="variable-input~2"></span>
+              <span class="anchor" id="variable-input~7"></span>
               type(<a href='../type/string_t.html'>string_t</a>),
             </td>
 <td>intent(in)</td>
@@ -440,7 +440,7 @@
     <tbody>
         <tr>
             <td>
-              <span class="anchor" id="variable-string~4"></span>
+              <span class="anchor" id="variable-string~12"></span>
               type(<a href='../type/string_t.html'>string_t</a>),
             </td>
 <td>intent(in)</td>
@@ -605,7 +605,7 @@
     <tbody>
         <tr>
             <td>
-              <span class="anchor" id="variable-this~6"></span>
+              <span class="anchor" id="variable-this~33"></span>
               type(<a href='../type/string_t.html'>string_t</a>),
             </td>
 <td>intent(in)</td>
@@ -620,7 +620,7 @@
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-that~6"></span>
+              <span class="anchor" id="variable-that~21"></span>
               type(<a href='../type/string_t.html'>string_t</a>),
             </td>
 <td>intent(in)</td>
@@ -663,7 +663,7 @@
     <tbody>
         <tr>
             <td>
-              <span class="anchor" id="variable-this~7"></span>
+              <span class="anchor" id="variable-this~34"></span>
               type(<a href='../type/string_t.html'>string_t</a>),
             </td>
 <td>intent(in),</td>
@@ -678,7 +678,7 @@
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-that~7"></span>
+              <span class="anchor" id="variable-that~22"></span>
               type(<a href='../type/string_t.html'>string_t</a>),
             </td>
 <td>intent(in),</td>
@@ -706,8 +706,8 @@
 
               <div class="card">
     <div class="card-header bg-light codesum">
-      <span class="anchor" id="interface-resize"></span>
-      <h3>public        interface <a href='../interface/resize.html'>resize</a> 
+      <span class="anchor" id="interface-resize~3"></span>
+      <h3>public        interface <a href='../interface/resize~3.html'>resize</a> 
       </h3>
     </div>
     <ul class="list-group">
@@ -731,7 +731,7 @@
     <tbody>
         <tr>
             <td>
-              <span class="anchor" id="variable-list~9"></span>
+              <span class="anchor" id="variable-list~21"></span>
               type(<a href='../type/string_t.html'>string_t</a>),
             </td>
 <td>intent(inout),</td>
@@ -746,7 +746,7 @@
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-n~12"></span>
+              <span class="anchor" id="variable-n~19"></span>
               integer,
             </td>
 <td>intent(in),</td>
@@ -794,7 +794,7 @@
     <tbody>
         <tr>
             <td>
-              <span class="anchor" id="variable-i~32"></span>
+              <span class="anchor" id="variable-i~62"></span>
               integer,
             </td>
 <td>intent(in)</td>
@@ -837,7 +837,7 @@
     <tbody>
         <tr>
             <td>
-              <span class="anchor" id="variable-i~34"></span>
+              <span class="anchor" id="variable-i~64"></span>
               integer(kind=int64),
             </td>
 <td>intent(in)</td>
@@ -880,7 +880,7 @@
     <tbody>
         <tr>
             <td>
-              <span class="anchor" id="variable-l~3"></span>
+              <span class="anchor" id="variable-l~5"></span>
               logical,
             </td>
 <td>intent(in)</td>
@@ -933,7 +933,7 @@
     <tbody>
         <tr>
             <td>
-              <span class="anchor" id="variable-s~3"></span>
+              <span class="anchor" id="variable-s~9"></span>
               character(len=*),
             </td>
 <td>intent(in)</td>
@@ -991,7 +991,7 @@
     <tbody>
         <tr>
             <td>
-              <span class="anchor" id="variable-s~4"></span>
+              <span class="anchor" id="variable-s~10"></span>
               character(len=*),
             </td>
 <td>intent(in)</td>
@@ -1049,7 +1049,7 @@
     <tbody>
         <tr>
             <td>
-              <span class="anchor" id="variable-s~5"></span>
+              <span class="anchor" id="variable-s~11"></span>
               character(len=*),
             </td>
 <td>intent(in)</td>
@@ -1118,7 +1118,7 @@
     <tbody>
         <tr>
             <td>
-              <span class="anchor" id="variable-s~10"></span>
+              <span class="anchor" id="variable-s~16"></span>
               character(len=*),
             </td>
 <td>intent(in)</td>
@@ -1175,7 +1175,7 @@
     <tbody>
         <tr>
             <td>
-              <span class="anchor" id="variable-s~2"></span>
+              <span class="anchor" id="variable-s~8"></span>
               character(len=:),
             </td>
               <td>public,</td>
@@ -1405,7 +1405,7 @@ single characters terminated with a C_NULL_CHAR character</p>
     <tbody>
         <tr>
             <td>
-              <span class="anchor" id="variable-module_name~3"></span>
+              <span class="anchor" id="variable-module_name~4"></span>
               type(<a href='../type/string_t.html'>string_t</a>),
             </td>
 <td>intent(in)</td>
@@ -1468,7 +1468,7 @@ single characters terminated with a C_NULL_CHAR character</p>
     <tbody>
         <tr>
             <td>
-              <span class="anchor" id="variable-module_name~4"></span>
+              <span class="anchor" id="variable-module_name~5"></span>
               type(<a href='../type/string_t.html'>string_t</a>),
             </td>
 <td>intent(in)</td>
@@ -1483,7 +1483,7 @@ single characters terminated with a C_NULL_CHAR character</p>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-package_name~3"></span>
+              <span class="anchor" id="variable-package_name~6"></span>
               type(<a href='../type/string_t.html'>string_t</a>),
             </td>
 <td>intent(in)</td>
@@ -1528,7 +1528,7 @@ single characters terminated with a C_NULL_CHAR character</p>
     <tbody>
         <tr>
             <td>
-              <span class="anchor" id="variable-line~2"></span>
+              <span class="anchor" id="variable-line~7"></span>
               character(len=*),
             </td>
 <td>intent(in)</td>
@@ -1576,7 +1576,7 @@ single characters terminated with a C_NULL_CHAR character</p>
     <tbody>
         <tr>
             <td>
-              <span class="anchor" id="variable-module_name~2"></span>
+              <span class="anchor" id="variable-module_name~3"></span>
               type(<a href='../type/string_t.html'>string_t</a>),
             </td>
 <td>intent(in)</td>
@@ -1591,7 +1591,7 @@ single characters terminated with a C_NULL_CHAR character</p>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-package_name~2"></span>
+              <span class="anchor" id="variable-package_name~5"></span>
               type(<a href='../type/string_t.html'>string_t</a>),
             </td>
 <td>intent(in)</td>
@@ -1621,7 +1621,7 @@ single characters terminated with a C_NULL_CHAR character</p>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-enforce_module_names"></span>
+              <span class="anchor" id="variable-enforce_module_names~3"></span>
               logical,
             </td>
 <td>intent(in)</td>
@@ -1668,7 +1668,7 @@ single characters terminated with a C_NULL_CHAR character</p>
     <tbody>
         <tr>
             <td>
-              <span class="anchor" id="variable-module_prefix"></span>
+              <span class="anchor" id="variable-module_prefix~4"></span>
               type(<a href='../type/string_t.html'>string_t</a>),
             </td>
 <td>intent(in)</td>
@@ -1735,7 +1735,7 @@ single characters terminated with a C_NULL_CHAR character</p>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-sep~2"></span>
+              <span class="anchor" id="variable-sep"></span>
               character(len=*),
             </td>
 <td>intent(in),</td>
@@ -2054,7 +2054,7 @@ single characters terminated with a C_NULL_CHAR character</p>
     <tbody>
         <tr>
             <td>
-              <span class="anchor" id="variable-string~7"></span>
+              <span class="anchor" id="variable-string~15"></span>
               character(len=*),
             </td>
 <td>intent(in)</td>
@@ -2129,7 +2129,7 @@ single characters terminated with a C_NULL_CHAR character</p>
     <tbody>
         <tr>
             <td>
-              <span class="anchor" id="variable-s~6"></span>
+              <span class="anchor" id="variable-s~12"></span>
               character(len=*),
             </td>
 <td>intent(in)</td>
@@ -2327,7 +2327,7 @@ expanded to other characters if needed.</p>
     <tbody>
         <tr>
             <td>
-              <span class="anchor" id="variable-string~9"></span>
+              <span class="anchor" id="variable-string~17"></span>
               character(len=*),
             </td>
 <td>intent(in)</td>
@@ -2527,7 +2527,7 @@ expanded to other characters if needed.</p>
     <tbody>
         <tr>
             <td>
-              <span class="anchor" id="variable-string~10"></span>
+              <span class="anchor" id="variable-string~18"></span>
               character(len=:),
             </td>
 <td>intent(inout),</td>
@@ -2597,7 +2597,7 @@ expanded to other characters if needed.</p>
     <tbody>
         <tr>
             <td>
-              <span class="anchor" id="variable-string~11"></span>
+              <span class="anchor" id="variable-string~19"></span>
               type(<a href='../type/string_t.html'>string_t</a>),
             </td>
 <td>intent(inout)</td>
@@ -2742,7 +2742,7 @@ given a line of structure &rdquo; par1 par2 par3 &hellip; parn &rdquo; store eac
     <tbody>
         <tr>
             <td>
-              <span class="anchor" id="variable-string~5"></span>
+              <span class="anchor" id="variable-string~13"></span>
               character(len=*),
             </td>
 <td>intent(in)</td>
@@ -2830,7 +2830,7 @@ given a line of structure &rdquo; par1 par2 par3 &hellip; parn &rdquo; store eac
             <p class="text-end">
               Documentation generated by
               <a href="https://github.com/Fortran-FOSS-Programmers/ford">FORD</a>
- on 2024-10-21 16:25              </p>
+ on 2024-10-21 16:43              </p>
           </div>
         </div>
         <br>
