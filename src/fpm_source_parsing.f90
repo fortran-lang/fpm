@@ -334,8 +334,10 @@ function parse_f_source(f_filename,error) result(f_source)
             end if
 
             ! Detect if contains a program
-            !  (no modules allowed after program def)
-            if (index(file_lines_lower(i)%s,'program ') == 1) then
+            ! - no modules allowed after program def
+            ! - program header may be missing (only "end program" statement present)
+            if (index(file_lines_lower(i)%s,'program ')==1 .or. &
+                parse_sequence(file_lines_lower(i)%s,'end','program')) then
 
                 temp_string = split_n(file_lines_lower(i)%s,n=2,delims=' ',stat=stat)
                 if (stat == 0) then
@@ -352,6 +354,7 @@ function parse_f_source(f_filename,error) result(f_source)
                 f_source%unit_type = FPM_UNIT_PROGRAM
 
                 cycle
+                
 
             end if
 
