@@ -10,7 +10,7 @@
     <meta name="author" content="fortran-lang/fpm contributors" >
     <link rel="icon" href="../favicon.png">
 
-    <title>add_dependency &ndash; Fortran-lang/fpm</title>
+    <title>handle_error &ndash; Fortran-lang/fpm</title>
 
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet"
           integrity="sha384-1BmE4kWBq78iYhFldvKuhfTAU6auU8tT94WrHftjDbrCEXSU1oBoqyl2QvZ6jIW3" crossorigin="anonymous">
@@ -66,7 +66,7 @@
 
     <div class="container">
   <div class="row">
-    <h1>add_dependency
+    <h1>handle_error
       <small>Subroutine</small>
       
     </h1>
@@ -77,21 +77,21 @@
 
             <li class="list-inline-item" id="statements"><i class="fa fa-list-ol"></i>
               <a data-bs-toggle="tooltip" data-bs-placement="bottom" data-bs-html="true"
-                 title=" 0.1% of total for procedures.">5 statements</a>
+                 title=" 0.1% of total for procedures.">7 statements</a>
             </li>
 
             <li class="list-inline-item" id="source-file">
               <i class="fa fa-code"></i>
-              <a href="../src/fpm_targets.f90"> Source File</a>
+              <a href="../src/main.f90"> Source File</a>
             </li>
         </ul>
       </div>
       <div class="col">
         <nav aria-label="breadcrumb">
           <ol class="breadcrumb justify-content-end mb-0">
-                <li class="breadcrumb-item"><a href='../sourcefile/fpm_targets.f90.html'>fpm_targets.f90</a></li>
-                <li class="breadcrumb-item"><a href='../module/fpm_targets.html'>fpm_targets</a></li>
-            <li class="breadcrumb-item active" aria-current="page">add_dependency</li>
+                <li class="breadcrumb-item"><a href='../sourcefile/main.f90.html'>main.f90</a></li>
+                <li class="breadcrumb-item"><a href='../program/main.html'>main</a></li>
+            <li class="breadcrumb-item active" aria-current="page">handle_error</li>
           </ol>
         </nav>
       </div>
@@ -132,7 +132,7 @@
     <div class="card card-primary">
       <div class="card-header text-left"><h3 class="card-title">Source Code</h3></div>
       <div class="list-group">
-        <a class="list-group-item" href="../proc/add_dependency~2.html#src">add_dependency</a>
+        <a class="list-group-item" href="../proc/handle_error~2.html#src">handle_error</a>
       </div>
     </div>
 
@@ -142,11 +142,10 @@
     </div>
     
     <div class="col-md-9" id='text'>
-    <h2>public  subroutine add_dependency(target, dependency)  
+    <h2> subroutine handle_error(error_)  
 </h2>
     
 
-    <p>Add pointer to dependeny in target%dependencies</p>
 
 
     <h3>Arguments</h3>
@@ -162,30 +161,15 @@
     <tbody>
         <tr>
             <td>
-              <span class="anchor" id="variable-target~4"></span>
-              type(<a href='../type/build_target_t.html'>build_target_t</a>),
+              <span class="anchor" id="variable-error_"></span>
+              type(<a href='../type/error_t.html'>error_t</a>),
             </td>
-<td>intent(inout)</td>
-              <td></td>            <td>
+<td>intent(in),</td>
+              <td>optional</td>            <td>
               
             </td>
             <td>::</td>
-            <td><strong>target</strong></td>
-            <td>
-                
-            </td>
-        </tr>
-        <tr>
-            <td>
-              <span class="anchor" id="variable-dependency~12"></span>
-              type(<a href='../type/build_target_t.html'>build_target_t</a>),
-            </td>
-<td>intent(in),</td>
-              <td></td>            <td>
-              target
-            </td>
-            <td>::</td>
-            <td><strong>dependency</strong></td>
+            <td><strong>error_</strong></td>
             <td>
                 
             </td>
@@ -207,13 +191,13 @@
     
     <section>
     <h2><span class="anchor" id="src"></span>Source Code</h2>
-    <div class="hl codehilite"><pre><span></span><span class="k">subroutine </span><span class="n">add_dependency</span><span class="p">(</span><span class="k">target</span><span class="p">,</span><span class="w"> </span><span class="n">dependency</span><span class="p">)</span>
-<span class="w">    </span><span class="k">type</span><span class="p">(</span><span class="n">build_target_t</span><span class="p">),</span><span class="w"> </span><span class="k">intent</span><span class="p">(</span><span class="n">inout</span><span class="p">)</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="k">target</span>
-<span class="k">    type</span><span class="p">(</span><span class="n">build_target_t</span><span class="p">)</span><span class="w"> </span><span class="p">,</span><span class="w"> </span><span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">),</span><span class="w"> </span><span class="k">target</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">dependency</span>
-
-<span class="w">    </span><span class="k">target</span><span class="p">%</span><span class="n">dependencies</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">[</span><span class="k">target</span><span class="p">%</span><span class="n">dependencies</span><span class="p">,</span><span class="w"> </span><span class="n">build_target_ptr</span><span class="p">(</span><span class="n">dependency</span><span class="p">)]</span>
-
-<span class="k">end subroutine </span><span class="n">add_dependency</span>
+    <div class="hl codehilite"><pre><span></span><span class="w">    </span><span class="k">subroutine </span><span class="n">handle_error</span><span class="p">(</span><span class="n">error_</span><span class="p">)</span>
+<span class="w">        </span><span class="k">type</span><span class="p">(</span><span class="n">error_t</span><span class="p">),</span><span class="w"> </span><span class="k">optional</span><span class="p">,</span><span class="w"> </span><span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">)</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">error_</span>
+<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="nb">present</span><span class="p">(</span><span class="n">error_</span><span class="p">))</span><span class="w"> </span><span class="k">then</span>
+<span class="k">            write</span><span class="w"> </span><span class="p">(</span><span class="n">error_unit</span><span class="p">,</span><span class="w"> </span><span class="s1">&#39;(&quot;[Error]&quot;, 1x, a)&#39;</span><span class="p">)</span><span class="w"> </span><span class="n">error_</span><span class="p">%</span><span class="n">message</span>
+<span class="w">            </span><span class="k">stop </span><span class="mi">1</span>
+<span class="w">        </span><span class="k">end if</span>
+<span class="k">    end subroutine </span><span class="n">handle_error</span>
 </pre></div>
 
     </section>
@@ -237,7 +221,7 @@
             <p class="text-end">
               Documentation generated by
               <a href="https://github.com/Fortran-FOSS-Programmers/ford">FORD</a>
- on 2024-09-23 06:45              </p>
+ on 2024-10-21 16:25              </p>
           </div>
         </div>
         <br>
