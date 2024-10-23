@@ -77,7 +77,7 @@
 
             <li class="list-inline-item" id="statements"><i class="fa fa-list-ol"></i>
               <a data-bs-toggle="tooltip" data-bs-placement="bottom" data-bs-html="true"
-                 title=" 0.6% of total for procedures.">41 statements</a>
+                 title=" 0.7% of total for procedures.">45 statements</a>
             </li>
 
             <li class="list-inline-item" id="source-file">
@@ -162,7 +162,7 @@
     <tbody>
         <tr>
             <td>
-              <span class="anchor" id="variable-settings~2"></span>
+              <span class="anchor" id="variable-settings~8"></span>
               type(<a href='../type/fpm_install_settings.html'>fpm_install_settings</a>),
             </td>
 <td>intent(inout)</td>
@@ -206,7 +206,7 @@
 
 <span class="w">    </span><span class="k">call </span><span class="n">get_package_data</span><span class="p">(</span><span class="n">package</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;fpm.toml&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">error</span><span class="p">,</span><span class="w"> </span><span class="n">apply_defaults</span><span class="o">=</span><span class="p">.</span><span class="n">true</span><span class="p">.)</span>
 <span class="w">    </span><span class="k">call </span><span class="n">handle_error</span><span class="p">(</span><span class="n">error</span><span class="p">)</span>
-
+<span class="w">    </span>
 <span class="w">    </span><span class="k">call </span><span class="n">build_model</span><span class="p">(</span><span class="n">model</span><span class="p">,</span><span class="w"> </span><span class="n">settings</span><span class="p">,</span><span class="w"> </span><span class="n">package</span><span class="p">,</span><span class="w"> </span><span class="n">error</span><span class="p">)</span>
 <span class="w">    </span><span class="k">call </span><span class="n">handle_error</span><span class="p">(</span><span class="n">error</span><span class="p">)</span>
 
@@ -229,7 +229,7 @@
 <span class="w">    </span><span class="k">end if</span>
 
 <span class="k">    call </span><span class="n">new_installer</span><span class="p">(</span><span class="n">installer</span><span class="p">,</span><span class="w"> </span><span class="n">prefix</span><span class="o">=</span><span class="n">settings</span><span class="p">%</span><span class="n">prefix</span><span class="p">,</span><span class="w"> </span><span class="p">&amp;</span>
-<span class="w">      </span><span class="n">bindir</span><span class="o">=</span><span class="n">settings</span><span class="p">%</span><span class="n">bindir</span><span class="p">,</span><span class="w"> </span><span class="n">libdir</span><span class="o">=</span><span class="n">settings</span><span class="p">%</span><span class="n">libdir</span><span class="p">,</span><span class="w"> </span><span class="p">&amp;</span>
+<span class="w">      </span><span class="n">bindir</span><span class="o">=</span><span class="n">settings</span><span class="p">%</span><span class="n">bindir</span><span class="p">,</span><span class="w"> </span><span class="n">libdir</span><span class="o">=</span><span class="n">settings</span><span class="p">%</span><span class="n">libdir</span><span class="p">,</span><span class="w"> </span><span class="n">testdir</span><span class="o">=</span><span class="n">settings</span><span class="p">%</span><span class="n">testdir</span><span class="p">,</span><span class="w"> </span><span class="p">&amp;</span>
 <span class="w">      </span><span class="n">includedir</span><span class="o">=</span><span class="n">settings</span><span class="p">%</span><span class="n">includedir</span><span class="p">,</span><span class="w"> </span><span class="p">&amp;</span>
 <span class="w">      </span><span class="n">verbosity</span><span class="o">=</span><span class="nb">merge</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="n">settings</span><span class="p">%</span><span class="n">verbose</span><span class="p">))</span>
 
@@ -244,10 +244,17 @@
 <span class="w">        </span><span class="k">call </span><span class="n">handle_error</span><span class="p">(</span><span class="n">error</span><span class="p">)</span>
 <span class="w">      </span><span class="k">end if</span>
 <span class="k">    end if</span>
-
+<span class="k">    </span>
 <span class="k">    if</span><span class="w"> </span><span class="p">(</span><span class="nb">allocated</span><span class="p">(</span><span class="n">package</span><span class="p">%</span><span class="n">executable</span><span class="p">)</span><span class="w"> </span><span class="p">.</span><span class="nb">or</span><span class="p">.</span><span class="w"> </span><span class="n">ntargets</span><span class="o">&gt;</span><span class="mi">0</span><span class="p">)</span><span class="w"> </span><span class="k">then</span>
 <span class="k">      call </span><span class="n">install_executables</span><span class="p">(</span><span class="n">installer</span><span class="p">,</span><span class="w"> </span><span class="n">targets</span><span class="p">,</span><span class="w"> </span><span class="n">error</span><span class="p">)</span>
 <span class="w">      </span><span class="k">call </span><span class="n">handle_error</span><span class="p">(</span><span class="n">error</span><span class="p">)</span>
+<span class="w">    </span><span class="k">end if</span>
+
+<span class="k">    if</span><span class="w"> </span><span class="p">(</span><span class="nb">allocated</span><span class="p">(</span><span class="n">package</span><span class="p">%</span><span class="n">test</span><span class="p">)</span><span class="w"> </span><span class="p">.</span><span class="nb">and</span><span class="p">.</span><span class="w"> </span><span class="p">(</span><span class="n">package</span><span class="p">%</span><span class="n">install</span><span class="p">%</span><span class="n">test</span><span class="w"> </span><span class="p">.</span><span class="nb">or</span><span class="p">.</span><span class="w"> </span><span class="n">model</span><span class="p">%</span><span class="n">include_tests</span><span class="p">))</span><span class="w"> </span><span class="k">then </span>
+<span class="k">        </span>
+<span class="k">        call </span><span class="n">install_tests</span><span class="p">(</span><span class="n">installer</span><span class="p">,</span><span class="w"> </span><span class="n">targets</span><span class="p">,</span><span class="w"> </span><span class="n">error</span><span class="p">)</span>
+<span class="w">        </span><span class="k">call </span><span class="n">handle_error</span><span class="p">(</span><span class="n">error</span><span class="p">)</span>
+<span class="w">        </span>
 <span class="w">    </span><span class="k">end if</span>
 
 <span class="k">  end subroutine </span><span class="n">cmd_install</span>
@@ -274,7 +281,7 @@
             <p class="text-end">
               Documentation generated by
               <a href="https://github.com/Fortran-FOSS-Programmers/ford">FORD</a>
- on 2024-10-21 16:43              </p>
+ on 2024-10-23 13:38              </p>
           </div>
         </div>
         <br>

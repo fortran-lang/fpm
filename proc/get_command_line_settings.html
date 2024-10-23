@@ -77,7 +77,7 @@
 
             <li class="list-inline-item" id="statements"><i class="fa fa-list-ol"></i>
               <a data-bs-toggle="tooltip" data-bs-placement="bottom" data-bs-html="true"
-                 title=" 4.7% of total for procedures.">301 statements</a>
+                 title=" 4.7% of total for procedures.">302 statements</a>
             </li>
 
             <li class="list-inline-item" id="source-file">
@@ -499,8 +499,8 @@
 <span class="w">        </span><span class="k">case</span><span class="p">(</span><span class="s1">&#39;install&#39;</span><span class="p">)</span>
 <span class="w">            </span><span class="k">call </span><span class="n">set_args</span><span class="p">(</span><span class="n">common_args</span><span class="w"> </span><span class="o">//</span><span class="w"> </span><span class="n">compiler_args</span><span class="w"> </span><span class="o">//</span><span class="w"> </span><span class="s1">&#39;&amp;</span>
 <span class="s1">                &amp; --no-rebuild F --prefix &quot; &quot; &amp;</span>
-<span class="s1">                &amp; --list F &amp;</span>
-<span class="s1">                &amp; --libdir &quot;lib&quot; --bindir &quot;bin&quot; --includedir &quot;include&quot;&#39;</span><span class="p">,</span><span class="w"> </span><span class="p">&amp;</span>
+<span class="s1">                &amp; --list F --test F &amp;</span>
+<span class="s1">                &amp; --libdir &quot;lib&quot; --bindir &quot;bin&quot; --testdir &quot;test&quot; --includedir &quot;include&quot;&#39;</span><span class="p">,</span><span class="w"> </span><span class="p">&amp;</span>
 <span class="w">                </span><span class="n">help_install</span><span class="p">,</span><span class="w"> </span><span class="n">version_text</span><span class="p">)</span>
 
 <span class="w">            </span><span class="k">call </span><span class="n">check_build_vals</span><span class="p">()</span>
@@ -510,6 +510,7 @@
 <span class="w">            </span><span class="n">archiver</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">sget</span><span class="p">(</span><span class="s1">&#39;archiver&#39;</span><span class="p">)</span>
 <span class="w">            </span><span class="k">allocate</span><span class="p">(</span><span class="n">install_settings</span><span class="p">,</span><span class="w"> </span><span class="n">source</span><span class="o">=</span><span class="n">fpm_install_settings</span><span class="p">(&amp;</span>
 <span class="w">                </span><span class="n">list</span><span class="o">=</span><span class="n">lget</span><span class="p">(</span><span class="s1">&#39;list&#39;</span><span class="p">),</span><span class="w"> </span><span class="p">&amp;</span>
+<span class="w">                </span><span class="n">build_tests</span><span class="o">=</span><span class="n">lget</span><span class="p">(</span><span class="s1">&#39;test&#39;</span><span class="p">),</span><span class="w"> </span><span class="p">&amp;</span>
 <span class="w">                </span><span class="n">profile</span><span class="o">=</span><span class="n">val_profile</span><span class="p">,&amp;</span>
 <span class="w">                </span><span class="n">prune</span><span class="o">=</span><span class="p">.</span><span class="nb">not</span><span class="p">.</span><span class="n">lget</span><span class="p">(</span><span class="s1">&#39;no-prune&#39;</span><span class="p">),</span><span class="w"> </span><span class="p">&amp;</span>
 <span class="w">                </span><span class="n">compiler</span><span class="o">=</span><span class="n">val_compiler</span><span class="p">,</span><span class="w"> </span><span class="p">&amp;</span>
@@ -524,6 +525,7 @@
 <span class="w">                </span><span class="n">verbose</span><span class="o">=</span><span class="n">lget</span><span class="p">(</span><span class="s1">&#39;verbose&#39;</span><span class="p">)))</span>
 <span class="w">            </span><span class="k">call </span><span class="n">get_char_arg</span><span class="p">(</span><span class="n">install_settings</span><span class="p">%</span><span class="n">prefix</span><span class="p">,</span><span class="w"> </span><span class="s1">&#39;prefix&#39;</span><span class="p">)</span>
 <span class="w">            </span><span class="k">call </span><span class="n">get_char_arg</span><span class="p">(</span><span class="n">install_settings</span><span class="p">%</span><span class="n">libdir</span><span class="p">,</span><span class="w"> </span><span class="s1">&#39;libdir&#39;</span><span class="p">)</span>
+<span class="w">            </span><span class="k">call </span><span class="n">get_char_arg</span><span class="p">(</span><span class="n">install_settings</span><span class="p">%</span><span class="n">testdir</span><span class="p">,</span><span class="w"> </span><span class="s1">&#39;testdir&#39;</span><span class="p">)</span>
 <span class="w">            </span><span class="k">call </span><span class="n">get_char_arg</span><span class="p">(</span><span class="n">install_settings</span><span class="p">%</span><span class="n">bindir</span><span class="p">,</span><span class="w"> </span><span class="s1">&#39;bindir&#39;</span><span class="p">)</span>
 <span class="w">            </span><span class="k">call </span><span class="n">get_char_arg</span><span class="p">(</span><span class="n">install_settings</span><span class="p">%</span><span class="n">includedir</span><span class="p">,</span><span class="w"> </span><span class="s1">&#39;includedir&#39;</span><span class="p">)</span>
 <span class="w">            </span><span class="k">call </span><span class="nb">move_alloc</span><span class="p">(</span><span class="n">install_settings</span><span class="p">,</span><span class="w"> </span><span class="n">cmd_settings</span><span class="p">)</span>
@@ -792,7 +794,7 @@
             <p class="text-end">
               Documentation generated by
               <a href="https://github.com/Fortran-FOSS-Programmers/ford">FORD</a>
- on 2024-10-21 16:43              </p>
+ on 2024-10-23 13:38              </p>
           </div>
         </div>
         <br>
