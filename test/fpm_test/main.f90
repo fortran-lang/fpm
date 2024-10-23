@@ -1,9 +1,9 @@
 !> Driver for unit testing
 program fpm_testing
     use, intrinsic :: iso_fortran_env, only : error_unit
-    use testsuite, only : run_testsuite, new_testsuite, testsuite_t, &
-        & select_suite, run_selected
+    use testsuite, only : run_testsuite, new_testsuite, testsuite_t, select_suite, run_selected
     use test_toml, only : collect_toml
+    use test_compiler, only : collect_compiler
     use test_manifest, only : collect_manifest
     use test_filesystem, only : collect_filesystem
     use test_source_parsing, only : collect_source_parsing
@@ -12,6 +12,9 @@ program fpm_testing
     use test_backend, only: collect_backend
     use test_installer, only : collect_installer
     use test_versioning, only : collect_versioning
+    use test_settings, only : collect_settings
+    use test_os, only: collect_os
+
     implicit none
     integer :: stat, is
     character(len=:), allocatable :: suite_name, test_name
@@ -21,7 +24,7 @@ program fpm_testing
     stat = 0
 
     suite = [ &
-        & new_testsuite("fpm_toml", collect_toml), &
+        & new_testsuite("fpm_toml", collect_toml), &        
         & new_testsuite("fpm_manifest", collect_manifest), &
         & new_testsuite("fpm_filesystem", collect_filesystem), &
         & new_testsuite("fpm_source_parsing", collect_source_parsing), &
@@ -29,7 +32,10 @@ program fpm_testing
         & new_testsuite("fpm_package_dependencies", collect_package_dependencies), &
         & new_testsuite("fpm_test_backend", collect_backend), &
         & new_testsuite("fpm_installer", collect_installer), &
-        & new_testsuite("fpm_versioning", collect_versioning) &
+        & new_testsuite("fpm_versioning", collect_versioning), &
+        & new_testsuite("fpm_settings", collect_settings), &
+        & new_testsuite("fpm_os", collect_os), &
+        & new_testsuite("fpm_compiler", collect_compiler) &
         & ]
 
     call get_argument(1, suite_name)
@@ -80,21 +86,21 @@ contains
         !> Command line argument
         character(len=:), allocatable, intent(out) :: arg
 
-        integer :: length, stat
+        integer :: length, arg_stat
 
-        call get_command_argument(idx, length=length, status=stat)
-        if (stat /= 0) then
+        call get_command_argument(idx, length=length, status=arg_stat)
+        if (arg_stat /= 0) then
             return
         endif
 
-        allocate(character(len=length) :: arg, stat=stat)
-        if (stat /= 0) then
+        allocate(character(len=length) :: arg, stat=arg_stat)
+        if (arg_stat /= 0) then
             return
         endif
 
         if (length > 0) then
-            call get_command_argument(idx, arg, status=stat)
-            if (stat /= 0) then
+            call get_command_argument(idx, arg, status=arg_stat)
+            if (arg_stat /= 0) then
                 deallocate(arg)
                 return
             end if

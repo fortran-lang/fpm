@@ -56,7 +56,7 @@ module fpm_cmd_new
 use fpm_command_line, only : fpm_new_settings
 use fpm_environment, only : OS_LINUX, OS_MACOS, OS_WINDOWS
 use fpm_filesystem, only : join_path, exists, basename, mkdir, is_dir
-use fpm_filesystem, only : fileopen, fileclose, filewrite, warnwrite, which, run
+use fpm_filesystem, only : fileopen, fileclose, warnwrite, which, run
 use fpm_strings, only : join, to_fortran_name
 use fpm_error, only : fpm_stop
 
@@ -627,17 +627,17 @@ end function git_metadata
 
 subroutine create_verified_basic_manifest(filename)
 !> create a basic but verified default manifest file
-use fpm_toml, only : toml_table, toml_serializer, set_value
+use fpm_toml, only : toml_table, toml_serialize, set_value
 use fpm_manifest_package, only : package_config_t, new_package
 use fpm_error, only : error_t
 implicit none
 character(len=*),intent(in) :: filename
    type(toml_table)            :: table
-   type(toml_serializer)       :: ser
    type(package_config_t)      :: package
    type(error_t), allocatable  :: error
    integer                     :: lun
    character(len=8)            :: date
+   character(:), allocatable   :: output
 
     if(exists(filename))then
        write(stderr,'(*(g0,1x))')'<INFO>  ',filename,&
@@ -647,7 +647,6 @@ character(len=*),intent(in) :: filename
     !> get date to put into metadata in manifest file "fpm.toml"
     call date_and_time(DATE=date)
     table = toml_table()
-    ser = toml_serializer()
     call fileopen(filename,lun) ! fileopen stops on error
 
     call set_value(table, "name",       BNAME)
@@ -660,11 +659,11 @@ character(len=*),intent(in) :: filename
     ! ...
     call new_package(package, table, error=error)
     if (allocated(error)) call fpm_stop( 3,'')
+    output = toml_serialize(table)
     if(settings%verbose)then
-       call table%accept(ser)
+       print '(a)', output
     endif
-    ser%unit=lun
-    call table%accept(ser)
+    write(lun, '(a)') output
     call fileclose(lun) ! fileopen stops on error
 
 end subroutine create_verified_basic_manifest
@@ -673,27 +672,25 @@ end subroutine create_verified_basic_manifest
 subroutine validate_toml_data(input)
 !> verify a string array is a valid fpm.toml file
 !
-use tomlf, only : toml_parse
-use fpm_toml, only : toml_table, toml_serializer
+use tomlf, only : toml_load
+use fpm_toml, only : toml_table, toml_serialize
 implicit none
 character(kind=tfc,len=:),intent(in),allocatable :: input(:)
 character(len=1), parameter                      :: nl = new_line('a')
 type(toml_table), allocatable                    :: table
 character(kind=tfc, len=:), allocatable          :: joined_string
-type(toml_serializer)                            :: ser
 
 ! you have to add a newline character by using the intrinsic
 ! function `new_line("a")` to get the lines processed correctly.
 joined_string = join(input,right=nl)
 
 if (allocated(table)) deallocate(table)
-call toml_parse(table, joined_string)
+call toml_load(table, joined_string)
 if (allocated(table)) then
    if(settings%verbose)then
       ! If the TOML file is successfully parsed the table will be allocated and
-      ! can be written to the standard output by passing the `toml_serializer`
-      ! as visitor to the table.
-      call table%accept(ser)
+      ! can be written by `toml_serialize` to the standard output
+      print '(a)', toml_serialize(table)
    endif
    call table%destroy
 endif

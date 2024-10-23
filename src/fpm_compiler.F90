@@ -28,7 +28,6 @@
 module fpm_compiler
 use,intrinsic :: iso_fortran_env, only: stderr=>error_unit
 use fpm_environment, only: &
-        get_env, &
         get_os_type, &
         OS_LINUX, &
         OS_MACOS, &
@@ -42,7 +41,8 @@ use fpm_filesystem, only: join_path, basename, get_temp_filename, delete_file, u
     & getline, run
 use fpm_strings, only: split, string_cat, string_t, str_ends_with, str_begins_with_str
 use fpm_manifest, only : package_config_t
-use fpm_error, only: error_t
+use fpm_error, only: error_t, fatal_error
+use fpm_toml, only: serializable_t, toml_table, set_string, set_value, toml_stat, get_value
 implicit none
 public :: compiler_t, new_compiler, archiver_t, new_archiver, get_macros
 public :: debug
@@ -74,7 +74,7 @@ integer, parameter :: compiler_enum = kind(id_unknown)
 
 
 !> Definition of compiler object
-type :: compiler_t
+type, extends(serializable_t) :: compiler_t
     !> Identifier of the compiler
     integer(compiler_enum) :: id = id_unknown
     !> Path to the Fortran compiler
@@ -94,6 +94,10 @@ contains
     procedure :: get_module_flag
     !> Get flag for include directories
     procedure :: get_include_flag
+    !> Get feature flag
+    procedure :: get_feature_flag
+    !> Get flags for the main linking command
+    procedure :: get_main_flags
     !> Compile a Fortran object
     procedure :: compile_fortran
     !> Compile a C object
@@ -104,13 +108,29 @@ contains
     procedure :: link
     !> Check whether compiler is recognized
     procedure :: is_unknown
+    !> Check whether this is an Intel compiler
+    procedure :: is_intel
+    !> Check whether this is a GNU compiler
+    procedure :: is_gnu
     !> Enumerate libraries, based on compiler and platform
     procedure :: enumerate_libraries
+
+    !> Serialization interface
+    procedure :: serializable_is_same => compiler_is_same
+    procedure :: dump_to_toml => compiler_dump
+    procedure :: load_from_toml => compiler_load
+    !> Fortran feature support
+    procedure :: check_fortran_source_runs
+    procedure :: with_xdp
+    procedure :: with_qp
+    !> Return compiler name
+    procedure :: name => compiler_name
+
 end type compiler_t
 
 
 !> Definition of archiver object
-type :: archiver_t
+type, extends(serializable_t) :: archiver_t
     !> Path to archiver
     character(len=:), allocatable :: ar
     !> Use response files to pass arguments
@@ -122,6 +142,12 @@ type :: archiver_t
 contains
     !> Create static archive
     procedure :: make_archive
+
+    !> Serialization interface
+    procedure :: serializable_is_same => ar_is_same
+    procedure :: dump_to_toml
+    procedure :: load_from_toml
+
 end type archiver_t
 
 
@@ -137,17 +163,25 @@ character(*), parameter :: &
     flag_gnu_opt = " -O3 -funroll-loops", &
     flag_gnu_debug = " -g", &
     flag_gnu_pic = " -fPIC", &
-    flag_gnu_warn = " -Wall -Wextra -Wimplicit-interface", &
+    flag_gnu_warn = " -Wall -Wextra", &
     flag_gnu_check = " -fcheck=bounds -fcheck=array-temps", &
     flag_gnu_limit = " -fmax-errors=1", &
-    flag_gnu_external = " -Wimplicit-interface"
+    flag_gnu_external = " -Wimplicit-interface", &
+    flag_gnu_openmp = " -fopenmp", &
+    flag_gnu_no_implicit_typing = " -fimplicit-none", &
+    flag_gnu_no_implicit_external = " -Werror=implicit-interface", &
+    flag_gnu_free_form = " -ffree-form", &
+    flag_gnu_fixed_form = " -ffixed-form"
 
 character(*), parameter :: &
     flag_pgi_backslash = " -Mbackslash", &
     flag_pgi_traceback = " -traceback", &
     flag_pgi_debug = " -g", &
     flag_pgi_check = " -Mbounds -Mchkptr -Mchkstk", &
-    flag_pgi_warn = " -Minform=inform"
+    flag_pgi_warn = " -Minform=inform", &
+    flag_pgi_openmp = " -mp", &
+    flag_pgi_free_form = " -Mfree", &
+    flag_pgi_fixed_form = " -Mfixed"
 
 character(*), parameter :: &
     flag_ibmxl_backslash = " -qnoescape"
@@ -157,24 +191,37 @@ character(*), parameter :: &
     flag_intel_warn = " -warn all", &
     flag_intel_check = " -check all", &
     flag_intel_debug = " -O0 -g", &
+    flag_intel_opt = " -O3", &
     flag_intel_fp = " -fp-model precise -pc64", &
     flag_intel_align = " -align all", &
     flag_intel_limit = " -error-limit 1", &
     flag_intel_pthread = " -reentrancy threaded", &
     flag_intel_nogen = " -nogen-interfaces", &
-    flag_intel_byterecl = " -assume byterecl"
+    flag_intel_byterecl = " -assume byterecl", &
+    flag_intel_openmp = " -qopenmp", &
+    flag_intel_free_form = " -free", &
+    flag_intel_fixed_form = " -fixed", &
+    flag_intel_standard_compliance = " -standard-semantics"
+
+character(*), parameter :: &
+    flag_intel_llvm_check = " -check all,nouninit"
 
 character(*), parameter :: &
     flag_intel_backtrace_win = " /traceback", &
     flag_intel_warn_win = " /warn:all", &
     flag_intel_check_win = " /check:all", &
     flag_intel_debug_win = " /Od /Z7", &
+    flag_intel_opt_win = " /O3", &
     flag_intel_fp_win = " /fp:precise", &
     flag_intel_align_win = " /align:all", &
     flag_intel_limit_win = " /error-limit:1", &
     flag_intel_pthread_win = " /reentrancy:threaded", &
     flag_intel_nogen_win = " /nogen-interfaces", &
-    flag_intel_byterecl_win = " /assume:byterecl"
+    flag_intel_byterecl_win = " /assume:byterecl", &
+    flag_intel_openmp_win = " /Qopenmp", &
+    flag_intel_free_form_win = " /free", &
+    flag_intel_fixed_form_win = " /fixed", &
+    flag_intel_standard_compliance_win = " /standard-semantics"
 
 character(*), parameter :: &
     flag_nag_coarray = " -coarray=single", &
@@ -182,12 +229,25 @@ character(*), parameter :: &
     flag_nag_check = " -C", &
     flag_nag_debug = " -g -O0", &
     flag_nag_opt = " -O4", &
-    flag_nag_backtrace = " -gline"
+    flag_nag_backtrace = " -gline", &
+    flag_nag_openmp = " -openmp", &
+    flag_nag_free_form = " -free", &
+    flag_nag_fixed_form = " -fixed", &
+    flag_nag_no_implicit_typing = " -u"
 
 character(*), parameter :: &
-    flag_lfortran_opt = " --fast"
+    flag_lfortran_opt = " --fast", &
+    flag_lfortran_openmp = " --openmp", &
+    flag_lfortran_implicit_typing = " --implicit-typing", &
+    flag_lfortran_implicit_external = " --implicit-interface", &
+    flag_lfortran_fixed_form = " --fixed-form"
 
-    
+character(*), parameter :: &
+    flag_cray_no_implicit_typing = " -dl", &
+    flag_cray_implicit_typing = " -el", &
+    flag_cray_fixed_form = " -ffixed", &
+    flag_cray_free_form = " -ffree"
+
 contains
 
 
@@ -207,7 +267,6 @@ end function get_default_flags
 subroutine get_release_compile_flags(id, flags)
     integer(compiler_enum), intent(in) :: id
     character(len=:), allocatable, intent(out) :: flags
-
 
     select case(id)
     case default
@@ -244,6 +303,7 @@ subroutine get_release_compile_flags(id, flags)
 
     case(id_intel_classic_nix)
         flags = &
+            flag_intel_opt//&
             flag_intel_fp//&
             flag_intel_align//&
             flag_intel_limit//&
@@ -253,6 +313,7 @@ subroutine get_release_compile_flags(id, flags)
 
     case(id_intel_classic_mac)
         flags = &
+            flag_intel_opt//&
             flag_intel_fp//&
             flag_intel_align//&
             flag_intel_limit//&
@@ -262,7 +323,8 @@ subroutine get_release_compile_flags(id, flags)
 
     case(id_intel_classic_windows)
         flags = &
-            & flag_intel_fp_win//&
+            flag_intel_opt_win//&
+            flag_intel_fp_win//&
             flag_intel_align_win//&
             flag_intel_limit_win//&
             flag_intel_pthread_win//&
@@ -271,6 +333,7 @@ subroutine get_release_compile_flags(id, flags)
 
     case(id_intel_llvm_nix)
         flags = &
+            flag_intel_opt//&
             flag_intel_fp//&
             flag_intel_align//&
             flag_intel_limit//&
@@ -280,6 +343,7 @@ subroutine get_release_compile_flags(id, flags)
 
     case(id_intel_llvm_windows)
         flags = &
+            flag_intel_opt_win//&
             flag_intel_fp_win//&
             flag_intel_align_win//&
             flag_intel_limit_win//&
@@ -350,6 +414,7 @@ subroutine get_debug_compile_flags(id, flags)
             flag_intel_debug//&
             flag_intel_byterecl//&
             flag_intel_backtrace
+
     case(id_intel_classic_mac)
         flags = &
             flag_intel_warn//&
@@ -369,7 +434,7 @@ subroutine get_debug_compile_flags(id, flags)
     case(id_intel_llvm_nix)
         flags = &
             flag_intel_warn//&
-            flag_intel_check//&
+            flag_intel_llvm_check//&
             flag_intel_limit//&
             flag_intel_debug//&
             flag_intel_byterecl//&
@@ -417,7 +482,7 @@ pure subroutine set_cpp_preprocessor_flags(id, flags)
 
 end subroutine set_cpp_preprocessor_flags
 
-!> This function will parse and read the macros list and 
+!> This function will parse and read the macros list and
 !> return them as defined flags.
 function get_macros(id, macros_list, version) result(macros)
     integer(compiler_enum), intent(in) :: id
@@ -427,7 +492,7 @@ function get_macros(id, macros_list, version) result(macros)
     character(len=:), allocatable :: macros
     character(len=:), allocatable :: macro_definition_symbol
     character(:), allocatable :: valued_macros(:)
-    
+
 
     integer :: i
 
@@ -450,10 +515,10 @@ function get_macros(id, macros_list, version) result(macros)
     end if
 
     do i = 1, size(macros_list)
-        
+
         !> Split the macro name and value.
         call split(macros_list(i)%s, valued_macros, delimiters="=")
- 
+
         if (size(valued_macros) > 1) then
             !> Check if the value of macro starts with '{' character.
             if (str_begins_with_str(trim(valued_macros(size(valued_macros))), "{")) then
@@ -463,15 +528,15 @@ function get_macros(id, macros_list, version) result(macros)
 
                     !> Check if the string contains "version" as substring.
                     if (index(valued_macros(size(valued_macros)), "version") /= 0) then
-                    
+
                         !> These conditions are placed in order to ensure proper spacing between the macros.
                         macros = macros//macro_definition_symbol//trim(valued_macros(1))//'='//version
                         cycle
                     end if
                 end if
-            end if 
+            end if
         end if
-         
+
         macros = macros//macro_definition_symbol//macros_list(i)%s
 
     end do
@@ -538,6 +603,151 @@ function get_module_flag(self, path) result(flags)
 
 end function get_module_flag
 
+
+function get_feature_flag(self, feature) result(flags)
+    class(compiler_t), intent(in) :: self
+    character(len=*), intent(in) :: feature
+    character(len=:), allocatable :: flags
+
+    flags = ""
+    select case(feature)
+    case("no-implicit-typing")
+       select case(self%id)
+       case(id_caf, id_gcc, id_f95)
+           flags = flag_gnu_no_implicit_typing
+
+       case(id_nag)
+           flags = flag_nag_no_implicit_typing
+
+       case(id_cray)
+           flags = flag_cray_no_implicit_typing
+
+       end select
+
+    case("implicit-typing")
+       select case(self%id)
+       case(id_cray)
+           flags = flag_cray_implicit_typing
+
+       case(id_lfortran)
+           flags = flag_lfortran_implicit_typing
+
+       end select
+
+    case("no-implicit-external")
+       select case(self%id)
+       case(id_caf, id_gcc, id_f95)
+           flags = flag_gnu_no_implicit_external
+
+       end select
+
+    case("implicit-external")
+       select case(self%id)
+       case(id_lfortran)
+           flags = flag_lfortran_implicit_external
+
+       end select
+
+    case("free-form")
+       select case(self%id)
+       case(id_caf, id_gcc, id_f95)
+           flags = flag_gnu_free_form
+
+       case(id_pgi, id_nvhpc, id_flang)
+           flags = flag_pgi_free_form
+
+       case(id_nag)
+           flags = flag_nag_free_form
+
+       case(id_intel_classic_nix, id_intel_classic_mac, id_intel_llvm_nix, &
+             & id_intel_llvm_unknown)
+           flags = flag_intel_free_form
+
+       case(id_intel_classic_windows, id_intel_llvm_windows)
+           flags = flag_intel_free_form_win
+
+       case(id_cray)
+           flags = flag_cray_free_form
+
+       end select
+
+    case("fixed-form")
+       select case(self%id)
+       case(id_caf, id_gcc, id_f95)
+           flags = flag_gnu_fixed_form
+
+       case(id_pgi, id_nvhpc, id_flang)
+           flags = flag_pgi_fixed_form
+
+       case(id_nag)
+           flags = flag_nag_fixed_form
+
+       case(id_intel_classic_nix, id_intel_classic_mac, id_intel_llvm_nix, &
+             & id_intel_llvm_unknown)
+           flags = flag_intel_fixed_form
+
+       case(id_intel_classic_windows, id_intel_llvm_windows)
+           flags = flag_intel_fixed_form_win
+
+       case(id_cray)
+           flags = flag_cray_fixed_form
+
+       case(id_lfortran)
+           flags = flag_lfortran_fixed_form
+
+       end select
+
+    case("default-form")
+        continue
+
+    case default
+        error stop "Unknown feature '"//feature//"'"
+    end select
+end function get_feature_flag
+
+
+!> Get special flags for the main linker
+subroutine get_main_flags(self, language, flags)
+    class(compiler_t), intent(in) :: self
+    character(len=*), intent(in) :: language
+    character(len=:), allocatable, intent(out) :: flags
+
+    flags = ""
+    select case(language)
+
+    case("fortran")
+        flags = ""
+
+    case("c")
+
+        ! If the main program is on a C/C++ source, the Intel Fortran compiler requires option
+        ! -nofor-main to avoid "duplicate main" errors.
+        ! https://stackoverflow.com/questions/36221612/p3dfft-compilation-ifort-compiler-error-multiple-definiton-of-main
+        select case(self%id)
+           case(id_intel_classic_nix, id_intel_classic_mac, id_intel_llvm_nix)
+               flags = '-nofor-main'
+           case(id_intel_classic_windows,id_intel_llvm_windows)
+               flags = '/nofor-main'
+           case (id_pgi,id_nvhpc)
+               flags = '-Mnomain'
+        end select
+
+    case("c++","cpp","cxx")
+
+        select case(self%id)
+           case(id_intel_classic_nix, id_intel_classic_mac, id_intel_llvm_nix)
+               flags = '-nofor-main'
+           case(id_intel_classic_windows,id_intel_llvm_windows)
+               flags = '/nofor-main'
+           case (id_pgi,id_nvhpc)
+               flags = '-Mnomain'
+        end select
+
+    case default
+        error stop "Unknown language '"//language//'", try "fortran", "c", "c++"'
+    end select
+
+end subroutine get_main_flags
 
 subroutine get_default_c_compiler(f_compiler, c_compiler)
     character(len=*), intent(in) :: f_compiler
@@ -647,8 +857,6 @@ end function get_compiler_id
 function get_id(compiler) result(id)
     character(len=*), intent(in) :: compiler
     integer(kind=compiler_enum) :: id
-
-    integer :: stat
 
     if (check_compiler(compiler, "gfortran")) then
         id = id_gcc
@@ -760,6 +968,17 @@ pure function is_unknown(self)
     is_unknown = self%id == id_unknown
 end function is_unknown
 
+pure logical function is_intel(self)
+    class(compiler_t), intent(in) :: self
+    is_intel = any(self%id == [id_intel_classic_nix,id_intel_classic_mac,id_intel_classic_windows, &
+                               id_intel_llvm_nix,id_intel_llvm_windows,id_intel_llvm_unknown])
+end function is_intel
+
+pure logical function is_gnu(self)
+    class(compiler_t), intent(in) :: self
+    is_gnu = any(self%id == [id_f95,id_gcc,id_caf])
+end function is_gnu
+
 !>
 !> Enumerate libraries, based on compiler and platform
 !>
@@ -794,7 +1013,7 @@ subroutine new_compiler(self, fc, cc, cxx, echo, verbose)
     logical, intent(in) :: verbose
 
     self%id = get_compiler_id(fc)
-    
+
     self%echo = echo
     self%verbose = verbose
     self%fc = fc
@@ -809,6 +1028,7 @@ subroutine new_compiler(self, fc, cc, cxx, echo, verbose)
     else
       call get_default_cxx_compiler(self%fc, self%cxx)
     end if
+
 end subroutine new_compiler
 
 
@@ -845,13 +1065,26 @@ subroutine new_archiver(self, ar, echo, verbose)
       if (os_type /= OS_WINDOWS .and. os_type /= OS_UNKNOWN) then
         self%ar = "ar"//arflags
       else
+        ! Attempt "ar"
         call execute_command_line("ar --version > "//get_temp_filename()//" 2>&1", &
           & exitstat=estat)
-        if (estat /= 0) then
-          self%ar = "lib"//libflags
+          
+        if (estat == 0) then 
+            
+            self%ar = "ar"//arflags
+            
         else
-          self%ar = "ar"//arflags
-        end if
+            
+            ! Then "gcc-ar"
+            call execute_command_line("gcc-ar --version > "//get_temp_filename()//" 2>&1", &
+               & exitstat=estat)            
+            
+            if (estat /= 0) then
+              self%ar = "lib"//libflags
+            else
+              self%ar = "gcc-ar"//arflags
+            end if
+        endif
       end if
     end if
     self%use_response_file = os_type == OS_WINDOWS
@@ -1016,5 +1249,252 @@ pure function debug_archiver(self) result(repr)
     repr = 'ar="'//self%ar//'"'
 end function debug_archiver
 
+!> Check that two archiver_t objects are equal
+logical function ar_is_same(this,that)
+    class(archiver_t), intent(in) :: this
+    class(serializable_t), intent(in) :: that
+
+    ar_is_same = .false.
+
+    select type (other=>that)
+       type is (archiver_t)
+
+          if (.not.(this%ar==other%ar)) return
+          if (.not.(this%use_response_file.eqv.other%use_response_file)) return
+          if (.not.(this%echo.eqv.other%echo)) return
+          if (.not.(this%verbose.eqv.other%verbose)) return
+
+       class default
+          ! Not the same type
+          return
+    end select
+
+    !> All checks passed!
+    ar_is_same = .true.
+
+end function ar_is_same
+
+!> Dump dependency to toml table
+subroutine dump_to_toml(self, table, error)
+
+    !> Instance of the serializable object
+    class(archiver_t), intent(inout) :: self
+
+    !> Data structure
+    type(toml_table), intent(inout) :: table
+
+    !> Error handling
+    type(error_t), allocatable, intent(out) :: error
+
+    !> Path to archiver
+    call set_string(table, "ar", self%ar, error, 'archiver_t')
+    if (allocated(error)) return
+    call set_value(table, "use-response-file", self%use_response_file, error, 'archiver_t')
+    if (allocated(error)) return
+    call set_value(table, "echo", self%echo, error, 'archiver_t')
+    if (allocated(error)) return
+    call set_value(table, "verbose", self%verbose, error, 'archiver_t')
+    if (allocated(error)) return
+
+end subroutine dump_to_toml
+
+!> Read dependency from toml table (no checks made at this stage)
+subroutine load_from_toml(self, table, error)
+
+    !> Instance of the serializable object
+    class(archiver_t), intent(inout) :: self
+
+    !> Data structure
+    type(toml_table), intent(inout) :: table
+
+    !> Error handling
+    type(error_t), allocatable, intent(out) :: error
+
+    call get_value(table, "ar", self%ar)
+
+    call get_value(table, "use-response-file", self%use_response_file, error, 'archiver_t')
+    if (allocated(error)) return
+    call get_value(table, "echo", self%echo, error, 'archiver_t')
+    if (allocated(error)) return
+    call get_value(table, "verbose", self%verbose, error, 'archiver_t')
+    if (allocated(error)) return
+
+end subroutine load_from_toml
+
+!> Check that two compiler_t objects are equal
+logical function compiler_is_same(this,that)
+    class(compiler_t), intent(in) :: this
+    class(serializable_t), intent(in) :: that
+
+    compiler_is_same = .false.
+
+    select type (other=>that)
+       type is (compiler_t)
+
+          if (.not.(this%id==other%id)) return
+          if (.not.(this%fc==other%fc)) return
+          if (.not.(this%cc==other%cc)) return
+          if (.not.(this%cxx==other%cxx)) return
+          if (.not.(this%echo.eqv.other%echo)) return
+          if (.not.(this%verbose.eqv.other%verbose)) return
+
+       class default
+          ! Not the same type
+          return
+    end select
+
+    !> All checks passed!
+    compiler_is_same = .true.
+
+end function compiler_is_same
+
+!> Dump dependency to toml table
+subroutine compiler_dump(self, table, error)
+
+    !> Instance of the serializable object
+    class(compiler_t), intent(inout) :: self
+
+    !> Data structure
+    type(toml_table), intent(inout) :: table
+
+    !> Error handling
+    type(error_t), allocatable, intent(out) :: error
+
+    integer :: ierr
+
+    call set_value(table, "id", self%id, error, 'compiler_t')
+    if (allocated(error)) return
+    call set_string(table, "fc", self%fc, error, 'compiler_t')
+    if (allocated(error)) return
+    call set_string(table, "cc", self%cc, error, 'compiler_t')
+    if (allocated(error)) return
+    call set_string(table, "cxx", self%cxx, error, 'compiler_t')
+    if (allocated(error)) return
+    call set_value(table, "echo", self%echo, error, 'compiler_t')
+    if (allocated(error)) return
+    call set_value(table, "verbose", self%verbose, error, 'compiler_t')
+    if (allocated(error)) return
+
+end subroutine compiler_dump
+
+!> Read dependency from toml table (no checks made at this stage)
+subroutine compiler_load(self, table, error)
+
+    !> Instance of the serializable object
+    class(compiler_t), intent(inout) :: self
+
+    !> Data structure
+    type(toml_table), intent(inout) :: table
+
+    !> Error handling
+    type(error_t), allocatable, intent(out) :: error
+
+    call get_value(table, "id", self%id, error, 'compiler_t')
+    if (allocated(error)) return
+    call get_value(table, "fc", self%fc)
+    call get_value(table, "cc", self%cc)
+    call get_value(table, "cxx", self%cxx)
+    call get_value(table, "echo", self%echo, error, 'compiler_t')
+    if (allocated(error)) return
+    call get_value(table, "verbose", self%verbose, error, 'compiler_t')
+    if (allocated(error)) return
+
+end subroutine compiler_load
+
+!> Return a compiler name string
+pure function compiler_name(self) result(name)
+   !> Instance of the compiler object
+   class(compiler_t), intent(in) :: self
+   !> Representation as string
+   character(len=:), allocatable :: name
+
+   select case (self%id)
+       case(id_gcc); name = "gfortran"
+       case(id_f95); name = "f95"
+       case(id_caf); name = "caf"
+       case(id_intel_classic_nix);     name = "ifort"
+       case(id_intel_classic_mac);     name = "ifort"
+       case(id_intel_classic_windows); name = "ifort"
+       case(id_intel_llvm_nix);     name = "ifx"
+       case(id_intel_llvm_windows); name = "ifx"
+       case(id_intel_llvm_unknown); name = "ifx"
+       case(id_pgi);       name = "pgfortran"
+       case(id_nvhpc);     name = "nvfortran"
+       case(id_nag);       name = "nagfor"
+       case(id_flang);     name = "flang"
+       case(id_flang_new); name = "flang-new"
+       case(id_f18);       name = "f18"
+       case(id_ibmxl);     name = "xlf90"
+       case(id_cray);      name = "crayftn"
+       case(id_lahey);     name = "lfc"
+       case(id_lfortran);  name = "lFortran"
+       case default;       name = "invalid/unknown"
+   end select
+end function compiler_name
+
+!> Run a single-source Fortran program using the current compiler
+!> Compile a Fortran object
+logical function check_fortran_source_runs(self, input) result(success)
+    !> Instance of the compiler object
+    class(compiler_t), intent(in) :: self
+    !> Program Source 
+    character(len=*), intent(in) :: input
+    
+    integer :: stat,unit
+    character(:), allocatable :: source,object,logf,exe
+    
+    success = .false.
+   
+    !> Create temporary source file
+    exe    = get_temp_filename()
+    source = exe//'.f90'
+    object = exe//'.o'
+    logf   = exe//'.log'
+    open(newunit=unit, file=source, action='readwrite', iostat=stat)
+    if (stat/=0) return
+   
+    !> Write contents
+    write(unit,*) input
+    close(unit)  
+    
+    !> Compile and link program 
+    call self%compile_fortran(source, object, self%get_default_flags(release=.false.), logf, stat)
+    if (stat==0) &
+    call self%link(exe, self%get_default_flags(release=.false.)//" "//object, logf, stat)
+        
+    !> Run and retrieve exit code 
+    if (stat==0) &
+    call run(exe,echo=.false., exitstat=stat, verbose=.false., redirect=logf)
+    
+    !> Successful exit on 0 exit code
+    success = stat==0
+    
+    !> Delete files
+    open(newunit=unit, file=source, action='readwrite', iostat=stat)
+    close(unit,status='delete')
+    open(newunit=unit, file=object, action='readwrite', iostat=stat)
+    close(unit,status='delete')
+    open(newunit=unit, file=logf, action='readwrite', iostat=stat)
+    close(unit,status='delete')
+    open(newunit=unit, file=exe, action='readwrite', iostat=stat)
+    close(unit,status='delete')
+            
+end function check_fortran_source_runs
+
+!> Check if the current compiler supports 128-bit real precision 
+logical function with_qp(self)
+    !> Instance of the compiler object
+    class(compiler_t), intent(in) :: self
+    with_qp = self%check_fortran_source_runs &
+              ('if (selected_real_kind(33) == -1) stop 1; end')
+end function with_qp
+
+!> Check if the current compiler supports 80-bit "extended" real precision 
+logical function with_xdp(self)
+    !> Instance of the compiler object
+    class(compiler_t), intent(in) :: self
+    with_xdp = self%check_fortran_source_runs &
+               ('if (any(selected_real_kind(18) == [-1, selected_real_kind(33)])) stop 1; end')
+end function with_xdp
 
 end module fpm_compiler

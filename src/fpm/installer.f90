@@ -7,13 +7,11 @@ module fpm_installer
   use, intrinsic :: iso_fortran_env, only : output_unit
   use fpm_environment, only : get_os_type, os_is_unix
   use fpm_error, only : error_t, fatal_error
-  use fpm_filesystem, only : join_path, mkdir, exists, unix_path, windows_path, &
-    env_variable
+  use fpm_filesystem, only : join_path, mkdir, exists, unix_path, windows_path, get_local_prefix
+
   implicit none
   private
-
   public :: installer_t, new_installer
-
 
   !> Declaration of the installer type
   type :: installer_t
@@ -23,6 +21,8 @@ module fpm_installer
     character(len=:), allocatable :: bindir
     !> Library directory relative to the installation prefix
     character(len=:), allocatable :: libdir
+    !> Test program directory relative to the installation prefix
+    character(len=:), allocatable :: testdir
     !> Include directory relative to the installation prefix
     character(len=:), allocatable :: includedir
     !> Output unit for informative printout
@@ -42,6 +42,8 @@ module fpm_installer
     procedure :: install_library
     !> Install a header/module in its correct subdirectory
     procedure :: install_header
+    !> Install a test program in its correct subdirectory
+    procedure :: install_test
     !> Install a generic file into a subdirectory in the installation prefix
     procedure :: install
     !> Run an installation command, type-bound for unit testing purposes
@@ -55,15 +57,12 @@ module fpm_installer
 
   !> Default name of the library subdirectory
   character(len=*), parameter :: default_libdir = "lib"
+  
+  !> Default name of the test subdirectory
+  character(len=*), parameter :: default_testdir = "test"
 
   !> Default name of the include subdirectory
   character(len=*), parameter :: default_includedir = "include"
-
-  !> Default name of the installation prefix on Unix platforms
-  character(len=*), parameter :: default_prefix_unix = "/usr/local"
-
-  !> Default name of the installation prefix on Windows platforms
-  character(len=*), parameter :: default_prefix_win = "C:\"
 
   !> Copy command on Unix platforms
   character(len=*), parameter :: default_copy_unix = "cp"
@@ -71,17 +70,22 @@ module fpm_installer
   !> Copy command on Windows platforms
   character(len=*), parameter :: default_copy_win = "copy"
 
+  !> Copy command on Unix platforms
+  character(len=*), parameter :: default_force_copy_unix = "cp -f"
+
+  !> Copy command on Windows platforms
+  character(len=*), parameter :: default_force_copy_win = "copy /Y"
+
   !> Move command on Unix platforms
   character(len=*), parameter :: default_move_unix = "mv"
 
   !> Move command on Windows platforms
   character(len=*), parameter :: default_move_win = "move"
 
-
 contains
 
   !> Create a new instance of an installer
-  subroutine new_installer(self, prefix, bindir, libdir, includedir, verbosity, &
+  subroutine new_installer(self, prefix, bindir, libdir, includedir, testdir, verbosity, &
           copy, move)
     !> Instance of the installer
     type(installer_t), intent(out) :: self
@@ -93,6 +97,8 @@ contains
     character(len=*), intent(in), optional :: libdir
     !> Include directory relative to the installation prefix
     character(len=*), intent(in), optional :: includedir
+    !> Test directory relative to the installation prefix
+    character(len=*), intent(in), optional :: testdir    
     !> Verbosity of the installer
     integer, intent(in), optional :: verbosity
     !> Copy command
@@ -102,13 +108,14 @@ contains
 
     self%os = get_os_type()
 
+    ! By default, never prompt the user for overwrites
     if (present(copy)) then
       self%copy = copy
     else
       if (os_is_unix(self%os)) then
-        self%copy = default_copy_unix
+        self%copy = default_force_copy_unix
       else
-        self%copy = default_copy_win
+        self%copy = default_force_copy_win
       end if
     end if
 
@@ -127,11 +134,17 @@ contains
     else
       self%includedir = default_includedir
     end if
+    
+    if (present(testdir)) then 
+      self%testdir = testdir
+    else
+      self%testdir = default_testdir  
+    end if
 
     if (present(prefix)) then
       self%prefix = prefix
     else
-      call set_default_prefix(self%prefix, self%os)
+      self%prefix = get_local_prefix(self%os)
     end if
 
     if (present(bindir)) then
@@ -153,33 +166,6 @@ contains
     end if
 
   end subroutine new_installer
-
-  !> Set the default prefix for the installation
-  subroutine set_default_prefix(prefix, os)
-    !> Installation prefix
-    character(len=:), allocatable :: prefix
-    !> Platform identifier
-    integer, intent(in), optional :: os
-
-    character(len=:), allocatable :: home
-
-    if (os_is_unix(os)) then
-      call env_variable(home, "HOME")
-      if (allocated(home)) then
-        prefix = join_path(home, ".local")
-      else
-        prefix = default_prefix_unix
-      end if
-    else
-      call env_variable(home, "APPDATA")
-      if (allocated(home)) then
-        prefix = join_path(home, "local")
-      else
-        prefix = default_prefix_win
-      end if
-    end if
-
-  end subroutine set_default_prefix
 
   !> Install an executable in its correct subdirectory
   subroutine install_executable(self, executable, error)
@@ -214,6 +200,28 @@ contains
 
     call self%install(library, self%libdir, error)
   end subroutine install_library
+
+  !> Install a test program in its correct subdirectory
+  subroutine install_test(self, test, error)
+    !> Instance of the installer
+    class(installer_t), intent(inout) :: self
+    !> Path to the test executable
+    character(len=*), intent(in) :: test
+    !> Error handling
+    type(error_t), allocatable, intent(out) :: error
+    integer :: ll
+
+    if (.not.os_is_unix(self%os)) then
+        ll = len(test)
+        if (test(max(1, ll-3):ll) /= ".exe") then
+            call self%install(test//".exe", self%testdir, error)
+            return
+        end if
+    end if
+
+    call self%install(test, self%testdir, error)
+
+  end subroutine install_test
 
   !> Install a header/module in its correct subdirectory
   subroutine install_header(self, header, error)
@@ -259,12 +267,9 @@ contains
       end if
     end if
 
-    ! move instead of copy if already installed
-    if (exists(install_dest)) then
-      call self%run(self%move//' "'//source//'" "'//install_dest//'"', error)
-    else
-      call self%run(self%copy//' "'//source//'" "'//install_dest//'"', error)
-    end if
+    ! Use force-copy to never prompt the user for overwrite if a package was already installed
+    call self%run(self%copy//' "'//source//'" "'//install_dest//'"', error)
+
     if (allocated(error)) return
 
   end subroutine install

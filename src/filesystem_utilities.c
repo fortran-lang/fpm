@@ -1,7 +1,7 @@
 #include <sys/stat.h>
 #include <dirent.h>
 
-#if defined(__APPLE__) && !defined(__aarch64__) && !defined(__POWERPC__)
+#if defined(__APPLE__) && !defined(__aarch64__) && !defined(__ppc__) && !defined(__i386__)
 DIR * opendir$INODE64( const char * dirName );
 struct dirent * readdir$INODE64( DIR * dir );
 #define opendir opendir$INODE64

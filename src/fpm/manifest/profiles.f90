@@ -43,22 +43,23 @@
 !>
 module fpm_manifest_profile
     use fpm_error, only : error_t, syntax_error, fatal_error, fpm_stop
-    use fpm_toml, only : toml_table, toml_key, toml_stat, get_value
+    use fpm_toml, only : toml_table, toml_key, toml_stat, get_value, serializable_t, set_value, &
+                         set_string, add_table
     use fpm_strings, only: lower
     use fpm_environment, only: get_os_type, OS_UNKNOWN, OS_LINUX, OS_MACOS, OS_WINDOWS, &
-                             OS_CYGWIN, OS_SOLARIS, OS_FREEBSD, OS_OPENBSD
+                             OS_CYGWIN, OS_SOLARIS, OS_FREEBSD, OS_OPENBSD, OS_NAME
     use fpm_filesystem, only: join_path
     implicit none
     public :: profile_config_t, new_profile, new_profiles, get_default_profiles, &
             & info_profile, find_profile, DEFAULT_COMPILER
 
     !> Name of the default compiler
-    character(len=*), parameter :: DEFAULT_COMPILER = 'gfortran' 
+    character(len=*), parameter :: DEFAULT_COMPILER = 'gfortran'
     integer, parameter :: OS_ALL = -1
     character(len=:), allocatable :: path
 
     !> Type storing file name - file scope compiler flags pairs
-    type :: file_scope_flag
+    type, extends(serializable_t) :: file_scope_flag
 
       !> Name of the file
       character(len=:), allocatable :: file_name
@@ -66,10 +67,17 @@ module fpm_manifest_profile
       !> File scope flags
       character(len=:), allocatable :: flags
 
+      contains
+
+          !> Serialization interface
+          procedure :: serializable_is_same => file_scope_same
+          procedure :: dump_to_toml => file_scope_dump
+          procedure :: load_from_toml => file_scope_load
+
     end type file_scope_flag
 
     !> Configuration meta data for a profile
-    type :: profile_config_t
+    type, extends(serializable_t) :: profile_config_t
       !> Name of the profile
       character(len=:), allocatable :: profile_name
 
@@ -77,8 +85,8 @@ module fpm_manifest_profile
       character(len=:), allocatable :: compiler
 
       !> Value repesenting OS
-      integer :: os_type
-      
+      integer :: os_type = OS_ALL
+
       !> Fortran compiler flags
       character(len=:), allocatable :: flags
 
@@ -95,12 +103,17 @@ module fpm_manifest_profile
       type(file_scope_flag), allocatable :: file_scope_flags(:)
 
       !> Is this profile one of the built-in ones?
-      logical :: is_built_in
+      logical :: is_built_in = .false.
 
       contains
 
         !> Print information on this instance
         procedure :: info
+
+        !> Serialization interface
+        procedure :: serializable_is_same => profile_same
+        procedure :: dump_to_toml => profile_dump
+        procedure :: load_from_toml => profile_load
 
     end type profile_config_t
 
@@ -110,16 +123,16 @@ module fpm_manifest_profile
       function new_profile(profile_name, compiler, os_type, flags, c_flags, cxx_flags, &
                            link_time_flags, file_scope_flags, is_built_in) &
                       & result(profile)
-        
+
         !> Name of the profile
         character(len=*), intent(in) :: profile_name
-        
+
         !> Name of the compiler
         character(len=*), intent(in) :: compiler
-        
+
         !> Type of the OS
         integer, intent(in) :: os_type
-        
+
         !> Fortran compiler flags
         character(len=*), optional, intent(in) :: flags
 
@@ -190,7 +203,7 @@ module fpm_manifest_profile
             is_valid = .false.
         end select
       end subroutine validate_compiler_name
-        
+
       !> Check if os_name is a valid name of a supported OS
       subroutine validate_os_name(os_name, is_valid)
 
@@ -221,7 +234,8 @@ module fpm_manifest_profile
 
         select case (os_name)
           case ("linux");   os_type = OS_LINUX
-          case ("macos");   os_type = OS_WINDOWS
+          case ("macos");   os_type = OS_MACOS
+          case ("windows"); os_type = OS_WINDOWS
           case ("cygwin");  os_type = OS_CYGWIN
           case ("solaris"); os_type = OS_SOLARIS
           case ("freebsd"); os_type = OS_FREEBSD
@@ -231,6 +245,22 @@ module fpm_manifest_profile
         end select
 
       end subroutine match_os_type
+
+      !> Match lowercase string with name of OS to os_type enum
+      function os_type_name(os_type)
+
+        !> Name of operating system
+        character(len=:), allocatable :: os_type_name
+
+        !> Enum representing type of OS
+        integer, intent(in) :: os_type
+
+        select case (os_type)
+          case (OS_ALL); os_type_name = "all"
+          case default; os_type_name = lower(OS_NAME(os_type))
+        end select
+
+      end function os_type_name
 
       subroutine validate_profile_table(profile_name, compiler_name, key_list, table, error, os_valid)
 
@@ -373,10 +403,10 @@ module fpm_manifest_profile
                  & flags, c_flags, cxx_flags, link_time_flags, file_scope_flags)
         profindex = profindex + 1
       end subroutine get_flags
-      
+
       !> Traverse operating system tables to obtain number of profiles
       subroutine traverse_oss_for_size(profile_name, compiler_name, os_list, table, profiles_size, error)
-        
+
         !> Name of profile
         character(len=:), allocatable, intent(in) :: profile_name
 
@@ -447,7 +477,7 @@ module fpm_manifest_profile
 
       !> Traverse operating system tables to obtain profiles
       subroutine traverse_oss(profile_name, compiler_name, os_list, table, profiles, profindex, error)
-        
+
         !> Name of profile
         character(len=:), allocatable, intent(in) :: profile_name
 
@@ -468,7 +498,7 @@ module fpm_manifest_profile
 
         !> Index in the list of profiles
         integer, intent(inout) :: profindex
-        
+
         type(toml_key), allocatable :: key_list(:)
         character(len=:), allocatable :: os_name, l_os_name
         type(toml_table), pointer :: os_node
@@ -513,7 +543,7 @@ module fpm_manifest_profile
 
       !> Traverse compiler tables
       subroutine traverse_compilers(profile_name, comp_list, table, error, profiles_size, profiles, profindex)
-        
+
         !> Name of profile
         character(len=:), allocatable, intent(in) :: profile_name
 
@@ -522,10 +552,10 @@ module fpm_manifest_profile
 
         !> Table containing compiler tables
         type(toml_table), pointer, intent(in) :: table
-        
+
         !> Error handling
         type(error_t), allocatable, intent(out) :: error
-        
+
         !> Number of profiles in list of profiles
         integer, intent(inout), optional :: profiles_size
 
@@ -534,8 +564,8 @@ module fpm_manifest_profile
 
         !> Index in the list of profiles
         integer, intent(inout), optional :: profindex
-        
-        character(len=:), allocatable :: compiler_name        
+
+        character(len=:), allocatable :: compiler_name
         type(toml_table), pointer :: comp_node
         type(toml_key), allocatable :: os_list(:)
         integer :: icomp, stat
@@ -544,7 +574,7 @@ module fpm_manifest_profile
         if (size(comp_list)<1) return
         do icomp = 1, size(comp_list)
           call validate_compiler_name(comp_list(icomp)%key, is_valid)
-          if (is_valid) then  
+          if (is_valid) then
             compiler_name = comp_list(icomp)%key
             call get_value(table, compiler_name, comp_node, stat=stat)
             if (stat /= toml_stat%success) then
@@ -567,7 +597,7 @@ module fpm_manifest_profile
           else
             call fatal_error(error,'*traverse_compilers*:Error: Compiler name not specified or invalid.')
           end if
-        end do        
+        end do
       end subroutine traverse_compilers
 
       !> Construct new profiles array from a TOML data structure
@@ -596,9 +626,9 @@ module fpm_manifest_profile
         default_profiles = get_default_profiles(error)
         if (allocated(error)) return
         call table%get_keys(prof_list)
-        
+
         if (size(prof_list) < 1) return
-        
+
         profiles_size = 0
 
         do iprof = 1, size(prof_list)
@@ -633,7 +663,7 @@ module fpm_manifest_profile
 
         profiles_size = profiles_size + size(default_profiles)
         allocate(profiles(profiles_size))
-        
+
         do profindex=1, size(default_profiles)
           profiles(profindex) = default_profiles(profindex)
         end do
@@ -836,7 +866,7 @@ module fpm_manifest_profile
             write(unit, fmt) "- compiler", self%compiler
         end if
 
-        write(unit, fmt) "- os", self%os_type
+        write(unit, fmt) "- os", os_type_name(self%os_type)
 
         if (allocated(self%flags)) then
             write(unit, fmt) "- compiler flags", self%flags
@@ -954,4 +984,256 @@ module fpm_manifest_profile
           end do
         end if
       end subroutine find_profile
+
+
+      logical function file_scope_same(this,that)
+          class(file_scope_flag), intent(in) :: this
+          class(serializable_t), intent(in) :: that
+
+          file_scope_same = .false.
+
+          select type (other=>that)
+             type is (file_scope_flag)
+                if (allocated(this%file_name).neqv.allocated(other%file_name)) return
+                if (allocated(this%file_name)) then
+                    if (.not.(this%file_name==other%file_name)) return
+                endif
+                if (allocated(this%flags).neqv.allocated(other%flags)) return
+                if (allocated(this%flags)) then
+                    if (.not.(this%flags==other%flags)) return
+                endif
+
+             class default
+                ! Not the same type
+                return
+          end select
+
+          !> All checks passed!
+          file_scope_same = .true.
+
+    end function file_scope_same
+
+    !> Dump to toml table
+    subroutine file_scope_dump(self, table, error)
+
+       !> Instance of the serializable object
+       class(file_scope_flag), intent(inout) :: self
+
+       !> Data structure
+       type(toml_table), intent(inout) :: table
+
+       !> Error handling
+       type(error_t), allocatable, intent(out) :: error
+
+       call set_string(table, "file-name", self%file_name, error)
+       if (allocated(error)) return
+       call set_string(table, "flags", self%flags, error)
+       if (allocated(error)) return
+
+     end subroutine file_scope_dump
+
+     !> Read from toml table (no checks made at this stage)
+     subroutine file_scope_load(self, table, error)
+
+        !> Instance of the serializable object
+        class(file_scope_flag), intent(inout) :: self
+
+        !> Data structure
+        type(toml_table), intent(inout) :: table
+
+        !> Error handling
+        type(error_t), allocatable, intent(out) :: error
+
+        call get_value(table, "file-name", self%file_name)
+        call get_value(table, "flags", self%flags)
+
+     end subroutine file_scope_load
+
+      logical function profile_same(this,that)
+          class(profile_config_t), intent(in) :: this
+          class(serializable_t), intent(in) :: that
+
+          integer :: ii
+
+          profile_same = .false.
+
+          select type (other=>that)
+             type is (profile_config_t)
+                if (allocated(this%profile_name).neqv.allocated(other%profile_name)) return
+                if (allocated(this%profile_name)) then
+                    if (.not.(this%profile_name==other%profile_name)) return
+                endif
+                if (allocated(this%compiler).neqv.allocated(other%compiler)) return
+                if (allocated(this%compiler)) then
+                    if (.not.(this%compiler==other%compiler)) return
+                endif
+                if (this%os_type/=other%os_type) return
+                if (allocated(this%flags).neqv.allocated(other%flags)) return
+                if (allocated(this%flags)) then
+                    if (.not.(this%flags==other%flags)) return
+                endif
+                if (allocated(this%c_flags).neqv.allocated(other%c_flags)) return
+                if (allocated(this%c_flags)) then
+                    if (.not.(this%c_flags==other%c_flags)) return
+                endif
+                if (allocated(this%cxx_flags).neqv.allocated(other%cxx_flags)) return
+                if (allocated(this%cxx_flags)) then
+                    if (.not.(this%cxx_flags==other%cxx_flags)) return
+                endif
+                if (allocated(this%link_time_flags).neqv.allocated(other%link_time_flags)) return
+                if (allocated(this%link_time_flags)) then
+                    if (.not.(this%link_time_flags==other%link_time_flags)) return
+                endif
+
+                if (allocated(this%file_scope_flags).neqv.allocated(other%file_scope_flags)) return
+                if (allocated(this%file_scope_flags)) then
+                    if (.not.size(this%file_scope_flags)==size(other%file_scope_flags)) return
+                    do ii=1,size(this%file_scope_flags)
+                        print *, 'check ii-th file scope: ',ii
+                       if (.not.this%file_scope_flags(ii)==other%file_scope_flags(ii)) return
+                    end do
+                endif
+
+                if (this%is_built_in.neqv.other%is_built_in) return
+
+             class default
+                ! Not the same type
+                return
+          end select
+
+          !> All checks passed!
+          profile_same = .true.
+
+    end function profile_same
+
+    !> Dump to toml table
+    subroutine profile_dump(self, table, error)
+
+       !> Instance of the serializable object
+       class(profile_config_t), intent(inout) :: self
+
+       !> Data structure
+       type(toml_table), intent(inout) :: table
+
+       !> Error handling
+       type(error_t), allocatable, intent(out) :: error
+
+       !> Local variables
+       integer :: ierr, ii
+       type(toml_table), pointer :: ptr_deps, ptr
+       character(len=30) :: unnamed
+
+       call set_string(table, "profile-name", self%profile_name, error)
+       if (allocated(error)) return
+       call set_string(table, "compiler", self%compiler, error)
+       if (allocated(error)) return
+       call set_string(table,"os-type",os_type_name(self%os_type), error, 'profile_config_t')
+       if (allocated(error)) return
+       call set_string(table, "flags", self%flags, error)
+       if (allocated(error)) return
+       call set_string(table, "c-flags", self%c_flags, error)
+       if (allocated(error)) return
+       call set_string(table, "cxx-flags", self%cxx_flags, error)
+       if (allocated(error)) return
+       call set_string(table, "link-time-flags", self%link_time_flags, error)
+       if (allocated(error)) return
+
+       if (allocated(self%file_scope_flags)) then
+
+           ! Create dependency table
+           call add_table(table, "file-scope-flags", ptr_deps)
+           if (.not. associated(ptr_deps)) then
+              call fatal_error(error, "profile_config_t cannot create file scope table ")
+              return
+           end if
+
+           do ii = 1, size(self%file_scope_flags)
+              associate (dep => self%file_scope_flags(ii))
+
+                 !> Because files need a name, fallback if this has no name
+                 if (len_trim(dep%file_name)==0) then
+                    write(unnamed,1) ii
+                    call add_table(ptr_deps, trim(unnamed), ptr)
+                 else
+                    call add_table(ptr_deps, dep%file_name, ptr)
+                 end if
+                 if (.not. associated(ptr)) then
+                    call fatal_error(error, "profile_config_t cannot create entry for file "//dep%file_name)
+                    return
+                 end if
+                 call dep%dump_to_toml(ptr, error)
+                 if (allocated(error)) return
+              end associate
+           end do
+
+       endif
+
+       call set_value(table, "is-built-in", self%is_built_in, error, 'profile_config_t')
+       if (allocated(error)) return
+
+       1 format('UNNAMED_FILE_',i0)
+
+     end subroutine profile_dump
+
+     !> Read from toml table (no checks made at this stage)
+     subroutine profile_load(self, table, error)
+
+        !> Instance of the serializable object
+        class(profile_config_t), intent(inout) :: self
+
+        !> Data structure
+        type(toml_table), intent(inout) :: table
+
+        !> Error handling
+        type(error_t), allocatable, intent(out) :: error
+
+        !> Local variables
+        character(len=:), allocatable :: flag
+        integer :: ii, jj
+        type(toml_table), pointer :: ptr_dep, ptr
+        type(toml_key), allocatable :: keys(:),dep_keys(:)
+
+        call table%get_keys(keys)
+
+        call get_value(table, "profile-name", self%profile_name)
+        call get_value(table, "compiler", self%compiler)
+        call get_value(table,"os-type",flag)
+        call match_os_type(flag, self%os_type)
+        call get_value(table, "flags", self%flags)
+        call get_value(table, "c-flags", self%c_flags)
+        call get_value(table, "cxx-flags", self%cxx_flags)
+        call get_value(table, "link-time-flags", self%link_time_flags)
+        call get_value(table, "is-built-in", self%is_built_in, error, 'profile_config_t')
+        if (allocated(error)) return
+
+        if (allocated(self%file_scope_flags)) deallocate(self%file_scope_flags)
+        sub_deps: do ii = 1, size(keys)
+
+           select case (keys(ii)%key)
+              case ("file-scope-flags")
+
+               call get_value(table, keys(ii), ptr)
+               if (.not.associated(ptr)) then
+                  call fatal_error(error,'profile_config_t: error retrieving file_scope_flags table')
+                  return
+               end if
+
+               !> Read all packages
+               call ptr%get_keys(dep_keys)
+               allocate(self%file_scope_flags(size(dep_keys)))
+
+               do jj = 1, size(dep_keys)
+
+                   call get_value(ptr, dep_keys(jj), ptr_dep)
+                   call self%file_scope_flags(jj)%load_from_toml(ptr_dep, error)
+                   if (allocated(error)) return
+
+               end do
+
+           end select
+        end do sub_deps
+
+     end subroutine profile_load
+
+
 end module fpm_manifest_profile

@@ -1,27 +1,24 @@
 !> Define tests for the `fpm_manifest` modules
 module test_manifest
     use fpm_filesystem, only: get_temp_filename
-    use testsuite, only : new_unittest, unittest_t, error_t, test_failed, &
-        & check_string
+    use testsuite, only : new_unittest, unittest_t, error_t, test_failed, check_string
     use fpm_manifest
     use fpm_manifest_profile, only: profile_config_t, find_profile
     use fpm_strings, only: operator(.in.)
+    use fpm_error, only: fatal_error, error_t
     implicit none
     private
-
     public :: collect_manifest
-
 
 contains
 
-
     !> Collect all exported unit tests
-    subroutine collect_manifest(testsuite)
+    subroutine collect_manifest(tests)
 
         !> Collection of tests
-        type(unittest_t), allocatable, intent(out) :: testsuite(:)
+        type(unittest_t), allocatable, intent(out) :: tests(:)
 
-        testsuite = [ &
+        tests = [ &
             & new_unittest("valid-manifest", test_valid_manifest), &
             & new_unittest("invalid-manifest", test_invalid_manifest, should_fail=.true.), &
             & new_unittest("default-library", test_default_library), &
@@ -32,6 +29,8 @@ contains
             & new_unittest("dependency-nourl", test_dependency_nourl, should_fail=.true.), &
             & new_unittest("dependency-gitconflict", test_dependency_gitconflict, should_fail=.true.), &
             & new_unittest("dependency-invalid-git", test_dependency_invalid_git, should_fail=.true.), &
+            & new_unittest("dependency-no-namespace", test_dependency_no_namespace, should_fail=.true.), &
+            & new_unittest("dependency-redundant-v", test_dependency_redundant_v, should_fail=.true.), &
             & new_unittest("dependency-wrongkey", test_dependency_wrongkey, should_fail=.true.), &
             & new_unittest("dependencies-empty", test_dependencies_empty), &
             & new_unittest("dependencies-typeerror", test_dependencies_typeerror, should_fail=.true.), &
@@ -44,6 +43,7 @@ contains
             & new_unittest("build-config-valid", test_build_valid), &
             & new_unittest("build-config-empty", test_build_empty), &
             & new_unittest("build-config-invalid-values", test_build_invalid_values, should_fail=.true.), &
+            & new_unittest("build-key-invalid", test_build_invalid_key), &
             & new_unittest("library-empty", test_library_empty), &
             & new_unittest("library-wrongkey", test_library_wrongkey, should_fail=.true.), &
             & new_unittest("package-simple", test_package_simple), &
@@ -70,7 +70,8 @@ contains
             & new_unittest("preprocess-wrongkey", test_preprocess_wrongkey, should_fail=.true.), &
             & new_unittest("preprocessors-empty", test_preprocessors_empty, should_fail=.true.), &
             & new_unittest("macro-parsing", test_macro_parsing, should_fail=.false.), &
-            & new_unittest("macro-parsing-dependency", test_macro_parsing_dependency, should_fail=.false.)]
+            & new_unittest("macro-parsing-dependency", test_macro_parsing_dependency, should_fail=.false.) &
+            & ]
 
     end subroutine collect_manifest
 
@@ -166,6 +167,10 @@ contains
             return
         end if
 
+        ! Test package serialization
+        call package%test_serialization('test_valid_manifest',error)
+        if (allocated(error)) return
+
     end subroutine test_valid_manifest
 
 
@@ -219,6 +224,9 @@ contains
             return
         end if
 
+        call package%test_serialization('test_default_library',error)
+        if (allocated(error)) return
+
     end subroutine test_default_library
 
 
@@ -240,6 +248,9 @@ contains
 
         call check_string(error, package%executable(1)%name, name, &
             & "Default executable name")
+        if (allocated(error)) return
+
+        call package%test_serialization('test_default_executable',error)
         if (allocated(error)) return
 
     end subroutine test_default_executable
@@ -352,27 +363,61 @@ contains
     end subroutine test_dependency_gitconflict
 
 
-    !> Try to create a git dependency with invalid source format
+    !> Try to create a git dependency with an invalid source format.
     subroutine test_dependency_invalid_git(error)
         use fpm_manifest_dependency
-        use fpm_toml, only : new_table, add_table, toml_table, set_value
+        use fpm_toml, only : new_table, toml_table, set_value
 
         !> Error handling
         type(error_t), allocatable, intent(out) :: error
 
         type(toml_table) :: table
-        type(toml_table), pointer :: child
-
         type(dependency_config_t) :: dependency
 
         call new_table(table)
         table%key = 'example'
-        call add_table(table, 'git', child)
-        call set_value(child, 'path', '../../package')
+        call set_value(table, 'git', 123) ! Not a string
 
         call new_dependency(dependency, table, error=error)
 
     end subroutine test_dependency_invalid_git
+
+    !> Namespace is necessary if a dependency is not a git or path dependency
+    subroutine test_dependency_no_namespace(error)
+        use fpm_manifest_dependency
+        use fpm_toml, only : new_table, toml_table, set_value
+
+        type(error_t), allocatable, intent(out) :: error
+
+        type(toml_table) :: table
+        type(dependency_config_t) :: dependency
+
+        call new_table(table)
+        table%key = 'example'
+        call set_value(table, 'v', 'abc')
+
+        call new_dependency(dependency, table, error=error)
+
+    end subroutine test_dependency_no_namespace
+
+    !> Do not specify version with a git or path dependency
+    subroutine test_dependency_redundant_v(error)
+        use fpm_manifest_dependency
+        use fpm_toml, only : new_table, toml_table, set_value
+
+        type(error_t), allocatable, intent(out) :: error
+
+        type(toml_table) :: table
+        type(dependency_config_t) :: dependency
+
+        call new_table(table)
+        table%key = 'example'
+        call set_value(table, 'v', '0.0.0')
+        call set_value(table, 'path', 'abc')
+
+        call new_dependency(dependency, table, error=error)
+
+    end subroutine test_dependency_redundant_v
 
 
     !> Try to create a dependency with conflicting entries
@@ -448,7 +493,7 @@ contains
         type(package_config_t) :: package
         character(len=*), parameter :: manifest = 'fpm-profiles.toml'
         integer :: unit
-        character(:), allocatable :: profile_name, compiler, flags
+        character(:), allocatable :: profile_name, compiler
         logical :: profile_found
         type(profile_config_t) :: chosen_profile
 
@@ -482,6 +527,9 @@ contains
             return
         end if
 
+        call chosen_profile%test_serialization('profile serialization: '//profile_name//' '//compiler,error)
+        if (allocated(error)) return
+
         profile_name = 'release'
         compiler = 'gfortran'
         call find_profile(package%profiles, profile_name, compiler, 3, profile_found, chosen_profile)
@@ -489,6 +537,9 @@ contains
             call test_failed(error, "Failed to choose profile with OS 'all'")
             return
         end if
+
+        call chosen_profile%test_serialization('profile serialization: '//profile_name//' '//compiler,error)
+        if (allocated(error)) return
 
         profile_name = 'publish'
         compiler = 'gfortran'
@@ -498,13 +549,20 @@ contains
             return
         end if
 
+        call chosen_profile%test_serialization('profile serialization: '//profile_name//' '//compiler,error)
+        if (allocated(error)) return
+
         profile_name = 'debug'
         compiler = 'ifort'
         call find_profile(package%profiles, profile_name, compiler, 3, profile_found, chosen_profile)
-        if (.not.(chosen_profile%flags.eq.' /warn:all /check:all /error-limit:1 /Od /Z7 /assume:byterecl /traceback')) then
-            call test_failed(error, "Failed to load built-in profile"//flags)
+        if (.not.(chosen_profile%flags.eq.&
+            ' /warn:all /check:all /error-limit:1 /Od /Z7 /assume:byterecl /traceback')) then
+            call test_failed(error, "Failed to load built-in profile "//profile_name)
             return
         end if
+
+        call chosen_profile%test_serialization('profile serialization: '//profile_name//' '//compiler,error)
+        if (allocated(error)) return
 
         profile_name = 'release'
         compiler = 'ifort'
@@ -513,6 +571,10 @@ contains
             call test_failed(error, "Failed to overwrite built-in profile")
             return
         end if
+
+        call chosen_profile%test_serialization('profile serialization: '//profile_name//' '//compiler,error)
+        if (allocated(error)) return
+
     end subroutine test_profiles
 
     !> 'flags' is a key-value entry, test should fail as it is defined as a table
@@ -635,8 +697,8 @@ contains
             & 'name = "example"', &
             & '[build]', &
             & 'auto-executables = false', &
-            & 'auto-tests = false ', &
-            & 'module-naming = true '
+            & 'auto-tests = false', &
+            & 'module-naming = true'
         close(unit)
 
         call get_package_data(package, temp_file, error)
@@ -644,21 +706,67 @@ contains
         if (allocated(error)) return
 
         if (package%build%auto_executables) then
-            call test_failed(error, "Wong value of 'auto-executables' read, expecting .false.")
+            call test_failed(error, "Wrong value of 'auto-executables' read, expecting .false.")
             return
         end if
 
         if (package%build%auto_tests) then
-            call test_failed(error, "Wong value of 'auto-tests' read, expecting .false.")
+            call test_failed(error, "Wrong value of 'auto-tests' read, expecting .false.")
             return
         end if
 
-        if (.not.package%build%module_naming) then
-            call test_failed(error, "Wong value of 'module-naming' read, expecting .true.")
+        if (.not. package%build%module_naming) then
+            call test_failed(error, "Wrong value of 'module-naming' read, expecting .true.")
             return
         end if
 
     end subroutine test_build_valid
+
+
+    !> Try to read values from the [build] table
+    subroutine test_build_invalid_key(error)
+
+        !> Error handling
+        type(error_t), allocatable, intent(out) :: error
+
+        type(package_config_t) :: package
+        character(:), allocatable :: temp_file
+        integer :: unit
+        type(error_t), allocatable :: build_error
+
+        allocate(temp_file, source=get_temp_filename())
+
+        open(file=temp_file, newunit=unit)
+        write(unit, '(a)') &
+            & 'name = "example"', &
+            & '[build]', &
+            & 'auto-executables = false', &
+            & 'auto-tests = false ', &
+            & 'module-naming = true ', &
+            & 'this-will-fail = true '
+        close(unit)
+
+        call get_package_data(package, temp_file, build_error)
+
+        ! Error message should contain both package name and key name
+        if (allocated(build_error)) then
+
+            if (.not.index(build_error%message,'this-will-fail')>0) then
+                call fatal_error(error, 'no invalid key name is printed to output')
+                return
+            end if
+
+            if (.not.index(build_error%message,'example')>0) then
+                call fatal_error(error, 'no package name is printed to output')
+                return
+            end if
+
+        else
+            call fatal_error(error, 'no error allocated on invalid [build] section key ')
+            return
+        end if
+
+    end subroutine test_build_invalid_key
 
 
     !> Try to read values from an empty [build] table
@@ -685,17 +793,17 @@ contains
         if (allocated(error)) return
 
         if (.not.package%build%auto_executables) then
-            call test_failed(error, "Wong default value of 'auto-executables' read, expecting .true.")
+            call test_failed(error, "Wrong default value of 'auto-executables' read, expecting .true.")
             return
         end if
 
         if (.not.package%build%auto_tests) then
-            call test_failed(error, "Wong default value of 'auto-tests' read, expecting .true.")
+            call test_failed(error, "Wrong default value of 'auto-tests' read, expecting .true.")
             return
         end if
 
         if (package%build%module_naming) then
-            call test_failed(error, "Wong default value of 'module-naming' read, expecting .false.")
+            call test_failed(error, "Wrong default value of 'module-naming' read, expecting .false.")
             return
         end if
 
@@ -1124,7 +1232,12 @@ contains
         table = toml_table()
         call set_value(table, "link", "z", stat=stat)
 
-        call new_build_config(build, table, error)
+        call new_build_config(build, table, 'test_link_string', error)
+        if (allocated(error)) return
+
+        !> Test serialization roundtrip
+        call build%test_serialization('test_link_string', error)
+        if (allocated(error)) return
 
     end subroutine test_link_string
 
@@ -1147,7 +1260,12 @@ contains
         call set_value(children, 1, "blas", stat=stat)
         call set_value(children, 2, "lapack", stat=stat)
 
-        call new_build_config(build, table, error)
+        call new_build_config(build, table, 'test_link_array', error)
+        if (allocated(error)) return
+
+        !> Test serialization roundtrip
+        call build%test_serialization('test_link_array', error)
+        if (allocated(error)) return
 
     end subroutine test_link_array
 
@@ -1168,7 +1286,7 @@ contains
         table = toml_table()
         call add_table(table, "link", child, stat=stat)
 
-        call new_build_config(build, table, error)
+        call new_build_config(build, table, 'test_invalid_link', error)
 
     end subroutine test_invalid_link
 
@@ -1238,7 +1356,7 @@ contains
     end subroutine test_install_wrongkey
 
     subroutine test_preprocess_empty(error)
-        use fpm_mainfest_preprocess
+        use fpm_manifest_preprocess
         use fpm_toml, only : new_table, toml_table
 
         !> Error handling
@@ -1256,7 +1374,7 @@ contains
 
     !> Pass a TOML table with not allowed keys
     subroutine test_preprocess_wrongkey(error)
-        use fpm_mainfest_preprocess
+        use fpm_manifest_preprocess
         use fpm_toml, only : new_table, add_table, toml_table
 
         !> Error handling
@@ -1277,7 +1395,7 @@ contains
 
     !> Preprocess table cannot be empty.
     subroutine test_preprocessors_empty(error)
-        use fpm_mainfest_preprocess
+        use fpm_manifest_preprocess
         use fpm_toml, only : new_table, toml_table
 
         !> Error handling
@@ -1300,10 +1418,8 @@ contains
         !> Error handling
         type(error_t), allocatable, intent(out) :: error
 
-        character(len=:), allocatable :: version
-
         type(package_config_t) :: package
-        character(:), allocatable :: temp_file
+        character(:), allocatable :: temp_file,pkg_ver
         integer :: unit
         integer(compiler_enum)  :: id
 
@@ -1322,9 +1438,9 @@ contains
 
         if (allocated(error)) return
 
-        call package%version%to_string(version)
+        pkg_ver = package%version%s()
 
-        if (get_macros(id, package%preprocess(1)%macros, version) /= " -DFOO -DBAR=2 -DVERSION=0.1.0") then
+        if (get_macros(id, package%preprocess(1)%macros, pkg_ver) /= " -DFOO -DBAR=2 -DVERSION=0.1.0") then
             call test_failed(error, "Macros were not parsed correctly")
         end if
 
@@ -1337,13 +1453,13 @@ contains
         !> Error handling
         type(error_t), allocatable, intent(out) :: error
 
-        character(len=:), allocatable :: macrosPackage, macrosDependency
-        character(len=:), allocatable :: versionPackage, versionDependency
+        character(len=:), allocatable :: macros_package, macros_dependency
 
         type(package_config_t) :: package, dependency
 
         character(:), allocatable :: toml_file_package
         character(:), allocatable :: toml_file_dependency
+        character(:), allocatable :: pkg_ver,dep_ver
 
         integer :: unit
         integer(compiler_enum)  :: id
@@ -1380,13 +1496,12 @@ contains
 
         if (allocated(error)) return
 
-        call package%version%to_string(versionPackage)
-        call dependency%version%to_string(versionDependency)
+        pkg_ver = package%version%s()
+        dep_ver = dependency%version%s()
 
-        macrosPackage = get_macros(id, package%preprocess(1)%macros, versionPackage)
-        macrosDependency = get_macros(id, dependency%preprocess(1)%macros, versionDependency)
-
-        if (macrosPackage == macrosDependency) then
+        macros_package = get_macros(id, package%preprocess(1)%macros, pkg_ver)
+        macros_dependency = get_macros(id, dependency%preprocess(1)%macros, dep_ver)
+        if (macros_package == macros_dependency) then
             call test_failed(error, "Macros of package and dependency should not be equal")
         end if
 

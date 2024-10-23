@@ -1,10 +1,13 @@
 !> Implementation of versioning data for comparing packages
 module fpm_versioning
     use fpm_error, only : error_t, syntax_error
+    use fpm_strings, only: string_t
+    use regex_module, only: regex
     implicit none
     private
 
-    public :: version_t, new_version, char
+    public :: version_t, new_version
+    public :: regex_version_from_text
 
 
     type :: version_t
@@ -38,18 +41,13 @@ module fpm_versioning
         procedure, private :: match
 
         !> Create a printable string from a version data type
-        procedure :: to_string
+        procedure :: s
 
     end type version_t
 
 
     !> Arbitrary internal limit of the version parser
     integer, parameter :: max_limit = 3
-
-
-    interface char
-        module procedure :: as_string
-    end interface char
 
 
     interface new_version
@@ -220,19 +218,19 @@ contains
     end subroutine token_error
 
 
-    subroutine to_string(self, string)
+    pure function s(self) result(string)
 
         !> Version number
         class(version_t), intent(in) :: self
 
         !> Character representation of the version
-        character(len=:), allocatable, intent(out) :: string
+        character(len=:), allocatable :: string
 
         integer, parameter :: buffersize = 64
         character(len=buffersize) :: buffer
         integer :: ii
 
-        do ii = 1, size(self%num)
+        do ii = 1, ndigits(self)
             if (allocated(string)) then
                 write(buffer, '(".", i0)') self%num(ii)
                 string = string // trim(buffer)
@@ -246,20 +244,7 @@ contains
             string = '0'
         end if
 
-    end subroutine to_string
-
-
-    function as_string(self) result(string)
-
-        !> Version number
-        class(version_t), intent(in) :: self
-
-        !> Character representation of the version
-        character(len=:), allocatable :: string
-
-        call self%to_string(string)
-
-    end function as_string
+    end function s
 
 
     !> Check to version numbers for equality
@@ -314,19 +299,20 @@ contains
         !> First version is greater
         logical :: is_greater
 
-        integer :: ii
+        integer :: ii, lhs_size, rhs_size
 
-        do ii = 1, min(size(lhs%num), size(rhs%num))
-            is_greater = lhs%num(ii) > rhs%num(ii)
-            if (is_greater) exit
+        do ii = 1, min(ndigits(lhs),ndigits(rhs))
+            if (lhs%num(ii) /= rhs%num(ii)) then
+                is_greater = lhs%num(ii) > rhs%num(ii)
+                return
+            end if
         end do
-        if (is_greater) return
 
-        is_greater = size(lhs%num) > size(rhs%num)
+        is_greater = ndigits(lhs) > ndigits(rhs)
         if (is_greater) then
-            do ii = size(rhs%num) + 1, size(lhs%num)
+            do ii = ndigits(rhs) + 1, ndigits(lhs)
                 is_greater = lhs%num(ii) > 0
-                if (is_greater) exit
+                if (is_greater) return
             end do
         end if
 
@@ -407,5 +393,50 @@ contains
 
     end function match
 
+    !> Number of digits
+    elemental integer function ndigits(self)
+       class(version_t), intent(in) :: self
+
+       if (allocated(self%num)) then
+          ndigits = size(self%num)
+       else
+          ndigits = 0
+       end if
+
+    end function ndigits
+
+    ! Extract canonical version flags "1.0.0" or "1.0" as the first instance inside a text
+    ! (whatever long) using regex
+    type(string_t) function regex_version_from_text(text,what,error) result(ver)
+        character(*), intent(in) :: text
+        character(*), intent(in) :: what
+        type(error_t), allocatable, intent(out) :: error
+
+        integer :: ire, length
+
+        if (len_trim(text)<=0) then
+            call syntax_error(error,'cannot retrieve '//what//' version: empty input string')
+            return
+        end if
+
+        ! Extract 3-sized version "1.0.4"
+        ire = regex(text,'\d+\.\d+\.\d+',length=length)
+        if (ire>0 .and. length>0) then
+            ! Parse version into the object (this should always work)
+            ver = string_t(text(ire:ire+length-1))
+        else
+
+            ! Try 2-sized version "1.0"
+            ire = regex(text,'\d+\.\d+',length=length)
+
+            if (ire>0 .and. length>0) then
+                ver = string_t(text(ire:ire+length-1))
+            else
+                call syntax_error(error,'cannot retrieve '//what//' version.')
+            end if
+
+        end if
+
+    end function regex_version_from_text
 
 end module fpm_versioning

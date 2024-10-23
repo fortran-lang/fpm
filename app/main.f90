@@ -4,18 +4,22 @@ use fpm_command_line, only: &
         fpm_cmd_settings, &
         fpm_new_settings, &
         fpm_build_settings, &
+        fpm_export_settings, &
         fpm_run_settings, &
         fpm_test_settings, &
         fpm_install_settings, &
         fpm_update_settings, &
         fpm_clean_settings, &
+        fpm_publish_settings, &
         get_command_line_settings
 use fpm_error, only: error_t
 use fpm_filesystem, only: exists, parent_dir, join_path
 use fpm, only: cmd_build, cmd_run, cmd_clean
 use fpm_cmd_install, only: cmd_install
+use fpm_cmd_export, only: cmd_export
 use fpm_cmd_new, only: cmd_new
 use fpm_cmd_update, only : cmd_update
+use fpm_cmd_publish, only: cmd_publish
 use fpm_os,  only: change_directory, get_current_directory
 
 implicit none
@@ -74,12 +78,16 @@ type is (fpm_run_settings)
     call cmd_run(settings,test=.false.)
 type is (fpm_test_settings)
     call cmd_run(settings,test=.true.)
+type is (fpm_export_settings)
+    call cmd_export(settings)
 type is (fpm_install_settings)
     call cmd_install(settings)
 type is (fpm_update_settings)
     call cmd_update(settings)
 type is (fpm_clean_settings)
     call cmd_clean(settings)
+type is (fpm_publish_settings)
+    call cmd_publish(settings)
 end select
 
 if (allocated(project_root)) then
@@ -99,20 +107,20 @@ contains
         has_manifest = exists(join_path(dir, "fpm.toml"))
     end function has_manifest
 
-    subroutine handle_error(error)
-        type(error_t), optional, intent(in) :: error
-        if (present(error)) then
-            write(error_unit, '("[Error]", 1x, a)') error%message
+    subroutine handle_error(error_)
+        type(error_t), optional, intent(in) :: error_
+        if (present(error_)) then
+            write (error_unit, '("[Error]", 1x, a)') error_%message
             stop 1
         end if
     end subroutine handle_error
 
     !> Save access to working directory in settings, in case setting have not been allocated
-    subroutine get_working_dir(settings, working_dir)
+    subroutine get_working_dir(settings, working_dir_)
         class(fpm_cmd_settings), optional, intent(in) :: settings
-        character(len=:), allocatable, intent(out) :: working_dir
+        character(len=:), allocatable, intent(out) :: working_dir_
         if (present(settings)) then
-            working_dir = settings%working_dir
+            working_dir_ = settings%working_dir
         end if
     end subroutine get_working_dir
 

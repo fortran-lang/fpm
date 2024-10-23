@@ -6,15 +6,20 @@ module fpm_environment
     use,intrinsic :: iso_fortran_env, only : stdin=>input_unit,   &
                                            & stdout=>output_unit, &
                                            & stderr=>error_unit
+    use,intrinsic :: iso_c_binding, only: c_char,c_int,c_null_char
     use fpm_error, only : fpm_stop
     implicit none
     private
     public :: get_os_type
     public :: os_is_unix
     public :: get_env
+    public :: set_env
+    public :: delete_env
     public :: get_command_arguments_quoted
     public :: separator
+    
 
+                        public :: OS_NAME
     integer, parameter, public :: OS_UNKNOWN = 0
     integer, parameter, public :: OS_LINUX   = 1
     integer, parameter, public :: OS_MACOS   = 2
@@ -24,6 +29,25 @@ module fpm_environment
     integer, parameter, public :: OS_FREEBSD = 6
     integer, parameter, public :: OS_OPENBSD = 7
 contains
+
+    !> Return string describing the OS type flag
+    pure function OS_NAME(os)
+        integer, intent(in) :: os
+        character(len=:), allocatable :: OS_NAME
+
+        select case (os)
+            case (OS_LINUX);   OS_NAME =  "Linux"
+            case (OS_MACOS);   OS_NAME =  "macOS"
+            case (OS_WINDOWS); OS_NAME =  "Windows"
+            case (OS_CYGWIN);  OS_NAME =  "Cygwin"
+            case (OS_SOLARIS); OS_NAME =  "Solaris"
+            case (OS_FREEBSD); OS_NAME =  "FreeBSD"
+            case (OS_OPENBSD); OS_NAME =  "OpenBSD"
+            case (OS_UNKNOWN); OS_NAME =  "Unknown"
+            case default     ; OS_NAME =  "UNKNOWN"
+        end select
+    end function OS_NAME
+
     !> Determine the OS type
     integer function get_os_type() result(r)
         !!
@@ -36,11 +60,11 @@ contains
         !! found on specific system types only.
         !!
         !! Returns OS_UNKNOWN if the operating system cannot be determined.
-        character(len=32) :: val
-        integer           :: length, rc
-        logical           :: file_exists
-        logical, save     :: first_run = .true.
-        integer, save     :: ret = OS_UNKNOWN
+        character(len=255) :: val
+        integer            :: length, rc
+        logical            :: file_exists
+        logical, save      :: first_run = .true.
+        integer, save      :: ret = OS_UNKNOWN
         !$omp threadprivate(ret, first_run)
 
         if (.not. first_run) then
@@ -145,7 +169,7 @@ contains
     !> Compare the output of [[get_os_type]] or the optional
     !! passed INTEGER value to the value for OS_WINDOWS
     !! and return .TRUE. if they match and .FALSE. otherwise
-    logical function os_is_unix(os) result(unix)
+    logical function os_is_unix(os)
         integer, intent(in), optional :: os
         integer :: build_os
         if (present(os)) then
@@ -153,7 +177,7 @@ contains
         else
             build_os = get_os_type()
         end if
-        unix = build_os /= OS_WINDOWS
+        os_is_unix = build_os /= OS_WINDOWS
     end function os_is_unix
 
     !> get named environment variable value. It it is blank or
@@ -318,4 +342,99 @@ character(len=:),allocatable :: fname
    endif
    !*ifort_bug*!sep_cache=sep
 end function separator
+
+!> Set an environment variable for the current environment using the C standard library
+logical function set_env(name,value,overwrite)
+
+   !> Variable name
+   character(*), intent(in) :: name
+   
+   !> Variable value
+   character(*), intent(in) :: value
+   
+   !> Should a former value be overwritten? default = .true.
+   logical, optional, intent(in) :: overwrite
+   
+   ! Local variables
+   logical :: can_overwrite
+   integer(c_int) :: cover,cerr
+   character(kind=c_char,len=1), allocatable :: c_value(:),c_name(:)
+   
+   interface
+      integer(c_int) function c_setenv(envname, envval, overwrite) &
+                     bind(C,name="c_setenv")
+         import c_int, c_char
+         implicit none
+         !> Pointer to the name string
+         character(kind=c_char,len=1), intent(in) :: envname(*)
+         !> Pointer to the value string 
+         character(kind=c_char,len=1), intent(in) :: envval(*)
+         !> Overwrite option
+         integer(c_int), intent(in), value :: overwrite
+      end function c_setenv 
+   end interface
+   
+   !> Overwrite setting
+   can_overwrite = .true.
+   if (present(overwrite)) can_overwrite = overwrite
+   cover = merge(1_c_int,0_c_int,can_overwrite)
+   
+   !> C strings
+   call f2cs(name,c_name)
+   call f2cs(value,c_value)
+   
+   !> Call setenv
+#ifndef FPM_BOOTSTRAP   
+   cerr = c_setenv(c_name,c_value,cover)
+#endif
+   set_env = cerr==0_c_int
+   
+end function set_env
+
+!> Deletes an environment variable for the current environment using the C standard library
+!> Returns an error if the variable did not exist in the first place
+logical function delete_env(name) result(success)
+
+   !> Variable name
+   character(*), intent(in) :: name
+   
+   ! Local variables
+   integer(c_int) :: cerr
+   character(kind=c_char,len=1), allocatable :: c_name(:)
+   
+   interface
+      integer(c_int) function c_unsetenv(envname) bind(C,name="c_unsetenv")
+         import c_int, c_char
+         implicit none
+         !> Pointer to the name string
+         character(kind=c_char,len=1), intent(in) :: envname(*)
+      end function c_unsetenv      
+   end interface
+   
+   !> C strings
+   call f2cs(name,c_name)
+   
+   !> Call setenv
+#ifndef FPM_BOOTSTRAP   
+   cerr = c_unsetenv(c_name)
+#endif
+   success = cerr==0_c_int
+   
+end function delete_env
+
+!> Fortran to C allocatable string
+pure subroutine f2cs(f,c)
+  use iso_c_binding, only: c_char,c_null_char
+  character(*), intent(in) :: f
+  character(len=1,kind=c_char), allocatable, intent(out) :: c(:)
+  
+  integer :: lf,i
+  
+  lf = len(f)
+  allocate(c(lf+1))
+  c(lf+1) = c_null_char 
+  forall(i=1:lf) c(i) = f(i:i)
+  
+end subroutine f2cs 
+
 end module fpm_environment

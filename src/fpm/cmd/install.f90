@@ -7,7 +7,7 @@ module fpm_cmd_install
   use fpm_filesystem, only : join_path, list_files
   use fpm_installer, only : installer_t, new_installer
   use fpm_manifest, only : package_config_t, get_package_data
-  use fpm_model, only : fpm_model_t, FPM_SCOPE_APP
+  use fpm_model, only : fpm_model_t, FPM_SCOPE_APP, FPM_SCOPE_TEST
   use fpm_targets, only: targets_from_sources, build_target_t, &
                          build_target_ptr, FPM_TARGET_EXECUTABLE, &
                          filter_library_targets, filter_executable_targets, filter_modules
@@ -22,35 +22,34 @@ contains
   !> Entry point for the fpm-install subcommand
   subroutine cmd_install(settings)
     !> Representation of the command line settings
-    type(fpm_install_settings), intent(in) :: settings
+    type(fpm_install_settings), intent(inout) :: settings
     type(package_config_t) :: package
     type(error_t), allocatable :: error
     type(fpm_model_t) :: model
     type(build_target_ptr), allocatable :: targets(:)
     type(installer_t) :: installer
-    character(len=:), allocatable :: lib, dir
     type(string_t), allocatable :: list(:)
     logical :: installable
+    integer :: ntargets
 
     call get_package_data(package, "fpm.toml", error, apply_defaults=.true.)
     call handle_error(error)
-
-    call build_model(model, settings%fpm_build_settings, package, error)
+    
+    call build_model(model, settings, package, error)
     call handle_error(error)
 
     call targets_from_sources(targets, model, settings%prune, error)
     call handle_error(error)
 
+    call install_info(output_unit, settings%list, targets, ntargets)
+    if (settings%list) return
+
     installable = (allocated(package%library) .and. package%install%library) &
-      .or. allocated(package%executable)
+                   .or. allocated(package%executable) .or. ntargets>0
+    
     if (.not.installable) then
       call fatal_error(error, "Project does not contain any installable targets")
       call handle_error(error)
-    end if
-
-    if (settings%list) then
-      call install_info(output_unit, package, model, targets)
-      return
     end if
 
     if (.not.settings%no_rebuild) then
@@ -58,7 +57,7 @@ contains
     end if
 
     call new_installer(installer, prefix=settings%prefix, &
-      bindir=settings%bindir, libdir=settings%libdir, &
+      bindir=settings%bindir, libdir=settings%libdir, testdir=settings%testdir, &
       includedir=settings%includedir, &
       verbosity=merge(2, 1, settings%verbose))
 
@@ -73,22 +72,28 @@ contains
         call handle_error(error)
       end if
     end if
-
-    if (allocated(package%executable)) then
+    
+    if (allocated(package%executable) .or. ntargets>0) then
       call install_executables(installer, targets, error)
       call handle_error(error)
     end if
 
+    if (allocated(package%test) .and. (package%install%test .or. model%include_tests)) then 
+        
+        call install_tests(installer, targets, error)
+        call handle_error(error)
+        
+    end if
+
   end subroutine cmd_install
 
-  subroutine install_info(unit, package, model, targets)
+  subroutine install_info(unit, verbose, targets, ntargets)
     integer, intent(in) :: unit
-    type(package_config_t), intent(in) :: package
-    type(fpm_model_t), intent(in) :: model
+    logical, intent(in) :: verbose
     type(build_target_ptr), intent(in) :: targets(:)
+    integer, intent(out) :: ntargets
 
-    integer :: ii, ntargets
-    character(len=:), allocatable :: lib
+    integer :: ii
     type(string_t), allocatable :: install_target(:), temp(:)
 
     allocate(install_target(0))
@@ -99,13 +104,20 @@ contains
     call filter_executable_targets(targets, FPM_SCOPE_APP, temp)
     install_target = [install_target, temp]
 
-    ntargets = size(install_target)
+    call filter_executable_targets(targets, FPM_SCOPE_TEST, temp)
+    install_target = [install_target, temp]
 
-    write(unit, '("#", *(1x, g0))') &
-      "total number of installable targets:", ntargets
-    do ii = 1, ntargets
-      write(unit, '("-", *(1x, g0))') install_target(ii)%s
-    end do
+    ntargets = size(install_target)
+    
+    if (verbose) then 
+
+        write(unit, '("#", *(1x, g0))') &
+          "total number of installable targets:", ntargets
+        do ii = 1, ntargets
+          write(unit, '("-", *(1x, g0))') install_target(ii)%s
+        end do
+    
+    endif
 
   end subroutine install_info
 
@@ -133,7 +145,7 @@ contains
     integer :: ii
 
     do ii = 1, size(targets)
-      if (is_executable_target(targets(ii)%ptr)) then
+      if (targets(ii)%ptr%is_executable_target(FPM_SCOPE_APP)) then
         call installer%install_executable(targets(ii)%ptr%output_file, error)
         if (allocated(error)) exit
       end if
@@ -142,20 +154,26 @@ contains
 
   end subroutine install_executables
 
-  elemental function is_executable_target(target_ptr) result(is_exe)
-    type(build_target_t), intent(in) :: target_ptr
-    logical :: is_exe
-    is_exe = target_ptr%target_type == FPM_TARGET_EXECUTABLE .and. &
-      allocated(target_ptr%dependencies)
-    if (is_exe) then
-      is_exe = target_ptr%dependencies(1)%ptr%source%unit_scope == FPM_SCOPE_APP
-    end if
-  end function is_executable_target
+  subroutine install_tests(installer, targets, error)
+    type(installer_t), intent(inout) :: installer
+    type(build_target_ptr), intent(in) :: targets(:)
+    type(error_t), allocatable, intent(out) :: error
+    integer :: ii
+    
+    do ii = 1, size(targets)
+      if (targets(ii)%ptr%is_executable_target(FPM_SCOPE_TEST)) then
+        call installer%install_test(targets(ii)%ptr%output_file, error)
+        if (allocated(error)) exit
+      end if
+    end do
+    if (allocated(error)) return
+
+  end subroutine install_tests
 
   subroutine handle_error(error)
     type(error_t), intent(in), optional :: error
     if (present(error)) then
-      call fpm_stop(1,error%message)
+      call fpm_stop(1,'*cmd_install* error: '//error%message)
     end if
   end subroutine handle_error
 

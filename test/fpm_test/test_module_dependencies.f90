@@ -2,7 +2,7 @@
 module test_module_dependencies
     use testsuite, only : new_unittest, unittest_t, error_t, test_failed
     use fpm_targets, only: targets_from_sources, resolve_module_dependencies, &
-                            resolve_target_linking, build_target_t, build_target_ptr, &
+                            build_target_t, build_target_ptr, &
                             FPM_TARGET_EXECUTABLE, FPM_TARGET_OBJECT, FPM_TARGET_ARCHIVE
     use fpm_model, only: fpm_model_t, srcfile_t,  &
                 FPM_UNIT_UNKNOWN, FPM_UNIT_PROGRAM, FPM_UNIT_MODULE, &

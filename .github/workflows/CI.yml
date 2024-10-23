@@ -21,58 +21,69 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-latest, macos-11, windows-latest]
-        gcc_v: [9] # Version of GFortran we want to use.
+        os: [ubuntu-latest, macos-12, windows-latest]
+        toolchain:
+          - {compiler: gcc, version: 10}
+          - {compiler: gcc, version: 11}
+          - {compiler: gcc, version: 12}
+          - {compiler: gcc, version: 13}
+        exclude:
+          - os: macos-12
+            toolchain: {compiler: gcc, version: 13}          
         include:
-        - os: ubuntu-latest
-          os-arch: linux-x86_64
-          release-flags: --flag '--static -g -fbacktrace -O3'
-
-        - os: macos-11
-          os-arch: macos-x86_64
-          release-flags: --flag '-g -fbacktrace -O3'
-
-        - os: windows-latest
-          os-arch: windows-x86_64
-          release-flags: --flag '--static -g -fbacktrace -O3'
-          exe: .exe
-
-    env:
-      FC: gfortran
-      GCC_V: ${{ matrix.gcc_v }}
+          - os: ubuntu-latest
+            os-arch: linux-x86_64
+            release-flags: --flag '--static -g -fbacktrace -O3'
+          - os: macos-12
+            os-arch: macos-x86_64
+            release-flags: --flag '-g -fbacktrace -O3'
+          - os: windows-latest
+            os-arch: windows-x86_64
+            release-flags: --flag '--static -g -fbacktrace -O3'
+            exe: .exe
 
     steps:
     - name: Checkout code
-      uses: actions/checkout@v1
+      uses: actions/checkout@v4
 
-    - name: Install GFortran macOS
-      if: contains(matrix.os, 'macos')
-      run: |
-        ln -s /usr/local/bin/gfortran-${GCC_V} /usr/local/bin/gfortran
-        which gfortran-${GCC_V}
-        which gfortran
-
-    - name: Install GFortran Linux
-      if: contains(matrix.os, 'ubuntu')
-      run: |
-        sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-${GCC_V} 100 \
-        --slave /usr/bin/gfortran gfortran /usr/bin/gfortran-${GCC_V} \
-        --slave /usr/bin/gcov gcov /usr/bin/gcov-${GCC_V}
-
-    - name: Install GFortran Windows
-      if: contains(matrix.os, 'windows')
-      run: |
-        Invoke-WebRequest -Uri $Env:GCC_DOWNLOAD -OutFile mingw-w64.zip
-        Expand-Archive mingw-w64.zip
-        echo "$pwd\mingw-w64\mingw64\bin" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
-      env:
-        GCC_DOWNLOAD: "https://github.com/brechtsanders/winlibs_mingw/releases/download/9.4.0-9.0.0-msvcrt-r2/winlibs-x86_64-posix-seh-gcc-9.4.0-mingw-w64-9.0.0-r2.zip"
+    - name: Setup Fortran compiler
+      uses: fortran-lang/setup-fortran@v1.6.1
+      id: setup-fortran
+      with:
+        compiler: ${{ matrix.toolchain.compiler }}
+        version: ${{ matrix.toolchain.version }}
 
     # Phase 1: Bootstrap fpm with existing version
     - name: Install fpm
-      uses: fortran-lang/setup-fpm@v3
+      uses: fortran-lang/setup-fpm@v5
       with:
-        fpm-version: 'v0.3.0'
+        fpm-version: 'v0.8.0'
+
+    # Backport gfortran shared libraries to version 9 folder. This is necessary because the macOS release of fpm 
+    # 0.10.0 used for bootstrapping has these paths hardcoded in the executable.
+    - name: MacOS patch libgfortran
+      if: contains(matrix.os, 'macos') && !contains(matrix.toolchain.version, '10')
+      run: |
+        which gfortran-${{ matrix.toolchain.version }}
+        which gfortran
+        mkdir /usr/local/opt/gcc@10
+        mkdir /usr/local/opt/gcc@10/lib
+        mkdir /usr/local/opt/gcc@10/lib/gcc
+        mkdir /usr/local/opt/gcc@10/lib/gcc/10
+        mkdir /usr/local/lib/gcc/10
+        ln -fs /usr/local/opt/gcc@${{ matrix.toolchain.version }}/lib/gcc/${{ matrix.toolchain.version }}/libquadmath.0.dylib /usr/local/opt/gcc@10/lib/gcc/10/libquadmath.0.dylib 
+        ln -fs /usr/local/opt/gcc@${{ matrix.toolchain.version }}/lib/gcc/${{ matrix.toolchain.version }}/libgfortran.5.dylib /usr/local/opt/gcc@10/lib/gcc/10/libgfortran.5.dylib
+        ln -fs /usr/local/lib/gcc/${{ matrix.toolchain.version }}/libgcc_s.1.dylib /usr/local/lib/gcc/10/libgcc_s.1.dylib
+
+    # gcc and g++ will point to clang/clang++: use versioned alias for fpm
+    - name: MacOS patch C and C++ compilers
+      if: contains(matrix.os, 'macos')
+      run: |
+        echo "CC=gcc-${{ matrix.toolchain.version }}" >> $GITHUB_ENV
+        echo "FPM_CC=gcc-${{ matrix.toolchain.version }}" >> $GITHUB_ENV
+        echo "CXX=g++-${{ matrix.toolchain.version }}" >> $GITHUB_ENV
+        echo "FPM_CXX=g++-${{ matrix.toolchain.version }}" >> $GITHUB_ENV
+        echo "FPM_LDFLAGS=-lstdc++" >> $GITHUB_ENV
 
     - name: Remove fpm from path
       shell: bash
@@ -83,7 +94,7 @@ jobs:
     - name: Build Fortran fpm (bootstrap)
       shell: bash
       run: |
-        ${{ env.BOOTSTRAP }} build
+        ${{ env.BOOTSTRAP }} build 
 
     - name: Run Fortran fpm (bootstrap)
       shell: bash
@@ -128,11 +139,6 @@ jobs:
       env:
         REGEX: '[0-9]\{1,4\}\.[0-9]\{1,4\}\.[0-9]\{1,4\}'
 
-    - name: Build example packages
-      shell: bash
-      run: |
-        ci/run_tests.sh "${{ env.FPM }}"
-
     - name: Build Fortran fpm
       shell: bash
       run: |
@@ -162,7 +168,7 @@ jobs:
         rm -v ${{ env.FPM }}
         echo "FPM_RELEASE=${{ env.EXE }}" >> $GITHUB_ENV
       env:
-        EXE: fpm-${{ env.VERSION }}-${{ matrix.os-arch }}${{ matrix.exe }}
+        EXE: fpm-${{ env.VERSION }}-${{ matrix.os-arch }}-gcc-${{ matrix.toolchain.version }}${{ matrix.exe }}
 
     - name: Run release version
       shell: bash
@@ -170,7 +176,7 @@ jobs:
         ci/run_tests.sh "$PWD/${{ env.FPM_RELEASE }}"
 
     - name: Upload artifact
-      uses: actions/upload-artifact@v2
+      uses: actions/upload-artifact@v4
       with:
         name: ${{ env.FPM_RELEASE }}
         path: ${{ env.FPM_RELEASE }}
@@ -181,14 +187,19 @@ jobs:
     runs-on: windows-latest
     needs:
       - build
+    strategy:
+      fail-fast: false
+      matrix:
+        gcc_v: [10,11,12]
     
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v4
 
     - name: Download Artifacts
-      uses: actions/download-artifact@v2
+      uses: actions/download-artifact@v4
       with:
-        path: ${{ github.workspace }} # This will download all files
+        path: ${{ github.workspace }}
+        pattern: fpm-*-windows-*-gcc-${{ matrix.gcc_v }}.exe
 
     - name: Get version (normal)
       if: github.event_name != 'release'
@@ -218,7 +229,7 @@ jobs:
     - name: Fetch Windows executable
       shell: msys2 {0}
       run: |
-        cp fpm-*/fpm*.exe ./ci/fpm.exe
+        cp fpm-*/fpm-*-windows-*-gcc-${{ matrix.gcc_v }}.exe ./ci/fpm.exe
 
     - name: Fetch Git for Windows
       shell: msys2 {0}
@@ -243,13 +254,13 @@ jobs:
       run: |
         cd ./ci
         makensis fpm-installer.nsi
-        move fpm-installer.exe fpm-installer-${{ env.VERSION }}.exe
+        move fpm-installer.exe fpm-installer-${{ env.VERSION }}-gcc-${{ matrix.gcc_v }}.exe
 
     - name: Upload artifact
-      uses: actions/upload-artifact@v2
+      uses: actions/upload-artifact@v4
       with:
-        name: fpm-installer
-        path: ci/fpm-installer-${{ env.VERSION }}.exe
+        name: fpm-installer-gcc-${{ matrix.gcc_v }}
+        path: ci/fpm-installer-${{ env.VERSION }}-gcc-${{ matrix.gcc_v }}.exe
 
   upload-artifacts:
     if: ${{ github.event_name == 'release' && contains(github.ref, 'v') || github.event_name == 'push' }}
@@ -266,31 +277,31 @@ jobs:
       env:
         DEPLOY_BRANCH: ${{ secrets.DEPLOY_BRANCH && contains(github.ref, secrets.DEPLOY_BRANCH) && 1 || 0 }}
 
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v4
       if: ${{ github.event_name == 'push' }}
 
     - name: Download Artifacts
-      uses: actions/download-artifact@v2
+      uses: actions/download-artifact@v4
       with:
-        path: ${{ github.workspace }} # This will download all files
+        path: fpm-cd-artifacts
+        pattern: 'fpm-*-gcc-12*'
+        merge-multiple: true
 
     - name: Normalize file names for continuous delivery
       if: ${{ github.event_name == 'push' }}
       run: |
-        for output in fpm-*/fpm*; do
-          pushd $(dirname "$output")
+        cd fpm-cd-artifacts
+        for output in fpm-*; do
           mv -v $(basename $output) $(basename $output | sed -E '${{ env.replace }}')
-          popd
         done
       env:
         replace: 's/-([0-9]+\.[0-9]+\.[0-9]+-[0-9]+-g)?[0-9a-f]+//'
 
     - name: Create SHA256 checksums
       run: |
-        for output in fpm-*/fpm*; do
-          pushd $(dirname "$output")
+        cd fpm-cd-artifacts
+        for output in fpm-*; do
           sha256sum $(basename "$output") | tee $(basename "$output").sha256
-          popd
         done
 
     - name: Move/Create continuous tag
@@ -304,7 +315,7 @@ jobs:
       if: ${{ github.event_name == 'release' || steps.deploy-on-push.outputs.result != 0 }}
       with:
         repo_token: ${{ secrets.GITHUB_TOKEN }}
-        file: fpm-*/fpm*
+        file: fpm-cd-artifacts/*
         file_glob: true
         tag: ${{ github.event_name == 'release' && github.ref || 'current'}}
         overwrite: true

@@ -71,14 +71,9 @@ if [ $? -ne 0 ]; then
   exit 2
 fi
 
-LATEST_RELEASE=$(get_latest_release "fortran-lang/fpm" "$FETCH")
-
-if [ -z "$LATEST_RELEASE" ]; then
-  echo "Could not fetch the latest release from GitHub. Install curl or wget, and ensure network connectivity."
-  exit 3
-fi
-
-SOURCE_URL="https://github.com/fortran-lang/fpm/releases/download/v${LATEST_RELEASE}/fpm-${LATEST_RELEASE}.F90"
+# Use 0.8.0 too bootstrap
+BOOTSTRAP_RELEASE="0.8.0"
+SOURCE_URL="https://github.com/fortran-lang/fpm/releases/download/v${BOOTSTRAP_RELEASE}/fpm-${BOOTSTRAP_RELEASE}.F90"
 BOOTSTRAP_DIR="build/bootstrap"
 
 if [ -z ${FC+x} ]; then

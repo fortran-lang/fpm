@@ -1,0 +1,3 @@
+name = "free-form"
+fortran.source-form = "free"
+executable = [{main="main.f", name="free-form"}]

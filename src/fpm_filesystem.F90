@@ -2,24 +2,20 @@
 !!
 module fpm_filesystem
     use,intrinsic :: iso_fortran_env, only : stdin=>input_unit, stdout=>output_unit, stderr=>error_unit
+    use,intrinsic :: iso_c_binding, only: c_new_line
     use fpm_environment, only: get_os_type, &
                                OS_UNKNOWN, OS_LINUX, OS_MACOS, OS_WINDOWS, &
                                OS_CYGWIN, OS_SOLARIS, OS_FREEBSD, OS_OPENBSD
     use fpm_environment, only: separator, get_env, os_is_unix
-    use fpm_strings, only: f_string, replace, string_t, split, notabs, str_begins_with_str
+    use fpm_strings, only: f_string, replace, string_t, split, split_first_last, dilate, str_begins_with_str
     use iso_c_binding, only: c_char, c_ptr, c_int, c_null_char, c_associated, c_f_pointer
-    use fpm_error, only : fpm_stop
+    use fpm_error, only : fpm_stop, error_t, fatal_error
     implicit none
     private
-    public :: basename, canon_path, dirname, is_dir, join_path, number_of_rows, list_files, env_variable, &
-            mkdir, exists, get_temp_filename, windows_path, unix_path, getline, delete_file
-    public :: fileopen, fileclose, filewrite, warnwrite, parent_dir
-    public :: is_hidden_file
-    public :: read_lines, read_lines_expanded
-    public :: which, run, LINE_BUFFER_LEN
-    public :: os_delete_dir
-
-    integer, parameter :: LINE_BUFFER_LEN = 1000
+    public :: basename, canon_path, dirname, is_dir, join_path, number_of_rows, list_files, get_local_prefix, &
+            mkdir, exists, get_temp_filename, windows_path, unix_path, getline, delete_file, fileopen, fileclose, &
+            filewrite, warnwrite, parent_dir, is_hidden_file, read_lines, read_lines_expanded, which, run, &
+            os_delete_dir, is_absolute_path, get_home, execute_and_read_output, get_dos_path
 
 #ifndef FPM_BOOTSTRAP
     interface
@@ -55,30 +51,9 @@ module fpm_filesystem
     end interface
 #endif
 
+    character(*), parameter :: eol = new_line('a')    !! End of line
+
 contains
-
-
-!> return value of environment variable
-subroutine env_variable(var, name)
-   character(len=:), allocatable, intent(out) :: var
-   character(len=*), intent(in) :: name
-   integer :: length, stat
-
-   call get_environment_variable(name, length=length, status=stat)
-   if (stat /= 0) return
-
-   allocate(character(len=length) :: var)
-
-   if (length > 0) then
-      call get_environment_variable(name, var, status=stat)
-      if (stat /= 0) then
-         deallocate(var)
-         return
-      end if
-   end if
-
-end subroutine env_variable
-
 
 !> Extract filename from path with/without suffix
 function basename(path,suffix) result (base)
@@ -330,38 +305,70 @@ integer function number_of_rows(s) result(nrows)
 end function number_of_rows
 
 !> read lines into an array of TYPE(STRING_T) variables expanding tabs
-function read_lines_expanded(fh) result(lines)
-    integer, intent(in) :: fh
+function read_lines_expanded(filename) result(lines)
+    character(len=*), intent(in) :: filename
     type(string_t), allocatable :: lines(:)
 
     integer :: i
-    integer :: ilen
-    character(LINE_BUFFER_LEN) :: line_buffer_read, line_buffer_expanded
+    character(len=:), allocatable :: content
+    integer, allocatable :: first(:), last(:)
 
-    allocate(lines(number_of_rows(fh)))
-    do i = 1, size(lines)
-        read(fh, '(A)') line_buffer_read
-        call notabs(line_buffer_read, line_buffer_expanded, ilen)
-        lines(i)%s = trim(line_buffer_expanded)
+    content = read_text_file(filename)
+    if (len(content) == 0) then
+        allocate (lines(0))
+        return
+    end if
+
+    call split_first_last(content, eol, first, last)  ! TODO: \r (< macOS X), \n (>=macOS X/Linux/Unix), \r\n (Windows)
+
+    ! allocate lines from file content string
+    allocate (lines(size(first)))
+    do i = 1, size(first)
+        allocate(lines(i)%s, source=dilate(content(first(i):last(i))))
     end do
 
 end function read_lines_expanded
 
 !> read lines into an array of TYPE(STRING_T) variables
-function read_lines(fh) result(lines)
-    integer, intent(in) :: fh
+function read_lines(filename) result(lines)
+    character(len=*), intent(in) :: filename
     type(string_t), allocatable :: lines(:)
 
     integer :: i
-    character(LINE_BUFFER_LEN) :: line_buffer
+    character(len=:), allocatable :: content
+    integer, allocatable :: first(:), last(:)
 
-    allocate(lines(number_of_rows(fh)))
-    do i = 1, size(lines)
-        read(fh, '(A)') line_buffer
-        lines(i)%s = trim(line_buffer)
+    content = read_text_file(filename)
+    if (len(content) == 0) then
+        allocate (lines(0))
+        return
+    end if
+
+    call split_first_last(content, eol, first, last)  ! TODO: \r (< macOS X), \n (>=macOS X/Linux/Unix), \r\n (Windows)
+
+    ! allocate lines from file content string
+    allocate (lines(size(first)))
+    do i = 1, size(first)
+        allocate(lines(i)%s, source=content(first(i):last(i)))
     end do
 
 end function read_lines
+
+!> read text file into a string
+function read_text_file(filename) result(string)
+    character(len=*), intent(in) :: filename
+    character(len=:), allocatable :: string
+    integer :: fh, length
+
+    open (newunit=fh, file=filename, status='old', action='read', &
+            access='stream', form='unformatted')
+    inquire (fh, size=length)
+    allocate (character(len=length) :: string)
+    if (length == 0) return
+    read (fh) string
+    close (fh)
+
+end function read_text_file
 
 !> Create a directory. Create subdirectories as needed
 subroutine mkdir(dir, echo)
@@ -510,9 +517,8 @@ recursive subroutine list_files(dir, files, recurse)
         call fpm_stop(2,'*list_files*:directory listing failed')
     end if
 
-    open (newunit=fh, file=temp_file, status='old')
-    files = read_lines(fh)
-    close(fh,status="delete")
+    files = read_lines(temp_file)
+    call delete_file(temp_file)
 
     do i=1,size(files)
         files(i)%s = join_path(dir,files(i)%s)
@@ -546,6 +552,12 @@ end subroutine list_files
 logical function exists(filename) result(r)
     character(len=*), intent(in) :: filename
     inquire(file=filename, exist=r)
+
+    !> Directories are not files for the Intel compilers. If so, also use this compiler-dependent extension
+#if defined(__INTEL_COMPILER)
+    if (.not.r) inquire(directory=filename, exist=r)
+#endif
+
 end function
 
 
@@ -557,6 +569,7 @@ end function
 function get_temp_filename() result(tempfile)
     !
     use iso_c_binding, only: c_ptr, C_NULL_PTR, c_f_pointer
+    integer, parameter :: MAX_FILENAME_LENGTH = 32768
     character(:), allocatable :: tempfile
 
     type(c_ptr) :: c_tempfile_ptr
@@ -579,7 +592,7 @@ function get_temp_filename() result(tempfile)
     end interface
 
     c_tempfile_ptr = c_tempnam(C_NULL_PTR, C_NULL_PTR)
-    call c_f_pointer(c_tempfile_ptr,c_tempfile,[LINE_BUFFER_LEN])
+    call c_f_pointer(c_tempfile_ptr,c_tempfile,[MAX_FILENAME_LENGTH])
 
     tempfile = f_string(c_tempfile)
 
@@ -625,8 +638,68 @@ function unix_path(path) result(nixpath)
 
 end function unix_path
 
-
-!> read a line of arbitrary length into a CHARACTER variable from the specified LUN
+!>AUTHOR: fpm(1) contributors
+!!LICENSE: MIT
+!>
+!!##NAME
+!!     getline(3f) - [M_io:READ] read a line of arbintrary length from specified
+!!     LUN into allocatable string (up to system line length limit)
+!!    (LICENSE:PD)
+!!
+!!##SYNTAX
+!!   subroutine getline(unit,line,iostat,iomsg)
+!!
+!!    integer,intent(in)                       :: unit
+!!    character(len=:),allocatable,intent(out) :: line
+!!    integer,intent(out)                      :: iostat
+!!    character(len=:), allocatable, optional  :: iomsg
+!!
+!!##DESCRIPTION
+!!    Read a line of any length up to programming environment maximum
+!!    line length. Requires Fortran 2003+.
+!!
+!!    It is primarily expected to be used when reading input which will
+!!    then be parsed or echoed.
+!!
+!!    The input file must have a PAD attribute of YES for the function
+!!    to work properly, which is typically true.
+!!
+!!    The simple use of a loop that repeatedly re-allocates a character
+!!    variable in addition to reading the input file one buffer at a
+!!    time could (depending on the programming environment used) be
+!!    inefficient, as it could reallocate and allocate memory used for
+!!    the output string with each buffer read.
+!!
+!!##OPTIONS
+!!    LINE    The line read when IOSTAT returns as zero.
+!!    LUN     LUN (Fortran logical I/O unit) number of file open and ready
+!!            to read.
+!!    IOSTAT  status returned by READ(IOSTAT=IOS). If not zero, an error
+!!            occurred or an end-of-file or end-of-record was encountered.
+!!    IOMSG   error message returned by system when IOSTAT is not zero.
+!!
+!!##EXAMPLE
+!!
+!!   Sample program:
+!!
+!!    program demo_getline
+!!    use,intrinsic :: iso_fortran_env, only : stdin=>input_unit
+!!    use,intrinsic :: iso_fortran_env, only : iostat_end
+!!    use FPM_filesystem, only : getline
+!!    implicit none
+!!    integer :: iostat
+!!    character(len=:),allocatable :: line, iomsg
+!!       open(unit=stdin,pad='yes')
+!!       INFINITE: do
+!!          call getline(stdin,line,iostat,iomsg)
+!!          if(iostat /= 0) exit INFINITE
+!!          write(*,'(a)')'['//line//']'
+!!       enddo INFINITE
+!!       if(iostat /= iostat_end)then
+!!          write(*,*)'error reading input:',iomsg
+!!       endif
+!!    end program demo_getline
+!!
 subroutine getline(unit, line, iostat, iomsg)
 
     !> Formatted IO unit
@@ -641,8 +714,9 @@ subroutine getline(unit, line, iostat, iomsg)
     !> Error message
     character(len=:), allocatable, optional :: iomsg
 
-    character(len=LINE_BUFFER_LEN) :: buffer
-    character(len=LINE_BUFFER_LEN) :: msg
+    integer, parameter :: BUFFER_SIZE = 1024
+    character(len=BUFFER_SIZE)       :: buffer
+    character(len=256)               :: msg
     integer :: size
     integer :: stat
 
@@ -771,31 +845,32 @@ character(len=256)                    :: message
 
 end subroutine filewrite
 
-function which(command) result(pathname)
+!>AUTHOR: John S. Urban
+!!LICENSE: Public Domain
 !>
-!!##NAME
+!!##Name
 !!     which(3f) - [M_io:ENVIRONMENT] given a command name find the pathname by searching
 !!                 the directories in the environment variable $PATH
 !!     (LICENSE:PD)
 !!
-!!##SYNTAX
+!!##Syntax
 !!   function which(command) result(pathname)
 !!
 !!    character(len=*),intent(in)  :: command
 !!    character(len=:),allocatable :: pathname
 !!
-!!##DESCRIPTION
+!!##Description
 !!    Given a command name find the first file with that name in the directories
 !!    specified by the environment variable $PATH.
 !!
-!!##OPTIONS
+!!##options
 !!    COMMAND   the command to search for
 !!
-!!##RETURNS
+!!##Returns
 !!    PATHNAME  the first pathname found in the current user path. Returns blank
 !!              if the command is not found.
 !!
-!!##EXAMPLE
+!!##Example
 !!
 !!   Sample program:
 !!
@@ -809,11 +884,7 @@ function which(command) result(pathname)
 !!        write(*,*)'install is ',which('install')
 !!     end program demo_which
 !!
-!!##AUTHOR
-!!    John S. Urban
-!!##LICENSE
-!!    Public Domain
-
+function which(command) result(pathname)
 character(len=*),intent(in)     :: command
 character(len=:),allocatable    :: pathname, checkon, paths(:), exts(:)
 integer                         :: i, j
@@ -851,8 +922,66 @@ integer                         :: i, j
    enddo SEARCH
 end function which
 
-!> echo command string and pass it to the system for execution
-!call run(cmd,echo=.false.,exitstat=exitstat,verbose=.false.,redirect='')
+!>AUTHOR: fpm(1) contributors
+!!LICENSE: MIT
+!>
+!!##Name
+!!    run(3f) -  execute specified system command and selectively echo
+!!    command and output to a file and/or stdout.
+!!    (LICENSE:MIT)
+!!
+!!##Syntax
+!!    subroutine run(cmd,echo,exitstat,verbose,redirect)
+!!
+!!     character(len=*), intent(in)       :: cmd
+!!     logical,intent(in),optional        :: echo
+!!     integer, intent(out),optional      :: exitstat
+!!     logical, intent(in), optional      :: verbose
+!!     character(*), intent(in), optional :: redirect
+!!
+!!##Description
+!!   Execute the specified system command. Optionally
+!!
+!!   +  echo the command before execution
+!!   +  return the system exit status of the command.
+!!   +  redirect the output of the command to a file.
+!!   +  echo command output to stdout
+!!
+!!   Calling run(3f) is preferred to direct calls to
+!!   execute_command_line(3f) in the fpm(1) source to provide a standard
+!!   interface where output modes can be specified.
+!!
+!!##Options
+!!    CMD       System command to execute
+!!    ECHO      Whether to echo the command being executed or not
+!!              Defaults to .TRUE. .
+!!    VERBOSE   Whether to redirect the command output to a null device or not
+!!              Defaults to .TRUE. .
+!!    REDIRECT  Filename to redirect stdout and stderr of the command into.
+!!              If generated it is closed before run(3f) returns.
+!!    EXITSTAT  The system exit status of the command when supported by
+!!              the system. If not present and a non-zero status is
+!!              generated program termination occurs.
+!!
+!!##Example
+!!
+!!   Sample program:
+!!
+!!   Checking the error message and counting lines:
+!!
+!!     program demo_run
+!!     use fpm_filesystem, only : run
+!!     implicit none
+!!     logical,parameter :: T=.true., F=.false.
+!!     integer :: exitstat
+!!     character(len=:),allocatable :: cmd
+!!        cmd='ls -ltrasd *.md'
+!!        call run(cmd)
+!!        call run(cmd,exitstat=exitstat)
+!!        call run(cmd,echo=F)
+!!        call run(cmd,verbose=F)
+!!     end program demo_run
+!!
 subroutine run(cmd,echo,exitstat,verbose,redirect)
     character(len=*), intent(in) :: cmd
     logical,intent(in),optional  :: echo
@@ -882,6 +1011,8 @@ subroutine run(cmd,echo,exitstat,verbose,redirect)
     if (present(redirect)) then
         if(redirect /= '')then
            redirect_str =  ">"//redirect//" 2>&1"
+        else
+           redirect_str = "" 
         endif
     else
         if(verbose_local)then
@@ -924,26 +1055,204 @@ subroutine run(cmd,echo,exitstat,verbose,redirect)
 
     if (present(exitstat)) then
         exitstat = stat
-    else
-        if (stat /= 0) then
-            call fpm_stop(1,'*run*:Command failed')
-        end if
+    elseif (stat /= 0) then
+        call fpm_stop(stat,'*run*: Command '//cmd//redirect_str//' returned a non-zero status code')
     end if
 
 end subroutine run
 
 !> Delete directory using system OS remove directory commands
-subroutine os_delete_dir(unix, dir, echo)
-    logical, intent(in) :: unix
+subroutine os_delete_dir(is_unix, dir, echo)
+    logical, intent(in) :: is_unix
     character(len=*), intent(in) :: dir
     logical, intent(in), optional :: echo
 
-    if (unix) then
+    if (is_unix) then
         call run('rm -rf ' // dir, echo=echo,verbose=.false.)
     else
         call run('rmdir /s/q ' // dir, echo=echo,verbose=.false.)
     end if
 
 end subroutine os_delete_dir
+
+    !> Determine the path prefix to the local folder. Used for installation, registry etc.
+    function get_local_prefix(os) result(prefix)
+        !> Installation prefix
+        character(len=:), allocatable :: prefix
+        !> Platform identifier
+        integer, intent(in), optional :: os
+
+        !> Default installation prefix on Unix platforms
+        character(len=*), parameter :: default_prefix_unix = "/usr/local"
+        !> Default installation prefix on Windows platforms
+        character(len=*), parameter :: default_prefix_win = "C:\"
+
+        character(len=:), allocatable :: home
+
+        if (os_is_unix(os)) then
+            home=get_env('HOME','')
+            if (home /= '' ) then
+                prefix = join_path(home, ".local")
+            else
+                prefix = default_prefix_unix
+            end if
+        else
+            home=get_env('APPDATA','')
+            if (home /= '' ) then
+                prefix = join_path(home, "local")
+            else
+                prefix = default_prefix_win
+            end if
+        end if
+
+    end function get_local_prefix
+
+    !> Returns .true. if provided path is absolute.
+    !>
+    !> `~` not treated as absolute.
+    logical function is_absolute_path(path, is_unix)
+        character(len=*), intent(in) :: path
+        logical, optional, intent(in):: is_unix
+        character(len=*), parameter :: letters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz'
+        logical :: is_unix_os
+
+        if (present(is_unix)) then
+            is_unix_os = is_unix
+        else
+            is_unix_os = os_is_unix()
+        end if
+
+        if (is_unix_os) then
+            is_absolute_path = path(1:1) == '/'
+        else
+            if (len(path) < 2) then
+                is_absolute_path = .false.
+                return
+            end if
+
+            is_absolute_path = index(letters, path(1:1)) /= 0 .and. path(2:2) == ':'
+        end if
+
+    end function is_absolute_path
+
+    !> Get the HOME directory on Unix and the %USERPROFILE% directory on Windows.
+    subroutine get_home(home, error)
+        character(len=:), allocatable, intent(out) :: home
+        type(error_t), allocatable, intent(out) :: error
+
+        if (os_is_unix()) then
+            home=get_env('HOME','')
+            if ( home == '' ) then
+                call fatal_error(error, "Couldn't retrieve 'HOME' variable")
+                return
+            end if
+        else
+            home=get_env('USERPROFILE','')
+            if ( home == '' ) then
+                call fatal_error(error, "Couldn't retrieve '%USERPROFILE%' variable")
+                return
+            end if
+        end if
+    end subroutine get_home
+
+    !> Execute command line and return output as a string.
+    subroutine execute_and_read_output(cmd, output, error, verbose)
+        !> Command to execute.
+        character(len=*), intent(in) :: cmd
+        !> Command line output.
+        character(len=:), allocatable, intent(out) :: output
+        !> Error to handle.
+        type(error_t), allocatable, intent(out) :: error
+        !> Print additional information if true.
+        logical, intent(in), optional :: verbose
+
+        integer :: exitstat, unit, stat
+        character(len=:), allocatable :: cmdmsg, tmp_file, output_line
+        logical :: is_verbose
+
+        if (present(verbose)) then
+          is_verbose = verbose
+        else
+          is_verbose = .false.
+        end if
+
+        tmp_file = get_temp_filename()
+
+        call run(cmd//' > '//tmp_file, exitstat=exitstat, echo=is_verbose)
+        if (exitstat /= 0) call fatal_error(error, '*run*: '//"Command failed: '"//cmd//"'. Message: '"//trim(cmdmsg)//"'.")
+
+        open(newunit=unit, file=tmp_file, action='read', status='old')
+        output = ''
+        do
+           call getline(unit, output_line, stat)
+           if (stat /= 0) exit
+           output = output//output_line//' '
+        end do
+        if (is_verbose) print *, output
+        close(unit, status='delete')
+    end
+
+    !> Ensure a windows path is converted to an 8.3 DOS path if it contains spaces
+    function get_dos_path(path,error)
+        character(len=*), intent(in) :: path
+        type(error_t), allocatable, intent(out) :: error
+        character(len=:), allocatable :: get_dos_path
+
+        character(:), allocatable :: redirect,screen_output,line
+        integer :: stat,cmdstat,iunit,last
+
+        ! Non-Windows OS
+        if (get_os_type()/=OS_WINDOWS) then
+            get_dos_path = path
+            return
+        end if
+
+        ! Trim path first
+        get_dos_path = trim(path)
+
+        !> No need to convert if there are no spaces
+        has_spaces: if (scan(get_dos_path,' ')>0) then
+
+            redirect = get_temp_filename()
+            call execute_command_line('cmd /c for %A in ("'//path//'") do @echo %~sA >'//redirect//' 2>&1',&
+                                      exitstat=stat,cmdstat=cmdstat)
+
+            !> Read screen output
+            command_OK: if (cmdstat==0 .and. stat==0) then
+
+                allocate(character(len=0) :: screen_output)
+                open(newunit=iunit,file=redirect,status='old',iostat=stat)
+                if (stat == 0)then
+
+                   do
+                       call getline(iunit, line, stat)
+                       if (stat /= 0) exit
+                       screen_output = screen_output//line//' '
+                   end do
+
+                   ! Close and delete file
+                   close(iunit,status='delete')
+
+                else
+                   call fatal_error(error,'cannot read temporary file from successful DOS path evaluation')
+                   return
+                endif
+
+            else command_OK
+
+                call fatal_error(error,'unsuccessful Windows->DOS path command')
+                return
+
+            end if command_OK
+
+            get_dos_path = trim(adjustl(screen_output))
+
+        endif has_spaces
+
+        !> Ensure there are no trailing slashes
+        last = len_trim(get_dos_path)
+        if (last>1 .and. get_dos_path(last:last)=='/' .or. get_dos_path(last:last)=='\') get_dos_path = get_dos_path(1:last-1)
+
+    end function get_dos_path
 
 end module fpm_filesystem

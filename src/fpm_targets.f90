@@ -27,20 +27,24 @@ module fpm_targets
 use iso_fortran_env, only: int64
 use fpm_error, only: error_t, fatal_error, fpm_stop
 use fpm_model
+use fpm_compiler, only : compiler_t
 use fpm_environment, only: get_os_type, OS_WINDOWS, OS_MACOS
 use fpm_filesystem, only: dirname, join_path, canon_path
 use fpm_strings, only: string_t, operator(.in.), string_cat, fnv_1a, resize, lower, str_ends_with
 use fpm_compiler, only: get_macros
+use fpm_sources, only: get_exe_name_with_suffix
+use fpm_manifest_preprocess, only: preprocess_config_t
 implicit none
 
 private
 
 public FPM_TARGET_UNKNOWN, FPM_TARGET_EXECUTABLE, &
        FPM_TARGET_ARCHIVE, FPM_TARGET_OBJECT, &
-       FPM_TARGET_C_OBJECT, FPM_TARGET_CPP_OBJECT
+       FPM_TARGET_C_OBJECT, FPM_TARGET_CPP_OBJECT, &
+       FPM_TARGET_NAME
 public build_target_t, build_target_ptr
 public targets_from_sources, resolve_module_dependencies
-public resolve_target_linking, add_target, add_dependency
+public add_target, add_dependency
 public filter_library_targets, filter_executable_targets, filter_modules
 
 
@@ -114,6 +118,9 @@ type build_target_t
     !> Flag set if build target will be skipped (not built)
     logical :: skip = .false.
 
+    !> Language features
+    type(fortran_features_t) :: features
+
     !> Targets in the same schedule group are guaranteed to be independent
     integer :: schedule = -1
 
@@ -125,11 +132,31 @@ type build_target_t
 
     !> Version number
     character(:), allocatable :: version
+    
+    contains
+    
+        procedure :: is_executable_target
 
 end type build_target_t
 
 
 contains
+
+!> Target type name
+pure function FPM_TARGET_NAME(type) result(msg)
+   integer, intent(in) :: type
+   character(:), allocatable :: msg
+
+   select case (type)
+      case (FPM_TARGET_ARCHIVE);    msg = 'Archive'
+      case (FPM_TARGET_CPP_OBJECT); msg = 'C++ object'
+      case (FPM_TARGET_C_OBJECT);   msg = 'C Object'
+      case (FPM_TARGET_EXECUTABLE); msg = 'Executable'
+      case (FPM_TARGET_OBJECT);     msg = 'Object'
+      case default;                 msg = 'Unknown'
+   end select
+
+end function FPM_TARGET_NAME
 
 !> High-level wrapper to generate build target information
 subroutine targets_from_sources(targets,model,prune,error)
@@ -142,7 +169,7 @@ subroutine targets_from_sources(targets,model,prune,error)
 
     !> Enable tree-shaking/pruning of module dependencies
     logical, intent(in) :: prune
-    
+
     !> Error structure
     type(error_t), intent(out), allocatable :: error
 
@@ -190,23 +217,17 @@ subroutine build_target_list(targets,model)
     type(fpm_model_t), intent(inout), target :: model
 
     integer :: i, j, n_source, exe_type
-    character(:), allocatable :: xsuffix, exe_dir
+    character(:), allocatable :: exe_dir, compile_flags
     logical :: with_lib
+
+    ! Initialize targets
+    allocate(targets(0))
 
     ! Check for empty build (e.g. header-only lib)
     n_source = sum([(size(model%packages(j)%sources), &
                       j=1,size(model%packages))])
 
-    if (n_source < 1) then
-        allocate(targets(0))
-        return
-    end if
-
-    if (get_os_type() == OS_WINDOWS) then
-        xsuffix = '.exe'
-    else
-        xsuffix = ''
-    end if
+    if (n_source < 1) return
 
     with_lib = any([((model%packages(j)%sources(i)%unit_scope == FPM_SCOPE_LIB, &
                       i=1,size(model%packages(j)%sources)), &
@@ -233,21 +254,22 @@ subroutine build_target_list(targets,model)
                                 type = merge(FPM_TARGET_C_OBJECT,FPM_TARGET_OBJECT,&
                                                sources(i)%unit_type==FPM_UNIT_CSOURCE), &
                                 output_name = get_object_name(sources(i)), &
-                                macros = model%packages(j)%macros, &
+                                features = model%packages(j)%features, &
+                                preprocess = model%packages(j)%preprocess, &
                                 version = model%packages(j)%version)
-                                
+
 
                     if (with_lib .and. sources(i)%unit_scope == FPM_SCOPE_LIB) then
                         ! Archive depends on object
                         call add_dependency(targets(1)%ptr, targets(size(targets))%ptr)
                     end if
 
-                case (FPM_UNIT_CPPSOURCE) 
+                case (FPM_UNIT_CPPSOURCE)
 
                     call add_target(targets,package=model%packages(j)%name,source = sources(i), &
                                 type = FPM_TARGET_CPP_OBJECT, &
                                 output_name = get_object_name(sources(i)), &
-                                macros = model%packages(j)%macros, &
+                                preprocess = model%packages(j)%preprocess, &
                                 version = model%packages(j)%version)
 
                     if (with_lib .and. sources(i)%unit_scope == FPM_SCOPE_LIB) then
@@ -279,7 +301,8 @@ subroutine build_target_list(targets,model)
                     call add_target(targets,package=model%packages(j)%name,type = exe_type,&
                                 output_name = get_object_name(sources(i)), &
                                 source = sources(i), &
-                                macros = model%packages(j)%macros &
+                                features = model%packages(j)%features, &
+                                preprocess = model%packages(j)%preprocess &
                                 )
 
                     if (sources(i)%unit_scope == FPM_SCOPE_APP) then
@@ -298,16 +321,30 @@ subroutine build_target_list(targets,model)
 
                     call add_target(targets,package=model%packages(j)%name,type = FPM_TARGET_EXECUTABLE,&
                                     link_libraries = sources(i)%link_libraries, &
-                                    output_name = join_path(exe_dir, &
-                                    sources(i)%exe_name//xsuffix))
+                                    output_name = join_path(exe_dir,get_exe_name_with_suffix(sources(i))))
+
+                    associate(target => targets(size(targets))%ptr)
+
+                    ! Linker-only flags are necessary on some compilers for codes with non-Fortran main
+                    select case (exe_type)
+                       case (FPM_TARGET_C_OBJECT)
+                            call model%compiler%get_main_flags("c",compile_flags)
+                       case (FPM_TARGET_CPP_OBJECT)
+                            call model%compiler%get_main_flags("c++",compile_flags)
+                       case default
+                            compile_flags = ""
+                    end select
+                    target%compile_flags = target%compile_flags//' '//compile_flags
 
                     ! Executable depends on object
-                    call add_dependency(targets(size(targets))%ptr, targets(size(targets)-1)%ptr)
+                    call add_dependency(target, targets(size(targets)-1)%ptr)
 
                     if (with_lib) then
                         ! Executable depends on library
-                        call add_dependency(targets(size(targets))%ptr, targets(1)%ptr)
+                        call add_dependency(target, targets(1)%ptr)
                     end if
+
+                    endassociate
 
                 end select
 
@@ -379,7 +416,7 @@ subroutine collect_exe_link_dependencies(targets)
                             dep%source%unit_type /= FPM_UNIT_MODULE .and. &
                             index(dirname(dep%source%file_name), exe_source_dir) == 1) then
 
-                            call add_dependency(exe, dep) 
+                            call add_dependency(exe, dep)
 
                         end if
 
@@ -397,14 +434,16 @@ end subroutine collect_exe_link_dependencies
 
 
 !> Allocate a new target and append to target list
-subroutine add_target(targets,package,type,output_name,source,link_libraries, macros, version)
+subroutine add_target(targets, package, type, output_name, source, link_libraries, &
+        & features, preprocess, version)
     type(build_target_ptr), allocatable, intent(inout) :: targets(:)
     character(*), intent(in) :: package
     integer, intent(in) :: type
     character(*), intent(in) :: output_name
     type(srcfile_t), intent(in), optional :: source
     type(string_t), intent(in), optional :: link_libraries(:)
-    type(string_t), intent(in), optional :: macros(:)
+    type(fortran_features_t), intent(in), optional :: features
+    type(preprocess_config_t), intent(in), optional :: preprocess
     character(*), intent(in), optional :: version
 
     integer :: i
@@ -432,7 +471,10 @@ subroutine add_target(targets,package,type,output_name,source,link_libraries, ma
     new_target%package_name = package
     if (present(source)) new_target%source = source
     if (present(link_libraries)) new_target%link_libraries = link_libraries
-    if (present(macros)) new_target%macros = macros
+    if (present(features)) new_target%features = features
+    if (present(preprocess)) then
+        if (allocated(preprocess%macros)) new_target%macros = preprocess%macros
+    endif
     if (present(version)) new_target%version = version
     allocate(new_target%dependencies(0))
 
@@ -574,13 +616,13 @@ subroutine prune_build_targets(targets, root_package)
     type(build_target_ptr), intent(inout), allocatable :: targets(:)
 
     !> Name of root package
-    character(*), intent(in) :: root_package 
+    character(*), intent(in) :: root_package
 
     integer :: i, j, nexec
     type(string_t), allocatable :: modules_used(:)
     logical :: exclude_target(size(targets))
     logical, allocatable :: exclude_from_archive(:)
-    
+
     if (size(targets) < 1) then
         return
     end if
@@ -590,7 +632,7 @@ subroutine prune_build_targets(targets, root_package)
 
     ! Enumerate modules used by executables, non-module subprograms and their dependencies
     do i=1,size(targets)
-            
+
         if (targets(i)%ptr%target_type == FPM_TARGET_EXECUTABLE) then
 
             nexec = nexec + 1
@@ -611,16 +653,16 @@ subroutine prune_build_targets(targets, root_package)
     ! If there aren't any executables, then prune
     !  based on modules used in root package
     if (nexec < 1) then
-        
+
         do i=1,size(targets)
-            
+
             if (targets(i)%ptr%package_name == root_package .and. &
                  targets(i)%ptr%target_type /= FPM_TARGET_ARCHIVE) then
-    
+
                 call collect_used_modules(targets(i)%ptr)
-    
+
             end if
-            
+
         end do
 
     end if
@@ -642,11 +684,11 @@ subroutine prune_build_targets(targets, root_package)
                     do j=1,size(target%source%modules_provided)
 
                         if (target%source%modules_provided(j)%s .in. modules_used) then
-                            
+
                             exclude_target(i) = .false.
                             target%skip = .false.
 
-                        end if 
+                        end if
 
                     end do
 
@@ -658,11 +700,11 @@ subroutine prune_build_targets(targets, root_package)
                     do j=1,size(target%source%parent_modules)
 
                         if (target%source%parent_modules(j)%s .in. modules_used) then
-                            
+
                             exclude_target(i) = .false.
                             target%skip = .false.
 
-                        end if 
+                        end if
 
                     end do
 
@@ -675,7 +717,7 @@ subroutine prune_build_targets(targets, root_package)
                 target%skip = .false.
             end if
 
-        end associate        
+        end associate
     end do
 
     targets = pack(targets,.not.exclude_target)
@@ -800,19 +842,29 @@ subroutine resolve_target_linking(targets, model)
     do i=1,size(targets)
 
         associate(target => targets(i)%ptr)
-            if (target%target_type /= FPM_TARGET_C_OBJECT .and. target%target_type /= FPM_TARGET_CPP_OBJECT) then
-                target%compile_flags = model%fortran_compile_flags
-            else if (target%target_type == FPM_TARGET_C_OBJECT) then
-                target%compile_flags = model%c_compile_flags
-            else if(target%target_type == FPM_TARGET_CPP_OBJECT) then
-                target%compile_flags = model%cxx_compile_flags
-            end if
+
+            ! If the main program is a C/C++ one, some compilers require additional linking flags, see
+            ! https://stackoverflow.com/questions/36221612/p3dfft-compilation-ifort-compiler-error-multiple-definiton-of-main
+            ! In this case, compile_flags were already allocated
+            if (.not.allocated(target%compile_flags)) allocate(character(len=0) :: target%compile_flags)
+
+            target%compile_flags = target%compile_flags//' '
+
+            select case (target%target_type)
+               case (FPM_TARGET_C_OBJECT)
+                   target%compile_flags = target%compile_flags//model%c_compile_flags
+               case (FPM_TARGET_CPP_OBJECT)
+                   target%compile_flags = target%compile_flags//model%cxx_compile_flags
+               case default
+                   target%compile_flags = target%compile_flags//model%fortran_compile_flags &
+                                        & // get_feature_flags(model%compiler, target%features)
+            end select
 
             !> Get macros as flags.
             target%compile_flags = target%compile_flags // get_macros(model%compiler%id, &
                                                             target%macros, &
                                                             target%version)
- 
+
             if (len(global_include_flags) > 0) then
                 target%compile_flags = target%compile_flags//global_include_flags
             end if
@@ -841,7 +893,8 @@ subroutine resolve_target_linking(targets, model)
 
                 call get_link_objects(target%link_objects,target,is_exe=.true.)
 
-                local_link_flags = model%link_flags
+                local_link_flags = ""
+                if (allocated(model%link_flags)) local_link_flags = model%link_flags
                 target%link_flags = model%link_flags//" "//string_cat(target%link_objects," ")
 
                 if (allocated(target%link_libraries)) then
@@ -994,7 +1047,7 @@ end subroutine filter_executable_targets
 
 
 elemental function is_executable_target(target_ptr, scope) result(is_exe)
-    type(build_target_t), intent(in) :: target_ptr
+    class(build_target_t), intent(in) :: target_ptr
     integer, intent(in) :: scope
     logical :: is_exe
     is_exe = target_ptr%target_type == FPM_TARGET_EXECUTABLE .and. &
@@ -1028,5 +1081,28 @@ subroutine filter_modules(targets, list)
     call resize(list, n)
 end subroutine filter_modules
 
+
+function get_feature_flags(compiler, features) result(flags)
+    type(compiler_t), intent(in) :: compiler
+    type(fortran_features_t), intent(in) :: features
+    character(:), allocatable :: flags
+
+    flags = ""
+    if (features%implicit_typing) then
+        flags = flags // compiler%get_feature_flag("implicit-typing")
+    else
+        flags = flags // compiler%get_feature_flag("no-implicit-typing")
+    end if
+
+    if (features%implicit_external) then
+        flags = flags // compiler%get_feature_flag("implicit-external")
+    else
+        flags = flags // compiler%get_feature_flag("no-implicit-external")
+    end if
+
+    if (allocated(features%source_form)) then
+        flags = flags // compiler%get_feature_flag(features%source_form//"-form")
+    end if
+end function get_feature_flags
 
 end module fpm_targets

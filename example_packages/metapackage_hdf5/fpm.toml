@@ -1,0 +1,2 @@
+name = "metapackage_hdf5"
+dependencies.hdf5="*"

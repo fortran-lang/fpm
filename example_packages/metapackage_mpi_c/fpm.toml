@@ -1,0 +1,9 @@
+name = "test_mpi_c"
+dependencies.mpi = "*"
+fortran.implicit-typing=true
+fortran.implicit-external=true
+
+[[executable]]
+name = "test-mpi-c-main"
+main = "main.c"
+
