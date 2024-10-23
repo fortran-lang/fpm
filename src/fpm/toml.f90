@@ -28,7 +28,7 @@ module fpm_toml
     public :: read_package_file, toml_table, toml_array, toml_key, toml_stat, &
               get_value, set_value, get_list, new_table, add_table, add_array, len, &
               toml_error, toml_serialize, toml_load, check_keys, set_list, set_string, &
-              name_is_json
+              name_is_json, has_list
 
     !> An abstract interface for any fpm class that should be fully serializable to/from TOML/JSON
     type, abstract, public :: serializable_t
@@ -337,6 +337,29 @@ contains
         end if
 
     end subroutine read_package_file
+    
+    !> Check if an instance of the TOML data structure contains a list
+    logical function has_list(table, key)
+    
+        !> Instance of the TOML data structure
+        type(toml_table), intent(inout) :: table
+
+        !> Key to read from
+        character(len=*), intent(in) :: key
+
+        type(toml_array), pointer :: children
+        
+        has_list = .false.
+
+        if (.not.table%has_key(key)) return
+
+        call get_value(table, key, children, requested=.false.)
+        
+        ! There is an allocated list
+        has_list = associated(children)
+        
+    end function has_list
+    
 
     subroutine get_list(table, key, list, error)
 
