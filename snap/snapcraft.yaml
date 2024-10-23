@@ -26,14 +26,20 @@ description: |
   Website: https://fpm.fortran-lang.org/
   
 license: MIT
+source-code: https://github.com/fortran-lang/fpm
+issues: https://github.com/kz6fittycent/fpm/issues
+contact: https://github.com/kz6fittycent/fpm
+icon: snap/local/fpm.png
 
-base: core20
+base: core24
 grade: stable
 confinement: strict
 compression: lzo
 
-architectures:
-  - build-on: amd64
+platforms:
+  amd64:
+    build-on: [amd64]
+    build-for: [amd64]
 
 apps:
   fortran-fpm:
@@ -56,12 +62,12 @@ parts:
       LATEST=$(curl -s https://api.github.com/repos/fortran-lang/fpm/releases/latest | grep '"tag_name":' | cut -d ":" -f2 | sed -E 's/.*"([^"]+)".*/\1/' | sed -E 's/^v//')
       ################################
       
-      mkdir -p $SNAPCRAFT_PART_INSTALL/usr/bin/
-      cd $SNAPCRAFT_PART_INSTALL/usr/bin/
+      mkdir -p $CRAFT_PART_INSTALL/usr/bin/
+      cd $CRAFT_PART_INSTALL/usr/bin/
       wget -O fpm "https://github.com/fortran-lang/fpm/releases/download/v${LATEST}/fpm-${LATEST}-linux-x86_64"
       chmod a+x fpm
                
     override-pull: |
-      snapcraftctl pull
-      snapcraftctl set-version "$(curl -s https://api.github.com/repos/fortran-lang/fpm/releases/latest | grep '"tag_name":' | cut -d ":" -f2 | sed -E 's/.*"([^"]+)".*/\1/' | sed -E 's/^v//')"
+      craftctl default
+      craftctl set version="$(curl -s https://api.github.com/repos/fortran-lang/fpm/releases/latest | grep '"tag_name":' | cut -d ":" -f2 | sed -E 's/.*"([^"]+)".*/\1/' | sed -E 's/^v//')"
 
