@@ -35,7 +35,9 @@ contains
             & new_unittest("install-sitepackages", test_install_sitepackages), &
             & new_unittest("install-mod", test_install_mod), &
             & new_unittest("install-exe-unix", test_install_exe_unix), &
-            & new_unittest("install-exe-win", test_install_exe_win)]
+            & new_unittest("install-exe-win", test_install_exe_win), &
+            & new_unittest("install-test-unix", test_install_tests_unix), &
+            & new_unittest("install-test-win", test_install_tests_win)]
 
     end subroutine collect_installer
 
@@ -72,6 +74,40 @@ contains
         call mock%install_executable("name", error)
 
     end subroutine test_install_exe_win
+
+    subroutine test_install_tests_unix(error)
+        !> Error handling
+        type(error_t), allocatable, intent(out) :: error
+
+        type(mock_installer_t) :: mock
+        type(installer_t) :: installer
+
+        call new_installer(installer, prefix="PREFIX", testdir="tdir", verbosity=0, copy="mock")
+        mock%installer_t = installer
+        mock%os = OS_LINUX
+        mock%expected_dir = "PREFIX/tdir"
+        mock%expected_run = 'mock "name" "'//mock%expected_dir//'"'
+
+        call mock%install_test("name", error)
+
+    end subroutine test_install_tests_unix
+
+    subroutine test_install_tests_win(error)
+        !> Error handling
+        type(error_t), allocatable, intent(out) :: error
+
+        type(mock_installer_t) :: mock
+        type(installer_t) :: installer
+
+        call new_installer(installer, prefix="PREFIX", testdir="tdir", verbosity=0, copy="mock")
+        mock%installer_t = installer
+        mock%os = OS_WINDOWS
+        mock%expected_dir = "PREFIX\tdir"
+        mock%expected_run = 'mock "name.exe" "'//mock%expected_dir//'"'
+
+        call mock%install_test("name", error)
+
+    end subroutine test_install_tests_win
 
     subroutine test_install_lib(error)
         !> Error handling

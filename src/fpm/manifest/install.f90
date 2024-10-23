@@ -18,6 +18,9 @@ module fpm_manifest_install
 
     !> Install library with this project
     logical :: library = .false.
+    
+    !> Install tests with this project
+    logical :: test = .false.
 
   contains
 
@@ -51,6 +54,7 @@ contains
     if (allocated(error)) return
 
     call get_value(table, "library", self%library, .false.)
+    call get_value(table, "test", self%test, .false.)
 
   end subroutine new_install_config
 
@@ -75,8 +79,8 @@ contains
       case default
         call syntax_error(error, "Key "//list(ikey)%key//" is not allowed in install table")
         exit
-      case("library")
-        continue
+      case("library","test")
+        continue    
       end select
     end do
     if (allocated(error)) return
@@ -107,8 +111,8 @@ contains
     if (pr < 1) return
 
     write(unit, fmt) "Install configuration"
-    write(unit, fmt) " - library install", &
-      & trim(merge("enabled ", "disabled", self%library))
+    write(unit, fmt) " - library install", trim(merge("enabled ", "disabled", self%library))
+    write(unit, fmt) " - test    install", trim(merge("enabled ", "disabled", self%test))
 
   end subroutine info
 
@@ -121,6 +125,7 @@ contains
     select type (other=>that)
        type is (install_config_t)
           if (this%library.neqv.other%library) return
+          if (this%test.neqv.other%test) return
        class default
           ! Not the same type
           return
@@ -144,6 +149,10 @@ contains
     type(error_t), allocatable, intent(out) :: error
 
     call set_value(table, "library", self%library, error, class_name)
+    if (allocated(error)) return
+    
+    call set_value(table, "test", self%test, error, class_name)
+    if (allocated(error)) return
 
   end subroutine dump_to_toml
 
@@ -162,6 +171,8 @@ contains
     integer :: stat
 
     call get_value(table, "library", self%library, error, class_name)
+    if (allocated(error)) return
+    call get_value(table, "test", self%test, error, class_name)
     if (allocated(error)) return
 
   end subroutine load_from_toml
