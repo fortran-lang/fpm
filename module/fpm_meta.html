@@ -188,22 +188,22 @@
         <ul class="list-group list-group-flush">
             <li class="list-group-item">
               <ul class="list-inline">
-                  <li class="list-inline-item"><a href='fpm_command_line.html'>fpm_command_line</a></li>
-                  <li class="list-inline-item">regex_module</li>
-                  <li class="list-inline-item"><a href='fpm_filesystem.html'>fpm_filesystem</a></li>
-                  <li class="list-inline-item"><a href='fpm_error.html'>fpm_error</a></li>
-                  <li class="list-inline-item"><a href='fpm_compiler.html'>fpm_compiler</a></li>
                   <li class="list-inline-item"><a href='fpm_environment.html'>fpm_environment</a></li>
                   <li class="list-inline-item"><a href='fpm_pkg_config.html'>fpm_pkg_config</a></li>
-                  <li class="list-inline-item"><a href='fpm_model.html'>fpm_model</a></li>
-                  <li class="list-inline-item"><a href='http://fortranwiki.org/fortran/show/iso_fortran_env'>iso_fortran_env</a></li>
                   <li class="list-inline-item"><a href='fpm_versioning.html'>fpm_versioning</a></li>
-                  <li class="list-inline-item"><a href='fpm_manifest_dependency.html'>fpm_manifest_dependency</a></li>
-                  <li class="list-inline-item"><a href='fpm_git.html'>fpm_git</a></li>
-                  <li class="list-inline-item"><a href='fpm_os.html'>fpm_os</a></li>
+                  <li class="list-inline-item"><a href='fpm_command_line.html'>fpm_command_line</a></li>
+                  <li class="list-inline-item"><a href='fpm_filesystem.html'>fpm_filesystem</a></li>
                   <li class="list-inline-item"><a href='fpm_strings.html'>fpm_strings</a></li>
+                  <li class="list-inline-item"><a href='http://fortranwiki.org/fortran/show/iso_fortran_env'>iso_fortran_env</a></li>
                   <li class="list-inline-item">shlex_module</li>
+                  <li class="list-inline-item"><a href='fpm_model.html'>fpm_model</a></li>
+                  <li class="list-inline-item">regex_module</li>
+                  <li class="list-inline-item"><a href='fpm_git.html'>fpm_git</a></li>
                   <li class="list-inline-item"><a href='fpm_manifest.html'>fpm_manifest</a></li>
+                  <li class="list-inline-item"><a href='fpm_os.html'>fpm_os</a></li>
+                  <li class="list-inline-item"><a href='fpm_error.html'>fpm_error</a></li>
+                  <li class="list-inline-item"><a href='fpm_compiler.html'>fpm_compiler</a></li>
+                  <li class="list-inline-item"><a href='fpm_manifest_dependency.html'>fpm_manifest_dependency</a></li>
               </ul>
             </li>
         </ul>
@@ -245,7 +245,7 @@
     <tbody>
         <tr>
             <td>
-              <span class="anchor" id="variable-model~9"></span>
+              <span class="anchor" id="variable-model~12"></span>
               type(<a href='../type/fpm_model_t.html'>fpm_model_t</a>),
             </td>
 <td>intent(inout)</td>
@@ -260,7 +260,7 @@
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-package~13"></span>
+              <span class="anchor" id="variable-package~10"></span>
               type(<a href='../type/package_config_t.html'>package_config_t</a>),
             </td>
 <td>intent(inout)</td>
@@ -275,7 +275,7 @@
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-settings~6"></span>
+              <span class="anchor" id="variable-settings~8"></span>
               class(<a href='../type/fpm_build_settings.html'>fpm_build_settings</a>),
             </td>
 <td>intent(inout)</td>
@@ -290,7 +290,7 @@
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-error~116"></span>
+              <span class="anchor" id="variable-error~130"></span>
               type(<a href='../type/error_t.html'>error_t</a>),
             </td>
 <td>intent(out),</td>
@@ -376,7 +376,7 @@
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-dependency~10"></span>
+              <span class="anchor" id="variable-dependency~4"></span>
               type(<a href='../type/dependency_config_t.html'>dependency_config_t</a>),
             </td>
               <td>public,</td>
@@ -394,7 +394,7 @@ Metapackage dependencies are never exported from the model</p>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-external_modules~2"></span>
+              <span class="anchor" id="variable-external_modules~4"></span>
               type(<a href='../type/string_t.html'>string_t</a>),
             </td>
               <td>public,</td>
@@ -428,7 +428,7 @@ Metapackage dependencies are never exported from the model</p>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-flags~16"></span>
+              <span class="anchor" id="variable-flags~15"></span>
               type(<a href='../type/string_t.html'>string_t</a>),
             </td>
               <td>public</td>
@@ -445,7 +445,7 @@ Metapackage dependencies are never exported from the model</p>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-fortran"></span>
+              <span class="anchor" id="variable-fortran~2"></span>
               type(<a href='../type/fortran_features_t.html'>fortran_features_t</a>),
             </td>
               <td>public,</td>
@@ -649,7 +649,7 @@ Metapackage dependencies are never exported from the model</p>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-link_flags~2"></span>
+              <span class="anchor" id="variable-link_flags~3"></span>
               type(<a href='../type/string_t.html'>string_t</a>),
             </td>
               <td>public</td>
@@ -700,7 +700,7 @@ Metapackage dependencies are never exported from the model</p>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-version~14"></span>
+              <span class="anchor" id="variable-version~11"></span>
               type(<a href='../type/version_t.html'>version_t</a>),
             </td>
               <td>public,</td>
@@ -736,7 +736,7 @@ Metapackage dependencies are never exported from the model</p>
               </tr>
               <tr>
                 <td>  generic, public ::
-  <strong><a href='../type/metapackage_t.html#boundprocedure-resolve~2'>resolve</a></strong> => resolve_cmd, resolve_model, resolve_package_config</td>
+  <strong><a href='../type/metapackage_t.html#boundprocedure-resolve'>resolve</a></strong> => resolve_cmd, resolve_model, resolve_package_config</td>
                 <td></td>
               </tr>
           </tbody>
@@ -818,7 +818,7 @@ Metapackage dependencies are never exported from the model</p>
             <p class="text-end">
               Documentation generated by
               <a href="https://github.com/Fortran-FOSS-Programmers/ford">FORD</a>
- on 2024-10-23 13:38              </p>
+ on 2024-11-09 14:02              </p>
           </div>
         </div>
         <br>

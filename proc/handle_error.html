@@ -10,7 +10,7 @@
     <meta name="author" content="fortran-lang/fpm contributors" >
     <link rel="icon" href="../favicon.png">
 
-    <title>git_target_branch &ndash; Fortran-lang/fpm</title>
+    <title>handle_error &ndash; Fortran-lang/fpm</title>
 
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet"
           integrity="sha384-1BmE4kWBq78iYhFldvKuhfTAU6auU8tT94WrHftjDbrCEXSU1oBoqyl2QvZ6jIW3" crossorigin="anonymous">
@@ -66,8 +66,8 @@
 
     <div class="container">
   <div class="row">
-    <h1>git_target_branch
-      <small>Function</small>
+    <h1>handle_error
+      <small>Subroutine</small>
       
     </h1>
       <div class="container p-2 mb-4 bg-light border rounded-3">
@@ -77,21 +77,21 @@
 
             <li class="list-inline-item" id="statements"><i class="fa fa-list-ol"></i>
               <a data-bs-toggle="tooltip" data-bs-placement="bottom" data-bs-html="true"
-                 title=" 0.1% of total for procedures.">8 statements</a>
+                 title=" 0.1% of total for procedures.">7 statements</a>
             </li>
 
             <li class="list-inline-item" id="source-file">
               <i class="fa fa-code"></i>
-              <a href="../src/git.f90"> Source File</a>
+              <a href="../src/main.f90"> Source File</a>
             </li>
         </ul>
       </div>
       <div class="col">
         <nav aria-label="breadcrumb">
           <ol class="breadcrumb justify-content-end mb-0">
-                <li class="breadcrumb-item"><a href='../sourcefile/git.f90.html'>git.f90</a></li>
-                <li class="breadcrumb-item"><a href='../module/fpm_git.html'>fpm_git</a></li>
-            <li class="breadcrumb-item active" aria-current="page">git_target_branch</li>
+                <li class="breadcrumb-item"><a href='../sourcefile/main.f90.html'>main.f90</a></li>
+                <li class="breadcrumb-item"><a href='../program/main.html'>main</a></li>
+            <li class="breadcrumb-item active" aria-current="page">handle_error</li>
           </ol>
         </nav>
       </div>
@@ -132,7 +132,7 @@
     <div class="card card-primary">
       <div class="card-header text-left"><h3 class="card-title">Source Code</h3></div>
       <div class="list-group">
-        <a class="list-group-item" href="../proc/git_target_branch.html#src">git_target_branch</a>
+        <a class="list-group-item" href="../proc/handle_error.html#src">handle_error</a>
       </div>
     </div>
 
@@ -142,11 +142,10 @@
     </div>
     
     <div class="col-md-9" id='text'>
-    <h2>public  function git_target_branch(url, branch) result(self)  
+    <h2> subroutine handle_error(error_)  
 </h2>
     
 
-    <p>Target a branch in the git repository</p>
 
 
     <h3>Arguments</h3>
@@ -162,44 +161,22 @@
     <tbody>
         <tr>
             <td>
-              <span class="anchor" id="variable-url~5"></span>
-              character(len=*),
+              <span class="anchor" id="variable-error_"></span>
+              type(<a href='../type/error_t.html'>error_t</a>),
             </td>
-<td>intent(in)</td>
-              <td></td>            <td>
+<td>intent(in),</td>
+              <td>optional</td>            <td>
               
             </td>
             <td>::</td>
-            <td><strong>url</strong></td>
+            <td><strong>error_</strong></td>
             <td>
-                <p>Target URL of the git repository</p>
-            </td>
-        </tr>
-        <tr>
-            <td>
-              <span class="anchor" id="variable-branch~2"></span>
-              character(len=*),
-            </td>
-<td>intent(in)</td>
-              <td></td>            <td>
-              
-            </td>
-            <td>::</td>
-            <td><strong>branch</strong></td>
-            <td>
-                <p>Name of the branch of interest</p>
+                
             </td>
         </tr>
     </tbody>
   </table>
 
-      <h3>Return Value
-        <small>
-          <span class="anchor" id="variable-self~13"></span>
-          type(<a href='../type/git_target_t.html'>git_target_t</a>)
-        </small>
-      </h3>
-      <p>New git target</p>
     <br>
 
 
@@ -214,22 +191,13 @@
     
     <section>
     <h2><span class="anchor" id="src"></span>Source Code</h2>
-    <div class="hl codehilite"><pre><span></span><span class="w">    </span><span class="k">function </span><span class="n">git_target_branch</span><span class="p">(</span><span class="n">url</span><span class="p">,</span><span class="w"> </span><span class="n">branch</span><span class="p">)</span><span class="w"> </span><span class="k">result</span><span class="p">(</span><span class="n">self</span><span class="p">)</span>
-
-<span class="w">        </span><span class="c">!&gt; Target URL of the git repository</span>
-<span class="w">        </span><span class="kt">character</span><span class="p">(</span><span class="nb">len</span><span class="o">=*</span><span class="p">),</span><span class="w"> </span><span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">)</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">url</span>
-
-<span class="w">        </span><span class="c">!&gt; Name of the branch of interest</span>
-<span class="w">        </span><span class="kt">character</span><span class="p">(</span><span class="nb">len</span><span class="o">=*</span><span class="p">),</span><span class="w"> </span><span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">)</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">branch</span>
-
-<span class="w">        </span><span class="c">!&gt; New git target</span>
-<span class="w">        </span><span class="k">type</span><span class="p">(</span><span class="n">git_target_t</span><span class="p">)</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">self</span>
-
-<span class="w">        </span><span class="n">self</span><span class="p">%</span><span class="n">descriptor</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">git_descriptor</span><span class="p">%</span><span class="n">branch</span>
-<span class="w">        </span><span class="n">self</span><span class="p">%</span><span class="n">url</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">url</span>
-<span class="w">        </span><span class="n">self</span><span class="p">%</span><span class="n">object</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">branch</span>
-
-<span class="w">    </span><span class="k">end function </span><span class="n">git_target_branch</span>
+    <div class="hl codehilite"><pre><span></span><span class="w">    </span><span class="k">subroutine </span><span class="n">handle_error</span><span class="p">(</span><span class="n">error_</span><span class="p">)</span>
+<span class="w">        </span><span class="k">type</span><span class="p">(</span><span class="n">error_t</span><span class="p">),</span><span class="w"> </span><span class="k">optional</span><span class="p">,</span><span class="w"> </span><span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">)</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">error_</span>
+<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="nb">present</span><span class="p">(</span><span class="n">error_</span><span class="p">))</span><span class="w"> </span><span class="k">then</span>
+<span class="k">            write</span><span class="w"> </span><span class="p">(</span><span class="n">error_unit</span><span class="p">,</span><span class="w"> </span><span class="s1">&#39;(&quot;[Error]&quot;, 1x, a)&#39;</span><span class="p">)</span><span class="w"> </span><span class="n">error_</span><span class="p">%</span><span class="n">message</span>
+<span class="w">            </span><span class="k">stop </span><span class="mi">1</span>
+<span class="w">        </span><span class="k">end if</span>
+<span class="k">    end subroutine </span><span class="n">handle_error</span>
 </pre></div>
 
     </section>
