@@ -62,10 +62,10 @@ contains
 
     if (which('curl') /= '') then
       print *, "Downloading '"//url//"' -> '"//tmp_pkg_file//"'"
-      call execute_command_line('curl '//url//' -s -o '//tmp_pkg_file, exitstat=stat)
+      call execute_command_line('curl "'//url//'" -s -o '//tmp_pkg_file, exitstat=stat)
     else if (which('wget') /= '') then
       print *, "Downloading '"//url//"' -> '"//tmp_pkg_file//"'"
-      call execute_command_line('wget '//url//' -q -O '//tmp_pkg_file, exitstat=stat)
+      call execute_command_line('wget "'//url//'" -q -O '//tmp_pkg_file, exitstat=stat)
     else
       call fatal_error(error, "Neither 'curl' nor 'wget' installed."); return
     end if
