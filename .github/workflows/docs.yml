@@ -14,7 +14,7 @@ jobs:
       run: pip install ford
     - name: Build Documentation
       run: ford docs.md
-    - uses: JamesIves/github-pages-deploy-action@3.7.1
+    - uses: JamesIves/github-pages-deploy-action@v4.7.1
       if: github.event_name == 'push' && github.repository == 'fortran-lang/fpm' && ( startsWith( github.ref, 'refs/tags/' ) || github.ref == 'refs/heads/main' )
       with:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
