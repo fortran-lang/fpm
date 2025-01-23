@@ -16,7 +16,7 @@ module fpm_manifest_fortran
         logical :: implicit_external = .false.
 
         !> Form to use for all Fortran sources
-        character(:), allocatable :: source_form
+        character(:), allocatable :: source_form, user_defined_flags
 
         contains
 
@@ -44,7 +44,7 @@ contains
         type(error_t), allocatable, intent(out) :: error
 
         integer :: stat
-        character(:), allocatable :: source_form
+        character(:), allocatable :: source_form, user_defined_flags
 
         call check(table, error)
         if (allocated(error)) return
@@ -77,6 +77,14 @@ contains
             self%source_form = source_form
         end select
 
+        call get_value(table, "user-defined-flags", user_defined_flags, "", stat=stat)
+        if (stat /= toml_stat%success) then
+            call fatal_error(error,"Error while reading value for 'user-defined-flags' in fpm.toml")
+            return
+        end if
+
+        self%user_defined_flags = user_defined_flags
+
     end subroutine new_fortran_config
 
     !> Check local schema for allowed entries
@@ -99,7 +107,7 @@ contains
         do ikey = 1, size(list)
             select case(list(ikey)%key)
 
-            case("implicit-typing", "implicit-external", "source-form")
+            case("implicit-typing", "implicit-external", "source-form", "user-defined-flags")
                 continue
 
             case default
@@ -123,6 +131,8 @@ contains
           if (this%implicit_external.neqv.other%implicit_external) return
           if (.not.allocated(this%source_form).eqv.allocated(other%source_form)) return
           if (.not.this%source_form==other%source_form) return
+          if (.not.allocated(this%user_defined_flags).eqv.allocated(other%user_defined_flags)) return
+          if (.not.this%user_defined_flags==other%user_defined_flags) return
        class default
           ! Not the same type
           return
@@ -151,6 +161,8 @@ contains
     if (allocated(error)) return
     call set_string(table, "source-form", self%source_form, error, class_name)
     if (allocated(error)) return
+    call set_string(table, "user-defined-flags", self%user_defined_flags, error, class_name)
+    if (allocated(error)) return
 
   end subroutine dump_to_toml
 
@@ -171,6 +183,7 @@ contains
     call get_value(table, "implicit-external", self%implicit_external, error, class_name)
     if (allocated(error)) return
     call get_value(table, "source-form", self%source_form)
+    call get_value(table, "user-defined-flags", self%user_defined_flags)
 
   end subroutine load_from_toml
 

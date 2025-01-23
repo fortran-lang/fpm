@@ -108,6 +108,7 @@ subroutine build_model(model, settings, package, error)
                 features%implicit_typing = dependency%fortran%implicit_typing
                 features%implicit_external = dependency%fortran%implicit_external
                 features%source_form = dependency%fortran%source_form
+                features%user_defined_flags = dependency%fortran%user_defined_flags
             end associate
             model%packages(i)%version = package%version%s()
 
