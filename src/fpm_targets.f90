@@ -1103,6 +1103,10 @@ function get_feature_flags(compiler, features) result(flags)
     if (allocated(features%source_form)) then
         flags = flags // compiler%get_feature_flag(features%source_form//"-form")
     end if
+
+    if (allocated(features%user_defined_flags)) then
+        flags = flags // " " // features%user_defined_flags
+    end if
 end function get_feature_flags
 
 end module fpm_targets
