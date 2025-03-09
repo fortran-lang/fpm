@@ -18,7 +18,7 @@ module fpm_release
 
 ! Fallback to last known version in case of undefined macro
 #ifndef FPM_RELEASE_VERSION
-#  define FPM_RELEASE_VERSION 0.10.1
+#  define FPM_RELEASE_VERSION 0.11.0
 #endif
 
 ! Accept solution from https://stackoverflow.com/questions/31649691/stringify-macro-with-gnu-gfortran
