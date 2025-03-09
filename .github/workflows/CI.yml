@@ -29,8 +29,9 @@ jobs:
           - {compiler: gcc, version: 13}
           - {compiler: gcc, version: 14}
         exclude:
-          - os: macos-13
-            toolchain: {compiler: gcc, version: 13}          
+          # Not yet supported by setup-fortran
+          - os: windows-latest
+            toolchain: {compiler: gcc, version: 14}          
         include:
           - os: ubuntu-latest
             os-arch: linux-x86_64
