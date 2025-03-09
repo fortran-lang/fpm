@@ -1,16 +1,20 @@
 name: metapackage-tests
 
 on:
+  # On push, only run if any of the metapackage files has changed
   push:
     paths:
-      - 'src/*meta*.f90'  # On push, only launch job if something has changed in the metapackages
+      - 'src/*meta*.f90'  
       - 'src/fpm/*meta*.f90'
       - 'src/fpm/manifest/*meta*.f90'
       - 'src/ci/meta_tests.sh'
       - 'src/.github/workflows/meta.yml'
+  # Always run on PR or release 
   pull_request:
   release:
     types: [published]
+  # Allow manual triggering
+  workflow_dispatch:  
 
 env:
   CI: "ON" # We can detect this in the build system and other vendors implement it
@@ -35,9 +39,9 @@ jobs:
             mpi: openmpi
           - os: ubuntu-latest
             mpi: mpich
-          - os: macos-12
+          - os: macos-13
             mpi: openmpi
-          - os: macos-12
+          - os: macos-13
             mpi: mpich
 
 
@@ -45,15 +49,10 @@ jobs:
     - name: Checkout code
       uses: actions/checkout@v4
 
-    - name: (Ubuntu) setup gcc version
-      if: contains(matrix.os,'ubuntu')
-      run: |
-        echo "GCC_V=10" >> $GITHUB_ENV
-
-    - name: (macOS) setup gcc version
-      if: contains(matrix.os,'macos')
-      run: |
-        echo "GCC_V=13" >> $GITHUB_ENV
+    - name: (Ubuntu/macOS) setup gcc version
+      if: contains(matrix.os,'ubuntu') || contains(matrix.os,'macos')
+      run: |      
+        echo "GCC_V=14" >> $GITHUB_ENV
 
     - name: (Windows) Install MSYS2
       uses: msys2/setup-msys2@v2
