@@ -1,16 +1,20 @@
 name: metapackage-tests
 
 on:
+  # On push, only run if any of the metapackage files has changed
   push:
     paths:
-      - 'src/*meta*.f90'  # On push, only launch job if something has changed in the metapackages
+      - 'src/*meta*.f90'  
       - 'src/fpm/*meta*.f90'
       - 'src/fpm/manifest/*meta*.f90'
       - 'src/ci/meta_tests.sh'
       - 'src/.github/workflows/meta.yml'
+  # Always run on PR or release 
   pull_request:
   release:
     types: [published]
+  # Allow manual triggering
+  workflow_dispatch:  
 
 env:
   CI: "ON" # We can detect this in the build system and other vendors implement it
