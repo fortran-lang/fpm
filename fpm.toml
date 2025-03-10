@@ -1,9 +1,9 @@
 name = "fpm"
-version = "0.10.1"
+version = "0.11.0"
 license = "MIT"
 author = "fpm maintainers"
 maintainer = ""
-copyright = "2020-2023 fpm contributors"
+copyright = "2020-2025 fpm contributors"
 
 [preprocess]
 [preprocess.cpp]
