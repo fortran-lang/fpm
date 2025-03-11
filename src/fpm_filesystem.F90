@@ -51,7 +51,9 @@ module fpm_filesystem
     end interface
 #endif
 
-    character(*), parameter :: eol = new_line('a')    !! End of line
+    character,    parameter :: CR = achar(13)
+    character,    parameter :: LF = new_line('A')
+    character(*), parameter :: eol = CR//LF
 
 contains
 
