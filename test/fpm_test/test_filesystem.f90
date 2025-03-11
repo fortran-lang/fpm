@@ -338,7 +338,8 @@ contains
                                     'dependency.f90'//CRLF//&
                                     'example.f90'//CRLF//&
                                     'executable.f90'//CRLF//&
-                                    'fortran.f90'//CRLF, first, last))
+                                    'fortran.f90'//CRLF, &
+                                    first, last)
 
         if (.not.(all(first == [1,12,28,41,57]) .and. all(last == [9,25,38,54,67]))) then 
             call test_failed(error, "Test split_lines_first_last #6 failed")
