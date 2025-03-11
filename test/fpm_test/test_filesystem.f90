@@ -348,7 +348,8 @@ contains
 
     end subroutine test_split_lines_first_last    
     
-    ! On MS windows, 
+    ! On MS windows, directory listings are printed to files with CR//LF endings. 
+    ! Check that the lines can be properly read back from such files.
     subroutine test_dir_with_crlf(error)
         type(error_t), allocatable, intent(out) :: error
         
