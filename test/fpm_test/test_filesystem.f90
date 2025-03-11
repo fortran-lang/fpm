@@ -304,7 +304,7 @@ contains
         integer, allocatable :: first(:), last(:)
         
         call split_lines_first_last(CR//LF//'line1'//CR//'line2'//LF//'line3'//CR//LF//'hello', first, last)
-        if (.not.(all(first==[3,9,15,21]) .and. all(last==[7,13,18,25]))) then 
+        if (.not.(all(first==[3,9,15,22]) .and. all(last==[7,13,19,26]))) then 
             call test_failed(error, "Test split_lines_first_last #1 failed")
             return
         end if

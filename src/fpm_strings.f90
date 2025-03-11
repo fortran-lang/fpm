@@ -576,7 +576,7 @@ pure subroutine split_lines_first_last(string, first, last)
                 n = n + 1
                 istart(n) = p
                 do while (p <= slen)
-                    if (index(CR//LF, string(p:p)) == 0) exit
+                    if (index(CR//LF, string(p:p)) /= 0) exit
                     p = p + 1
                 end do
                 iend(n) = p - 1
