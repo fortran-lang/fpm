@@ -4,7 +4,7 @@ module test_filesystem
                               join_path, is_absolute_path, get_home, &
                               delete_file, read_lines, get_temp_filename
     use fpm_environment, only: OS_WINDOWS, get_os_type, os_is_unix
-    use fpm_strings, only: string_t
+    use fpm_strings, only: string_t, split_lines_first_last
     implicit none
     private
 
@@ -23,6 +23,7 @@ contains
             & new_unittest("create-delete-directory", test_mkdir_rmdir), &
             & new_unittest("test-is-absolute-path", test_is_absolute_path), &
             & new_unittest("test-get-home", test_get_home), &
+            & new_unittest("test-split-lines-first-last", test_split_lines_first_last), &
             & new_unittest("test-crlf-lines", test_dir_with_crlf) &
             ]
 
@@ -292,6 +293,42 @@ contains
         end if
 
     end subroutine test_get_home
+    
+    ! Test line splitting on MS windows
+    subroutine test_split_lines_first_last(error)
+        !> Error handling
+        type(error_t), allocatable, intent(out) :: error
+
+        character, parameter :: CR = achar(13)
+        character, parameter :: LF = new_line('A')
+        integer, allocatable :: first(:), last(:)
+
+        call check_array(error, &
+            & split_lines_first_last(CR//LF//'line1'//CR//'line2'//LF//'line3'//CR//LF//'hello', first, last), &
+            & [3, 9, 15, 23], [7, 13, 21, 27])
+        if (allocated(error)) return
+
+        call check_array(error, &
+            & split_lines_first_last('single_line', first, last), &
+            & [1], [11])
+        if (allocated(error)) return
+
+        call check_array(error, &
+            & split_lines_first_last(CR//LF//CR//LF//'test', first, last), &
+            & [5], [8])
+        if (allocated(error)) return
+
+        call check_array(error, &
+            & split_lines_first_last('a'//CR//'b'//LF//'c'//CR//LF//'d', first, last), &
+            & [1, 3, 5, 8], [1, 3, 5, 8])
+        if (allocated(error)) return
+
+        call check_array(error, &
+            & split_lines_first_last('', first, last), &
+            & [], [])
+        if (allocated(error)) return
+
+    end subroutine test_split_lines_first_last    
     
     ! On MS windows, 
     subroutine test_dir_with_crlf(error)
