@@ -343,28 +343,28 @@ contains
             return
         end if
         
-        if (lines(1)/='build.f90') then 
+        if (lines(1)%s/='build.f90') then 
             call test_failed(error, "Failed reading file with CRLF: at build.f90")
             return
         end if
-        if (lines(2)/='dependency.f90') then 
+        if (lines(2)%s/='dependency.f90') then 
             call test_failed(error, "Failed reading file with CRLF: at dependency.f90")
             return
         end if
-        if (lines(3)/='example.f90') then 
+        if (lines(3)%s/='example.f90') then 
             call test_failed(error, "Failed reading file with CRLF: at example.f90")
             return
         end if
-        if (lines(4)/='executable.f90') then 
+        if (lines(4)%s/='executable.f90') then 
             call test_failed(error, "Failed reading file with CRLF: at executable.f90")
             return
         end if
-        if (lines(5)/='fortran.f90') then 
+        if (lines(5)%s/='fortran.f90') then 
             call test_failed(error, "Failed reading file with CRLF: at fortran.f90")
             return
         end if                                
         
-        call delete_dile(temp_file)
+        call delete_file(temp_file)
         
     end subroutine test_dir_with_crlf
     
