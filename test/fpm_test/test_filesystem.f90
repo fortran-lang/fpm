@@ -299,9 +299,10 @@ contains
         !> Error handling
         type(error_t), allocatable, intent(out) :: error
 
-        character, parameter :: CR = achar(13)
-        character, parameter :: LF = new_line('A')
-        integer, allocatable :: first(:), last(:)
+        character,    parameter :: CR = achar(13)
+        character,    parameter :: LF = new_line('A')
+        character(*), parameter :: CRLF = CR//LF
+        integer, allocatable    :: first(:), last(:)
         
         call split_lines_first_last(CR//LF//'line1'//CR//'line2'//LF//'line3'//CR//LF//'hello', first, last)
         if (.not.(all(first==[3,9,15,22]) .and. all(last==[7,13,19,26]))) then 
@@ -330,6 +331,17 @@ contains
         call split_lines_first_last('', first, last)
         if (.not.(size(first) == 0 .and. size(last) == 0)) then 
             call test_failed(error, "Test split_lines_first_last #5 failed")
+            return
+        end if
+        
+        call split_lines_first_last('build.f90'//CRLF//&
+                                    'dependency.f90'//CRLF//&
+                                    'example.f90'//CRLF//&
+                                    'executable.f90'//CRLF//&
+                                    'fortran.f90'//CRLF, first, last))
+
+        if (.not.(all(first == [1,12,28,41,57]) .and. all(last == [9,25,38,54,67]))) then 
+            call test_failed(error, "Test split_lines_first_last #6 failed")
             return
         end if
 
