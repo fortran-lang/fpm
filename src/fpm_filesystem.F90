@@ -7,7 +7,7 @@ module fpm_filesystem
                                OS_UNKNOWN, OS_LINUX, OS_MACOS, OS_WINDOWS, &
                                OS_CYGWIN, OS_SOLARIS, OS_FREEBSD, OS_OPENBSD
     use fpm_environment, only: separator, get_env, os_is_unix
-    use fpm_strings, only: f_string, replace, string_t, split, split_first_last, dilate, str_begins_with_str
+    use fpm_strings, only: f_string, replace, string_t, split, split_lines_first_last, dilate, str_begins_with_str
     use iso_c_binding, only: c_char, c_ptr, c_int, c_null_char, c_associated, c_f_pointer
     use fpm_error, only : fpm_stop, error_t, fatal_error
     implicit none
@@ -50,10 +50,6 @@ module fpm_filesystem
         end function c_is_dir
     end interface
 #endif
-
-    character,    parameter :: CR = achar(13)
-    character,    parameter :: LF = new_line('A')
-    character(*), parameter :: eol = CR//LF
 
 contains
 
@@ -321,7 +317,7 @@ function read_lines_expanded(filename) result(lines)
         return
     end if
 
-    call split_first_last(content, eol, first, last)  ! TODO: \r (< macOS X), \n (>=macOS X/Linux/Unix), \r\n (Windows)
+    call split_lines_first_last(content, first, last)  
 
     ! allocate lines from file content string
     allocate (lines(size(first)))
@@ -346,7 +342,7 @@ function read_lines(filename) result(lines)
         return
     end if
 
-    call split_first_last(content, eol, first, last)  ! TODO: \r (< macOS X), \n (>=macOS X/Linux/Unix), \r\n (Windows)
+    call split_lines_first_last(content, first, last) 
 
     ! allocate lines from file content string
     allocate (lines(size(first)))

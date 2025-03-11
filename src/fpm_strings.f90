@@ -42,7 +42,7 @@ use iso_c_binding, only: c_char, c_ptr, c_int, c_null_char, c_associated, c_f_po
 implicit none
 
 private
-public :: f_string, lower, upper, split, split_first_last, str_ends_with, string_t, str_begins_with_str
+public :: f_string, lower, upper, split, split_first_last, split_lines_first_last, str_ends_with, string_t, str_begins_with_str
 public :: to_fortran_name, is_fortran_name
 public :: string_array_contains, string_cat, len_trim, operator(.in.), fnv_1a
 public :: replace, resize, str, join, glob
@@ -550,6 +550,50 @@ pure subroutine split_first_last(string, set, first, last)
     last = iend(:n)
 
 end subroutine split_first_last
+
+!! Author: Federico Perini
+!! Computes the first and last indices of lines in input string, delimited
+!! by either CR, LF, or CRLF, and stores them into first and last output
+!! arrays.
+pure subroutine split_lines_first_last(string, first, last)
+    character(*), intent(in) :: string
+    integer, allocatable, intent(out) :: first(:)
+    integer, allocatable, intent(out) :: last(:)
+
+    integer, dimension(len(string) + 1) :: istart, iend
+    integer :: p, n, slen
+    character, parameter :: CR = achar(13)
+    character, parameter :: LF = new_line('A')
+
+    slen = len(string)
+
+    n = 0
+    if (slen > 0) then
+        p = 1
+        do while (p <= slen)
+            
+            if (index(CR//LF, string(p:p)) == 0) then
+                n = n + 1
+                istart(n) = p
+                do while (p <= slen .and. index(CR//LF, string(p:p)) == 0)
+                    p = p + 1
+                end do
+                iend(n) = p - 1
+            end if
+            
+            ! Handle Windows CRLF by skipping LF after CR
+            if (p < slen) then 
+               if (string(p:p) == CR .and. string(p+1:p+1) == LF) p = p + 1
+            endif
+            
+            p = p + 1
+        end do
+    end if
+
+    first = istart(:n)
+    last = iend(:n)
+
+end subroutine split_lines_first_last
 
 !! Author: Milan Curcic
 !! If back is absent, computes the leftmost token delimiter in string whose
