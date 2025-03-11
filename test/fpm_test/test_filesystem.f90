@@ -4,6 +4,7 @@ module test_filesystem
                               join_path, is_absolute_path, get_home, &
                               delete_file, read_lines, get_temp_filename
     use fpm_environment, only: OS_WINDOWS, get_os_type, os_is_unix
+    use fpm_strings, only: string_t
     implicit none
     private
 
