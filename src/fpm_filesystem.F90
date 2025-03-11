@@ -517,7 +517,7 @@ recursive subroutine list_files(dir, files, recurse)
         call fpm_stop(2,'*list_files*:directory listing failed')
     end if
 
-    files = read_lines(temp_file)
+    files = read_lines_expanded(temp_file)
     call delete_file(temp_file)
 
     do i=1,size(files)
