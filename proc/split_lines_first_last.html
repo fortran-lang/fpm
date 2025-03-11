@@ -10,7 +10,7 @@
     <meta name="author" content="fortran-lang/fpm contributors" >
     <link rel="icon" href="../favicon.png">
 
-    <title>split_first_last &ndash; Fortran-lang/fpm</title>
+    <title>split_lines_first_last &ndash; Fortran-lang/fpm</title>
 
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet"
           integrity="sha384-1BmE4kWBq78iYhFldvKuhfTAU6auU8tT94WrHftjDbrCEXSU1oBoqyl2QvZ6jIW3" crossorigin="anonymous">
@@ -66,7 +66,7 @@
 
     <div class="container">
   <div class="row">
-    <h1>split_first_last
+    <h1>split_lines_first_last
       <small>Subroutine</small>
       
     </h1>
@@ -77,7 +77,7 @@
 
             <li class="list-inline-item" id="statements"><i class="fa fa-list-ol"></i>
               <a data-bs-toggle="tooltip" data-bs-placement="bottom" data-bs-html="true"
-                 title=" 0.3% of total for procedures.">21 statements</a>
+                 title=" 0.5% of total for procedures.">31 statements</a>
             </li>
 
             <li class="list-inline-item" id="source-file">
@@ -91,7 +91,7 @@
           <ol class="breadcrumb justify-content-end mb-0">
                 <li class="breadcrumb-item"><a href='../sourcefile/fpm_strings.f90.html'>fpm_strings.f90</a></li>
                 <li class="breadcrumb-item"><a href='../module/fpm_strings.html'>fpm_strings</a></li>
-            <li class="breadcrumb-item active" aria-current="page">split_first_last</li>
+            <li class="breadcrumb-item active" aria-current="page">split_lines_first_last</li>
           </ol>
         </nav>
       </div>
@@ -132,7 +132,7 @@
     <div class="card card-primary">
       <div class="card-header text-left"><h3 class="card-title">Source Code</h3></div>
       <div class="list-group">
-        <a class="list-group-item" href="../proc/split_first_last.html#src">split_first_last</a>
+        <a class="list-group-item" href="../proc/split_lines_first_last.html#src">split_lines_first_last</a>
       </div>
     </div>
 
@@ -142,7 +142,7 @@
     </div>
     
     <div class="col-md-9" id='text'>
-    <h2>public pure subroutine split_first_last(string, set, first, last)  
+    <h2>public pure subroutine split_lines_first_last(string, first, last)  
 </h2>
     
 
@@ -161,7 +161,7 @@
     <tbody>
         <tr>
             <td>
-              <span class="anchor" id="variable-string~13"></span>
+              <span class="anchor" id="variable-string~14"></span>
               character(len=*),
             </td>
 <td>intent(in)</td>
@@ -176,22 +176,7 @@
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-set"></span>
-              character(len=*),
-            </td>
-<td>intent(in)</td>
-              <td></td>            <td>
-              
-            </td>
-            <td>::</td>
-            <td><strong>set</strong></td>
-            <td>
-                
-            </td>
-        </tr>
-        <tr>
-            <td>
-              <span class="anchor" id="variable-first"></span>
+              <span class="anchor" id="variable-first~2"></span>
               integer,
             </td>
 <td>intent(out),</td>
@@ -206,7 +191,7 @@
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-last"></span>
+              <span class="anchor" id="variable-last~2"></span>
               integer,
             </td>
 <td>intent(out),</td>
@@ -236,32 +221,46 @@
     
     <section>
     <h2><span class="anchor" id="src"></span>Source Code</h2>
-    <div class="hl codehilite"><pre><span></span><span class="k">pure subroutine </span><span class="n">split_first_last</span><span class="p">(</span><span class="n">string</span><span class="p">,</span><span class="w"> </span><span class="n">set</span><span class="p">,</span><span class="w"> </span><span class="n">first</span><span class="p">,</span><span class="w"> </span><span class="n">last</span><span class="p">)</span>
+    <div class="hl codehilite"><pre><span></span><span class="k">pure subroutine </span><span class="n">split_lines_first_last</span><span class="p">(</span><span class="n">string</span><span class="p">,</span><span class="w"> </span><span class="n">first</span><span class="p">,</span><span class="w"> </span><span class="n">last</span><span class="p">)</span>
 <span class="w">    </span><span class="kt">character</span><span class="p">(</span><span class="o">*</span><span class="p">),</span><span class="w"> </span><span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">)</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">string</span>
-<span class="w">    </span><span class="kt">character</span><span class="p">(</span><span class="o">*</span><span class="p">),</span><span class="w"> </span><span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">)</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">set</span>
 <span class="w">    </span><span class="kt">integer</span><span class="p">,</span><span class="w"> </span><span class="k">allocatable</span><span class="p">,</span><span class="w"> </span><span class="k">intent</span><span class="p">(</span><span class="n">out</span><span class="p">)</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">first</span><span class="p">(:)</span>
 <span class="w">    </span><span class="kt">integer</span><span class="p">,</span><span class="w"> </span><span class="k">allocatable</span><span class="p">,</span><span class="w"> </span><span class="k">intent</span><span class="p">(</span><span class="n">out</span><span class="p">)</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">last</span><span class="p">(:)</span>
 
 <span class="w">    </span><span class="kt">integer</span><span class="p">,</span><span class="w"> </span><span class="k">dimension</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">string</span><span class="p">)</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="mi">1</span><span class="p">)</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">istart</span><span class="p">,</span><span class="w"> </span><span class="n">iend</span>
 <span class="w">    </span><span class="kt">integer</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">p</span><span class="p">,</span><span class="w"> </span><span class="n">n</span><span class="p">,</span><span class="w"> </span><span class="n">slen</span>
+<span class="w">    </span><span class="kt">character</span><span class="p">,</span><span class="w"> </span><span class="k">parameter</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">CR</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">achar</span><span class="p">(</span><span class="mi">13</span><span class="p">)</span>
+<span class="w">    </span><span class="kt">character</span><span class="p">,</span><span class="w"> </span><span class="k">parameter</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">LF</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">new_line</span><span class="p">(</span><span class="s1">&#39;A&#39;</span><span class="p">)</span>
 
 <span class="w">    </span><span class="n">slen</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">len</span><span class="p">(</span><span class="n">string</span><span class="p">)</span>
 
 <span class="w">    </span><span class="n">n</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span>
 <span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">slen</span><span class="w"> </span><span class="o">&gt;</span><span class="w"> </span><span class="mi">0</span><span class="p">)</span><span class="w"> </span><span class="k">then</span>
-<span class="k">        </span><span class="n">p</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span>
-<span class="w">        </span><span class="k">do while</span><span class="w"> </span><span class="p">(</span><span class="n">p</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="n">slen</span><span class="p">)</span>
-<span class="w">            </span><span class="n">n</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">n</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="mi">1</span>
-<span class="w">            </span><span class="n">istart</span><span class="p">(</span><span class="n">n</span><span class="p">)</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">min</span><span class="p">(</span><span class="n">p</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="n">slen</span><span class="p">)</span>
-<span class="w">            </span><span class="k">call </span><span class="n">split_pos</span><span class="p">(</span><span class="n">string</span><span class="p">,</span><span class="w"> </span><span class="n">set</span><span class="p">,</span><span class="w"> </span><span class="n">p</span><span class="p">)</span>
-<span class="w">            </span><span class="n">iend</span><span class="p">(</span><span class="n">n</span><span class="p">)</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">p</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="mi">1</span>
+<span class="k">        </span><span class="n">p</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">1</span>
+<span class="w">        </span><span class="k">do while</span><span class="w"> </span><span class="p">(</span><span class="n">p</span><span class="w"> </span><span class="o">&lt;=</span><span class="w"> </span><span class="n">slen</span><span class="p">)</span>
+<span class="w">            </span>
+<span class="w">            </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="nb">index</span><span class="p">(</span><span class="n">CR</span><span class="o">//</span><span class="n">LF</span><span class="p">,</span><span class="w"> </span><span class="n">string</span><span class="p">(</span><span class="n">p</span><span class="p">:</span><span class="n">p</span><span class="p">))</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="mi">0</span><span class="p">)</span><span class="w"> </span><span class="k">then</span>
+<span class="k">                </span><span class="n">n</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">n</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="mi">1</span>
+<span class="w">                </span><span class="n">istart</span><span class="p">(</span><span class="n">n</span><span class="p">)</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">p</span>
+<span class="w">                </span><span class="k">do while</span><span class="w"> </span><span class="p">(</span><span class="n">p</span><span class="w"> </span><span class="o">&lt;=</span><span class="w"> </span><span class="n">slen</span><span class="p">)</span>
+<span class="w">                    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="nb">index</span><span class="p">(</span><span class="n">CR</span><span class="o">//</span><span class="n">LF</span><span class="p">,</span><span class="w"> </span><span class="n">string</span><span class="p">(</span><span class="n">p</span><span class="p">:</span><span class="n">p</span><span class="p">))</span><span class="w"> </span><span class="o">/=</span><span class="w"> </span><span class="mi">0</span><span class="p">)</span><span class="w"> </span><span class="k">exit</span>
+<span class="k">                    </span><span class="n">p</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">p</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="mi">1</span>
+<span class="w">                </span><span class="k">end do</span>
+<span class="k">                </span><span class="n">iend</span><span class="p">(</span><span class="n">n</span><span class="p">)</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">p</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="mi">1</span>
+<span class="w">            </span><span class="k">end if</span>
+<span class="w">            </span>
+<span class="w">            </span><span class="c">! Handle Windows CRLF by skipping LF after CR</span>
+<span class="w">            </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">p</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="n">slen</span><span class="p">)</span><span class="w"> </span><span class="k">then </span>
+<span class="k">               if</span><span class="w"> </span><span class="p">(</span><span class="n">string</span><span class="p">(</span><span class="n">p</span><span class="p">:</span><span class="n">p</span><span class="p">)</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="n">CR</span><span class="w"> </span><span class="p">.</span><span class="nb">and</span><span class="p">.</span><span class="w"> </span><span class="n">string</span><span class="p">(</span><span class="n">p</span><span class="o">+</span><span class="mi">1</span><span class="p">:</span><span class="n">p</span><span class="o">+</span><span class="mi">1</span><span class="p">)</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="n">LF</span><span class="p">)</span><span class="w"> </span><span class="n">p</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">p</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="mi">1</span>
+<span class="w">            </span><span class="k">endif</span>
+<span class="k">            </span>
+<span class="k">            </span><span class="n">p</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">p</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="mi">1</span>
 <span class="w">        </span><span class="k">end do</span>
 <span class="k">    end if</span>
 
 <span class="k">    </span><span class="n">first</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">istart</span><span class="p">(:</span><span class="n">n</span><span class="p">)</span>
 <span class="w">    </span><span class="n">last</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">iend</span><span class="p">(:</span><span class="n">n</span><span class="p">)</span>
 
-<span class="k">end subroutine </span><span class="n">split_first_last</span>
+<span class="k">end subroutine </span><span class="n">split_lines_first_last</span>
 </pre></div>
 
     </section>
