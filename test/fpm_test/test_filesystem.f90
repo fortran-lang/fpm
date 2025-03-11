@@ -302,31 +302,36 @@ contains
         character, parameter :: CR = achar(13)
         character, parameter :: LF = new_line('A')
         integer, allocatable :: first(:), last(:)
+        
+        call split_lines_first_last(CR//LF//'line1'//CR//'line2'//LF//'line3'//CR//LF//'hello', first, last)
+        if (.not.(all(first==[3,9,15,23]) .and. all(last==[7,13,21,27]))) then 
+            call test_failed(error, "Test split_lines_first_last #1 failed")
+            return
+        end if
 
-        call check_array(error, &
-            & split_lines_first_last(CR//LF//'line1'//CR//'line2'//LF//'line3'//CR//LF//'hello', first, last), &
-            & [3, 9, 15, 23], [7, 13, 21, 27])
-        if (allocated(error)) return
+        call split_lines_first_last('single_line', first, last)
+        if (.not.(all(first==[1]) .and. all(last==[11]))) then 
+            call test_failed(error, "Test split_lines_first_last #2 failed")
+            return
+        end if
 
-        call check_array(error, &
-            & split_lines_first_last('single_line', first, last), &
-            & [1], [11])
-        if (allocated(error)) return
+        call split_lines_first_last(CR//LF//CR//LF//'test', first, last)
+        if (.not.(all(first == [5]) .and. all(last == [8]))) then 
+            call test_failed(error, "Test split_lines_first_last #3 failed")
+            return
+        end if
 
-        call check_array(error, &
-            & split_lines_first_last(CR//LF//CR//LF//'test', first, last), &
-            & [5], [8])
-        if (allocated(error)) return
+        call split_lines_first_last('a'//CR//'b'//LF//'c'//CR//LF//'d', first, last)
+        if (.not.(all(first == [1, 3, 5, 8]) .and. all(last == [1, 3, 5, 8]))) then 
+            call test_failed(error, "Test split_lines_first_last #4 failed")
+            return
+        end if
 
-        call check_array(error, &
-            & split_lines_first_last('a'//CR//'b'//LF//'c'//CR//LF//'d', first, last), &
-            & [1, 3, 5, 8], [1, 3, 5, 8])
-        if (allocated(error)) return
-
-        call check_array(error, &
-            & split_lines_first_last('', first, last), &
-            & [], [])
-        if (allocated(error)) return
+        call split_lines_first_last('', first, last)
+        if (.not.(size(first) == 0 .and. size(last) == 0)) then 
+            call test_failed(error, "Test split_lines_first_last #5 failed")
+            return
+        end if
 
     end subroutine test_split_lines_first_last    
     
