@@ -1,7 +1,8 @@
 module test_filesystem
     use testsuite, only: new_unittest, unittest_t, error_t, test_failed
     use fpm_filesystem, only: canon_path, is_dir, mkdir, os_delete_dir, &
-                              join_path, is_absolute_path, get_home
+                              join_path, is_absolute_path, get_home, &
+                              delete_file, read_lines, get_temp_filename
     use fpm_environment, only: OS_WINDOWS, get_os_type, os_is_unix
     implicit none
     private
@@ -20,7 +21,8 @@ contains
             & new_unittest("canon-path", test_canon_path), &
             & new_unittest("create-delete-directory", test_mkdir_rmdir), &
             & new_unittest("test-is-absolute-path", test_is_absolute_path), &
-            & new_unittest("test-get-home", test_get_home) &
+            & new_unittest("test-get-home", test_get_home), &
+            & new_unittest("test-crlf-lines", test_dir_with_crlf) &
             ]
 
     end subroutine collect_filesystem
@@ -289,5 +291,81 @@ contains
         end if
 
     end subroutine test_get_home
+    
+    ! On MS windows, 
+    subroutine test_dir_with_crlf(error)
+        type(error_t), allocatable, intent(out) :: error
+        
+        character,    parameter :: CR = achar(13)
+        character,    parameter :: LF = new_line('A')
+        character(*), parameter :: CRLF = CR//LF
+        
+        character(*), parameter :: test_lines = 'build.f90'//CRLF//&
+                                                'dependency.f90'//CRLF//&
+                                                'example.f90'//CRLF//&
+                                                'executable.f90'//CRLF//&
+                                                'fortran.f90'//CRLF
+                                               
+        type(string_t), allocatable :: lines(:)
+        character(len=:), allocatable :: temp_file
+        integer :: unit, i, ios
+        
+        temp_file = get_temp_filename()
+        
+        open(newunit=unit,file=temp_file,access='stream',action='write',iostat=ios)
+        if (ios/=0) then 
+            call test_failed(error, "cannot create temporary file")
+            return
+        end if
+        
+        write(unit,iostat=ios) test_lines
+        if (ios/=0) then 
+            call test_failed(error, "cannot write to temporary file")
+            return
+        end if
+                
+        close(unit,iostat=ios)
+        if (ios/=0) then 
+            call test_failed(error, "cannot close temporary file")
+            return
+        end if        
+        
+        lines = read_lines(temp_file) 
+        
+        if (.not.allocated(lines)) then 
+            call test_failed(error, "Failed reading file with CRLF: no output")
+            return
+        end if
+        
+        if (size(lines)/=5) then 
+            call test_failed(error, "Failed reading file with CRLF: wrong number of lines")
+            return
+        end if
+        
+        if (lines(1)/='build.f90') then 
+            call test_failed(error, "Failed reading file with CRLF: at build.f90")
+            return
+        end if
+        if (lines(2)/='dependency.f90') then 
+            call test_failed(error, "Failed reading file with CRLF: at dependency.f90")
+            return
+        end if
+        if (lines(3)/='example.f90') then 
+            call test_failed(error, "Failed reading file with CRLF: at example.f90")
+            return
+        end if
+        if (lines(4)/='executable.f90') then 
+            call test_failed(error, "Failed reading file with CRLF: at executable.f90")
+            return
+        end if
+        if (lines(5)/='fortran.f90') then 
+            call test_failed(error, "Failed reading file with CRLF: at fortran.f90")
+            return
+        end if                                
+        
+        call delete_dile(temp_file)
+        
+    end subroutine test_dir_with_crlf
+    
 
 end module test_filesystem
