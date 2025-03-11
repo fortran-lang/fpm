@@ -610,6 +610,10 @@ contains
         call fortran%test_serialization('fortran_features_t: with form',error)
         if (allocated(error)) return
 
+        fortran%user_defined_flags = "--ffree-line-length-none"
+        call fortran%test_serialization('fortran_features_t: with user-defined-flags',error)
+        if (allocated(error)) return
+
     end subroutine fft_roundtrip
 
     !> Test deserialization of an invalid fortran-features structure
@@ -623,7 +627,8 @@ contains
 
         character(len=*), parameter :: toml = 'implicit-typing = false '//NL//&
                                             & 'implicit-external = 0 '//NL//& ! not a boolean
-                                            & 'source-form = "free" '
+                                            & 'source-form = "free" '//NL//&
+                                            & 'user-defined-flags = "--ffree-line-length-none" '
 
         call string_to_toml(toml, table)
 
@@ -651,6 +656,7 @@ contains
         pkg%enforce_module_names = .false.
         pkg%module_prefix = string_t("")
         pkg%features%source_form = "free"
+        pkg%features%user_defined_flags = "--ffree-line-length-none"
 
         if (allocated(pkg%sources)) deallocate(pkg%sources)
         allocate(pkg%sources(4))
@@ -931,6 +937,7 @@ contains
         fpm = fpm//NL//'implicit-typing = false'
         fpm = fpm//NL//'implicit-external = false'
         fpm = fpm//NL//'source-form = "free"'
+        fpm = fpm//NL//'user-defined-flags = "--ffree-line-length-none"'
         fpm = fpm//NL//'[packages.fpm.sources]'
         fpm = fpm//NL//'[packages.fpm.sources.src_1]'
         fpm = fpm//NL//'file-name = "././src/fpm.f90"'
@@ -1002,6 +1009,7 @@ contains
         fpm = fpm//NL//'implicit-typing = false'
         fpm = fpm//NL//'implicit-external = false'
         fpm = fpm//NL//'source-form = "free"'
+        fpm = fpm//NL//'user-defined-flags = "--ffree-line-length-none"'
         fpm = fpm//NL//'[packages.toml-f.sources]'
         fpm = fpm//NL//'[packages.toml-f.sources.src_1]'
         fpm = fpm//NL//'file-name = "build/dependencies/toml-f/src/tomlf.f90"'
@@ -1032,6 +1040,7 @@ contains
         fpm = fpm//NL//'implicit-typing = false'
         fpm = fpm//NL//'implicit-external = false'
         fpm = fpm//NL//'source-form = "free"'
+        fpm = fpm//NL//'flags = "--ffree-line-length-none"'
         fpm = fpm//NL//'[packages.M_CLI2.sources]'
         fpm = fpm//NL//'[packages.M_CLI2.sources.src_1]'
         fpm = fpm//NL//'file-name = "build/dependencies/M_CLI2/src/M_CLI2.F90"'
@@ -1052,6 +1061,7 @@ contains
         fpm = fpm//NL//'implicit-typing = false'
         fpm = fpm//NL//'implicit-external = false'
         fpm = fpm//NL//'source-form = "free"'
+        fpm = fpm//NL//'user-defined-flags = "--ffree-line-length-none"'
         fpm = fpm//NL//'[packages.jonquil.sources]'
         fpm = fpm//NL//'[packages.jonquil.sources.src_1]'
         fpm = fpm//NL//'file-name = "build/dependencies/jonquil/src/jonquil.f90"'
@@ -1186,12 +1196,16 @@ contains
         fortran%implicit_external = .true.
         fortran%implicit_typing = .false.
         fortran%source_form = 'free'
+        fortran%user_defined_flags = '--ffree-line-length-none'
 
         call fortran%test_serialization('fortran_features_roundtrip',error)
         if (allocated(error)) return
 
         deallocate(fortran%source_form)
         call fortran%test_serialization('fortran_features_roundtrip 2',error)
+
+        deallocate(fortran%user_defined_flags)
+        call fortran%test_serialization('fortran_features_roundtrip 3',error)
 
     end subroutine fortran_features_roundtrip
 
