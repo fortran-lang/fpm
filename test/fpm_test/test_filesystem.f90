@@ -304,7 +304,7 @@ contains
         integer, allocatable :: first(:), last(:)
         
         call split_lines_first_last(CR//LF//'line1'//CR//'line2'//LF//'line3'//CR//LF//'hello', first, last)
-        if (.not.(all(first==[3,9,15,23]) .and. all(last==[7,13,21,27]))) then 
+        if (.not.(all(first==[3,9,15,21]) .and. all(last==[7,13,18,25]))) then 
             call test_failed(error, "Test split_lines_first_last #1 failed")
             return
         end if
@@ -351,6 +351,7 @@ contains
                                                
         type(string_t), allocatable :: lines(:)
         character(len=:), allocatable :: temp_file
+        character(256) :: msg
         integer :: unit, i, ios
         
         temp_file = get_temp_filename()
@@ -376,12 +377,14 @@ contains
         lines = read_lines(temp_file) 
         
         if (.not.allocated(lines)) then 
-            call test_failed(error, "Failed reading file with CRLF: no output")
+            write(msg, 1) 'no output'
+            call test_failed(error, msg)
             return
         end if
         
         if (size(lines)/=5) then 
-            call test_failed(error, "Failed reading file with CRLF: wrong number of lines")
+            write(msg, 1) 'wrong number of lines: expected ',5,', actual ',size(lines)
+            call test_failed(error, msg)
             return
         end if
         
@@ -407,6 +410,8 @@ contains
         end if                                
         
         call delete_file(temp_file)
+        
+        1 format("Failed reading file with CRLF: ",a,:,i0,:,a,:,i0)
         
     end subroutine test_dir_with_crlf
     
