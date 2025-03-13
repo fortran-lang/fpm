@@ -69,7 +69,7 @@ enum, bind(C)
         id_pgi, &
         id_nvhpc, &
         id_nag, &
-        id_flang, &
+        id_flang_classic, &
         id_flang_new, &
         id_f18, &
         id_ibmxl, &
@@ -614,7 +614,7 @@ function get_include_flag(self, path) result(flags)
         flags = "-I "//path
 
     case(id_caf, id_gcc, id_f95, id_cray, id_nvhpc, id_pgi, &
-        & id_flang, id_flang_new, id_f18, &
+        & id_flang_classic, id_flang_new, id_f18, &
         & id_intel_classic_nix, id_intel_classic_mac, &
         & id_intel_llvm_nix, id_lahey, id_nag, id_ibmxl, &
         & id_lfortran)
@@ -638,7 +638,7 @@ function get_module_flag(self, path) result(flags)
     case(id_caf, id_gcc, id_f95, id_cray, id_lfortran)
         flags = "-J "//path
 
-    case(id_nvhpc, id_pgi, id_flang)
+    case(id_nvhpc, id_pgi, id_flang_classic)
         flags = "-module "//path
 
     case(id_flang_new, id_f18)
@@ -738,7 +738,7 @@ function get_feature_flag(self, feature) result(flags)
        case(id_caf, id_gcc, id_f95)
            flags = flag_gnu_free_form
 
-       case(id_pgi, id_nvhpc, id_flang)
+       case(id_pgi, id_nvhpc, id_flang_classic)
            flags = flag_pgi_free_form
 
        case(id_nag)
@@ -761,7 +761,7 @@ function get_feature_flag(self, feature) result(flags)
        case(id_caf, id_gcc, id_f95)
            flags = flag_gnu_fixed_form
 
-       case(id_pgi, id_nvhpc, id_flang)
+       case(id_pgi, id_nvhpc, id_flang_classic)
            flags = flag_pgi_fixed_form
 
        case(id_nag)
@@ -849,7 +849,7 @@ subroutine get_default_c_compiler(f_compiler, c_compiler)
     case(id_intel_llvm_nix,id_intel_llvm_windows)
         c_compiler = 'icx'
 
-    case(id_flang, id_flang_new, id_f18)
+    case(id_flang_classic, id_flang_new, id_f18)
         c_compiler='clang'
 
     case(id_ibmxl)
@@ -884,7 +884,7 @@ subroutine get_default_cxx_compiler(f_compiler, cxx_compiler)
     case(id_intel_llvm_nix,id_intel_llvm_windows)
         cxx_compiler = 'icpx'
 
-    case(id_flang, id_flang_new, id_f18)
+    case(id_flang_classic, id_flang_new, id_f18)
         cxx_compiler='clang++'
 
     case(id_ibmxl)
@@ -1008,7 +1008,7 @@ function get_id(compiler) result(id)
     end if
 
     if (check_compiler(compiler, "flang")) then
-        id = id_flang
+        id = id_flang_classic
         return
     end if
 
@@ -1752,7 +1752,7 @@ pure function compiler_name(self) result(name)
        case(id_pgi);       name = "pgfortran"
        case(id_nvhpc);     name = "nvfortran"
        case(id_nag);       name = "nagfor"
-       case(id_flang);     name = "flang"
+       case(id_flang_classic);     name = "flang"
        case(id_flang_new); name = "flang-new"
        case(id_f18);       name = "f18"
        case(id_ibmxl);     name = "xlf90"
