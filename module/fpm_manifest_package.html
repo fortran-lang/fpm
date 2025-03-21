@@ -193,21 +193,21 @@
         <ul class="list-group list-group-flush">
             <li class="list-group-item">
               <ul class="list-inline">
-                  <li class="list-inline-item"><a href='fpm_filesystem.html'>fpm_filesystem</a></li>
-                  <li class="list-inline-item"><a href='fpm_manifest_executable.html'>fpm_manifest_executable</a></li>
-                  <li class="list-inline-item"><a href='fpm_manifest_install.html'>fpm_manifest_install</a></li>
-                  <li class="list-inline-item"><a href='fpm_manifest_example.html'>fpm_manifest_example</a></li>
+                  <li class="list-inline-item"><a href='fpm_manifest_dependency.html'>fpm_manifest_dependency</a></li>
                   <li class="list-inline-item"><a href='fpm_manifest_test.html'>fpm_manifest_test</a></li>
                   <li class="list-inline-item"><a href='fpm_manifest_profile.html'>fpm_manifest_profile</a></li>
+                  <li class="list-inline-item"><a href='fpm_manifest_example.html'>fpm_manifest_example</a></li>
                   <li class="list-inline-item"><a href='fpm_manifest_metapackages.html'>fpm_manifest_metapackages</a></li>
                   <li class="list-inline-item"><a href='fpm_toml.html'>fpm_toml</a></li>
                   <li class="list-inline-item"><a href='fpm_manifest_build.html'>fpm_manifest_build</a></li>
+                  <li class="list-inline-item"><a href='fpm_manifest_executable.html'>fpm_manifest_executable</a></li>
+                  <li class="list-inline-item"><a href='fpm_manifest_library.html'>fpm_manifest_library</a></li>
+                  <li class="list-inline-item"><a href='fpm_filesystem.html'>fpm_filesystem</a></li>
+                  <li class="list-inline-item"><a href='fpm_versioning.html'>fpm_versioning</a></li>
+                  <li class="list-inline-item"><a href='fpm_manifest_install.html'>fpm_manifest_install</a></li>
+                  <li class="list-inline-item"><a href='fpm_error.html'>fpm_error</a></li>
                   <li class="list-inline-item"><a href='fpm_manifest_fortran.html'>fpm_manifest_fortran</a></li>
                   <li class="list-inline-item"><a href='fpm_manifest_preprocess.html'>fpm_manifest_preprocess</a></li>
-                  <li class="list-inline-item"><a href='fpm_error.html'>fpm_error</a></li>
-                  <li class="list-inline-item"><a href='fpm_manifest_library.html'>fpm_manifest_library</a></li>
-                  <li class="list-inline-item"><a href='fpm_versioning.html'>fpm_versioning</a></li>
-                  <li class="list-inline-item"><a href='fpm_manifest_dependency.html'>fpm_manifest_dependency</a></li>
               </ul>
             </li>
         </ul>
@@ -453,7 +453,7 @@
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-meta~3"></span>
+              <span class="anchor" id="variable-meta~2"></span>
               type(<a href='../type/metapackage_config_t.html'>metapackage_config_t</a>),
             </td>
               <td>public</td>
@@ -470,7 +470,7 @@
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-name~39"></span>
+              <span class="anchor" id="variable-name~33"></span>
               character(len=:),
             </td>
               <td>public,</td>
@@ -487,7 +487,7 @@
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-preprocess~4"></span>
+              <span class="anchor" id="variable-preprocess~3"></span>
               type(<a href='../type/preprocess_config_t.html'>preprocess_config_t</a>),
             </td>
               <td>public,</td>
@@ -538,7 +538,7 @@
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-version~16"></span>
+              <span class="anchor" id="variable-version~18"></span>
               type(<a href='../type/version_t.html'>version_t</a>),
             </td>
               <td>public</td>
@@ -564,37 +564,37 @@
           <tbody>
               <tr>
                 <td>  generic, public ::
-  <strong><a href='../type/package_config_t.html#boundprocedure-dump~24'>dump</a></strong> => <a href='/home/runner/work/fpm/fpm/fpm-doc/type/srcfile_t.html#boundprocedure-dump_to_toml~7'>dump_to_toml</a>, dump_to_file, dump_to_unit</td>
+  <strong><a href='../type/package_config_t.html#boundprocedure-dump~20'>dump</a></strong> => <a href='/home/runner/work/fpm/fpm/fpm-doc/type/srcfile_t.html#boundprocedure-dump_to_toml~10'>dump_to_toml</a>, dump_to_file, dump_to_unit</td>
                 <td></td>
               </tr>
               <tr>
                 <td>  procedure, public ::
-  <strong><a href='../type/package_config_t.html#boundprocedure-dump_to_toml~20'>dump_to_toml</a></strong></td>
+  <strong><a href='../type/package_config_t.html#boundprocedure-dump_to_toml~17'>dump_to_toml</a></strong></td>
                 <td></td>
               </tr>
               <tr>
                 <td>  procedure, public ::
-  <strong><a href='../type/package_config_t.html#boundprocedure-info~12'>info</a></strong></td>
+  <strong><a href='../type/package_config_t.html#boundprocedure-info~10'>info</a></strong></td>
                 <td>../../<p>Print information on this instance</p></td>
               </tr>
               <tr>
                 <td>  generic, public ::
-  <strong><a href='../type/package_config_t.html#boundprocedure-load~22'>load</a></strong> => <a href='/home/runner/work/fpm/fpm/fpm-doc/type/srcfile_t.html#boundprocedure-load_from_toml~7'>load_from_toml</a>, load_from_file, load_from_unit</td>
+  <strong><a href='../type/package_config_t.html#boundprocedure-load~18'>load</a></strong> => <a href='/home/runner/work/fpm/fpm/fpm-doc/type/srcfile_t.html#boundprocedure-load_from_toml~10'>load_from_toml</a>, load_from_file, load_from_unit</td>
                 <td></td>
               </tr>
               <tr>
                 <td>  procedure, public ::
-  <strong><a href='../type/package_config_t.html#boundprocedure-load_from_toml~20'>load_from_toml</a></strong></td>
+  <strong><a href='../type/package_config_t.html#boundprocedure-load_from_toml~17'>load_from_toml</a></strong></td>
                 <td></td>
               </tr>
               <tr>
                 <td>  generic, public ::
-  <strong><a href='../type/package_config_t.html#boundprocedure-operator%28%3D%3D%29~23'>operator(==)</a></strong> => <a href='/home/runner/work/fpm/fpm/fpm-doc/type/srcfile_t.html#boundprocedure-serializable_is_same~7'>serializable_is_same</a></td>
+  <strong><a href='../type/package_config_t.html#boundprocedure-operator%28%3D%3D%29~19'>operator(==)</a></strong> => <a href='/home/runner/work/fpm/fpm/fpm-doc/type/srcfile_t.html#boundprocedure-serializable_is_same~10'>serializable_is_same</a></td>
                 <td></td>
               </tr>
               <tr>
                 <td>  procedure, public ::
-  <strong><a href='../type/package_config_t.html#boundprocedure-serializable_is_same~20'>serializable_is_same</a></strong> => manifest_is_same</td>
+  <strong><a href='../type/package_config_t.html#boundprocedure-serializable_is_same~17'>serializable_is_same</a></strong> => manifest_is_same</td>
                 <td>../../<p>Serialization interface</p></td>
               </tr>
               <tr>
@@ -633,7 +633,7 @@
     <tbody>
         <tr>
             <td>
-              <span class="anchor" id="variable-self~140"></span>
+              <span class="anchor" id="variable-self~107"></span>
               type(<a href='../type/package_config_t.html'>package_config_t</a>),
             </td>
 <td>intent(out)</td>
@@ -648,7 +648,7 @@
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-table~90"></span>
+              <span class="anchor" id="variable-table~81"></span>
               type(toml_table),
             </td>
 <td>intent(inout)</td>
@@ -663,7 +663,7 @@
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-root~11"></span>
+              <span class="anchor" id="variable-root~9"></span>
               character(len=*),
             </td>
 <td>intent(in),</td>
@@ -678,7 +678,7 @@
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-error~180"></span>
+              <span class="anchor" id="variable-error~170"></span>
               type(<a href='../type/error_t.html'>error_t</a>),
             </td>
 <td>intent(out),</td>
@@ -721,7 +721,7 @@
             <p class="text-end">
               Documentation generated by
               <a href="https://github.com/Fortran-FOSS-Programmers/ford">FORD</a>
- on 2025-03-11 12:04 +0000             </p>
+ on 2025-03-21 18:52 +0000             </p>
           </div>
         </div>
         <br>
