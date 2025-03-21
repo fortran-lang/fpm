@@ -223,6 +223,10 @@ subroutine init_openmp(this,compiler,error)
        case (id_lfortran)
             this%flags      = string_t(flag_lfortran_openmp)
             this%link_flags = string_t(flag_lfortran_openmp)
+            
+       case (id_flang, id_flang_new)
+            this%flags      = string_t(flag_flang_new_openmp)
+            this%link_flags = string_t(flag_flang_new_openmp)
 
        case default
 
