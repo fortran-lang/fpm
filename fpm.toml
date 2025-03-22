@@ -2,8 +2,10 @@ name = "fpm"
 version = "0.11.0"
 license = "MIT"
 author = "fpm maintainers"
-maintainer = ""
+maintainer = "@fortran-lang/fpm"
 copyright = "2020-2025 fpm contributors"
+homepage = "https://fpm.fortran-lang.org/"
+description = "Fortran Package Manager"
 
 [preprocess]
 [preprocess.cpp]
