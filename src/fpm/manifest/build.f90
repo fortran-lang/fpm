@@ -41,6 +41,9 @@ module fpm_manifest_build
         !> External modules to use
         type(string_t), allocatable :: external_modules(:)
 
+        !> Generate a shared library.
+        logical :: shared_library = .false.
+
     contains
 
         !> Print information on this instance
@@ -135,6 +138,8 @@ contains
         call get_list(table, "external-modules", self%external_modules, error)
         if (allocated(error)) return
 
+        call get_value(table, "shared-library", self%shared_library, .false., stat=stat)
+
     end subroutine new_build_config
 
     !> Check local schema for allowed entries
@@ -160,7 +165,7 @@ contains
         do ikey = 1, size(list)
             select case(list(ikey)%key)
 
-            case("auto-executables", "auto-examples", "auto-tests", "link", "external-modules", "module-naming")
+            case("auto-executables", "auto-examples", "auto-tests", "link", "external-modules", "module-naming", "shared-library")
                 continue
 
             case default
@@ -216,6 +221,8 @@ contains
             end do
         end if
 
+        write(unit, fmt) " - generate shared library ", merge("enabled ", "disabled", self%shared_library)
+
     end subroutine info
 
     !> Check that two dependency trees are equal
@@ -235,6 +242,7 @@ contains
              if (.not.this%module_prefix==other%module_prefix) return
              if (.not.this%link==other%link) return
              if (.not.this%external_modules==other%external_modules) return
+             if (this%shared_library.neqv.other%shared_library) return
 
          class default
             ! Not the same type
@@ -278,6 +286,8 @@ contains
         call set_list(table, "external-modules", self%external_modules, error)
         if (allocated(error)) return
 
+        call set_value(table, "shared-library", self%shared_library, error, class_name)
+
     end subroutine dump_to_toml
 
     !> Read build config from toml table (no checks made at this stage)
@@ -320,6 +330,8 @@ contains
         if (allocated(error)) return
         call get_list(table, "external-modules", self%external_modules, error)
         if (allocated(error)) return
+
+        call get_value(table, "shared-library", self%shared_library, error, class_name)
 
     end subroutine load_from_toml
 
