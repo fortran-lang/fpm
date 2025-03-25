@@ -9,6 +9,7 @@ use fpm_command_line, only: fpm_build_settings, fpm_new_settings, &
 use fpm_dependency, only : new_dependency_tree
 use fpm_filesystem, only: is_dir, join_path, list_files, exists, &
                    basename, filewrite, mkdir, run, os_delete_dir
+use fpm_lock, only: fpm_lock_acquire, fpm_lock_release
 use fpm_model, only: fpm_model_t, srcfile_t, show_model, fortran_features_t, &
                     FPM_SCOPE_UNKNOWN, FPM_SCOPE_LIB, FPM_SCOPE_DEP, &
                     FPM_SCOPE_APP, FPM_SCOPE_EXAMPLE, FPM_SCOPE_TEST
@@ -436,6 +437,11 @@ type(error_t), allocatable :: error
 
 integer :: i
 
+call fpm_lock_acquire(error)
+if (allocated(error)) then
+    call fpm_stop(1, '*cmd_build* Lock error: '//error%message)
+end if
+
 call get_package_data(package, "fpm.toml", error, apply_defaults=.true.)
 if (allocated(error)) then
     call fpm_stop(1,'*cmd_build* Package error: '//error%message)
@@ -467,6 +473,11 @@ else
     call build_package(targets,model,verbose=settings%verbose)
 endif
 
+call fpm_lock_release(error)
+if (allocated(error)) then
+    call fpm_stop(1, '*cmd_build* Lock error: '//error%message)
+end if
+
 end subroutine cmd_build
 
 subroutine cmd_run(settings,test)
@@ -486,6 +497,11 @@ subroutine cmd_run(settings,test)
     integer :: run_scope,firsterror
     integer, allocatable :: stat(:),target_ID(:)
     character(len=:),allocatable :: line
+
+    call fpm_lock_acquire(error)
+    if (allocated(error)) then
+        call fpm_stop(1, '*cmd_run* Lock error: '//error%message)
+    end if
 
     call get_package_data(package, "fpm.toml", error, apply_defaults=.true.)
     if (allocated(error)) then
@@ -616,6 +632,11 @@ subroutine cmd_run(settings,test)
 
     end if
 
+    call fpm_lock_release(error)
+    if (allocated(error)) then
+        call fpm_stop(1, '*cmd_run* Lock error: '//error%message)
+    end if
+
     contains
 
     subroutine compact_list_all()
@@ -684,6 +705,11 @@ subroutine cmd_clean(settings)
     type(fpm_global_settings) :: global_settings
     type(error_t), allocatable :: error
 
+    call fpm_lock_acquire(error)
+    if (allocated(error)) then
+        call fpm_stop(1, '*cmd_clean* Lock error: '//error%message)
+    end if
+
     ! Clear registry cache
     if (settings%registry_cache) then
         call get_global_settings(global_settings, error) 
@@ -708,6 +734,11 @@ subroutine cmd_clean(settings)
     else
         write (stdout, '(A)') "fpm: No build directory found."
     end if
+
+    call fpm_lock_release(error)
+    if (allocated(error)) then
+        call fpm_stop(1, '*cmd_clean* Lock error: '//error%message)
+     end if
 end subroutine cmd_clean
 
 !> Sort executables by namelist ID, and trim unused values
