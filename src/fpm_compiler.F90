@@ -39,10 +39,12 @@ use fpm_environment, only: &
         OS_UNKNOWN
 use fpm_filesystem, only: join_path, basename, get_temp_filename, delete_file, unix_path, &
     & getline, run
-use fpm_strings, only: split, string_cat, string_t, str_ends_with, str_begins_with_str
+use fpm_strings, only: split, string_cat, string_t, str_ends_with, str_begins_with_str, &
+    & operator(==)
 use fpm_manifest, only : package_config_t
 use fpm_error, only: error_t, fatal_error
-use fpm_toml, only: serializable_t, toml_table, set_string, set_value, toml_stat, get_value
+use fpm_toml, only: serializable_t, toml_table, set_string, set_value, toml_stat, get_value, &
+    & get_list, set_list
 implicit none
 public :: compiler_t, new_compiler, archiver_t, new_archiver, get_macros
 public :: debug
@@ -72,6 +74,23 @@ enum, bind(C)
 end enum
 integer, parameter :: compiler_enum = kind(id_unknown)
 
+!> Definition of a build command
+type, extends(serializable_t) :: compile_command_t
+    
+    type(string_t) :: directory
+    
+    type(string_t), allocatable :: arguments(:)
+    
+    type(string_t) :: file
+    
+    contains
+    
+    !> Serialization procedures
+    procedure :: serializable_is_same => compile_command_is_same
+    procedure :: dump_to_toml         => compile_command_dump_toml
+    procedure :: load_from_toml       => compile_command_load_toml
+    
+end type compile_command_t
 
 !> Definition of compiler object
 type, extends(serializable_t) :: compiler_t
@@ -1499,5 +1518,71 @@ logical function with_xdp(self)
     with_xdp = self%check_fortran_source_runs &
                ('if (any(selected_real_kind(18) == [-1, selected_real_kind(33)])) stop 1; end')
 end function with_xdp
+
+!> Dump compile_command_t to toml table
+subroutine compile_command_dump_toml(self, table, error)
+
+    !> Instance of the serializable object
+    class(compile_command_t), intent(inout) :: self
+
+    !> Data structure
+    type(toml_table), intent(inout) :: table
+
+    !> Error handling
+    type(error_t), allocatable, intent(out) :: error
+
+    call set_string(table, "directory", self%directory, error, 'compile_command_t')
+    if (allocated(error)) return
+    call set_list(table, "arguments", self%arguments, error)
+    if (allocated(error)) return
+    call set_string(table, "file", self%file, error, 'compile_command_t')
+    if (allocated(error)) return    
+
+end subroutine compile_command_dump_toml
+
+!> Read compile_command_t from toml table (no checks made at this stage)
+subroutine compile_command_load_toml(self, table, error)
+
+    !> Instance of the serializable object
+    class(compile_command_t), intent(inout) :: self
+
+    !> Data structure
+    type(toml_table), intent(inout) :: table
+    
+    !> Error handling
+    type(error_t), allocatable, intent(out) :: error
+    
+    call get_value(table, "directory", self%directory, error, 'compile_command_t')
+    if (allocated(error)) return
+    call get_list(table, "arguments", self%arguments, error)
+    if (allocated(error)) return   
+    call get_value(table, "file", self%file, error, 'compile_command_t')
+    if (allocated(error)) return
+
+end subroutine compile_command_load_toml
+
+!> Check that two compile_command_t objects are equal
+logical function compile_command_is_same(this,that)
+    class(compile_command_t), intent(in) :: this
+    class(serializable_t), intent(in) :: that
+
+    compile_command_is_same = .false.
+
+    select type (other=>that)
+       type is (compile_command_t)
+
+          if (.not.this%directory==other%directory) return
+          if (.not.this%arguments==other%arguments) return
+          if (.not.this%file==other%file) return
+
+       class default
+          ! Not the same type
+          return
+    end select
+
+    !> All checks passed!
+    compile_command_is_same = .true.
+
+end function compile_command_is_same
 
 end module fpm_compiler
