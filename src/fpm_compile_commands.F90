@@ -25,6 +25,7 @@ module fpm_compile_commands
     
     type, extends(serializable_t) :: compile_command_table_t
         
+        
         type(compile_command_t), allocatable :: command(:)
         
         contains
@@ -116,13 +117,32 @@ module fpm_compile_commands
 
         !> Error handling
         type(error_t), allocatable, intent(out) :: error
-
-!        call set_string(table, "directory", self%directory, error, 'compile_command_table_t')
-!        if (allocated(error)) return
-!        call set_list(table, "arguments", self%arguments, error)
-!        if (allocated(error)) return
-!        call set_string(table, "file", self%file, error, 'compile_command_table_t')
-!        if (allocated(error)) return    
+        
+        integer :: ii
+        type(toml_table), pointer :: ptr
+        character(64) :: name
+        
+        if (.not.allocated(self%command)) return
+        
+        do ii = 1, size(self%command)
+            associate (cmd => self%command(ii))
+            
+               ! Set node for this command
+               write(name,1) ii
+               call add_table(table, trim(name), ptr)               
+               if (.not. associated(ptr)) then
+                   call fatal_error(error, "compile_command_table_t cannot create entry for "//trim(name))
+                   return
+               end if
+   
+               ! Dump node
+               call cmd%dump_to_toml(ptr, error)
+               if (allocated(error)) return
+                           
+            endassociate
+        end do
+        
+        1 format('compile_command_',i0)
 
     end subroutine cct_dump_toml
 
