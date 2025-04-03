@@ -124,7 +124,6 @@ private
 public :: fpm_lock_acquire, fpm_lock_acquire_noblock, fpm_lock_release
 
 logical :: has_lock = .false.
-logical :: has_atexit_handler = .false.
 
 interface
     ! This function is defined in `fpm_lock.c`.
