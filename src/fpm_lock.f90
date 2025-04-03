@@ -114,9 +114,7 @@ use :: fpm_error, only : error_t, fatal_error
 use :: fpm_os, only : get_current_directory
 use :: fpm_filesystem, only : join_path, delete_file
 use, intrinsic :: iso_fortran_env, only : stderr => error_unit
-use iso_c_binding, only : c_int, c_char, c_null_char, c_ptr, c_funptr, &
-                          c_funloc, c_f_pointer
-use fpm_strings, only: f_string
+use iso_c_binding, only : c_funptr, c_funloc
 
 
 implicit none
@@ -124,26 +122,11 @@ private
 public :: fpm_lock_acquire, fpm_lock_acquire_noblock, fpm_lock_release
 
 interface
-    ! This function is defined in `fpm_lock.c`.
-    subroutine c_create(path, iostat, iomsg, exists) bind(c, name='c_create')
-        import c_int, c_char, c_ptr
-        character(kind=c_char), intent(in)  :: path(*)
-        integer(kind=c_int),    intent(out) :: iostat
-        type(c_ptr),            intent(out) :: iomsg
-        integer(kind=c_int),    intent(out) :: exists
-    end subroutine c_create
-
     ! atexit is a standard C90 function.
     subroutine atexit(fptr) bind(c, name='atexit')
         import c_funptr
         type(c_funptr), value :: fptr
     end subroutine atexit
-
-    ! free is also standard C.
-    subroutine c_free(ptr) BIND(C, name='free')
-        import
-        type(c_ptr), value :: ptr
-    end subroutine c_free
 end interface
 
 contains
@@ -174,53 +157,38 @@ subroutine fpm_lock_acquire_noblock(error, success)
 
     ! Error status and message.
     integer :: iostat
-    character(:), allocatable :: iomsg
-    character(len=1), pointer :: c_iomsg(:)
-    type(c_ptr) :: c_iomsg_ptr
+    character(len=256) :: iomsg
 
     ! Did the lock-file exist already or not.
     integer :: exists
 
-    ! NOTE(@emmabastas) as far as I can tell there is no atomic way to tell
-    ! Fortran to "create this file and let me know if it already exists", I
-    ! initially thought that the snippet bellow would do the trick but I think
-    ! that
-    !   * status='unknown' makes the open operation implementation-defined.
-    !   * status='replace' gives no way of telling if the file existed already
-    !     or not.
-    !
-    !open(file='.fpm-package-lock', &
-    !     action='read', &
-    !     status='unknown', &
-    !     newunit=lock_unit, &
-    !     iostat=iostat, &
-    !     iomsg=iomsg)
-    !inquire(unit=lock_unit, exist=exists)
+    open(file='.fpm-package-lock', &
+         action='read', &
+         status='new', &
+         newunit=lock_unit, &
+         iostat=iostat, &
+         iomsg=iomsg)
 
-    call c_create('.fpm-package-lock'//c_null_char, iostat, c_iomsg_ptr, exists)
-
-    ! An error occurred when opening the file.
+    ! If there was an error we asume it's because the lock-file already exists
+    ! (but there could be other reasons too)
     if (iostat /= 0) then
-        if (present(success)) success = .false.
-
-        ! Convert C pointer to Fortran pointer.
-        call c_f_pointer(c_iomsg_ptr, c_iomsg, [1024])
-        ! Convert Fortran pointer to Fortran string.
-        iomsg = f_string(c_iomsg)
-        !iomsg = f_string(c_iomsg_ptr)
-        call fatal_error(error, "Error trying to delete lock-file: "//iomsg)
-
-        call c_free(c_iomsg_ptr)
-        return
-    end if
-
-    ! The lock-file already exists, so some other process probably has the lock.
-    if (exists /= 0) then
         if (present(success)) success = .false.
         return
     end if
 
     ! At this point we have the lock.
+
+    ! Close the unit without removing the lock-file
+    close(unit=lock_unit, &
+          status='keep', &
+          iostat=iostat)
+
+    if (iostat /= 0) then
+        if (present(success)) success = .false.
+        call fatal_error(error, "Error closing lock-file")
+        return
+    end if
+
     if (present(success)) success = .true.
 
     ! Setup the atexit handler
