@@ -112,7 +112,7 @@ module fpm_lock
 
 use :: fpm_error, only : error_t, fatal_error
 use :: fpm_os, only : get_current_directory
-use :: fpm_filesystem, only : join_path
+use :: fpm_filesystem, only : join_path, delete_file
 use, intrinsic :: iso_fortran_env, only : stderr => error_unit
 use iso_c_binding, only : c_int, c_char, c_null_char, c_ptr, c_funptr, &
                           c_funloc, c_f_pointer
@@ -132,14 +132,6 @@ interface
         type(c_ptr),            intent(out) :: iomsg
         integer(kind=c_int),    intent(out) :: exists
     end subroutine c_create
-
-    ! This function is defined in `fpm_lock.c`.
-    subroutine c_remove(path, iostat, iomsg) bind(c, name='c_remove')
-        import c_int, c_char, c_ptr
-        character(kind=c_char), intent(in)  :: path(*)
-        integer(kind=c_int),    intent(out) :: iostat
-        type(c_ptr),            intent(out) :: iomsg
-    end subroutine c_remove
 
     ! atexit is a standard C90 function.
     subroutine atexit(fptr) bind(c, name='atexit')
@@ -287,24 +279,29 @@ subroutine fpm_lock_release(error)
     !> Error handling
     type(error_t), allocatable, intent(out) :: error
 
-    integer :: lock_unit
-
+    integer :: unit
     integer :: iostat
-    character(:), allocatable :: iomsg
-    character(len=1), pointer :: c_iomsg(:)
-    type(c_ptr) :: c_iomsg_ptr
+    character(len=256) :: iomsg
 
-    call c_remove('.fpm-package-lock'//c_null_char, iostat, c_iomsg_ptr)
+    open(file='.fpm-package-lock', &
+              action='read', &
+              status='old', &
+              newunit=unit, &
+              iostat=iostat, &
+              iomsg=iomsg)
 
     if (iostat /= 0) then
-        ! Convert C pointer to Fortran pointer.
-        call c_f_pointer(c_iomsg_ptr, c_iomsg, [1024])
-        ! Convert Fortran pointer to Fortran string.
-        iomsg = f_string(c_iomsg)
-        !iomsg = f_string(c_iomsg_ptr)
-        call fatal_error(error, "Error trying to delete lock-file: "//iomsg)
+        call fatal_error(error, "Error opening lock-file for deletion: "//iomsg)
+        return
+    end if
 
-        call c_free(c_iomsg_ptr)
+    close(unit=unit, &
+          status='delete', &
+          iostat=iostat)
+
+    if (iostat /= 0) then
+        call fatal_error(error, "Error closing lock-file")
+        return
     end if
 end subroutine fpm_lock_release
 

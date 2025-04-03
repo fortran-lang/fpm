@@ -71,18 +71,3 @@ void c_create(char *path, int *iostat, char **iomsg, int *exists) {
     *iostat = 0;
     *iomsg = NULL;
 }
-
-// @brief Remove a file/directory in an atomic manner.
-// @param path
-// @param iostat
-// @param iomsg
-void c_remove(char *path, int *iostat, char **iomsg) {
-    int stat = remove(path);
-    if (stat == -1) {
-        *iostat = 1;
-        *iomsg = my_strerror(errno);
-        return;
-    }
-    *iostat = 0;
-    *iomsg = NULL;
-}
