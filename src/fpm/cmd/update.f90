@@ -3,6 +3,7 @@ module fpm_cmd_update
   use fpm_dependency, only : dependency_tree_t, new_dependency_tree
   use fpm_error, only : error_t, fpm_stop
   use fpm_filesystem, only : exists, mkdir, join_path, delete_file, filewrite
+  use fpm_lock, only : fpm_lock_acquire, fpm_lock_release
   use fpm_manifest, only : package_config_t, get_package_data
   use fpm_toml, only: name_is_json
   implicit none
@@ -21,6 +22,9 @@ contains
     type(error_t), allocatable :: error
     integer :: ii
     character(len=:), allocatable :: cache
+
+    call fpm_lock_acquire(error)
+    call handle_error(error)
 
     call get_package_data(package, "fpm.toml", error, apply_defaults=.true.)
     call handle_error(error)
@@ -62,6 +66,9 @@ contains
         call deps%dump(trim(settings%dump), error, json=name_is_json(trim(settings%dump)))
         call handle_error(error)
     end if
+
+    call fpm_lock_release(error)
+    call handle_error(error)
 
   end subroutine cmd_update
 
