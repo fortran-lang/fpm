@@ -123,8 +123,6 @@ implicit none
 private
 public :: fpm_lock_acquire, fpm_lock_acquire_noblock, fpm_lock_release
 
-logical :: has_lock = .false.
-
 interface
     ! This function is defined in `fpm_lock.c`.
     subroutine c_create(path, iostat, iomsg, exists) bind(c, name='c_create')
@@ -191,13 +189,6 @@ subroutine fpm_lock_acquire_noblock(error, success)
     ! Did the lock-file exist already or not.
     integer :: exists
 
-    if (has_lock) then
-        call fatal_error (error, &
-            "Tried locking package directory when it's already locked")
-        if (present(success)) success = .false.
-        return
-    end if
-
     ! NOTE(@emmabastas) as far as I can tell there is no atomic way to tell
     ! Fortran to "create this file and let me know if it already exists", I
     ! initially thought that the snippet bellow would do the trick but I think
@@ -238,7 +229,6 @@ subroutine fpm_lock_acquire_noblock(error, success)
     end if
 
     ! At this point we have the lock.
-    has_lock = .true.
     if (present(success)) success = .true.
 
     ! Setup the atexit handler
@@ -303,14 +293,6 @@ subroutine fpm_lock_release(error)
     character(:), allocatable :: iomsg
     character(len=1), pointer :: c_iomsg(:)
     type(c_ptr) :: c_iomsg_ptr
-
-    if (.not. has_lock) then
-        call fatal_error(error, &
-            "Tried unlocking package directory when it wasn't locked")
-        return
-    end if
-
-    has_lock = .false.
 
     call c_remove('.fpm-package-lock'//c_null_char, iostat, c_iomsg_ptr)
 

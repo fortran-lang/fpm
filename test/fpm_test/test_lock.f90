@@ -22,11 +22,13 @@ contains
             & new_unittest('acquire-leaves-lockfile', acquire_leaves_lockfile), &
             & new_unittest('aquire-release-leaves-nothing', acquire_release_leaves_nothing), &
             & new_unittest('acquire-release-acquire-release', acquire_release_acquire_release), &
-            & new_unittest('double-acquire', double_acquire, should_fail=.true.), &
+            & new_unittest('double-acquire', double_acquire), &
             & new_unittest('release', release, should_fail=.true.), &
             & new_unittest('acquire-release-release', acquire_release_release, should_fail=.true.), &
             & new_unittest('acquire-existing-lockfile-valid', acquire_existing_lockfile_valid), &
-            & new_unittest('acquire-blocks', acquire_blocks) &
+            & new_unittest('acquire-blocks', acquire_blocks), &
+            & new_unittest('release-rouge-remove', release_rouge_remove) &
+
         ]
     end subroutine collect_lock
 
@@ -113,14 +115,22 @@ contains
         call cleanup()
     end subroutine acquire_release_acquire_release
 
-    !> Double acquire should cause an error.
+    !> Double acquire should not work the second time.
     subroutine double_acquire(error)
         type(error_t), allocatable, intent(out) :: error
+        logical :: success
 
         call setup()
 
         call fpm_lock_acquire_noblock(error)
-        call fpm_lock_acquire_noblock(error)
+        if (allocated(error)) return
+
+        call fpm_lock_acquire_noblock(error, success)
+        if (allocated(error)) return
+
+        if (success) then
+            call test_failed(error, "Expected lock to not succeed.")
+        end if
 
         call cleanup()
     end subroutine double_acquire
@@ -129,7 +139,7 @@ contains
     subroutine release(error)
         type(error_t), allocatable, intent(out) :: error
 
-        call cleanup()
+        call setup()
 
         call fpm_lock_release(error)
 
@@ -179,6 +189,33 @@ contains
         ! Our blocking acquire should wait for a bit and then go through
         call fpm_lock_acquire(error)
         if (allocated(error)) return
+
+        call cleanup()
+    end subroutine
+
+    !> If some other process removes our lock-file then fpm_lock_release should
+    !> give an error.
+    subroutine release_rouge_remove(error)
+        type(error_t), allocatable, intent(out) :: error
+        type(error_t), allocatable :: dummy_error
+        logical success
+
+        call setup()
+
+        call fpm_lock_acquire_noblock(error, success)
+        if (allocated(error)) return
+        if (.not. success) then
+            call test_failed(error, "lock-file acquire failed")
+        end if
+
+        ! Some reouge process removes the lock-file
+        call run('rm .fpm-package-lock')
+
+        call fpm_lock_release(dummy_error)
+        if (.not. allocated(dummy_error)) then
+            call test_failed(error, &
+                "Expected fpm_lock_release to fail, but it succeeded")
+        end if
 
         call cleanup()
     end subroutine
