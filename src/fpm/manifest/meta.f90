@@ -52,6 +52,9 @@ module fpm_manifest_metapackages
         !> HDF5
         type(metapackage_request_t) :: hdf5
 
+        !> NetCDF
+        type(metapackage_request_t) :: netcdf
+
     end type metapackage_config_t
 
 
@@ -203,6 +206,9 @@ contains
         call new_meta_request(self%hdf5, "hdf5", table, meta_allowed, error)
         if (allocated(error)) return
 
+        call new_meta_request(self%netcdf, "netcdf", table, meta_allowed, error)
+        if (allocated(error)) return
+
     end subroutine new_meta_config
 
     !> Check local schema for allowed entries
@@ -214,7 +220,7 @@ contains
         select case (key)
 
             !> Supported metapackages
-            case ("openmp","stdlib","mpi","minpack","hdf5")
+            case ("openmp","stdlib","mpi","minpack","hdf5","netcdf")
                 is_meta_package = .true.
 
             case default
