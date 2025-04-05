@@ -5,7 +5,7 @@ module fpm_meta_base
     use fpm_command_line, only: fpm_cmd_settings, fpm_run_settings
     use fpm_manifest_dependency, only: dependency_config_t
     use fpm_manifest, only: package_config_t
-    use fpm_strings, only: string_t, len_trim
+    use fpm_strings, only: string_t, len_trim, split, join
 
     implicit none
 
@@ -111,30 +111,30 @@ module fpm_meta_base
 
         ! Add global build flags, to apply to all sources
         if (self%has_build_flags) then
-            model%fortran_compile_flags = model%fortran_compile_flags//self%flags%s
-            model%c_compile_flags       = model%c_compile_flags//self%flags%s
-            model%cxx_compile_flags     = model%cxx_compile_flags//self%flags%s
+            call append_flags_without_duplicates(model%fortran_compile_flags, self%flags%s)
+            call append_flags_without_duplicates(model%c_compile_flags, self%flags%s)
+            call append_flags_without_duplicates(model%cxx_compile_flags, self%flags%s)
         endif
 
         ! Add language-specific flags
-        if (self%has_fortran_flags) model%fortran_compile_flags = model%fortran_compile_flags//self%fflags%s
-        if (self%has_c_flags)       model%c_compile_flags       = model%c_compile_flags//self%cflags%s
-        if (self%has_cxx_flags)     model%cxx_compile_flags     = model%cxx_compile_flags//self%cxxflags%s
+        if (self%has_fortran_flags) call append_flags_without_duplicates(model%fortran_compile_flags, self%fflags%s)
+        if (self%has_c_flags)       call append_flags_without_duplicates(model%c_compile_flags, self%cflags%s)
+        if (self%has_cxx_flags)     call append_flags_without_duplicates(model%cxx_compile_flags, self%cxxflags%s)
 
         if (self%has_link_flags) then
-            model%link_flags            = model%link_flags//' '//self%link_flags%s
+            call append_flags_without_duplicates(model%link_flags, self%link_flags%s)
         end if
 
         if (self%has_link_libraries) then
-            model%link_libraries        = [model%link_libraries,self%link_libs]
+            call append_array_without_duplicates(model%link_libraries, self%link_libs)
         end if
 
         if (self%has_include_dirs) then
-            model%include_dirs          = [model%include_dirs,self%incl_dirs]
+            call append_array_without_duplicates(model%include_dirs, self%incl_dirs)
         end if
 
         if (self%has_external_modules) then
-            model%external_modules      = [model%external_modules,self%external_modules]
+            call append_array_without_duplicates(model%external_modules, self%external_modules)
         end if
 
     end subroutine resolve_model
@@ -185,6 +185,72 @@ module fpm_meta_base
            end if
         end function dn
 
-
     end subroutine resolve_package_config
+
+    subroutine append_flags_without_duplicates(flags, new_flags)
+        character(:), intent(inout), allocatable :: flags
+        character(*), intent(in) :: new_flags
+
+        character(len=:), allocatable :: flags_array(:), new_flags_array(:)
+        type(string_t), allocatable :: flags_str_array(:), new_flags_str_array(:)
+        integer :: i, max_len
+
+        call split(flags, flags_array, " ")
+        call split(new_flags, new_flags_array, " ")
+
+        allocate(flags_str_array(size(flags_array, 1)))
+        allocate(new_flags_str_array(size(new_flags_array, 1)))
+        do i = 1, size(flags_array)
+            flags_str_array(i) = string_t(flags_array(i))
+        end do
+        do i = 1, size(new_flags_array)
+            new_flags_str_array(i) = string_t(new_flags_array(i))
+        end do
+
+        call append_array_without_duplicates(flags_str_array, new_flags_str_array)
+
+        max_len = 0
+        do i = 1, size(flags_str_array)
+            max_len = max(max_len, len_trim(flags_str_array(i)%s))
+        end do
+        deallocate(flags_array)
+        allocate(character(len=max_len) :: flags_array(size(flags_str_array)))
+        do i = 1, size(flags_str_array)
+            flags_array(i) = flags_str_array(i)%s
+        end do
+
+        flags = join(flags_array, " ")
+
+    end subroutine append_flags_without_duplicates
+
+    subroutine append_array_without_duplicates(str_array, new_elements)
+        type(string_t), allocatable, intent(inout) :: str_array(:)
+        type(string_t), intent(in) :: new_elements(:)
+        integer :: i
+
+        do i = 1, size(new_elements)
+            if (contains_element(str_array, new_elements(i))) cycle
+            ! Filter out empty flags
+            if (new_elements(i)%s == "") cycle
+            if (new_elements(i)%s == "-l") cycle
+            if (new_elements(i)%s == "-L") cycle
+            if (new_elements(i)%s == "-I") cycle
+            if (new_elements(i)%s == "-J") cycle
+            str_array = [str_array, new_elements(i)]
+        end do
+    end subroutine append_array_without_duplicates
+
+    function contains_element(str_array, element)
+        logical :: contains_element
+        type(string_t), intent(in) :: str_array(:), element
+        integer :: i
+
+        contains_element = .false.
+        do i = 1, size(str_array)
+            if (str_array(i)%s == element%s) then
+                contains_element = .true.
+                exit
+            end if
+        end do
+    end function contains_element
 end module fpm_meta_base

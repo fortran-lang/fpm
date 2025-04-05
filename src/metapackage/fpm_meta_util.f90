@@ -21,10 +21,10 @@ module fpm_meta_util
         character(len=*), intent(in) :: include_flag
         type(error_t), allocatable, intent(out) :: error
 
-        character(len=:), allocatable :: libdir, ext, pref
-        type(string_t) :: log, this_lib
+        character(len=:), allocatable :: libdir
+        type(string_t) :: log, current_include_dir, current_lib
         type(string_t), allocatable :: libs(:), flags(:)
-        integer :: i
+        integer :: i, j
 
         !> Get version
         if (.not. allocated(this%version)) then
@@ -42,8 +42,10 @@ module fpm_meta_util
         libdir = ""
         do i = 1, size(libs)
             if (str_begins_with_str(libs(i)%s, '-l')) then
+                current_lib = string_t(libs(i)%s(3:))
+                if (len_trim(current_lib%s) == 0) cycle
                 this%has_link_libraries = .true.
-                this%link_libs = [this%link_libs, string_t(libs(i)%s(3:))]
+                this%link_libs = [this%link_libs, current_lib]
             else ! -L and others: concatenate
                 this%has_link_flags = .true.
                 this%link_flags = string_t(trim(this%link_flags%s)//' '//libs(i)%s)
@@ -63,8 +65,10 @@ module fpm_meta_util
 
         do i = 1, size(flags)
             if (str_begins_with_str(flags(i)%s, include_flag)) then
+                current_include_dir = string_t(flags(i)%s(len(include_flag)+1:))
+                if (len_trim(current_include_dir%s) == 0) cycle
                 this%has_include_dirs = .true.
-                this%incl_dirs = [this%incl_dirs, string_t(flags(i)%s(len(include_flag)+1:))]
+                this%incl_dirs = [this%incl_dirs, current_include_dir]
             else
                 this%has_build_flags = .true.
                 this%flags = string_t(trim(this%flags%s)//' '//flags(i)%s)
