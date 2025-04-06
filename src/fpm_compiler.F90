@@ -39,12 +39,15 @@ use fpm_environment, only: &
         OS_UNKNOWN
 use fpm_filesystem, only: join_path, basename, get_temp_filename, delete_file, unix_path, &
     & getline, run
-use fpm_strings, only: split, string_cat, string_t, str_ends_with, str_begins_with_str
+use fpm_strings, only: split, string_cat, string_t, str_ends_with, str_begins_with_str, &
+    & string_array_contains
 use fpm_manifest, only : package_config_t
 use fpm_error, only: error_t, fatal_error
 use fpm_toml, only: serializable_t, toml_table, set_string, set_value, toml_stat, get_value
+use shlex_module, only: shlex_split => split
 implicit none
 public :: compiler_t, new_compiler, archiver_t, new_archiver, get_macros
+public :: append_clean_flags, append_clean_flags_array
 public :: debug
 
 enum, bind(C)
@@ -1071,17 +1074,17 @@ subroutine new_archiver(self, ar, echo, verbose)
         ! Attempt "ar"
         call execute_command_line("ar --version > "//get_temp_filename()//" 2>&1", &
           & exitstat=estat)
-          
-        if (estat == 0) then 
-            
+
+        if (estat == 0) then
+
             self%ar = "ar"//arflags
-            
+
         else
-            
+
             ! Then "gcc-ar"
             call execute_command_line("gcc-ar --version > "//get_temp_filename()//" 2>&1", &
-               & exitstat=estat)            
-            
+               & exitstat=estat)
+
             if (estat /= 0) then
               self%ar = "lib"//libflags
             else
@@ -1440,14 +1443,14 @@ end function compiler_name
 logical function check_fortran_source_runs(self, input) result(success)
     !> Instance of the compiler object
     class(compiler_t), intent(in) :: self
-    !> Program Source 
+    !> Program Source
     character(len=*), intent(in) :: input
-    
+
     integer :: stat,unit
     character(:), allocatable :: source,object,logf,exe
-    
+
     success = .false.
-   
+
     !> Create temporary source file
     exe    = get_temp_filename()
     source = exe//'.f90'
@@ -1455,23 +1458,23 @@ logical function check_fortran_source_runs(self, input) result(success)
     logf   = exe//'.log'
     open(newunit=unit, file=source, action='readwrite', iostat=stat)
     if (stat/=0) return
-   
+
     !> Write contents
     write(unit,*) input
-    close(unit)  
-    
-    !> Compile and link program 
+    close(unit)
+
+    !> Compile and link program
     call self%compile_fortran(source, object, self%get_default_flags(release=.false.), logf, stat)
     if (stat==0) &
     call self%link(exe, self%get_default_flags(release=.false.)//" "//object, logf, stat)
-        
-    !> Run and retrieve exit code 
+
+    !> Run and retrieve exit code
     if (stat==0) &
     call run(exe,echo=.false., exitstat=stat, verbose=.false., redirect=logf)
-    
+
     !> Successful exit on 0 exit code
     success = stat==0
-    
+
     !> Delete files
     open(newunit=unit, file=source, action='readwrite', iostat=stat)
     close(unit,status='delete')
@@ -1481,10 +1484,10 @@ logical function check_fortran_source_runs(self, input) result(success)
     close(unit,status='delete')
     open(newunit=unit, file=exe, action='readwrite', iostat=stat)
     close(unit,status='delete')
-            
+
 end function check_fortran_source_runs
 
-!> Check if the current compiler supports 128-bit real precision 
+!> Check if the current compiler supports 128-bit real precision
 logical function with_qp(self)
     !> Instance of the compiler object
     class(compiler_t), intent(in) :: self
@@ -1492,12 +1495,65 @@ logical function with_qp(self)
               ('if (selected_real_kind(33) == -1) stop 1; end')
 end function with_qp
 
-!> Check if the current compiler supports 80-bit "extended" real precision 
+!> Check if the current compiler supports 80-bit "extended" real precision
 logical function with_xdp(self)
     !> Instance of the compiler object
     class(compiler_t), intent(in) :: self
     with_xdp = self%check_fortran_source_runs &
                ('if (any(selected_real_kind(18) == [-1, selected_real_kind(33)])) stop 1; end')
 end function with_xdp
+
+!> Append new flags to existing flags, removing duplicates and empty flags (string version)
+subroutine append_clean_flags(flags, new_flags)
+    character(:), intent(inout), allocatable :: flags
+    character(*), intent(in) :: new_flags
+
+    type(string_t), allocatable :: flags_array(:), new_flags_array(:)
+    integer :: i
+
+    call tokenize_flags(flags, flags_array)
+    call tokenize_flags(new_flags, new_flags_array)
+
+    call append_clean_flags_array(flags_array, new_flags_array)
+
+    do i = 1, size(flags_array)
+        flags = flags // " " // flags_array(i)%s
+    end do
+end subroutine append_clean_flags
+
+!> Append new flags to existing flags, removing duplicates and empty flags (array version)
+subroutine append_clean_flags_array(flags_array, new_flags_array)
+    type(string_t), allocatable, intent(inout) :: flags_array(:)
+    type(string_t), intent(in) :: new_flags_array(:)
+
+    integer :: i
+
+    do i = 1, size(new_flags_array)
+        if (string_array_contains(new_flags_array(i)%s, flags_array)) cycle
+        ! Filter out empty flags and arguments
+        if (new_flags_array(i)%s == "") cycle
+        if (trim(new_flags_array(i)%s) == "-l") cycle
+        if (trim(new_flags_array(i)%s) == "-L") cycle
+        if (trim(new_flags_array(i)%s) == "-I") cycle
+        if (trim(new_flags_array(i)%s) == "-J") cycle
+        if (trim(new_flags_array(i)%s) == "-M") cycle
+        flags_array = [flags_array, new_flags_array(i)]
+    end do
+end subroutine append_clean_flags_array
+
+!> Tokenize a string into an array of compiler flags
+subroutine tokenize_flags(flags, flags_array)
+    character(*), intent(in) :: flags
+    type(string_t), allocatable, intent(out) :: flags_array(:)
+    character(len=:), allocatable :: flags_char_array(:)
+
+    integer :: i
+
+    flags_char_array = shlex_split(flags)
+    allocate(flags_array(size(flags_char_array)))
+    do i = 1, size(flags_char_array)
+        flags_array(i)%s = trim(adjustl(flags_char_array(i)))
+    end do
+end subroutine tokenize_flags
 
 end module fpm_compiler
