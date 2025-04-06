@@ -12,14 +12,29 @@
 
     <title>dependency_tree_t &ndash; Fortran-lang/fpm </title>
 
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet"
-          integrity="sha384-1BmE4kWBq78iYhFldvKuhfTAU6auU8tT94WrHftjDbrCEXSU1oBoqyl2QvZ6jIW3" crossorigin="anonymous">
-    <link href="../css/pygments.css" rel="stylesheet">
-    <link href="../css/font-awesome.min.css" rel="stylesheet">
+    <!-- Bootstrap -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet"
+          integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
+            integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
+    <!-- Font Awesome -->
+    <link href="../css/fontawesome.min.css" rel="stylesheet">
+    <link href="../css/brands.min.css" rel="stylesheet">
+    <link href="../css/regular.min.css" rel="stylesheet">
+    <link href="../css/solid.min.css" rel="stylesheet">
+    <link href="../css/v4-font-face.min.css" rel="stylesheet">
+    <link href="../css/v4-shims.min.css" rel="stylesheet">
+    <!-- MathJax -->
+    <script type="text/x-mathjax-config">
+      MathJax.Hub.Config({
+        TeX: { equationNumbers: { autoNumber: "AMS" } }
+      });
+    </script>
+    <script src="https://cdn.jsdelivr.net/npm/mathjax@2.7.9/MathJax.js?config=TeX-AMS-MML_HTMLorMML" async
+            integrity="sha256-DViIOMYdwlM/axqoGDPeUyf0urLoHMN4QACBKyB58Uw=" crossorigin="anonymous"></script>
+    <!-- Other scripts and stylesheets -->
     <link href="../css/local.css" rel="stylesheet">
-      <link  href="../tipuesearch/tipuesearch.css" rel="stylesheet">
-
-    <script src="https://code.jquery.com/jquery-3.7.1.min.js" integrity="sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo=" crossorigin="anonymous"></script>
+    <link href="../css/pygments.css" rel="stylesheet">
     <script src="../js/svg-pan-zoom.min.js"></script>
   </head>
 
@@ -77,7 +92,7 @@
 
             <li class="list-inline-item" id="statements"><i class="fa fa-list-ol"></i>
               <a data-bs-toggle="tooltip" data-bs-placement="bottom" data-bs-html="true"
-                 title="<p> 6.8% of total for derived types.</p>Including implementation: 545 statements, 11.0% of total for derived types.">37 statements</a>
+                 title="<p> 6.8% of total for derived types.</p>Including implementation: 545 statements, 11.1% of total for derived types.">37 statements</a>
             </li>
 
             <li class="list-inline-item" id="source-file">
@@ -89,7 +104,7 @@
       <div class="col">
         <nav aria-label="breadcrumb">
           <ol class="breadcrumb justify-content-end mb-0">
-                <li class="breadcrumb-item"><a href='../sourcefile/dependency.f90~2.html'>dependency.f90</a></li>
+                <li class="breadcrumb-item"><a href='../sourcefile/dependency.f90.html'>dependency.f90</a></li>
                 <li class="breadcrumb-item"><a href='../module/fpm_dependency.html'>fpm_dependency</a></li>
             <li class="breadcrumb-item active" aria-current="page">dependency_tree_t</li>
           </ol>
@@ -98,9 +113,11 @@
     </div>
   </div>
   <script>
-    $(function () {
-    $('[data-bs-toggle="tooltip"]').tooltip()
-    })
+    // Enable Bootstrap tooltips
+    (function () {
+      const tooltipTriggerList = document.querySelectorAll('[data-bs-toggle="tooltip"]')
+      const tooltipList = [...tooltipTriggerList].map(tooltipTriggerEl => new bootstrap.Tooltip(tooltipTriggerEl))
+    })();
   </script>
 
   </div>
@@ -117,12 +134,12 @@
       </a>
       <div id="vars-0" class="collapse">
         <div class="list-group list-group-flush">
-            <a class="list-group-item" href="../type/dependency_tree_t.html#variable-cache~2">cache</a>
-            <a class="list-group-item" href="../type/dependency_tree_t.html#variable-dep~2">dep</a>
+            <a class="list-group-item" href="../type/dependency_tree_t.html#variable-cache">cache</a>
+            <a class="list-group-item" href="../type/dependency_tree_t.html#variable-dep">dep</a>
             <a class="list-group-item" href="../type/dependency_tree_t.html#variable-dep_dir">dep_dir</a>
-            <a class="list-group-item" href="../type/dependency_tree_t.html#variable-ndep~2">ndep</a>
-            <a class="list-group-item" href="../type/dependency_tree_t.html#variable-unit~22">unit</a>
-            <a class="list-group-item" href="../type/dependency_tree_t.html#variable-verbosity~15">verbosity</a>
+            <a class="list-group-item" href="../type/dependency_tree_t.html#variable-ndep">ndep</a>
+            <a class="list-group-item" href="../type/dependency_tree_t.html#variable-unit~12">unit</a>
+            <a class="list-group-item" href="../type/dependency_tree_t.html#variable-verbosity~5">verbosity</a>
         </div>
       </div>
     </div>
@@ -150,18 +167,18 @@
       <div id="boundprocs-0" class="collapse">
         <div class="list-group list-group-flush">
             <a class="list-group-item" href="../type/dependency_tree_t.html#boundprocedure-add">add</a>
-            <a class="list-group-item" href="../type/dependency_tree_t.html#boundprocedure-dump~21">dump</a>
+            <a class="list-group-item" href="../type/dependency_tree_t.html#boundprocedure-dump~10">dump</a>
             <a class="list-group-item" href="../type/dependency_tree_t.html#boundprocedure-dump_cache">dump_cache</a>
-            <a class="list-group-item" href="../type/dependency_tree_t.html#boundprocedure-dump_to_toml~17">dump_to_toml</a>
+            <a class="list-group-item" href="../type/dependency_tree_t.html#boundprocedure-dump_to_toml~8">dump_to_toml</a>
             <a class="list-group-item" href="../type/dependency_tree_t.html#boundprocedure-find">find</a>
             <a class="list-group-item" href="../type/dependency_tree_t.html#boundprocedure-finished">finished</a>
             <a class="list-group-item" href="../type/dependency_tree_t.html#boundprocedure-has">has</a>
-            <a class="list-group-item" href="../type/dependency_tree_t.html#boundprocedure-load~19">load</a>
+            <a class="list-group-item" href="../type/dependency_tree_t.html#boundprocedure-load~8">load</a>
             <a class="list-group-item" href="../type/dependency_tree_t.html#boundprocedure-load_cache">load_cache</a>
-            <a class="list-group-item" href="../type/dependency_tree_t.html#boundprocedure-load_from_toml~17">load_from_toml</a>
-            <a class="list-group-item" href="../type/dependency_tree_t.html#boundprocedure-operator%28%3D%3D%29~20">operator(==)</a>
-            <a class="list-group-item" href="../type/dependency_tree_t.html#boundprocedure-resolve~2">resolve</a>
-            <a class="list-group-item" href="../type/dependency_tree_t.html#boundprocedure-serializable_is_same~17">serializable_is_same</a>
+            <a class="list-group-item" href="../type/dependency_tree_t.html#boundprocedure-load_from_toml~8">load_from_toml</a>
+            <a class="list-group-item" href="../type/dependency_tree_t.html#boundprocedure-operator%28%3D%3D%29~9">operator(==)</a>
+            <a class="list-group-item" href="../type/dependency_tree_t.html#boundprocedure-resolve">resolve</a>
+            <a class="list-group-item" href="../type/dependency_tree_t.html#boundprocedure-serializable_is_same~8">serializable_is_same</a>
             <a class="list-group-item" href="../type/dependency_tree_t.html#boundprocedure-test_serialization">test_serialization</a>
             <a class="list-group-item" href="../type/dependency_tree_t.html#boundprocedure-update~2">update</a>
         </div>
@@ -204,7 +221,7 @@ with a binary-search tree or a hash table in the future.</p>
     <tbody>
         <tr>
             <td>
-              <span class="anchor" id="variable-cache~2"></span>
+              <span class="anchor" id="variable-cache"></span>
               character(len=:),
             </td>
               <td>public,</td>
@@ -221,7 +238,7 @@ with a binary-search tree or a hash table in the future.</p>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-dep~2"></span>
+              <span class="anchor" id="variable-dep"></span>
               type(<a href='dependency_node_t.html'>dependency_node_t</a>),
             </td>
               <td>public,</td>
@@ -255,7 +272,7 @@ with a binary-search tree or a hash table in the future.</p>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-ndep~2"></span>
+              <span class="anchor" id="variable-ndep"></span>
               integer,
             </td>
               <td>public</td>
@@ -272,7 +289,7 @@ with a binary-search tree or a hash table in the future.</p>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-unit~22"></span>
+              <span class="anchor" id="variable-unit~12"></span>
               integer,
             </td>
               <td>public</td>
@@ -289,7 +306,7 @@ with a binary-search tree or a hash table in the future.</p>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-verbosity~15"></span>
+              <span class="anchor" id="variable-verbosity~5"></span>
               integer,
             </td>
               <td>public</td>
@@ -324,13 +341,13 @@ with a binary-search tree or a hash table in the future.</p>
         
       </h3>
     </div>
-      <div class="card-body">
-        
-        <p>Overload procedure to add new dependencies to the tree</p>
-      </div>
-    <ul class="list-group">
-        <li class="list-group-item">
-                  <h3>
+        <div class="card-body">
+          
+          <p>Overload procedure to add new dependencies to the tree</p>
+        </div>
+      <ul class="list-group">
+          <li class="list-group-item">
+                    <h3>
     private  subroutine add_project(self, package, error)  
 </h3>
 
@@ -398,9 +415,9 @@ as a choice of design.</p>
   </table>
 
 
-        </li>
-        <li class="list-group-item">
-                  <h3>
+          </li>
+          <li class="list-group-item">
+                    <h3>
     private recursive subroutine add_project_dependencies(self, package, root, main, error)  
 </h3>
 
@@ -497,9 +514,9 @@ Ensure allocation fits</p>
   </table>
 
 
-        </li>
-        <li class="list-group-item">
-                  <h3>
+          </li>
+          <li class="list-group-item">
+                    <h3>
     private  subroutine add_dependencies(self, dependency, error)  
 </h3>
 
@@ -566,9 +583,9 @@ Ensure allocation fits ndep</p>
   </table>
 
 
-        </li>
-        <li class="list-group-item">
-                  <h3>
+          </li>
+          <li class="list-group-item">
+                    <h3>
     private  subroutine add_dependency(self, dependency, error)  
 </h3>
 
@@ -634,9 +651,9 @@ Ensure allocation fits ndep</p>
   </table>
 
 
-        </li>
-        <li class="list-group-item">
-                  <h3>
+          </li>
+          <li class="list-group-item">
+                    <h3>
     private  subroutine add_dependency_node(self, dependency, error)  
 </h3>
 
@@ -704,24 +721,24 @@ Safety: reallocate if necessary</p>
   </table>
 
 
-        </li>
-    </ul>
+          </li>
+      </ul>
   </div>
 
           </div>
           <div class="row">
               <div class="card mt-3">
     <div class="card-header codesum">
-      <span class="anchor" id="boundprocedure-dump~21"></span>
+      <span class="anchor" id="boundprocedure-dump~10"></span>
       <h3>
           generic, public ::
-  <strong>dump</strong> => <a href='/home/runner/work/fpm/fpm/fpm-doc/type/srcfile_t.html#boundprocedure-dump_to_toml~6'>dump_to_toml</a>, dump_to_file, dump_to_unit
+  <strong>dump</strong> => <a href='/home/runner/work/fpm/fpm/fpm-doc/type/srcfile_t.html#boundprocedure-dump_to_toml~12'>dump_to_toml</a>, dump_to_file, dump_to_unit
         
       </h3>
     </div>
-    <ul class="list-group">
-        <li class="list-group-item">
-                  <h3>
+      <ul class="list-group">
+          <li class="list-group-item">
+                    <h3>
     private  subroutine srcfile_dump_to_toml(self, table, error)  
 </h3>
 
@@ -787,9 +804,9 @@ Safety: reallocate if necessary</p>
   </table>
 
 
-        </li>
-        <li class="list-group-item">
-                  <h3>
+          </li>
+          <li class="list-group-item">
+                    <h3>
     private  subroutine dump_to_file(self, file, error, json)  
 </h3>
 
@@ -870,9 +887,9 @@ Safety: reallocate if necessary</p>
   </table>
 
 
-        </li>
-        <li class="list-group-item">
-                  <h3>
+          </li>
+          <li class="list-group-item">
+                    <h3>
     private  subroutine dump_to_unit(self, unit, error, json)  
 </h3>
 
@@ -953,8 +970,8 @@ Safety: reallocate if necessary</p>
   </table>
 
 
-        </li>
-    </ul>
+          </li>
+      </ul>
   </div>
 
           </div>
@@ -968,13 +985,13 @@ Safety: reallocate if necessary</p>
         
       </h3>
     </div>
-      <div class="card-body">
-        
-        <p>Writing of dependency tree</p>
-      </div>
-    <ul class="list-group">
-        <li class="list-group-item">
-                  <h3>
+        <div class="card-body">
+          
+          <p>Writing of dependency tree</p>
+        </div>
+      <ul class="list-group">
+          <li class="list-group-item">
+                    <h3>
     private  subroutine dump_cache_to_file(self, file, error)  
 </h3>
 
@@ -1040,9 +1057,9 @@ Safety: reallocate if necessary</p>
   </table>
 
 
-        </li>
-        <li class="list-group-item">
-                  <h3>
+          </li>
+          <li class="list-group-item">
+                    <h3>
     private  subroutine dump_cache_to_unit(self, unit, error)  
 </h3>
 
@@ -1108,9 +1125,9 @@ Safety: reallocate if necessary</p>
   </table>
 
 
-        </li>
-        <li class="list-group-item">
-                  <h3>
+          </li>
+          <li class="list-group-item">
+                    <h3>
     private  subroutine dump_cache_to_toml(self, table, error)  
 </h3>
 
@@ -1176,24 +1193,24 @@ Safety: reallocate if necessary</p>
   </table>
 
 
-        </li>
-    </ul>
+          </li>
+      </ul>
   </div>
 
           </div>
           <div class="row">
               <div class="card mt-3">
     <div class="card-header codesum">
-      <span class="anchor" id="boundprocedure-dump_to_toml~17"></span>
+      <span class="anchor" id="boundprocedure-dump_to_toml~8"></span>
       <h3>
           procedure, public ::
   <strong>dump_to_toml</strong> => tree_dump_to_toml
         
       </h3>
     </div>
-    <ul class="list-group">
-        <li class="list-group-item">
-                  <h3>
+      <ul class="list-group">
+          <li class="list-group-item">
+                    <h3>
     private  subroutine tree_dump_to_toml(self, table, error)  
 </h3>
 
@@ -1261,8 +1278,8 @@ So, serialization will work regardless of size(self%dep) == self%ndep</p>
   </table>
 
 
-        </li>
-    </ul>
+          </li>
+      </ul>
   </div>
 
           </div>
@@ -1276,13 +1293,13 @@ So, serialization will work regardless of size(self%dep) == self%ndep</p>
         
       </h3>
     </div>
-      <div class="card-body">
-        
-        <p>Find a dependency in the tree</p>
-      </div>
-    <ul class="list-group">
-        <li class="list-group-item">
-                  <h3>
+        <div class="card-body">
+          
+          <p>Find a dependency in the tree</p>
+        </div>
+      <ul class="list-group">
+          <li class="list-group-item">
+                    <h3>
     private pure function find_name(self, name) result(pos)  
 </h3>
 
@@ -1338,8 +1355,8 @@ So, serialization will work regardless of size(self%dep) == self%ndep</p>
     </h4>
     <p>Index of the dependency</p>
 
-        </li>
-    </ul>
+          </li>
+      </ul>
   </div>
 
           </div>
@@ -1353,13 +1370,13 @@ So, serialization will work regardless of size(self%dep) == self%ndep</p>
         
       </h3>
     </div>
-      <div class="card-body">
-        
-        <p>Depedendncy resolution finished</p>
-      </div>
-    <ul class="list-group">
-        <li class="list-group-item">
-                  <h3>
+        <div class="card-body">
+          
+          <p>Depedendncy resolution finished</p>
+        </div>
+      <ul class="list-group">
+          <li class="list-group-item">
+                    <h3>
     private pure function finished(self)  
 </h3>
 
@@ -1400,8 +1417,8 @@ So, serialization will work regardless of size(self%dep) == self%ndep</p>
     </h4>
     <p>All dependencies are updated</p>
 
-        </li>
-    </ul>
+          </li>
+      </ul>
   </div>
 
           </div>
@@ -1415,13 +1432,13 @@ So, serialization will work regardless of size(self%dep) == self%ndep</p>
         
       </h3>
     </div>
-      <div class="card-body">
-        
-        <p>True if entity can be found</p>
-      </div>
-    <ul class="list-group">
-        <li class="list-group-item">
-                  <h3>
+        <div class="card-body">
+          
+          <p>True if entity can be found</p>
+        </div>
+      <ul class="list-group">
+          <li class="list-group-item">
+                    <h3>
     private pure function has_dependency(self, dependency)  
 </h3>
 
@@ -1477,24 +1494,24 @@ So, serialization will work regardless of size(self%dep) == self%ndep</p>
     </h4>
     
 
-        </li>
-    </ul>
+          </li>
+      </ul>
   </div>
 
           </div>
           <div class="row">
               <div class="card mt-3">
     <div class="card-header codesum">
-      <span class="anchor" id="boundprocedure-load~19"></span>
+      <span class="anchor" id="boundprocedure-load~8"></span>
       <h3>
           generic, public ::
-  <strong>load</strong> => <a href='/home/runner/work/fpm/fpm/fpm-doc/type/srcfile_t.html#boundprocedure-load_from_toml~6'>load_from_toml</a>, load_from_file, load_from_unit
+  <strong>load</strong> => <a href='/home/runner/work/fpm/fpm/fpm-doc/type/srcfile_t.html#boundprocedure-load_from_toml~12'>load_from_toml</a>, load_from_file, load_from_unit
         
       </h3>
     </div>
-    <ul class="list-group">
-        <li class="list-group-item">
-                  <h3>
+      <ul class="list-group">
+          <li class="list-group-item">
+                    <h3>
     private  subroutine srcfile_load_from_toml(self, table, error)  
 </h3>
 
@@ -1560,9 +1577,9 @@ So, serialization will work regardless of size(self%dep) == self%ndep</p>
   </table>
 
 
-        </li>
-        <li class="list-group-item">
-                  <h3>
+          </li>
+          <li class="list-group-item">
+                    <h3>
     private  subroutine load_from_file(self, file, error, json)  
 </h3>
 
@@ -1643,9 +1660,9 @@ So, serialization will work regardless of size(self%dep) == self%ndep</p>
   </table>
 
 
-        </li>
-        <li class="list-group-item">
-                  <h3>
+          </li>
+          <li class="list-group-item">
+                    <h3>
     private  subroutine load_from_unit(self, unit, error, json)  
 </h3>
 
@@ -1730,8 +1747,8 @@ Read object from TOML table</p>
   </table>
 
 
-        </li>
-    </ul>
+          </li>
+      </ul>
   </div>
 
           </div>
@@ -1745,13 +1762,13 @@ Read object from TOML table</p>
         
       </h3>
     </div>
-      <div class="card-body">
-        
-        <p>Reading of dependency tree</p>
-      </div>
-    <ul class="list-group">
-        <li class="list-group-item">
-                  <h3>
+        <div class="card-body">
+          
+          <p>Reading of dependency tree</p>
+        </div>
+      <ul class="list-group">
+          <li class="list-group-item">
+                    <h3>
     private  subroutine load_cache_from_file(self, file, error)  
 </h3>
 
@@ -1817,9 +1834,9 @@ Read object from TOML table</p>
   </table>
 
 
-        </li>
-        <li class="list-group-item">
-                  <h3>
+          </li>
+          <li class="list-group-item">
+                    <h3>
     private  subroutine load_cache_from_unit(self, unit, error)  
 </h3>
 
@@ -1885,9 +1902,9 @@ Read object from TOML table</p>
   </table>
 
 
-        </li>
-        <li class="list-group-item">
-                  <h3>
+          </li>
+          <li class="list-group-item">
+                    <h3>
     private  subroutine load_cache_from_toml(self, table, error)  
 </h3>
 
@@ -1953,24 +1970,24 @@ Read object from TOML table</p>
   </table>
 
 
-        </li>
-    </ul>
+          </li>
+      </ul>
   </div>
 
           </div>
           <div class="row">
               <div class="card mt-3">
     <div class="card-header codesum">
-      <span class="anchor" id="boundprocedure-load_from_toml~17"></span>
+      <span class="anchor" id="boundprocedure-load_from_toml~8"></span>
       <h3>
           procedure, public ::
   <strong>load_from_toml</strong> => tree_load_from_toml
         
       </h3>
     </div>
-    <ul class="list-group">
-        <li class="list-group-item">
-                  <h3>
+      <ul class="list-group">
+          <li class="list-group-item">
+                    <h3>
     private  subroutine tree_load_from_toml(self, table, error)  
 </h3>
 
@@ -2037,24 +2054,24 @@ Read object from TOML table</p>
   </table>
 
 
-        </li>
-    </ul>
+          </li>
+      </ul>
   </div>
 
           </div>
           <div class="row">
               <div class="card mt-3">
     <div class="card-header codesum">
-      <span class="anchor" id="boundprocedure-operator%28%3D%3D%29~20"></span>
+      <span class="anchor" id="boundprocedure-operator%28%3D%3D%29~9"></span>
       <h3>
           generic, public ::
-  <strong>operator(==)</strong> => <a href='/home/runner/work/fpm/fpm/fpm-doc/type/srcfile_t.html#boundprocedure-serializable_is_same~6'>serializable_is_same</a>
+  <strong>operator(==)</strong> => <a href='/home/runner/work/fpm/fpm/fpm-doc/type/srcfile_t.html#boundprocedure-serializable_is_same~12'>serializable_is_same</a>
         
       </h3>
     </div>
-    <ul class="list-group">
-        <li class="list-group-item">
-                  <h3>
+      <ul class="list-group">
+          <li class="list-group-item">
+                    <h3>
     private  function srcfile_is_same(this, that)  
 </h3>
 
@@ -2111,28 +2128,28 @@ All checks passed!</p>
     </h4>
     
 
-        </li>
-    </ul>
+          </li>
+      </ul>
   </div>
 
           </div>
           <div class="row">
               <div class="card mt-3">
     <div class="card-header codesum">
-      <span class="anchor" id="boundprocedure-resolve~2"></span>
+      <span class="anchor" id="boundprocedure-resolve"></span>
       <h3>
           generic, public ::
   <strong>resolve</strong> => resolve_dependencies, resolve_dependency
         
       </h3>
     </div>
-      <div class="card-body">
-        
-        <p>Resolve dependencies</p>
-      </div>
-    <ul class="list-group">
-        <li class="list-group-item">
-                  <h3>
+        <div class="card-body">
+          
+          <p>Resolve dependencies</p>
+        </div>
+      <ul class="list-group">
+          <li class="list-group-item">
+                    <h3>
     private  subroutine resolve_dependencies(self, root, error)  
 </h3>
 
@@ -2198,9 +2215,9 @@ All checks passed!</p>
   </table>
 
 
-        </li>
-        <li class="list-group-item">
-                  <h3>
+          </li>
+          <li class="list-group-item">
+                    <h3>
     private  subroutine resolve_dependency(self, dependency, global_settings, root, error)  
 </h3>
 
@@ -2296,28 +2313,28 @@ All checks passed!</p>
   </table>
 
 
-        </li>
-    </ul>
+          </li>
+      </ul>
   </div>
 
           </div>
           <div class="row">
               <div class="card mt-3">
     <div class="card-header codesum">
-      <span class="anchor" id="boundprocedure-serializable_is_same~17"></span>
+      <span class="anchor" id="boundprocedure-serializable_is_same~8"></span>
       <h3>
           procedure, public ::
   <strong>serializable_is_same</strong> => dependency_tree_is_same
         
       </h3>
     </div>
-      <div class="card-body">
-        
-        <p>Serialization interface</p>
-      </div>
-    <ul class="list-group">
-        <li class="list-group-item">
-                  <h3>
+        <div class="card-body">
+          
+          <p>Serialization interface</p>
+        </div>
+      <ul class="list-group">
+          <li class="list-group-item">
+                    <h3>
     private  function dependency_tree_is_same(this, that)  
 </h3>
 
@@ -2374,8 +2391,8 @@ All checks passed!</p>
     </h4>
     
 
-        </li>
-    </ul>
+          </li>
+      </ul>
   </div>
 
           </div>
@@ -2389,13 +2406,13 @@ All checks passed!</p>
         
       </h3>
     </div>
-      <div class="card-body">
-        
-        <p>Test load/write roundtrip</p>
-      </div>
-    <ul class="list-group">
-        <li class="list-group-item">
-                  <h3>
+        <div class="card-body">
+          
+          <p>Test load/write roundtrip</p>
+        </div>
+      <ul class="list-group">
+          <li class="list-group-item">
+                    <h3>
     private  subroutine test_serialization(self, message, error)  
 </h3>
 
@@ -2464,8 +2481,8 @@ Check same</p>
   </table>
 
 
-        </li>
-    </ul>
+          </li>
+      </ul>
   </div>
 
           </div>
@@ -2479,13 +2496,13 @@ Check same</p>
         
       </h3>
     </div>
-      <div class="card-body">
-        
-        <p>Update dependency tree</p>
-      </div>
-    <ul class="list-group">
-        <li class="list-group-item">
-                  <h3>
+        <div class="card-body">
+          
+          <p>Update dependency tree</p>
+        </div>
+      <ul class="list-group">
+          <li class="list-group-item">
+                    <h3>
     private  subroutine update_dependency(self, name, error)  
 </h3>
 
@@ -2551,9 +2568,9 @@ Check same</p>
   </table>
 
 
-        </li>
-        <li class="list-group-item">
-                  <h3>
+          </li>
+          <li class="list-group-item">
+                    <h3>
     private  subroutine update_tree(self, error)  
 </h3>
 
@@ -2604,8 +2621,8 @@ Check same</p>
   </table>
 
 
-        </li>
-    </ul>
+          </li>
+      </ul>
   </div>
 
           </div>
@@ -2709,33 +2726,11 @@ Check same</p>
             <p class="text-end">
               Documentation generated by
               <a href="https://github.com/Fortran-FOSS-Programmers/ford">FORD</a>
- on 2025-03-23 12:59 +0000             </p>
+ on 2025-04-06 17:37 +0000             </p>
           </div>
         </div>
         <br>
       </div> <!-- /container -->
     </footer>
-
-    <!-- Bootstrap core JavaScript -->
-    <!-- Placed at the end of the document so the pages load faster -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"
-            integrity="sha384-ka7Sk0Gln4gmtz2MlQnikT1wXgYsOg+OMhuP+IlRH9sENBO0LRn5q+8nbTov4+1p" crossorigin="anonymous"></script>    
-
-    <!-- MathJax JavaScript
-             ================================================== -->
-             <!-- Placed at the end of the document so the pages load faster -->
-        <script type="text/x-mathjax-config">
-          MathJax.Hub.Config({
-          TeX: { extensions: ['AMSmath.js','AMSsymbols.js','noErrors.js','noUndefined.js'], equationNumbers: { autoNumber: 'AMS' } },
-          jax: ['input/TeX','input/MathML','output/HTML-CSS'],
-          extensions: ['tex2jax.js','mml2jax.js','MathMenu.js','MathZoom.js']
-          });
-        </script>
-        <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
-
-          <script src="../tipuesearch/tipuesearch_content.js"></script>
-          <script src="../tipuesearch/tipuesearch_set.js"></script>
-          <script src="../tipuesearch/tipuesearch.js"></script>
-
   </body>
 </html>

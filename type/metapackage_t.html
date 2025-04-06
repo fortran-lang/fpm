@@ -12,14 +12,29 @@
 
     <title>metapackage_t &ndash; Fortran-lang/fpm </title>
 
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet"
-          integrity="sha384-1BmE4kWBq78iYhFldvKuhfTAU6auU8tT94WrHftjDbrCEXSU1oBoqyl2QvZ6jIW3" crossorigin="anonymous">
-    <link href="../css/pygments.css" rel="stylesheet">
-    <link href="../css/font-awesome.min.css" rel="stylesheet">
+    <!-- Bootstrap -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet"
+          integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
+            integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
+    <!-- Font Awesome -->
+    <link href="../css/fontawesome.min.css" rel="stylesheet">
+    <link href="../css/brands.min.css" rel="stylesheet">
+    <link href="../css/regular.min.css" rel="stylesheet">
+    <link href="../css/solid.min.css" rel="stylesheet">
+    <link href="../css/v4-font-face.min.css" rel="stylesheet">
+    <link href="../css/v4-shims.min.css" rel="stylesheet">
+    <!-- MathJax -->
+    <script type="text/x-mathjax-config">
+      MathJax.Hub.Config({
+        TeX: { equationNumbers: { autoNumber: "AMS" } }
+      });
+    </script>
+    <script src="https://cdn.jsdelivr.net/npm/mathjax@2.7.9/MathJax.js?config=TeX-AMS-MML_HTMLorMML" async
+            integrity="sha256-DViIOMYdwlM/axqoGDPeUyf0urLoHMN4QACBKyB58Uw=" crossorigin="anonymous"></script>
+    <!-- Other scripts and stylesheets -->
     <link href="../css/local.css" rel="stylesheet">
-      <link  href="../tipuesearch/tipuesearch.css" rel="stylesheet">
-
-    <script src="https://code.jquery.com/jquery-3.7.1.min.js" integrity="sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo=" crossorigin="anonymous"></script>
+    <link href="../css/pygments.css" rel="stylesheet">
     <script src="../js/svg-pan-zoom.min.js"></script>
   </head>
 
@@ -77,20 +92,20 @@
 
             <li class="list-inline-item" id="statements"><i class="fa fa-list-ol"></i>
               <a data-bs-toggle="tooltip" data-bs-placement="bottom" data-bs-html="true"
-                 title="<p> 5.7% of total for derived types.</p>Including implementation: 145 statements,  2.9% of total for derived types.">31 statements</a>
+                 title="<p> 5.5% of total for derived types.</p>Including implementation: 116 statements,  2.4% of total for derived types.">30 statements</a>
             </li>
 
             <li class="list-inline-item" id="source-file">
               <i class="fa fa-code"></i>
-              <a href="../src/fpm_meta.f90"> Source File</a>
+              <a href="../src/fpm_meta_base.f90"> Source File</a>
             </li>
         </ul>
       </div>
       <div class="col">
         <nav aria-label="breadcrumb">
           <ol class="breadcrumb justify-content-end mb-0">
-                <li class="breadcrumb-item"><a href='../sourcefile/fpm_meta.f90.html'>fpm_meta.f90</a></li>
-                <li class="breadcrumb-item"><a href='../module/fpm_meta.html'>fpm_meta</a></li>
+                <li class="breadcrumb-item"><a href='../sourcefile/fpm_meta_base.f90.html'>fpm_meta_base.f90</a></li>
+                <li class="breadcrumb-item"><a href='../module/fpm_meta_base.html'>fpm_meta_base</a></li>
             <li class="breadcrumb-item active" aria-current="page">metapackage_t</li>
           </ol>
         </nav>
@@ -98,9 +113,11 @@
     </div>
   </div>
   <script>
-    $(function () {
-    $('[data-bs-toggle="tooltip"]').tooltip()
-    })
+    // Enable Bootstrap tooltips
+    (function () {
+      const tooltipTriggerList = document.querySelectorAll('[data-bs-toggle="tooltip"]')
+      const tooltipList = [...tooltipTriggerList].map(tooltipTriggerEl => new bootstrap.Tooltip(tooltipTriggerEl))
+    })();
   </script>
 
   </div>
@@ -117,12 +134,12 @@
       </a>
       <div id="vars-0" class="collapse">
         <div class="list-group list-group-flush">
-            <a class="list-group-item" href="../type/metapackage_t.html#variable-cflags">cflags</a>
-            <a class="list-group-item" href="../type/metapackage_t.html#variable-cxxflags">cxxflags</a>
-            <a class="list-group-item" href="../type/metapackage_t.html#variable-dependency~2">dependency</a>
-            <a class="list-group-item" href="../type/metapackage_t.html#variable-external_modules">external_modules</a>
+            <a class="list-group-item" href="../type/metapackage_t.html#variable-cflags~2">cflags</a>
+            <a class="list-group-item" href="../type/metapackage_t.html#variable-cxxflags~2">cxxflags</a>
+            <a class="list-group-item" href="../type/metapackage_t.html#variable-dependency~11">dependency</a>
+            <a class="list-group-item" href="../type/metapackage_t.html#variable-external_modules~3">external_modules</a>
             <a class="list-group-item" href="../type/metapackage_t.html#variable-fflags">fflags</a>
-            <a class="list-group-item" href="../type/metapackage_t.html#variable-flags">flags</a>
+            <a class="list-group-item" href="../type/metapackage_t.html#variable-flags~18">flags</a>
             <a class="list-group-item" href="../type/metapackage_t.html#variable-fortran~2">fortran</a>
             <a class="list-group-item" href="../type/metapackage_t.html#variable-has_build_flags">has_build_flags</a>
             <a class="list-group-item" href="../type/metapackage_t.html#variable-has_c_flags">has_c_flags</a>
@@ -135,10 +152,10 @@
             <a class="list-group-item" href="../type/metapackage_t.html#variable-has_link_libraries">has_link_libraries</a>
             <a class="list-group-item" href="../type/metapackage_t.html#variable-has_run_command">has_run_command</a>
             <a class="list-group-item" href="../type/metapackage_t.html#variable-incl_dirs">incl_dirs</a>
-            <a class="list-group-item" href="../type/metapackage_t.html#variable-link_flags">link_flags</a>
+            <a class="list-group-item" href="../type/metapackage_t.html#variable-link_flags~2">link_flags</a>
             <a class="list-group-item" href="../type/metapackage_t.html#variable-link_libs">link_libs</a>
             <a class="list-group-item" href="../type/metapackage_t.html#variable-run_command">run_command</a>
-            <a class="list-group-item" href="../type/metapackage_t.html#variable-version~3">version</a>
+            <a class="list-group-item" href="../type/metapackage_t.html#variable-version~18">version</a>
         </div>
       </div>
     </div>
@@ -166,8 +183,7 @@
       <div id="boundprocs-0" class="collapse">
         <div class="list-group list-group-flush">
             <a class="list-group-item" href="../type/metapackage_t.html#boundprocedure-destroy~2">destroy</a>
-            <a class="list-group-item" href="../type/metapackage_t.html#boundprocedure-new">new</a>
-            <a class="list-group-item" href="../type/metapackage_t.html#boundprocedure-resolve">resolve</a>
+            <a class="list-group-item" href="../type/metapackage_t.html#boundprocedure-resolve~2">resolve</a>
         </div>
       </div>
     </div>
@@ -206,7 +222,7 @@
     <tbody>
         <tr>
             <td>
-              <span class="anchor" id="variable-cflags"></span>
+              <span class="anchor" id="variable-cflags~2"></span>
               type(<a href='string_t.html'>string_t</a>),
             </td>
               <td>public</td>
@@ -223,7 +239,7 @@
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-cxxflags"></span>
+              <span class="anchor" id="variable-cxxflags~2"></span>
               type(<a href='string_t.html'>string_t</a>),
             </td>
               <td>public</td>
@@ -240,7 +256,7 @@
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-dependency~2"></span>
+              <span class="anchor" id="variable-dependency~11"></span>
               type(<a href='dependency_config_t.html'>dependency_config_t</a>),
             </td>
               <td>public,</td>
@@ -258,7 +274,7 @@ Metapackage dependencies are never exported from the model</p>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-external_modules"></span>
+              <span class="anchor" id="variable-external_modules~3"></span>
               type(<a href='string_t.html'>string_t</a>),
             </td>
               <td>public,</td>
@@ -292,7 +308,7 @@ Metapackage dependencies are never exported from the model</p>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-flags"></span>
+              <span class="anchor" id="variable-flags~18"></span>
               type(<a href='string_t.html'>string_t</a>),
             </td>
               <td>public</td>
@@ -513,7 +529,7 @@ Metapackage dependencies are never exported from the model</p>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-link_flags"></span>
+              <span class="anchor" id="variable-link_flags~2"></span>
               type(<a href='string_t.html'>string_t</a>),
             </td>
               <td>public</td>
@@ -564,7 +580,7 @@ Metapackage dependencies are never exported from the model</p>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-version~3"></span>
+              <span class="anchor" id="variable-version~18"></span>
               type(<a href='version_t.html'>version_t</a>),
             </td>
               <td>public,</td>
@@ -599,17 +615,18 @@ Metapackage dependencies are never exported from the model</p>
         
       </h3>
     </div>
-      <div class="card-body">
-        
-        <p>Clean metapackage structure</p>
-      </div>
-    <ul class="list-group">
-        <li class="list-group-item">
-                  <h3>
-    private elemental subroutine destroy(this)  
+        <div class="card-body">
+          
+          <p>Clean metapackage structure</p>
+        </div>
+      <ul class="list-group">
+          <li class="list-group-item">
+                    <h3>
+    public elemental subroutine <a href='../proc/destroy~2.html'>destroy</a>(this)  
 </h3>
+    
 
-  <p>Clean the metapackage structure</p>
+  
 
   <h4>Arguments</h4>
       <table class="table table-striped varlist">
@@ -634,138 +651,35 @@ Metapackage dependencies are never exported from the model</p>
             <td>::</td>
             <td><strong>this</strong></td>
             <td>
-                
+
             </td>
         </tr>
     </tbody>
   </table>
 
 
-        </li>
-    </ul>
+          </li>
+      </ul>
   </div>
 
           </div>
           <div class="row">
               <div class="card mt-3">
     <div class="card-header codesum">
-      <span class="anchor" id="boundprocedure-new"></span>
-      <h3>
-          procedure, public ::
-  <strong>new</strong> => init_from_name
-        
-      </h3>
-    </div>
-      <div class="card-body">
-        
-        <p>Initialize the metapackage structure from its given name</p>
-      </div>
-    <ul class="list-group">
-        <li class="list-group-item">
-                  <h3>
-    private  subroutine init_from_name(this, name, compiler, error)  
-</h3>
-
-  <p>Initialize a metapackage from the given name
-Initialize metapackage by name</p>
-
-  <h4>Arguments</h4>
-      <table class="table table-striped varlist">
-    <thead>
-      <tr>
-        <th scope="col">Type</th>
-<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
-        <th scope="col"></th>
-        <th scope="col">Name</th>
-        <th scope="col"></th>
-    </thead>
-    <tbody>
-        <tr>
-            <td>
-              <span class="anchor" ></span>
-              class(<a href='metapackage_t.html'>metapackage_t</a>),
-            </td>
-<td>intent(inout)</td>
-              <td></td>            <td>
-              
-            </td>
-            <td>::</td>
-            <td><strong>this</strong></td>
-            <td>
-                
-            </td>
-        </tr>
-        <tr>
-            <td>
-              <span class="anchor" ></span>
-              character(len=*),
-            </td>
-<td>intent(in)</td>
-              <td></td>            <td>
-              
-            </td>
-            <td>::</td>
-            <td><strong>name</strong></td>
-            <td>
-                
-            </td>
-        </tr>
-        <tr>
-            <td>
-              <span class="anchor" ></span>
-              type(<a href='compiler_t.html'>compiler_t</a>),
-            </td>
-<td>intent(in)</td>
-              <td></td>            <td>
-              
-            </td>
-            <td>::</td>
-            <td><strong>compiler</strong></td>
-            <td>
-                
-            </td>
-        </tr>
-        <tr>
-            <td>
-              <span class="anchor" ></span>
-              type(<a href='error_t.html'>error_t</a>),
-            </td>
-<td>intent(out),</td>
-              <td></td>            <td>
-              allocatable
-            </td>
-            <td>::</td>
-            <td><strong>error</strong></td>
-            <td>
-                
-            </td>
-        </tr>
-    </tbody>
-  </table>
-
-
-        </li>
-    </ul>
-  </div>
-
-          </div>
-          <div class="row">
-              <div class="card mt-3">
-    <div class="card-header codesum">
-      <span class="anchor" id="boundprocedure-resolve"></span>
+      <span class="anchor" id="boundprocedure-resolve~2"></span>
       <h3>
           generic, public ::
   <strong>resolve</strong> => resolve_cmd, resolve_model, resolve_package_config
         
       </h3>
     </div>
-    <ul class="list-group">
-        <li class="list-group-item">
-                  <h3>
+      <ul class="list-group">
+          <li class="list-group-item">
+                    <h3>
     private  subroutine resolve_cmd(self, settings, error)  
 </h3>
 
-  
+  <p>Resolve metapackage dependencies into the command line settings</p>
 
   <h4>Arguments</h4>
       <table class="table table-striped varlist">
@@ -827,13 +741,13 @@ Initialize metapackage by name</p>
   </table>
 
 
-        </li>
-        <li class="list-group-item">
-                  <h3>
+          </li>
+          <li class="list-group-item">
+                    <h3>
     private  subroutine resolve_model(self, model, error)  
 </h3>
 
-  
+  <p>Resolve metapackage dependencies into the model</p>
 
   <h4>Arguments</h4>
       <table class="table table-striped varlist">
@@ -895,9 +809,9 @@ Initialize metapackage by name</p>
   </table>
 
 
-        </li>
-        <li class="list-group-item">
-                  <h3>
+          </li>
+          <li class="list-group-item">
+                    <h3>
     private  subroutine resolve_package_config(self, package, error)  
 </h3>
 
@@ -963,8 +877,8 @@ Initialize metapackage by name</p>
   </table>
 
 
-        </li>
-    </ul>
+          </li>
+      </ul>
   </div>
 
           </div>
@@ -972,55 +886,52 @@ Initialize metapackage by name</p>
 
     <section>
     <h3><span class="anchor" id="src"></span>Source Code</h3>
-    <div class="hl codehilite"><pre><span></span><span class="k">type</span><span class="p">,</span><span class="w"> </span><span class="k">public</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">metapackage_t</span>
+    <div class="hl codehilite"><pre><span></span><span class="w">    </span><span class="k">type</span><span class="p">,</span><span class="w"> </span><span class="k">public</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">metapackage_t</span>
 
 <span class="w">    </span><span class="c">!&gt; Package version (if supported)</span>
 <span class="w">    </span><span class="k">type</span><span class="p">(</span><span class="n">version_t</span><span class="p">),</span><span class="w"> </span><span class="k">allocatable</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">version</span>
 
-<span class="w">    </span><span class="kt">logical</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">has_link_libraries</span><span class="w">   </span><span class="o">=</span><span class="w"> </span><span class="p">.</span><span class="n">false</span><span class="p">.</span>
-<span class="w">    </span><span class="kt">logical</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">has_link_flags</span><span class="w">       </span><span class="o">=</span><span class="w"> </span><span class="p">.</span><span class="n">false</span><span class="p">.</span>
-<span class="w">    </span><span class="kt">logical</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">has_build_flags</span><span class="w">      </span><span class="o">=</span><span class="w"> </span><span class="p">.</span><span class="n">false</span><span class="p">.</span>
-<span class="w">    </span><span class="kt">logical</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">has_fortran_flags</span><span class="w">    </span><span class="o">=</span><span class="w"> </span><span class="p">.</span><span class="n">false</span><span class="p">.</span>
-<span class="w">    </span><span class="kt">logical</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">has_c_flags</span><span class="w">          </span><span class="o">=</span><span class="w"> </span><span class="p">.</span><span class="n">false</span><span class="p">.</span>
-<span class="w">    </span><span class="kt">logical</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">has_cxx_flags</span><span class="w">        </span><span class="o">=</span><span class="w"> </span><span class="p">.</span><span class="n">false</span><span class="p">.</span>
-<span class="w">    </span><span class="kt">logical</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">has_include_dirs</span><span class="w">     </span><span class="o">=</span><span class="w"> </span><span class="p">.</span><span class="n">false</span><span class="p">.</span>
-<span class="w">    </span><span class="kt">logical</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">has_dependencies</span><span class="w">     </span><span class="o">=</span><span class="w"> </span><span class="p">.</span><span class="n">false</span><span class="p">.</span>
-<span class="w">    </span><span class="kt">logical</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">has_run_command</span><span class="w">      </span><span class="o">=</span><span class="w"> </span><span class="p">.</span><span class="n">false</span><span class="p">.</span>
-<span class="w">    </span><span class="kt">logical</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">has_external_modules</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">.</span><span class="n">false</span><span class="p">.</span>
+<span class="w">        </span><span class="kt">logical</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">has_link_libraries</span><span class="w">   </span><span class="o">=</span><span class="w"> </span><span class="p">.</span><span class="n">false</span><span class="p">.</span>
+<span class="w">        </span><span class="kt">logical</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">has_link_flags</span><span class="w">       </span><span class="o">=</span><span class="w"> </span><span class="p">.</span><span class="n">false</span><span class="p">.</span>
+<span class="w">        </span><span class="kt">logical</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">has_build_flags</span><span class="w">      </span><span class="o">=</span><span class="w"> </span><span class="p">.</span><span class="n">false</span><span class="p">.</span>
+<span class="w">        </span><span class="kt">logical</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">has_fortran_flags</span><span class="w">    </span><span class="o">=</span><span class="w"> </span><span class="p">.</span><span class="n">false</span><span class="p">.</span>
+<span class="w">        </span><span class="kt">logical</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">has_c_flags</span><span class="w">          </span><span class="o">=</span><span class="w"> </span><span class="p">.</span><span class="n">false</span><span class="p">.</span>
+<span class="w">        </span><span class="kt">logical</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">has_cxx_flags</span><span class="w">        </span><span class="o">=</span><span class="w"> </span><span class="p">.</span><span class="n">false</span><span class="p">.</span>
+<span class="w">        </span><span class="kt">logical</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">has_include_dirs</span><span class="w">     </span><span class="o">=</span><span class="w"> </span><span class="p">.</span><span class="n">false</span><span class="p">.</span>
+<span class="w">        </span><span class="kt">logical</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">has_dependencies</span><span class="w">     </span><span class="o">=</span><span class="w"> </span><span class="p">.</span><span class="n">false</span><span class="p">.</span>
+<span class="w">        </span><span class="kt">logical</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">has_run_command</span><span class="w">      </span><span class="o">=</span><span class="w"> </span><span class="p">.</span><span class="n">false</span><span class="p">.</span>
+<span class="w">        </span><span class="kt">logical</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">has_external_modules</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">.</span><span class="n">false</span><span class="p">.</span>
 
-<span class="w">    </span><span class="c">!&gt; List of compiler flags and options to be added</span>
-<span class="w">    </span><span class="k">type</span><span class="p">(</span><span class="n">string_t</span><span class="p">)</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">flags</span>
-<span class="w">    </span><span class="k">type</span><span class="p">(</span><span class="n">string_t</span><span class="p">)</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">fflags</span>
-<span class="w">    </span><span class="k">type</span><span class="p">(</span><span class="n">string_t</span><span class="p">)</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">cflags</span>
-<span class="w">    </span><span class="k">type</span><span class="p">(</span><span class="n">string_t</span><span class="p">)</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">cxxflags</span>
-<span class="w">    </span><span class="k">type</span><span class="p">(</span><span class="n">string_t</span><span class="p">)</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">link_flags</span>
-<span class="w">    </span><span class="k">type</span><span class="p">(</span><span class="n">string_t</span><span class="p">)</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">run_command</span>
-<span class="w">    </span><span class="k">type</span><span class="p">(</span><span class="n">string_t</span><span class="p">),</span><span class="w"> </span><span class="k">allocatable</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">incl_dirs</span><span class="p">(:)</span>
-<span class="w">    </span><span class="k">type</span><span class="p">(</span><span class="n">string_t</span><span class="p">),</span><span class="w"> </span><span class="k">allocatable</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">link_libs</span><span class="p">(:)</span>
-<span class="w">    </span><span class="k">type</span><span class="p">(</span><span class="n">string_t</span><span class="p">),</span><span class="w"> </span><span class="k">allocatable</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">external_modules</span><span class="p">(:)</span>
+<span class="w">        </span><span class="c">!&gt; List of compiler flags and options to be added</span>
+<span class="w">        </span><span class="k">type</span><span class="p">(</span><span class="n">string_t</span><span class="p">)</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">flags</span>
+<span class="w">        </span><span class="k">type</span><span class="p">(</span><span class="n">string_t</span><span class="p">)</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">fflags</span>
+<span class="w">        </span><span class="k">type</span><span class="p">(</span><span class="n">string_t</span><span class="p">)</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">cflags</span>
+<span class="w">        </span><span class="k">type</span><span class="p">(</span><span class="n">string_t</span><span class="p">)</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">cxxflags</span>
+<span class="w">        </span><span class="k">type</span><span class="p">(</span><span class="n">string_t</span><span class="p">)</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">link_flags</span>
+<span class="w">        </span><span class="k">type</span><span class="p">(</span><span class="n">string_t</span><span class="p">)</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">run_command</span>
+<span class="w">        </span><span class="k">type</span><span class="p">(</span><span class="n">string_t</span><span class="p">),</span><span class="w"> </span><span class="k">allocatable</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">incl_dirs</span><span class="p">(:)</span>
+<span class="w">        </span><span class="k">type</span><span class="p">(</span><span class="n">string_t</span><span class="p">),</span><span class="w"> </span><span class="k">allocatable</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">link_libs</span><span class="p">(:)</span>
+<span class="w">        </span><span class="k">type</span><span class="p">(</span><span class="n">string_t</span><span class="p">),</span><span class="w"> </span><span class="k">allocatable</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">external_modules</span><span class="p">(:)</span>
 
-<span class="w">    </span><span class="c">!&gt; Special fortran features</span>
-<span class="w">    </span><span class="k">type</span><span class="p">(</span><span class="n">fortran_features_t</span><span class="p">),</span><span class="w"> </span><span class="k">allocatable</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">fortran</span>
+<span class="w">        </span><span class="c">!&gt; Special fortran features</span>
+<span class="w">        </span><span class="k">type</span><span class="p">(</span><span class="n">fortran_features_t</span><span class="p">),</span><span class="w"> </span><span class="k">allocatable</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">fortran</span>
 
-<span class="w">    </span><span class="c">!&gt; List of Development dependency meta data.</span>
-<span class="w">    </span><span class="c">!&gt; Metapackage dependencies are never exported from the model</span>
-<span class="w">    </span><span class="k">type</span><span class="p">(</span><span class="n">dependency_config_t</span><span class="p">),</span><span class="w"> </span><span class="k">allocatable</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">dependency</span><span class="p">(:)</span>
+<span class="w">        </span><span class="c">!&gt; List of Development dependency meta data.</span>
+<span class="w">        </span><span class="c">!&gt; Metapackage dependencies are never exported from the model</span>
+<span class="w">        </span><span class="k">type</span><span class="p">(</span><span class="n">dependency_config_t</span><span class="p">),</span><span class="w"> </span><span class="k">allocatable</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">dependency</span><span class="p">(:)</span>
 
-<span class="w">    </span><span class="k">contains</span>
+<span class="w">        </span><span class="k">contains</span>
 
-<span class="w">       </span><span class="c">!&gt; Clean metapackage structure</span>
-<span class="w">       </span><span class="k">procedure</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">destroy</span>
+<span class="w">            </span><span class="c">!&gt; Clean metapackage structure</span>
+<span class="w">            </span><span class="k">procedure</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">destroy</span>
 
-<span class="w">       </span><span class="c">!&gt; Initialize the metapackage structure from its given name</span>
-<span class="w">       </span><span class="k">procedure</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">new</span><span class="w"> </span><span class="o">=&gt;</span><span class="w"> </span><span class="n">init_from_name</span>
+<span class="w">            </span><span class="c">!&gt; Add metapackage dependencies to the model</span>
+<span class="w">            </span><span class="k">procedure</span><span class="p">,</span><span class="w"> </span><span class="k">private</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">resolve_cmd</span>
+<span class="w">            </span><span class="k">procedure</span><span class="p">,</span><span class="w"> </span><span class="k">private</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">resolve_model</span>
+<span class="w">            </span><span class="k">procedure</span><span class="p">,</span><span class="w"> </span><span class="k">private</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">resolve_package_config</span>
+<span class="w">            </span><span class="k">generic</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">resolve</span><span class="w"> </span><span class="o">=&gt;</span><span class="w"> </span><span class="n">resolve_cmd</span><span class="p">,</span><span class="n">resolve_model</span><span class="p">,</span><span class="n">resolve_package_config</span>
 
-<span class="w">       </span><span class="c">!&gt; Add metapackage dependencies to the model</span>
-<span class="w">       </span><span class="k">procedure</span><span class="p">,</span><span class="w"> </span><span class="k">private</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">resolve_cmd</span>
-<span class="w">       </span><span class="k">procedure</span><span class="p">,</span><span class="w"> </span><span class="k">private</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">resolve_model</span>
-<span class="w">       </span><span class="k">procedure</span><span class="p">,</span><span class="w"> </span><span class="k">private</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">resolve_package_config</span>
-<span class="w">       </span><span class="k">generic</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">resolve</span><span class="w"> </span><span class="o">=&gt;</span><span class="w"> </span><span class="n">resolve_cmd</span><span class="p">,</span><span class="n">resolve_model</span><span class="p">,</span><span class="n">resolve_package_config</span>
-
-<span class="k">end type </span><span class="n">metapackage_t</span>
+<span class="w">    </span><span class="k">end type </span><span class="n">metapackage_t</span>
 </pre></div>
 
     </section>
@@ -1043,33 +954,11 @@ Initialize metapackage by name</p>
             <p class="text-end">
               Documentation generated by
               <a href="https://github.com/Fortran-FOSS-Programmers/ford">FORD</a>
- on 2025-03-23 12:59 +0000             </p>
+ on 2025-04-06 17:37 +0000             </p>
           </div>
         </div>
         <br>
       </div> <!-- /container -->
     </footer>
-
-    <!-- Bootstrap core JavaScript -->
-    <!-- Placed at the end of the document so the pages load faster -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"
-            integrity="sha384-ka7Sk0Gln4gmtz2MlQnikT1wXgYsOg+OMhuP+IlRH9sENBO0LRn5q+8nbTov4+1p" crossorigin="anonymous"></script>    
-
-    <!-- MathJax JavaScript
-             ================================================== -->
-             <!-- Placed at the end of the document so the pages load faster -->
-        <script type="text/x-mathjax-config">
-          MathJax.Hub.Config({
-          TeX: { extensions: ['AMSmath.js','AMSsymbols.js','noErrors.js','noUndefined.js'], equationNumbers: { autoNumber: 'AMS' } },
-          jax: ['input/TeX','input/MathML','output/HTML-CSS'],
-          extensions: ['tex2jax.js','mml2jax.js','MathMenu.js','MathZoom.js']
-          });
-        </script>
-        <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
-
-          <script src="../tipuesearch/tipuesearch_content.js"></script>
-          <script src="../tipuesearch/tipuesearch_set.js"></script>
-          <script src="../tipuesearch/tipuesearch.js"></script>
-
   </body>
 </html>

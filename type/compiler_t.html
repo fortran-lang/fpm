@@ -12,14 +12,29 @@
 
     <title>compiler_t &ndash; Fortran-lang/fpm </title>
 
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet"
-          integrity="sha384-1BmE4kWBq78iYhFldvKuhfTAU6auU8tT94WrHftjDbrCEXSU1oBoqyl2QvZ6jIW3" crossorigin="anonymous">
-    <link href="../css/pygments.css" rel="stylesheet">
-    <link href="../css/font-awesome.min.css" rel="stylesheet">
+    <!-- Bootstrap -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet"
+          integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
+            integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
+    <!-- Font Awesome -->
+    <link href="../css/fontawesome.min.css" rel="stylesheet">
+    <link href="../css/brands.min.css" rel="stylesheet">
+    <link href="../css/regular.min.css" rel="stylesheet">
+    <link href="../css/solid.min.css" rel="stylesheet">
+    <link href="../css/v4-font-face.min.css" rel="stylesheet">
+    <link href="../css/v4-shims.min.css" rel="stylesheet">
+    <!-- MathJax -->
+    <script type="text/x-mathjax-config">
+      MathJax.Hub.Config({
+        TeX: { equationNumbers: { autoNumber: "AMS" } }
+      });
+    </script>
+    <script src="https://cdn.jsdelivr.net/npm/mathjax@2.7.9/MathJax.js?config=TeX-AMS-MML_HTMLorMML" async
+            integrity="sha256-DViIOMYdwlM/axqoGDPeUyf0urLoHMN4QACBKyB58Uw=" crossorigin="anonymous"></script>
+    <!-- Other scripts and stylesheets -->
     <link href="../css/local.css" rel="stylesheet">
-      <link  href="../tipuesearch/tipuesearch.css" rel="stylesheet">
-
-    <script src="https://code.jquery.com/jquery-3.7.1.min.js" integrity="sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo=" crossorigin="anonymous"></script>
+    <link href="../css/pygments.css" rel="stylesheet">
     <script src="../js/svg-pan-zoom.min.js"></script>
   </head>
 
@@ -98,9 +113,11 @@
     </div>
   </div>
   <script>
-    $(function () {
-    $('[data-bs-toggle="tooltip"]').tooltip()
-    })
+    // Enable Bootstrap tooltips
+    (function () {
+      const tooltipTriggerList = document.querySelectorAll('[data-bs-toggle="tooltip"]')
+      const tooltipList = [...tooltipTriggerList].map(tooltipTriggerEl => new bootstrap.Tooltip(tooltipTriggerEl))
+    })();
   </script>
 
   </div>
@@ -119,10 +136,10 @@
         <div class="list-group list-group-flush">
             <a class="list-group-item" href="../type/compiler_t.html#variable-cc">cc</a>
             <a class="list-group-item" href="../type/compiler_t.html#variable-cxx">cxx</a>
-            <a class="list-group-item" href="../type/compiler_t.html#variable-echo~5">echo</a>
+            <a class="list-group-item" href="../type/compiler_t.html#variable-echo">echo</a>
             <a class="list-group-item" href="../type/compiler_t.html#variable-fc">fc</a>
             <a class="list-group-item" href="../type/compiler_t.html#variable-id~4">id</a>
-            <a class="list-group-item" href="../type/compiler_t.html#variable-verbose~16">verbose</a>
+            <a class="list-group-item" href="../type/compiler_t.html#variable-verbose~5">verbose</a>
         </div>
       </div>
     </div>
@@ -153,8 +170,8 @@
             <a class="list-group-item" href="../type/compiler_t.html#boundprocedure-compile_c">compile_c</a>
             <a class="list-group-item" href="../type/compiler_t.html#boundprocedure-compile_cpp">compile_cpp</a>
             <a class="list-group-item" href="../type/compiler_t.html#boundprocedure-compile_fortran">compile_fortran</a>
-            <a class="list-group-item" href="../type/compiler_t.html#boundprocedure-dump~23">dump</a>
-            <a class="list-group-item" href="../type/compiler_t.html#boundprocedure-dump_to_toml~18">dump_to_toml</a>
+            <a class="list-group-item" href="../type/compiler_t.html#boundprocedure-dump~12">dump</a>
+            <a class="list-group-item" href="../type/compiler_t.html#boundprocedure-dump_to_toml~9">dump_to_toml</a>
             <a class="list-group-item" href="../type/compiler_t.html#boundprocedure-enumerate_libraries">enumerate_libraries</a>
             <a class="list-group-item" href="../type/compiler_t.html#boundprocedure-get_default_flags">get_default_flags</a>
             <a class="list-group-item" href="../type/compiler_t.html#boundprocedure-get_feature_flag">get_feature_flag</a>
@@ -165,11 +182,11 @@
             <a class="list-group-item" href="../type/compiler_t.html#boundprocedure-is_intel">is_intel</a>
             <a class="list-group-item" href="../type/compiler_t.html#boundprocedure-is_unknown">is_unknown</a>
             <a class="list-group-item" href="../type/compiler_t.html#boundprocedure-link~2">link</a>
-            <a class="list-group-item" href="../type/compiler_t.html#boundprocedure-load~21">load</a>
-            <a class="list-group-item" href="../type/compiler_t.html#boundprocedure-load_from_toml~18">load_from_toml</a>
-            <a class="list-group-item" href="../type/compiler_t.html#boundprocedure-name~33">name</a>
-            <a class="list-group-item" href="../type/compiler_t.html#boundprocedure-operator%28%3D%3D%29~22">operator(==)</a>
-            <a class="list-group-item" href="../type/compiler_t.html#boundprocedure-serializable_is_same~18">serializable_is_same</a>
+            <a class="list-group-item" href="../type/compiler_t.html#boundprocedure-load~10">load</a>
+            <a class="list-group-item" href="../type/compiler_t.html#boundprocedure-load_from_toml~9">load_from_toml</a>
+            <a class="list-group-item" href="../type/compiler_t.html#boundprocedure-name~17">name</a>
+            <a class="list-group-item" href="../type/compiler_t.html#boundprocedure-operator%28%3D%3D%29~11">operator(==)</a>
+            <a class="list-group-item" href="../type/compiler_t.html#boundprocedure-serializable_is_same~9">serializable_is_same</a>
             <a class="list-group-item" href="../type/compiler_t.html#boundprocedure-test_serialization">test_serialization</a>
             <a class="list-group-item" href="../type/compiler_t.html#boundprocedure-with_qp">with_qp</a>
             <a class="list-group-item" href="../type/compiler_t.html#boundprocedure-with_xdp">with_xdp</a>
@@ -245,7 +262,7 @@
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-echo~5"></span>
+              <span class="anchor" id="variable-echo"></span>
               logical,
             </td>
               <td>public</td>
@@ -296,7 +313,7 @@
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-verbose~16"></span>
+              <span class="anchor" id="variable-verbose~5"></span>
               logical,
             </td>
               <td>public</td>
@@ -331,13 +348,13 @@
         
       </h3>
     </div>
-      <div class="card-body">
-        
-        <p>Fortran feature support</p>
-      </div>
-    <ul class="list-group">
-        <li class="list-group-item">
-                  <h3>
+        <div class="card-body">
+          
+          <p>Fortran feature support</p>
+        </div>
+      <ul class="list-group">
+          <li class="list-group-item">
+                    <h3>
     public  function <a href='../proc/check_fortran_source_runs.html'>check_fortran_source_runs</a>(self, input) result(success)  
 </h3>
     
@@ -399,8 +416,8 @@ Run and retrieve exit code</p><a href="../proc/check_fortran_source_runs.html" c
     </h4>
     
 
-        </li>
-    </ul>
+          </li>
+      </ul>
   </div>
 
           </div>
@@ -414,13 +431,13 @@ Run and retrieve exit code</p><a href="../proc/check_fortran_source_runs.html" c
         
       </h3>
     </div>
-      <div class="card-body">
-        
-        <p>Compile a C object</p>
-      </div>
-    <ul class="list-group">
-        <li class="list-group-item">
-                  <h3>
+        <div class="card-body">
+          
+          <p>Compile a C object</p>
+        </div>
+      <ul class="list-group">
+          <li class="list-group-item">
+                    <h3>
     public  subroutine <a href='../proc/compile_c.html'>compile_c</a>(self, input, output, args, log_file, stat)  
 </h3>
     
@@ -532,8 +549,8 @@ Run and retrieve exit code</p><a href="../proc/check_fortran_source_runs.html" c
   </table>
 
 
-        </li>
-    </ul>
+          </li>
+      </ul>
   </div>
 
           </div>
@@ -547,13 +564,13 @@ Run and retrieve exit code</p><a href="../proc/check_fortran_source_runs.html" c
         
       </h3>
     </div>
-      <div class="card-body">
-        
-        <p>Compile a CPP object</p>
-      </div>
-    <ul class="list-group">
-        <li class="list-group-item">
-                  <h3>
+        <div class="card-body">
+          
+          <p>Compile a CPP object</p>
+        </div>
+      <ul class="list-group">
+          <li class="list-group-item">
+                    <h3>
     public  subroutine <a href='../proc/compile_cpp.html'>compile_cpp</a>(self, input, output, args, log_file, stat)  
 </h3>
     
@@ -665,8 +682,8 @@ Run and retrieve exit code</p><a href="../proc/check_fortran_source_runs.html" c
   </table>
 
 
-        </li>
-    </ul>
+          </li>
+      </ul>
   </div>
 
           </div>
@@ -680,13 +697,13 @@ Run and retrieve exit code</p><a href="../proc/check_fortran_source_runs.html" c
         
       </h3>
     </div>
-      <div class="card-body">
-        
-        <p>Compile a Fortran object</p>
-      </div>
-    <ul class="list-group">
-        <li class="list-group-item">
-                  <h3>
+        <div class="card-body">
+          
+          <p>Compile a Fortran object</p>
+        </div>
+      <ul class="list-group">
+          <li class="list-group-item">
+                    <h3>
     public  subroutine <a href='../proc/compile_fortran.html'>compile_fortran</a>(self, input, output, args, log_file, stat)  
 </h3>
     
@@ -798,24 +815,24 @@ Run and retrieve exit code</p><a href="../proc/check_fortran_source_runs.html" c
   </table>
 
 
-        </li>
-    </ul>
+          </li>
+      </ul>
   </div>
 
           </div>
           <div class="row">
               <div class="card mt-3">
     <div class="card-header codesum">
-      <span class="anchor" id="boundprocedure-dump~23"></span>
+      <span class="anchor" id="boundprocedure-dump~12"></span>
       <h3>
           generic, public ::
-  <strong>dump</strong> => <a href='/home/runner/work/fpm/fpm/fpm-doc/type/srcfile_t.html#boundprocedure-dump_to_toml~6'>dump_to_toml</a>, dump_to_file, dump_to_unit
+  <strong>dump</strong> => <a href='/home/runner/work/fpm/fpm/fpm-doc/type/srcfile_t.html#boundprocedure-dump_to_toml~12'>dump_to_toml</a>, dump_to_file, dump_to_unit
         
       </h3>
     </div>
-    <ul class="list-group">
-        <li class="list-group-item">
-                  <h3>
+      <ul class="list-group">
+          <li class="list-group-item">
+                    <h3>
     private  subroutine srcfile_dump_to_toml(self, table, error)  
 </h3>
 
@@ -881,9 +898,9 @@ Run and retrieve exit code</p><a href="../proc/check_fortran_source_runs.html" c
   </table>
 
 
-        </li>
-        <li class="list-group-item">
-                  <h3>
+          </li>
+          <li class="list-group-item">
+                    <h3>
     private  subroutine dump_to_file(self, file, error, json)  
 </h3>
 
@@ -964,9 +981,9 @@ Run and retrieve exit code</p><a href="../proc/check_fortran_source_runs.html" c
   </table>
 
 
-        </li>
-        <li class="list-group-item">
-                  <h3>
+          </li>
+          <li class="list-group-item">
+                    <h3>
     private  subroutine dump_to_unit(self, unit, error, json)  
 </h3>
 
@@ -1047,24 +1064,24 @@ Run and retrieve exit code</p><a href="../proc/check_fortran_source_runs.html" c
   </table>
 
 
-        </li>
-    </ul>
+          </li>
+      </ul>
   </div>
 
           </div>
           <div class="row">
               <div class="card mt-3">
     <div class="card-header codesum">
-      <span class="anchor" id="boundprocedure-dump_to_toml~18"></span>
+      <span class="anchor" id="boundprocedure-dump_to_toml~9"></span>
       <h3>
           procedure, public ::
   <strong>dump_to_toml</strong> => <a href='/home/runner/work/fpm/fpm/fpm-doc/proc/compiler_dump.html'>compiler_dump</a>
         
       </h3>
     </div>
-    <ul class="list-group">
-        <li class="list-group-item">
-                  <h3>
+      <ul class="list-group">
+          <li class="list-group-item">
+                    <h3>
     public  subroutine <a href='../proc/compiler_dump.html'>compiler_dump</a>(self, table, error)  
 </h3>
     
@@ -1131,8 +1148,8 @@ Run and retrieve exit code</p><a href="../proc/check_fortran_source_runs.html" c
   </table>
 
 
-        </li>
-    </ul>
+          </li>
+      </ul>
   </div>
 
           </div>
@@ -1146,13 +1163,13 @@ Run and retrieve exit code</p><a href="../proc/check_fortran_source_runs.html" c
         
       </h3>
     </div>
-      <div class="card-body">
-        
-        <p>Enumerate libraries, based on compiler and platform</p>
-      </div>
-    <ul class="list-group">
-        <li class="list-group-item">
-                  <h3>
+        <div class="card-body">
+          
+          <p>Enumerate libraries, based on compiler and platform</p>
+        </div>
+      <ul class="list-group">
+          <li class="list-group-item">
+                    <h3>
     public  function <a href='../proc/enumerate_libraries.html'>enumerate_libraries</a>(self, prefix, libs) result(r)  
 </h3>
     
@@ -1224,8 +1241,8 @@ Run and retrieve exit code</p><a href="../proc/check_fortran_source_runs.html" c
     </h4>
     
 
-        </li>
-    </ul>
+          </li>
+      </ul>
   </div>
 
           </div>
@@ -1239,13 +1256,13 @@ Run and retrieve exit code</p><a href="../proc/check_fortran_source_runs.html" c
         
       </h3>
     </div>
-      <div class="card-body">
-        
-        <p>Get default compiler flags</p>
-      </div>
-    <ul class="list-group">
-        <li class="list-group-item">
-                  <h3>
+        <div class="card-body">
+          
+          <p>Get default compiler flags</p>
+        </div>
+      <ul class="list-group">
+          <li class="list-group-item">
+                    <h3>
     public  function <a href='../proc/get_default_flags.html'>get_default_flags</a>(self, release) result(flags)  
 </h3>
     
@@ -1302,8 +1319,8 @@ Run and retrieve exit code</p><a href="../proc/check_fortran_source_runs.html" c
     </h4>
     
 
-        </li>
-    </ul>
+          </li>
+      </ul>
   </div>
 
           </div>
@@ -1317,13 +1334,13 @@ Run and retrieve exit code</p><a href="../proc/check_fortran_source_runs.html" c
         
       </h3>
     </div>
-      <div class="card-body">
-        
-        <p>Get feature flag</p>
-      </div>
-    <ul class="list-group">
-        <li class="list-group-item">
-                  <h3>
+        <div class="card-body">
+          
+          <p>Get feature flag</p>
+        </div>
+      <ul class="list-group">
+          <li class="list-group-item">
+                    <h3>
     public  function <a href='../proc/get_feature_flag.html'>get_feature_flag</a>(self, feature) result(flags)  
 </h3>
     
@@ -1380,8 +1397,8 @@ Run and retrieve exit code</p><a href="../proc/check_fortran_source_runs.html" c
     </h4>
     
 
-        </li>
-    </ul>
+          </li>
+      </ul>
   </div>
 
           </div>
@@ -1395,13 +1412,13 @@ Run and retrieve exit code</p><a href="../proc/check_fortran_source_runs.html" c
         
       </h3>
     </div>
-      <div class="card-body">
-        
-        <p>Get flag for include directories</p>
-      </div>
-    <ul class="list-group">
-        <li class="list-group-item">
-                  <h3>
+        <div class="card-body">
+          
+          <p>Get flag for include directories</p>
+        </div>
+      <ul class="list-group">
+          <li class="list-group-item">
+                    <h3>
     public  function <a href='../proc/get_include_flag.html'>get_include_flag</a>(self, path) result(flags)  
 </h3>
     
@@ -1458,8 +1475,8 @@ Run and retrieve exit code</p><a href="../proc/check_fortran_source_runs.html" c
     </h4>
     
 
-        </li>
-    </ul>
+          </li>
+      </ul>
   </div>
 
           </div>
@@ -1473,13 +1490,13 @@ Run and retrieve exit code</p><a href="../proc/check_fortran_source_runs.html" c
         
       </h3>
     </div>
-      <div class="card-body">
-        
-        <p>Get flags for the main linking command</p>
-      </div>
-    <ul class="list-group">
-        <li class="list-group-item">
-                  <h3>
+        <div class="card-body">
+          
+          <p>Get flags for the main linking command</p>
+        </div>
+      <ul class="list-group">
+          <li class="list-group-item">
+                    <h3>
     public  subroutine <a href='../proc/get_main_flags.html'>get_main_flags</a>(self, language, flags)  
 </h3>
     
@@ -1546,8 +1563,8 @@ Run and retrieve exit code</p><a href="../proc/check_fortran_source_runs.html" c
   </table>
 
 
-        </li>
-    </ul>
+          </li>
+      </ul>
   </div>
 
           </div>
@@ -1561,13 +1578,13 @@ Run and retrieve exit code</p><a href="../proc/check_fortran_source_runs.html" c
         
       </h3>
     </div>
-      <div class="card-body">
-        
-        <p>Get flag for module output directories</p>
-      </div>
-    <ul class="list-group">
-        <li class="list-group-item">
-                  <h3>
+        <div class="card-body">
+          
+          <p>Get flag for module output directories</p>
+        </div>
+      <ul class="list-group">
+          <li class="list-group-item">
+                    <h3>
     public  function <a href='../proc/get_module_flag.html'>get_module_flag</a>(self, path) result(flags)  
 </h3>
     
@@ -1624,8 +1641,8 @@ Run and retrieve exit code</p><a href="../proc/check_fortran_source_runs.html" c
     </h4>
     
 
-        </li>
-    </ul>
+          </li>
+      </ul>
   </div>
 
           </div>
@@ -1639,13 +1656,13 @@ Run and retrieve exit code</p><a href="../proc/check_fortran_source_runs.html" c
         
       </h3>
     </div>
-      <div class="card-body">
-        
-        <p>Check whether this is a GNU compiler</p>
-      </div>
-    <ul class="list-group">
-        <li class="list-group-item">
-                  <h3>
+        <div class="card-body">
+          
+          <p>Check whether this is a GNU compiler</p>
+        </div>
+      <ul class="list-group">
+          <li class="list-group-item">
+                    <h3>
     public pure function <a href='../proc/is_gnu.html'>is_gnu</a>(self)  
 </h3>
     
@@ -1687,8 +1704,8 @@ Run and retrieve exit code</p><a href="../proc/check_fortran_source_runs.html" c
     </h4>
     
 
-        </li>
-    </ul>
+          </li>
+      </ul>
   </div>
 
           </div>
@@ -1702,13 +1719,13 @@ Run and retrieve exit code</p><a href="../proc/check_fortran_source_runs.html" c
         
       </h3>
     </div>
-      <div class="card-body">
-        
-        <p>Check whether this is an Intel compiler</p>
-      </div>
-    <ul class="list-group">
-        <li class="list-group-item">
-                  <h3>
+        <div class="card-body">
+          
+          <p>Check whether this is an Intel compiler</p>
+        </div>
+      <ul class="list-group">
+          <li class="list-group-item">
+                    <h3>
     public pure function <a href='../proc/is_intel.html'>is_intel</a>(self)  
 </h3>
     
@@ -1750,8 +1767,8 @@ Run and retrieve exit code</p><a href="../proc/check_fortran_source_runs.html" c
     </h4>
     
 
-        </li>
-    </ul>
+          </li>
+      </ul>
   </div>
 
           </div>
@@ -1765,13 +1782,13 @@ Run and retrieve exit code</p><a href="../proc/check_fortran_source_runs.html" c
         
       </h3>
     </div>
-      <div class="card-body">
-        
-        <p>Check whether compiler is recognized</p>
-      </div>
-    <ul class="list-group">
-        <li class="list-group-item">
-                  <h3>
+        <div class="card-body">
+          
+          <p>Check whether compiler is recognized</p>
+        </div>
+      <ul class="list-group">
+          <li class="list-group-item">
+                    <h3>
     public pure function <a href='../proc/is_unknown.html'>is_unknown</a>(self)  
 </h3>
     
@@ -1813,8 +1830,8 @@ Run and retrieve exit code</p><a href="../proc/check_fortran_source_runs.html" c
     </h4>
     
 
-        </li>
-    </ul>
+          </li>
+      </ul>
   </div>
 
           </div>
@@ -1828,13 +1845,13 @@ Run and retrieve exit code</p><a href="../proc/check_fortran_source_runs.html" c
         
       </h3>
     </div>
-      <div class="card-body">
-        
-        <p>Link executable</p>
-      </div>
-    <ul class="list-group">
-        <li class="list-group-item">
-                  <h3>
+        <div class="card-body">
+          
+          <p>Link executable</p>
+        </div>
+      <ul class="list-group">
+          <li class="list-group-item">
+                    <h3>
     public  subroutine <a href='../proc/link.html'>link</a>(self, output, args, log_file, stat)  
 </h3>
     
@@ -1931,24 +1948,24 @@ Run and retrieve exit code</p><a href="../proc/check_fortran_source_runs.html" c
   </table>
 
 
-        </li>
-    </ul>
+          </li>
+      </ul>
   </div>
 
           </div>
           <div class="row">
               <div class="card mt-3">
     <div class="card-header codesum">
-      <span class="anchor" id="boundprocedure-load~21"></span>
+      <span class="anchor" id="boundprocedure-load~10"></span>
       <h3>
           generic, public ::
-  <strong>load</strong> => <a href='/home/runner/work/fpm/fpm/fpm-doc/type/srcfile_t.html#boundprocedure-load_from_toml~6'>load_from_toml</a>, load_from_file, load_from_unit
+  <strong>load</strong> => <a href='/home/runner/work/fpm/fpm/fpm-doc/type/srcfile_t.html#boundprocedure-load_from_toml~12'>load_from_toml</a>, load_from_file, load_from_unit
         
       </h3>
     </div>
-    <ul class="list-group">
-        <li class="list-group-item">
-                  <h3>
+      <ul class="list-group">
+          <li class="list-group-item">
+                    <h3>
     private  subroutine srcfile_load_from_toml(self, table, error)  
 </h3>
 
@@ -2014,9 +2031,9 @@ Run and retrieve exit code</p><a href="../proc/check_fortran_source_runs.html" c
   </table>
 
 
-        </li>
-        <li class="list-group-item">
-                  <h3>
+          </li>
+          <li class="list-group-item">
+                    <h3>
     private  subroutine load_from_file(self, file, error, json)  
 </h3>
 
@@ -2097,9 +2114,9 @@ Run and retrieve exit code</p><a href="../proc/check_fortran_source_runs.html" c
   </table>
 
 
-        </li>
-        <li class="list-group-item">
-                  <h3>
+          </li>
+          <li class="list-group-item">
+                    <h3>
     private  subroutine load_from_unit(self, unit, error, json)  
 </h3>
 
@@ -2184,24 +2201,24 @@ Read object from TOML table</p>
   </table>
 
 
-        </li>
-    </ul>
+          </li>
+      </ul>
   </div>
 
           </div>
           <div class="row">
               <div class="card mt-3">
     <div class="card-header codesum">
-      <span class="anchor" id="boundprocedure-load_from_toml~18"></span>
+      <span class="anchor" id="boundprocedure-load_from_toml~9"></span>
       <h3>
           procedure, public ::
   <strong>load_from_toml</strong> => <a href='/home/runner/work/fpm/fpm/fpm-doc/proc/compiler_load.html'>compiler_load</a>
         
       </h3>
     </div>
-    <ul class="list-group">
-        <li class="list-group-item">
-                  <h3>
+      <ul class="list-group">
+          <li class="list-group-item">
+                    <h3>
     public  subroutine <a href='../proc/compiler_load.html'>compiler_load</a>(self, table, error)  
 </h3>
     
@@ -2268,28 +2285,28 @@ Read object from TOML table</p>
   </table>
 
 
-        </li>
-    </ul>
+          </li>
+      </ul>
   </div>
 
           </div>
           <div class="row">
               <div class="card mt-3">
     <div class="card-header codesum">
-      <span class="anchor" id="boundprocedure-name~33"></span>
+      <span class="anchor" id="boundprocedure-name~17"></span>
       <h3>
           procedure, public ::
   <strong>name</strong> => <a href='/home/runner/work/fpm/fpm/fpm-doc/proc/compiler_name.html'>compiler_name</a>
         
       </h3>
     </div>
-      <div class="card-body">
-        
-        <p>Return compiler name</p>
-      </div>
-    <ul class="list-group">
-        <li class="list-group-item">
-                  <h3>
+        <div class="card-body">
+          
+          <p>Return compiler name</p>
+        </div>
+      <ul class="list-group">
+          <li class="list-group-item">
+                    <h3>
     public pure function <a href='../proc/compiler_name.html'>compiler_name</a>(self) result(name)  
 </h3>
     
@@ -2331,24 +2348,24 @@ Read object from TOML table</p>
     </h4>
     <p>Representation as string</p>
 
-        </li>
-    </ul>
+          </li>
+      </ul>
   </div>
 
           </div>
           <div class="row">
               <div class="card mt-3">
     <div class="card-header codesum">
-      <span class="anchor" id="boundprocedure-operator%28%3D%3D%29~22"></span>
+      <span class="anchor" id="boundprocedure-operator%28%3D%3D%29~11"></span>
       <h3>
           generic, public ::
-  <strong>operator(==)</strong> => <a href='/home/runner/work/fpm/fpm/fpm-doc/type/srcfile_t.html#boundprocedure-serializable_is_same~6'>serializable_is_same</a>
+  <strong>operator(==)</strong> => <a href='/home/runner/work/fpm/fpm/fpm-doc/type/srcfile_t.html#boundprocedure-serializable_is_same~12'>serializable_is_same</a>
         
       </h3>
     </div>
-    <ul class="list-group">
-        <li class="list-group-item">
-                  <h3>
+      <ul class="list-group">
+          <li class="list-group-item">
+                    <h3>
     private  function srcfile_is_same(this, that)  
 </h3>
 
@@ -2405,28 +2422,28 @@ All checks passed!</p>
     </h4>
     
 
-        </li>
-    </ul>
+          </li>
+      </ul>
   </div>
 
           </div>
           <div class="row">
               <div class="card mt-3">
     <div class="card-header codesum">
-      <span class="anchor" id="boundprocedure-serializable_is_same~18"></span>
+      <span class="anchor" id="boundprocedure-serializable_is_same~9"></span>
       <h3>
           procedure, public ::
   <strong>serializable_is_same</strong> => <a href='/home/runner/work/fpm/fpm/fpm-doc/proc/compiler_is_same.html'>compiler_is_same</a>
         
       </h3>
     </div>
-      <div class="card-body">
-        
-        <p>Serialization interface</p>
-      </div>
-    <ul class="list-group">
-        <li class="list-group-item">
-                  <h3>
+        <div class="card-body">
+          
+          <p>Serialization interface</p>
+        </div>
+      <ul class="list-group">
+          <li class="list-group-item">
+                    <h3>
     public  function <a href='../proc/compiler_is_same.html'>compiler_is_same</a>(this, that)  
 </h3>
     
@@ -2484,8 +2501,8 @@ All checks passed!</p>
     </h4>
     
 
-        </li>
-    </ul>
+          </li>
+      </ul>
   </div>
 
           </div>
@@ -2499,13 +2516,13 @@ All checks passed!</p>
         
       </h3>
     </div>
-      <div class="card-body">
-        
-        <p>Test load/write roundtrip</p>
-      </div>
-    <ul class="list-group">
-        <li class="list-group-item">
-                  <h3>
+        <div class="card-body">
+          
+          <p>Test load/write roundtrip</p>
+        </div>
+      <ul class="list-group">
+          <li class="list-group-item">
+                    <h3>
     private  subroutine test_serialization(self, message, error)  
 </h3>
 
@@ -2574,8 +2591,8 @@ Check same</p>
   </table>
 
 
-        </li>
-    </ul>
+          </li>
+      </ul>
   </div>
 
           </div>
@@ -2589,9 +2606,9 @@ Check same</p>
         
       </h3>
     </div>
-    <ul class="list-group">
-        <li class="list-group-item">
-                  <h3>
+      <ul class="list-group">
+          <li class="list-group-item">
+                    <h3>
     public  function <a href='../proc/with_qp.html'>with_qp</a>(self)  
 </h3>
     
@@ -2633,8 +2650,8 @@ Check same</p>
     </h4>
     
 
-        </li>
-    </ul>
+          </li>
+      </ul>
   </div>
 
           </div>
@@ -2648,9 +2665,9 @@ Check same</p>
         
       </h3>
     </div>
-    <ul class="list-group">
-        <li class="list-group-item">
-                  <h3>
+      <ul class="list-group">
+          <li class="list-group-item">
+                    <h3>
     public  function <a href='../proc/with_xdp.html'>with_xdp</a>(self)  
 </h3>
     
@@ -2692,8 +2709,8 @@ Check same</p>
     </h4>
     
 
-        </li>
-    </ul>
+          </li>
+      </ul>
   </div>
 
           </div>
@@ -2776,33 +2793,11 @@ Check same</p>
             <p class="text-end">
               Documentation generated by
               <a href="https://github.com/Fortran-FOSS-Programmers/ford">FORD</a>
- on 2025-03-23 12:59 +0000             </p>
+ on 2025-04-06 17:37 +0000             </p>
           </div>
         </div>
         <br>
       </div> <!-- /container -->
     </footer>
-
-    <!-- Bootstrap core JavaScript -->
-    <!-- Placed at the end of the document so the pages load faster -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"
-            integrity="sha384-ka7Sk0Gln4gmtz2MlQnikT1wXgYsOg+OMhuP+IlRH9sENBO0LRn5q+8nbTov4+1p" crossorigin="anonymous"></script>    
-
-    <!-- MathJax JavaScript
-             ================================================== -->
-             <!-- Placed at the end of the document so the pages load faster -->
-        <script type="text/x-mathjax-config">
-          MathJax.Hub.Config({
-          TeX: { extensions: ['AMSmath.js','AMSsymbols.js','noErrors.js','noUndefined.js'], equationNumbers: { autoNumber: 'AMS' } },
-          jax: ['input/TeX','input/MathML','output/HTML-CSS'],
-          extensions: ['tex2jax.js','mml2jax.js','MathMenu.js','MathZoom.js']
-          });
-        </script>
-        <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
-
-          <script src="../tipuesearch/tipuesearch_content.js"></script>
-          <script src="../tipuesearch/tipuesearch_set.js"></script>
-          <script src="../tipuesearch/tipuesearch.js"></script>
-
   </body>
 </html>
