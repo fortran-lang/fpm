@@ -24,12 +24,12 @@ module fpm_meta
     use fpm_command_line, only: fpm_cmd_settings, fpm_build_settings, fpm_run_settings
     use fpm_error, only: error_t, syntax_error, fatal_error
 
-    use fpm_meta_base
-    use fpm_meta_openmp
-    use fpm_meta_stdlib
-    use fpm_meta_minpack
-    use fpm_meta_mpi
-    use fpm_meta_hdf5
+    use fpm_meta_base, only: metapackage_t, destroy
+    use fpm_meta_openmp, only: init_openmp
+    use fpm_meta_stdlib, only: init_stdlib
+    use fpm_meta_minpack, only: init_minpack
+    use fpm_meta_mpi, only: init_mpi
+    use fpm_meta_hdf5, only: init_hdf5
 
     use shlex_module, only: shlex_split => split
     use regex_module, only: regex

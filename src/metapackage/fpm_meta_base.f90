@@ -19,45 +19,45 @@ module fpm_meta_base
     !> Package version (if supported)
     type(version_t), allocatable :: version
 
-    logical :: has_link_libraries   = .false.
-    logical :: has_link_flags       = .false.
-    logical :: has_build_flags      = .false.
-    logical :: has_fortran_flags    = .false.
-    logical :: has_c_flags          = .false.
-    logical :: has_cxx_flags        = .false.
-    logical :: has_include_dirs     = .false.
-    logical :: has_dependencies     = .false.
-    logical :: has_run_command      = .false.
-    logical :: has_external_modules = .false.
+        logical :: has_link_libraries   = .false.
+        logical :: has_link_flags       = .false.
+        logical :: has_build_flags      = .false.
+        logical :: has_fortran_flags    = .false.
+        logical :: has_c_flags          = .false.
+        logical :: has_cxx_flags        = .false.
+        logical :: has_include_dirs     = .false.
+        logical :: has_dependencies     = .false.
+        logical :: has_run_command      = .false.
+        logical :: has_external_modules = .false.
 
-    !> List of compiler flags and options to be added
-    type(string_t) :: flags
-    type(string_t) :: fflags
-    type(string_t) :: cflags
-    type(string_t) :: cxxflags
-    type(string_t) :: link_flags
-    type(string_t) :: run_command
-    type(string_t), allocatable :: incl_dirs(:)
-    type(string_t), allocatable :: link_libs(:)
-    type(string_t), allocatable :: external_modules(:)
+        !> List of compiler flags and options to be added
+        type(string_t) :: flags
+        type(string_t) :: fflags
+        type(string_t) :: cflags
+        type(string_t) :: cxxflags
+        type(string_t) :: link_flags
+        type(string_t) :: run_command
+        type(string_t), allocatable :: incl_dirs(:)
+        type(string_t), allocatable :: link_libs(:)
+        type(string_t), allocatable :: external_modules(:)
 
-    !> Special fortran features
-    type(fortran_features_t), allocatable :: fortran
+        !> Special fortran features
+        type(fortran_features_t), allocatable :: fortran
 
-    !> List of Development dependency meta data.
-    !> Metapackage dependencies are never exported from the model
-    type(dependency_config_t), allocatable :: dependency(:)
+        !> List of Development dependency meta data.
+        !> Metapackage dependencies are never exported from the model
+        type(dependency_config_t), allocatable :: dependency(:)
 
-    contains
+        contains
 
-        !> Clean metapackage structure
-        procedure :: destroy
+            !> Clean metapackage structure
+            procedure :: destroy
 
-        !> Add metapackage dependencies to the model
-        procedure, private :: resolve_cmd
-        procedure, private :: resolve_model
-        procedure, private :: resolve_package_config
-        generic :: resolve => resolve_cmd,resolve_model,resolve_package_config
+            !> Add metapackage dependencies to the model
+            procedure, private :: resolve_cmd
+            procedure, private :: resolve_model
+            procedure, private :: resolve_package_config
+            generic :: resolve => resolve_cmd,resolve_model,resolve_package_config
 
     end type metapackage_t
 
