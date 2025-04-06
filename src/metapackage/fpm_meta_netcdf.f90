@@ -2,7 +2,7 @@ module fpm_meta_netcdf
     use fpm_compiler, only: compiler_t, get_include_flag
     use fpm_meta_base, only: metapackage_t, destroy
     use fpm_meta_util, only: add_pkg_config_compile_options
-    use fpm_pkg_config, only: assert_pkg_config, pkgcfg_has_package, pkgcfg_list_all
+    use fpm_pkg_config, only: assert_pkg_config, pkgcfg_has_package
     use fpm_strings, only: string_t
     use fpm_error, only: error_t, fatal_error
 
@@ -62,8 +62,5 @@ contains
                                    string_t('netcdf_nc_interfaces'), &
                                    string_t('netcdf_nf_data'), &
                                    string_t('netcdf_nf_interfaces')]
-
-        print *, 'NetCDF metapackage initialized successfully.'
-
     end subroutine init_netcdf
 end module fpm_meta_netcdf
