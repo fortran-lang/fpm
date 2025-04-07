@@ -1548,8 +1548,13 @@ subroutine tokenize_flags(flags, flags_array)
     character(len=:), allocatable :: flags_char_array(:)
 
     integer :: i
+    logical :: success
 
-    flags_char_array = shlex_split(flags)
+    flags_char_array = shlex_split(flags, join_spaced=.true., keep_quotes=.true., success=success)
+    if (.not. success) then
+        allocate(flags_array(0))
+        return
+    end if
     allocate(flags_array(size(flags_char_array)))
     do i = 1, size(flags_char_array)
         flags_array(i)%s = trim(adjustl(flags_char_array(i)))
