@@ -5,7 +5,8 @@ module fpm_meta_base
     use fpm_command_line, only: fpm_cmd_settings, fpm_run_settings
     use fpm_manifest_dependency, only: dependency_config_t
     use fpm_manifest, only: package_config_t
-    use fpm_strings, only: string_t, len_trim
+    use fpm_strings, only: string_t, len_trim, split, join
+    use fpm_compiler, only: append_clean_flags, append_clean_flags_array
 
     implicit none
 
@@ -111,30 +112,30 @@ module fpm_meta_base
 
         ! Add global build flags, to apply to all sources
         if (self%has_build_flags) then
-            model%fortran_compile_flags = model%fortran_compile_flags//self%flags%s
-            model%c_compile_flags       = model%c_compile_flags//self%flags%s
-            model%cxx_compile_flags     = model%cxx_compile_flags//self%flags%s
+            call append_clean_flags(model%fortran_compile_flags, self%flags%s)
+            call append_clean_flags(model%c_compile_flags, self%flags%s)
+            call append_clean_flags(model%cxx_compile_flags, self%flags%s)
         endif
 
         ! Add language-specific flags
-        if (self%has_fortran_flags) model%fortran_compile_flags = model%fortran_compile_flags//self%fflags%s
-        if (self%has_c_flags)       model%c_compile_flags       = model%c_compile_flags//self%cflags%s
-        if (self%has_cxx_flags)     model%cxx_compile_flags     = model%cxx_compile_flags//self%cxxflags%s
+        if (self%has_fortran_flags) call append_clean_flags(model%fortran_compile_flags, self%fflags%s)
+        if (self%has_c_flags)       call append_clean_flags(model%c_compile_flags, self%cflags%s)
+        if (self%has_cxx_flags)     call append_clean_flags(model%cxx_compile_flags, self%cxxflags%s)
 
         if (self%has_link_flags) then
-            model%link_flags            = model%link_flags//' '//self%link_flags%s
+            call append_clean_flags(model%link_flags, self%link_flags%s)
         end if
 
         if (self%has_link_libraries) then
-            model%link_libraries        = [model%link_libraries,self%link_libs]
+            call append_clean_flags_array(model%link_libraries, self%link_libs)
         end if
 
         if (self%has_include_dirs) then
-            model%include_dirs          = [model%include_dirs,self%incl_dirs]
+            call append_clean_flags_array(model%include_dirs, self%incl_dirs)
         end if
 
         if (self%has_external_modules) then
-            model%external_modules      = [model%external_modules,self%external_modules]
+            call append_clean_flags_array(model%external_modules, self%external_modules)
         end if
 
     end subroutine resolve_model
@@ -185,6 +186,6 @@ module fpm_meta_base
            end if
         end function dn
 
-
     end subroutine resolve_package_config
+
 end module fpm_meta_base
