@@ -92,20 +92,20 @@
 
             <li class="list-inline-item" id="statements"><i class="fa fa-list-ol"></i>
               <a data-bs-toggle="tooltip" data-bs-placement="bottom" data-bs-html="true"
-                 title=" 0.2% of total for procedures.">12 statements</a>
+                 title=" 0.2% of total for procedures.">13 statements</a>
             </li>
 
             <li class="list-inline-item" id="source-file">
               <i class="fa fa-code"></i>
-              <a href="../src/git.f90"> Source File</a>
+              <a href="../src/fpm_compiler.F90"> Source File</a>
             </li>
         </ul>
       </div>
       <div class="col">
         <nav aria-label="breadcrumb">
           <ol class="breadcrumb justify-content-end mb-0">
-                <li class="breadcrumb-item"><a href='../sourcefile/git.f90.html'>git.f90</a></li>
-                <li class="breadcrumb-item"><a href='../module/fpm_git.html'>fpm_git</a></li>
+                <li class="breadcrumb-item"><a href='../sourcefile/fpm_compiler.f90.html'>fpm_compiler.F90</a></li>
+                <li class="breadcrumb-item"><a href='../module/fpm_compiler.html'>fpm_compiler</a></li>
             <li class="breadcrumb-item active" aria-current="page">dump_to_toml</li>
           </ol>
         </nav>
@@ -127,18 +127,7 @@
       <div id="sidebar">
       <h3>Contents</h3>
   
-      <div class="card mb-4">
-      <a data-bs-toggle="collapse" href="#vars-0"
-         aria-expanded="false" aria-controls="vars-0">
-         <h4 class="card-header bg-primary text-white">Variables</h4>
-      </a>
-      <div id="vars-0" class="collapse">
-        <div class="list-group list-group-flush">
-            <a class="list-group-item" href="../proc/dump_to_toml~8.html#variable-ierr~25">ierr</a>
-        </div>
-      </div>
-    </div>
-
+  
   
   
   
@@ -160,7 +149,7 @@
     <div class="card card-primary">
       <div class="card-header text-left"><h3 class="card-title">Source Code</h3></div>
       <div class="list-group">
-        <a class="list-group-item" href="../proc/dump_to_toml~8.html#src">dump_to_toml</a>
+        <a class="list-group-item" href="../proc/dump_to_toml~3.html#src">dump_to_toml</a>
       </div>
     </div>
 
@@ -175,9 +164,10 @@
     
 
     <p>Dump dependency to toml table</p>
+<p>Path to archiver</p>
 
     <h3>Type Bound</h3>
-    <p><a href='../type/git_target_t.html'>git_target_t</a></p>
+    <p><a href='../type/archiver_t.html'>archiver_t</a></p>
 
     <h3>Arguments</h3>
         <table class="table table-striped varlist">
@@ -192,8 +182,8 @@
     <tbody>
         <tr>
             <td>
-              <span class="anchor" id="variable-self~126"></span>
-              class(<a href='../type/git_target_t.html'>git_target_t</a>),
+              <span class="anchor" id="variable-self~36"></span>
+              class(<a href='../type/archiver_t.html'>archiver_t</a>),
             </td>
 <td>intent(inout)</td>
               <td></td>            <td>
@@ -207,7 +197,7 @@
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-table~79"></span>
+              <span class="anchor" id="variable-table~17"></span>
               type(toml_table),
             </td>
 <td>intent(inout)</td>
@@ -222,7 +212,7 @@
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-error~171"></span>
+              <span class="anchor" id="variable-error~31"></span>
               type(<a href='../type/error_t.html'>error_t</a>),
             </td>
 <td>intent(out),</td>
@@ -241,40 +231,6 @@
     <br>
 
 
-    <section>    
-      <h2>Variables</h2>
-      <table class="table table-striped varlist">
-    <thead>
-      <tr>
-        <th scope="col">Type</th>
-<th scope="col">Visibility</th>        <th scope="col">Attributes</th>
-        <th scope="col"></th>
-        <th scope="col">Name</th>
-<th></th><th scope="col">Initial</th>        <th scope="col"></th>
-    </thead>
-    <tbody>
-        <tr>
-            <td>
-              <span class="anchor" id="variable-ierr~25"></span>
-              integer,
-            </td>
-              <td>public</td>
-            <td>
-              
-            </td>
-            <td>::</td>
-            <td><strong>ierr</strong></td>
-                <td></td>
-                <td></td>
-            <td>
-                
-            </td>
-        </tr>
-    </tbody>
-  </table>
-
-    </section>
-    <br>
     
     
 
@@ -286,27 +242,28 @@
     
     <section>
     <h2><span class="anchor" id="src"></span>Source Code</h2>
-    <div class="hl codehilite"><pre><span></span><span class="w">    </span><span class="k">subroutine </span><span class="n">dump_to_toml</span><span class="p">(</span><span class="n">self</span><span class="p">,</span><span class="w"> </span><span class="n">table</span><span class="p">,</span><span class="w"> </span><span class="n">error</span><span class="p">)</span>
+    <div class="hl codehilite"><pre><span></span><span class="k">subroutine </span><span class="n">dump_to_toml</span><span class="p">(</span><span class="n">self</span><span class="p">,</span><span class="w"> </span><span class="n">table</span><span class="p">,</span><span class="w"> </span><span class="n">error</span><span class="p">)</span>
 
-<span class="w">        </span><span class="c">!&gt; Instance of the serializable object</span>
-<span class="w">        </span><span class="k">class</span><span class="p">(</span><span class="n">git_target_t</span><span class="p">),</span><span class="w"> </span><span class="k">intent</span><span class="p">(</span><span class="n">inout</span><span class="p">)</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">self</span>
+<span class="w">    </span><span class="c">!&gt; Instance of the serializable object</span>
+<span class="w">    </span><span class="k">class</span><span class="p">(</span><span class="n">archiver_t</span><span class="p">),</span><span class="w"> </span><span class="k">intent</span><span class="p">(</span><span class="n">inout</span><span class="p">)</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">self</span>
 
-<span class="w">        </span><span class="c">!&gt; Data structure</span>
-<span class="w">        </span><span class="k">type</span><span class="p">(</span><span class="n">toml_table</span><span class="p">),</span><span class="w"> </span><span class="k">intent</span><span class="p">(</span><span class="n">inout</span><span class="p">)</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">table</span>
+<span class="w">    </span><span class="c">!&gt; Data structure</span>
+<span class="w">    </span><span class="k">type</span><span class="p">(</span><span class="n">toml_table</span><span class="p">),</span><span class="w"> </span><span class="k">intent</span><span class="p">(</span><span class="n">inout</span><span class="p">)</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">table</span>
 
-<span class="w">        </span><span class="c">!&gt; Error handling</span>
-<span class="w">        </span><span class="k">type</span><span class="p">(</span><span class="n">error_t</span><span class="p">),</span><span class="w"> </span><span class="k">allocatable</span><span class="p">,</span><span class="w"> </span><span class="k">intent</span><span class="p">(</span><span class="n">out</span><span class="p">)</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">error</span>
+<span class="w">    </span><span class="c">!&gt; Error handling</span>
+<span class="w">    </span><span class="k">type</span><span class="p">(</span><span class="n">error_t</span><span class="p">),</span><span class="w"> </span><span class="k">allocatable</span><span class="p">,</span><span class="w"> </span><span class="k">intent</span><span class="p">(</span><span class="n">out</span><span class="p">)</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">error</span>
 
-<span class="w">        </span><span class="kt">integer</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">ierr</span>
+<span class="w">    </span><span class="c">!&gt; Path to archiver</span>
+<span class="w">    </span><span class="k">call </span><span class="n">set_string</span><span class="p">(</span><span class="n">table</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;ar&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">self</span><span class="p">%</span><span class="n">ar</span><span class="p">,</span><span class="w"> </span><span class="n">error</span><span class="p">,</span><span class="w"> </span><span class="s1">&#39;archiver_t&#39;</span><span class="p">)</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="nb">allocated</span><span class="p">(</span><span class="n">error</span><span class="p">))</span><span class="w"> </span><span class="k">return</span>
+<span class="k">    call </span><span class="n">set_value</span><span class="p">(</span><span class="n">table</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;use-response-file&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">self</span><span class="p">%</span><span class="n">use_response_file</span><span class="p">,</span><span class="w"> </span><span class="n">error</span><span class="p">,</span><span class="w"> </span><span class="s1">&#39;archiver_t&#39;</span><span class="p">)</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="nb">allocated</span><span class="p">(</span><span class="n">error</span><span class="p">))</span><span class="w"> </span><span class="k">return</span>
+<span class="k">    call </span><span class="n">set_value</span><span class="p">(</span><span class="n">table</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;echo&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">self</span><span class="p">%</span><span class="n">echo</span><span class="p">,</span><span class="w"> </span><span class="n">error</span><span class="p">,</span><span class="w"> </span><span class="s1">&#39;archiver_t&#39;</span><span class="p">)</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="nb">allocated</span><span class="p">(</span><span class="n">error</span><span class="p">))</span><span class="w"> </span><span class="k">return</span>
+<span class="k">    call </span><span class="n">set_value</span><span class="p">(</span><span class="n">table</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;verbose&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">self</span><span class="p">%</span><span class="n">verbose</span><span class="p">,</span><span class="w"> </span><span class="n">error</span><span class="p">,</span><span class="w"> </span><span class="s1">&#39;archiver_t&#39;</span><span class="p">)</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="nb">allocated</span><span class="p">(</span><span class="n">error</span><span class="p">))</span><span class="w"> </span><span class="k">return</span>
 
-<span class="w">        </span><span class="k">call </span><span class="n">set_string</span><span class="p">(</span><span class="n">table</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;descriptor&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">descriptor_name</span><span class="p">(</span><span class="n">self</span><span class="p">%</span><span class="n">descriptor</span><span class="p">),</span><span class="w"> </span><span class="n">error</span><span class="p">,</span><span class="w"> </span><span class="s1">&#39;git_target_t&#39;</span><span class="p">)</span>
-<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="nb">allocated</span><span class="p">(</span><span class="n">error</span><span class="p">))</span><span class="w"> </span><span class="k">return</span>
-<span class="k">        call </span><span class="n">set_string</span><span class="p">(</span><span class="n">table</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;url&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">self</span><span class="p">%</span><span class="n">url</span><span class="p">,</span><span class="w"> </span><span class="n">error</span><span class="p">,</span><span class="w"> </span><span class="s1">&#39;git_target_t&#39;</span><span class="p">)</span>
-<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="nb">allocated</span><span class="p">(</span><span class="n">error</span><span class="p">))</span><span class="w"> </span><span class="k">return</span>
-<span class="k">        call </span><span class="n">set_string</span><span class="p">(</span><span class="n">table</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;object&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">self</span><span class="p">%</span><span class="n">object</span><span class="p">,</span><span class="w"> </span><span class="n">error</span><span class="p">,</span><span class="w"> </span><span class="s1">&#39;git_target_t&#39;</span><span class="p">)</span>
-<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="nb">allocated</span><span class="p">(</span><span class="n">error</span><span class="p">))</span><span class="w"> </span><span class="k">return</span>
-
-<span class="k">    end subroutine </span><span class="n">dump_to_toml</span>
+<span class="k">end subroutine </span><span class="n">dump_to_toml</span>
 </pre></div>
 
     </section>
@@ -330,7 +287,7 @@
             <p class="text-end">
               Documentation generated by
               <a href="https://github.com/Fortran-FOSS-Programmers/ford">FORD</a>
- on 2025-04-06 17:37 +0000             </p>
+ on 2025-04-08 06:40 +0000             </p>
           </div>
         </div>
         <br>

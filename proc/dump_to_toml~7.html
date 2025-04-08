@@ -10,7 +10,7 @@
     <meta name="author" content="fortran-lang/fpm contributors" >
     <link rel="icon" href="../favicon.png">
 
-    <title>load_from_toml &ndash; Fortran-lang/fpm</title>
+    <title>dump_to_toml &ndash; Fortran-lang/fpm</title>
 
     <!-- Bootstrap -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet"
@@ -81,7 +81,7 @@
 
     <div class="container">
   <div class="row">
-    <h1>load_from_toml
+    <h1>dump_to_toml
       <small>Subroutine</small>
       
     </h1>
@@ -92,7 +92,7 @@
 
             <li class="list-inline-item" id="statements"><i class="fa fa-list-ol"></i>
               <a data-bs-toggle="tooltip" data-bs-placement="bottom" data-bs-html="true"
-                 title=" 0.2% of total for procedures.">14 statements</a>
+                 title=" 0.2% of total for procedures.">12 statements</a>
             </li>
 
             <li class="list-inline-item" id="source-file">
@@ -106,7 +106,7 @@
           <ol class="breadcrumb justify-content-end mb-0">
                 <li class="breadcrumb-item"><a href='../sourcefile/git.f90.html'>git.f90</a></li>
                 <li class="breadcrumb-item"><a href='../module/fpm_git.html'>fpm_git</a></li>
-            <li class="breadcrumb-item active" aria-current="page">load_from_toml</li>
+            <li class="breadcrumb-item active" aria-current="page">dump_to_toml</li>
           </ol>
         </nav>
       </div>
@@ -134,7 +134,7 @@
       </a>
       <div id="vars-0" class="collapse">
         <div class="list-group list-group-flush">
-            <a class="list-group-item" href="../proc/load_from_toml~8.html#variable-descriptor_name">descriptor_name</a>
+            <a class="list-group-item" href="../proc/dump_to_toml~7.html#variable-ierr~9">ierr</a>
         </div>
       </div>
     </div>
@@ -160,7 +160,7 @@
     <div class="card card-primary">
       <div class="card-header text-left"><h3 class="card-title">Source Code</h3></div>
       <div class="list-group">
-        <a class="list-group-item" href="../proc/load_from_toml~8.html#src">load_from_toml</a>
+        <a class="list-group-item" href="../proc/dump_to_toml~7.html#src">dump_to_toml</a>
       </div>
     </div>
 
@@ -170,13 +170,11 @@
     </div>
     
     <div class="col-md-9" id='text'>
-    <h2>public  subroutine load_from_toml(self, table, error)  
+    <h2>public  subroutine dump_to_toml(self, table, error)  
 </h2>
     
 
-    <p>Read dependency from toml table (no checks made at this stage)</p>
-<p>Target URL of the git repository</p>
-<p>Additional descriptor of the git object</p>
+    <p>Dump dependency to toml table</p>
 
     <h3>Type Bound</h3>
     <p><a href='../type/git_target_t.html'>git_target_t</a></p>
@@ -194,7 +192,7 @@
     <tbody>
         <tr>
             <td>
-              <span class="anchor" id="variable-self~127"></span>
+              <span class="anchor" id="variable-self~105"></span>
               class(<a href='../type/git_target_t.html'>git_target_t</a>),
             </td>
 <td>intent(inout)</td>
@@ -209,7 +207,7 @@
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-table~80"></span>
+              <span class="anchor" id="variable-table~45"></span>
               type(toml_table),
             </td>
 <td>intent(inout)</td>
@@ -224,7 +222,7 @@
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-error~172"></span>
+              <span class="anchor" id="variable-error~124"></span>
               type(<a href='../type/error_t.html'>error_t</a>),
             </td>
 <td>intent(out),</td>
@@ -257,19 +255,19 @@
     <tbody>
         <tr>
             <td>
-              <span class="anchor" id="variable-descriptor_name"></span>
-              character(len=:),
+              <span class="anchor" id="variable-ierr~9"></span>
+              integer,
             </td>
-              <td>public,</td>
+              <td>public</td>
             <td>
-              allocatable
+              
             </td>
             <td>::</td>
-            <td><strong>descriptor_name</strong></td>
+            <td><strong>ierr</strong></td>
                 <td></td>
                 <td></td>
             <td>
-                <p>Local variables</p>
+                
             </td>
         </tr>
     </tbody>
@@ -288,7 +286,7 @@
     
     <section>
     <h2><span class="anchor" id="src"></span>Source Code</h2>
-    <div class="hl codehilite"><pre><span></span><span class="w">    </span><span class="k">subroutine </span><span class="n">load_from_toml</span><span class="p">(</span><span class="n">self</span><span class="p">,</span><span class="w"> </span><span class="n">table</span><span class="p">,</span><span class="w"> </span><span class="n">error</span><span class="p">)</span>
+    <div class="hl codehilite"><pre><span></span><span class="w">    </span><span class="k">subroutine </span><span class="n">dump_to_toml</span><span class="p">(</span><span class="n">self</span><span class="p">,</span><span class="w"> </span><span class="n">table</span><span class="p">,</span><span class="w"> </span><span class="n">error</span><span class="p">)</span>
 
 <span class="w">        </span><span class="c">!&gt; Instance of the serializable object</span>
 <span class="w">        </span><span class="k">class</span><span class="p">(</span><span class="n">git_target_t</span><span class="p">),</span><span class="w"> </span><span class="k">intent</span><span class="p">(</span><span class="n">inout</span><span class="p">)</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">self</span>
@@ -299,24 +297,16 @@
 <span class="w">        </span><span class="c">!&gt; Error handling</span>
 <span class="w">        </span><span class="k">type</span><span class="p">(</span><span class="n">error_t</span><span class="p">),</span><span class="w"> </span><span class="k">allocatable</span><span class="p">,</span><span class="w"> </span><span class="k">intent</span><span class="p">(</span><span class="n">out</span><span class="p">)</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">error</span>
 
-<span class="w">        </span><span class="c">!&gt; Local variables</span>
-<span class="w">        </span><span class="kt">character</span><span class="p">(</span><span class="nb">len</span><span class="o">=</span><span class="p">:),</span><span class="w"> </span><span class="k">allocatable</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">descriptor_name</span>
+<span class="w">        </span><span class="kt">integer</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">ierr</span>
 
-<span class="w">        </span><span class="k">call </span><span class="n">get_value</span><span class="p">(</span><span class="n">table</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;descriptor&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">descriptor_name</span><span class="p">)</span>
-<span class="w">        </span><span class="n">self</span><span class="p">%</span><span class="n">descriptor</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">parse_descriptor</span><span class="p">(</span><span class="n">descriptor_name</span><span class="p">)</span>
+<span class="w">        </span><span class="k">call </span><span class="n">set_string</span><span class="p">(</span><span class="n">table</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;descriptor&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">descriptor_name</span><span class="p">(</span><span class="n">self</span><span class="p">%</span><span class="n">descriptor</span><span class="p">),</span><span class="w"> </span><span class="n">error</span><span class="p">,</span><span class="w"> </span><span class="s1">&#39;git_target_t&#39;</span><span class="p">)</span>
+<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="nb">allocated</span><span class="p">(</span><span class="n">error</span><span class="p">))</span><span class="w"> </span><span class="k">return</span>
+<span class="k">        call </span><span class="n">set_string</span><span class="p">(</span><span class="n">table</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;url&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">self</span><span class="p">%</span><span class="n">url</span><span class="p">,</span><span class="w"> </span><span class="n">error</span><span class="p">,</span><span class="w"> </span><span class="s1">&#39;git_target_t&#39;</span><span class="p">)</span>
+<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="nb">allocated</span><span class="p">(</span><span class="n">error</span><span class="p">))</span><span class="w"> </span><span class="k">return</span>
+<span class="k">        call </span><span class="n">set_string</span><span class="p">(</span><span class="n">table</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;object&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">self</span><span class="p">%</span><span class="n">object</span><span class="p">,</span><span class="w"> </span><span class="n">error</span><span class="p">,</span><span class="w"> </span><span class="s1">&#39;git_target_t&#39;</span><span class="p">)</span>
+<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="nb">allocated</span><span class="p">(</span><span class="n">error</span><span class="p">))</span><span class="w"> </span><span class="k">return</span>
 
-<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">self</span><span class="p">%</span><span class="n">descriptor</span><span class="o">==</span><span class="n">git_descriptor</span><span class="p">%</span><span class="n">error</span><span class="p">)</span><span class="w"> </span><span class="k">then</span>
-<span class="k">            call </span><span class="n">fatal_error</span><span class="p">(</span><span class="n">error</span><span class="p">,</span><span class="s2">&quot;invalid descriptor ID &lt;&quot;</span><span class="o">//</span><span class="n">descriptor_name</span><span class="o">//</span><span class="s2">&quot;&gt; in TOML entry&quot;</span><span class="p">)</span>
-<span class="w">            </span><span class="k">return</span>
-<span class="k">        end if</span>
-
-<span class="w">        </span><span class="c">!&gt; Target URL of the git repository</span>
-<span class="w">        </span><span class="k">call </span><span class="n">get_value</span><span class="p">(</span><span class="n">table</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;url&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">self</span><span class="p">%</span><span class="n">url</span><span class="p">)</span>
-
-<span class="w">        </span><span class="c">!&gt; Additional descriptor of the git object</span>
-<span class="w">        </span><span class="k">call </span><span class="n">get_value</span><span class="p">(</span><span class="n">table</span><span class="p">,</span><span class="s2">&quot;object&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">self</span><span class="p">%</span><span class="n">object</span><span class="p">)</span>
-
-<span class="w">    </span><span class="k">end subroutine </span><span class="n">load_from_toml</span>
+<span class="k">    end subroutine </span><span class="n">dump_to_toml</span>
 </pre></div>
 
     </section>
@@ -340,7 +330,7 @@
             <p class="text-end">
               Documentation generated by
               <a href="https://github.com/Fortran-FOSS-Programmers/ford">FORD</a>
- on 2025-04-06 17:37 +0000             </p>
+ on 2025-04-08 06:40 +0000             </p>
           </div>
         </div>
         <br>
