@@ -1,5 +1,6 @@
 module fpm_meta_blas
     use fpm_compiler, only: compiler_t, get_include_flag
+    use fpm_environment, only: get_os_type, OS_MACOS
     use fpm_meta_base, only: metapackage_t, destroy
     use fpm_meta_util, only: add_pkg_config_compile_options
     use fpm_pkg_config, only: assert_pkg_config, pkgcfg_has_package
@@ -33,6 +34,14 @@ contains
         this%link_flags = string_t("")
         this%flags = string_t("")
         this%has_external_modules = .false.
+
+        if (get_os_type() == OS_MACOS) then
+            this%flags = string_t("-framework Accelerate")
+            this%has_build_flags = .true.
+            this%link_flags = string_t("-framework Accelerate")
+            this%has_link_flags = .true.
+            return
+        end if
 
         if (compiler%is_intel()) then
             this%flags = string_t("-qmkl")
