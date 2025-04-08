@@ -1,6 +1,7 @@
 module fpm_manifest_fortran
     use fpm_error, only : error_t, syntax_error, fatal_error
-    use fpm_toml, only : toml_table, toml_key, toml_stat, get_value, serializable_t, set_value, set_string
+    use tomlf, only : toml_table, toml_key, toml_stat
+    use fpm_toml, only : get_value, serializable_t, set_value, set_string
     implicit none
     private
 

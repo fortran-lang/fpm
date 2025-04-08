@@ -26,7 +26,8 @@ module fpm_manifest_dependency
     use fpm_error, only: error_t, syntax_error, fatal_error
     use fpm_git, only: git_target_t, git_target_tag, git_target_branch, &
         & git_target_revision, git_target_default, git_matches_manifest
-    use fpm_toml, only: toml_table, toml_key, toml_stat, get_value, check_keys, serializable_t, add_table, &
+    use tomlf, only: toml_table, toml_key, toml_stat
+    use fpm_toml, only: get_value, check_keys, serializable_t, add_table, &
         & set_value, set_string
     use fpm_filesystem, only: windows_path, join_path
     use fpm_environment, only: get_os_type, OS_WINDOWS

@@ -14,7 +14,8 @@ module fpm_manifest_executable
     use fpm_manifest_dependency, only : dependency_config_t, new_dependencies, resize
     use fpm_error, only : error_t, syntax_error, bad_name_error, fatal_error
     use fpm_strings, only : string_t, operator(==)
-    use fpm_toml, only : toml_table, toml_key, toml_stat, get_value, get_list, serializable_t, add_table, &
+    use tomlf, only : toml_table, toml_key, toml_stat
+    use fpm_toml, only : get_value, get_list, serializable_t, add_table, &
                           set_string, set_list
     implicit none
     private

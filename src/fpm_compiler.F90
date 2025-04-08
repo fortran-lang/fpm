@@ -43,7 +43,8 @@ use fpm_strings, only: split, string_cat, string_t, str_ends_with, str_begins_wi
     & string_array_contains
 use fpm_manifest, only : package_config_t
 use fpm_error, only: error_t, fatal_error
-use fpm_toml, only: serializable_t, toml_table, set_string, set_value, toml_stat, get_value
+use tomlf, only: toml_table
+use fpm_toml, only: serializable_t, set_string, set_value, toml_stat, get_value
 use shlex_module, only: shlex_split => split
 implicit none
 public :: compiler_t, new_compiler, archiver_t, new_archiver, get_macros

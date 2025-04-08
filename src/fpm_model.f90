@@ -39,7 +39,8 @@ use iso_fortran_env, only: int64
 use fpm_compiler, only: compiler_t, archiver_t, debug
 use fpm_dependency, only: dependency_tree_t
 use fpm_strings, only: string_t, str, len_trim, upper, operator(==)
-use fpm_toml, only: serializable_t, toml_table, toml_stat, set_value, set_list, get_value, &
+use tomlf, only: toml_table, toml_stat
+use fpm_toml, only: serializable_t, set_value, set_list, get_value, &
                     & get_list, add_table, toml_key, add_array, set_string
 use fpm_error, only: error_t, fatal_error
 use fpm_manifest_preprocess, only: preprocess_config_t

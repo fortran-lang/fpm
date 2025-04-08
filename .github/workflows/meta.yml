@@ -4,17 +4,17 @@ on:
   # On push, only run if any of the metapackage files has changed
   push:
     paths:
-      - 'src/*meta*.f90'  
+      - 'src/*meta*.f90'
       - 'src/fpm/*meta*.f90'
       - 'src/fpm/manifest/*meta*.f90'
       - 'src/ci/meta_tests.sh'
       - 'src/.github/workflows/meta.yml'
-  # Always run on PR or release 
+  # Always run on PR or release
   pull_request:
   release:
     types: [published]
   # Allow manual triggering
-  workflow_dispatch:  
+  workflow_dispatch:
 
 env:
   CI: "ON" # We can detect this in the build system and other vendors implement it
@@ -51,7 +51,7 @@ jobs:
 
     - name: (Ubuntu/macOS) setup gcc version
       if: contains(matrix.os,'ubuntu') || contains(matrix.os,'macos')
-      run: |      
+      run: |
         echo "GCC_V=14" >> $GITHUB_ENV
 
     - name: (Windows) Install MSYS2
@@ -84,7 +84,7 @@ jobs:
         Remove-Item "oneAPI" -Force -Recurse
 
     - name: (Ubuntu) Install gfortran
-      if: contains(matrix.os,'ubuntu') 
+      if: contains(matrix.os,'ubuntu')
       run: |
         sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-${GCC_V} 100 \
         --slave /usr/bin/gfortran gfortran /usr/bin/gfortran-${GCC_V} \
@@ -115,16 +115,16 @@ jobs:
       uses: fortran-lang/setup-fortran@v1.6.1
       id: setup-fortran
       with:
-        compiler: intel 
-        version: 2024.1.0 
+        compiler: intel
+        version: 2024.1.0
 
-    - name: (Ubuntu) finalize oneAPI environment 
+    - name: (Ubuntu) finalize oneAPI environment
       if: contains(matrix.os,'ubuntu') && contains(matrix.mpi,'intel')
       run: |
         # Install MPI
         sudo apt-get install -y -q intel-oneapi-mpi-devel ninja-build cmake
         source /opt/intel/oneapi/setvars.sh --force
-        printenv >> $GITHUB_ENV        
+        printenv >> $GITHUB_ENV
         # To run HDF5 with oneAPI, we need to build it from source. Use CMake to generate pkg-config info
         curl -O -L https://github.com/HDFGroup/hdf5/archive/refs/tags/snapshot-1.14.tar.gz
         tar zxf snapshot-1.14.tar.gz
@@ -214,8 +214,8 @@ jobs:
 
     - name: (macOS) Install homebrew HDF5
       if: contains(matrix.os,'macos')
-      run: | 
-        brew install hdf5 
+      run: |
+        brew install hdf5
 
     # Phase 1: Bootstrap fpm with existing version
     - name: Install fpm
@@ -229,8 +229,8 @@ jobs:
         mv $(which fpm) fpm-bootstrap${{ matrix.exe }}
         echo "BOOTSTRAP=$PWD/fpm-bootstrap" >> $GITHUB_ENV
 
-    - name: (macOS/Ubuntu) Use gcc/g++ instead of Clang for C/C++ / ifx to build fpm
-      if: contains(matrix.os,'macOS') || contains(matrix.os,'ubuntu')
+    - name: (macOS) Use gcc/g++ instead of Clang for C/C++ to build fpm
+      if: contains(matrix.os,'macOS')
       shell: bash
       run: |
         echo "FPM_FC=gfortran-${{ env.GCC_V }}" >> $GITHUB_ENV

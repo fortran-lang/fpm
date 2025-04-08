@@ -627,7 +627,8 @@ end function git_metadata
 
 subroutine create_verified_basic_manifest(filename)
 !> create a basic but verified default manifest file
-use fpm_toml, only : toml_table, toml_serialize, set_value
+use tomlf, only : toml_table, toml_serialize
+use fpm_toml, only : set_value
 use fpm_manifest_package, only : package_config_t, new_package
 use fpm_error, only : error_t
 implicit none
