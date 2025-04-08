@@ -20,8 +20,8 @@ fortran-regex.git  = "https://github.com/perazz/fortran-regex"
 fortran-regex.tag  = "1.1.2"
 jonquil.git = "https://github.com/toml-f/jonquil"
 jonquil.rev = "4fbd4cf34d577c0fd25e32667ee9e41bf231ece8"
-fortran-shlex.git = "https://github.com/itpplasma/fortran-shlex" # TODO: Change back to perazz
-fortran-shlex.tag = "main"  # TODO: Change back to 1.2.x
+fortran-shlex.git = "https://github.com/perazz/fortran-shlex"
+fortran-shlex.tag = "1.2.1"
 
 [[test]]
 name = "cli-test"
