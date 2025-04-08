@@ -137,7 +137,7 @@
             <a class="list-group-item" href="../proc/new_archiver.html#variable-arflags">arflags</a>
             <a class="list-group-item" href="../proc/new_archiver.html#variable-estat">estat</a>
             <a class="list-group-item" href="../proc/new_archiver.html#variable-libflags">libflags</a>
-            <a class="list-group-item" href="../proc/new_archiver.html#variable-os_type">os_type</a>
+            <a class="list-group-item" href="../proc/new_archiver.html#variable-os_type~2">os_type</a>
         </div>
       </div>
     </div>
@@ -193,7 +193,7 @@
     <tbody>
         <tr>
             <td>
-              <span class="anchor" id="variable-self~21"></span>
+              <span class="anchor" id="variable-self~74"></span>
               type(<a href='../type/archiver_t.html'>archiver_t</a>),
             </td>
 <td>intent(out)</td>
@@ -223,7 +223,7 @@
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-echo~4"></span>
+              <span class="anchor" id="variable-echo~7"></span>
               logical,
             </td>
 <td>intent(in)</td>
@@ -238,7 +238,7 @@
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-verbose~6"></span>
+              <span class="anchor" id="variable-verbose~13"></span>
               logical,
             </td>
 <td>intent(in)</td>
@@ -322,7 +322,7 @@ parameter
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-os_type"></span>
+              <span class="anchor" id="variable-os_type~2"></span>
               integer,
             </td>
               <td>public</td>
@@ -388,17 +388,17 @@ parameter
 <span class="w">        </span><span class="c">! Attempt &quot;ar&quot;</span>
 <span class="w">        </span><span class="k">call </span><span class="nb">execute_command_line</span><span class="p">(</span><span class="s2">&quot;ar --version &gt; &quot;</span><span class="o">//</span><span class="n">get_temp_filename</span><span class="p">()</span><span class="o">//</span><span class="s2">&quot; 2&gt;&amp;1&quot;</span><span class="p">,</span><span class="w"> </span><span class="p">&amp;</span>
 <span class="w">          </span><span class="p">&amp;</span><span class="w"> </span><span class="n">exitstat</span><span class="o">=</span><span class="n">estat</span><span class="p">)</span>
-<span class="w">          </span>
-<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">estat</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="mi">0</span><span class="p">)</span><span class="w"> </span><span class="k">then </span>
-<span class="k">            </span>
+
+<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">estat</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="mi">0</span><span class="p">)</span><span class="w"> </span><span class="k">then</span>
+
 <span class="k">            </span><span class="n">self</span><span class="p">%</span><span class="n">ar</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;ar&quot;</span><span class="o">//</span><span class="n">arflags</span>
-<span class="w">            </span>
+
 <span class="w">        </span><span class="k">else</span>
-<span class="w">            </span>
+
 <span class="w">            </span><span class="c">! Then &quot;gcc-ar&quot;</span>
 <span class="w">            </span><span class="k">call </span><span class="nb">execute_command_line</span><span class="p">(</span><span class="s2">&quot;gcc-ar --version &gt; &quot;</span><span class="o">//</span><span class="n">get_temp_filename</span><span class="p">()</span><span class="o">//</span><span class="s2">&quot; 2&gt;&amp;1&quot;</span><span class="p">,</span><span class="w"> </span><span class="p">&amp;</span>
-<span class="w">               </span><span class="p">&amp;</span><span class="w"> </span><span class="n">exitstat</span><span class="o">=</span><span class="n">estat</span><span class="p">)</span><span class="w">            </span>
-<span class="w">            </span>
+<span class="w">               </span><span class="p">&amp;</span><span class="w"> </span><span class="n">exitstat</span><span class="o">=</span><span class="n">estat</span><span class="p">)</span>
+
 <span class="w">            </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">estat</span><span class="w"> </span><span class="o">/=</span><span class="w"> </span><span class="mi">0</span><span class="p">)</span><span class="w"> </span><span class="k">then</span>
 <span class="k">              </span><span class="n">self</span><span class="p">%</span><span class="n">ar</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;lib&quot;</span><span class="o">//</span><span class="n">libflags</span>
 <span class="w">            </span><span class="k">else</span>
@@ -434,7 +434,7 @@ parameter
             <p class="text-end">
               Documentation generated by
               <a href="https://github.com/Fortran-FOSS-Programmers/ford">FORD</a>
- on 2025-04-08 06:46 +0000             </p>
+ on 2025-04-08 07:05 +0000             </p>
           </div>
         </div>
         <br>

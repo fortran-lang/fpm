@@ -134,18 +134,18 @@
       </a>
       <div id="vars-0" class="collapse">
         <div class="list-group list-group-flush">
-            <a class="list-group-item" href="../type/dependency_node_t.html#variable-cached~2">cached</a>
+            <a class="list-group-item" href="../type/dependency_node_t.html#variable-cached~3">cached</a>
             <a class="list-group-item" href="../type/dependency_node_t.html#variable-done">done</a>
             <a class="list-group-item" href="../type/dependency_node_t.html#variable-git">git</a>
-            <a class="list-group-item" href="../type/dependency_node_t.html#variable-name~18">name</a>
+            <a class="list-group-item" href="../type/dependency_node_t.html#variable-name~10">name</a>
             <a class="list-group-item" href="../type/dependency_node_t.html#variable-namespace">namespace</a>
-            <a class="list-group-item" href="../type/dependency_node_t.html#variable-path~4">path</a>
-            <a class="list-group-item" href="../type/dependency_node_t.html#variable-preprocess~3">preprocess</a>
+            <a class="list-group-item" href="../type/dependency_node_t.html#variable-path~13">path</a>
+            <a class="list-group-item" href="../type/dependency_node_t.html#variable-preprocess">preprocess</a>
             <a class="list-group-item" href="../type/dependency_node_t.html#variable-proj_dir">proj_dir</a>
             <a class="list-group-item" href="../type/dependency_node_t.html#variable-requested_version">requested_version</a>
-            <a class="list-group-item" href="../type/dependency_node_t.html#variable-revision">revision</a>
+            <a class="list-group-item" href="../type/dependency_node_t.html#variable-revision~2">revision</a>
             <a class="list-group-item" href="../type/dependency_node_t.html#variable-update">update</a>
-            <a class="list-group-item" href="../type/dependency_node_t.html#variable-version~11">version</a>
+            <a class="list-group-item" href="../type/dependency_node_t.html#variable-version~9">version</a>
         </div>
       </div>
     </div>
@@ -172,13 +172,13 @@
       </a>
       <div id="boundprocs-0" class="collapse">
         <div class="list-group list-group-flush">
-            <a class="list-group-item" href="../type/dependency_node_t.html#boundprocedure-dump~20">dump</a>
+            <a class="list-group-item" href="../type/dependency_node_t.html#boundprocedure-dump~19">dump</a>
             <a class="list-group-item" href="../type/dependency_node_t.html#boundprocedure-dump_to_toml~16">dump_to_toml</a>
             <a class="list-group-item" href="../type/dependency_node_t.html#boundprocedure-get_from_registry">get_from_registry</a>
             <a class="list-group-item" href="../type/dependency_node_t.html#boundprocedure-info~9">info</a>
-            <a class="list-group-item" href="../type/dependency_node_t.html#boundprocedure-load~18">load</a>
+            <a class="list-group-item" href="../type/dependency_node_t.html#boundprocedure-load~17">load</a>
             <a class="list-group-item" href="../type/dependency_node_t.html#boundprocedure-load_from_toml~16">load_from_toml</a>
-            <a class="list-group-item" href="../type/dependency_node_t.html#boundprocedure-operator%28%3D%3D%29~19">operator(==)</a>
+            <a class="list-group-item" href="../type/dependency_node_t.html#boundprocedure-operator%28%3D%3D%29~18">operator(==)</a>
             <a class="list-group-item" href="../type/dependency_node_t.html#boundprocedure-register">register</a>
             <a class="list-group-item" href="../type/dependency_node_t.html#boundprocedure-serializable_is_same~16">serializable_is_same</a>
             <a class="list-group-item" href="../type/dependency_node_t.html#boundprocedure-test_serialization">test_serialization</a>
@@ -220,7 +220,7 @@
     <tbody>
         <tr>
             <td>
-              <span class="anchor" id="variable-cached~2"></span>
+              <span class="anchor" id="variable-cached~3"></span>
               logical,
             </td>
               <td>public</td>
@@ -271,7 +271,7 @@
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-name~18"></span>
+              <span class="anchor" id="variable-name~10"></span>
               character(len=:),
             </td>
               <td>public,</td>
@@ -307,7 +307,7 @@ Required for dependencies that are obtained via the official registry.</p>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-path~4"></span>
+              <span class="anchor" id="variable-path~13"></span>
               character(len=:),
             </td>
               <td>public,</td>
@@ -324,7 +324,7 @@ Required for dependencies that are obtained via the official registry.</p>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-preprocess~3"></span>
+              <span class="anchor" id="variable-preprocess"></span>
               type(<a href='preprocess_config_t.html'>preprocess_config_t</a>),
             </td>
               <td>public,</td>
@@ -376,7 +376,7 @@ The latest version is used if not specified.</p>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-revision"></span>
+              <span class="anchor" id="variable-revision~2"></span>
               character(len=:),
             </td>
               <td>public,</td>
@@ -410,7 +410,7 @@ The latest version is used if not specified.</p>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-version~11"></span>
+              <span class="anchor" id="variable-version~9"></span>
               type(<a href='version_t.html'>version_t</a>),
             </td>
               <td>public,</td>
@@ -438,10 +438,10 @@ The latest version is used if not specified.</p>
           <div class="row">
               <div class="card mt-3">
     <div class="card-header codesum">
-      <span class="anchor" id="boundprocedure-dump~20"></span>
+      <span class="anchor" id="boundprocedure-dump~19"></span>
       <h3>
           generic, public ::
-  <strong>dump</strong> => <a href='/home/runner/work/fpm/fpm/fpm-doc/type/srcfile_t.html#boundprocedure-dump_to_toml~2'>dump_to_toml</a>, dump_to_file, dump_to_unit
+  <strong>dump</strong> => <a href='/home/runner/work/fpm/fpm/fpm-doc/type/srcfile_t.html#boundprocedure-dump_to_toml~13'>dump_to_toml</a>, dump_to_file, dump_to_unit
         
       </h3>
     </div>
@@ -977,10 +977,10 @@ by the global configuration settings.</p>
           <div class="row">
               <div class="card mt-3">
     <div class="card-header codesum">
-      <span class="anchor" id="boundprocedure-load~18"></span>
+      <span class="anchor" id="boundprocedure-load~17"></span>
       <h3>
           generic, public ::
-  <strong>load</strong> => <a href='/home/runner/work/fpm/fpm/fpm-doc/type/srcfile_t.html#boundprocedure-load_from_toml~2'>load_from_toml</a>, load_from_file, load_from_unit
+  <strong>load</strong> => <a href='/home/runner/work/fpm/fpm/fpm-doc/type/srcfile_t.html#boundprocedure-load_from_toml~13'>load_from_toml</a>, load_from_file, load_from_unit
         
       </h3>
     </div>
@@ -1313,10 +1313,10 @@ Read object from TOML table</p>
           <div class="row">
               <div class="card mt-3">
     <div class="card-header codesum">
-      <span class="anchor" id="boundprocedure-operator%28%3D%3D%29~19"></span>
+      <span class="anchor" id="boundprocedure-operator%28%3D%3D%29~18"></span>
       <h3>
           generic, public ::
-  <strong>operator(==)</strong> => <a href='/home/runner/work/fpm/fpm/fpm-doc/type/srcfile_t.html#boundprocedure-serializable_is_same~2'>serializable_is_same</a>
+  <strong>operator(==)</strong> => <a href='/home/runner/work/fpm/fpm/fpm-doc/type/srcfile_t.html#boundprocedure-serializable_is_same~13'>serializable_is_same</a>
         
       </h3>
     </div>
@@ -1738,7 +1738,7 @@ Check same</p>
             <p class="text-end">
               Documentation generated by
               <a href="https://github.com/Fortran-FOSS-Programmers/ford">FORD</a>
- on 2025-04-08 06:46 +0000             </p>
+ on 2025-04-08 07:05 +0000             </p>
           </div>
         </div>
         <br>
