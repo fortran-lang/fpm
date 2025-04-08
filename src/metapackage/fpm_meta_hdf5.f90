@@ -1,13 +1,11 @@
 module fpm_meta_hdf5
     use fpm_compiler, only: compiler_t, get_include_flag
-    use fpm_strings, only: str_begins_with_str, str_ends_with
+    use fpm_strings, only: str_begins_with_str, str_ends_with, string_t
     use fpm_filesystem, only: join_path
-    use fpm_pkg_config, only: assert_pkg_config, pkgcfg_has_package, &
-        pkgcfg_get_libs, pkgcfg_get_build_flags, pkgcfg_get_version, pkgcfg_list_all
+    use fpm_pkg_config, only: assert_pkg_config, pkgcfg_has_package, pkgcfg_list_all
     use fpm_meta_base, only: metapackage_t, destroy
-    use fpm_strings, only: string_t, split
+    use fpm_meta_util, only: add_pkg_config_compile_options, lib_get_trailing
     use fpm_error, only: error_t, fatal_error
-    use fpm_versioning, only: new_version
 
     implicit none
 
@@ -74,37 +72,8 @@ module fpm_meta_hdf5
             return
         end if
 
-        !> Get version
-        log = pkgcfg_get_version(name,error)
+        call add_pkg_config_compile_options(this, name, include_flag, libdir, error)
         if (allocated(error)) return
-        allocate(this%version)
-        call new_version(this%version,log%s,error)
-        if (allocated(error)) return
-
-        !> Get libraries
-        libs = pkgcfg_get_libs(name,error)
-        if (allocated(error)) return
-
-        libdir = ""
-        do i=1,size(libs)
-
-            if (str_begins_with_str(libs(i)%s,'-l')) then
-                this%has_link_libraries = .true.
-                this%link_libs = [this%link_libs, string_t(libs(i)%s(3:))]
-
-            else ! -L and others: concatenate
-                this%has_link_flags = .true.
-                this%link_flags = string_t(trim(this%link_flags%s)//' '//libs(i)%s)
-
-                ! Also save library dir
-                if (str_begins_with_str(libs(i)%s,'-L')) then
-                   libdir = libs(i)%s(3:)
-                elseif (str_begins_with_str(libs(i)%s,'/LIBPATH')) then
-                   libdir = libs(i)%s(9:)
-                endif
-
-            end if
-        end do
 
         ! Some pkg-config hdf5.pc (e.g. Ubuntu) don't include the commonly-used HL HDF5 libraries,
         ! so let's add them if they exist
@@ -148,22 +117,6 @@ module fpm_meta_hdf5
             end do
         endif
 
-        !> Get compiler flags
-        flags = pkgcfg_get_build_flags(name,.true.,error)
-        if (allocated(error)) return
-
-        do i=1,size(flags)
-
-            if (str_begins_with_str(flags(i)%s,include_flag)) then
-                this%has_include_dirs = .true.
-                this%incl_dirs = [this%incl_dirs, string_t(flags(i)%s(len(include_flag)+1:))]
-            else
-                this%has_build_flags = .true.
-                this%flags = string_t(trim(this%flags%s)//' '//flags(i)%s)
-            end if
-
-        end do
-
         !> Add HDF5 modules as external
         this%has_external_modules = .true.
         this%external_modules = [string_t('h5a'), &
@@ -189,49 +142,4 @@ module fpm_meta_hdf5
                                  string_t('hdf5')]
 
     end subroutine init_hdf5
-
-    !> Given a library name and folder, find extension and prefix
-    subroutine lib_get_trailing(lib_name,lib_dir,prefix,suffix,found)
-        character(*), intent(in) :: lib_name,lib_dir
-        character(:), allocatable, intent(out) :: prefix,suffix
-        logical, intent(out) :: found
-
-        character(*), parameter :: extensions(*) = [character(11) :: '.dll.a','.a','.dylib','.dll']
-        logical :: is_file
-        character(:), allocatable :: noext,tokens(:),path
-        integer :: l,k
-
-        ! Extract name with no extension
-        call split(lib_name,tokens,'.')
-        noext = trim(tokens(1))
-
-        ! Get library extension: find file name: NAME.a, NAME.dll.a, NAME.dylib, libNAME.a, etc.
-        found = .false.
-        suffix = ""
-        prefix = ""
-        with_pref: do l=1,2
-            if (l==2) then
-               prefix = "lib"
-            else
-               prefix = ""
-            end if
-            find_ext: do k=1,size(extensions)
-                path = join_path(lib_dir,prefix//noext//trim(extensions(k)))
-                inquire(file=path,exist=is_file)
-
-                if (is_file) then
-                   suffix = trim(extensions(k))
-                   found = .true.
-                   exit with_pref
-                end if
-            end do find_ext
-        end do with_pref
-
-        if (.not.found) then
-             prefix = ""
-             suffix = ""
-        end if
-
-    end subroutine lib_get_trailing
-
 end module fpm_meta_hdf5
