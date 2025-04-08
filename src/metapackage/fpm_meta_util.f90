@@ -24,7 +24,7 @@ module fpm_meta_util
         character(len=:), allocatable :: libdir
         type(string_t) :: log, current_include_dir, current_lib
         type(string_t), allocatable :: libs(:), flags(:)
-        integer :: i, j
+        integer :: i
 
         !> Get version
         if (.not. allocated(this%version)) then
