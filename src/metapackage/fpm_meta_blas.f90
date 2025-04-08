@@ -20,8 +20,10 @@ contains
         type(compiler_t), intent(in) :: compiler
         type(error_t), allocatable, intent(out) :: error
 
-        logical :: s
+        integer :: i
         character(len=:), allocatable :: include_flag, libdir
+        character(*), parameter :: candidates(*) = &
+                     [character(20) :: 'mkl-dynamic-lp64-tbb', 'openblas', 'blas']
 
         include_flag = get_include_flag(compiler, "")
 
@@ -38,9 +40,15 @@ contains
             return
         end if
 
-        if (pkgcfg_has_package('openblas')) then
-            call add_pkg_config_compile_options(this, 'openblas', include_flag, libdir, error)
-            return
-        end if
+        do i=1,size(candidates)
+            if (pkgcfg_has_package(trim(candidates(i)))) then
+                call add_pkg_config_compile_options(&
+                    this, trim(candidates(i)), include_flag, libdir, error)
+                print *, 'found blas package: ', trim(candidates(i))
+                return
+            end if
+        end do
+
+        call fatal_error(error, 'pkg-config could not find a suitable blas package.')
     end subroutine init_blas
 end module fpm_meta_blas
