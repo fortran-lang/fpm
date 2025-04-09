@@ -4,17 +4,17 @@ on:
   # On push, only run if any of the metapackage files has changed
   push:
     paths:
-      - 'src/*meta*.f90'  
+      - 'src/*meta*.f90'
       - 'src/fpm/*meta*.f90'
       - 'src/fpm/manifest/*meta*.f90'
       - 'src/ci/meta_tests.sh'
       - 'src/.github/workflows/meta.yml'
-  # Always run on PR or release 
+  # Always run on PR or release
   pull_request:
   release:
     types: [published]
   # Allow manual triggering
-  workflow_dispatch:  
+  workflow_dispatch:
 
 env:
   CI: "ON" # We can detect this in the build system and other vendors implement it
@@ -51,7 +51,7 @@ jobs:
 
     - name: (Ubuntu/macOS) setup gcc version
       if: contains(matrix.os,'ubuntu') || contains(matrix.os,'macos')
-      run: |      
+      run: |
         echo "GCC_V=14" >> $GITHUB_ENV
 
     - name: (Windows) Install MSYS2
@@ -67,6 +67,8 @@ jobs:
           unzip
           curl
           hdf5
+          netcdf
+          netcdf-fortran
 
     - name: (Windows) Setup VS Build environment
       if: contains(matrix.os,'windows') && contains(matrix.mpi,'intel')
@@ -84,7 +86,7 @@ jobs:
         Remove-Item "oneAPI" -Force -Recurse
 
     - name: (Ubuntu) Install gfortran
-      if: contains(matrix.os,'ubuntu') 
+      if: contains(matrix.os,'ubuntu')
       run: |
         sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-${GCC_V} 100 \
         --slave /usr/bin/gfortran gfortran /usr/bin/gfortran-${GCC_V} \
@@ -94,13 +96,15 @@ jobs:
       if: contains(matrix.os,'ubuntu') && contains(matrix.mpi,'openmpi')
       run: |
         sudo apt-get update
-        sudo apt install -y -q openmpi-bin libopenmpi-dev hwloc fabric libhdf5-dev libhdf5-fortran-102
+        sudo apt install -y -q openmpi-bin libopenmpi-dev hwloc fabric libhdf5-dev \
+          libhdf5-fortran-102 libnetcdf-dev libnetcdff-dev
 
     - name: (Ubuntu) Install MPICH
       if: contains(matrix.os,'ubuntu') && contains(matrix.mpi,'mpich')
       run: |
         sudo apt-get update
-        sudo apt install -y -q mpich hwloc fabric libhdf5-dev libhdf5-fortran-102
+        sudo apt install -y -q mpich hwloc fabric libhdf5-dev libhdf5-fortran-102 \
+          libnetcdf-dev libnetcdff-dev
 
     - name: (Ubuntu) Retrieve Intel toolchain
       if: contains(matrix.os,'ubuntu') && contains(matrix.mpi,'intel')
@@ -115,21 +119,32 @@ jobs:
       uses: fortran-lang/setup-fortran@v1.6.1
       id: setup-fortran
       with:
-        compiler: intel 
-        version: 2024.1.0 
+        compiler: intel
+        version: 2024.1.0
 
-    - name: (Ubuntu) finalize oneAPI environment 
+    - name: (Ubuntu) finalize oneAPI environment
       if: contains(matrix.os,'ubuntu') && contains(matrix.mpi,'intel')
       run: |
         # Install MPI
-        sudo apt-get install -y -q intel-oneapi-mpi-devel ninja-build cmake
+        sudo apt-get install -y -q intel-oneapi-mpi-devel ninja-build cmake libcurl4-gnutls-dev
         source /opt/intel/oneapi/setvars.sh --force
-        printenv >> $GITHUB_ENV        
+        printenv >> $GITHUB_ENV
         # To run HDF5 with oneAPI, we need to build it from source. Use CMake to generate pkg-config info
         curl -O -L https://github.com/HDFGroup/hdf5/archive/refs/tags/snapshot-1.14.tar.gz
         tar zxf snapshot-1.14.tar.gz
         cd hdf5-snapshot-1.14
         cmake -B build -DCMAKE_Fortran_COMPILER=ifx -DCMAKE_C_COMPILER=icx -DCMAKE_CXX_COMPILER=icpx -DHDF5_BUILD_FORTRAN=ON -DCMAKE_INSTALL_PREFIX=/usr
+        cd build
+        make -j
+        sudo make install
+        curl -L https://github.com/Unidata/netcdf-c/archive/refs/tags/v4.9.2.tar.gz -o - | tar xz
+        cd netcdf-c-4.9.2
+        CC=icx CXX=icpx FC=ifx ./configure --prefix=/usr --with-hdf5=/usr
+        CC=icx CXX=icpx FC=ifx make -j
+        sudo make install
+        curl -L https://github.com/Unidata/netcdf-fortran/archive/refs/tags/v4.6.1.tar.gz -o - | tar xz
+        cd netcdf-fortran-4.6.1
+        cmake -B build -DCMAKE_Fortran_COMPILER=ifx -DCMAKE_C_COMPILER=icx -DCMAKE_CXX_COMPILER=icpx -DCMAKE_INSTALL_PREFIX=/usr
         cd build
         make -j
         sudo make install
@@ -214,8 +229,14 @@ jobs:
 
     - name: (macOS) Install homebrew HDF5
       if: contains(matrix.os,'macos')
-      run: | 
-        brew install hdf5 
+      run: |
+        brew install hdf5
+
+    - name: (macOS) Install homebrew NetCDF
+      if: contains(matrix.os,'macos')
+      run: |
+        brew install netcdf
+        brew install netcdf-fortran
 
     # Phase 1: Bootstrap fpm with existing version
     - name: Install fpm

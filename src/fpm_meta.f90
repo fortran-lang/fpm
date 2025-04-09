@@ -30,6 +30,7 @@ module fpm_meta
     use fpm_meta_minpack, only: init_minpack
     use fpm_meta_mpi, only: init_mpi
     use fpm_meta_hdf5, only: init_hdf5
+    use fpm_meta_netcdf, only: init_netcdf
 
     use shlex_module, only: shlex_split => split
     use regex_module, only: regex
@@ -61,6 +62,7 @@ module fpm_meta
             case("minpack"); call init_minpack(this,compiler,error)
             case("mpi");     call init_mpi    (this,compiler,error)
             case("hdf5");    call init_hdf5   (this,compiler,error)
+            case("netcdf");  call init_netcdf (this,compiler,error)
             case default
                 call syntax_error(error, "Package "//name//" is not supported in [metapackages]")
                 return
@@ -150,6 +152,12 @@ module fpm_meta
         ! hdf5
         if (package%meta%hdf5%on) then
             call add_metapackage_model(model,package,settings,"hdf5",error)
+            if (allocated(error)) return
+        endif
+
+        ! netcdf
+        if (package%meta%netcdf%on) then
+            call add_metapackage_model(model,package,settings,"netcdf",error)
             if (allocated(error)) return
         endif
 
