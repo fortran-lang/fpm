@@ -5,6 +5,6 @@ program metapackage_netcdf
     integer(c_int) :: ncid, retval
 
     retval = nf_create("dummy.nc", NF_INMEMORY, ncid)
-    if (retval .ne. nf_noerr) error stop
+    if (retval /= nf_noerr) error stop nf_strerror(retval)
     stop 0
 end program metapackage_netcdf
