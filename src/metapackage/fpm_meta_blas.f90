@@ -36,7 +36,7 @@ contains
         this%has_external_modules = .false.
 
         if (get_os_type() == OS_MACOS) then
-            if (compile_and_link_flags_supported(this, compiler, "-framework Accelerate")) then
+            if (compile_and_link_flags_supported(compiler, "-framework Accelerate")) then
                 call set_compile_and_link_flags(this, compiler, "-framework Accelerate")
                 return
             end if
@@ -44,11 +44,11 @@ contains
 
         if (compiler%is_intel()) then
             if (get_os_type() == OS_WINDOWS) then
-                if (compile_and_link_flags_supported(this, compiler, "/Qmkl")) then
+                if (compile_and_link_flags_supported(compiler, "/Qmkl")) then
                     call set_compile_and_link_flags(this, compiler, "/Qmkl")
                     return
                 end if
-            else if (compile_and_link_flags_supported(this, compiler, "-qmkl")) then
+            else if (compile_and_link_flags_supported(compiler, "-qmkl")) then
                 call set_compile_and_link_flags(this, compiler, "-Qmkl")
                 return
             endif
@@ -72,15 +72,12 @@ contains
         call fatal_error(error, 'pkg-config could not find a suitable blas package.')
     end subroutine init_blas
 
-    function compile_and_link_flags_supported(this, compiler, flags) result(is_supported)
-        class(metapackage_t), intent(in) :: this
+    function compile_and_link_flags_supported(compiler, flags) result(is_supported)
         type(compiler_t), intent(in) :: compiler
         character(len=*), intent(in) :: flags
         logical :: is_supported
 
-        is_supported = compiler%check_flags_supported( &
-            compile_flags=flags, &
-            link_flags=flags)
+        is_supported = compiler%check_flags_supported(compile_flags=flags, link_flags=flags)
     end function compile_and_link_flags_supported
 
     subroutine set_compile_and_link_flags(this, compiler, flags)
