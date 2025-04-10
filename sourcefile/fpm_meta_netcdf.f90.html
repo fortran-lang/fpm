@@ -92,7 +92,7 @@
 
             <li class="list-inline-item" id="statements"><i class="fa fa-list-ol"></i>
               <a data-bs-toggle="tooltip" data-bs-placement="bottom" data-bs-html="true"
-                 title=" 0.3% of total for source files.">40 statements</a>
+                 title=" 0.3% of total for source files.">42 statements</a>
             </li>
 
             <li class="list-inline-item" id="source-file">
@@ -212,31 +212,33 @@
 <a id="ln-39" name="ln-39" href="#ln-39"></a>
 <a id="ln-40" name="ln-40" href="#ln-40"></a><span class="k">        if</span><span class="w"> </span><span class="p">(.</span><span class="nb">not</span><span class="p">.</span><span class="w"> </span><span class="n">pkgcfg_has_package</span><span class="p">(</span><span class="s1">&#39;netcdf&#39;</span><span class="p">))</span><span class="w"> </span><span class="k">then</span>
 <a id="ln-41" name="ln-41" href="#ln-41"></a><span class="k">            call </span><span class="n">fatal_error</span><span class="p">(</span><span class="n">error</span><span class="p">,</span><span class="w"> </span><span class="s1">&#39;pkg-config could not find a suitable netcdf package.&#39;</span><span class="p">)</span>
-<a id="ln-42" name="ln-42" href="#ln-42"></a><span class="w">        </span><span class="k">end if</span>
-<a id="ln-43" name="ln-43" href="#ln-43"></a><span class="k">        call </span><span class="n">add_pkg_config_compile_options</span><span class="p">(</span><span class="n">this</span><span class="p">,</span><span class="w"> </span><span class="s1">&#39;netcdf&#39;</span><span class="p">,</span><span class="w"> </span><span class="n">include_flag</span><span class="p">,</span><span class="w"> </span><span class="n">libdir</span><span class="p">,</span><span class="w"> </span><span class="n">error</span><span class="p">)</span>
-<a id="ln-44" name="ln-44" href="#ln-44"></a><span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="nb">allocated</span><span class="p">(</span><span class="n">error</span><span class="p">))</span><span class="w"> </span><span class="k">return</span>
-<a id="ln-45" name="ln-45" href="#ln-45"></a>
-<a id="ln-46" name="ln-46" href="#ln-46"></a><span class="k">        if</span><span class="w"> </span><span class="p">(.</span><span class="nb">not</span><span class="p">.</span><span class="w"> </span><span class="n">pkgcfg_has_package</span><span class="p">(</span><span class="s1">&#39;netcdf-fortran&#39;</span><span class="p">))</span><span class="w"> </span><span class="k">then</span>
-<a id="ln-47" name="ln-47" href="#ln-47"></a><span class="k">            call </span><span class="n">fatal_error</span><span class="p">(</span><span class="n">error</span><span class="p">,</span><span class="w"> </span><span class="p">&amp;</span>
-<a id="ln-48" name="ln-48" href="#ln-48"></a><span class="w">                             </span><span class="s1">&#39;pkg-config could not find a suitable netcdf-fortran package.&#39;</span><span class="p">)</span>
-<a id="ln-49" name="ln-49" href="#ln-49"></a><span class="w">        </span><span class="k">end if</span>
-<a id="ln-50" name="ln-50" href="#ln-50"></a><span class="k">        call </span><span class="n">add_pkg_config_compile_options</span><span class="p">(</span><span class="n">this</span><span class="p">,</span><span class="w"> </span><span class="s1">&#39;netcdf-fortran&#39;</span><span class="p">,</span><span class="w"> </span><span class="n">include_flag</span><span class="p">,</span><span class="w"> </span><span class="n">libdir</span><span class="p">,</span><span class="w"> </span><span class="n">error</span><span class="p">)</span>
-<a id="ln-51" name="ln-51" href="#ln-51"></a><span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="nb">allocated</span><span class="p">(</span><span class="n">error</span><span class="p">))</span><span class="w"> </span><span class="k">return</span>
-<a id="ln-52" name="ln-52" href="#ln-52"></a>
-<a id="ln-53" name="ln-53" href="#ln-53"></a><span class="w">        </span><span class="c">!&gt; Add NetCDF modules as external</span>
-<a id="ln-54" name="ln-54" href="#ln-54"></a><span class="w">        </span><span class="n">this</span><span class="w"> </span><span class="p">%</span><span class="w"> </span><span class="n">has_external_modules</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">.</span><span class="n">true</span><span class="p">.</span>
-<a id="ln-55" name="ln-55" href="#ln-55"></a><span class="w">        </span><span class="n">this</span><span class="w"> </span><span class="p">%</span><span class="w"> </span><span class="n">external_modules</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">[</span><span class="n">string_t</span><span class="p">(</span><span class="s1">&#39;netcdf&#39;</span><span class="p">),</span><span class="w"> </span><span class="p">&amp;</span>
-<a id="ln-56" name="ln-56" href="#ln-56"></a><span class="w">                                   </span><span class="n">string_t</span><span class="p">(</span><span class="s1">&#39;netcdf4_f03&#39;</span><span class="p">),</span><span class="w"> </span><span class="p">&amp;</span>
-<a id="ln-57" name="ln-57" href="#ln-57"></a><span class="w">                                   </span><span class="n">string_t</span><span class="p">(</span><span class="s1">&#39;netcdf4_nc_interfaces&#39;</span><span class="p">),</span><span class="w"> </span><span class="p">&amp;</span>
-<a id="ln-58" name="ln-58" href="#ln-58"></a><span class="w">                                   </span><span class="n">string_t</span><span class="p">(</span><span class="s1">&#39;netcdf4_nf_interfaces&#39;</span><span class="p">),</span><span class="w"> </span><span class="p">&amp;</span>
-<a id="ln-59" name="ln-59" href="#ln-59"></a><span class="w">                                   </span><span class="n">string_t</span><span class="p">(</span><span class="s1">&#39;netcdf_f03&#39;</span><span class="p">),</span><span class="w"> </span><span class="p">&amp;</span>
-<a id="ln-60" name="ln-60" href="#ln-60"></a><span class="w">                                   </span><span class="n">string_t</span><span class="p">(</span><span class="s1">&#39;netcdf_fortv2_c_interfaces&#39;</span><span class="p">),</span><span class="w"> </span><span class="p">&amp;</span>
-<a id="ln-61" name="ln-61" href="#ln-61"></a><span class="w">                                   </span><span class="n">string_t</span><span class="p">(</span><span class="s1">&#39;netcdf_nc_data&#39;</span><span class="p">),</span><span class="w"> </span><span class="p">&amp;</span>
-<a id="ln-62" name="ln-62" href="#ln-62"></a><span class="w">                                   </span><span class="n">string_t</span><span class="p">(</span><span class="s1">&#39;netcdf_nc_interfaces&#39;</span><span class="p">),</span><span class="w"> </span><span class="p">&amp;</span>
-<a id="ln-63" name="ln-63" href="#ln-63"></a><span class="w">                                   </span><span class="n">string_t</span><span class="p">(</span><span class="s1">&#39;netcdf_nf_data&#39;</span><span class="p">),</span><span class="w"> </span><span class="p">&amp;</span>
-<a id="ln-64" name="ln-64" href="#ln-64"></a><span class="w">                                   </span><span class="n">string_t</span><span class="p">(</span><span class="s1">&#39;netcdf_nf_interfaces&#39;</span><span class="p">)]</span>
-<a id="ln-65" name="ln-65" href="#ln-65"></a><span class="w">    </span><span class="k">end subroutine </span><span class="n">init_netcdf</span>
-<a id="ln-66" name="ln-66" href="#ln-66"></a><span class="k">end module </span><span class="n">fpm_meta_netcdf</span>
+<a id="ln-42" name="ln-42" href="#ln-42"></a><span class="w">            </span><span class="k">return</span>
+<a id="ln-43" name="ln-43" href="#ln-43"></a><span class="k">        end if</span>
+<a id="ln-44" name="ln-44" href="#ln-44"></a><span class="k">        call </span><span class="n">add_pkg_config_compile_options</span><span class="p">(</span><span class="n">this</span><span class="p">,</span><span class="w"> </span><span class="s1">&#39;netcdf&#39;</span><span class="p">,</span><span class="w"> </span><span class="n">include_flag</span><span class="p">,</span><span class="w"> </span><span class="n">libdir</span><span class="p">,</span><span class="w"> </span><span class="n">error</span><span class="p">)</span>
+<a id="ln-45" name="ln-45" href="#ln-45"></a><span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="nb">allocated</span><span class="p">(</span><span class="n">error</span><span class="p">))</span><span class="w"> </span><span class="k">return</span>
+<a id="ln-46" name="ln-46" href="#ln-46"></a>
+<a id="ln-47" name="ln-47" href="#ln-47"></a><span class="k">        if</span><span class="w"> </span><span class="p">(.</span><span class="nb">not</span><span class="p">.</span><span class="w"> </span><span class="n">pkgcfg_has_package</span><span class="p">(</span><span class="s1">&#39;netcdf-fortran&#39;</span><span class="p">))</span><span class="w"> </span><span class="k">then</span>
+<a id="ln-48" name="ln-48" href="#ln-48"></a><span class="k">            call </span><span class="n">fatal_error</span><span class="p">(</span><span class="n">error</span><span class="p">,</span><span class="w"> </span><span class="p">&amp;</span>
+<a id="ln-49" name="ln-49" href="#ln-49"></a><span class="w">                             </span><span class="s1">&#39;pkg-config could not find a suitable netcdf-fortran package.&#39;</span><span class="p">)</span>
+<a id="ln-50" name="ln-50" href="#ln-50"></a><span class="w">            </span><span class="k">return</span>
+<a id="ln-51" name="ln-51" href="#ln-51"></a><span class="k">        end if</span>
+<a id="ln-52" name="ln-52" href="#ln-52"></a><span class="k">        call </span><span class="n">add_pkg_config_compile_options</span><span class="p">(</span><span class="n">this</span><span class="p">,</span><span class="w"> </span><span class="s1">&#39;netcdf-fortran&#39;</span><span class="p">,</span><span class="w"> </span><span class="n">include_flag</span><span class="p">,</span><span class="w"> </span><span class="n">libdir</span><span class="p">,</span><span class="w"> </span><span class="n">error</span><span class="p">)</span>
+<a id="ln-53" name="ln-53" href="#ln-53"></a><span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="nb">allocated</span><span class="p">(</span><span class="n">error</span><span class="p">))</span><span class="w"> </span><span class="k">return</span>
+<a id="ln-54" name="ln-54" href="#ln-54"></a>
+<a id="ln-55" name="ln-55" href="#ln-55"></a><span class="w">        </span><span class="c">!&gt; Add NetCDF modules as external</span>
+<a id="ln-56" name="ln-56" href="#ln-56"></a><span class="w">        </span><span class="n">this</span><span class="w"> </span><span class="p">%</span><span class="w"> </span><span class="n">has_external_modules</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">.</span><span class="n">true</span><span class="p">.</span>
+<a id="ln-57" name="ln-57" href="#ln-57"></a><span class="w">        </span><span class="n">this</span><span class="w"> </span><span class="p">%</span><span class="w"> </span><span class="n">external_modules</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">[</span><span class="n">string_t</span><span class="p">(</span><span class="s1">&#39;netcdf&#39;</span><span class="p">),</span><span class="w"> </span><span class="p">&amp;</span>
+<a id="ln-58" name="ln-58" href="#ln-58"></a><span class="w">                                   </span><span class="n">string_t</span><span class="p">(</span><span class="s1">&#39;netcdf4_f03&#39;</span><span class="p">),</span><span class="w"> </span><span class="p">&amp;</span>
+<a id="ln-59" name="ln-59" href="#ln-59"></a><span class="w">                                   </span><span class="n">string_t</span><span class="p">(</span><span class="s1">&#39;netcdf4_nc_interfaces&#39;</span><span class="p">),</span><span class="w"> </span><span class="p">&amp;</span>
+<a id="ln-60" name="ln-60" href="#ln-60"></a><span class="w">                                   </span><span class="n">string_t</span><span class="p">(</span><span class="s1">&#39;netcdf4_nf_interfaces&#39;</span><span class="p">),</span><span class="w"> </span><span class="p">&amp;</span>
+<a id="ln-61" name="ln-61" href="#ln-61"></a><span class="w">                                   </span><span class="n">string_t</span><span class="p">(</span><span class="s1">&#39;netcdf_f03&#39;</span><span class="p">),</span><span class="w"> </span><span class="p">&amp;</span>
+<a id="ln-62" name="ln-62" href="#ln-62"></a><span class="w">                                   </span><span class="n">string_t</span><span class="p">(</span><span class="s1">&#39;netcdf_fortv2_c_interfaces&#39;</span><span class="p">),</span><span class="w"> </span><span class="p">&amp;</span>
+<a id="ln-63" name="ln-63" href="#ln-63"></a><span class="w">                                   </span><span class="n">string_t</span><span class="p">(</span><span class="s1">&#39;netcdf_nc_data&#39;</span><span class="p">),</span><span class="w"> </span><span class="p">&amp;</span>
+<a id="ln-64" name="ln-64" href="#ln-64"></a><span class="w">                                   </span><span class="n">string_t</span><span class="p">(</span><span class="s1">&#39;netcdf_nc_interfaces&#39;</span><span class="p">),</span><span class="w"> </span><span class="p">&amp;</span>
+<a id="ln-65" name="ln-65" href="#ln-65"></a><span class="w">                                   </span><span class="n">string_t</span><span class="p">(</span><span class="s1">&#39;netcdf_nf_data&#39;</span><span class="p">),</span><span class="w"> </span><span class="p">&amp;</span>
+<a id="ln-66" name="ln-66" href="#ln-66"></a><span class="w">                                   </span><span class="n">string_t</span><span class="p">(</span><span class="s1">&#39;netcdf_nf_interfaces&#39;</span><span class="p">)]</span>
+<a id="ln-67" name="ln-67" href="#ln-67"></a><span class="w">    </span><span class="k">end subroutine </span><span class="n">init_netcdf</span>
+<a id="ln-68" name="ln-68" href="#ln-68"></a><span class="k">end module </span><span class="n">fpm_meta_netcdf</span>
 </pre></div>
 
       </section>
@@ -258,7 +260,7 @@
             <p class="text-end">
               Documentation generated by
               <a href="https://github.com/Fortran-FOSS-Programmers/ford">FORD</a>
- on 2025-04-09 09:23 +0000             </p>
+ on 2025-04-10 06:56 +0000             </p>
           </div>
         </div>
         <br>

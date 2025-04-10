@@ -135,7 +135,7 @@
         <div class="list-group list-group-flush">
             <a class="list-group-item" href="../module/fpm_manifest_profile.html#variable-default_compiler">DEFAULT_COMPILER</a>
             <a class="list-group-item" href="../module/fpm_manifest_profile.html#variable-os_all">OS_ALL</a>
-            <a class="list-group-item" href="../module/fpm_manifest_profile.html#variable-path~31">path</a>
+            <a class="list-group-item" href="../module/fpm_manifest_profile.html#variable-path~29">path</a>
         </div>
       </div>
     </div>
@@ -189,7 +189,7 @@
             <a class="list-group-item" href="../module/fpm_manifest_profile.html#proc-file_scope_load">file_scope_load</a>
             <a class="list-group-item" href="../module/fpm_manifest_profile.html#proc-find_profile">find_profile</a>
             <a class="list-group-item" href="../module/fpm_manifest_profile.html#proc-get_flags">get_flags</a>
-            <a class="list-group-item" href="../module/fpm_manifest_profile.html#proc-info~12">info</a>
+            <a class="list-group-item" href="../module/fpm_manifest_profile.html#proc-info~8">info</a>
             <a class="list-group-item" href="../module/fpm_manifest_profile.html#proc-match_os_type">match_os_type</a>
             <a class="list-group-item" href="../module/fpm_manifest_profile.html#proc-new_profiles">new_profiles</a>
             <a class="list-group-item" href="../module/fpm_manifest_profile.html#proc-profile_dump">profile_dump</a>
@@ -264,11 +264,11 @@
         <ul class="list-group list-group-flush">
             <li class="list-group-item">
               <ul class="list-inline">
-                  <li class="list-inline-item"><a href='fpm_environment.html'>fpm_environment</a></li>
-                  <li class="list-inline-item"><a href='fpm_toml.html'>fpm_toml</a></li>
-                  <li class="list-inline-item"><a href='fpm_error.html'>fpm_error</a></li>
                   <li class="list-inline-item"><a href='fpm_strings.html'>fpm_strings</a></li>
                   <li class="list-inline-item"><a href='fpm_filesystem.html'>fpm_filesystem</a></li>
+                  <li class="list-inline-item"><a href='fpm_error.html'>fpm_error</a></li>
+                  <li class="list-inline-item"><a href='fpm_toml.html'>fpm_toml</a></li>
+                  <li class="list-inline-item"><a href='fpm_environment.html'>fpm_environment</a></li>
               </ul>
             </li>
         </ul>
@@ -327,7 +327,7 @@ parameter
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-path~31"></span>
+              <span class="anchor" id="variable-path~29"></span>
               character(len=:),
             </td>
               <td>public,</td>
@@ -395,7 +395,7 @@ parameter
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-flags~17"></span>
+              <span class="anchor" id="variable-flags~16"></span>
               character(len=:),
             </td>
               <td>public,</td>
@@ -421,32 +421,32 @@ parameter
           <tbody>
               <tr>
                 <td>  generic, public ::
-  <strong><a href='../type/file_scope_flag.html#boundprocedure-dump~23'>dump</a></strong> => <a href='/home/runner/work/fpm/fpm/fpm-doc/type/srcfile_t.html#boundprocedure-dump_to_toml~9'>dump_to_toml</a>, dump_to_file, dump_to_unit</td>
+  <strong><a href='../type/file_scope_flag.html#boundprocedure-dump~18'>dump</a></strong> => <a href='/home/runner/work/fpm/fpm/fpm-doc/type/srcfile_t.html#boundprocedure-dump_to_toml~9'>dump_to_toml</a>, dump_to_file, dump_to_unit</td>
                   <td></td>
               </tr>
               <tr>
                 <td>  procedure, public ::
-  <strong><a href='../type/file_scope_flag.html#boundprocedure-dump_to_toml~19'>dump_to_toml</a></strong> => <a href='/home/runner/work/fpm/fpm/fpm-doc/proc/file_scope_dump.html'>file_scope_dump</a></td>
+  <strong><a href='../type/file_scope_flag.html#boundprocedure-dump_to_toml~14'>dump_to_toml</a></strong> => <a href='/home/runner/work/fpm/fpm/fpm-doc/proc/file_scope_dump.html'>file_scope_dump</a></td>
                   <td></td>
               </tr>
               <tr>
                 <td>  generic, public ::
-  <strong><a href='../type/file_scope_flag.html#boundprocedure-load~21'>load</a></strong> => <a href='/home/runner/work/fpm/fpm/fpm-doc/type/srcfile_t.html#boundprocedure-load_from_toml~9'>load_from_toml</a>, load_from_file, load_from_unit</td>
+  <strong><a href='../type/file_scope_flag.html#boundprocedure-load~16'>load</a></strong> => <a href='/home/runner/work/fpm/fpm/fpm-doc/type/srcfile_t.html#boundprocedure-load_from_toml~9'>load_from_toml</a>, load_from_file, load_from_unit</td>
                   <td></td>
               </tr>
               <tr>
                 <td>  procedure, public ::
-  <strong><a href='../type/file_scope_flag.html#boundprocedure-load_from_toml~19'>load_from_toml</a></strong> => <a href='/home/runner/work/fpm/fpm/fpm-doc/proc/file_scope_load.html'>file_scope_load</a></td>
+  <strong><a href='../type/file_scope_flag.html#boundprocedure-load_from_toml~14'>load_from_toml</a></strong> => <a href='/home/runner/work/fpm/fpm/fpm-doc/proc/file_scope_load.html'>file_scope_load</a></td>
                   <td></td>
               </tr>
               <tr>
                 <td>  generic, public ::
-  <strong><a href='../type/file_scope_flag.html#boundprocedure-operator%28%3D%3D%29~22'>operator(==)</a></strong> => <a href='/home/runner/work/fpm/fpm/fpm-doc/type/srcfile_t.html#boundprocedure-serializable_is_same~9'>serializable_is_same</a></td>
+  <strong><a href='../type/file_scope_flag.html#boundprocedure-operator%28%3D%3D%29~17'>operator(==)</a></strong> => <a href='/home/runner/work/fpm/fpm/fpm-doc/type/srcfile_t.html#boundprocedure-serializable_is_same~9'>serializable_is_same</a></td>
                   <td></td>
               </tr>
               <tr>
                 <td>  procedure, public ::
-  <strong><a href='../type/file_scope_flag.html#boundprocedure-serializable_is_same~19'>serializable_is_same</a></strong> => <a href='/home/runner/work/fpm/fpm/fpm-doc/proc/file_scope_same.html'>file_scope_same</a></td>
+  <strong><a href='../type/file_scope_flag.html#boundprocedure-serializable_is_same~14'>serializable_is_same</a></strong> => <a href='/home/runner/work/fpm/fpm/fpm-doc/proc/file_scope_same.html'>file_scope_same</a></td>
                   <td>../../<p>Serialization interface</p></td>
               </tr>
               <tr>
@@ -501,7 +501,7 @@ parameter
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-compiler~24"></span>
+              <span class="anchor" id="variable-compiler~25"></span>
               character(len=:),
             </td>
               <td>public,</td>
@@ -552,7 +552,7 @@ parameter
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-flags~18"></span>
+              <span class="anchor" id="variable-flags~17"></span>
               character(len=:),
             </td>
               <td>public,</td>
@@ -620,7 +620,7 @@ parameter
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-profile_name~2"></span>
+              <span class="anchor" id="variable-profile_name"></span>
               character(len=:),
             </td>
               <td>public,</td>
@@ -646,37 +646,37 @@ parameter
           <tbody>
               <tr>
                 <td>  generic, public ::
-  <strong><a href='../type/profile_config_t.html#boundprocedure-dump~24'>dump</a></strong> => <a href='/home/runner/work/fpm/fpm/fpm-doc/type/srcfile_t.html#boundprocedure-dump_to_toml~9'>dump_to_toml</a>, dump_to_file, dump_to_unit</td>
+  <strong><a href='../type/profile_config_t.html#boundprocedure-dump~19'>dump</a></strong> => <a href='/home/runner/work/fpm/fpm/fpm-doc/type/srcfile_t.html#boundprocedure-dump_to_toml~9'>dump_to_toml</a>, dump_to_file, dump_to_unit</td>
                   <td></td>
               </tr>
               <tr>
                 <td>  procedure, public ::
-  <strong><a href='../type/profile_config_t.html#boundprocedure-dump_to_toml~20'>dump_to_toml</a></strong> => <a href='/home/runner/work/fpm/fpm/fpm-doc/proc/profile_dump.html'>profile_dump</a></td>
+  <strong><a href='../type/profile_config_t.html#boundprocedure-dump_to_toml~15'>dump_to_toml</a></strong> => <a href='/home/runner/work/fpm/fpm/fpm-doc/proc/profile_dump.html'>profile_dump</a></td>
                   <td></td>
               </tr>
               <tr>
                 <td>  procedure, public ::
-  <strong><a href='../type/profile_config_t.html#boundprocedure-info~12'>info</a></strong></td>
+  <strong><a href='../type/profile_config_t.html#boundprocedure-info~8'>info</a></strong></td>
                   <td>../../<p>Print information on this instance</p></td>
               </tr>
               <tr>
                 <td>  generic, public ::
-  <strong><a href='../type/profile_config_t.html#boundprocedure-load~22'>load</a></strong> => <a href='/home/runner/work/fpm/fpm/fpm-doc/type/srcfile_t.html#boundprocedure-load_from_toml~9'>load_from_toml</a>, load_from_file, load_from_unit</td>
+  <strong><a href='../type/profile_config_t.html#boundprocedure-load~17'>load</a></strong> => <a href='/home/runner/work/fpm/fpm/fpm-doc/type/srcfile_t.html#boundprocedure-load_from_toml~9'>load_from_toml</a>, load_from_file, load_from_unit</td>
                   <td></td>
               </tr>
               <tr>
                 <td>  procedure, public ::
-  <strong><a href='../type/profile_config_t.html#boundprocedure-load_from_toml~20'>load_from_toml</a></strong> => <a href='/home/runner/work/fpm/fpm/fpm-doc/proc/profile_load.html'>profile_load</a></td>
+  <strong><a href='../type/profile_config_t.html#boundprocedure-load_from_toml~15'>load_from_toml</a></strong> => <a href='/home/runner/work/fpm/fpm/fpm-doc/proc/profile_load.html'>profile_load</a></td>
                   <td></td>
               </tr>
               <tr>
                 <td>  generic, public ::
-  <strong><a href='../type/profile_config_t.html#boundprocedure-operator%28%3D%3D%29~23'>operator(==)</a></strong> => <a href='/home/runner/work/fpm/fpm/fpm-doc/type/srcfile_t.html#boundprocedure-serializable_is_same~9'>serializable_is_same</a></td>
+  <strong><a href='../type/profile_config_t.html#boundprocedure-operator%28%3D%3D%29~18'>operator(==)</a></strong> => <a href='/home/runner/work/fpm/fpm/fpm-doc/type/srcfile_t.html#boundprocedure-serializable_is_same~9'>serializable_is_same</a></td>
                   <td></td>
               </tr>
               <tr>
                 <td>  procedure, public ::
-  <strong><a href='../type/profile_config_t.html#boundprocedure-serializable_is_same~20'>serializable_is_same</a></strong> => <a href='/home/runner/work/fpm/fpm/fpm-doc/proc/profile_same.html'>profile_same</a></td>
+  <strong><a href='../type/profile_config_t.html#boundprocedure-serializable_is_same~15'>serializable_is_same</a></strong> => <a href='/home/runner/work/fpm/fpm/fpm-doc/proc/profile_same.html'>profile_same</a></td>
                   <td>../../<p>Serialization interface</p></td>
               </tr>
               <tr>
@@ -714,7 +714,7 @@ parameter
     <tbody>
         <tr>
             <td>
-              <span class="anchor" id="variable-this~33"></span>
+              <span class="anchor" id="variable-this~30"></span>
               class(<a href='../type/file_scope_flag.html'>file_scope_flag</a>),
             </td>
 <td>intent(in)</td>
@@ -729,7 +729,7 @@ parameter
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-that~22"></span>
+              <span class="anchor" id="variable-that~17"></span>
               class(<a href='../type/serializable_t.html'>serializable_t</a>),
             </td>
 <td>intent(in)</td>
@@ -774,7 +774,7 @@ parameter
     <tbody>
         <tr>
             <td>
-              <span class="anchor" id="variable-error~194"></span>
+              <span class="anchor" id="variable-error~129"></span>
               type(<a href='../type/error_t.html'>error_t</a>),
             </td>
 <td>intent(out),</td>
@@ -864,7 +864,7 @@ parameter
     <tbody>
         <tr>
             <td>
-              <span class="anchor" id="variable-profile_name~3"></span>
+              <span class="anchor" id="variable-profile_name~2"></span>
               character(len=*),
             </td>
 <td>intent(in)</td>
@@ -879,7 +879,7 @@ parameter
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-compiler~25"></span>
+              <span class="anchor" id="variable-compiler~26"></span>
               character(len=*),
             </td>
 <td>intent(in)</td>
@@ -909,7 +909,7 @@ parameter
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-flags~19"></span>
+              <span class="anchor" id="variable-flags~18"></span>
               character(len=*),
             </td>
 <td>intent(in),</td>
@@ -1074,7 +1074,7 @@ parameter
     <tbody>
         <tr>
             <td>
-              <span class="anchor" id="variable-this~34"></span>
+              <span class="anchor" id="variable-this~31"></span>
               class(<a href='../type/profile_config_t.html'>profile_config_t</a>),
             </td>
 <td>intent(in)</td>
@@ -1089,7 +1089,7 @@ parameter
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-that~23"></span>
+              <span class="anchor" id="variable-that~18"></span>
               class(<a href='../type/serializable_t.html'>serializable_t</a>),
             </td>
 <td>intent(in)</td>
@@ -1139,7 +1139,7 @@ parameter
     <tbody>
         <tr>
             <td>
-              <span class="anchor" id="variable-self~141"></span>
+              <span class="anchor" id="variable-self~84"></span>
               class(<a href='../type/file_scope_flag.html'>file_scope_flag</a>),
             </td>
 <td>intent(inout)</td>
@@ -1154,7 +1154,7 @@ parameter
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-table~92"></span>
+              <span class="anchor" id="variable-table~69"></span>
               type(toml_table),
             </td>
 <td>intent(inout)</td>
@@ -1169,7 +1169,7 @@ parameter
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-error~195"></span>
+              <span class="anchor" id="variable-error~130"></span>
               type(<a href='../type/error_t.html'>error_t</a>),
             </td>
 <td>intent(out),</td>
@@ -1209,7 +1209,7 @@ parameter
     <tbody>
         <tr>
             <td>
-              <span class="anchor" id="variable-self~142"></span>
+              <span class="anchor" id="variable-self~85"></span>
               class(<a href='../type/file_scope_flag.html'>file_scope_flag</a>),
             </td>
 <td>intent(inout)</td>
@@ -1224,7 +1224,7 @@ parameter
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-table~93"></span>
+              <span class="anchor" id="variable-table~70"></span>
               type(toml_table),
             </td>
 <td>intent(inout)</td>
@@ -1239,7 +1239,7 @@ parameter
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-error~196"></span>
+              <span class="anchor" id="variable-error~131"></span>
               type(<a href='../type/error_t.html'>error_t</a>),
             </td>
 <td>intent(out),</td>
@@ -1279,7 +1279,7 @@ parameter
     <tbody>
         <tr>
             <td>
-              <span class="anchor" id="variable-profiles~6"></span>
+              <span class="anchor" id="variable-profiles~5"></span>
               type(<a href='../type/profile_config_t.html'>profile_config_t</a>),
             </td>
 <td>intent(in),</td>
@@ -1294,7 +1294,7 @@ parameter
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-profile_name~10"></span>
+              <span class="anchor" id="variable-profile_name~9"></span>
               character(len=:),
             </td>
 <td>intent(in),</td>
@@ -1309,7 +1309,7 @@ parameter
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-compiler~26"></span>
+              <span class="anchor" id="variable-compiler~27"></span>
               character(len=:),
             </td>
 <td>intent(in),</td>
@@ -1395,7 +1395,7 @@ and files table in a given table and create new profiles</p>
     <tbody>
         <tr>
             <td>
-              <span class="anchor" id="variable-profile_name~5"></span>
+              <span class="anchor" id="variable-profile_name~4"></span>
               character(len=:),
             </td>
 <td>intent(in),</td>
@@ -1455,7 +1455,7 @@ and files table in a given table and create new profiles</p>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-table~87"></span>
+              <span class="anchor" id="variable-table~64"></span>
               type(toml_table),
             </td>
 <td>intent(in),</td>
@@ -1470,7 +1470,7 @@ and files table in a given table and create new profiles</p>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-profiles~2"></span>
+              <span class="anchor" id="variable-profiles"></span>
               type(<a href='../type/profile_config_t.html'>profile_config_t</a>),
             </td>
 <td>intent(inout),</td>
@@ -1521,7 +1521,7 @@ and files table in a given table and create new profiles</p>
   </div>
 
               <div class="card">
-    <div class="card-header codesum"><span class="anchor" id="proc-info~12"></span> <h3>public  subroutine <a href='../proc/info~12.html'>info</a>(self, unit, verbosity)  
+    <div class="card-header codesum"><span class="anchor" id="proc-info~8"></span> <h3>public  subroutine <a href='../proc/info~8.html'>info</a>(self, unit, verbosity)  
 </h3></div>
     <div class="card-body">
           
@@ -1540,7 +1540,7 @@ and files table in a given table and create new profiles</p>
     <tbody>
         <tr>
             <td>
-              <span class="anchor" id="variable-self~140"></span>
+              <span class="anchor" id="variable-self~83"></span>
               class(<a href='../type/profile_config_t.html'>profile_config_t</a>),
             </td>
 <td>intent(in)</td>
@@ -1555,7 +1555,7 @@ and files table in a given table and create new profiles</p>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-unit~33"></span>
+              <span class="anchor" id="variable-unit~21"></span>
               integer,
             </td>
 <td>intent(in)</td>
@@ -1570,7 +1570,7 @@ and files table in a given table and create new profiles</p>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-verbosity~19"></span>
+              <span class="anchor" id="variable-verbosity~10"></span>
               integer,
             </td>
 <td>intent(in),</td>
@@ -1665,7 +1665,7 @@ and files table in a given table and create new profiles</p>
     <tbody>
         <tr>
             <td>
-              <span class="anchor" id="variable-profiles~5"></span>
+              <span class="anchor" id="variable-profiles~4"></span>
               type(<a href='../type/profile_config_t.html'>profile_config_t</a>),
             </td>
 <td>intent(out),</td>
@@ -1680,7 +1680,7 @@ and files table in a given table and create new profiles</p>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-table~91"></span>
+              <span class="anchor" id="variable-table~68"></span>
               type(toml_table),
             </td>
 <td>intent(inout),</td>
@@ -1695,7 +1695,7 @@ and files table in a given table and create new profiles</p>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-error~193"></span>
+              <span class="anchor" id="variable-error~128"></span>
               type(<a href='../type/error_t.html'>error_t</a>),
             </td>
 <td>intent(out),</td>
@@ -1735,7 +1735,7 @@ and files table in a given table and create new profiles</p>
     <tbody>
         <tr>
             <td>
-              <span class="anchor" id="variable-self~143"></span>
+              <span class="anchor" id="variable-self~86"></span>
               class(<a href='../type/profile_config_t.html'>profile_config_t</a>),
             </td>
 <td>intent(inout)</td>
@@ -1750,7 +1750,7 @@ and files table in a given table and create new profiles</p>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-table~94"></span>
+              <span class="anchor" id="variable-table~71"></span>
               type(toml_table),
             </td>
 <td>intent(inout)</td>
@@ -1765,7 +1765,7 @@ and files table in a given table and create new profiles</p>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-error~197"></span>
+              <span class="anchor" id="variable-error~132"></span>
               type(<a href='../type/error_t.html'>error_t</a>),
             </td>
 <td>intent(out),</td>
@@ -1805,7 +1805,7 @@ and files table in a given table and create new profiles</p>
     <tbody>
         <tr>
             <td>
-              <span class="anchor" id="variable-self~144"></span>
+              <span class="anchor" id="variable-self~87"></span>
               class(<a href='../type/profile_config_t.html'>profile_config_t</a>),
             </td>
 <td>intent(inout)</td>
@@ -1820,7 +1820,7 @@ and files table in a given table and create new profiles</p>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-table~95"></span>
+              <span class="anchor" id="variable-table~72"></span>
               type(toml_table),
             </td>
 <td>intent(inout)</td>
@@ -1835,7 +1835,7 @@ and files table in a given table and create new profiles</p>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-error~198"></span>
+              <span class="anchor" id="variable-error~133"></span>
               type(<a href='../type/error_t.html'>error_t</a>),
             </td>
 <td>intent(out),</td>
@@ -1875,7 +1875,7 @@ and files table in a given table and create new profiles</p>
     <tbody>
         <tr>
             <td>
-              <span class="anchor" id="variable-profile_name~8"></span>
+              <span class="anchor" id="variable-profile_name~7"></span>
               character(len=:),
             </td>
 <td>intent(in),</td>
@@ -1905,7 +1905,7 @@ and files table in a given table and create new profiles</p>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-table~90"></span>
+              <span class="anchor" id="variable-table~67"></span>
               type(toml_table),
             </td>
 <td>intent(in),</td>
@@ -1920,7 +1920,7 @@ and files table in a given table and create new profiles</p>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-error~192"></span>
+              <span class="anchor" id="variable-error~127"></span>
               type(<a href='../type/error_t.html'>error_t</a>),
             </td>
 <td>intent(out),</td>
@@ -1950,7 +1950,7 @@ and files table in a given table and create new profiles</p>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-profiles~4"></span>
+              <span class="anchor" id="variable-profiles~3"></span>
               type(<a href='../type/profile_config_t.html'>profile_config_t</a>),
             </td>
 <td>intent(inout),</td>
@@ -2005,7 +2005,7 @@ and files table in a given table and create new profiles</p>
     <tbody>
         <tr>
             <td>
-              <span class="anchor" id="variable-profile_name~7"></span>
+              <span class="anchor" id="variable-profile_name~6"></span>
               character(len=:),
             </td>
 <td>intent(in),</td>
@@ -2050,7 +2050,7 @@ and files table in a given table and create new profiles</p>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-table~89"></span>
+              <span class="anchor" id="variable-table~66"></span>
               type(toml_table),
             </td>
 <td>intent(in),</td>
@@ -2065,7 +2065,7 @@ and files table in a given table and create new profiles</p>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-profiles~3"></span>
+              <span class="anchor" id="variable-profiles~2"></span>
               type(<a href='../type/profile_config_t.html'>profile_config_t</a>),
             </td>
 <td>intent(inout),</td>
@@ -2095,7 +2095,7 @@ and files table in a given table and create new profiles</p>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-error~191"></span>
+              <span class="anchor" id="variable-error~126"></span>
               type(<a href='../type/error_t.html'>error_t</a>),
             </td>
 <td>intent(out),</td>
@@ -2135,7 +2135,7 @@ and files table in a given table and create new profiles</p>
     <tbody>
         <tr>
             <td>
-              <span class="anchor" id="variable-profile_name~6"></span>
+              <span class="anchor" id="variable-profile_name~5"></span>
               character(len=:),
             </td>
 <td>intent(in),</td>
@@ -2180,7 +2180,7 @@ and files table in a given table and create new profiles</p>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-table~88"></span>
+              <span class="anchor" id="variable-table~65"></span>
               type(toml_table),
             </td>
 <td>intent(in),</td>
@@ -2210,7 +2210,7 @@ and files table in a given table and create new profiles</p>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-error~190"></span>
+              <span class="anchor" id="variable-error~125"></span>
               type(<a href='../type/error_t.html'>error_t</a>),
             </td>
 <td>intent(out),</td>
@@ -2360,7 +2360,7 @@ and files table in a given table and create new profiles</p>
     <tbody>
         <tr>
             <td>
-              <span class="anchor" id="variable-profile_name~4"></span>
+              <span class="anchor" id="variable-profile_name~3"></span>
               character(len=:),
             </td>
 <td>intent(in),</td>
@@ -2405,7 +2405,7 @@ and files table in a given table and create new profiles</p>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-table~86"></span>
+              <span class="anchor" id="variable-table~63"></span>
               type(toml_table),
             </td>
 <td>intent(in),</td>
@@ -2420,7 +2420,7 @@ and files table in a given table and create new profiles</p>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-error~189"></span>
+              <span class="anchor" id="variable-error~124"></span>
               type(<a href='../type/error_t.html'>error_t</a>),
             </td>
 <td>intent(out),</td>
@@ -2478,7 +2478,7 @@ and files table in a given table and create new profiles</p>
             <p class="text-end">
               Documentation generated by
               <a href="https://github.com/Fortran-FOSS-Programmers/ford">FORD</a>
- on 2025-04-09 09:23 +0000             </p>
+ on 2025-04-10 06:56 +0000             </p>
           </div>
         </div>
         <br>
