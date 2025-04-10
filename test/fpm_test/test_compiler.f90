@@ -51,6 +51,24 @@ contains
             call test_failed(error, "Cannot run Fortran hello world")
             return
         end if
+        
+        !> Test with invalid flags 
+        if (compiler%check_fortran_source_runs("print *, 'Hello world!'; end", &
+                                               link_flags=" -some-really-invalid-link-flag")) then 
+            call test_failed(error, "Invalid link flags did not trigger an error")
+            return
+        end if              
+        if (compiler%check_fortran_source_runs("print *, 'Hello world!'; end", &
+                                               compile_flags=" -certainly-not-a-build/flag")) then 
+            call test_failed(error, "Invalid compile flags did not trigger an error")
+            return
+        end if                              
+        if (compiler%check_fortran_source_runs("print *, 'Hello world!'; end", &
+                                               compile_flags=" -certainly-not-a-build/flag", &
+                                               link_flags=" -some-really-invalid-link-flag")) then 
+            call test_failed(error, "Invalid build and link flags did not trigger an error")
+            return
+        end if                              
 
     end subroutine test_check_fortran_source_runs
 
