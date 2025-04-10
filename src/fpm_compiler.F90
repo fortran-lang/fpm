@@ -124,6 +124,7 @@ contains
     procedure :: load_from_toml => compiler_load
     !> Fortran feature support
     procedure :: check_fortran_source_runs
+    procedure :: check_flags_supported
     procedure :: with_xdp
     procedure :: with_qp
     !> Return compiler name
@@ -1440,14 +1441,16 @@ end function compiler_name
 
 !> Run a single-source Fortran program using the current compiler
 !> Compile a Fortran object
-logical function check_fortran_source_runs(self, input) result(success)
+logical function check_fortran_source_runs(self, input, compile_flags, link_flags) result(success)
     !> Instance of the compiler object
     class(compiler_t), intent(in) :: self
     !> Program Source
     character(len=*), intent(in) :: input
+    !> Optional build and link flags 
+    character(len=*), optional, intent(in) :: compile_flags, link_flags
 
     integer :: stat,unit
-    character(:), allocatable :: source,object,logf,exe
+    character(:), allocatable :: source,object,logf,exe,flags,ldflags
 
     success = .false.
 
@@ -1463,10 +1466,17 @@ logical function check_fortran_source_runs(self, input) result(success)
     write(unit,*) input
     close(unit)
 
+    !> Get flags
+    flags    = self%get_default_flags(release=.false.)
+    ldflags  = self%get_default_flags(release=.false.)
+    
+    if (present(compile_flags)) flags = flags//" "//compile_flags
+    if (present(link_flags)) ldflags = ldflags//" "//link_flags
+    
     !> Compile and link program
-    call self%compile_fortran(source, object, self%get_default_flags(release=.false.), logf, stat)
+    call self%compile_fortran(source, object, flags, logf, stat)
     if (stat==0) &
-    call self%link(exe, self%get_default_flags(release=.false.)//" "//object, logf, stat)
+    call self%link(exe, ldflags//" "//object, logf, stat)
 
     !> Run and retrieve exit code
     if (stat==0) &
@@ -1486,6 +1496,18 @@ logical function check_fortran_source_runs(self, input) result(success)
     close(unit,status='delete')
 
 end function check_fortran_source_runs
+
+!> Check if the given compile and/or link flags are accepted by the compiler
+logical function check_flags_supported(self, compile_flags, link_flags)
+    class(compiler_t), intent(in) :: self
+    character(len=*), optional, intent(in) :: compile_flags, link_flags
+
+    ! Minimal program that always compiles
+    character(len=*), parameter :: hello_world = "print *, 'Hello, World!'; end"
+
+    check_flags_supported = self%check_fortran_source_runs(hello_world, compile_flags, link_flags)
+    
+end function check_flags_supported
 
 !> Check if the current compiler supports 128-bit real precision
 logical function with_qp(self)
