@@ -122,8 +122,8 @@ contains
        type is (fortran_config_t)
           if (this%implicit_typing.neqv.other%implicit_typing) return
           if (this%implicit_external.neqv.other%implicit_external) return
-          if (.not.allocated(this%source_form).eqv.allocated(other%source_form)) return
-          if (allocated(this%source_form).and.allocated(other%source_form)) then
+          if (allocated(this%source_form).neqv.allocated(other%source_form)) return
+          if (allocated(this%source_form)) then
             if (.not.this%source_form==other%source_form) return
           end if
        class default

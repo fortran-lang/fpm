@@ -206,19 +206,19 @@ contains
         select type (other=>that)
            type is (executable_config_t)
               if (.not.this%link==other%link) return
-              if (.not.allocated(this%name).eqv.allocated(other%name)) return
-              if (allocated(this%name).and.allocated(other%name)) then
+              if (allocated(this%name).neqv.allocated(other%name)) return
+              if (allocated(this%name)) then
                 if (.not.this%name==other%name) return
               end if
-              if (.not.allocated(this%source_dir).eqv.allocated(other%source_dir)) return
-              if (allocated(this%source_dir).and.allocated(other%source_dir)) then
+              if (allocated(this%source_dir).neqv.allocated(other%source_dir)) return
+              if (allocated(this%source_dir)) then
                 if (.not.this%source_dir==other%source_dir) return
               end if
-              if (.not.allocated(this%main).eqv.allocated(other%main)) return
-              if (allocated(this%main).and.allocated(other%main)) then
+              if (allocated(this%main).neqv.allocated(other%main)) return
+              if (allocated(this%main)) then
                 if (.not.this%main==other%main) return
               end if
-              if (.not.allocated(this%dependency).eqv.allocated(other%dependency)) return
+              if (allocated(this%dependency).neqv.allocated(other%dependency)) return
               if (allocated(this%dependency)) then
                  if (.not.(size(this%dependency)==size(other%dependency))) return
                  do ii = 1, size(this%dependency)

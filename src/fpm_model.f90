@@ -482,33 +482,33 @@ logical function srcfile_is_same(this,that)
     select type (other=>that)
        type is (srcfile_t)
           if (allocated(this%file_name).neqv.allocated(other%file_name)) return
-          if (allocated(this%file_name).and.allocated(other%file_name)) then
+          if (allocated(this%file_name)) then
             if (.not.(this%file_name==other%file_name)) return
           end if
           if (allocated(this%exe_name).neqv.allocated(other%exe_name)) return
-          if (allocated(this%exe_name).and.allocated(other%exe_name)) then
+          if (allocated(this%exe_name)) then
             if (.not.(this%exe_name==other%exe_name)) return
           end if
           if (.not.(this%unit_scope==other%unit_scope)) return
           if (allocated(this%modules_provided).neqv.allocated(other%modules_provided)) return
-          if (allocated(this%modules_provided).and.allocated(other%modules_provided)) then
+          if (allocated(this%modules_provided)) then
             if (.not.(this%modules_provided==other%modules_provided)) return
           end if
           if (.not.(this%unit_type==other%unit_type)) return
           if (allocated(this%parent_modules).neqv.allocated(other%parent_modules)) return
-          if (allocated(this%parent_modules).and.allocated(other%parent_modules)) then
+          if (allocated(this%parent_modules)) then
             if (.not.(this%parent_modules==other%parent_modules)) return
           end if
           if (allocated(this%modules_used).neqv.allocated(other%modules_used)) return
-          if (allocated(this%modules_used).and.allocated(other%modules_used)) then
+          if (allocated(this%modules_used)) then
             if (.not.(this%modules_used==other%modules_used)) return
           end if
           if (allocated(this%include_dependencies).neqv.allocated(other%include_dependencies)) return
-          if (allocated(this%include_dependencies).and.allocated(other%include_dependencies)) then
+          if (allocated(this%include_dependencies)) then
             if (.not.(this%include_dependencies==other%include_dependencies)) return
           end if
           if (allocated(this%link_libraries).neqv.allocated(other%link_libraries)) return
-          if (allocated(this%link_libraries).and.allocated(other%link_libraries)) then
+          if (allocated(this%link_libraries)) then
             if (.not.(this%link_libraries==other%link_libraries)) return
           end if
           if (.not.(this%digest==other%digest)) return
@@ -620,7 +620,7 @@ logical function fft_is_same(this,that)
            if (.not.(this%implicit_typing.eqv.other%implicit_typing)) return
            if (.not.(this%implicit_external.eqv.other%implicit_external)) return
            if (allocated(this%source_form).neqv.allocated(other%source_form)) return
-           if (allocated(this%source_form).and.allocated(other%source_form)) then
+           if (allocated(this%source_form)) then
              if (.not.(this%source_form==other%source_form)) return
            end if
 
@@ -880,7 +880,7 @@ logical function model_is_same(this,that)
        type is (fpm_model_t)
 
            if ((allocated(this%package_name).neqv.allocated(other%package_name))) return
-           if (allocated(this%package_name).and.allocated(other%package_name)) then
+           if (allocated(this%package_name)) then
              if (.not.(this%package_name==other%package_name)) return
            end if
            if (.not.(allocated(this%packages).eqv.allocated(other%packages))) return
@@ -894,35 +894,35 @@ logical function model_is_same(this,that)
            if (.not.(this%compiler==other%compiler)) return
            if (.not.(this%archiver==other%archiver)) return
            if (allocated(this%fortran_compile_flags).neqv.allocated(other%fortran_compile_flags)) return
-           if (allocated(this%fortran_compile_flags).and.allocated(other%fortran_compile_flags)) then
+           if (allocated(this%fortran_compile_flags)) then
              if (.not.(this%fortran_compile_flags==other%fortran_compile_flags)) return
            end if
            if (allocated(this%c_compile_flags).neqv.allocated(other%c_compile_flags)) return
-           if (allocated(this%c_compile_flags).and.allocated(other%c_compile_flags)) then
+           if (allocated(this%c_compile_flags)) then
              if (.not.(this%c_compile_flags==other%c_compile_flags)) return
            end if
            if (allocated(this%cxx_compile_flags).neqv.allocated(other%cxx_compile_flags)) return
-           if (allocated(this%cxx_compile_flags).and.allocated(other%cxx_compile_flags)) then
+           if (allocated(this%cxx_compile_flags)) then
              if (.not.(this%cxx_compile_flags==other%cxx_compile_flags)) return
            end if
            if (allocated(this%link_flags).neqv.allocated(other%link_flags)) return
-           if (allocated(this%link_flags).and.allocated(other%link_flags)) then
+           if (allocated(this%link_flags)) then
              if (.not.(this%link_flags==other%link_flags)) return
            end if
            if (allocated(this%build_prefix).neqv.allocated(other%build_prefix)) return
-           if (allocated(this%build_prefix).and.allocated(other%build_prefix)) then
+           if (allocated(this%build_prefix)) then
              if (.not.(this%build_prefix==other%build_prefix)) return
            end if
            if (allocated(this%include_dirs).neqv.allocated(other%include_dirs)) return
-           if (allocated(this%include_dirs).and.allocated(other%include_dirs)) then
+           if (allocated(this%include_dirs)) then
              if (.not.(this%include_dirs==other%include_dirs)) return
            end if
            if (allocated(this%link_libraries).neqv.allocated(other%link_libraries)) return
-           if (allocated(this%link_libraries).and.allocated(other%link_libraries)) then
+           if (allocated(this%link_libraries)) then
              if (.not.(this%link_libraries==other%link_libraries)) return
            end if
            if (allocated(this%external_modules).neqv.allocated(other%external_modules)) return
-           if (allocated(this%external_modules).and.allocated(other%external_modules)) then
+           if (allocated(this%external_modules)) then
              if (.not.(this%external_modules==other%external_modules)) return
            end if
            if (.not.(this%deps==other%deps)) return

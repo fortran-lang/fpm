@@ -1285,13 +1285,17 @@ contains
             if (.not.(this%update.eqv.other%update)) return
             if (.not.(this%cached.eqv.other%cached)) return
 
-            if (.not. allocated(this%proj_dir) .eqv. allocated(other%proj_dir)) return
-            if (.not.(this%proj_dir==other%proj_dir)) return
-            if (.not. allocated(this%revision) .eqv. allocated(other%revision)) return
-            if (.not.(this%revision==other%revision)) return
+            if (allocated(this%proj_dir) .neqv. allocated(other%proj_dir)) return
+            if (allocated(this%proj_dir)) then
+              if (.not.(this%proj_dir==other%proj_dir)) return
+            endif
+            if (allocated(this%revision) .neqv. allocated(other%revision)) return
+            if (allocated(this%revision)) then
+              if (.not.(this%revision==other%revision)) return
+            endif
 
-            if (.not.(allocated(this%version).eqv.allocated(other%version))) return
-               if (allocated(this%version)) then
+            if (allocated(this%version).neqv.allocated(other%version)) return
+            if (allocated(this%version)) then
               if (.not.(this%version==other%version)) return
             endif
 

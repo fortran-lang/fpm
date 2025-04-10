@@ -1342,15 +1342,15 @@ logical function compiler_is_same(this,that)
        type is (compiler_t)
 
           if (.not.(this%id==other%id)) return
-          if (.not. allocated(this%fc).eqv.allocated(other%fc)) return
+          if (allocated(this%fc).neqv.allocated(other%fc)) return
           if (allocated(this%fc)) then
             if (.not.(this%fc==other%fc)) return
           end if
-          if (.not. allocated(this%cc).eqv.allocated(other%cc)) return
+          if (allocated(this%cc).neqv.allocated(other%cc)) return
           if (allocated(this%cc)) then
             if (.not.(this%cc==other%cc)) return
           end if
-          if (.not. allocated(this%cxx).eqv.allocated(other%cxx)) return
+          if (allocated(this%cxx).neqv.allocated(other%cxx)) return
           if (allocated(this%cxx)) then
             if (.not.(this%cxx==other%cxx)) return
           end if
@@ -1458,7 +1458,7 @@ logical function check_fortran_source_runs(self, input, compile_flags, link_flag
     class(compiler_t), intent(in) :: self
     !> Program Source
     character(len=*), intent(in) :: input
-    !> Optional build and link flags 
+    !> Optional build and link flags
     character(len=*), optional, intent(in) :: compile_flags, link_flags
 
     integer :: stat,unit
@@ -1481,10 +1481,10 @@ logical function check_fortran_source_runs(self, input, compile_flags, link_flag
     !> Get flags
     flags    = self%get_default_flags(release=.false.)
     ldflags  = self%get_default_flags(release=.false.)
-    
+
     if (present(compile_flags)) flags = flags//" "//compile_flags
     if (present(link_flags)) ldflags = ldflags//" "//link_flags
-    
+
     !> Compile and link program
     call self%compile_fortran(source, object, flags, logf, stat)
     if (stat==0) &
@@ -1518,7 +1518,7 @@ logical function check_flags_supported(self, compile_flags, link_flags)
     character(len=*), parameter :: hello_world = "print *, 'Hello, World!'; end"
 
     check_flags_supported = self%check_fortran_source_runs(hello_world, compile_flags, link_flags)
-    
+
 end function check_flags_supported
 
 !> Check if the current compiler supports 128-bit real precision
