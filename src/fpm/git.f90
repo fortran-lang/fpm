@@ -149,13 +149,15 @@ contains
 
         select type (other=>that)
            type is (git_target_t)
-              if (.not. allocated(this%url) .or. .not. allocated(other%url) .or. &
-                  .not. allocated(this%object) .or. .not. allocated(other%object)) return
-
               if (.not.(this%descriptor==other%descriptor)) return
-              if (.not.(this%url==other%url)) return
-              if (.not.(this%object==other%object)) return
-
+              if (allocated(this%url) .neqv. allocated(other%url)) return
+              if (allocated(this%url) .and. allocated(other%url)) then
+                if (.not.(this%url==other%url)) return
+              end if
+              if (allocated(this%object) .neqv. allocated(other%object)) return
+              if (allocated(this%object) .and. allocated(other%object)) then
+                if (.not.(this%object==other%object)) return
+              end if
            class default
               ! Not the same type
               return

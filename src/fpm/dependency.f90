@@ -1416,7 +1416,10 @@ contains
 
           if (.not.(this%unit==other%unit)) return
           if (.not.(this%verbosity==other%verbosity)) return
-          if (.not.(this%dep_dir==other%dep_dir)) return
+          if (allocated(this%dep_dir) .neqv. allocated(other%dep_dir)) return
+          if (allocated(this%dep_dir)) then
+            if (.not.(this%dep_dir==other%dep_dir)) return
+          endif
           if (.not.(this%ndep==other%ndep)) return
           if (.not.(allocated(this%dep).eqv.allocated(other%dep))) return
           if (allocated(this%dep)) then
@@ -1425,7 +1428,10 @@ contains
                 if (.not.(this%dep(ii)==other%dep(ii))) return
              end do
           endif
-          if (.not.(this%cache==other%cache)) return
+          if (allocated(this%cache) .neqv. allocated(other%cache)) return
+          if (allocated(this%cache)) then
+            if (.not.(this%cache==other%cache)) return
+          endif
 
        class default
           ! Not the same type

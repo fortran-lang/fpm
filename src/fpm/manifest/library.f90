@@ -162,9 +162,13 @@ contains
            type is (library_config_t)
               if (.not.this%include_dir==other%include_dir) return
               if (.not.allocated(this%source_dir).eqv.allocated(other%source_dir)) return
-              if (.not.this%source_dir==other%source_dir) return
+              if (allocated(this%source_dir).and.allocated(other%source_dir)) then
+                if (.not.this%source_dir==other%source_dir) return
+              end if
               if (.not.allocated(this%build_script).eqv.allocated(other%build_script)) return
-              if (.not.this%build_script==other%build_script) return
+              if (allocated(this%build_script).and.allocated(other%build_script)) then
+                if (.not.this%build_script==other%build_script) return
+              end if
            class default
               ! Not the same type
               return

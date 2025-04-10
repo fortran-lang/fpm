@@ -1265,8 +1265,10 @@ logical function ar_is_same(this,that)
 
     select type (other=>that)
        type is (archiver_t)
-
-          if (.not.(this%ar==other%ar)) return
+          if (allocated(this%ar).neqv.allocated(other%ar)) return
+          if (allocated(this%ar)) then
+            if (.not.(this%ar==other%ar)) return
+          end if
           if (.not.(this%use_response_file.eqv.other%use_response_file)) return
           if (.not.(this%echo.eqv.other%echo)) return
           if (.not.(this%verbose.eqv.other%verbose)) return
@@ -1339,9 +1341,18 @@ logical function compiler_is_same(this,that)
        type is (compiler_t)
 
           if (.not.(this%id==other%id)) return
-          if (.not.(this%fc==other%fc)) return
-          if (.not.(this%cc==other%cc)) return
-          if (.not.(this%cxx==other%cxx)) return
+          if (.not. allocated(this%fc).eqv.allocated(other%fc)) return
+          if (allocated(this%fc)) then
+            if (.not.(this%fc==other%fc)) return
+          end if
+          if (.not. allocated(this%cc).eqv.allocated(other%cc)) return
+          if (allocated(this%cc)) then
+            if (.not.(this%cc==other%cc)) return
+          end if
+          if (.not. allocated(this%cxx).eqv.allocated(other%cxx)) return
+          if (allocated(this%cxx)) then
+            if (.not.(this%cxx==other%cxx)) return
+          end if
           if (.not.(this%echo.eqv.other%echo)) return
           if (.not.(this%verbose.eqv.other%verbose)) return
 

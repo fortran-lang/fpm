@@ -123,7 +123,9 @@ contains
           if (this%implicit_typing.neqv.other%implicit_typing) return
           if (this%implicit_external.neqv.other%implicit_external) return
           if (.not.allocated(this%source_form).eqv.allocated(other%source_form)) return
-          if (.not.this%source_form==other%source_form) return
+          if (allocated(this%source_form).and.allocated(other%source_form)) then
+            if (.not.this%source_form==other%source_form) return
+          end if
        class default
           ! Not the same type
           return
