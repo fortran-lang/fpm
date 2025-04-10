@@ -68,7 +68,22 @@ contains
                                                link_flags=" -some-really-invalid-link-flag")) then 
             call test_failed(error, "Invalid build and link flags did not trigger an error")
             return
-        end if                              
+        end if           
+        
+        !> Test the flag check wrapper
+        if (compiler%check_flags_supported(compile_flags='-Werror=unknown-flag')) then
+            call test_failed(error, "Invalid compile flags did not trigger an error")
+            return
+        end if
+        if (compiler%check_flags_supported(link_flags='-Wl,--nonexistent-linker-option')) then
+            call test_failed(error, "Invalid link flags did not trigger an error")
+            return
+        end if
+        if (compiler%check_flags_supported(compile_flags='-Werror=unknown-flag', &
+                                           link_flags='-Wl,--nonexistent-linker-option')) then
+            call test_failed(error, "Invalid compile and link flags did not trigger an error")
+            return
+        end if
 
     end subroutine test_check_fortran_source_runs
 
