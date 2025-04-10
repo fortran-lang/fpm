@@ -1284,7 +1284,10 @@ contains
             if (.not.(this%done  .eqv.other%done)) return
             if (.not.(this%update.eqv.other%update)) return
             if (.not.(this%cached.eqv.other%cached)) return
+
+            if (.not. allocated(this%proj_dir) .eqv. allocated(other%proj_dir)) return
             if (.not.(this%proj_dir==other%proj_dir)) return
+            if (.not. allocated(this%revision) .eqv. allocated(other%revision)) return
             if (.not.(this%revision==other%revision)) return
 
             if (.not.(allocated(this%version).eqv.allocated(other%version))) return
@@ -1475,7 +1478,10 @@ contains
 
                  !> Because dependencies are named, fallback if this has no name
                  !> So, serialization will work regardless of size(self%dep) == self%ndep
-                 if (len_trim(dep%name)==0) then
+                 if (.not. allocated(dep%name)) then
+                    write(unnamed,1) ii
+                    call add_table(ptr_deps, trim(unnamed), ptr)
+                 else if (len_trim(dep%name)==0) then
                     write(unnamed,1) ii
                     call add_table(ptr_deps, trim(unnamed), ptr)
                  else

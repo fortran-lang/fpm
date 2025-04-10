@@ -149,6 +149,8 @@ contains
 
         select type (other=>that)
            type is (git_target_t)
+              if (.not. allocated(this%url) .or. .not. allocated(other%url) .or. &
+                  .not. allocated(this%object) .or. .not. allocated(other%object)) return
 
               if (.not.(this%descriptor==other%descriptor)) return
               if (.not.(this%url==other%url)) return

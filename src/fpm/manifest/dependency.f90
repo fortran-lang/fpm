@@ -411,8 +411,11 @@ contains
         select type (other=>that)
            type is (dependency_config_t)
 
+              if (.not. allocated(this%name) .or. .not. allocated(other%name)) return
               if (.not.(this%name==other%name)) return
+              if (.not. allocated(this%path) .or. .not. allocated(other%path)) return
               if (.not.(this%path==other%path)) return
+              if (.not. allocated(this%namespace) .or. .not. allocated(other%namespace)) return
               if (.not.(this%namespace==other%namespace)) return
               if (.not.(allocated(this%requested_version).eqv.allocated(other%requested_version))) return
               if (allocated(this%requested_version)) then
