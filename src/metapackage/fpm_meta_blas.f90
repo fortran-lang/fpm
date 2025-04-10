@@ -49,7 +49,7 @@ contains
                     return
                 end if
             else if (compile_and_link_flags_supported(compiler, "-qmkl")) then
-                call set_compile_and_link_flags(this, compiler, "-Qmkl")
+                call set_compile_and_link_flags(this, compiler, "-qmkl")
                 return
             endif
         end if
