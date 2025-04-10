@@ -124,6 +124,7 @@ contains
     procedure :: load_from_toml => compiler_load
     !> Fortran feature support
     procedure :: check_fortran_source_runs
+    procedure :: check_flags_supported
     procedure :: with_xdp
     procedure :: with_qp
     !> Return compiler name
@@ -1495,6 +1496,18 @@ logical function check_fortran_source_runs(self, input, compile_flags, link_flag
     close(unit,status='delete')
 
 end function check_fortran_source_runs
+
+!> Check if the given compile and/or link flags are accepted by the compiler
+logical function check_flags_supported(self, compile_flags, link_flags)
+    class(compiler_t), intent(in) :: self
+    character(len=*), optional, intent(in) :: compile_flags, link_flags
+
+    ! Minimal program that always compiles
+    character(len=*), parameter :: hello_world = "print *, 'Hello, World!'; end"
+
+    check_flags_supported = self%check_fortran_source_runs(hello_world, compile_flags, link_flags)
+    
+end function check_flags_supported
 
 !> Check if the current compiler supports 128-bit real precision
 logical function with_qp(self)
