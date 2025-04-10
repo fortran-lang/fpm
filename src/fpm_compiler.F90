@@ -1440,14 +1440,16 @@ end function compiler_name
 
 !> Run a single-source Fortran program using the current compiler
 !> Compile a Fortran object
-logical function check_fortran_source_runs(self, input) result(success)
+logical function check_fortran_source_runs(self, input, compile_flags, link_flags) result(success)
     !> Instance of the compiler object
     class(compiler_t), intent(in) :: self
     !> Program Source
     character(len=*), intent(in) :: input
+    !> Optional build and link flags 
+    character(len=*), optional, intent(in) :: compile_flags, link_flags
 
     integer :: stat,unit
-    character(:), allocatable :: source,object,logf,exe
+    character(:), allocatable :: source,object,logf,exe,flags,ldflags
 
     success = .false.
 
@@ -1463,10 +1465,17 @@ logical function check_fortran_source_runs(self, input) result(success)
     write(unit,*) input
     close(unit)
 
+    !> Get flags
+    flags    = self%get_default_flags(release=.false.)
+    ldflags  = self%get_default_flags(release=.false.)
+    
+    if (present(compile_flags)) flags = flags//" "//compile_flags
+    if (present(link_flags)) ldflags = ldflags//" "//link_flags
+    
     !> Compile and link program
-    call self%compile_fortran(source, object, self%get_default_flags(release=.false.), logf, stat)
+    call self%compile_fortran(source, object, flags, logf, stat)
     if (stat==0) &
-    call self%link(exe, self%get_default_flags(release=.false.)//" "//object, logf, stat)
+    call self%link(exe, ldflags//" "//object, logf, stat)
 
     !> Run and retrieve exit code
     if (stat==0) &
