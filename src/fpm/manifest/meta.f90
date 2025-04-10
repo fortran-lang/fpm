@@ -55,6 +55,9 @@ module fpm_manifest_metapackages
         !> NetCDF
         type(metapackage_request_t) :: netcdf
 
+        !> BLAS
+        type(metapackage_request_t) :: blas
+
     end type metapackage_config_t
 
 
@@ -209,6 +212,9 @@ contains
         call new_meta_request(self%netcdf, "netcdf", table, meta_allowed, error)
         if (allocated(error)) return
 
+        call new_meta_request(self%blas, "blas", table, meta_allowed, error)
+        if (allocated(error)) return
+
     end subroutine new_meta_config
 
     !> Check local schema for allowed entries
@@ -220,7 +226,7 @@ contains
         select case (key)
 
             !> Supported metapackages
-            case ("openmp","stdlib","mpi","minpack","hdf5","netcdf")
+            case ("openmp","stdlib","mpi","minpack","hdf5","netcdf","blas")
                 is_meta_package = .true.
 
             case default

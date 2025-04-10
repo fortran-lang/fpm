@@ -31,6 +31,7 @@ module fpm_meta
     use fpm_meta_mpi, only: init_mpi
     use fpm_meta_hdf5, only: init_hdf5
     use fpm_meta_netcdf, only: init_netcdf
+    use fpm_meta_blas, only: init_blas
 
     use shlex_module, only: shlex_split => split
     use regex_module, only: regex
@@ -63,6 +64,7 @@ module fpm_meta
             case("mpi");     call init_mpi    (this,compiler,error)
             case("hdf5");    call init_hdf5   (this,compiler,error)
             case("netcdf");  call init_netcdf (this,compiler,error)
+            case("blas");    call init_blas   (this,compiler,error)
             case default
                 call syntax_error(error, "Package "//name//" is not supported in [metapackages]")
                 return
@@ -158,6 +160,12 @@ module fpm_meta
         ! netcdf
         if (package%meta%netcdf%on) then
             call add_metapackage_model(model,package,settings,"netcdf",error)
+            if (allocated(error)) return
+        endif
+
+        ! blas
+        if (package%meta%blas%on) then
+            call add_metapackage_model(model,package,settings,"blas",error)
             if (allocated(error)) return
         endif
 
