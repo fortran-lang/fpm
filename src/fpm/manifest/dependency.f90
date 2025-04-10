@@ -411,18 +411,24 @@ contains
         select type (other=>that)
            type is (dependency_config_t)
 
-              if (.not. allocated(this%name) .or. .not. allocated(other%name)) return
-              if (.not.(this%name==other%name)) return
-              if (.not. allocated(this%path) .or. .not. allocated(other%path)) return
-              if (.not.(this%path==other%path)) return
-              if (.not. allocated(this%namespace) .or. .not. allocated(other%namespace)) return
-              if (.not.(this%namespace==other%namespace)) return
-              if (.not.(allocated(this%requested_version).eqv.allocated(other%requested_version))) return
+              if (allocated(this%name).neqv.allocated(other%name)) return
+              if (allocated(this%name)) then
+                if (.not.(this%name==other%name)) return
+              endif
+              if (allocated(this%path).neqv.allocated(other%path)) return
+              if (allocated(this%path)) then
+                if (.not.(this%path==other%path)) return
+              endif
+              if (allocated(this%namespace).neqv.allocated(other%namespace)) return
+              if (allocated(this%namespace)) then
+                if (.not.(this%namespace==other%namespace)) return
+              endif
+              if (allocated(this%requested_version).neqv.allocated(other%requested_version)) return
               if (allocated(this%requested_version)) then
                 if (.not.(this%requested_version==other%requested_version)) return
               endif
 
-              if (.not.(allocated(this%git).eqv.allocated(other%git))) return
+              if ((allocated(this%git).neqv.allocated(other%git))) return
               if (allocated(this%git)) then
                 if (.not.(this%git==other%git)) return
               endif
