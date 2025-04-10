@@ -39,6 +39,7 @@ contains
 
         if (.not. pkgcfg_has_package('netcdf')) then
             call fatal_error(error, 'pkg-config could not find a suitable netcdf package.')
+            return
         end if
         call add_pkg_config_compile_options(this, 'netcdf', include_flag, libdir, error)
         if (allocated(error)) return
@@ -46,6 +47,7 @@ contains
         if (.not. pkgcfg_has_package('netcdf-fortran')) then
             call fatal_error(error, &
                              'pkg-config could not find a suitable netcdf-fortran package.')
+            return
         end if
         call add_pkg_config_compile_options(this, 'netcdf-fortran', include_flag, libdir, error)
         if (allocated(error)) return
