@@ -1096,7 +1096,7 @@ contains
         integer :: iunit
 
         ! Write
-        open(newunit=iunit,form='formatted',status='scratch',action='readwrite',recl=4096)
+        open(newunit=iunit,form='formatted',status='scratch',action='readwrite',recl=1073741824)
 
         !> Dump to scratch file
         write(iunit,*) string
