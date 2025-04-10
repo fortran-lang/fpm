@@ -550,19 +550,19 @@ contains
             if (.not.this%install==other%install) return
             if (.not.this%fortran==other%fortran) return
             if (allocated(this%license).neqv.allocated(other%license)) return
-            if (allocated(this%license) .and. allocated(other%license)) then
+            if (allocated(this%license)) then
                 if (.not.this%license==other%license) return
             end if
             if (allocated(this%author).neqv.allocated(other%author)) return
-            if (allocated(this%author) .and. allocated(other%author)) then
+            if (allocated(this%author)) then
                 if (.not.this%author==other%author) return
             end if
             if (allocated(this%maintainer).neqv.allocated(other%maintainer)) return
-            if (allocated(this%maintainer) .and. allocated(other%maintainer)) then
+            if (allocated(this%maintainer)) then
                 if (.not.this%maintainer==other%maintainer) return
             end if
             if (allocated(this%copyright).neqv.allocated(other%copyright)) return
-            if (allocated(this%copyright) .and. allocated(other%copyright)) then
+            if (allocated(this%copyright)) then
                 if (.not.this%copyright==other%copyright) return
             end if
             if (allocated(this%library).neqv.allocated(other%library)) return
