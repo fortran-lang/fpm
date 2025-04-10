@@ -151,11 +151,11 @@ contains
            type is (git_target_t)
               if (.not.(this%descriptor==other%descriptor)) return
               if (allocated(this%url) .neqv. allocated(other%url)) return
-              if (allocated(this%url) .and. allocated(other%url)) then
+              if (allocated(this%url)) then
                 if (.not.(this%url==other%url)) return
               end if
               if (allocated(this%object) .neqv. allocated(other%object)) return
-              if (allocated(this%object) .and. allocated(other%object)) then
+              if (allocated(this%object)) then
                 if (.not.(this%object==other%object)) return
               end if
            class default
