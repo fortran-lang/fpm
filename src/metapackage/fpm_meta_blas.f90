@@ -1,6 +1,6 @@
 module fpm_meta_blas
     use fpm_compiler, only: compiler_t, get_include_flag
-    use fpm_environment, only: get_os_type, OS_MACOS
+    use fpm_environment, only: get_os_type, OS_MACOS, OS_WINDOWS
     use fpm_meta_base, only: metapackage_t, destroy
     use fpm_meta_util, only: add_pkg_config_compile_options
     use fpm_pkg_config, only: assert_pkg_config, pkgcfg_has_package
@@ -36,24 +36,22 @@ contains
         this%has_external_modules = .false.
 
         if (get_os_type() == OS_MACOS) then
-            this%flags = string_t("-framework Accelerate")
-            this%has_build_flags = .true.
-            this%link_flags = string_t("-framework Accelerate")
-            this%has_link_flags = .true.
-            return
+            if (compile_and_link_flags_supported(this, compiler, "-framework Accelerate")) then
+                call set_compile_and_link_flags(this, compiler, "-framework Accelerate")
+                return
+            end if
         end if
 
         if (compiler%is_intel()) then
-            if (get_os_type() == OS_WINDOWS) then 
-                this%flags = string_t("/Qmkl")
-                this%link_flags = string_t("/Qmkl")
-            else
-                this%flags = string_t("-qmkl")
-                this%link_flags = string_t("-qmkl")
+            if (get_os_type() == OS_WINDOWS) then
+                if (compile_and_link_flags_supported(this, compiler, "/Qmkl")) then
+                    call set_compile_and_link_flags(this, compiler, "/Qmkl")
+                    return
+                end if
+            else if (compile_and_link_flags_supported(this, compiler, "-qmkl")) then
+                call set_compile_and_link_flags(this, compiler, "-Qmkl")
+                return
             endif
-            this%has_build_flags = .true.
-            this%has_link_flags = .true.
-            return
         end if
 
         !> Assert pkg-config is installed
@@ -73,4 +71,26 @@ contains
 
         call fatal_error(error, 'pkg-config could not find a suitable blas package.')
     end subroutine init_blas
+
+    function compile_and_link_flags_supported(this, compiler, flags) result(is_supported)
+        class(metapackage_t), intent(in) :: this
+        type(compiler_t), intent(in) :: compiler
+        character(len=*), intent(in) :: flags
+        logical :: is_supported
+
+        is_supported = compiler%check_flags_supported( &
+            compile_flags=flags, &
+            link_flags=flags)
+    end function compile_and_link_flags_supported
+
+    subroutine set_compile_and_link_flags(this, compiler, flags)
+        class(metapackage_t), intent(inout) :: this
+        type(compiler_t), intent(in) :: compiler
+        character(len=*), intent(in) :: flags
+
+        this%flags = string_t(flags)
+        this%link_flags = string_t(flags)
+        this%has_build_flags = .true.
+        this%has_link_flags = .true.
+    end subroutine set_compile_and_link_flags
 end module fpm_meta_blas
