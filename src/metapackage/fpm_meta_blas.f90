@@ -44,9 +44,14 @@ contains
         end if
 
         if (compiler%is_intel()) then
-            this%flags = string_t("-qmkl")
+            if (get_os_type() == OS_WINDOWS) then 
+                this%flags = string_t("/Qmkl")
+                this%link_flags = string_t("/Qmkl")
+            else
+                this%flags = string_t("-qmkl")
+                this%link_flags = string_t("-qmkl")
+            endif
             this%has_build_flags = .true.
-            this%link_flags = string_t("-qmkl")
             this%has_link_flags = .true.
             return
         end if
