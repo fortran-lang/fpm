@@ -93,7 +93,7 @@ type, extends(serializable_t) :: fortran_features_t
     logical :: implicit_external = .false.
 
     !> Form to use for all Fortran sources
-    character(:), allocatable :: source_form
+    character(:), allocatable :: source_form, user_defined_flags
 
     contains
 
@@ -599,6 +599,7 @@ logical function fft_is_same(this,that)
            if (.not.(this%implicit_typing.eqv.other%implicit_typing)) return
            if (.not.(this%implicit_external.eqv.other%implicit_external)) return
            if (.not.(this%source_form==other%source_form)) return
+           if (.not.(this%user_defined_flags==other%user_defined_flags)) return
 
        class default
           ! Not the same type
@@ -628,6 +629,8 @@ subroutine fft_dump_to_toml(self, table, error)
     if (allocated(error)) return
     call set_string(table, "source-form", self%source_form, error, 'fortran_features_t')
     if (allocated(error)) return
+    call set_string(table, "user-defined-flags", self%user_defined_flags, error, 'fortran_features_t')
+    if (allocated(error)) return
 
 end subroutine fft_dump_to_toml
 
@@ -651,6 +654,7 @@ subroutine fft_load_from_toml(self, table, error)
     if (allocated(error)) return
     ! Return unallocated value if not present
     call get_value(table, "source-form", self%source_form)
+    call get_value(table, "user-defined-flags", self%user_defined_flags)
 
 end subroutine fft_load_from_toml
 
