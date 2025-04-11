@@ -207,7 +207,7 @@ character(*), parameter :: &
     flag_intel_free_form = " -free", &
     flag_intel_fixed_form = " -fixed", &
     flag_intel_standard_compliance = " -standard-semantics", &
-    flag_intel_unknown_cmd_err = "-diag-error 10006"
+    flag_intel_unknown_cmd_err = " -diag-error 10006"
 
 character(*), parameter :: &
     flag_intel_llvm_check = " -check all,nouninit"
@@ -228,7 +228,7 @@ character(*), parameter :: &
     flag_intel_free_form_win = " /free", &
     flag_intel_fixed_form_win = " /fixed", &
     flag_intel_standard_compliance_win = " /standard-semantics", &
-    flag_intel_unknown_cmd_err_win = "/Qdiag-error:10006"
+    flag_intel_unknown_cmd_err_win = " /Qdiag-error:10006"
 
 character(*), parameter :: &
     flag_nag_coarray = " -coarray=single", &
