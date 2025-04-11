@@ -94,7 +94,7 @@ jobs:
 
     - name: Setup Intel Environment
       if: contains(matrix.mpi, 'intel')
-      uses: ./.github/workflows/setup_intel.yml
+      uses: ./.github/actions/setup-intel
       with:
         os: ${{ matrix.os }}
 

@@ -1,0 +1,116 @@
+name: 'Setup Intel oneAPI Environment'
+description: 'Sets up Intel oneAPI C++, Fortran compilers and MPI on Windows or Ubuntu runners.'
+
+inputs:
+  os:
+    description: 'Operating system of the runner. Must contain "windows" or "ubuntu".'
+    required: true
+    type: string
+
+runs:
+  using: "composite"
+  steps:
+    - name: (Windows) Setup VS Build environment
+      if: contains(inputs.os, 'windows')
+      uses: seanmiddleditch/gha-setup-vsdevenv@v4
+
+    - name: (Windows) Retrieve and Install Intel toolchain
+      if: contains(inputs.os, 'windows')
+      shell: pwsh
+      run: |
+        $tempDir = "C:\TEMP\intel_install"
+        New-Item -ItemType Directory -Force -Path $tempDir
+        cd $tempDir
+        $installerName = "w_HPCKit_p_2023.0.0.25931_offline.exe" # Consider using inputs.intel_version_windows if added
+        $installerUrl = "https://registrationcenter-download.intel.com/akdlm/irc_nas/19085/$installerName"
+        Write-Host "Downloading Intel oneAPI installer..."
+        curl.exe --output $installerName --url $installerUrl --retry 5 --retry-delay 5 -L # Added -L for potential redirects
+        Write-Host "Extracting installer..."
+        Start-Process -FilePath ".\$installerName" -ArgumentList "-s -x -f oneAPI --log extract.log" -Wait -NoNewWindow
+        Remove-Item ".\$installerName" -Force
+        Write-Host "Installing oneAPI components..."
+        # Install C++, Fortran, and MPI development tools silently
+        Start-Process -FilePath ".\oneAPI\bootstrapper.exe" -ArgumentList "-s --action install --eula=accept --components=""intel.oneapi.win.cpp-compiler:intel.oneapi.win.ifort-compiler:intel.oneapi.win.mpi.devel"" -p=NEED_VS2017_INTEGRATION=0 -p=NEED_VS2019_INTEGRATION=0 -p=NEED_VS2022_INTEGRATION=0 --log-dir=." -Wait -NoNewWindow
+        Write-Host "Cleaning up extracted files..."
+        Remove-Item ".\oneAPI" -Force -Recurse
+        cd ..
+        Remove-Item $tempDir -Force -Recurse
+
+    - name: (Windows) Test that OneAPI is installed
+      if: contains(inputs.os, 'windows')
+      shell: pwsh
+      run: |
+        $setvarsPath = "C:\Program Files (x86)\Intel\oneAPI\setvars.bat"
+        $compilerVarsPath = "C:\Program Files (x86)\Intel\oneAPI\compiler\latest\env\vars.bat"
+        if (-not (Test-Path -Path $setvarsPath -PathType Leaf)) {
+          Write-Error "Intel oneAPI setvars.bat not found at $setvarsPath"
+          exit 1
+        }
+        if (-not (Test-Path -Path $compilerVarsPath -PathType Leaf)) {
+          Write-Warning "Intel oneAPI compiler vars.bat not found at $compilerVarsPath. MPI might still work."
+          # Depending on requirements, you might want to 'exit 1' here too
+        }
+        Write-Host "Intel oneAPI installation paths verified."
+
+    - name: (Windows) Load OneAPI environment variables
+      if: contains(inputs.os, 'windows')
+      shell: cmd
+      run: |
+        call "C:\Program Files (x86)\Intel\oneAPI\setvars.bat" > NUL
+        echo "Setting Intel environment variables..."
+        echo "PATH=%PATH%" >> %GITHUB_ENV%
+        echo "INCLUDE=%INCLUDE%" >> %GITHUB_ENV%
+        echo "LIB=%LIB%" >> %GITHUB_ENV%
+        REM Add any other specific vars if needed, e.g., for MPI
+        echo "I_MPI_ROOT=%I_MPI_ROOT%" >> %GITHUB_ENV%
+        echo "FI_PROVIDER_PATH=%FI_PROVIDER_PATH%" >> %GITHUB_ENV%
+        echo "MPI_BIN=%MPI_BIN%" >> %GITHUB_ENV%
+
+    # --- Ubuntu Intel Setup ---
+    - name: (Ubuntu) Install prerequisites and Intel GPG key
+      if: contains(inputs.os, 'ubuntu')
+      shell: bash
+      run: |
+        sudo apt-get update -y -qq
+        sudo apt-get install -y -qq gpg wget ca-certificates curl gpg-agent software-properties-common
+        wget -O- https://apt.repos.intel.com/intel-gpg-keys/GPG-PUB-KEY-INTEL-SW-PRODUCTS.PUB | gpg --dearmor | sudo tee /usr/share/keyrings/oneapi-archive-keyring.gpg > /dev/null
+
+    - name: (Ubuntu) Add Intel oneAPI repository
+      if: contains(inputs.os, 'ubuntu')
+      shell: bash
+      run: |
+        echo "deb [signed-by=/usr/share/keyrings/oneapi-archive-keyring.gpg] https://apt.repos.intel.com/oneapi all main" | sudo tee /etc/apt/sources.list.d/oneAPI.list
+        sudo apt-get update -y -qq
+
+    - name: (Ubuntu) Install Intel oneAPI Compilers using fortran-lang action
+      if: contains(inputs.os, 'ubuntu')
+      uses: fortran-lang/setup-fortran@v1
+      with:
+        compiler: intel
+        version: 2025.1
+
+    - name: (Ubuntu) Install Intel oneAPI MPI and build dependencies
+      if: contains(inputs.os, 'ubuntu')
+      shell: bash
+      run: |
+        # Install MPI devel package and common build tools
+        # The compilers (icc, ifort) should already be installed by setup-fortran action
+        sudo apt-get install -y -q intel-oneapi-mpi-devel ninja-build cmake libcurl4-gnutls-dev
+
+    - name: (Ubuntu) Source oneAPI environment and add to GITHUB_ENV
+      if: contains(inputs.os, 'ubuntu')
+      shell: bash
+      run: |
+        # Source the main setvars script to set up the environment for this step
+        # Use --force as we might be in a non-interactive shell
+        source /opt/intel/oneapi/setvars.sh --force > /dev/null 2>&1
+        echo "Sourced setvars.sh. Adding key variables to GITHUB_ENV..."
+        # Explicitly add key variables to GITHUB_ENV for subsequent steps
+        echo "PATH=$PATH" >> $GITHUB_ENV
+        echo "LD_LIBRARY_PATH=$LD_LIBRARY_PATH" >> $GITHUB_ENV
+        echo "LIBRARY_PATH=$LIBRARY_PATH" >> $GITHUB_ENV
+        echo "CPATH=$CPATH" >> $GITHUB_ENV
+        echo "CMPLR_ROOT=$CMPLR_ROOT" >> $GITHUB_ENV # Example compiler root
+        echo "MPI_ROOT=$MPI_ROOT" >> $GITHUB_ENV     # MPI root (check actual variable name if needed, e.g., I_MPI_ROOT)
+        echo "I_MPI_ROOT=$I_MPI_ROOT" >> $GITHUB_ENV # Common variable name for Intel MPI root
+        echo "FI_PROVIDER_PATH=$FI_PROVIDER_PATH" >> $GITHUB_ENV # Often needed for MPI
