@@ -1,23 +1,29 @@
 !> Define tests for the `fpm_toml` modules
 module test_toml
     use testsuite, only : new_unittest, unittest_t, error_t
-    use fpm_toml
+    use tomlf, only: toml_table, toml_load
+    use fpm_toml, only: read_package_file, toml_array, toml_key, toml_stat, &
+        get_value, set_value, get_list, new_table, add_table, add_array, len, &
+        toml_error, toml_serialize, check_keys, set_list, set_string, &
+        name_is_json
     use tomlf_constants, only: tf_i8
-    use fpm_git
+    use fpm_git, only: git_target_t, git_target_revision, git_target_branch, &
+         & git_target_tag
     use fpm_dependency, only: dependency_node_t, destroy_dependency_node, dependency_tree_t, &
          & new_dependency_node, new_dependency_tree, resize
     use fpm_manifest_dependency, only: dependency_config_t, dependency_destroy
-    use fpm_manifest_install
-    use fpm_manifest_fortran
-    use fpm_manifest_library
-    use fpm_manifest_executable
-    use fpm_manifest_preprocess
-    use fpm_manifest_profile
+    use fpm_manifest_install, only: install_config_t
+    use fpm_manifest_fortran, only: fortran_config_t
+    use fpm_manifest_library, only: library_config_t
+    use fpm_manifest_executable, only: executable_config_t
+    use fpm_manifest_preprocess, only: preprocess_config_t
+    use fpm_manifest_profile, only: file_scope_flag
     use fpm_versioning, only: new_version
     use fpm_strings, only: string_t, operator(==), split
     use fpm_model, only: fortran_features_t, package_t, FPM_SCOPE_LIB, FPM_UNIT_MODULE, fpm_model_t, &
          & srcfile_t
     use fpm_compiler, only: archiver_t, compiler_t, id_gcc
+    use fpm_error, only: fatal_error
 
 
     implicit none
@@ -1090,7 +1096,7 @@ contains
         integer :: iunit
 
         ! Write
-        open(newunit=iunit,form='formatted',status='scratch',action='readwrite')
+        open(newunit=iunit,form='formatted',status='scratch',action='readwrite',recl=1073741824)
 
         !> Dump to scratch file
         write(iunit,*) string

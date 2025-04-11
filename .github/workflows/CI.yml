@@ -28,10 +28,14 @@ jobs:
           - {compiler: gcc, version: 12}
           - {compiler: gcc, version: 13}
           - {compiler: gcc, version: 14}
+          - {compiler: intel, version: 2025.1}
         exclude:
-          # Not yet supported by setup-fortran
-          - os: windows-latest
-            toolchain: {compiler: gcc, version: 14}          
+          - os: macos-13  # No Intel on MacOS anymore since 2024
+            toolchain: {compiler: intel, version: '2025.1'}
+          - os: windows-latest  # Doesn't pass build and tests yet
+            toolchain: {compiler: intel, version: '2025.1'}
+          - os: windows-latest  # gcc 14 not available on Windows yet
+            toolchain: {compiler: gcc, version: 14}
         include:
           - os: ubuntu-latest
             os-arch: linux-x86_64
@@ -49,7 +53,7 @@ jobs:
       uses: actions/checkout@v4
 
     - name: Setup Fortran compiler
-      uses: fortran-lang/setup-fortran@v1.6.1
+      uses: fortran-lang/setup-fortran@v1.6.3
       id: setup-fortran
       with:
         compiler: ${{ matrix.toolchain.compiler }}
@@ -61,7 +65,7 @@ jobs:
       with:
         fpm-version: 'v0.8.0'
 
-    # Backport gfortran shared libraries to version 10 folder. This is necessary because the macOS release of fpm 
+    # Backport gfortran shared libraries to version 10 folder. This is necessary because the macOS release of fpm
     # 0.10.0 used for bootstrapping has these paths hardcoded in the executable.
     - name: MacOS patch libgfortran
       if: contains(matrix.os, 'macos') && !contains(matrix.toolchain.version, '10')
@@ -73,7 +77,7 @@ jobs:
         mkdir /usr/local/opt/gcc@10/lib/gcc
         mkdir /usr/local/opt/gcc@10/lib/gcc/10
         mkdir /usr/local/lib/gcc/10
-        ln -fs /usr/local/opt/gcc@${{ matrix.toolchain.version }}/lib/gcc/${{ matrix.toolchain.version }}/libquadmath.0.dylib /usr/local/opt/gcc@10/lib/gcc/10/libquadmath.0.dylib 
+        ln -fs /usr/local/opt/gcc@${{ matrix.toolchain.version }}/lib/gcc/${{ matrix.toolchain.version }}/libquadmath.0.dylib /usr/local/opt/gcc@10/lib/gcc/10/libquadmath.0.dylib
         ln -fs /usr/local/opt/gcc@${{ matrix.toolchain.version }}/lib/gcc/${{ matrix.toolchain.version }}/libgfortran.5.dylib /usr/local/opt/gcc@10/lib/gcc/10/libgfortran.5.dylib
         ln -fs /usr/local/lib/gcc/${{ matrix.toolchain.version }}/libgcc_s.1.dylib /usr/local/lib/gcc/10/libgcc_s.1.dylib
 
@@ -96,7 +100,7 @@ jobs:
     - name: Build Fortran fpm (bootstrap)
       shell: bash
       run: |
-        ${{ env.BOOTSTRAP }} build 
+        ${{ env.BOOTSTRAP }} build
 
     - name: Run Fortran fpm (bootstrap)
       shell: bash
@@ -193,7 +197,7 @@ jobs:
       fail-fast: false
       matrix:
         gcc_v: [11,12,13]
-    
+
     steps:
     - uses: actions/checkout@v4
 

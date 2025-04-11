@@ -12,8 +12,9 @@
 module fpm_manifest_build
     use fpm_error, only : error_t, syntax_error, fatal_error
     use fpm_strings, only : string_t, len_trim, is_valid_module_prefix, operator(==)
-    use fpm_toml, only : toml_table, toml_key, toml_stat, get_value, get_list, serializable_t, &
-                         set_value, set_string, set_list
+    use tomlf, only: toml_table, toml_key, toml_stat
+    use fpm_toml, only : serializable_t, get_value, get_list, set_value, set_string, set_list
+
     implicit none
     private
 

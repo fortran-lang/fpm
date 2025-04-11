@@ -1,6 +1,7 @@
 module fpm_manifest_fortran
     use fpm_error, only : error_t, syntax_error, fatal_error
-    use fpm_toml, only : toml_table, toml_key, toml_stat, get_value, serializable_t, set_value, set_string
+    use tomlf, only : toml_table, toml_key, toml_stat
+    use fpm_toml, only : get_value, serializable_t, set_value, set_string
     implicit none
     private
 
@@ -121,8 +122,10 @@ contains
        type is (fortran_config_t)
           if (this%implicit_typing.neqv.other%implicit_typing) return
           if (this%implicit_external.neqv.other%implicit_external) return
-          if (.not.allocated(this%source_form).eqv.allocated(other%source_form)) return
-          if (.not.this%source_form==other%source_form) return
+          if (allocated(this%source_form).neqv.allocated(other%source_form)) return
+          if (allocated(this%source_form)) then
+            if (.not.this%source_form==other%source_form) return
+          end if
        class default
           ! Not the same type
           return

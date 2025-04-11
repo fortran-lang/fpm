@@ -26,7 +26,8 @@ module fpm_manifest_dependency
     use fpm_error, only: error_t, syntax_error, fatal_error
     use fpm_git, only: git_target_t, git_target_tag, git_target_branch, &
         & git_target_revision, git_target_default, git_matches_manifest
-    use fpm_toml, only: toml_table, toml_key, toml_stat, get_value, check_keys, serializable_t, add_table, &
+    use tomlf, only: toml_table, toml_key, toml_stat
+    use fpm_toml, only: get_value, check_keys, serializable_t, add_table, &
         & set_value, set_string
     use fpm_filesystem, only: windows_path, join_path
     use fpm_environment, only: get_os_type, OS_WINDOWS
@@ -410,15 +411,24 @@ contains
         select type (other=>that)
            type is (dependency_config_t)
 
-              if (.not.(this%name==other%name)) return
-              if (.not.(this%path==other%path)) return
-              if (.not.(this%namespace==other%namespace)) return
-              if (.not.(allocated(this%requested_version).eqv.allocated(other%requested_version))) return
+              if (allocated(this%name).neqv.allocated(other%name)) return
+              if (allocated(this%name)) then
+                if (.not.(this%name==other%name)) return
+              endif
+              if (allocated(this%path).neqv.allocated(other%path)) return
+              if (allocated(this%path)) then
+                if (.not.(this%path==other%path)) return
+              endif
+              if (allocated(this%namespace).neqv.allocated(other%namespace)) return
+              if (allocated(this%namespace)) then
+                if (.not.(this%namespace==other%namespace)) return
+              endif
+              if (allocated(this%requested_version).neqv.allocated(other%requested_version)) return
               if (allocated(this%requested_version)) then
                 if (.not.(this%requested_version==other%requested_version)) return
               endif
 
-              if (.not.(allocated(this%git).eqv.allocated(other%git))) return
+              if ((allocated(this%git).neqv.allocated(other%git))) return
               if (allocated(this%git)) then
                 if (.not.(this%git==other%git)) return
               endif

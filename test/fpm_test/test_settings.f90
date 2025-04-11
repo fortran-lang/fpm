@@ -3,7 +3,8 @@ module test_settings
   use fpm_settings, only: fpm_global_settings, get_global_settings, get_registry_settings, official_registry_base_url
   use fpm_filesystem, only: is_dir, join_path, mkdir, filewrite, os_delete_dir, exists, get_local_prefix
   use fpm_environment, only: os_is_unix
-  use fpm_toml, only: toml_table, new_table, add_table, set_value
+  use tomlf, only: toml_table, new_table
+  use fpm_toml, only: add_table, set_value
   use fpm_os, only: get_absolute_path, get_current_directory
 
   implicit none

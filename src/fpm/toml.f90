@@ -337,10 +337,10 @@ contains
         end if
 
     end subroutine read_package_file
-    
+
     !> Check if an instance of the TOML data structure contains a list
     logical function has_list(table, key)
-    
+
         !> Instance of the TOML data structure
         type(toml_table), intent(inout) :: table
 
@@ -348,18 +348,18 @@ contains
         character(len=*), intent(in) :: key
 
         type(toml_array), pointer :: children
-        
+
         has_list = .false.
 
         if (.not.table%has_key(key)) return
 
         call get_value(table, key, children, requested=.false.)
-        
+
         ! There is an allocated list
         has_list = associated(children)
-        
+
     end function has_list
-    
+
 
     subroutine get_list(table, key, list, error)
 

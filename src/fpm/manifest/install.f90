@@ -7,7 +7,8 @@
 !>```
 module fpm_manifest_install
   use fpm_error, only : error_t, fatal_error, syntax_error
-  use fpm_toml, only : toml_table, toml_key, toml_stat, get_value, set_value, serializable_t
+  use tomlf, only : toml_table, toml_key, toml_stat
+  use fpm_toml, only : get_value, set_value, serializable_t
   implicit none
   private
 
@@ -18,7 +19,7 @@ module fpm_manifest_install
 
     !> Install library with this project
     logical :: library = .false.
-    
+
     !> Install tests with this project
     logical :: test = .false.
 
@@ -80,7 +81,7 @@ contains
         call syntax_error(error, "Key "//list(ikey)%key//" is not allowed in install table")
         exit
       case("library","test")
-        continue    
+        continue
       end select
     end do
     if (allocated(error)) return
@@ -150,7 +151,7 @@ contains
 
     call set_value(table, "library", self%library, error, class_name)
     if (allocated(error)) return
-    
+
     call set_value(table, "test", self%test, error, class_name)
     if (allocated(error)) return
 
