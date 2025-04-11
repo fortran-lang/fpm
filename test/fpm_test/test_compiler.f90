@@ -76,7 +76,7 @@ contains
             call test_failed(error, "Invalid compile flags did not trigger an error")
             return
         end if
-        if (compiler%check_flags_supported(compile_flags='-unknown-flag')) then
+        if (compiler%check_flags_supported(compile_flags='-not-a-compile-flag')) then
             call test_failed(error, "Invalid compile flags did not trigger an error")
             return
         end if
