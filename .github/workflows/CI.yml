@@ -32,7 +32,7 @@ jobs:
         exclude:
           - os: macos-13  # No Intel on MacOS anymore since 2024
             toolchain: {compiler: intel, version: '2025.1'}
-          - os: windows-latest  # Until #1090 resolved
+          - os: windows-latest  # Doesn't pass build and tests yet
             toolchain: {compiler: intel, version: '2025.1'}
           - os: windows-latest  # gcc 14 not available on Windows yet
             toolchain: {compiler: gcc, version: 14}
