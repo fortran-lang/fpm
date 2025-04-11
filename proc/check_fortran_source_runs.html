@@ -92,7 +92,7 @@
 
             <li class="list-inline-item" id="statements"><i class="fa fa-list-ol"></i>
               <a data-bs-toggle="tooltip" data-bs-placement="bottom" data-bs-html="true"
-                 title=" 0.5% of total for procedures.">32 statements</a>
+                 title=" 0.6% of total for procedures.">39 statements</a>
             </li>
 
             <li class="list-inline-item" id="source-file">
@@ -135,13 +135,13 @@
       <div id="vars-0" class="collapse">
         <div class="list-group list-group-flush">
             <a class="list-group-item" href="../proc/check_fortran_source_runs.html#variable-exe">exe</a>
-            <a class="list-group-item" href="../proc/check_fortran_source_runs.html#variable-flags~21">flags</a>
-            <a class="list-group-item" href="../proc/check_fortran_source_runs.html#variable-ldflags~2">ldflags</a>
+            <a class="list-group-item" href="../proc/check_fortran_source_runs.html#variable-flags~9">flags</a>
+            <a class="list-group-item" href="../proc/check_fortran_source_runs.html#variable-ldflags">ldflags</a>
             <a class="list-group-item" href="../proc/check_fortran_source_runs.html#variable-logf">logf</a>
-            <a class="list-group-item" href="../proc/check_fortran_source_runs.html#variable-object~5">object</a>
-            <a class="list-group-item" href="../proc/check_fortran_source_runs.html#variable-source~10">source</a>
-            <a class="list-group-item" href="../proc/check_fortran_source_runs.html#variable-stat~59">stat</a>
-            <a class="list-group-item" href="../proc/check_fortran_source_runs.html#variable-unit~33">unit</a>
+            <a class="list-group-item" href="../proc/check_fortran_source_runs.html#variable-object">object</a>
+            <a class="list-group-item" href="../proc/check_fortran_source_runs.html#variable-source~2">source</a>
+            <a class="list-group-item" href="../proc/check_fortran_source_runs.html#variable-stat~9">stat</a>
+            <a class="list-group-item" href="../proc/check_fortran_source_runs.html#variable-unit~4">unit</a>
         </div>
       </div>
     </div>
@@ -186,6 +186,7 @@ Compile a Fortran object
 Create temporary source file
 Write contents
 Get flags
+Intel: Needs -warn last for error on unknown command line arguments to work
 Compile and link program
 Run and retrieve exit code</p>
 <p>Successful exit on 0 exit code</p>
@@ -207,7 +208,7 @@ Run and retrieve exit code</p>
     <tbody>
         <tr>
             <td>
-              <span class="anchor" id="variable-self~145"></span>
+              <span class="anchor" id="variable-self~36"></span>
               class(<a href='../type/compiler_t.html'>compiler_t</a>),
             </td>
 <td>intent(in)</td>
@@ -222,7 +223,7 @@ Run and retrieve exit code</p>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-input~7"></span>
+              <span class="anchor" id="variable-input~4"></span>
               character(len=*),
             </td>
 <td>intent(in)</td>
@@ -237,7 +238,7 @@ Run and retrieve exit code</p>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-compile_flags~3"></span>
+              <span class="anchor" id="variable-compile_flags"></span>
               character(len=*),
             </td>
 <td>intent(in),</td>
@@ -252,7 +253,7 @@ Run and retrieve exit code</p>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-link_flags~4"></span>
+              <span class="anchor" id="variable-link_flags"></span>
               character(len=*),
             </td>
 <td>intent(in),</td>
@@ -270,7 +271,7 @@ Run and retrieve exit code</p>
 
       <h3>Return Value
         <small>
-          <span class="anchor" id="variable-success~11"></span>
+          <span class="anchor" id="variable-success~2"></span>
           logical
         </small>
       </h3>
@@ -309,7 +310,7 @@ Run and retrieve exit code</p>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-flags~21"></span>
+              <span class="anchor" id="variable-flags~9"></span>
               character(len=:),
             </td>
               <td>public,</td>
@@ -326,7 +327,7 @@ Run and retrieve exit code</p>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-ldflags~2"></span>
+              <span class="anchor" id="variable-ldflags"></span>
               character(len=:),
             </td>
               <td>public,</td>
@@ -360,7 +361,7 @@ Run and retrieve exit code</p>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-object~5"></span>
+              <span class="anchor" id="variable-object"></span>
               character(len=:),
             </td>
               <td>public,</td>
@@ -377,7 +378,7 @@ Run and retrieve exit code</p>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-source~10"></span>
+              <span class="anchor" id="variable-source~2"></span>
               character(len=:),
             </td>
               <td>public,</td>
@@ -394,7 +395,7 @@ Run and retrieve exit code</p>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-stat~59"></span>
+              <span class="anchor" id="variable-stat~9"></span>
               integer,
             </td>
               <td>public</td>
@@ -411,7 +412,7 @@ Run and retrieve exit code</p>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-unit~33"></span>
+              <span class="anchor" id="variable-unit~4"></span>
               integer,
             </td>
               <td>public</td>
@@ -447,7 +448,7 @@ Run and retrieve exit code</p>
 <span class="w">    </span><span class="k">class</span><span class="p">(</span><span class="n">compiler_t</span><span class="p">),</span><span class="w"> </span><span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">)</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">self</span>
 <span class="w">    </span><span class="c">!&gt; Program Source</span>
 <span class="w">    </span><span class="kt">character</span><span class="p">(</span><span class="nb">len</span><span class="o">=*</span><span class="p">),</span><span class="w"> </span><span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">)</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">input</span>
-<span class="w">    </span><span class="c">!&gt; Optional build and link flags </span>
+<span class="w">    </span><span class="c">!&gt; Optional build and link flags</span>
 <span class="w">    </span><span class="kt">character</span><span class="p">(</span><span class="nb">len</span><span class="o">=*</span><span class="p">),</span><span class="w"> </span><span class="k">optional</span><span class="p">,</span><span class="w"> </span><span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">)</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">compile_flags</span><span class="p">,</span><span class="w"> </span><span class="n">link_flags</span>
 
 <span class="w">    </span><span class="kt">integer</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="nb">stat</span><span class="p">,</span><span class="n">unit</span>
@@ -470,10 +471,19 @@ Run and retrieve exit code</p>
 <span class="w">    </span><span class="c">!&gt; Get flags</span>
 <span class="w">    </span><span class="n">flags</span><span class="w">    </span><span class="o">=</span><span class="w"> </span><span class="n">self</span><span class="p">%</span><span class="n">get_default_flags</span><span class="p">(</span><span class="n">release</span><span class="o">=</span><span class="p">.</span><span class="n">false</span><span class="p">.)</span>
 <span class="w">    </span><span class="n">ldflags</span><span class="w">  </span><span class="o">=</span><span class="w"> </span><span class="n">self</span><span class="p">%</span><span class="n">get_default_flags</span><span class="p">(</span><span class="n">release</span><span class="o">=</span><span class="p">.</span><span class="n">false</span><span class="p">.)</span>
-<span class="w">    </span>
+
 <span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="nb">present</span><span class="p">(</span><span class="n">compile_flags</span><span class="p">))</span><span class="w"> </span><span class="n">flags</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">flags</span><span class="o">//</span><span class="s2">&quot; &quot;</span><span class="o">//</span><span class="n">compile_flags</span>
 <span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="nb">present</span><span class="p">(</span><span class="n">link_flags</span><span class="p">))</span><span class="w"> </span><span class="n">ldflags</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">ldflags</span><span class="o">//</span><span class="s2">&quot; &quot;</span><span class="o">//</span><span class="n">link_flags</span>
-<span class="w">    </span>
+
+<span class="w">    </span><span class="c">!&gt; Intel: Needs -warn last for error on unknown command line arguments to work</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">self</span><span class="p">%</span><span class="n">id</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="n">id_intel_llvm_nix</span><span class="p">)</span><span class="w"> </span><span class="k">then</span>
+<span class="k">        </span><span class="n">flags</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">flags</span><span class="o">//</span><span class="s2">&quot; &quot;</span><span class="o">//</span><span class="n">flag_intel_warn</span>
+<span class="w">        </span><span class="n">ldflags</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">ldflags</span><span class="o">//</span><span class="s2">&quot; &quot;</span><span class="o">//</span><span class="n">flag_intel_warn</span>
+<span class="w">    </span><span class="k">elseif</span><span class="w"> </span><span class="p">(</span><span class="n">self</span><span class="p">%</span><span class="n">id</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="n">id_intel_llvm_windows</span><span class="p">)</span><span class="w"> </span><span class="k">then</span>
+<span class="k">        </span><span class="n">flags</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">flags</span><span class="o">//</span><span class="s2">&quot; &quot;</span><span class="o">//</span><span class="n">flag_intel_warn_win</span>
+<span class="w">        </span><span class="n">ldflags</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">ldflags</span><span class="o">//</span><span class="s2">&quot; &quot;</span><span class="o">//</span><span class="n">flag_intel_warn_win</span>
+<span class="w">    </span><span class="k">end if</span>
+
 <span class="w">    </span><span class="c">!&gt; Compile and link program</span>
 <span class="w">    </span><span class="k">call </span><span class="n">self</span><span class="p">%</span><span class="n">compile_fortran</span><span class="p">(</span><span class="n">source</span><span class="p">,</span><span class="w"> </span><span class="n">object</span><span class="p">,</span><span class="w"> </span><span class="n">flags</span><span class="p">,</span><span class="w"> </span><span class="n">logf</span><span class="p">,</span><span class="w"> </span><span class="nb">stat</span><span class="p">)</span>
 <span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="nb">stat</span><span class="o">==</span><span class="mi">0</span><span class="p">)</span><span class="w"> </span><span class="p">&amp;</span>
@@ -520,7 +530,7 @@ Run and retrieve exit code</p>
             <p class="text-end">
               Documentation generated by
               <a href="https://github.com/Fortran-FOSS-Programmers/ford">FORD</a>
- on 2025-04-10 17:34 +0000             </p>
+ on 2025-04-11 16:53 +0000             </p>
           </div>
         </div>
         <br>

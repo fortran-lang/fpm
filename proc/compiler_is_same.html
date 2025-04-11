@@ -92,7 +92,7 @@
 
             <li class="list-inline-item" id="statements"><i class="fa fa-list-ol"></i>
               <a data-bs-toggle="tooltip" data-bs-placement="bottom" data-bs-html="true"
-                 title=" 0.2% of total for procedures.">17 statements</a>
+                 title=" 0.4% of total for procedures.">26 statements</a>
             </li>
 
             <li class="list-inline-item" id="source-file">
@@ -182,7 +182,7 @@ All checks passed!</p>
     <tbody>
         <tr>
             <td>
-              <span class="anchor" id="variable-this~37"></span>
+              <span class="anchor" id="variable-this~4"></span>
               class(<a href='../type/compiler_t.html'>compiler_t</a>),
             </td>
 <td>intent(in)</td>
@@ -197,7 +197,7 @@ All checks passed!</p>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-that~23"></span>
+              <span class="anchor" id="variable-that~3"></span>
               class(<a href='../type/serializable_t.html'>serializable_t</a>),
             </td>
 <td>intent(in)</td>
@@ -244,9 +244,18 @@ All checks passed!</p>
 <span class="w">       </span><span class="k">type is</span><span class="w"> </span><span class="p">(</span><span class="n">compiler_t</span><span class="p">)</span>
 
 <span class="w">          </span><span class="k">if</span><span class="w"> </span><span class="p">(.</span><span class="nb">not</span><span class="p">.(</span><span class="n">this</span><span class="p">%</span><span class="n">id</span><span class="o">==</span><span class="n">other</span><span class="p">%</span><span class="n">id</span><span class="p">))</span><span class="w"> </span><span class="k">return</span>
-<span class="k">          if</span><span class="w"> </span><span class="p">(.</span><span class="nb">not</span><span class="p">.(</span><span class="n">this</span><span class="p">%</span><span class="n">fc</span><span class="o">==</span><span class="n">other</span><span class="p">%</span><span class="n">fc</span><span class="p">))</span><span class="w"> </span><span class="k">return</span>
-<span class="k">          if</span><span class="w"> </span><span class="p">(.</span><span class="nb">not</span><span class="p">.(</span><span class="n">this</span><span class="p">%</span><span class="n">cc</span><span class="o">==</span><span class="n">other</span><span class="p">%</span><span class="n">cc</span><span class="p">))</span><span class="w"> </span><span class="k">return</span>
-<span class="k">          if</span><span class="w"> </span><span class="p">(.</span><span class="nb">not</span><span class="p">.(</span><span class="n">this</span><span class="p">%</span><span class="n">cxx</span><span class="o">==</span><span class="n">other</span><span class="p">%</span><span class="n">cxx</span><span class="p">))</span><span class="w"> </span><span class="k">return</span>
+<span class="k">          if</span><span class="w"> </span><span class="p">(</span><span class="nb">allocated</span><span class="p">(</span><span class="n">this</span><span class="p">%</span><span class="n">fc</span><span class="p">).</span><span class="n">neqv</span><span class="p">.</span><span class="nb">allocated</span><span class="p">(</span><span class="n">other</span><span class="p">%</span><span class="n">fc</span><span class="p">))</span><span class="w"> </span><span class="k">return</span>
+<span class="k">          if</span><span class="w"> </span><span class="p">(</span><span class="nb">allocated</span><span class="p">(</span><span class="n">this</span><span class="p">%</span><span class="n">fc</span><span class="p">))</span><span class="w"> </span><span class="k">then</span>
+<span class="k">            if</span><span class="w"> </span><span class="p">(.</span><span class="nb">not</span><span class="p">.(</span><span class="n">this</span><span class="p">%</span><span class="n">fc</span><span class="o">==</span><span class="n">other</span><span class="p">%</span><span class="n">fc</span><span class="p">))</span><span class="w"> </span><span class="k">return</span>
+<span class="k">          end if</span>
+<span class="k">          if</span><span class="w"> </span><span class="p">(</span><span class="nb">allocated</span><span class="p">(</span><span class="n">this</span><span class="p">%</span><span class="n">cc</span><span class="p">).</span><span class="n">neqv</span><span class="p">.</span><span class="nb">allocated</span><span class="p">(</span><span class="n">other</span><span class="p">%</span><span class="n">cc</span><span class="p">))</span><span class="w"> </span><span class="k">return</span>
+<span class="k">          if</span><span class="w"> </span><span class="p">(</span><span class="nb">allocated</span><span class="p">(</span><span class="n">this</span><span class="p">%</span><span class="n">cc</span><span class="p">))</span><span class="w"> </span><span class="k">then</span>
+<span class="k">            if</span><span class="w"> </span><span class="p">(.</span><span class="nb">not</span><span class="p">.(</span><span class="n">this</span><span class="p">%</span><span class="n">cc</span><span class="o">==</span><span class="n">other</span><span class="p">%</span><span class="n">cc</span><span class="p">))</span><span class="w"> </span><span class="k">return</span>
+<span class="k">          end if</span>
+<span class="k">          if</span><span class="w"> </span><span class="p">(</span><span class="nb">allocated</span><span class="p">(</span><span class="n">this</span><span class="p">%</span><span class="n">cxx</span><span class="p">).</span><span class="n">neqv</span><span class="p">.</span><span class="nb">allocated</span><span class="p">(</span><span class="n">other</span><span class="p">%</span><span class="n">cxx</span><span class="p">))</span><span class="w"> </span><span class="k">return</span>
+<span class="k">          if</span><span class="w"> </span><span class="p">(</span><span class="nb">allocated</span><span class="p">(</span><span class="n">this</span><span class="p">%</span><span class="n">cxx</span><span class="p">))</span><span class="w"> </span><span class="k">then</span>
+<span class="k">            if</span><span class="w"> </span><span class="p">(.</span><span class="nb">not</span><span class="p">.(</span><span class="n">this</span><span class="p">%</span><span class="n">cxx</span><span class="o">==</span><span class="n">other</span><span class="p">%</span><span class="n">cxx</span><span class="p">))</span><span class="w"> </span><span class="k">return</span>
+<span class="k">          end if</span>
 <span class="k">          if</span><span class="w"> </span><span class="p">(.</span><span class="nb">not</span><span class="p">.(</span><span class="n">this</span><span class="p">%</span><span class="n">echo</span><span class="p">.</span><span class="n">eqv</span><span class="p">.</span><span class="n">other</span><span class="p">%</span><span class="n">echo</span><span class="p">))</span><span class="w"> </span><span class="k">return</span>
 <span class="k">          if</span><span class="w"> </span><span class="p">(.</span><span class="nb">not</span><span class="p">.(</span><span class="n">this</span><span class="p">%</span><span class="n">verbose</span><span class="p">.</span><span class="n">eqv</span><span class="p">.</span><span class="n">other</span><span class="p">%</span><span class="n">verbose</span><span class="p">))</span><span class="w"> </span><span class="k">return</span>
 
@@ -282,7 +291,7 @@ All checks passed!</p>
             <p class="text-end">
               Documentation generated by
               <a href="https://github.com/Fortran-FOSS-Programmers/ford">FORD</a>
- on 2025-04-10 17:34 +0000             </p>
+ on 2025-04-11 16:53 +0000             </p>
           </div>
         </div>
         <br>

@@ -92,7 +92,7 @@
 
             <li class="list-inline-item" id="statements"><i class="fa fa-list-ol"></i>
               <a data-bs-toggle="tooltip" data-bs-placement="bottom" data-bs-html="true"
-                 title=" 0.2% of total for procedures.">14 statements</a>
+                 title=" 0.3% of total for procedures.">20 statements</a>
             </li>
 
             <li class="list-inline-item" id="source-file">
@@ -182,7 +182,7 @@ All checks passed!</p>
     <tbody>
         <tr>
             <td>
-              <span class="anchor" id="variable-this~8"></span>
+              <span class="anchor" id="variable-this~27"></span>
               class(<a href='../type/git_target_t.html'>git_target_t</a>),
             </td>
 <td>intent(in)</td>
@@ -197,7 +197,7 @@ All checks passed!</p>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-that~4"></span>
+              <span class="anchor" id="variable-that~18"></span>
               class(<a href='../type/serializable_t.html'>serializable_t</a>),
             </td>
 <td>intent(in)</td>
@@ -242,11 +242,15 @@ All checks passed!</p>
 
 <span class="w">        </span><span class="k">select type</span><span class="w"> </span><span class="p">(</span><span class="n">other</span><span class="o">=&gt;</span><span class="n">that</span><span class="p">)</span>
 <span class="w">           </span><span class="k">type is</span><span class="w"> </span><span class="p">(</span><span class="n">git_target_t</span><span class="p">)</span>
-
 <span class="w">              </span><span class="k">if</span><span class="w"> </span><span class="p">(.</span><span class="nb">not</span><span class="p">.(</span><span class="n">this</span><span class="p">%</span><span class="n">descriptor</span><span class="o">==</span><span class="n">other</span><span class="p">%</span><span class="n">descriptor</span><span class="p">))</span><span class="w"> </span><span class="k">return</span>
-<span class="k">              if</span><span class="w"> </span><span class="p">(.</span><span class="nb">not</span><span class="p">.(</span><span class="n">this</span><span class="p">%</span><span class="n">url</span><span class="o">==</span><span class="n">other</span><span class="p">%</span><span class="n">url</span><span class="p">))</span><span class="w"> </span><span class="k">return</span>
-<span class="k">              if</span><span class="w"> </span><span class="p">(.</span><span class="nb">not</span><span class="p">.(</span><span class="n">this</span><span class="p">%</span><span class="n">object</span><span class="o">==</span><span class="n">other</span><span class="p">%</span><span class="n">object</span><span class="p">))</span><span class="w"> </span><span class="k">return</span>
-
+<span class="k">              if</span><span class="w"> </span><span class="p">(</span><span class="nb">allocated</span><span class="p">(</span><span class="n">this</span><span class="p">%</span><span class="n">url</span><span class="p">)</span><span class="w"> </span><span class="p">.</span><span class="n">neqv</span><span class="p">.</span><span class="w"> </span><span class="nb">allocated</span><span class="p">(</span><span class="n">other</span><span class="p">%</span><span class="n">url</span><span class="p">))</span><span class="w"> </span><span class="k">return</span>
+<span class="k">              if</span><span class="w"> </span><span class="p">(</span><span class="nb">allocated</span><span class="p">(</span><span class="n">this</span><span class="p">%</span><span class="n">url</span><span class="p">))</span><span class="w"> </span><span class="k">then</span>
+<span class="k">                if</span><span class="w"> </span><span class="p">(.</span><span class="nb">not</span><span class="p">.(</span><span class="n">this</span><span class="p">%</span><span class="n">url</span><span class="o">==</span><span class="n">other</span><span class="p">%</span><span class="n">url</span><span class="p">))</span><span class="w"> </span><span class="k">return</span>
+<span class="k">              end if</span>
+<span class="k">              if</span><span class="w"> </span><span class="p">(</span><span class="nb">allocated</span><span class="p">(</span><span class="n">this</span><span class="p">%</span><span class="n">object</span><span class="p">)</span><span class="w"> </span><span class="p">.</span><span class="n">neqv</span><span class="p">.</span><span class="w"> </span><span class="nb">allocated</span><span class="p">(</span><span class="n">other</span><span class="p">%</span><span class="n">object</span><span class="p">))</span><span class="w"> </span><span class="k">return</span>
+<span class="k">              if</span><span class="w"> </span><span class="p">(</span><span class="nb">allocated</span><span class="p">(</span><span class="n">this</span><span class="p">%</span><span class="n">object</span><span class="p">))</span><span class="w"> </span><span class="k">then</span>
+<span class="k">                if</span><span class="w"> </span><span class="p">(.</span><span class="nb">not</span><span class="p">.(</span><span class="n">this</span><span class="p">%</span><span class="n">object</span><span class="o">==</span><span class="n">other</span><span class="p">%</span><span class="n">object</span><span class="p">))</span><span class="w"> </span><span class="k">return</span>
+<span class="k">              end if</span>
 <span class="k">           class </span><span class="n">default</span>
 <span class="w">              </span><span class="c">! Not the same type</span>
 <span class="w">              </span><span class="k">return</span>
@@ -279,7 +283,7 @@ All checks passed!</p>
             <p class="text-end">
               Documentation generated by
               <a href="https://github.com/Fortran-FOSS-Programmers/ford">FORD</a>
- on 2025-04-10 17:34 +0000             </p>
+ on 2025-04-11 16:53 +0000             </p>
           </div>
         </div>
         <br>

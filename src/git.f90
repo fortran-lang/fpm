@@ -2,7 +2,8 @@
 module fpm_git
     use fpm_error, only: error_t, fatal_error
     use fpm_filesystem, only : get_temp_filename, getline, join_path, execute_and_read_output, run
-    use fpm_toml, only: serializable_t, toml_table, get_value, set_value, toml_stat, set_string
+    use tomlf, only: toml_table, toml_stat
+    use fpm_toml, only: serializable_t, get_value, set_value, set_string
     implicit none
 
     public :: git_target_t, git_target_default, git_target_branch, git_target_tag, git_target_revision, git_revision, &
@@ -148,11 +149,15 @@ contains
 
         select type (other=>that)
            type is (git_target_t)
-
               if (.not.(this%descriptor==other%descriptor)) return
-              if (.not.(this%url==other%url)) return
-              if (.not.(this%object==other%object)) return
-
+              if (allocated(this%url) .neqv. allocated(other%url)) return
+              if (allocated(this%url)) then
+                if (.not.(this%url==other%url)) return
+              end if
+              if (allocated(this%object) .neqv. allocated(other%object)) return
+              if (allocated(this%object)) then
+                if (.not.(this%object==other%object)) return
+              end if
            class default
               ! Not the same type
               return
@@ -434,7 +439,7 @@ contains
     end if
 
     allocate(character(len=0) :: add_files)
-    if (present(additional_files)) then 
+    if (present(additional_files)) then
        do i=1,size(additional_files)
           add_files = trim(add_files)//' --add-file='//adjustl(additional_files(i))
        end do
@@ -446,7 +451,7 @@ contains
         & -o '//destination, &
         & echo=verbose, &
         & exitstat=stat)
-        
+
     if (stat /= 0) then
       call fatal_error(error, "Error packing '"//source//"'."); return
     end if

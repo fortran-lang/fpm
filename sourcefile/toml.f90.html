@@ -510,10 +510,10 @@
 <a id="ln-337" name="ln-337" href="#ln-337"></a><span class="k">        end if</span>
 <a id="ln-338" name="ln-338" href="#ln-338"></a>
 <a id="ln-339" name="ln-339" href="#ln-339"></a><span class="k">    end subroutine </span><span class="n">read_package_file</span>
-<a id="ln-340" name="ln-340" href="#ln-340"></a><span class="w">    </span>
+<a id="ln-340" name="ln-340" href="#ln-340"></a>
 <a id="ln-341" name="ln-341" href="#ln-341"></a><span class="w">    </span><span class="c">!&gt; Check if an instance of the TOML data structure contains a list</span>
 <a id="ln-342" name="ln-342" href="#ln-342"></a><span class="w">    </span><span class="kt">logical </span><span class="k">function </span><span class="n">has_list</span><span class="p">(</span><span class="n">table</span><span class="p">,</span><span class="w"> </span><span class="n">key</span><span class="p">)</span>
-<a id="ln-343" name="ln-343" href="#ln-343"></a><span class="w">    </span>
+<a id="ln-343" name="ln-343" href="#ln-343"></a>
 <a id="ln-344" name="ln-344" href="#ln-344"></a><span class="w">        </span><span class="c">!&gt; Instance of the TOML data structure</span>
 <a id="ln-345" name="ln-345" href="#ln-345"></a><span class="w">        </span><span class="k">type</span><span class="p">(</span><span class="n">toml_table</span><span class="p">),</span><span class="w"> </span><span class="k">intent</span><span class="p">(</span><span class="n">inout</span><span class="p">)</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">table</span>
 <a id="ln-346" name="ln-346" href="#ln-346"></a>
@@ -521,18 +521,18 @@
 <a id="ln-348" name="ln-348" href="#ln-348"></a><span class="w">        </span><span class="kt">character</span><span class="p">(</span><span class="nb">len</span><span class="o">=*</span><span class="p">),</span><span class="w"> </span><span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">)</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">key</span>
 <a id="ln-349" name="ln-349" href="#ln-349"></a>
 <a id="ln-350" name="ln-350" href="#ln-350"></a><span class="w">        </span><span class="k">type</span><span class="p">(</span><span class="n">toml_array</span><span class="p">),</span><span class="w"> </span><span class="k">pointer</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">children</span>
-<a id="ln-351" name="ln-351" href="#ln-351"></a><span class="w">        </span>
+<a id="ln-351" name="ln-351" href="#ln-351"></a>
 <a id="ln-352" name="ln-352" href="#ln-352"></a><span class="w">        </span><span class="n">has_list</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">.</span><span class="n">false</span><span class="p">.</span>
 <a id="ln-353" name="ln-353" href="#ln-353"></a>
 <a id="ln-354" name="ln-354" href="#ln-354"></a><span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(.</span><span class="nb">not</span><span class="p">.</span><span class="n">table</span><span class="p">%</span><span class="n">has_key</span><span class="p">(</span><span class="n">key</span><span class="p">))</span><span class="w"> </span><span class="k">return</span>
 <a id="ln-355" name="ln-355" href="#ln-355"></a>
 <a id="ln-356" name="ln-356" href="#ln-356"></a><span class="k">        call </span><span class="n">get_value</span><span class="p">(</span><span class="n">table</span><span class="p">,</span><span class="w"> </span><span class="n">key</span><span class="p">,</span><span class="w"> </span><span class="n">children</span><span class="p">,</span><span class="w"> </span><span class="n">requested</span><span class="o">=</span><span class="p">.</span><span class="n">false</span><span class="p">.)</span>
-<a id="ln-357" name="ln-357" href="#ln-357"></a><span class="w">        </span>
+<a id="ln-357" name="ln-357" href="#ln-357"></a>
 <a id="ln-358" name="ln-358" href="#ln-358"></a><span class="w">        </span><span class="c">! There is an allocated list</span>
 <a id="ln-359" name="ln-359" href="#ln-359"></a><span class="w">        </span><span class="n">has_list</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">associated</span><span class="p">(</span><span class="n">children</span><span class="p">)</span>
-<a id="ln-360" name="ln-360" href="#ln-360"></a><span class="w">        </span>
+<a id="ln-360" name="ln-360" href="#ln-360"></a>
 <a id="ln-361" name="ln-361" href="#ln-361"></a><span class="w">    </span><span class="k">end function </span><span class="n">has_list</span>
-<a id="ln-362" name="ln-362" href="#ln-362"></a><span class="w">    </span>
+<a id="ln-362" name="ln-362" href="#ln-362"></a>
 <a id="ln-363" name="ln-363" href="#ln-363"></a>
 <a id="ln-364" name="ln-364" href="#ln-364"></a><span class="w">    </span><span class="k">subroutine </span><span class="n">get_list</span><span class="p">(</span><span class="n">table</span><span class="p">,</span><span class="w"> </span><span class="n">key</span><span class="p">,</span><span class="w"> </span><span class="n">list</span><span class="p">,</span><span class="w"> </span><span class="n">error</span><span class="p">)</span>
 <a id="ln-365" name="ln-365" href="#ln-365"></a>
@@ -994,7 +994,7 @@
             <p class="text-end">
               Documentation generated by
               <a href="https://github.com/Fortran-FOSS-Programmers/ford">FORD</a>
- on 2025-04-10 17:34 +0000             </p>
+ on 2025-04-11 16:53 +0000             </p>
           </div>
         </div>
         <br>

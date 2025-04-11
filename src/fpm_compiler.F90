@@ -43,7 +43,8 @@ use fpm_strings, only: split, string_cat, string_t, str_ends_with, str_begins_wi
     & string_array_contains
 use fpm_manifest, only : package_config_t
 use fpm_error, only: error_t, fatal_error
-use fpm_toml, only: serializable_t, toml_table, set_string, set_value, toml_stat, get_value
+use tomlf, only: toml_table
+use fpm_toml, only: serializable_t, set_string, set_value, toml_stat, get_value
 use shlex_module, only: shlex_split => split
 implicit none
 public :: compiler_t, new_compiler, archiver_t, new_archiver, get_macros
@@ -205,7 +206,8 @@ character(*), parameter :: &
     flag_intel_openmp = " -qopenmp", &
     flag_intel_free_form = " -free", &
     flag_intel_fixed_form = " -fixed", &
-    flag_intel_standard_compliance = " -standard-semantics"
+    flag_intel_standard_compliance = " -standard-semantics", &
+    flag_intel_unknown_cmd_err = " -diag-error 10006"
 
 character(*), parameter :: &
     flag_intel_llvm_check = " -check all,nouninit"
@@ -225,7 +227,8 @@ character(*), parameter :: &
     flag_intel_openmp_win = " /Qopenmp", &
     flag_intel_free_form_win = " /free", &
     flag_intel_fixed_form_win = " /fixed", &
-    flag_intel_standard_compliance_win = " /standard-semantics"
+    flag_intel_standard_compliance_win = " /standard-semantics", &
+    flag_intel_unknown_cmd_err_win = " /Qdiag-error:10006"
 
 character(*), parameter :: &
     flag_nag_coarray = " -coarray=single", &
@@ -440,7 +443,7 @@ subroutine get_debug_compile_flags(id, flags)
             flag_intel_backtrace_win
     case(id_intel_llvm_nix)
         flags = &
-            flag_intel_warn//&
+            flag_intel_unknown_cmd_err//&
             flag_intel_llvm_check//&
             flag_intel_limit//&
             flag_intel_debug//&
@@ -448,7 +451,7 @@ subroutine get_debug_compile_flags(id, flags)
             flag_intel_backtrace
     case(id_intel_llvm_windows)
         flags = &
-            flag_intel_warn_win//&
+            flag_intel_unknown_cmd_err_win//&
             flag_intel_check_win//&
             flag_intel_limit_win//&
             flag_intel_debug_win//&
@@ -1265,8 +1268,10 @@ logical function ar_is_same(this,that)
 
     select type (other=>that)
        type is (archiver_t)
-
-          if (.not.(this%ar==other%ar)) return
+          if (allocated(this%ar).neqv.allocated(other%ar)) return
+          if (allocated(this%ar)) then
+            if (.not.(this%ar==other%ar)) return
+          end if
           if (.not.(this%use_response_file.eqv.other%use_response_file)) return
           if (.not.(this%echo.eqv.other%echo)) return
           if (.not.(this%verbose.eqv.other%verbose)) return
@@ -1339,9 +1344,18 @@ logical function compiler_is_same(this,that)
        type is (compiler_t)
 
           if (.not.(this%id==other%id)) return
-          if (.not.(this%fc==other%fc)) return
-          if (.not.(this%cc==other%cc)) return
-          if (.not.(this%cxx==other%cxx)) return
+          if (allocated(this%fc).neqv.allocated(other%fc)) return
+          if (allocated(this%fc)) then
+            if (.not.(this%fc==other%fc)) return
+          end if
+          if (allocated(this%cc).neqv.allocated(other%cc)) return
+          if (allocated(this%cc)) then
+            if (.not.(this%cc==other%cc)) return
+          end if
+          if (allocated(this%cxx).neqv.allocated(other%cxx)) return
+          if (allocated(this%cxx)) then
+            if (.not.(this%cxx==other%cxx)) return
+          end if
           if (.not.(this%echo.eqv.other%echo)) return
           if (.not.(this%verbose.eqv.other%verbose)) return
 
@@ -1446,7 +1460,7 @@ logical function check_fortran_source_runs(self, input, compile_flags, link_flag
     class(compiler_t), intent(in) :: self
     !> Program Source
     character(len=*), intent(in) :: input
-    !> Optional build and link flags 
+    !> Optional build and link flags
     character(len=*), optional, intent(in) :: compile_flags, link_flags
 
     integer :: stat,unit
@@ -1469,10 +1483,19 @@ logical function check_fortran_source_runs(self, input, compile_flags, link_flag
     !> Get flags
     flags    = self%get_default_flags(release=.false.)
     ldflags  = self%get_default_flags(release=.false.)
-    
+
     if (present(compile_flags)) flags = flags//" "//compile_flags
     if (present(link_flags)) ldflags = ldflags//" "//link_flags
-    
+
+    !> Intel: Needs -warn last for error on unknown command line arguments to work
+    if (self%id == id_intel_llvm_nix) then
+        flags = flags//" "//flag_intel_warn
+        ldflags = ldflags//" "//flag_intel_warn
+    elseif (self%id == id_intel_llvm_windows) then
+        flags = flags//" "//flag_intel_warn_win
+        ldflags = ldflags//" "//flag_intel_warn_win
+    end if
+
     !> Compile and link program
     call self%compile_fortran(source, object, flags, logf, stat)
     if (stat==0) &
@@ -1506,7 +1529,7 @@ logical function check_flags_supported(self, compile_flags, link_flags)
     character(len=*), parameter :: hello_world = "print *, 'Hello, World!'; end"
 
     check_flags_supported = self%check_fortran_source_runs(hello_world, compile_flags, link_flags)
-    
+
 end function check_flags_supported
 
 !> Check if the current compiler supports 128-bit real precision

@@ -13,7 +13,8 @@
 module fpm_manifest_preprocess
    use fpm_error, only : error_t, syntax_error
    use fpm_strings, only : string_t, operator(==)
-   use fpm_toml, only : toml_table, toml_key, toml_stat, get_value, get_list, serializable_t, set_value, set_list, &
+   use tomlf, only : toml_table, toml_key, toml_stat
+   use fpm_toml, only : get_value, get_list, serializable_t, set_value, set_list, &
                         set_string
    use,intrinsic :: iso_fortran_env, only : stderr=>error_unit
    implicit none
