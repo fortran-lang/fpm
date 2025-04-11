@@ -95,7 +95,7 @@ runs:
       run: |
         # Install MPI devel package and common build tools
         # The compilers (icc, ifort) should already be installed by setup-fortran action
-        sudo apt-get install -y -q intel-oneapi-mpi-devel ninja-build cmake libcurl4-gnutls-dev
+        sudo apt-get install -y -q intel-oneapi-mpi-devel intel-oneapi-mkl ninja-build cmake libcurl4-gnutls-dev
 
     - name: (Ubuntu) Source oneAPI environment and add to GITHUB_ENV
       if: contains(inputs.os, 'ubuntu')
