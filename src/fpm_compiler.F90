@@ -206,7 +206,8 @@ character(*), parameter :: &
     flag_intel_openmp = " -qopenmp", &
     flag_intel_free_form = " -free", &
     flag_intel_fixed_form = " -fixed", &
-    flag_intel_standard_compliance = " -standard-semantics"
+    flag_intel_standard_compliance = " -standard-semantics", &
+    flag_intel_unknown_cmd_err = "-diag-error 10006"
 
 character(*), parameter :: &
     flag_intel_llvm_check = " -check all,nouninit"
@@ -226,7 +227,8 @@ character(*), parameter :: &
     flag_intel_openmp_win = " /Qopenmp", &
     flag_intel_free_form_win = " /free", &
     flag_intel_fixed_form_win = " /fixed", &
-    flag_intel_standard_compliance_win = " /standard-semantics"
+    flag_intel_standard_compliance_win = " /standard-semantics", &
+    flag_intel_unknown_cmd_err_win = "/Qdiag-error:10006"
 
 character(*), parameter :: &
     flag_nag_coarray = " -coarray=single", &
@@ -441,7 +443,7 @@ subroutine get_debug_compile_flags(id, flags)
             flag_intel_backtrace_win
     case(id_intel_llvm_nix)
         flags = &
-            flag_intel_warn//&
+            flag_intel_unknown_cmd_err//&
             flag_intel_llvm_check//&
             flag_intel_limit//&
             flag_intel_debug//&
@@ -449,7 +451,7 @@ subroutine get_debug_compile_flags(id, flags)
             flag_intel_backtrace
     case(id_intel_llvm_windows)
         flags = &
-            flag_intel_warn_win//&
+            flag_intel_unknown_cmd_err_win//&
             flag_intel_check_win//&
             flag_intel_limit_win//&
             flag_intel_debug_win//&
@@ -1484,6 +1486,15 @@ logical function check_fortran_source_runs(self, input, compile_flags, link_flag
 
     if (present(compile_flags)) flags = flags//" "//compile_flags
     if (present(link_flags)) ldflags = ldflags//" "//link_flags
+
+    !> Intel: Needs -warn last for error on unknown command line arguments to work
+    if (self%id == id_intel_llvm_nix) then
+        flags = flags//" "//flag_intel_warn
+        ldflags = ldflags//" "//flag_intel_warn
+    elseif (self%id == id_intel_llvm_windows) then
+        flags = flags//" "//flag_intel_warn_win
+        ldflags = ldflags//" "//flag_intel_warn_win
+    end if
 
     !> Compile and link program
     call self%compile_fortran(source, object, flags, logf, stat)
