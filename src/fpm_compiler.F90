@@ -105,7 +105,7 @@ contains
     !> Compile a CPP object
     procedure :: compile_cpp
     !> Link executable
-    procedure :: link
+    procedure :: link => link_executable
     !> Check whether compiler is recognized
     procedure :: is_unknown
     !> Check whether this is an Intel compiler
@@ -1203,7 +1203,7 @@ subroutine compile_cpp(self, input, output, args, log_file, stat, table)
 end subroutine compile_cpp
 
 !> Link an executable
-subroutine link(self, output, args, log_file, stat)
+subroutine link_executable(self, output, args, log_file, stat)
     !> Instance of the compiler object
     class(compiler_t), intent(in) :: self
     !> Output file of object
@@ -1223,7 +1223,7 @@ subroutine link(self, output, args, log_file, stat)
     ! Execute command
     call run(command, echo=self%echo, verbose=self%verbose, redirect=log_file, exitstat=stat)
     
-end subroutine link
+end subroutine link_executable
 
 !> Create an archive
 !> @todo For Windows OS, use the local `delete_file_win32` in stead of `delete_file`.
