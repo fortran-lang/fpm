@@ -14,6 +14,7 @@ use iso_fortran_env, only: stdout=>output_unit
 use fpm_filesystem, only: basename
 use fpm_targets, only: build_target_ptr
 use fpm_backend_console, only: console_t, LINE_RESET, COLOR_RED, COLOR_GREEN, COLOR_YELLOW, COLOR_RESET
+use fpm_compile_commands, only: compile_command_t, compile_command_table_t
 implicit none
 
 private
@@ -33,6 +34,8 @@ type build_progress_t
     integer, allocatable :: output_lines(:)
     !> Queue of scheduled build targets
     type(build_target_ptr), pointer :: target_queue(:)
+    !> The compile_commands.json table
+    type(compile_command_table_t) :: compile_commands
 contains
     !> Output 'compiling' status for build target
     procedure :: compiling_status => output_status_compiling
@@ -57,6 +60,8 @@ contains
         logical, intent(in), optional :: plain_mode
         !> Progress object to initialise
         type(build_progress_t) :: progress
+        
+        call progress%compile_commands%destroy()
 
         progress%n_target = size(target_queue,1)
         progress%target_queue => target_queue

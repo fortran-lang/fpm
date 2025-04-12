@@ -36,6 +36,7 @@ use fpm_targets, only: build_target_t, build_target_ptr, FPM_TARGET_OBJECT, &
                        FPM_TARGET_C_OBJECT, FPM_TARGET_ARCHIVE, FPM_TARGET_EXECUTABLE, &
                        FPM_TARGET_CPP_OBJECT
 use fpm_backend_output
+use fpm_compile_commands, only: compile_command_table_t
 implicit none
 
 private
@@ -125,7 +126,7 @@ subroutine build_package(targets,model,verbose)
 
             if (.not.skip_current) then
                 call progress%compiling_status(j)
-                call build_target(model,queue(j)%ptr,verbose,stat(j))
+                call build_target(model,queue(j)%ptr,verbose,progress%compile_commands,stat(j))
                 call progress%completed_status(j,stat(j))
             end if
 
@@ -300,10 +301,11 @@ end subroutine schedule_targets
 !>
 !> If successful, also caches the source file digest to disk.
 !>
-subroutine build_target(model,target,verbose,stat)
+subroutine build_target(model,target,verbose,table,stat)
     type(fpm_model_t), intent(in) :: model
     type(build_target_t), intent(in), target :: target
     logical, intent(in) :: verbose
+    type(compile_command_table_t), intent(inout) :: table
     integer, intent(out) :: stat
 
     integer :: fh
@@ -318,15 +320,15 @@ subroutine build_target(model,target,verbose,stat)
 
     case (FPM_TARGET_OBJECT)
         call model%compiler%compile_fortran(target%source%file_name, target%output_file, &
-            & target%compile_flags, target%output_log_file, stat)
+            & target%compile_flags, target%output_log_file, stat, table)
 
     case (FPM_TARGET_C_OBJECT)
         call model%compiler%compile_c(target%source%file_name, target%output_file, &
-            & target%compile_flags, target%output_log_file, stat)
+            & target%compile_flags, target%output_log_file, stat, table)
 
     case (FPM_TARGET_CPP_OBJECT)
         call model%compiler%compile_cpp(target%source%file_name, target%output_file, &
-            & target%compile_flags, target%output_log_file, stat)
+            & target%compile_flags, target%output_log_file, stat, table)
 
     case (FPM_TARGET_EXECUTABLE)
         call model%compiler%link(target%output_file, &
