@@ -1,6 +1,7 @@
 !># Store compiler commands in a `compile_commands.json` table
 module fpm_compile_commands
-    use fpm_toml, only: serializable_t, set_string, set_list, get_value, get_list, toml_table, add_table
+    use fpm_toml, only: serializable_t, set_string, set_value, set_list, get_value, get_list, toml_table, add_table, toml_array, add_array, toml_stat
+    use jonquil, only: json_serialize, json_ser_config
     use fpm_strings, only: string_t, operator(==)
     use fpm_error, only: error_t, syntax_error, fatal_error
     use fpm_os, only: get_current_directory
@@ -34,6 +35,7 @@ module fpm_compile_commands
         !> Operation
         procedure :: destroy              => cct_destroy
         procedure :: register             => cct_register
+        procedure :: write                => cct_write
         
         !> Serialization interface
         procedure :: serializable_is_same => cct_is_same
@@ -110,6 +112,39 @@ module fpm_compile_commands
         compile_command_is_same = .true.
 
     end function compile_command_is_same
+    
+    !> Dump compile_command_table_t to a toml array
+    subroutine cct_dump_array(self, array, error)
+        !> Instance of the serializable object
+        class(compile_command_table_t), intent(inout) :: self
+
+        !> Data structure
+        type(toml_array), intent(inout) :: array
+
+        !> Error handling
+        type(error_t), allocatable, intent(out) :: error      
+        
+        integer :: ii, stat
+        type(toml_table), pointer :: item  
+        
+        if (.not.allocated(self%command)) return
+        
+        do ii = 1, size(self%command)
+            associate (cmd => self%command(ii))
+            
+               ! Set node for this command
+               call add_table(array, item, stat)
+               if (stat /= toml_stat%success) then
+                   call fatal_error(error, "Cannot store entry in compile_command_table_t array")
+                   return
+               end if                    
+               call cmd%dump_to_toml(item, error)
+               if (allocated(error)) return
+
+            endassociate
+        end do                
+        
+    end subroutine cct_dump_array
         
     !> Dump compile_command_table_t to toml table
     subroutine cct_dump_toml(self, table, error)
@@ -123,33 +158,70 @@ module fpm_compile_commands
         !> Error handling
         type(error_t), allocatable, intent(out) :: error
         
-        integer :: ii
-        type(toml_table), pointer :: ptr
-        character(64) :: name
+        integer :: stat, ii
+        type(toml_array), pointer :: array
         
         if (.not.allocated(self%command)) return
         
-        do ii = 1, size(self%command)
-            associate (cmd => self%command(ii))
-            
-               ! Set node for this command
-               write(name,1) ii
-               call add_table(table, trim(name), ptr)               
-               if (.not. associated(ptr)) then
-                   call fatal_error(error, "compile_command_table_t cannot create entry for "//trim(name))
-                   return
-               end if
-   
-               ! Dump node
-               call cmd%dump_to_toml(ptr, error)
-               if (allocated(error)) return
-                           
-            endassociate
-        end do
+        ! Create array
+        call add_array(table, 'compile_commands', array, stat=stat)
+        if (stat/=toml_stat%success .or. .not.associated(array)) then 
+            call fatal_error(error,"compile_command_table_t cannot create entry")
+            return
+        end if
         
-        1 format('compile_command_',i0)
+        ! Dump to it
+        call cct_dump_array(self, array, error)
 
     end subroutine cct_dump_toml
+    
+    !> Write compile_commands.json file. Because Jonquil does not support non-named arrays, 
+    !> create a custom json here. 
+    subroutine cct_write(self, filename, error)
+
+        !> Instance of the serializable object
+        class(compile_command_table_t), intent(inout) :: self
+
+        !> The file name
+        character(*), intent(in) :: filename
+
+        !> Error handling
+        type(error_t), allocatable, intent(out) :: error
+        
+        type(toml_array) :: array
+        type(json_ser_config) :: cfg
+        integer :: stat, lun
+        
+        ! Init array
+        array = toml_array()
+        
+        ! Dump information to the array
+        call cct_dump_array(self, array, error)
+        if (allocated(error)) return
+        
+        ! Open file and write to it
+        open(newunit=lun,file=filename,form='formatted',action='write',status='replace',iostat=stat)
+        if (stat/=0) then 
+            call fatal_error(error, 'cannot open file '//filename//' for writing')
+            return
+        end if
+        
+        ! Ensure the array has no key
+        if (allocated(array%key)) deallocate(array%key)
+        
+        cfg%indent = repeat(' ',4)
+        write (lun, '(A)', iostat=stat, err=1) '{'
+        write (lun, '(A)', iostat=stat, err=1) json_serialize(array, cfg)
+        write (lun, '(A)', iostat=stat, err=1) '}'
+        
+        close(lun,iostat=stat)
+        
+        1 if (stat/=0) then 
+            call fatal_error(error, 'cannot close file '//filename//' after writing')
+            return
+        end if
+
+    end subroutine cct_write
     
     !> Cleanup a compile command table
     elemental subroutine cct_destroy(self)

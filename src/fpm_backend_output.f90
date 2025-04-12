@@ -193,7 +193,7 @@ contains
         ! Write compile commands 
         path = join_path('build','compile_commands.json')
         
-        call progress%compile_commands%dump(file=path, error=error, json=.true.)        
+        call progress%compile_commands%write(filename=path, error=error) 
         
     end subroutine output_write_compile_commands
 
