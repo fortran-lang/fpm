@@ -1,6 +1,7 @@
 !># Store compiler commands in a `compile_commands.json` table
 module fpm_compile_commands
-    use fpm_toml, only: serializable_t, set_string, set_value, set_list, get_value, get_list, toml_table, add_table, toml_array, add_array, toml_stat
+    use fpm_toml, only: serializable_t, set_string, set_list, get_value, get_list, toml_table, add_table, &
+        toml_array, add_array, toml_stat
     use jonquil, only: json_serialize, json_ser_config
     use fpm_strings, only: string_t, operator(==)
     use fpm_error, only: error_t, syntax_error, fatal_error
@@ -209,7 +210,7 @@ module fpm_compile_commands
         ! Ensure the array has no key
         if (allocated(array%key)) deallocate(array%key)
         
-        cfg%indent = repeat(' ',4)
+        cfg%indent = repeat(' ',3)
         write (lun, '(A)', iostat=stat, err=1) '{'
         write (lun, '(A)', iostat=stat, err=1) json_serialize(array, cfg)
         write (lun, '(A)', iostat=stat, err=1) '}'
