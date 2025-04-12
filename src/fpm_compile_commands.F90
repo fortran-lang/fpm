@@ -186,7 +186,7 @@ module fpm_compile_commands
         end if
 
         ! Tokenize the input command into args(:)
-        args = shlex_split(command, join_spaced=.true., keep_quotes=.true., success=sh_success)
+        args = shlex_split(command, join_spaced=.false., keep_quotes=.true., success=sh_success)
         n = size(args)
         
         if (n==0 .or. .not.sh_success) then 
