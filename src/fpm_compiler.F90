@@ -43,7 +43,7 @@ use fpm_strings, only: split, string_cat, string_t, str_ends_with, str_begins_wi
 use fpm_manifest, only : package_config_t
 use fpm_error, only: error_t, fatal_error
 use fpm_toml, only: serializable_t, toml_table, set_string, set_value, toml_stat, get_value
-use fpm_compile_commands, only: compile_command_t
+use fpm_compile_commands, only: compile_command_t, compile_command_table_t
 implicit none
 public :: compiler_t, new_compiler, archiver_t, new_archiver, get_macros
 public :: debug
@@ -1097,7 +1097,7 @@ end subroutine new_archiver
 
 
 !> Compile a Fortran object
-subroutine compile_fortran(self, input, output, args, log_file, stat)
+subroutine compile_fortran(self, input, output, args, log_file, stat, table)
     !> Instance of the compiler object
     class(compiler_t), intent(in) :: self
     !> Source file input
@@ -1110,14 +1110,30 @@ subroutine compile_fortran(self, input, output, args, log_file, stat)
     character(len=*), intent(in) :: log_file
     !> Status flag
     integer, intent(out) :: stat
+    !> Optional compile_commands table
+    type(compile_command_table_t), optional, intent(inout) :: table    
+    
+    character(len=:), allocatable :: command 
+    type(error_t), allocatable :: error
+    
+    ! Set command
+    command = self%fc // " -c " // input // " " // args // " -o " // output
 
-    call run(self%fc // " -c " // input // " " // args // " -o " // output, &
-        & echo=self%echo, verbose=self%verbose, redirect=log_file, exitstat=stat)
+    ! Execute command
+    call run(command, echo=self%echo, verbose=self%verbose, redirect=log_file, exitstat=stat)
+    if (stat/=0) return
+        
+    ! Optionally register compile command 
+    if (present(table)) then 
+        call table%register(command, error)
+        stat = merge(-1,0,allocated(error))
+    endif    
+        
 end subroutine compile_fortran
 
 
 !> Compile a C object
-subroutine compile_c(self, input, output, args, log_file, stat)
+subroutine compile_c(self, input, output, args, log_file, stat, table)
     !> Instance of the compiler object
     class(compiler_t), intent(in) :: self
     !> Source file input
@@ -1130,13 +1146,29 @@ subroutine compile_c(self, input, output, args, log_file, stat)
     character(len=*), intent(in) :: log_file
     !> Status flag
     integer, intent(out) :: stat
+    !> Optional compile_commands table
+    type(compile_command_table_t), optional, intent(inout) :: table    
+    
+    character(len=:), allocatable :: command 
+    type(error_t), allocatable :: error
+    
+    ! Set command
+    command = self%cc // " -c " // input // " " // args // " -o " // output
 
-    call run(self%cc // " -c " // input // " " // args // " -o " // output, &
-        & echo=self%echo, verbose=self%verbose, redirect=log_file, exitstat=stat)
+    ! Execute command
+    call run(command, echo=self%echo, verbose=self%verbose, redirect=log_file, exitstat=stat)
+    if (stat/=0) return
+        
+    ! Optionally register compile command 
+    if (present(table)) then 
+        call table%register(command, error)
+        stat = merge(-1,0,allocated(error))
+    endif        
+    
 end subroutine compile_c
 
 !> Compile a CPP object
-subroutine compile_cpp(self, input, output, args, log_file, stat)
+subroutine compile_cpp(self, input, output, args, log_file, stat, table)
     !> Instance of the compiler object
     class(compiler_t), intent(in) :: self
     !> Source file input
@@ -1149,9 +1181,25 @@ subroutine compile_cpp(self, input, output, args, log_file, stat)
     character(len=*), intent(in) :: log_file
     !> Status flag
     integer, intent(out) :: stat
+    !> Optional compile_commands table
+    type(compile_command_table_t), optional, intent(inout) :: table    
+    
+    character(len=:), allocatable :: command 
+    type(error_t), allocatable :: error
+        
+    ! Set command
+    command = self%cxx // " -c " // input // " " // args // " -o " // output
 
-    call run(self%cxx // " -c " // input // " " // args // " -o " // output, &
-        & echo=self%echo, verbose=self%verbose, redirect=log_file, exitstat=stat)
+    ! Execute command
+    call run(command, echo=self%echo, verbose=self%verbose, redirect=log_file, exitstat=stat)
+    if (stat/=0) return
+        
+    ! Optionally register compile command 
+    if (present(table)) then 
+        call table%register(command, error)
+        stat = merge(-1,0,allocated(error))
+    endif               
+        
 end subroutine compile_cpp
 
 !> Link an executable
@@ -1166,11 +1214,16 @@ subroutine link(self, output, args, log_file, stat)
     character(len=*), intent(in) :: log_file
     !> Status flag
     integer, intent(out) :: stat
-
-    call run(self%fc // " " // args // " -o " // output, echo=self%echo, &
-        & verbose=self%verbose, redirect=log_file, exitstat=stat)
+    
+    character(len=:), allocatable :: command 
+        
+    ! Set command
+    command = self%fc // " " // args // " -o " // output    
+    
+    ! Execute command
+    call run(command, echo=self%echo, verbose=self%verbose, redirect=log_file, exitstat=stat)
+    
 end subroutine link
-
 
 !> Create an archive
 !> @todo For Windows OS, use the local `delete_file_win32` in stead of `delete_file`.
