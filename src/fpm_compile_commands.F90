@@ -1,7 +1,7 @@
 !># Store compiler commands in a `compile_commands.json` table
 module fpm_compile_commands
     use fpm_toml, only: serializable_t, set_string, set_list, get_value, get_list, toml_table, add_table, &
-        toml_array, add_array, toml_stat
+        toml_array, add_array, toml_stat, len
     use jonquil, only: json_serialize, json_ser_config
     use fpm_strings, only: string_t, operator(==)
     use fpm_error, only: error_t, syntax_error, fatal_error
@@ -146,36 +146,7 @@ module fpm_compile_commands
         end do                
         
     end subroutine cct_dump_array
-        
-    !> Dump compile_command_table_t to toml table
-    subroutine cct_dump_toml(self, table, error)
-
-        !> Instance of the serializable object
-        class(compile_command_table_t), intent(inout) :: self
-
-        !> Data structure
-        type(toml_table), intent(inout) :: table
-
-        !> Error handling
-        type(error_t), allocatable, intent(out) :: error
-        
-        integer :: stat, ii
-        type(toml_array), pointer :: array
-        
-        if (.not.allocated(self%command)) return
-        
-        ! Create array
-        call add_array(table, 'compile_commands', array, stat=stat)
-        if (stat/=toml_stat%success .or. .not.associated(array)) then 
-            call fatal_error(error,"compile_command_table_t cannot create entry")
-            return
-        end if
-        
-        ! Dump to it
-        call cct_dump_array(self, array, error)
-
-    end subroutine cct_dump_toml
-    
+            
     !> Write compile_commands.json file. Because Jonquil does not support non-named arrays, 
     !> create a custom json here. 
     subroutine cct_write(self, filename, error)
@@ -293,6 +264,35 @@ module fpm_compile_commands
 
     end subroutine cct_register
         
+    !> Dump compile_command_table_t to toml table
+    subroutine cct_dump_toml(self, table, error)
+
+        !> Instance of the serializable object
+        class(compile_command_table_t), intent(inout) :: self
+
+        !> Data structure
+        type(toml_table), intent(inout) :: table
+
+        !> Error handling
+        type(error_t), allocatable, intent(out) :: error
+        
+        integer :: stat, ii
+        type(toml_array), pointer :: array
+        
+        if (.not.allocated(self%command)) return
+        
+        ! Create array
+        call add_array(table, 'compile_commands', array, stat=stat)
+        if (stat/=toml_stat%success .or. .not.associated(array)) then 
+            call fatal_error(error,"compile_command_table_t cannot create entry")
+            return
+        end if
+        
+        ! Dump to it
+        call cct_dump_array(self, array, error)
+
+    end subroutine cct_dump_toml        
+        
     !> Read compile_command_table_t from toml table (no checks made at this stage)
     subroutine cct_load_toml(self, table, error)
 
@@ -305,12 +305,37 @@ module fpm_compile_commands
         !> Error handling
         type(error_t), allocatable, intent(out) :: error
         
-!        call get_value(table, "directory", self%directory, error, 'compile_command_table_t')
-!        if (allocated(error)) return
-!        call get_list(table, "arguments", self%arguments, error)
-!        if (allocated(error)) return   
-!        call get_value(table, "file", self%file, error, 'compile_command_table_t')
-!        if (allocated(error)) return
+        integer :: stat, i, n
+        type(toml_array), pointer :: array
+        type(toml_table), pointer :: elem
+                
+        call self%destroy()
+        
+        call get_value(table, key='compile_commands', ptr=array, requested=.true.,stat=stat)
+        
+        if (stat/=toml_stat%success .or. .not.associated(array)) then 
+            
+            call fatal_error(error, "TOML table has no 'compile_commands' key")
+            return
+            
+        else
+            
+            n = len(array)            
+            allocate(self%command(n))
+            
+            do i = 1, n
+                call get_value(array, pos=i, ptr=elem, stat=stat)
+                if (stat /= toml_stat%success) then
+                    call fatal_error(error, "Entry in 'compile_commands' field cannot be read")
+                    return
+                end if
+                
+                call self%command(i)%load(elem, error)
+                if (allocated(error)) return
+                
+            end do            
+            
+        end if
 
     end subroutine cct_load_toml
 
