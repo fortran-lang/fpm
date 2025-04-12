@@ -272,13 +272,13 @@ module fpm_compile_commands
         allocate(character(len=0) :: source_file)
         find_source_file: do i = 1, n-1
             if (args(i) == "-c") then
-                source_file = args(i+1)
+                source_file = trim(args(i+1))
                 exit find_source_file
             end if
         end do find_source_file
 
         ! Fallback: use last argument if not found
-        if (len_trim(source_file)==0) source_file = args(n)
+        if (len_trim(source_file)==0) source_file = trim(args(n))
 
         ! Fill in the compile_command_t
         cmd = compile_command_t(directory = string_t(cwd), &
