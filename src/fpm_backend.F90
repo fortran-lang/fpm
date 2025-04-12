@@ -28,7 +28,7 @@
 module fpm_backend
 
 use,intrinsic :: iso_fortran_env, only : stdin=>input_unit, stdout=>output_unit, stderr=>error_unit
-use fpm_error, only : fpm_stop
+use fpm_error, only : fpm_stop, error_t
 use fpm_filesystem, only: basename, dirname, join_path, exists, mkdir, run, getline
 use fpm_model, only: fpm_model_t
 use fpm_strings, only: string_t, operator(.in.)
@@ -65,6 +65,7 @@ subroutine build_package(targets,model,verbose)
     logical :: build_failed, skip_current
     type(string_t), allocatable :: build_dirs(:)
     type(string_t) :: temp
+    type(error_t), allocatable :: error
 
     type(build_progress_t) :: progress
     logical :: plain_output
@@ -157,6 +158,8 @@ subroutine build_package(targets,model,verbose)
     end do
 
     call progress%success()
+    call progress%dump_commands(error)
+    if (allocated(error)) call fpm_stop(1,'error writing compile_commands.json: '//trim(error%message))
 
 end subroutine build_package
 

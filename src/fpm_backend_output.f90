@@ -11,7 +11,8 @@
 
 module fpm_backend_output
 use iso_fortran_env, only: stdout=>output_unit
-use fpm_filesystem, only: basename
+use fpm_error, only: error_t
+use fpm_filesystem, only: basename,join_path
 use fpm_targets, only: build_target_ptr
 use fpm_backend_console, only: console_t, LINE_RESET, COLOR_RED, COLOR_GREEN, COLOR_YELLOW, COLOR_RESET
 use fpm_compile_commands, only: compile_command_t, compile_command_table_t
@@ -43,6 +44,8 @@ contains
     procedure :: completed_status => output_status_complete
     !> Output finished status for whole package
     procedure :: success => output_progress_success
+    !> Output 'compile_commands.json' to build/ folder
+    procedure :: dump_commands => output_write_compile_commands
 end type build_progress_t
 
 !> Constructor for build_progress_t
@@ -167,7 +170,7 @@ contains
     !> Output finished status for whole package
     subroutine output_progress_success(progress)
         class(build_progress_t), intent(inout) :: progress
-
+        
         if (progress%plain_mode) then ! Plain output
 
             write(*,'(A)') '[100%] Project compiled successfully.'
@@ -177,7 +180,21 @@ contains
             write(*,'(A)') LINE_RESET//COLOR_GREEN//'[100%] Project compiled successfully.'//COLOR_RESET
 
         end if
-
+        
     end subroutine output_progress_success
+    
+    !> Write compile commands table
+    subroutine output_write_compile_commands(progress,error)
+        class(build_progress_t), intent(inout) :: progress
+        
+        character(:), allocatable :: path
+        type(error_t), allocatable :: error
+        
+        ! Write compile commands 
+        path = join_path('build','compile_commands.json')
+        
+        call progress%compile_commands%dump(file=path, error=error, json=.true.)        
+        
+    end subroutine output_write_compile_commands
 
 end module fpm_backend_output
