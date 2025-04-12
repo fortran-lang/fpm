@@ -211,10 +211,7 @@ module fpm_compile_commands
         if (allocated(array%key)) deallocate(array%key)
         
         cfg%indent = repeat(' ',3)
-        write (lun, '(A)', iostat=stat, err=1) '{'
-        write (lun, '(A)', iostat=stat, err=1) json_serialize(array, cfg)
-        write (lun, '(A)', iostat=stat, err=1) '}'
-        
+        write (lun, '(A)', iostat=stat, err=1) json_serialize(array, cfg)                
         close(lun,iostat=stat)
         
         1 if (stat/=0) then 
