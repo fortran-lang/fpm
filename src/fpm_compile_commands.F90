@@ -20,6 +20,9 @@ module fpm_compile_commands
         
         contains
         
+        !> Operation
+        procedure :: destroy              => compile_command_destroy
+        
         !> Serialization interface
         procedure :: serializable_is_same => compile_command_is_same
         procedure :: dump_to_toml         => compile_command_dump_toml
@@ -34,9 +37,13 @@ module fpm_compile_commands
         contains
         
         !> Operation
-        procedure :: destroy              => cct_destroy
-        procedure :: register             => cct_register
+        procedure :: destroy              => cct_destroy        
         procedure :: write                => cct_write
+        
+        procedure, private :: cct_register
+        procedure, private :: cct_register_object
+        generic   :: register             => cct_register, &
+                                             cct_register_object
         
         !> Serialization interface
         procedure :: serializable_is_same => cct_is_same
@@ -47,6 +54,18 @@ module fpm_compile_commands
     end type compile_command_table_t    
     
     contains
+    
+    !> Cleanup compile command
+    elemental subroutine compile_command_destroy(self)
+    
+        !> Instance of the serializable object
+        class(compile_command_t), intent(inout) :: self    
+        
+        if (allocated(self%directory%s))deallocate(self%directory%s)
+        if (allocated(self%arguments))deallocate(self%arguments)
+        if (allocated(self%file%s))deallocate(self%file%s)
+    
+    end subroutine compile_command_destroy
         
     !> Dump compile_command_t to toml table
     subroutine compile_command_dump_toml(self, table, error)
@@ -60,6 +79,8 @@ module fpm_compile_commands
         !> Error handling
         type(error_t), allocatable, intent(out) :: error
 
+        call self%destroy()
+ 
         call set_string(table, "directory", self%directory, error, 'compile_command_t')
         if (allocated(error)) return
         call set_list(table, "arguments", self%arguments, error)
@@ -256,13 +277,29 @@ module fpm_compile_commands
                                 arguments = [(string_t(trim(args(i))), i=1,n)], &
                                 file = string_t(source_file))
         
-        if (allocated(self%command)) then         
-           self%command = [self%command, cmd]
-        else
-           allocate(self%command(1), source=cmd) 
-        end if
+        ! Add it to the structure
+        call cct_register_object(self, cmd, error)
 
     end subroutine cct_register
+    
+    pure subroutine cct_register_object(self, command, error)
+    
+        !> Instance of the serializable object
+        class(compile_command_table_t), intent(inout) :: self
+
+        !> Data structure
+        type(compile_command_t), intent(in) :: command
+        
+        !> Error handling
+        type(error_t), allocatable, intent(out) :: error    
+        
+        if (allocated(self%command)) then         
+           self%command = [self%command, command]
+        else
+           allocate(self%command(1), source=command) 
+        end if        
+        
+    end subroutine cct_register_object
         
     !> Dump compile_command_table_t to toml table
     subroutine cct_dump_toml(self, table, error)
