@@ -79,11 +79,9 @@ module fpm_compile_commands
         !> Error handling
         type(error_t), allocatable, intent(out) :: error
 
-        call self%destroy()
- 
-        call set_string(table, "directory", self%directory, error, 'compile_command_t')
-        if (allocated(error)) return
         call set_list(table, "arguments", self%arguments, error)
+        if (allocated(error)) return
+        call set_string(table, "directory", self%directory, error, 'compile_command_t')
         if (allocated(error)) return
         call set_string(table, "file", self%file, error, 'compile_command_t')
         if (allocated(error)) return    
@@ -102,12 +100,14 @@ module fpm_compile_commands
         !> Error handling
         type(error_t), allocatable, intent(out) :: error
         
-        call get_value(table, "directory", self%directory, error, 'compile_command_t')
-        if (allocated(error)) return
+        call self%destroy()
+        
         call get_list(table, "arguments", self%arguments, error)
-        if (allocated(error)) return   
-        call get_value(table, "file", self%file, error, 'compile_command_t')
-        if (allocated(error)) return
+        if (allocated(error)) return           
+        
+        ! Return unallocated value if not present
+        call get_value(table, "directory", self%directory%s)
+        call get_value(table, "file", self%file%s)
 
     end subroutine compile_command_load_toml
 
@@ -316,8 +316,6 @@ module fpm_compile_commands
         integer :: stat, ii
         type(toml_array), pointer :: array
         
-        if (.not.allocated(self%command)) return
-        
         ! Create array
         call add_array(table, 'compile_commands', array, stat=stat)
         if (stat/=toml_stat%success .or. .not.associated(array)) then 
@@ -349,7 +347,7 @@ module fpm_compile_commands
         call self%destroy()
         
         call get_value(table, key='compile_commands', ptr=array, requested=.true.,stat=stat)
-        
+
         if (stat/=toml_stat%success .or. .not.associated(array)) then 
             
             call fatal_error(error, "TOML table has no 'compile_commands' key")
@@ -357,12 +355,14 @@ module fpm_compile_commands
             
         else
             
-            n = len(array)            
+            n = len(array)               
+            if (n<=0) return
+                    
             allocate(self%command(n))
             
             do i = 1, n
                 call get_value(array, pos=i, ptr=elem, stat=stat)
-                if (stat /= toml_stat%success) then
+                if (stat /= toml_stat%success .or. .not.associated(elem)) then
                     call fatal_error(error, "Entry in 'compile_commands' field cannot be read")
                     return
                 end if

@@ -7,6 +7,7 @@ module test_backend
                             FPM_TARGET_OBJECT, FPM_TARGET_ARCHIVE, &
                            add_target, add_dependency
     use fpm_backend, only: sort_target, schedule_targets
+    use fpm_strings, only: string_t
     use fpm_compile_commands, only: compile_command_t, compile_command_table_t
     implicit none
     private
