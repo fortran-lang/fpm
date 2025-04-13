@@ -65,8 +65,8 @@ module fpm_dependency
   use fpm_manifest_dependency, only: manifest_has_changed, dependency_destroy
   use fpm_manifest_preprocess, only: operator(==)
   use fpm_strings, only: string_t, operator(.in.)
-  use fpm_toml, only: toml_table, toml_key, toml_error, toml_serialize, &
-                      get_value, set_value, add_table, toml_load, toml_stat, set_string
+  use tomlf, only: toml_table, toml_key, toml_error, toml_load, toml_stat
+  use fpm_toml, only: toml_serialize, get_value, set_value, add_table, set_string
   use fpm_versioning, only: version_t, new_version
   use fpm_settings, only: fpm_global_settings, get_global_settings, official_registry_base_url
   use fpm_downloader, only: downloader_t
@@ -1284,11 +1284,18 @@ contains
             if (.not.(this%done  .eqv.other%done)) return
             if (.not.(this%update.eqv.other%update)) return
             if (.not.(this%cached.eqv.other%cached)) return
-            if (.not.(this%proj_dir==other%proj_dir)) return
-            if (.not.(this%revision==other%revision)) return
 
-            if (.not.(allocated(this%version).eqv.allocated(other%version))) return
-               if (allocated(this%version)) then
+            if (allocated(this%proj_dir) .neqv. allocated(other%proj_dir)) return
+            if (allocated(this%proj_dir)) then
+              if (.not.(this%proj_dir==other%proj_dir)) return
+            endif
+            if (allocated(this%revision) .neqv. allocated(other%revision)) return
+            if (allocated(this%revision)) then
+              if (.not.(this%revision==other%revision)) return
+            endif
+
+            if (allocated(this%version).neqv.allocated(other%version)) return
+            if (allocated(this%version)) then
               if (.not.(this%version==other%version)) return
             endif
 
@@ -1413,7 +1420,10 @@ contains
 
           if (.not.(this%unit==other%unit)) return
           if (.not.(this%verbosity==other%verbosity)) return
-          if (.not.(this%dep_dir==other%dep_dir)) return
+          if (allocated(this%dep_dir) .neqv. allocated(other%dep_dir)) return
+          if (allocated(this%dep_dir)) then
+            if (.not.(this%dep_dir==other%dep_dir)) return
+          endif
           if (.not.(this%ndep==other%ndep)) return
           if (.not.(allocated(this%dep).eqv.allocated(other%dep))) return
           if (allocated(this%dep)) then
@@ -1422,7 +1432,10 @@ contains
                 if (.not.(this%dep(ii)==other%dep(ii))) return
              end do
           endif
-          if (.not.(this%cache==other%cache)) return
+          if (allocated(this%cache) .neqv. allocated(other%cache)) return
+          if (allocated(this%cache)) then
+            if (.not.(this%cache==other%cache)) return
+          endif
 
        class default
           ! Not the same type
@@ -1475,7 +1488,10 @@ contains
 
                  !> Because dependencies are named, fallback if this has no name
                  !> So, serialization will work regardless of size(self%dep) == self%ndep
-                 if (len_trim(dep%name)==0) then
+                 if (.not. allocated(dep%name)) then
+                    write(unnamed,1) ii
+                    call add_table(ptr_deps, trim(unnamed), ptr)
+                 else if (len_trim(dep%name)==0) then
                     write(unnamed,1) ii
                     call add_table(ptr_deps, trim(unnamed), ptr)
                  else
