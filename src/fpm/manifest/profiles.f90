@@ -43,7 +43,8 @@
 !>
 module fpm_manifest_profile
     use fpm_error, only : error_t, syntax_error, fatal_error, fpm_stop
-    use fpm_toml, only : toml_table, toml_key, toml_stat, get_value, serializable_t, set_value, &
+    use tomlf, only : toml_table, toml_key, toml_stat
+    use fpm_toml, only : get_value, serializable_t, set_value, &
                          set_string, add_table
     use fpm_strings, only: lower
     use fpm_environment, only: get_os_type, OS_UNKNOWN, OS_LINUX, OS_MACOS, OS_WINDOWS, &

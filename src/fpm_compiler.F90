@@ -39,13 +39,17 @@ use fpm_environment, only: &
         OS_UNKNOWN
 use fpm_filesystem, only: join_path, basename, get_temp_filename, delete_file, unix_path, &
     & getline, run
-use fpm_strings, only: split, string_cat, string_t, str_ends_with, str_begins_with_str
+use fpm_strings, only: split, string_cat, string_t, str_ends_with, str_begins_with_str, &
+    & string_array_contains
 use fpm_manifest, only : package_config_t
 use fpm_error, only: error_t, fatal_error
-use fpm_toml, only: serializable_t, toml_table, set_string, set_value, toml_stat, get_value
+use tomlf, only: toml_table
+use fpm_toml, only: serializable_t, set_string, set_value, toml_stat, get_value
 use fpm_compile_commands, only: compile_command_t, compile_command_table_t
+use shlex_module, only: shlex_split => split
 implicit none
 public :: compiler_t, new_compiler, archiver_t, new_archiver, get_macros
+public :: append_clean_flags, append_clean_flags_array
 public :: debug
 
 enum, bind(C)
@@ -121,6 +125,7 @@ contains
     procedure :: load_from_toml => compiler_load
     !> Fortran feature support
     procedure :: check_fortran_source_runs
+    procedure :: check_flags_supported
     procedure :: with_xdp
     procedure :: with_qp
     !> Return compiler name
@@ -201,7 +206,8 @@ character(*), parameter :: &
     flag_intel_openmp = " -qopenmp", &
     flag_intel_free_form = " -free", &
     flag_intel_fixed_form = " -fixed", &
-    flag_intel_standard_compliance = " -standard-semantics"
+    flag_intel_standard_compliance = " -standard-semantics", &
+    flag_intel_unknown_cmd_err = " -diag-error 10006"
 
 character(*), parameter :: &
     flag_intel_llvm_check = " -check all,nouninit"
@@ -221,7 +227,8 @@ character(*), parameter :: &
     flag_intel_openmp_win = " /Qopenmp", &
     flag_intel_free_form_win = " /free", &
     flag_intel_fixed_form_win = " /fixed", &
-    flag_intel_standard_compliance_win = " /standard-semantics"
+    flag_intel_standard_compliance_win = " /standard-semantics", &
+    flag_intel_unknown_cmd_err_win = " /Qdiag-error:10006"
 
 character(*), parameter :: &
     flag_nag_coarray = " -coarray=single", &
@@ -436,7 +443,7 @@ subroutine get_debug_compile_flags(id, flags)
             flag_intel_backtrace_win
     case(id_intel_llvm_nix)
         flags = &
-            flag_intel_warn//&
+            flag_intel_unknown_cmd_err//&
             flag_intel_llvm_check//&
             flag_intel_limit//&
             flag_intel_debug//&
@@ -444,7 +451,7 @@ subroutine get_debug_compile_flags(id, flags)
             flag_intel_backtrace
     case(id_intel_llvm_windows)
         flags = &
-            flag_intel_warn_win//&
+            flag_intel_unknown_cmd_err_win//&
             flag_intel_check_win//&
             flag_intel_limit_win//&
             flag_intel_debug_win//&
@@ -1071,17 +1078,17 @@ subroutine new_archiver(self, ar, echo, verbose)
         ! Attempt "ar"
         call execute_command_line("ar --version > "//get_temp_filename()//" 2>&1", &
           & exitstat=estat)
-          
-        if (estat == 0) then 
-            
+
+        if (estat == 0) then
+
             self%ar = "ar"//arflags
-            
+
         else
-            
+
             ! Then "gcc-ar"
             call execute_command_line("gcc-ar --version > "//get_temp_filename()//" 2>&1", &
-               & exitstat=estat)            
-            
+               & exitstat=estat)
+
             if (estat /= 0) then
               self%ar = "lib"//libflags
             else
@@ -1314,8 +1321,10 @@ logical function ar_is_same(this,that)
 
     select type (other=>that)
        type is (archiver_t)
-
-          if (.not.(this%ar==other%ar)) return
+          if (allocated(this%ar).neqv.allocated(other%ar)) return
+          if (allocated(this%ar)) then
+            if (.not.(this%ar==other%ar)) return
+          end if
           if (.not.(this%use_response_file.eqv.other%use_response_file)) return
           if (.not.(this%echo.eqv.other%echo)) return
           if (.not.(this%verbose.eqv.other%verbose)) return
@@ -1388,9 +1397,18 @@ logical function compiler_is_same(this,that)
        type is (compiler_t)
 
           if (.not.(this%id==other%id)) return
-          if (.not.(this%fc==other%fc)) return
-          if (.not.(this%cc==other%cc)) return
-          if (.not.(this%cxx==other%cxx)) return
+          if (allocated(this%fc).neqv.allocated(other%fc)) return
+          if (allocated(this%fc)) then
+            if (.not.(this%fc==other%fc)) return
+          end if
+          if (allocated(this%cc).neqv.allocated(other%cc)) return
+          if (allocated(this%cc)) then
+            if (.not.(this%cc==other%cc)) return
+          end if
+          if (allocated(this%cxx).neqv.allocated(other%cxx)) return
+          if (allocated(this%cxx)) then
+            if (.not.(this%cxx==other%cxx)) return
+          end if
           if (.not.(this%echo.eqv.other%echo)) return
           if (.not.(this%verbose.eqv.other%verbose)) return
 
@@ -1490,17 +1508,19 @@ end function compiler_name
 
 !> Run a single-source Fortran program using the current compiler
 !> Compile a Fortran object
-logical function check_fortran_source_runs(self, input) result(success)
+logical function check_fortran_source_runs(self, input, compile_flags, link_flags) result(success)
     !> Instance of the compiler object
     class(compiler_t), intent(in) :: self
-    !> Program Source 
+    !> Program Source
     character(len=*), intent(in) :: input
-    
+    !> Optional build and link flags
+    character(len=*), optional, intent(in) :: compile_flags, link_flags
+
     integer :: stat,unit
-    character(:), allocatable :: source,object,logf,exe
-    
+    character(:), allocatable :: source,object,logf,exe,flags,ldflags
+
     success = .false.
-   
+
     !> Create temporary source file
     exe    = get_temp_filename()
     source = exe//'.f90'
@@ -1508,23 +1528,39 @@ logical function check_fortran_source_runs(self, input) result(success)
     logf   = exe//'.log'
     open(newunit=unit, file=source, action='readwrite', iostat=stat)
     if (stat/=0) return
-   
+
     !> Write contents
     write(unit,*) input
-    close(unit)  
-    
-    !> Compile and link program 
-    call self%compile_fortran(source, object, self%get_default_flags(release=.false.), logf, stat)
+    close(unit)
+
+    !> Get flags
+    flags    = self%get_default_flags(release=.false.)
+    ldflags  = self%get_default_flags(release=.false.)
+
+    if (present(compile_flags)) flags = flags//" "//compile_flags
+    if (present(link_flags)) ldflags = ldflags//" "//link_flags
+
+    !> Intel: Needs -warn last for error on unknown command line arguments to work
+    if (self%id == id_intel_llvm_nix) then
+        flags = flags//" "//flag_intel_warn
+        ldflags = ldflags//" "//flag_intel_warn
+    elseif (self%id == id_intel_llvm_windows) then
+        flags = flags//" "//flag_intel_warn_win
+        ldflags = ldflags//" "//flag_intel_warn_win
+    end if
+
+    !> Compile and link program
+    call self%compile_fortran(source, object, flags, logf, stat)
     if (stat==0) &
-    call self%link(exe, self%get_default_flags(release=.false.)//" "//object, logf, stat)
-        
-    !> Run and retrieve exit code 
+    call self%link(exe, ldflags//" "//object, logf, stat)
+
+    !> Run and retrieve exit code
     if (stat==0) &
     call run(exe,echo=.false., exitstat=stat, verbose=.false., redirect=logf)
-    
+
     !> Successful exit on 0 exit code
     success = stat==0
-    
+
     !> Delete files
     open(newunit=unit, file=source, action='readwrite', iostat=stat)
     close(unit,status='delete')
@@ -1534,10 +1570,22 @@ logical function check_fortran_source_runs(self, input) result(success)
     close(unit,status='delete')
     open(newunit=unit, file=exe, action='readwrite', iostat=stat)
     close(unit,status='delete')
-            
+
 end function check_fortran_source_runs
 
-!> Check if the current compiler supports 128-bit real precision 
+!> Check if the given compile and/or link flags are accepted by the compiler
+logical function check_flags_supported(self, compile_flags, link_flags)
+    class(compiler_t), intent(in) :: self
+    character(len=*), optional, intent(in) :: compile_flags, link_flags
+
+    ! Minimal program that always compiles
+    character(len=*), parameter :: hello_world = "print *, 'Hello, World!'; end"
+
+    check_flags_supported = self%check_fortran_source_runs(hello_world, compile_flags, link_flags)
+
+end function check_flags_supported
+
+!> Check if the current compiler supports 128-bit real precision
 logical function with_qp(self)
     !> Instance of the compiler object
     class(compiler_t), intent(in) :: self
@@ -1545,7 +1593,7 @@ logical function with_qp(self)
               ('if (selected_real_kind(33) == -1) stop 1; end')
 end function with_qp
 
-!> Check if the current compiler supports 80-bit "extended" real precision 
+!> Check if the current compiler supports 80-bit "extended" real precision
 logical function with_xdp(self)
     !> Instance of the compiler object
     class(compiler_t), intent(in) :: self
@@ -1553,5 +1601,62 @@ logical function with_xdp(self)
                ('if (any(selected_real_kind(18) == [-1, selected_real_kind(33)])) stop 1; end')
 end function with_xdp
 
+!> Append new flags to existing flags, removing duplicates and empty flags (string version)
+subroutine append_clean_flags(flags, new_flags)
+    character(:), intent(inout), allocatable :: flags
+    character(*), intent(in) :: new_flags
+
+    type(string_t), allocatable :: flags_array(:), new_flags_array(:)
+    integer :: i
+
+    call tokenize_flags(flags, flags_array)
+    call tokenize_flags(new_flags, new_flags_array)
+
+    call append_clean_flags_array(flags_array, new_flags_array)
+
+    do i = 1, size(flags_array)
+        flags = flags // " " // flags_array(i)%s
+    end do
+end subroutine append_clean_flags
+
+!> Append new flags to existing flags, removing duplicates and empty flags (array version)
+subroutine append_clean_flags_array(flags_array, new_flags_array)
+    type(string_t), allocatable, intent(inout) :: flags_array(:)
+    type(string_t), intent(in) :: new_flags_array(:)
+
+    integer :: i
+
+    do i = 1, size(new_flags_array)
+        if (string_array_contains(new_flags_array(i)%s, flags_array)) cycle
+        ! Filter out empty flags and arguments
+        if (new_flags_array(i)%s == "") cycle
+        if (trim(new_flags_array(i)%s) == "-l") cycle
+        if (trim(new_flags_array(i)%s) == "-L") cycle
+        if (trim(new_flags_array(i)%s) == "-I") cycle
+        if (trim(new_flags_array(i)%s) == "-J") cycle
+        if (trim(new_flags_array(i)%s) == "-M") cycle
+        flags_array = [flags_array, new_flags_array(i)]
+    end do
+end subroutine append_clean_flags_array
+
+!> Tokenize a string into an array of compiler flags
+subroutine tokenize_flags(flags, flags_array)
+    character(*), intent(in) :: flags
+    type(string_t), allocatable, intent(out) :: flags_array(:)
+    character(len=:), allocatable :: flags_char_array(:)
+
+    integer :: i
+    logical :: success
+
+    flags_char_array = shlex_split(flags, join_spaced=.true., keep_quotes=.true., success=success)
+    if (.not. success) then
+        allocate(flags_array(0))
+        return
+    end if
+    allocate(flags_array(size(flags_char_array)))
+    do i = 1, size(flags_char_array)
+        flags_array(i)%s = trim(adjustl(flags_char_array(i)))
+    end do
+end subroutine tokenize_flags
 
 end module fpm_compiler

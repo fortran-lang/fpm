@@ -4,17 +4,17 @@ on:
   # On push, only run if any of the metapackage files has changed
   push:
     paths:
-      - 'src/*meta*.f90'  
+      - 'src/*meta*.f90'
       - 'src/fpm/*meta*.f90'
       - 'src/fpm/manifest/*meta*.f90'
       - 'src/ci/meta_tests.sh'
       - 'src/.github/workflows/meta.yml'
-  # Always run on PR or release 
+  # Always run on PR or release
   pull_request:
   release:
     types: [published]
   # Allow manual triggering
-  workflow_dispatch:  
+  workflow_dispatch:
 
 env:
   CI: "ON" # We can detect this in the build system and other vendors implement it
@@ -44,14 +44,13 @@ jobs:
           - os: macos-13
             mpi: mpich
 
-
     steps:
     - name: Checkout code
       uses: actions/checkout@v4
 
     - name: (Ubuntu/macOS) setup gcc version
       if: contains(matrix.os,'ubuntu') || contains(matrix.os,'macos')
-      run: |      
+      run: |
         echo "GCC_V=14" >> $GITHUB_ENV
 
     - name: (Windows) Install MSYS2
@@ -67,24 +66,11 @@ jobs:
           unzip
           curl
           hdf5
-
-    - name: (Windows) Setup VS Build environment
-      if: contains(matrix.os,'windows') && contains(matrix.mpi,'intel')
-      uses: seanmiddleditch/gha-setup-vsdevenv@master
-
-    - name: (Windows) Retrieve Intel toolchain
-      if: contains(matrix.os,'windows') && contains(matrix.mpi,'intel')
-      shell: pwsh
-      working-directory: C:\TEMP
-      run: |
-        curl.exe --output webimage.exe --url https://registrationcenter-download.intel.com/akdlm/irc_nas/19085/w_HPCKit_p_2023.0.0.25931_offline.exe --retry 5 --retry-delay 5
-        Start-Process -FilePath "webimage.exe" -ArgumentList "-s -x -f oneAPI --log extract.log" -Wait
-        Remove-Item "webimage.exe" -Force
-        Start-Process -FilePath "oneAPI\bootstrapper.exe" -ArgumentList "-s --action install --eula=accept --components=""intel.oneapi.win.cpp-compiler:intel.oneapi.win.ifort-compiler:intel.oneapi.win.mpi.devel"" -p=NEED_VS2017_INTEGRATION=0 -p=NEED_VS2019_INTEGRATION=0 -p=NEED_VS2022_INTEGRATION=0 --log-dir=." -Wait
-        Remove-Item "oneAPI" -Force -Recurse
+          netcdf
+          netcdf-fortran
 
     - name: (Ubuntu) Install gfortran
-      if: contains(matrix.os,'ubuntu') 
+      if: contains(matrix.os,'ubuntu')
       run: |
         sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-${GCC_V} 100 \
         --slave /usr/bin/gfortran gfortran /usr/bin/gfortran-${GCC_V} \
@@ -94,45 +80,76 @@ jobs:
       if: contains(matrix.os,'ubuntu') && contains(matrix.mpi,'openmpi')
       run: |
         sudo apt-get update
-        sudo apt install -y -q openmpi-bin libopenmpi-dev hwloc fabric libhdf5-dev libhdf5-fortran-102
+        sudo apt install -y -q openmpi-bin libopenmpi-dev hwloc fabric libhdf5-dev \
+          libhdf5-fortran-102 libnetcdf-dev libnetcdff-dev
 
     - name: (Ubuntu) Install MPICH
       if: contains(matrix.os,'ubuntu') && contains(matrix.mpi,'mpich')
       run: |
         sudo apt-get update
-        sudo apt install -y -q mpich hwloc fabric libhdf5-dev libhdf5-fortran-102
+        sudo apt install -y -q mpich hwloc fabric libhdf5-dev libhdf5-fortran-102 \
+          libnetcdf-dev libnetcdff-dev
 
-    - name: (Ubuntu) Retrieve Intel toolchain
-      if: contains(matrix.os,'ubuntu') && contains(matrix.mpi,'intel')
-      timeout-minutes: 1
-      run: |
-        wget -O- https://apt.repos.intel.com/intel-gpg-keys/GPG-PUB-KEY-INTEL-SW-PRODUCTS.PUB | gpg --dearmor | sudo tee /usr/share/keyrings/oneapi-archive-keyring.gpg > /dev/null
-        echo "deb [signed-by=/usr/share/keyrings/oneapi-archive-keyring.gpg] https://apt.repos.intel.com/oneapi all main" | sudo tee /etc/apt/sources.list.d/oneAPI.list
-        sudo apt-get update
+    # Intel
 
-    - name: (Ubuntu) Install Intel oneAPI
-      if: contains(matrix.os,'ubuntu') && contains(matrix.mpi,'intel')
-      uses: fortran-lang/setup-fortran@v1.6.1
-      id: setup-fortran
+    - name: Setup Intel Environment
+      if: contains(matrix.mpi, 'intel')
+      uses: ./.github/actions/setup-intel
       with:
-        compiler: intel 
-        version: 2024.1.0 
+        os: ${{ matrix.os }}
 
-    - name: (Ubuntu) finalize oneAPI environment 
-      if: contains(matrix.os,'ubuntu') && contains(matrix.mpi,'intel')
+    - name: (Ubuntu) Build and Install HDF5 from source
+      if: contains(matrix.os, 'ubuntu') && contains(matrix.mpi, 'intel')
+      # Needs checkout if source code isn't available, adjust if needed
+      # Ensure compilers are available from the previous step's environment setup
+      shell: bash
       run: |
-        # Install MPI
-        sudo apt-get install -y -q intel-oneapi-mpi-devel ninja-build cmake
+        # Source again just in case shell context is lost (shouldn't be, but safer)
         source /opt/intel/oneapi/setvars.sh --force
-        printenv >> $GITHUB_ENV        
-        # To run HDF5 with oneAPI, we need to build it from source. Use CMake to generate pkg-config info
+        # Download HDF5
         curl -O -L https://github.com/HDFGroup/hdf5/archive/refs/tags/snapshot-1.14.tar.gz
         tar zxf snapshot-1.14.tar.gz
         cd hdf5-snapshot-1.14
+        # Configure HDF5 with Intel compilers
         cmake -B build -DCMAKE_Fortran_COMPILER=ifx -DCMAKE_C_COMPILER=icx -DCMAKE_CXX_COMPILER=icpx -DHDF5_BUILD_FORTRAN=ON -DCMAKE_INSTALL_PREFIX=/usr
         cd build
-        make -j
+        make -j $(nproc)
         sudo make install
+        cd ../.. # Go back to workspace directory
+        rm -rf hdf5-snapshot-1.14 snapshot-1.14.tar.gz # Clean up
+
+    - name: (Ubuntu) Build and Install NetCDF-C from source
+      if: contains(matrix.os, 'ubuntu') && contains(matrix.mpi, 'intel')
+      shell: bash
+      run: |
+        source /opt/intel/oneapi/setvars.sh --force
+        # Download NetCDF-C
+        curl -L https://github.com/Unidata/netcdf-c/archive/refs/tags/v4.9.2.tar.gz -o - | tar xz
+        cd netcdf-c-4.9.2
+        # Configure NetCDF-C with Intel Compilers, referencing installed HDF5
+        # Set CC/CXX/FC explicitly in environment for configure script
+        export CC=icx CXX=icpx FC=ifx
+        ./configure --prefix=/usr --enable-netcdf-4 --with-hdf5=/usr
+        make -j $(nproc)
+        sudo make install
+        cd .. # Go back to workspace directory
+        rm -rf netcdf-c-4.9.2 # Clean up
+
+    - name: (Ubuntu) Build and Install NetCDF-Fortran from source
+      if: contains(matrix.os, 'ubuntu') && contains(matrix.mpi, 'intel')
+      shell: bash
+      run: |
+        source /opt/intel/oneapi/setvars.sh --force
+        # Download NetCDF-Fortran
+        curl -L https://github.com/Unidata/netcdf-fortran/archive/refs/tags/v4.6.1.tar.gz -o - | tar xz
+        cd netcdf-fortran-4.6.1
+        # Configure NetCDF-Fortran with Intel Compilers using CMake
+        cmake -B build -DCMAKE_Fortran_COMPILER=ifx -DCMAKE_C_COMPILER=icx -DCMAKE_CXX_COMPILER=icpx -DCMAKE_INSTALL_PREFIX=/usr
+        cd build
+        make -j $(nproc)
+        sudo make install
+        cd ../.. # Go back to workspace directory
+        rm -rf netcdf-fortran-4.6.1 # Clean up
 
     - name: (Windows) Put MSYS2_MinGW64 on PATH
       if: contains(matrix.os,'windows') && (!contains(matrix.mpi,'intel'))
@@ -153,25 +170,12 @@ jobs:
       # can't use MSMPI_BIN as Actions doesn't update PATH from msmpisetup.exe
       run: Test-Path "C:\Program Files\Microsoft MPI\Bin\mpiexec.exe" -PathType leaf
 
-    - name: (Windows) test that OneAPI is installed
-      if: contains(matrix.os,'windows') && contains(matrix.mpi,'intel')
-      run: |
-        Test-Path -Path "C:\Program Files (x86)\Intel\oneAPI\setvars.bat" -PathType leaf
-        Test-Path -Path "C:\Program Files (x86)\Intel\oneAPI\compiler\latest\env\vars.bat" -PathType leaf
-
     - name: (Windows) put MSMPI_BIN on PATH (where mpiexec is)
       if: contains(matrix.os,'windows') && contains(matrix.mpi,'msmpi')
       run: |
         echo "C:\Program Files\Microsoft MPI\Bin\" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
         echo "/c/Program Files/Microsoft MPI/Bin/" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
         echo "MSMPI_BIN=C:\Program Files\Microsoft MPI\Bin\" | Out-File -FilePath $env:GITHUB_ENV -Append
-
-    - name: (Windows) load OneAPI environment variables
-      if: contains(matrix.os,'windows') && contains(matrix.mpi,'intel')
-      shell: cmd
-      run: |
-        "C:\Program Files (x86)\Intel\oneAPI\setvars.bat"
-        "C:\Program Files (x86)\Intel\oneAPI\compiler\latest\env\vars.bat"
 
     - name: (Windows) Install MSYS2 msmpi package
       if: contains(matrix.os,'windows') && contains(matrix.mpi,'msmpi')
@@ -214,8 +218,14 @@ jobs:
 
     - name: (macOS) Install homebrew HDF5
       if: contains(matrix.os,'macos')
-      run: | 
-        brew install hdf5 
+      run: |
+        brew install hdf5
+
+    - name: (macOS) Install homebrew NetCDF
+      if: contains(matrix.os,'macos')
+      run: |
+        brew install netcdf
+        brew install netcdf-fortran
 
     # Phase 1: Bootstrap fpm with existing version
     - name: Install fpm

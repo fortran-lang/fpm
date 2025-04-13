@@ -18,7 +18,8 @@ module fpm_manifest_example
     use fpm_manifest_dependency, only : dependency_config_t, new_dependencies
     use fpm_manifest_executable, only : executable_config_t
     use fpm_error, only : error_t, syntax_error, bad_name_error
-    use fpm_toml, only : toml_table, toml_key, toml_stat, get_value, get_list
+    use tomlf, only : toml_table, toml_key, toml_stat
+    use fpm_toml, only : get_value, get_list
     implicit none
     private
 
