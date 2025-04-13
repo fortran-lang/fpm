@@ -1,7 +1,8 @@
 !># Store compiler commands in a `compile_commands.json` table
 module fpm_compile_commands
-    use fpm_toml, only: serializable_t, set_string, set_list, get_value, get_list, toml_table, add_table, &
+    use fpm_toml, only: serializable_t, set_string, set_list, get_value, get_list, add_table, &
         toml_array, add_array, toml_stat, len
+    use tomlf, only: toml_table
     use jonquil, only: json_serialize, json_ser_config
     use fpm_strings, only: string_t, operator(==)
     use fpm_error, only: error_t, syntax_error, fatal_error
