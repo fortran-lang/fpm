@@ -7,6 +7,7 @@ module test_backend
                             FPM_TARGET_OBJECT, FPM_TARGET_ARCHIVE, &
                            add_target, add_dependency
     use fpm_backend, only: sort_target, schedule_targets
+    use fpm_compile_commands, only: compile_command_t, compile_command_table_t
     implicit none
     private
 
@@ -26,7 +27,8 @@ contains
             & new_unittest("target-sort-skip-all", test_target_sort_skip_all), &
             & new_unittest("target-sort-rebuild-all", test_target_sort_rebuild_all), &
             & new_unittest("schedule-targets", test_schedule_targets), &
-            & new_unittest("schedule-targets-empty", test_schedule_empty) &
+            & new_unittest("schedule-targets-empty", test_schedule_empty), &
+            & new_unittest("serialize-compile-commands", compile_commands_roundtrip) &
             ]
 
     end subroutine collect_backend
@@ -354,5 +356,38 @@ contains
 
     end function new_test_package
 
+    subroutine compile_commands_roundtrip(error)
+        
+        !> Error handling
+        type(error_t), allocatable, intent(out) :: error
+        
+        type(compile_command_t) :: cmd
+        type(compile_command_table_t) :: cc
+        integer :: i
+        
+        call cmd%test_serialization('compile_command: empty', error)
+        if (allocated(error)) return
+        
+        cmd = compile_command_t(directory = string_t("/test/dir"), &
+                                arguments = [string_t("gfortran"), &
+                                             string_t("-c"), string_t("main.f90"), &
+                                             string_t("-o"), string_t("main.o")], &
+                                file = string_t("main.f90"))
+        
+        call cmd%test_serialization('compile_command: non-empty', error)
+        if (allocated(error)) return       
+       
+        call cc%test_serialization('compile_command_table: empty', error)
+        if (allocated(error)) return
+        
+        do i=1,10
+           call cc%register(cmd,error)
+           if (allocated(error)) return
+        end do
+        
+        call cc%test_serialization('compile_command_table: non-empty', error)
+        if (allocated(error)) return        
+         
+    end subroutine compile_commands_roundtrip
 
 end module test_backend
