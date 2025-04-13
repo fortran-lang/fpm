@@ -29,7 +29,9 @@ contains
             & new_unittest("target-sort-rebuild-all", test_target_sort_rebuild_all), &
             & new_unittest("schedule-targets", test_schedule_targets), &
             & new_unittest("schedule-targets-empty", test_schedule_empty), &
-            & new_unittest("serialize-compile-commands", compile_commands_roundtrip) &
+            & new_unittest("serialize-compile-commands", compile_commands_roundtrip), &
+            & new_unittest("compile-commands-write", compile_commands_register_from_cmd), &
+            & new_unittest("compile-commands-register-string", compile_commands_register_from_string) &
             ]
 
     end subroutine collect_backend
@@ -390,5 +392,82 @@ contains
         if (allocated(error)) return        
          
     end subroutine compile_commands_roundtrip
+
+    subroutine compile_commands_register_from_cmd(error)
+        type(error_t), allocatable, intent(out) :: error
+        
+        type(compile_command_table_t) :: table
+        type(compile_command_t) :: cmd
+        integer :: i
+
+        cmd = compile_command_t(directory = string_t("/src"), &
+                                arguments = [string_t("gfortran"), &
+                                             string_t("-c"), string_t("example.f90"), &
+                                             string_t("-o"), string_t("example.o")], &
+                                file = string_t("example.f90"))
+
+        call table%register(cmd, error)
+        if (allocated(error)) return
+
+        if (.not.allocated(table%command)) then 
+            call test_failed(error, "Command table not allocated after registration")
+            return 
+        endif
+            
+        if (size(table%command) /= 1) then 
+            call test_failed(error, "Expected one registered command")
+            return
+        endif
+        
+        if (table%command(1)%file%s /= "example.f90") then 
+            call test_failed(error, "Registered file mismatch")
+            return
+        endif
+        
+    end subroutine compile_commands_register_from_cmd
+
+    subroutine compile_commands_register_from_string(error)
+        type(error_t), allocatable, intent(out) :: error
+
+        type(compile_command_table_t) :: table
+        character(len=*), parameter :: cmd_line = "gfortran -c example.f90 -o example.o"
+
+        ! Register a raw command line string
+        call table%register(cmd_line, error)
+        if (allocated(error)) return
+
+        if (.not.allocated(table%command)) then
+            call test_failed(error, "Command table not allocated after string registration")
+            return
+        end if
+
+        if (size(table%command) /= 1) then
+            call test_failed(error, "Expected one registered command after string registration")
+            return
+        end if
+
+        if (.not.allocated(table%command(1)%arguments)) then
+            call test_failed(error, "Command arguments not allocated")
+            return
+        end if
+
+        if (size(table%command(1)%arguments) /= 5) then
+            call test_failed(error, "Wrong number of parsed arguments, should be 5")
+            return
+        end if
+
+        if (table%command(1)%arguments(1)%s /= "gfortran") then
+            call test_failed(error, "Expected 'gfortran' as first argument")
+            return
+        end if
+
+        if (table%command(1)%arguments(3)%s /= "example.f90") then
+            call test_failed(error, "Expected 'example.f90' as third argument")
+            return
+        end if
+
+    end subroutine compile_commands_register_from_string
+
+
 
 end module test_backend
