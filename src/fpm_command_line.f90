@@ -32,6 +32,7 @@ use fpm_strings,      only : lower, split, to_fortran_name, is_fortran_name, rem
                              string_t, glob
 use fpm_filesystem,   only : basename, canon_path, which, run
 use fpm_environment,  only : get_command_arguments_quoted
+use fpm_settings,     only :  official_registry_base_url
 use fpm_error,        only : fpm_stop, error_t
 use fpm_os,           only : get_current_directory
 use fpm_release,      only : fpm_version, version_t
@@ -53,6 +54,7 @@ public :: fpm_cmd_settings, &
           fpm_clean_settings, &
           fpm_publish_settings, &
           get_command_line_settings, &
+          fpm_search_settings, &
           get_fpm_env
 
 type, abstract :: fpm_cmd_settings
@@ -134,6 +136,20 @@ type, extends(fpm_cmd_settings)   :: fpm_clean_settings
     logical                       :: registry_cache = .false.
 end type
 
+!> Settings for searching for packages in local and remote registries
+type, extends(fpm_cmd_settings)   :: fpm_search_settings
+    character(len=:),allocatable  :: query     !> search for packages with a specific query (globbing supported) 
+    character(len=:),allocatable  :: page      !> return in a specific page of results of remote registry (default: 1)
+    character(len=:),allocatable  :: registry  !> search in a specific registry (default: official registry), stores the URL of the registry
+    character(len=:),allocatable  :: namespace !> search for packages with a specific namespace (globbing supported)
+    character(len=:),allocatable  :: package   !> search for packages with a specific name (globbing supported)
+    character(len=:),allocatable  :: version   !> search for packages with version (globbing supported)
+    character(len=:),allocatable  :: license   !> search for packages with a specific license (globbing supported)
+    character(len=:),allocatable  :: limit     !> limit the number of results returned (default: 10).
+    character(len=:),allocatable  :: sort_by   !> sort the results by name, author, createdat, updatedat, downloads (default: name)
+    character(len=:),allocatable  :: sort      !> sort the results in ascending or descending (asc or desc) order  (default: asc).
+end type
+
 type, extends(fpm_build_settings) :: fpm_publish_settings
     logical :: show_package_version = .false.
     logical :: show_upload_data = .false.
@@ -151,9 +167,9 @@ character(len=:), allocatable :: help_new(:), help_fpm(:), help_run(:), &
                  & help_test(:), help_build(:), help_usage(:), help_runner(:), &
                  & help_text(:), help_install(:), help_help(:), help_update(:), &
                  & help_list(:), help_list_dash(:), help_list_nodash(:), &
-                 & help_clean(:), help_publish(:)
+                 & help_clean(:), help_publish(:), help_search(:)
 character(len=20),parameter :: manual(*)=[ character(len=20) ::&
-&  ' ',     'fpm',    'new',     'build',  'run',    'clean',  &
+&  ' ',     'fpm',    'new',     'build',  'run',    'clean', 'search', &
 &  'test',  'runner', 'install', 'update', 'list',   'help',   'version', 'publish' ]
 
 character(len=:), allocatable :: val_runner, val_compiler, val_flag, val_cflag, val_cxxflag, val_ldflag, &
@@ -240,7 +256,8 @@ contains
         type(fpm_export_settings) , allocatable :: export_settings
         type(version_t) :: version
         character(len=:), allocatable :: common_args, compiler_args, run_args, working_dir, &
-            & c_compiler, cxx_compiler, archiver, version_s, token_s
+            & c_compiler, cxx_compiler, archiver, version_s, token_s, query, page, registry, & 
+            & namespace, license, package, package_version, limit, sort_by, sort
 
         character(len=*), parameter :: fc_env = "FC", cc_env = "CC", ar_env = "AR", &
             & fflags_env = "FFLAGS", cflags_env = "CFLAGS", cxxflags_env = "CXXFLAGS", ldflags_env = "LDFLAGS", &
@@ -521,6 +538,8 @@ contains
                    help_text=[character(len=widest) :: help_text, version_text]
                 case('clean' )
                    help_text=[character(len=widest) :: help_text, help_clean]
+                case('search' )
+                    help_text=[character(len=widest) :: help_text, help_search]
                 case('publish')
                    help_text=[character(len=widest) :: help_text, help_publish]
                 case default
@@ -705,6 +724,56 @@ contains
                 &   clean_all=clean_all)
             end block
 
+        case('search')
+            call set_args(common_args //'&
+            & --query " " &
+            & --page " " &
+            & --registry " " &
+            & --namespace " " &
+            & --package " " &
+            & --package_version " " &
+            & --license " " &
+            & --limit " " &
+            & --sort-by " " &
+            & --sort " " &
+            & --', help_search, version_text)
+
+            query = sget('query')
+            namespace = sget('namespace')
+            package = sget('package')
+            package_version = sget('package_version')
+            license = sget('license')
+            registry = sget('registry')
+            page = sget('page')
+            limit = sget('limit')
+            sort_by = sget('sort-by')
+            sort = sget('sort')
+
+            block
+                
+                if (query==' ') query=''
+                if (page==' ') page='1'
+                if (package==' ') package='*'
+                if (license==' ') license=''
+                if (sort_by==' ') sort_by='name'
+                if (sort==' ') sort='asc'
+                if (limit==' ') limit='10'
+                if (namespace==' ') namespace='*'
+                if (package_version==' ') package_version='*'
+                if (.not. registry=='') then
+                    print *, 'Using custom registry for seaching packages: ', registry
+                    registry = trim(adjustl(registry))
+                else 
+                    registry = official_registry_base_url
+                end if
+                allocate(fpm_search_settings :: cmd_settings)
+                cmd_settings = fpm_search_settings( &
+                & query=query, page=page, registry=registry, &
+                & namespace=namespace, package=package, version=package_version, &
+                & license=license, limit=limit, sort_by=sort_by, &
+                & sort=sort)
+            end block
+
         case('publish')
             call set_args(common_args // compiler_args //'&
             & --show-package-version F &
@@ -724,6 +793,7 @@ contains
             token_s = sget('token')
 
             allocate(fpm_publish_settings :: cmd_settings)
+
             cmd_settings = fpm_publish_settings( &
             & show_package_version = lget('show-package-version'), &
             & show_upload_data = lget('show-upload-data'), &
@@ -787,7 +857,6 @@ contains
         val_cxxflag = " "// sget('cxx-flag')
         val_ldflag = " " // sget('link-flag')
         val_profile = sget('profile')
-
     end subroutine check_build_vals
 
     !> Print help text and stop
@@ -823,6 +892,7 @@ contains
    '  update    Update and manage project dependencies                      ', &
    '  install   Install project                                             ', &
    '  clean     Delete the build                                            ', &
+   '  search    Search for the packages in local registry and fpm-registry  ', &
    '  publish   Publish package to the registry                             ', &
    '                                                                        ', &
    ' Enter "fpm --list" for a brief list of subcommand options. Enter       ', &
@@ -844,6 +914,9 @@ contains
    ' install [--profile PROF] [--flag FFLAGS] [--no-rebuild] [--prefix PATH]        ', &
    '         [options]                                                              ', &
    ' clean [--skip] [--all] [--registry-cache]                                      ', &
+   ' search [--query query] [--page page] [--registry URL] [--namespace namespace]  ', &
+   '        [--package package] [--package_version version] [--license license]     ', &
+   '        [--limit <10>] [--sort-by <name>] [--sort <asc/desc>]                   ', &
    ' publish [--token TOKEN] [--show-package-version] [--show-upload-data]          ', &
    '         [--dry-run] [--verbose]                                                ', &
    ' ']
@@ -954,6 +1027,7 @@ contains
     '  + install  Install project.                                          ', &
     '  + clean    Delete directories in the "build/" directory, except      ', &
     '             dependencies. Prompts for confirmation to delete.         ', &
+    '  + search   Search for packages in local and fpm-registry             ', &
     '  + publish  Publish package to the registry.                          ', &
     '                                                                       ', &
     '  Their syntax is                                                      ', &
@@ -973,6 +1047,9 @@ contains
     '    install [--profile PROF] [--flag FFLAGS] [--no-rebuild] [--prefix PATH]     ', &
     '            [options]                                                           ', &
     '    clean [--skip] [--all] [--registry-cache]                                   ', &
+    ' search [--query query] [--page page] [--registry URL] [--namespace namespace]  ', &
+    '        [--package package] [--package_version version] [--license license]     ', &
+    '        [--limit <10>] [--sort-by <name>] [--sort <asc/desc>]                   ', &
     '    publish [--token TOKEN] [--show-package-version] [--show-upload-data]       ', &
     '            [--dry-run] [--verbose]                                             ', &
     '                                                                                ', &
@@ -1044,6 +1121,7 @@ contains
     '    fpm run myprogram --profile release -- -x 10 -y 20 --title "my title"       ', &
     '    fpm install --prefix ~/.local                                               ', &
     '    fpm clean --all                                                             ', &
+    '    fpm search --query fortran --page 2                                         ', &
     '                                                                                ', &
     'SEE ALSO                                                                        ', &
     '                                                                                ', &
@@ -1468,6 +1546,32 @@ contains
     ' --all             Delete the build without prompting including dependencies.', &
     ' --registry-cache  Delete registry cache.', &
     '' ]
+    help_search=[character(len=80) :: &
+    'NAME', &
+    ' search(1) - search for the package in local and fpm - registry.', &
+    '', &
+    'SYNOPSIS', &
+    ' fpm search', &
+    '', &
+    'DESCRIPTION', &
+    ' Search for packages in the local directory and the fpm-registry, ', &
+    ' supports package search by name, namespace, query (description and README.md)', &
+    ' and license from the registries (local and remote).', &
+    '', &
+    'OPTIONS', &
+    ' --query              Search for any term, can be used for searching across parameters like:', &
+    '                      name, namespace, description, and license, version, keywords, ', &
+    '                      README, maintainer, author. (supports globbing)', &
+    ' --page               Page number for results.', &
+    ' --registry           URL of the registry to query.', &
+    ' --namespace          Namespace of the package', &
+    ' --package            Package name to filter results.', &
+    ' --package_version    Version of the package', &
+    ' --license            License type to filter results.', &
+    ' --limit              Maximum number of results to return.', &
+    ' --sort-by            Field to sort results by (e.g., name).', &
+    ' --sort               Sort order (asc for ascending, desc for descending).', &
+    '' ]
     help_publish=[character(len=80) :: &
     'NAME', &
     ' publish(1) - publish package to the registry', &
@@ -1481,7 +1585,7 @@ contains
     'DESCRIPTION', &
     ' Follow the steps to create a tarball and upload a package to the registry:', &
     '', &
-    '  1. Register on the website (https://registry-phi.vercel.app/).', &
+    '  1. Register on the website (TODO: registry url).', &
     '  2. Create a namespace. Uploaded packages must be assigned to a unique', &
     '     namespace to avoid conflicts among packages with similar names. A', &
     '     namespace can accommodate multiple packages.', &
