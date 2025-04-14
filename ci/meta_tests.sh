@@ -52,5 +52,10 @@ pushd metapackage_netcdf
 "$fpm" run --verbose
 popd
 
+pushd metapackage_blas
+"$fpm" build --verbose
+"$fpm" run --verbose
+popd
+
 # Cleanup
 rm -rf ./*/build

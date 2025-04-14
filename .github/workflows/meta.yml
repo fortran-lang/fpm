@@ -81,14 +81,14 @@ jobs:
       run: |
         sudo apt-get update
         sudo apt install -y -q openmpi-bin libopenmpi-dev hwloc fabric libhdf5-dev \
-          libhdf5-fortran-102 libnetcdf-dev libnetcdff-dev
+          libhdf5-fortran-102 libnetcdf-dev libnetcdff-dev libopenblas-dev
 
     - name: (Ubuntu) Install MPICH
       if: contains(matrix.os,'ubuntu') && contains(matrix.mpi,'mpich')
       run: |
         sudo apt-get update
         sudo apt install -y -q mpich hwloc fabric libhdf5-dev libhdf5-fortran-102 \
-          libnetcdf-dev libnetcdff-dev
+          libnetcdf-dev libnetcdff-dev libopenblas-dev
 
     # Intel
 
@@ -334,4 +334,3 @@ jobs:
       shell: bash
       run: |
         ci/meta_tests.sh "$PWD/${{ env.FPM_RELEASE }}"
-
