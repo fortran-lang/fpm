@@ -91,7 +91,7 @@ subroutine build_package(targets,model,verbose,dry_run)
     ! Perform depth-first topological sort of targets
     do i=1,size(targets)
 
-        call sort_target(targets(i)%ptr)
+        call sort_target(targets(i)%ptr, dry_run)
 
     end do
 
@@ -180,15 +180,19 @@ end subroutine build_package
 !> If `target` is marked as sorted, `target%schedule` should be an
 !> integer greater than zero indicating the region for scheduling
 !>
-recursive subroutine sort_target(target)
+recursive subroutine sort_target(target, mock)
     type(build_target_t), intent(inout), target :: target
+    !> Optionally sort ALL targets if this is a dry run
+    logical, optional, intent(in) :: mock
 
     integer :: i, fh, stat
+    logical :: dry_run
+    
+    dry_run = .false.
+    if (present(mock)) dry_run = mock
 
     ! Check if target has already been processed (as a dependency)
-    if (target%sorted .or. target%skip) then
-        return
-    end if
+    if (target%sorted .or. target%skip) return
 
     ! Check for a circular dependency
     ! (If target has been touched but not processed)
@@ -201,20 +205,24 @@ recursive subroutine sort_target(target)
     ! Load cached source file digest if present
     if (.not.allocated(target%digest_cached) .and. &
          exists(target%output_file) .and. &
-         exists(target%output_file//'.digest')) then
+         exists(target%output_file//'.digest') .and. &
+         (.not.dry_run)) then 
 
         allocate(target%digest_cached)
         open(newunit=fh,file=target%output_file//'.digest',status='old')
         read(fh,*,iostat=stat) target%digest_cached
         close(fh)
 
-        if (stat /= 0) then    ! Cached digest is not recognized
-            deallocate(target%digest_cached)
-        end if
+        ! Cached digest is not recognized
+        if (stat /= 0) deallocate(target%digest_cached)
 
     end if
-
-    if (allocated(target%source)) then
+    
+    if (dry_run) then 
+        
+        target%skip = .false.
+        
+    elseif (allocated(target%source)) then
 
         ! Skip if target is source-based and source file is unmodified
         if (allocated(target%digest_cached)) then
@@ -233,7 +241,7 @@ recursive subroutine sort_target(target)
     do i=1,size(target%dependencies)
 
         ! Sort dependency
-        call sort_target(target%dependencies(i)%ptr)
+        call sort_target(target%dependencies(i)%ptr, dry_run)
 
         if (.not.target%dependencies(i)%ptr%skip) then
 
@@ -329,23 +337,23 @@ subroutine build_target(model,target,verbose,dry_run,table,stat)
 
     case (FPM_TARGET_OBJECT)
         call model%compiler%compile_fortran(target%source%file_name, target%output_file, &
-            & target%compile_flags, target%output_log_file, stat, table)
+            & target%compile_flags, target%output_log_file, stat, table, dry_run)
 
     case (FPM_TARGET_C_OBJECT)
         call model%compiler%compile_c(target%source%file_name, target%output_file, &
-            & target%compile_flags, target%output_log_file, stat, table)
+            & target%compile_flags, target%output_log_file, stat, table, dry_run)
 
     case (FPM_TARGET_CPP_OBJECT)
         call model%compiler%compile_cpp(target%source%file_name, target%output_file, &
-            & target%compile_flags, target%output_log_file, stat, table)
+            & target%compile_flags, target%output_log_file, stat, table, dry_run)
 
     case (FPM_TARGET_EXECUTABLE)
         call model%compiler%link(target%output_file, &
-            & target%compile_flags//" "//target%link_flags, target%output_log_file, stat)
+            & target%compile_flags//" "//target%link_flags, target%output_log_file, stat, dry_run)
 
     case (FPM_TARGET_ARCHIVE)
         call model%archiver%make_archive(target%output_file, target%link_objects, &
-            & target%output_log_file, stat)
+            & target%output_log_file, stat, dry_run)
 
     end select
 
