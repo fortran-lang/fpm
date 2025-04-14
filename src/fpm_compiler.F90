@@ -1104,7 +1104,7 @@ end subroutine new_archiver
 
 
 !> Compile a Fortran object
-subroutine compile_fortran(self, input, output, args, log_file, stat, table)
+subroutine compile_fortran(self, input, output, args, log_file, stat, table, dry_run)
     !> Instance of the compiler object
     class(compiler_t), intent(in) :: self
     !> Source file input
@@ -1119,16 +1119,25 @@ subroutine compile_fortran(self, input, output, args, log_file, stat, table)
     integer, intent(out) :: stat
     !> Optional compile_commands table
     type(compile_command_table_t), optional, intent(inout) :: table    
+    !> Optional mocking
+    logical, optional, intent(in) :: dry_run
     
     character(len=:), allocatable :: command 
     type(error_t), allocatable :: error
+    logical :: mock
+    
+    ! Check if we're actually building this file
+    mock = .false.
+    if (present(dry_run)) mock = dry_run
     
     ! Set command
     command = self%fc // " -c " // input // " " // args // " -o " // output
 
     ! Execute command
-    call run(command, echo=self%echo, verbose=self%verbose, redirect=log_file, exitstat=stat)
-    if (stat/=0) return
+    if (.not.mock) then 
+       call run(command, echo=self%echo, verbose=self%verbose, redirect=log_file, exitstat=stat)
+       if (stat/=0) return
+    endif
         
     ! Optionally register compile command 
     if (present(table)) then 
@@ -1140,7 +1149,7 @@ end subroutine compile_fortran
 
 
 !> Compile a C object
-subroutine compile_c(self, input, output, args, log_file, stat, table)
+subroutine compile_c(self, input, output, args, log_file, stat, table, dry_run)
     !> Instance of the compiler object
     class(compiler_t), intent(in) :: self
     !> Source file input
@@ -1155,16 +1164,25 @@ subroutine compile_c(self, input, output, args, log_file, stat, table)
     integer, intent(out) :: stat
     !> Optional compile_commands table
     type(compile_command_table_t), optional, intent(inout) :: table    
+    !> Optional mocking
+    logical, optional, intent(in) :: dry_run    
     
     character(len=:), allocatable :: command 
     type(error_t), allocatable :: error
+    logical :: mock
+    
+    ! Check if we're actually building this file
+    mock = .false.
+    if (present(dry_run)) mock = dry_run    
     
     ! Set command
     command = self%cc // " -c " // input // " " // args // " -o " // output
 
     ! Execute command
-    call run(command, echo=self%echo, verbose=self%verbose, redirect=log_file, exitstat=stat)
-    if (stat/=0) return
+    if (.not.mock) then 
+       call run(command, echo=self%echo, verbose=self%verbose, redirect=log_file, exitstat=stat)
+       if (stat/=0) return
+    endif
         
     ! Optionally register compile command 
     if (present(table)) then 
@@ -1175,7 +1193,7 @@ subroutine compile_c(self, input, output, args, log_file, stat, table)
 end subroutine compile_c
 
 !> Compile a CPP object
-subroutine compile_cpp(self, input, output, args, log_file, stat, table)
+subroutine compile_cpp(self, input, output, args, log_file, stat, table, dry_run)
     !> Instance of the compiler object
     class(compiler_t), intent(in) :: self
     !> Source file input
@@ -1190,16 +1208,25 @@ subroutine compile_cpp(self, input, output, args, log_file, stat, table)
     integer, intent(out) :: stat
     !> Optional compile_commands table
     type(compile_command_table_t), optional, intent(inout) :: table    
+    !> Optional mocking
+    logical, optional, intent(in) :: dry_run    
     
     character(len=:), allocatable :: command 
     type(error_t), allocatable :: error
+    logical :: mock
+        
+    ! Check if we're actually building this file
+    mock = .false.
+    if (present(dry_run)) mock = dry_run        
         
     ! Set command
     command = self%cxx // " -c " // input // " " // args // " -o " // output
 
     ! Execute command
-    call run(command, echo=self%echo, verbose=self%verbose, redirect=log_file, exitstat=stat)
-    if (stat/=0) return
+    if (.not.mock) then 
+       call run(command, echo=self%echo, verbose=self%verbose, redirect=log_file, exitstat=stat)
+       if (stat/=0) return
+    endif
         
     ! Optionally register compile command 
     if (present(table)) then 
@@ -1210,7 +1237,7 @@ subroutine compile_cpp(self, input, output, args, log_file, stat, table)
 end subroutine compile_cpp
 
 !> Link an executable
-subroutine link_executable(self, output, args, log_file, stat)
+subroutine link_executable(self, output, args, log_file, stat, dry_run)
     !> Instance of the compiler object
     class(compiler_t), intent(in) :: self
     !> Output file of object
@@ -1221,13 +1248,21 @@ subroutine link_executable(self, output, args, log_file, stat)
     character(len=*), intent(in) :: log_file
     !> Status flag
     integer, intent(out) :: stat
+    !> Optional mocking
+    logical, optional, intent(in) :: dry_run    
     
     character(len=:), allocatable :: command 
+    logical :: mock
+        
+    ! Check if we're actually linking
+    mock = .false.
+    if (present(dry_run)) mock = dry_run                
         
     ! Set command
     command = self%fc // " " // args // " -o " // output    
     
     ! Execute command
+    if (.not.mock) &
     call run(command, echo=self%echo, verbose=self%verbose, redirect=log_file, exitstat=stat)
     
 end subroutine link_executable
@@ -1236,7 +1271,7 @@ end subroutine link_executable
 !> @todo For Windows OS, use the local `delete_file_win32` in stead of `delete_file`.
 !> This may be related to a bug in Mingw64-openmp and is expected to be resolved in the future,
 !> see issue #707, #708 and #808.
-subroutine make_archive(self, output, args, log_file, stat)
+subroutine make_archive(self, output, args, log_file, stat, dry_run)
     !> Instance of the archiver object
     class(archiver_t), intent(in) :: self
     !> Name of the archive to generate
@@ -1247,6 +1282,16 @@ subroutine make_archive(self, output, args, log_file, stat)
     character(len=*), intent(in) :: log_file
     !> Status flag
     integer, intent(out) :: stat
+    !> Optional mocking
+    logical, optional, intent(in) :: dry_run    
+    
+    logical :: mock
+        
+    ! Check if we're actually linking
+    mock = .false.
+    if (present(dry_run)) mock = dry_run            
+    
+    if (mock) return
 
     if (self%use_response_file) then
         call write_response_file(output//".resp" , args)

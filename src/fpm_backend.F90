@@ -54,11 +54,15 @@ end interface
 contains
 
 !> Top-level routine to build package described by `model`
-subroutine build_package(targets,model,verbose)
+subroutine build_package(targets,model,verbose,dry_run)
     type(build_target_ptr), intent(inout) :: targets(:)
     type(fpm_model_t), intent(in) :: model
     logical, intent(in) :: verbose
-
+    
+    !> If dry_run, the build process is only mocked, but the list of compile_commands 
+    !> is still created
+    logical, intent(in) :: dry_run
+ 
     integer :: i, j
     type(build_target_ptr), allocatable :: queue(:)
     integer, allocatable :: schedule_ptr(:), stat(:)
@@ -81,7 +85,7 @@ subroutine build_package(targets,model,verbose)
     end do
 
     do i = 1, size(build_dirs)
-       call mkdir(build_dirs(i)%s,verbose)
+       if (.not.dry_run) call mkdir(build_dirs(i)%s,verbose)
     end do
 
     ! Perform depth-first topological sort of targets
@@ -95,14 +99,13 @@ subroutine build_package(targets,model,verbose)
     call schedule_targets(queue, schedule_ptr, targets)
 
     ! Check if queue is empty
-    if (.not.verbose .and. size(queue) < 1) then
+    if (.not.verbose .and. size(queue) < 1 .and. .not.dry_run) then
         write(stderr, '(a)') 'Project is up to date'
         return
     end if
 
     ! Initialise build status flags
-    allocate(stat(size(queue)))
-    stat(:) = 0
+    allocate(stat(size(queue)),source=0)
     build_failed = .false.
 
     ! Set output mode
@@ -126,9 +129,10 @@ subroutine build_package(targets,model,verbose)
             skip_current = build_failed
 
             if (.not.skip_current) then
-                call progress%compiling_status(j)
-                call build_target(model,queue(j)%ptr,verbose,progress%compile_commands,stat(j))
-                call progress%completed_status(j,stat(j))
+                if (.not.dry_run) call progress%compiling_status(j)
+                call build_target(model,queue(j)%ptr,verbose,dry_run, &
+                                  progress%compile_commands,stat(j))
+                if (.not.dry_run) call progress%completed_status(j,stat(j))
             end if
 
             ! Set global flag if this target failed to build
@@ -157,7 +161,7 @@ subroutine build_package(targets,model,verbose)
 
     end do
 
-    call progress%success()
+    if (.not.dry_run) call progress%success()
     call progress%dump_commands(error)
     if (allocated(error)) call fpm_stop(1,'error writing compile_commands.json: '//trim(error%message))
 
@@ -304,17 +308,19 @@ end subroutine schedule_targets
 !>
 !> If successful, also caches the source file digest to disk.
 !>
-subroutine build_target(model,target,verbose,table,stat)
+subroutine build_target(model,target,verbose,dry_run,table,stat)
     type(fpm_model_t), intent(in) :: model
     type(build_target_t), intent(in), target :: target
     logical, intent(in) :: verbose
+    !> If dry_run, the build process is only mocked, but compile_commands are still created
+    logical, intent(in) :: dry_run    
     type(compile_command_table_t), intent(inout) :: table
     integer, intent(out) :: stat
 
     integer :: fh
 
     !$omp critical
-    if (.not.exists(dirname(target%output_file))) then
+    if (.not.exists(dirname(target%output_file)) .and. .not.dry_run) then
         call mkdir(dirname(target%output_file),verbose)
     end if
     !$omp end critical
@@ -343,7 +349,7 @@ subroutine build_target(model,target,verbose,table,stat)
 
     end select
 
-    if (stat == 0 .and. allocated(target%source)) then
+    if (stat == 0 .and. allocated(target%source) .and. .not.dry_run) then
         open(newunit=fh,file=target%output_file//'.digest',status='unknown')
         write(fh,*) target%source%digest
         close(fh)
