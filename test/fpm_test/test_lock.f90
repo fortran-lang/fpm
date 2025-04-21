@@ -28,21 +28,16 @@ contains
             & new_unittest('acquire-existing-lockfile-valid', acquire_existing_lockfile_valid), &
             & new_unittest('acquire-blocks', acquire_blocks), &
             & new_unittest('release-rouge-remove', release_rouge_remove) &
-
         ]
     end subroutine collect_lock
 
     !> Setup before each unittest
     subroutine setup()
-        type(error_t), allocatable :: dummy_error
-        call fpm_lock_release(dummy_error)
         call run ('rm -f .fpm-package-lock')
     end subroutine setup
 
     !> Cleanup after each unit test
     subroutine cleanup()
-        type(error_t), allocatable :: dummy_error
-        call fpm_lock_release(dummy_error)
         call run ('touch .fpm-package-lock')
     end subroutine cleanup
 
@@ -208,7 +203,7 @@ contains
             call test_failed(error, "lock-file acquire failed")
         end if
 
-        ! Some reouge process removes the lock-file
+        ! Some rouge process removes the lock-file
         call run('rm .fpm-package-lock')
 
         call fpm_lock_release(dummy_error)
