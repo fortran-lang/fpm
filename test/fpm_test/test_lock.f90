@@ -179,7 +179,8 @@ contains
         call setup()
 
         ! Some other process acquires a lock to work on the package briefly.
-        call run('touch .fpm-package-lock && sleep 1 && rm .fpm-package-lock &')
+        call run('touch .fpm-package-lock')
+        call run('sleep 0.5 && rm .fpm-package-lock &')
 
         ! Our blocking acquire should wait for a bit and then go through
         call fpm_lock_acquire(error)
