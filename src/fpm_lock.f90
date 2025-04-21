@@ -159,9 +159,6 @@ subroutine fpm_lock_acquire_noblock(error, success)
     integer :: iostat
     character(len=256) :: iomsg
 
-    ! Did the lock-file exist already or not.
-    integer :: exists
-
     open(file='.fpm-package-lock', &
          action='read', &
          status='new', &
