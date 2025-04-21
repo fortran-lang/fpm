@@ -189,7 +189,7 @@ subroutine fpm_lock_acquire_noblock(error, success)
     if (present(success)) success = .true.
 
     ! Setup the atexit handler
-    call atexit(c_funloc(atexit_cleanup))
+    !call atexit(c_funloc(atexit_cleanup))
 end subroutine fpm_lock_acquire_noblock
 
 !> Try to acquire a lock on the current package directory. If some other process
