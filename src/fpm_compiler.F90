@@ -1141,7 +1141,7 @@ subroutine compile_fortran(self, input, output, args, log_file, stat, table, dry
         
     ! Optionally register compile command 
     if (present(table)) then 
-        call table%register(command, error)
+        call table%register(command, get_os_type(), error)
         stat = merge(-1,0,allocated(error))
     endif    
         
@@ -1186,7 +1186,7 @@ subroutine compile_c(self, input, output, args, log_file, stat, table, dry_run)
         
     ! Optionally register compile command 
     if (present(table)) then 
-        call table%register(command, error)
+        call table%register(command, get_os_type(), error)
         stat = merge(-1,0,allocated(error))
     endif        
     
@@ -1230,7 +1230,7 @@ subroutine compile_cpp(self, input, output, args, log_file, stat, table, dry_run
         
     ! Optionally register compile command 
     if (present(table)) then 
-        call table%register(command, error)
+        call table%register(command, get_os_type(), error)
         stat = merge(-1,0,allocated(error))
     endif               
         

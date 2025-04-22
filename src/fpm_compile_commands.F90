@@ -226,13 +226,16 @@ module fpm_compile_commands
     end subroutine cct_destroy
     
     !> Register a new compile command
-    subroutine cct_register(self, command, error)
+    subroutine cct_register(self, command, target_os, error)
 
         !> Instance of the serializable object
         class(compile_command_table_t), intent(inout) :: self
 
         !> Data structure
         character(len=*), intent(in) :: command
+        
+        !> The target OS of the compile_commands.json (may be cross-compiling)
+        integer, intent(in) :: target_os
         
         !> Error handling
         type(error_t), allocatable, intent(out) :: error    
@@ -250,7 +253,7 @@ module fpm_compile_commands
         end if
 
         ! Tokenize the input command into args(:)
-        if (get_os_type()==OS_WINDOWS) then 
+        if (target_os==OS_WINDOWS) then 
             args = ms_split(command, ucrt=.true., success=sh_success)
         else
             args = sh_split(command, join_spaced=.false., keep_quotes=.true., success=sh_success)

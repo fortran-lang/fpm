@@ -908,7 +908,7 @@ subroutine resolve_target_linking(targets, model)
 
                 target%output_dir = get_output_dir(model%build_prefix, &
                    & target%compile_flags//local_link_flags)
-                target%output_file = join_path(target%output_dir, target%output_name)
+                target%output_file     = join_path(target%output_dir, target%output_name)
                 target%output_log_file = join_path(target%output_dir, target%output_name)//'.log'
         end if
 
