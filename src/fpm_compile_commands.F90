@@ -7,7 +7,8 @@ module fpm_compile_commands
     use fpm_strings, only: string_t, operator(==)
     use fpm_error, only: error_t, syntax_error, fatal_error
     use fpm_os, only: get_current_directory
-    use shlex_module, only: shlex_split => split 
+    use fpm_environment, only: get_os_type, OS_WINDOWS
+    use shlex_module, only: sh_split => split, ms_split
     implicit none
     
     !> Definition of a build command
@@ -249,7 +250,11 @@ module fpm_compile_commands
         end if
 
         ! Tokenize the input command into args(:)
-        args = shlex_split(command, join_spaced=.false., keep_quotes=.true., success=sh_success)
+        if (get_os_type()==OS_WINDOWS) then 
+            args = ms_split(command, ucrt=.true., success=sh_success)
+        else
+            args = sh_split(command, join_spaced=.false., keep_quotes=.true., success=sh_success)
+        end if
         n = size(args)
         
         if (n==0 .or. .not.sh_success) then 

@@ -46,7 +46,7 @@ use fpm_error, only: error_t, fatal_error
 use tomlf, only: toml_table
 use fpm_toml, only: serializable_t, set_string, set_value, toml_stat, get_value
 use fpm_compile_commands, only: compile_command_t, compile_command_table_t
-use shlex_module, only: shlex_split => split
+use shlex_module, only: sh_split => split, ms_split
 implicit none
 public :: compiler_t, new_compiler, archiver_t, new_archiver, get_macros
 public :: append_clean_flags, append_clean_flags_array
@@ -1693,7 +1693,7 @@ subroutine tokenize_flags(flags, flags_array)
     integer :: i
     logical :: success
 
-    flags_char_array = shlex_split(flags, join_spaced=.true., keep_quotes=.true., success=success)
+    flags_char_array = sh_split(flags, join_spaced=.true., keep_quotes=.true., success=success)
     if (.not. success) then
         allocate(flags_array(0))
         return
