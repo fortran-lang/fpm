@@ -8,6 +8,7 @@ module test_backend
                            add_target, add_dependency
     use fpm_backend, only: sort_target, schedule_targets
     use fpm_strings, only: string_t
+    use fpm_environment, only: OS_LINUX
     use fpm_compile_commands, only: compile_command_t, compile_command_table_t
     implicit none
     private
@@ -433,7 +434,7 @@ contains
         character(len=*), parameter :: cmd_line = "gfortran -c example.f90 -o example.o"
 
         ! Register a raw command line string
-        call table%register(cmd_line, error)
+        call table%register(cmd_line, OS_LINUX, error)
         if (allocated(error)) return
 
         if (.not.allocated(table%command)) then
