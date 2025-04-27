@@ -92,7 +92,7 @@
 
             <li class="list-inline-item" id="statements"><i class="fa fa-list-ol"></i>
               <a data-bs-toggle="tooltip" data-bs-placement="bottom" data-bs-html="true"
-                 title=" 0.1% of total for procedures.">9 statements</a>
+                 title=" 0.3% of total for procedures.">24 statements</a>
             </li>
 
             <li class="list-inline-item" id="source-file">
@@ -127,7 +127,20 @@
       <div id="sidebar">
       <h3>Contents</h3>
   
-  
+      <div class="card mb-4">
+      <a data-bs-toggle="collapse" href="#vars-0"
+         aria-expanded="false" aria-controls="vars-0">
+         <h4 class="card-header bg-primary text-white">Variables</h4>
+      </a>
+      <div id="vars-0" class="collapse">
+        <div class="list-group list-group-flush">
+            <a class="list-group-item" href="../proc/compile_c.html#variable-command~8">command</a>
+            <a class="list-group-item" href="../proc/compile_c.html#variable-error~127">error</a>
+            <a class="list-group-item" href="../proc/compile_c.html#variable-mock~3">mock</a>
+        </div>
+      </div>
+    </div>
+
   
   
   
@@ -159,7 +172,7 @@
     </div>
     
     <div class="col-md-9" id='text'>
-    <h2>public  subroutine compile_c(self, input, output, args, log_file, stat)  
+    <h2>public  subroutine compile_c(self, input, output, args, log_file, stat, table, dry_run)  
 </h2>
     
 
@@ -181,7 +194,7 @@
     <tbody>
         <tr>
             <td>
-              <span class="anchor" id="variable-self~70"></span>
+              <span class="anchor" id="variable-self~103"></span>
               class(<a href='../type/compiler_t.html'>compiler_t</a>),
             </td>
 <td>intent(in)</td>
@@ -196,7 +209,7 @@
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-input~5"></span>
+              <span class="anchor" id="variable-input~4"></span>
               character(len=*),
             </td>
 <td>intent(in)</td>
@@ -211,7 +224,7 @@
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-output~6"></span>
+              <span class="anchor" id="variable-output~4"></span>
               character(len=*),
             </td>
 <td>intent(in)</td>
@@ -226,7 +239,7 @@
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-args~5"></span>
+              <span class="anchor" id="variable-args~6"></span>
               character(len=*),
             </td>
 <td>intent(in)</td>
@@ -256,7 +269,7 @@
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-stat~40"></span>
+              <span class="anchor" id="variable-stat~46"></span>
               integer,
             </td>
 <td>intent(out)</td>
@@ -269,12 +282,110 @@
                 <p>Status flag</p>
             </td>
         </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-table~56"></span>
+              type(<a href='../type/compile_command_table_t.html'>compile_command_table_t</a>),
+            </td>
+<td>intent(inout),</td>
+              <td>optional</td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>table</strong></td>
+            <td>
+                <p>Optional compile_commands table</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-dry_run~5"></span>
+              logical,
+            </td>
+<td>intent(in),</td>
+              <td>optional</td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>dry_run</strong></td>
+            <td>
+                <p>Optional mocking</p>
+            </td>
+        </tr>
     </tbody>
   </table>
 
     <br>
 
 
+    <section>    
+      <h2>Variables</h2>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Visibility</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+<th></th><th scope="col">Initial</th>        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-command~8"></span>
+              character(len=:),
+            </td>
+              <td>public,</td>
+            <td>
+              allocatable
+            </td>
+            <td>::</td>
+            <td><strong>command</strong></td>
+                <td></td>
+                <td></td>
+            <td>
+                
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-error~127"></span>
+              type(<a href='../type/error_t.html'>error_t</a>),
+            </td>
+              <td>public,</td>
+            <td>
+              allocatable
+            </td>
+            <td>::</td>
+            <td><strong>error</strong></td>
+                <td></td>
+                <td></td>
+            <td>
+                
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-mock~3"></span>
+              logical,
+            </td>
+              <td>public</td>
+            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>mock</strong></td>
+                <td></td>
+                <td></td>
+            <td>
+                
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+    </section>
+    <br>
     
     
 
@@ -286,7 +397,7 @@
     
     <section>
     <h2><span class="anchor" id="src"></span>Source Code</h2>
-    <div class="hl codehilite"><pre><span></span><span class="k">subroutine </span><span class="n">compile_c</span><span class="p">(</span><span class="n">self</span><span class="p">,</span><span class="w"> </span><span class="n">input</span><span class="p">,</span><span class="w"> </span><span class="n">output</span><span class="p">,</span><span class="w"> </span><span class="n">args</span><span class="p">,</span><span class="w"> </span><span class="n">log_file</span><span class="p">,</span><span class="w"> </span><span class="nb">stat</span><span class="p">)</span>
+    <div class="hl codehilite"><pre><span></span><span class="k">subroutine </span><span class="n">compile_c</span><span class="p">(</span><span class="n">self</span><span class="p">,</span><span class="w"> </span><span class="n">input</span><span class="p">,</span><span class="w"> </span><span class="n">output</span><span class="p">,</span><span class="w"> </span><span class="n">args</span><span class="p">,</span><span class="w"> </span><span class="n">log_file</span><span class="p">,</span><span class="w"> </span><span class="nb">stat</span><span class="p">,</span><span class="w"> </span><span class="n">table</span><span class="p">,</span><span class="w"> </span><span class="n">dry_run</span><span class="p">)</span>
 <span class="w">    </span><span class="c">!&gt; Instance of the compiler object</span>
 <span class="w">    </span><span class="k">class</span><span class="p">(</span><span class="n">compiler_t</span><span class="p">),</span><span class="w"> </span><span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">)</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">self</span>
 <span class="w">    </span><span class="c">!&gt; Source file input</span>
@@ -299,9 +410,34 @@
 <span class="w">    </span><span class="kt">character</span><span class="p">(</span><span class="nb">len</span><span class="o">=*</span><span class="p">),</span><span class="w"> </span><span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">)</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">log_file</span>
 <span class="w">    </span><span class="c">!&gt; Status flag</span>
 <span class="w">    </span><span class="kt">integer</span><span class="p">,</span><span class="w"> </span><span class="k">intent</span><span class="p">(</span><span class="n">out</span><span class="p">)</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="nb">stat</span>
+<span class="w">    </span><span class="c">!&gt; Optional compile_commands table</span>
+<span class="w">    </span><span class="k">type</span><span class="p">(</span><span class="n">compile_command_table_t</span><span class="p">),</span><span class="w"> </span><span class="k">optional</span><span class="p">,</span><span class="w"> </span><span class="k">intent</span><span class="p">(</span><span class="n">inout</span><span class="p">)</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">table</span><span class="w">    </span>
+<span class="w">    </span><span class="c">!&gt; Optional mocking</span>
+<span class="w">    </span><span class="kt">logical</span><span class="p">,</span><span class="w"> </span><span class="k">optional</span><span class="p">,</span><span class="w"> </span><span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">)</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">dry_run</span><span class="w">    </span>
+<span class="w">    </span>
+<span class="w">    </span><span class="kt">character</span><span class="p">(</span><span class="nb">len</span><span class="o">=</span><span class="p">:),</span><span class="w"> </span><span class="k">allocatable</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">command</span><span class="w"> </span>
+<span class="w">    </span><span class="k">type</span><span class="p">(</span><span class="n">error_t</span><span class="p">),</span><span class="w"> </span><span class="k">allocatable</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">error</span>
+<span class="w">    </span><span class="kt">logical</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">mock</span>
+<span class="w">    </span>
+<span class="w">    </span><span class="c">! Check if we&#39;re actually building this file</span>
+<span class="w">    </span><span class="n">mock</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">.</span><span class="n">false</span><span class="p">.</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="nb">present</span><span class="p">(</span><span class="n">dry_run</span><span class="p">))</span><span class="w"> </span><span class="n">mock</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">dry_run</span><span class="w">    </span>
+<span class="w">    </span>
+<span class="w">    </span><span class="c">! Set command</span>
+<span class="w">    </span><span class="n">command</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">self</span><span class="p">%</span><span class="n">cc</span><span class="w"> </span><span class="o">//</span><span class="w"> </span><span class="s2">&quot; -c &quot;</span><span class="w"> </span><span class="o">//</span><span class="w"> </span><span class="n">input</span><span class="w"> </span><span class="o">//</span><span class="w"> </span><span class="s2">&quot; &quot;</span><span class="w"> </span><span class="o">//</span><span class="w"> </span><span class="n">args</span><span class="w"> </span><span class="o">//</span><span class="w"> </span><span class="s2">&quot; -o &quot;</span><span class="w"> </span><span class="o">//</span><span class="w"> </span><span class="n">output</span>
 
-<span class="nb">    </span><span class="k">call </span><span class="n">run</span><span class="p">(</span><span class="n">self</span><span class="p">%</span><span class="n">cc</span><span class="w"> </span><span class="o">//</span><span class="w"> </span><span class="s2">&quot; -c &quot;</span><span class="w"> </span><span class="o">//</span><span class="w"> </span><span class="n">input</span><span class="w"> </span><span class="o">//</span><span class="w"> </span><span class="s2">&quot; &quot;</span><span class="w"> </span><span class="o">//</span><span class="w"> </span><span class="n">args</span><span class="w"> </span><span class="o">//</span><span class="w"> </span><span class="s2">&quot; -o &quot;</span><span class="w"> </span><span class="o">//</span><span class="w"> </span><span class="n">output</span><span class="p">,</span><span class="w"> </span><span class="p">&amp;</span>
-<span class="w">        </span><span class="p">&amp;</span><span class="w"> </span><span class="n">echo</span><span class="o">=</span><span class="n">self</span><span class="p">%</span><span class="n">echo</span><span class="p">,</span><span class="w"> </span><span class="n">verbose</span><span class="o">=</span><span class="n">self</span><span class="p">%</span><span class="n">verbose</span><span class="p">,</span><span class="w"> </span><span class="n">redirect</span><span class="o">=</span><span class="n">log_file</span><span class="p">,</span><span class="w"> </span><span class="n">exitstat</span><span class="o">=</span><span class="nb">stat</span><span class="p">)</span>
+<span class="w">    </span><span class="c">! Execute command</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(.</span><span class="nb">not</span><span class="p">.</span><span class="n">mock</span><span class="p">)</span><span class="w"> </span><span class="k">then </span>
+<span class="k">       call </span><span class="n">run</span><span class="p">(</span><span class="n">command</span><span class="p">,</span><span class="w"> </span><span class="n">echo</span><span class="o">=</span><span class="n">self</span><span class="p">%</span><span class="n">echo</span><span class="p">,</span><span class="w"> </span><span class="n">verbose</span><span class="o">=</span><span class="n">self</span><span class="p">%</span><span class="n">verbose</span><span class="p">,</span><span class="w"> </span><span class="n">redirect</span><span class="o">=</span><span class="n">log_file</span><span class="p">,</span><span class="w"> </span><span class="n">exitstat</span><span class="o">=</span><span class="nb">stat</span><span class="p">)</span>
+<span class="w">       </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="nb">stat</span><span class="o">/=</span><span class="mi">0</span><span class="p">)</span><span class="w"> </span><span class="k">return</span>
+<span class="k">    endif</span>
+<span class="w">        </span>
+<span class="w">    </span><span class="c">! Optionally register compile command </span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="nb">present</span><span class="p">(</span><span class="n">table</span><span class="p">))</span><span class="w"> </span><span class="k">then </span>
+<span class="k">        call </span><span class="n">table</span><span class="p">%</span><span class="n">register</span><span class="p">(</span><span class="n">command</span><span class="p">,</span><span class="w"> </span><span class="n">get_os_type</span><span class="p">(),</span><span class="w"> </span><span class="n">error</span><span class="p">)</span>
+<span class="w">        </span><span class="nb">stat</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">merge</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="nb">allocated</span><span class="p">(</span><span class="n">error</span><span class="p">))</span>
+<span class="w">    </span><span class="k">endif        </span>
+<span class="k">    </span>
 <span class="k">end subroutine </span><span class="n">compile_c</span>
 </pre></div>
 
@@ -326,7 +462,7 @@
             <p class="text-end">
               Documentation generated by
               <a href="https://github.com/Fortran-FOSS-Programmers/ford">FORD</a>
- on 2025-04-14 08:16 +0000             </p>
+ on 2025-04-27 10:40 +0000             </p>
           </div>
         </div>
         <br>

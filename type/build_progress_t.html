@@ -92,7 +92,7 @@
 
             <li class="list-inline-item" id="statements"><i class="fa fa-list-ol"></i>
               <a data-bs-toggle="tooltip" data-bs-placement="bottom" data-bs-html="true"
-                 title="<p> 2.7% of total for derived types.</p>Including implementation: 70 statements,  1.4% of total for derived types.">15 statements</a>
+                 title="<p> 3.0% of total for derived types.</p>Including implementation: 79 statements,  1.5% of total for derived types.">17 statements</a>
             </li>
 
             <li class="list-inline-item" id="source-file">
@@ -134,6 +134,7 @@
       </a>
       <div id="vars-0" class="collapse">
         <div class="list-group list-group-flush">
+            <a class="list-group-item" href="../type/build_progress_t.html#variable-compile_commands">compile_commands</a>
             <a class="list-group-item" href="../type/build_progress_t.html#variable-console">console</a>
             <a class="list-group-item" href="../type/build_progress_t.html#variable-n_complete">n_complete</a>
             <a class="list-group-item" href="../type/build_progress_t.html#variable-n_target">n_target</a>
@@ -179,7 +180,8 @@
         <div class="list-group list-group-flush">
             <a class="list-group-item" href="../type/build_progress_t.html#boundprocedure-compiling_status">compiling_status</a>
             <a class="list-group-item" href="../type/build_progress_t.html#boundprocedure-completed_status">completed_status</a>
-            <a class="list-group-item" href="../type/build_progress_t.html#boundprocedure-success~3">success</a>
+            <a class="list-group-item" href="../type/build_progress_t.html#boundprocedure-dump_commands">dump_commands</a>
+            <a class="list-group-item" href="../type/build_progress_t.html#boundprocedure-success~8">success</a>
         </div>
       </div>
     </div>
@@ -216,6 +218,23 @@
 <th></th><th scope="col">Initial</th>        <th scope="col"></th>
     </thead>
     <tbody>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-compile_commands"></span>
+              type(<a href='compile_command_table_t.html'>compile_command_table_t</a>),
+            </td>
+              <td>public</td>
+            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>compile_commands</strong></td>
+                <td></td>
+                <td></td>
+            <td>
+                <p>The compile_commands.json table</p>
+            </td>
+        </tr>
         <tr>
             <td>
               <span class="anchor" id="variable-console"></span>
@@ -565,7 +584,79 @@
           <div class="row">
               <div class="card mt-3">
     <div class="card-header codesum">
-      <span class="anchor" id="boundprocedure-success~3"></span>
+      <span class="anchor" id="boundprocedure-dump_commands"></span>
+      <h3>
+          procedure, public ::
+  <strong>dump_commands</strong> => output_write_compile_commands
+        
+      </h3>
+    </div>
+        <div class="card-body">
+          
+          <p>Output &lsquo;compile_commands.json&rsquo; to build/ folder</p>
+        </div>
+      <ul class="list-group">
+          <li class="list-group-item">
+                    <h3>
+    private  subroutine output_write_compile_commands(progress, error)  
+</h3>
+
+  <p>Write compile commands table</p>
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" ></span>
+              class(<a href='build_progress_t.html'>build_progress_t</a>),
+            </td>
+<td>intent(inout)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>progress</strong></td>
+            <td>
+                
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" ></span>
+              type(<a href='error_t.html'>error_t</a>),
+            </td>
+<td></td>
+              <td></td>            <td>
+              allocatable
+            </td>
+            <td>::</td>
+            <td><strong>error</strong></td>
+            <td>
+                
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+
+          </li>
+      </ul>
+  </div>
+
+          </div>
+          <div class="row">
+              <div class="card mt-3">
+    <div class="card-header codesum">
+      <span class="anchor" id="boundprocedure-success~8"></span>
       <h3>
           procedure, public ::
   <strong>success</strong> => output_progress_success
@@ -636,6 +727,8 @@
 <span class="w">    </span><span class="kt">integer</span><span class="p">,</span><span class="w"> </span><span class="k">allocatable</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">output_lines</span><span class="p">(:)</span>
 <span class="w">    </span><span class="c">!&gt; Queue of scheduled build targets</span>
 <span class="w">    </span><span class="k">type</span><span class="p">(</span><span class="n">build_target_ptr</span><span class="p">),</span><span class="w"> </span><span class="k">pointer</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">target_queue</span><span class="p">(:)</span>
+<span class="w">    </span><span class="c">!&gt; The compile_commands.json table</span>
+<span class="w">    </span><span class="k">type</span><span class="p">(</span><span class="n">compile_command_table_t</span><span class="p">)</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">compile_commands</span>
 <span class="k">contains</span>
 <span class="w">    </span><span class="c">!&gt; Output &#39;compiling&#39; status for build target</span>
 <span class="w">    </span><span class="k">procedure</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">compiling_status</span><span class="w"> </span><span class="o">=&gt;</span><span class="w"> </span><span class="n">output_status_compiling</span>
@@ -643,6 +736,8 @@
 <span class="w">    </span><span class="k">procedure</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">completed_status</span><span class="w"> </span><span class="o">=&gt;</span><span class="w"> </span><span class="n">output_status_complete</span>
 <span class="w">    </span><span class="c">!&gt; Output finished status for whole package</span>
 <span class="w">    </span><span class="k">procedure</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">success</span><span class="w"> </span><span class="o">=&gt;</span><span class="w"> </span><span class="n">output_progress_success</span>
+<span class="w">    </span><span class="c">!&gt; Output &#39;compile_commands.json&#39; to build/ folder</span>
+<span class="w">    </span><span class="k">procedure</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">dump_commands</span><span class="w"> </span><span class="o">=&gt;</span><span class="w"> </span><span class="n">output_write_compile_commands</span>
 <span class="k">end type </span><span class="n">build_progress_t</span>
 </pre></div>
 
@@ -666,7 +761,7 @@
             <p class="text-end">
               Documentation generated by
               <a href="https://github.com/Fortran-FOSS-Programmers/ford">FORD</a>
- on 2025-04-14 08:16 +0000             </p>
+ on 2025-04-27 10:40 +0000             </p>
           </div>
         </div>
         <br>

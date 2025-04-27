@@ -92,7 +92,7 @@
 
             <li class="list-inline-item" id="statements"><i class="fa fa-list-ol"></i>
               <a data-bs-toggle="tooltip" data-bs-placement="bottom" data-bs-html="true"
-                 title=" 0.9% of total for procedures.">65 statements</a>
+                 title=" 0.9% of total for procedures.">68 statements</a>
             </li>
 
             <li class="list-inline-item" id="source-file">
@@ -159,7 +159,7 @@
     </div>
     
     <div class="col-md-9" id='text'>
-    <h2>public  subroutine build_package(targets, model, verbose)  
+    <h2>public  subroutine build_package(targets, model, verbose, dry_run)  
 </h2>
     
 
@@ -179,7 +179,7 @@
     <tbody>
         <tr>
             <td>
-              <span class="anchor" id="variable-targets~14"></span>
+              <span class="anchor" id="variable-targets"></span>
               type(<a href='../type/build_target_ptr.html'>build_target_ptr</a>),
             </td>
 <td>intent(inout)</td>
@@ -194,7 +194,7 @@
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-model~8"></span>
+              <span class="anchor" id="variable-model~2"></span>
               type(<a href='../type/fpm_model_t.html'>fpm_model_t</a>),
             </td>
 <td>intent(in)</td>
@@ -209,7 +209,7 @@
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-verbose~9"></span>
+              <span class="anchor" id="variable-verbose~2"></span>
               logical,
             </td>
 <td>intent(in)</td>
@@ -220,6 +220,22 @@
             <td><strong>verbose</strong></td>
             <td>
                 
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-dry_run"></span>
+              logical,
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>dry_run</strong></td>
+            <td>
+                <p>If dry_run, the build process is only mocked, but the list of compile_commands
+is still created</p>
             </td>
         </tr>
     </tbody>
@@ -239,17 +255,22 @@
     
     <section>
     <h2><span class="anchor" id="src"></span>Source Code</h2>
-    <div class="hl codehilite"><pre><span></span><span class="k">subroutine </span><span class="n">build_package</span><span class="p">(</span><span class="n">targets</span><span class="p">,</span><span class="n">model</span><span class="p">,</span><span class="n">verbose</span><span class="p">)</span>
+    <div class="hl codehilite"><pre><span></span><span class="k">subroutine </span><span class="n">build_package</span><span class="p">(</span><span class="n">targets</span><span class="p">,</span><span class="n">model</span><span class="p">,</span><span class="n">verbose</span><span class="p">,</span><span class="n">dry_run</span><span class="p">)</span>
 <span class="w">    </span><span class="k">type</span><span class="p">(</span><span class="n">build_target_ptr</span><span class="p">),</span><span class="w"> </span><span class="k">intent</span><span class="p">(</span><span class="n">inout</span><span class="p">)</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">targets</span><span class="p">(:)</span>
 <span class="w">    </span><span class="k">type</span><span class="p">(</span><span class="n">fpm_model_t</span><span class="p">),</span><span class="w"> </span><span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">)</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">model</span>
 <span class="w">    </span><span class="kt">logical</span><span class="p">,</span><span class="w"> </span><span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">)</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">verbose</span>
-
+<span class="w">    </span>
+<span class="w">    </span><span class="c">!&gt; If dry_run, the build process is only mocked, but the list of compile_commands </span>
+<span class="w">    </span><span class="c">!&gt; is still created</span>
+<span class="w">    </span><span class="kt">logical</span><span class="p">,</span><span class="w"> </span><span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">)</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">dry_run</span>
+<span class="w"> </span>
 <span class="w">    </span><span class="kt">integer</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">i</span><span class="p">,</span><span class="w"> </span><span class="n">j</span>
 <span class="w">    </span><span class="k">type</span><span class="p">(</span><span class="n">build_target_ptr</span><span class="p">),</span><span class="w"> </span><span class="k">allocatable</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">queue</span><span class="p">(:)</span>
 <span class="w">    </span><span class="kt">integer</span><span class="p">,</span><span class="w"> </span><span class="k">allocatable</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">schedule_ptr</span><span class="p">(:),</span><span class="w"> </span><span class="nb">stat</span><span class="p">(:)</span>
 <span class="w">    </span><span class="kt">logical</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">build_failed</span><span class="p">,</span><span class="w"> </span><span class="n">skip_current</span>
 <span class="w">    </span><span class="k">type</span><span class="p">(</span><span class="n">string_t</span><span class="p">),</span><span class="w"> </span><span class="k">allocatable</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">build_dirs</span><span class="p">(:)</span>
 <span class="w">    </span><span class="k">type</span><span class="p">(</span><span class="n">string_t</span><span class="p">)</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">temp</span>
+<span class="w">    </span><span class="k">type</span><span class="p">(</span><span class="n">error_t</span><span class="p">),</span><span class="w"> </span><span class="k">allocatable</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">error</span>
 
 <span class="w">    </span><span class="k">type</span><span class="p">(</span><span class="n">build_progress_t</span><span class="p">)</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">progress</span>
 <span class="w">    </span><span class="kt">logical</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">plain_output</span>
@@ -265,13 +286,13 @@
 <span class="k">    end do</span>
 
 <span class="k">    do </span><span class="n">i</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="n">size</span><span class="p">(</span><span class="n">build_dirs</span><span class="p">)</span>
-<span class="w">       </span><span class="k">call </span><span class="n">mkdir</span><span class="p">(</span><span class="n">build_dirs</span><span class="p">(</span><span class="n">i</span><span class="p">)%</span><span class="n">s</span><span class="p">,</span><span class="n">verbose</span><span class="p">)</span>
+<span class="w">       </span><span class="k">if</span><span class="w"> </span><span class="p">(.</span><span class="nb">not</span><span class="p">.</span><span class="n">dry_run</span><span class="p">)</span><span class="w"> </span><span class="k">call </span><span class="n">mkdir</span><span class="p">(</span><span class="n">build_dirs</span><span class="p">(</span><span class="n">i</span><span class="p">)%</span><span class="n">s</span><span class="p">,</span><span class="n">verbose</span><span class="p">)</span>
 <span class="w">    </span><span class="k">end do</span>
 
 <span class="w">    </span><span class="c">! Perform depth-first topological sort of targets</span>
 <span class="w">    </span><span class="k">do </span><span class="n">i</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span><span class="n">size</span><span class="p">(</span><span class="n">targets</span><span class="p">)</span>
 
-<span class="w">        </span><span class="k">call </span><span class="n">sort_target</span><span class="p">(</span><span class="n">targets</span><span class="p">(</span><span class="n">i</span><span class="p">)%</span><span class="n">ptr</span><span class="p">)</span>
+<span class="w">        </span><span class="k">call </span><span class="n">sort_target</span><span class="p">(</span><span class="n">targets</span><span class="p">(</span><span class="n">i</span><span class="p">)%</span><span class="n">ptr</span><span class="p">,</span><span class="w"> </span><span class="n">dry_run</span><span class="p">)</span>
 
 <span class="w">    </span><span class="k">end do</span>
 
@@ -279,14 +300,13 @@
 <span class="w">    </span><span class="k">call </span><span class="n">schedule_targets</span><span class="p">(</span><span class="n">queue</span><span class="p">,</span><span class="w"> </span><span class="n">schedule_ptr</span><span class="p">,</span><span class="w"> </span><span class="n">targets</span><span class="p">)</span>
 
 <span class="w">    </span><span class="c">! Check if queue is empty</span>
-<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(.</span><span class="nb">not</span><span class="p">.</span><span class="n">verbose</span><span class="w"> </span><span class="p">.</span><span class="nb">and</span><span class="p">.</span><span class="w"> </span><span class="n">size</span><span class="p">(</span><span class="n">queue</span><span class="p">)</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="mi">1</span><span class="p">)</span><span class="w"> </span><span class="k">then</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(.</span><span class="nb">not</span><span class="p">.</span><span class="n">verbose</span><span class="w"> </span><span class="p">.</span><span class="nb">and</span><span class="p">.</span><span class="w"> </span><span class="n">size</span><span class="p">(</span><span class="n">queue</span><span class="p">)</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="mi">1</span><span class="w"> </span><span class="p">.</span><span class="nb">and</span><span class="p">.</span><span class="w"> </span><span class="p">.</span><span class="nb">not</span><span class="p">.</span><span class="n">dry_run</span><span class="p">)</span><span class="w"> </span><span class="k">then</span>
 <span class="k">        write</span><span class="p">(</span><span class="n">stderr</span><span class="p">,</span><span class="w"> </span><span class="s1">&#39;(a)&#39;</span><span class="p">)</span><span class="w"> </span><span class="s1">&#39;Project is up to date&#39;</span>
 <span class="w">        </span><span class="k">return</span>
 <span class="k">    end if</span>
 
 <span class="w">    </span><span class="c">! Initialise build status flags</span>
-<span class="w">    </span><span class="k">allocate</span><span class="p">(</span><span class="nb">stat</span><span class="p">(</span><span class="n">size</span><span class="p">(</span><span class="n">queue</span><span class="p">)))</span>
-<span class="w">    </span><span class="nb">stat</span><span class="p">(:)</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span>
+<span class="w">    </span><span class="k">allocate</span><span class="p">(</span><span class="nb">stat</span><span class="p">(</span><span class="n">size</span><span class="p">(</span><span class="n">queue</span><span class="p">)),</span><span class="n">source</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
 <span class="w">    </span><span class="n">build_failed</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">.</span><span class="n">false</span><span class="p">.</span>
 
 <span class="w">    </span><span class="c">! Set output mode</span>
@@ -310,9 +330,10 @@
 <span class="w">            </span><span class="n">skip_current</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">build_failed</span>
 
 <span class="w">            </span><span class="k">if</span><span class="w"> </span><span class="p">(.</span><span class="nb">not</span><span class="p">.</span><span class="n">skip_current</span><span class="p">)</span><span class="w"> </span><span class="k">then</span>
-<span class="k">                call </span><span class="n">progress</span><span class="p">%</span><span class="n">compiling_status</span><span class="p">(</span><span class="n">j</span><span class="p">)</span>
-<span class="w">                </span><span class="k">call </span><span class="n">build_target</span><span class="p">(</span><span class="n">model</span><span class="p">,</span><span class="n">queue</span><span class="p">(</span><span class="n">j</span><span class="p">)%</span><span class="n">ptr</span><span class="p">,</span><span class="n">verbose</span><span class="p">,</span><span class="nb">stat</span><span class="p">(</span><span class="n">j</span><span class="p">))</span>
-<span class="w">                </span><span class="k">call </span><span class="n">progress</span><span class="p">%</span><span class="n">completed_status</span><span class="p">(</span><span class="n">j</span><span class="p">,</span><span class="nb">stat</span><span class="p">(</span><span class="n">j</span><span class="p">))</span>
+<span class="k">                if</span><span class="w"> </span><span class="p">(.</span><span class="nb">not</span><span class="p">.</span><span class="n">dry_run</span><span class="p">)</span><span class="w"> </span><span class="k">call </span><span class="n">progress</span><span class="p">%</span><span class="n">compiling_status</span><span class="p">(</span><span class="n">j</span><span class="p">)</span>
+<span class="w">                </span><span class="k">call </span><span class="n">build_target</span><span class="p">(</span><span class="n">model</span><span class="p">,</span><span class="n">queue</span><span class="p">(</span><span class="n">j</span><span class="p">)%</span><span class="n">ptr</span><span class="p">,</span><span class="n">verbose</span><span class="p">,</span><span class="n">dry_run</span><span class="p">,</span><span class="w"> </span><span class="p">&amp;</span>
+<span class="w">                                  </span><span class="n">progress</span><span class="p">%</span><span class="n">compile_commands</span><span class="p">,</span><span class="nb">stat</span><span class="p">(</span><span class="n">j</span><span class="p">))</span>
+<span class="w">                </span><span class="k">if</span><span class="w"> </span><span class="p">(.</span><span class="nb">not</span><span class="p">.</span><span class="n">dry_run</span><span class="p">)</span><span class="w"> </span><span class="k">call </span><span class="n">progress</span><span class="p">%</span><span class="n">completed_status</span><span class="p">(</span><span class="n">j</span><span class="p">,</span><span class="nb">stat</span><span class="p">(</span><span class="n">j</span><span class="p">))</span>
 <span class="w">            </span><span class="k">end if</span>
 
 <span class="w">            </span><span class="c">! Set global flag if this target failed to build</span>
@@ -341,7 +362,9 @@
 
 <span class="k">    end do</span>
 
-<span class="k">    call </span><span class="n">progress</span><span class="p">%</span><span class="n">success</span><span class="p">()</span>
+<span class="k">    if</span><span class="w"> </span><span class="p">(.</span><span class="nb">not</span><span class="p">.</span><span class="n">dry_run</span><span class="p">)</span><span class="w"> </span><span class="k">call </span><span class="n">progress</span><span class="p">%</span><span class="n">success</span><span class="p">()</span>
+<span class="w">    </span><span class="k">call </span><span class="n">progress</span><span class="p">%</span><span class="n">dump_commands</span><span class="p">(</span><span class="n">error</span><span class="p">)</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="nb">allocated</span><span class="p">(</span><span class="n">error</span><span class="p">))</span><span class="w"> </span><span class="k">call </span><span class="n">fpm_stop</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="s1">&#39;error writing compile_commands.json: &#39;</span><span class="o">//</span><span class="nb">trim</span><span class="p">(</span><span class="n">error</span><span class="p">%</span><span class="n">message</span><span class="p">))</span>
 
 <span class="k">end subroutine </span><span class="n">build_package</span>
 </pre></div>
@@ -367,7 +390,7 @@
             <p class="text-end">
               Documentation generated by
               <a href="https://github.com/Fortran-FOSS-Programmers/ford">FORD</a>
- on 2025-04-14 08:16 +0000             </p>
+ on 2025-04-27 10:40 +0000             </p>
           </div>
         </div>
         <br>

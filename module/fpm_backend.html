@@ -92,7 +92,7 @@
 
             <li class="list-inline-item" id="statements"><i class="fa fa-list-ol"></i>
               <a data-bs-toggle="tooltip" data-bs-placement="bottom" data-bs-html="true"
-                 title=" 1.4% of total for modules and submodules.">194 statements</a>
+                 title=" 1.4% of total for modules and submodules.">202 statements</a>
             </li>
 
             <li class="list-inline-item" id="source-file">
@@ -199,13 +199,14 @@
         <ul class="list-group list-group-flush">
             <li class="list-group-item">
               <ul class="list-inline">
-                  <li class="list-inline-item"><a href='http://fortranwiki.org/fortran/show/iso_fortran_env'>iso_fortran_env</a></li>
-                  <li class="list-inline-item"><a href='fpm_model.html'>fpm_model</a></li>
-                  <li class="list-inline-item"><a href='fpm_strings.html'>fpm_strings</a></li>
                   <li class="list-inline-item"><a href='fpm_error.html'>fpm_error</a></li>
-                  <li class="list-inline-item"><a href='fpm_backend_output.html'>fpm_backend_output</a></li>
                   <li class="list-inline-item"><a href='fpm_targets.html'>fpm_targets</a></li>
                   <li class="list-inline-item"><a href='fpm_filesystem.html'>fpm_filesystem</a></li>
+                  <li class="list-inline-item"><a href='fpm_backend_output.html'>fpm_backend_output</a></li>
+                  <li class="list-inline-item"><a href='http://fortranwiki.org/fortran/show/iso_fortran_env'>iso_fortran_env</a></li>
+                  <li class="list-inline-item"><a href='fpm_strings.html'>fpm_strings</a></li>
+                  <li class="list-inline-item"><a href='fpm_model.html'>fpm_model</a></li>
+                  <li class="list-inline-item"><a href='fpm_compile_commands.html'>fpm_compile_commands</a></li>
               </ul>
             </li>
         </ul>
@@ -225,7 +226,7 @@
         <section>
           <h2>Subroutines</h2>
               <div class="card">
-    <div class="card-header codesum"><span class="anchor" id="proc-build_package"></span> <h3>public  subroutine <a href='../proc/build_package.html'>build_package</a>(targets, model, verbose)  
+    <div class="card-header codesum"><span class="anchor" id="proc-build_package"></span> <h3>public  subroutine <a href='../proc/build_package.html'>build_package</a>(targets, model, verbose, dry_run)  
 </h3></div>
     <div class="card-body">
           
@@ -244,7 +245,7 @@
     <tbody>
         <tr>
             <td>
-              <span class="anchor" id="variable-targets~14"></span>
+              <span class="anchor" id="variable-targets"></span>
               type(<a href='../type/build_target_ptr.html'>build_target_ptr</a>),
             </td>
 <td>intent(inout)</td>
@@ -259,7 +260,7 @@
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-model~8"></span>
+              <span class="anchor" id="variable-model~2"></span>
               type(<a href='../type/fpm_model_t.html'>fpm_model_t</a>),
             </td>
 <td>intent(in)</td>
@@ -274,7 +275,7 @@
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-verbose~9"></span>
+              <span class="anchor" id="variable-verbose~2"></span>
               logical,
             </td>
 <td>intent(in)</td>
@@ -285,6 +286,22 @@
             <td><strong>verbose</strong></td>
             <td>
 
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-dry_run"></span>
+              logical,
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>dry_run</strong></td>
+            <td>
+<p>If dry_run, the build process is only mocked, but the list of compile_commands
+is still created</p>
             </td>
         </tr>
     </tbody>
@@ -344,7 +361,7 @@
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-targets~15"></span>
+              <span class="anchor" id="variable-targets~2"></span>
               type(<a href='../type/build_target_ptr.html'>build_target_ptr</a>),
             </td>
 <td>intent(in)</td>
@@ -365,7 +382,7 @@
   </div>
 
               <div class="card">
-    <div class="card-header codesum"><span class="anchor" id="proc-sort_target"></span> <h3>public recursive subroutine <a href='../proc/sort_target.html'>sort_target</a>(target)  
+    <div class="card-header codesum"><span class="anchor" id="proc-sort_target"></span> <h3>public recursive subroutine <a href='../proc/sort_target.html'>sort_target</a>(target, mock)  
 </h3></div>
     <div class="card-body">
           
@@ -385,7 +402,7 @@
     <tbody>
         <tr>
             <td>
-              <span class="anchor" id="variable-target~4"></span>
+              <span class="anchor" id="variable-target"></span>
               type(<a href='../type/build_target_t.html'>build_target_t</a>),
             </td>
 <td>intent(inout),</td>
@@ -396,6 +413,21 @@
             <td><strong>target</strong></td>
             <td>
 
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-mock"></span>
+              logical,
+            </td>
+<td>intent(in),</td>
+              <td>optional</td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>mock</strong></td>
+            <td>
+<p>Optionally sort ALL targets if this is a dry run</p>
             </td>
         </tr>
     </tbody>
@@ -428,7 +460,7 @@
             <p class="text-end">
               Documentation generated by
               <a href="https://github.com/Fortran-FOSS-Programmers/ford">FORD</a>
- on 2025-04-14 08:16 +0000             </p>
+ on 2025-04-27 10:40 +0000             </p>
           </div>
         </div>
         <br>

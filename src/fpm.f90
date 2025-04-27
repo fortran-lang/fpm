@@ -461,10 +461,11 @@ if(settings%list)then
     do i=1,size(targets)
         write(stderr,*) targets(i)%ptr%output_file
     enddo
-else if (settings%show_model) then
+endif
+if (settings%show_model) then
     call show_model(model)
 else
-    call build_package(targets,model,verbose=settings%verbose)
+    call build_package(targets,model,verbose=settings%verbose,dry_run=settings%list)
 endif
 
 end subroutine cmd_build
@@ -573,7 +574,7 @@ subroutine cmd_run(settings,test)
 
     end if
 
-    call build_package(targets,model,verbose=settings%verbose)
+    call build_package(targets,model,verbose=settings%verbose,dry_run=settings%list)
 
     if (settings%list) then
          call compact_list()
