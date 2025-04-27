@@ -53,7 +53,7 @@ contains
     end if
 
     if (.not.settings%no_rebuild) then
-      call build_package(targets,model,verbose=settings%verbose)
+      call build_package(targets,model,verbose=settings%verbose,dry_run=settings%list)
     end if
 
     call new_installer(installer, prefix=settings%prefix, &

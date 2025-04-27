@@ -45,7 +45,8 @@ use fpm_manifest, only : package_config_t
 use fpm_error, only: error_t, fatal_error
 use tomlf, only: toml_table
 use fpm_toml, only: serializable_t, set_string, set_value, toml_stat, get_value
-use shlex_module, only: shlex_split => split
+use fpm_compile_commands, only: compile_command_t, compile_command_table_t
+use shlex_module, only: sh_split => split, ms_split
 implicit none
 public :: compiler_t, new_compiler, archiver_t, new_archiver, get_macros
 public :: append_clean_flags, append_clean_flags_array
@@ -75,7 +76,6 @@ enum, bind(C)
         id_lfortran
 end enum
 integer, parameter :: compiler_enum = kind(id_unknown)
-
 
 !> Definition of compiler object
 type, extends(serializable_t) :: compiler_t
@@ -109,7 +109,7 @@ contains
     !> Compile a CPP object
     procedure :: compile_cpp
     !> Link executable
-    procedure :: link
+    procedure :: link => link_executable
     !> Check whether compiler is recognized
     procedure :: is_unknown
     !> Check whether this is an Intel compiler
@@ -1104,7 +1104,7 @@ end subroutine new_archiver
 
 
 !> Compile a Fortran object
-subroutine compile_fortran(self, input, output, args, log_file, stat)
+subroutine compile_fortran(self, input, output, args, log_file, stat, table, dry_run)
     !> Instance of the compiler object
     class(compiler_t), intent(in) :: self
     !> Source file input
@@ -1117,14 +1117,39 @@ subroutine compile_fortran(self, input, output, args, log_file, stat)
     character(len=*), intent(in) :: log_file
     !> Status flag
     integer, intent(out) :: stat
+    !> Optional compile_commands table
+    type(compile_command_table_t), optional, intent(inout) :: table    
+    !> Optional mocking
+    logical, optional, intent(in) :: dry_run
+    
+    character(len=:), allocatable :: command 
+    type(error_t), allocatable :: error
+    logical :: mock
+    
+    ! Check if we're actually building this file
+    mock = .false.
+    if (present(dry_run)) mock = dry_run
+    
+    ! Set command
+    command = self%fc // " -c " // input // " " // args // " -o " // output
 
-    call run(self%fc // " -c " // input // " " // args // " -o " // output, &
-        & echo=self%echo, verbose=self%verbose, redirect=log_file, exitstat=stat)
+    ! Execute command
+    if (.not.mock) then 
+       call run(command, echo=self%echo, verbose=self%verbose, redirect=log_file, exitstat=stat)
+       if (stat/=0) return
+    endif
+        
+    ! Optionally register compile command 
+    if (present(table)) then 
+        call table%register(command, get_os_type(), error)
+        stat = merge(-1,0,allocated(error))
+    endif    
+        
 end subroutine compile_fortran
 
 
 !> Compile a C object
-subroutine compile_c(self, input, output, args, log_file, stat)
+subroutine compile_c(self, input, output, args, log_file, stat, table, dry_run)
     !> Instance of the compiler object
     class(compiler_t), intent(in) :: self
     !> Source file input
@@ -1137,13 +1162,38 @@ subroutine compile_c(self, input, output, args, log_file, stat)
     character(len=*), intent(in) :: log_file
     !> Status flag
     integer, intent(out) :: stat
+    !> Optional compile_commands table
+    type(compile_command_table_t), optional, intent(inout) :: table    
+    !> Optional mocking
+    logical, optional, intent(in) :: dry_run    
+    
+    character(len=:), allocatable :: command 
+    type(error_t), allocatable :: error
+    logical :: mock
+    
+    ! Check if we're actually building this file
+    mock = .false.
+    if (present(dry_run)) mock = dry_run    
+    
+    ! Set command
+    command = self%cc // " -c " // input // " " // args // " -o " // output
 
-    call run(self%cc // " -c " // input // " " // args // " -o " // output, &
-        & echo=self%echo, verbose=self%verbose, redirect=log_file, exitstat=stat)
+    ! Execute command
+    if (.not.mock) then 
+       call run(command, echo=self%echo, verbose=self%verbose, redirect=log_file, exitstat=stat)
+       if (stat/=0) return
+    endif
+        
+    ! Optionally register compile command 
+    if (present(table)) then 
+        call table%register(command, get_os_type(), error)
+        stat = merge(-1,0,allocated(error))
+    endif        
+    
 end subroutine compile_c
 
 !> Compile a CPP object
-subroutine compile_cpp(self, input, output, args, log_file, stat)
+subroutine compile_cpp(self, input, output, args, log_file, stat, table, dry_run)
     !> Instance of the compiler object
     class(compiler_t), intent(in) :: self
     !> Source file input
@@ -1156,13 +1206,38 @@ subroutine compile_cpp(self, input, output, args, log_file, stat)
     character(len=*), intent(in) :: log_file
     !> Status flag
     integer, intent(out) :: stat
+    !> Optional compile_commands table
+    type(compile_command_table_t), optional, intent(inout) :: table    
+    !> Optional mocking
+    logical, optional, intent(in) :: dry_run    
+    
+    character(len=:), allocatable :: command 
+    type(error_t), allocatable :: error
+    logical :: mock
+        
+    ! Check if we're actually building this file
+    mock = .false.
+    if (present(dry_run)) mock = dry_run        
+        
+    ! Set command
+    command = self%cxx // " -c " // input // " " // args // " -o " // output
 
-    call run(self%cxx // " -c " // input // " " // args // " -o " // output, &
-        & echo=self%echo, verbose=self%verbose, redirect=log_file, exitstat=stat)
+    ! Execute command
+    if (.not.mock) then 
+       call run(command, echo=self%echo, verbose=self%verbose, redirect=log_file, exitstat=stat)
+       if (stat/=0) return
+    endif
+        
+    ! Optionally register compile command 
+    if (present(table)) then 
+        call table%register(command, get_os_type(), error)
+        stat = merge(-1,0,allocated(error))
+    endif               
+        
 end subroutine compile_cpp
 
 !> Link an executable
-subroutine link(self, output, args, log_file, stat)
+subroutine link_executable(self, output, args, log_file, stat, dry_run)
     !> Instance of the compiler object
     class(compiler_t), intent(in) :: self
     !> Output file of object
@@ -1173,17 +1248,30 @@ subroutine link(self, output, args, log_file, stat)
     character(len=*), intent(in) :: log_file
     !> Status flag
     integer, intent(out) :: stat
-
-    call run(self%fc // " " // args // " -o " // output, echo=self%echo, &
-        & verbose=self%verbose, redirect=log_file, exitstat=stat)
-end subroutine link
-
+    !> Optional mocking
+    logical, optional, intent(in) :: dry_run    
+    
+    character(len=:), allocatable :: command 
+    logical :: mock
+        
+    ! Check if we're actually linking
+    mock = .false.
+    if (present(dry_run)) mock = dry_run                
+        
+    ! Set command
+    command = self%fc // " " // args // " -o " // output    
+    
+    ! Execute command
+    if (.not.mock) &
+    call run(command, echo=self%echo, verbose=self%verbose, redirect=log_file, exitstat=stat)
+    
+end subroutine link_executable
 
 !> Create an archive
 !> @todo For Windows OS, use the local `delete_file_win32` in stead of `delete_file`.
 !> This may be related to a bug in Mingw64-openmp and is expected to be resolved in the future,
 !> see issue #707, #708 and #808.
-subroutine make_archive(self, output, args, log_file, stat)
+subroutine make_archive(self, output, args, log_file, stat, dry_run)
     !> Instance of the archiver object
     class(archiver_t), intent(in) :: self
     !> Name of the archive to generate
@@ -1194,6 +1282,16 @@ subroutine make_archive(self, output, args, log_file, stat)
     character(len=*), intent(in) :: log_file
     !> Status flag
     integer, intent(out) :: stat
+    !> Optional mocking
+    logical, optional, intent(in) :: dry_run    
+    
+    logical :: mock
+        
+    ! Check if we're actually linking
+    mock = .false.
+    if (present(dry_run)) mock = dry_run            
+    
+    if (mock) return
 
     if (self%use_response_file) then
         call write_response_file(output//".resp" , args)
@@ -1595,7 +1693,7 @@ subroutine tokenize_flags(flags, flags_array)
     integer :: i
     logical :: success
 
-    flags_char_array = shlex_split(flags, join_spaced=.true., keep_quotes=.true., success=success)
+    flags_char_array = sh_split(flags, join_spaced=.true., keep_quotes=.true., success=success)
     if (.not. success) then
         allocate(flags_array(0))
         return

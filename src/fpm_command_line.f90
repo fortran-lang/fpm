@@ -1175,7 +1175,9 @@ contains
     help_text_build_common,&
     help_text_compiler, &
     help_text_flag, &
-    ' --list        list candidates instead of building or running them     ', &
+    ' --list        list candidates instead of building or running them.    ', &
+    '               all dependencies are downloaded, and the build sequence ', &
+    '               is saved to `build/compile_commands.json`.              ', &
     ' --tests       build all tests (otherwise only if needed)              ', &
     ' --show-model  show the model and exit (do not build)                  ', &
     ' --dump [FILENAME] save model representation to file. use JSON format  ', &
