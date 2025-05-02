@@ -34,15 +34,19 @@ jobs:
       matrix:
         include:
           - os: ubuntu-latest
+            mpi: openmpi
+          - os: ubuntu-latest
+            mpi: mpich
+          - os: macos-13
+            mpi: openmpi
+          - os: macos-13
+            mpi: mpich
+          - os: ubuntu-latest
             mpi: intel
+            intel_version: 2024.1.0
           - os: ubuntu-latest
-            mpi: openmpi
-          - os: ubuntu-latest
-            mpi: mpich
-          - os: macos-13
-            mpi: openmpi
-          - os: macos-13
-            mpi: mpich
+            mpi: intel
+            intel_version: 2025.0            
 
     steps:
     - name: Checkout code
@@ -91,13 +95,18 @@ jobs:
           libnetcdf-dev libnetcdff-dev libopenblas-dev
 
     # Intel
-
     - name: Setup Intel Environment
       if: contains(matrix.mpi, 'intel')
       uses: ./.github/actions/setup-intel
       with:
         os: ${{ matrix.os }}
+        version: ${{ matrix.intel_version }}
 
+    - name: Log Intel oneAPI version
+      if: contains(matrix.mpi, 'intel')
+      shell: bash
+      run: echo "✅ Intel oneAPI version: ${{ matrix.intel_version }}"
+        
     - name: (Ubuntu) Build and Install HDF5 from source
       if: contains(matrix.os, 'ubuntu') && contains(matrix.mpi, 'intel')
       # Needs checkout if source code isn't available, adjust if needed
