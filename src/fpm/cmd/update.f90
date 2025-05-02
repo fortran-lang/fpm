@@ -33,8 +33,8 @@ contains
     cache = join_path("build", "cache.toml")
     if (settings%clean) call delete_file(cache)
 
-    call new_dependency_tree(deps, cache=cache, &
-      verbosity=merge(2, 1, settings%verbose))
+    call new_dependency_tree(deps, cache=cache, verbosity=merge(2, 1, settings%verbose), &
+    & path_to_config=settings%path_to_config)
 
     call deps%add(package, error)
     call handle_error(error)
