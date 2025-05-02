@@ -1112,9 +1112,7 @@ contains
                                               exitcode=stat,cmd_success=success,screen_output=screen)
                      endif
 
-                     ! LLVM wrappers bug: non-zero exit code when checking for "-v" -> only check for 
-                     ! successful command: https://github.com/spack/spack/issues/47672
-                     if (success) then
+                     if (stat/=0 .or. .not.success) then
                         call syntax_error(error, &
                             'cannot retrieve MPICH library version from <mpichversion, '//wrapper%s//', mpiexec>')
                         return
@@ -1126,7 +1124,9 @@ contains
                      call run_wrapper(wrapper,[string_t('-v')],verbose=verbose, &
                                           exitcode=stat,cmd_success=success,screen_output=screen)
 
-                     if (stat/=0 .or. .not.success) then
+                     ! LLVM wrappers bug: non-zero exit code when checking for "-v" -> only check for 
+                     ! successful command: https://github.com/spack/spack/issues/47672
+                     if (.not.success) then
                         call syntax_error(error,'local INTEL MPI library does not support -v')
                         return
                      else
