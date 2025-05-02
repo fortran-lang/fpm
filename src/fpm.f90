@@ -462,10 +462,11 @@ if(settings%list)then
     do i=1,size(targets)
         write(stderr,*) targets(i)%ptr%output_file
     enddo
-else if (settings%show_model) then
+endif
+if (settings%show_model) then
     call show_model(model)
 else
-    call build_package(targets,model,verbose=settings%verbose)
+    call build_package(targets,model,verbose=settings%verbose,dry_run=settings%list)
 endif
 
 end subroutine cmd_build
@@ -487,7 +488,6 @@ subroutine cmd_run(settings,test)
     integer :: run_scope,firsterror
     integer, allocatable :: stat(:),target_ID(:)
     character(len=:),allocatable :: line
-    logical :: toomany
 
     call get_package_data(package, "fpm.toml", error, apply_defaults=.true.)
     if (allocated(error)) then
@@ -548,13 +548,8 @@ subroutine cmd_run(settings,test)
     end if
 
     ! Check all names are valid
-    ! or no name and found more than one file
-    toomany= size(settings%name)==0 .and. size(executables)>1
-    if ( any(.not.found) &
-    & .or. &
-    & ( (toomany .and. .not.test) .or.  (toomany .and. settings%runner /= '') ) &
-    & .and. &
-    & .not.settings%list) then
+    ! or no name and found more than one file    
+    if ( any(.not.found) ) then
         line=join(settings%name)
         if(line/='.')then ! do not report these special strings
            if(any(.not.found))then
@@ -580,7 +575,7 @@ subroutine cmd_run(settings,test)
 
     end if
 
-    call build_package(targets,model,verbose=settings%verbose)
+    call build_package(targets,model,verbose=settings%verbose,dry_run=settings%list)
 
     if (settings%list) then
          call compact_list()
@@ -766,8 +761,7 @@ logical function should_be_run(settings,run_scope,exe_target)
     
     integer :: j
     
-    if (exe_target%target_type == FPM_TARGET_EXECUTABLE .and. &
-        allocated(exe_target%dependencies)) then
+    if (exe_target%is_executable_target(run_scope)) then
         
         associate(exe_source => exe_target%dependencies(1)%ptr%source)
             
@@ -776,9 +770,9 @@ logical function should_be_run(settings,run_scope,exe_target)
                 ! Other scope
                 should_be_run = .false.
                 
-            elseif (size(settings%name) == 0 .or. .not.settings%list) then
+            elseif (size(settings%name) == 0 .or. settings%list) then
 
-                ! No list of targets
+                ! Run all or list all
                 should_be_run = .true.
 
             else

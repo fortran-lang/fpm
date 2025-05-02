@@ -1,4 +1,5 @@
 #include <stdlib.h>
+#include <stdio.h>
 
 /// @brief Determine the absolute, canonicalized path for a given path.
 /// @param path
@@ -14,3 +15,6 @@ char* c_realpath(char* path, char* resolved_path, int maxLength) {
   return _fullpath(resolved_path, path, maxLength);
 #endif
 }
+
+
+

@@ -59,11 +59,57 @@ pushd with_examples
 popd
 
 pushd many_examples
-"$fpm" build
+
 "$fpm" run --example --all
 test -e demo1.txt
 test -e demo2.txt
 popd
+
+# Test building individual targets
+pushd many_targets
+cases=( "1" "2" "3" )
+targets=( "run" "example" "test" )
+cmdrun=( "run --target" "run --example" "test --target" )
+for j in {0..2}
+do
+   for i in {0..2}
+   do
+      rm -f *.txt
+      this=${cases[$i]}
+      others=${cases[@]/$this}
+      filename=${targets[$j]}$this
+      echo "$filename"
+      "$fpm" ${cmdrun[$j]} $filename
+      test -e $filename.txt
+      # non-i-th tests should not have run
+      for k in ${others[@]}
+      do
+         test ! -e ${targets[$k]}$k.txt
+      done
+   done
+done
+
+# Test building all targets and with runner
+if [[ "$(which time)" ]]; then
+targets=( "run" "run --example" "test" )
+names=( "run" "example" "test" )
+cmdrun=( " " " --runner time" )
+for j in {0..2}
+do
+  for i in {0..1}
+  do
+    rm -f *.txt
+    "$fpm" ${targets[$j]}${cmdrun[$i]}
+    # all targets should have run
+    for k in ${cases[@]}
+    do
+       test -e ${names[$j]}$k.txt
+    done
+  done
+done
+fi
+popd
+
 
 pushd auto_discovery_off
 "$fpm" build
@@ -71,6 +117,12 @@ pushd auto_discovery_off
 "$fpm" test --target my_test
 test ! -x ./build/gfortran_*/app/unused
 test ! -x ./build/gfortran_*/test/unused_test
+popd
+
+pushd auto_with_nondefault_main
+"$fpm" build
+"$fpm" install --prefix=./installed
+test -x ./installed/bin/non_default_name
 popd
 
 pushd tree_shake
@@ -207,7 +259,11 @@ test $EXIT_CODE -eq 3
 # not an integer -> error 2
 EXIT_CODE=0
 "$fpm" run -- 3.1415 || EXIT_CODE=$?
-test $EXIT_CODE -eq 2
+if [[ "$FPM_FC" == "ifx" ]]; then
+   test $EXIT_CODE -eq 0  # ifx does not return error code on non-integer input
+else
+   test $EXIT_CODE -eq 2
+fi
 
 # not a number -> error 2
 EXIT_CODE=0

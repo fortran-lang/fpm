@@ -39,7 +39,8 @@ use iso_fortran_env, only: int64
 use fpm_compiler, only: compiler_t, archiver_t, debug
 use fpm_dependency, only: dependency_tree_t
 use fpm_strings, only: string_t, str, len_trim, upper, operator(==)
-use fpm_toml, only: serializable_t, toml_table, toml_stat, set_value, set_list, get_value, &
+use tomlf, only: toml_table, toml_stat
+use fpm_toml, only: serializable_t, set_value, set_list, get_value, &
                     & get_list, add_table, toml_key, add_array, set_string
 use fpm_error, only: error_t, fatal_error
 use fpm_manifest_preprocess, only: preprocess_config_t
@@ -52,7 +53,7 @@ public :: FPM_UNIT_UNKNOWN, FPM_UNIT_PROGRAM, FPM_UNIT_MODULE, &
           FPM_UNIT_SUBMODULE, FPM_UNIT_SUBPROGRAM, FPM_UNIT_CSOURCE, &
           FPM_UNIT_CHEADER, FPM_SCOPE_UNKNOWN, FPM_SCOPE_LIB, &
           FPM_SCOPE_DEP, FPM_SCOPE_APP, FPM_SCOPE_EXAMPLE, FPM_SCOPE_TEST, &
-          FPM_UNIT_CPPSOURCE, FPM_SCOPE_NAME
+          FPM_UNIT_CPPSOURCE, FPM_SCOPE_NAME, FPM_UNIT_NAME
 
 !> Source type unknown
 integer, parameter :: FPM_UNIT_UNKNOWN = -1
@@ -480,16 +481,36 @@ logical function srcfile_is_same(this,that)
 
     select type (other=>that)
        type is (srcfile_t)
-
-          if (.not.(this%file_name==other%file_name)) return
-          if (.not.(this%exe_name==other%exe_name)) return
+          if (allocated(this%file_name).neqv.allocated(other%file_name)) return
+          if (allocated(this%file_name)) then
+            if (.not.(this%file_name==other%file_name)) return
+          end if
+          if (allocated(this%exe_name).neqv.allocated(other%exe_name)) return
+          if (allocated(this%exe_name)) then
+            if (.not.(this%exe_name==other%exe_name)) return
+          end if
           if (.not.(this%unit_scope==other%unit_scope)) return
-          if (.not.(this%modules_provided==other%modules_provided)) return
+          if (allocated(this%modules_provided).neqv.allocated(other%modules_provided)) return
+          if (allocated(this%modules_provided)) then
+            if (.not.(this%modules_provided==other%modules_provided)) return
+          end if
           if (.not.(this%unit_type==other%unit_type)) return
-          if (.not.(this%parent_modules==other%parent_modules)) return
-          if (.not.(this%modules_used==other%modules_used)) return
-          if (.not.(this%include_dependencies==other%include_dependencies)) return
-          if (.not.(this%link_libraries==other%link_libraries)) return
+          if (allocated(this%parent_modules).neqv.allocated(other%parent_modules)) return
+          if (allocated(this%parent_modules)) then
+            if (.not.(this%parent_modules==other%parent_modules)) return
+          end if
+          if (allocated(this%modules_used).neqv.allocated(other%modules_used)) return
+          if (allocated(this%modules_used)) then
+            if (.not.(this%modules_used==other%modules_used)) return
+          end if
+          if (allocated(this%include_dependencies).neqv.allocated(other%include_dependencies)) return
+          if (allocated(this%include_dependencies)) then
+            if (.not.(this%include_dependencies==other%include_dependencies)) return
+          end if
+          if (allocated(this%link_libraries).neqv.allocated(other%link_libraries)) return
+          if (allocated(this%link_libraries)) then
+            if (.not.(this%link_libraries==other%link_libraries)) return
+          end if
           if (.not.(this%digest==other%digest)) return
 
        class default
@@ -598,7 +619,10 @@ logical function fft_is_same(this,that)
 
            if (.not.(this%implicit_typing.eqv.other%implicit_typing)) return
            if (.not.(this%implicit_external.eqv.other%implicit_external)) return
-           if (.not.(this%source_form==other%source_form)) return
+           if (allocated(this%source_form).neqv.allocated(other%source_form)) return
+           if (allocated(this%source_form)) then
+             if (.not.(this%source_form==other%source_form)) return
+           end if
 
        class default
           ! Not the same type
@@ -665,9 +689,11 @@ logical function package_is_same(this,that)
 
     select type (other=>that)
        type is (package_t)
-
-           if (.not.(this%name==other%name)) return
-           if (.not.(allocated(this%sources).eqv.allocated(other%sources))) return
+           if (allocated(this%name).neqv.allocated(other%name)) return
+           if (allocated(this%name)) then
+              if (.not.(this%name==other%name)) return
+           end if
+           if (allocated(this%sources).neqv.allocated(other%sources)) return
            if (allocated(this%sources)) then
               if (.not.(size(this%sources)==size(other%sources))) return
               do ii = 1, size(this%sources)
@@ -676,7 +702,10 @@ logical function package_is_same(this,that)
            end if
 
            if (.not.(this%preprocess==other%preprocess)) return
-           if (.not.(this%version==other%version)) return
+           if (allocated(this%version).neqv.allocated(other%version)) return
+           if (allocated(this%version)) then
+             if (.not.(this%version==other%version)) return
+           end if
 
            !> Module naming
            if (.not.(this%enforce_module_names.eqv.other%enforce_module_names)) return
@@ -850,7 +879,10 @@ logical function model_is_same(this,that)
     select type (other=>that)
        type is (fpm_model_t)
 
-           if (.not.(this%package_name==other%package_name)) return
+           if ((allocated(this%package_name).neqv.allocated(other%package_name))) return
+           if (allocated(this%package_name)) then
+             if (.not.(this%package_name==other%package_name)) return
+           end if
            if (.not.(allocated(this%packages).eqv.allocated(other%packages))) return
            if (allocated(this%packages)) then
                if (.not.(size(this%packages)==size(other%packages))) return
@@ -861,14 +893,38 @@ logical function model_is_same(this,that)
 
            if (.not.(this%compiler==other%compiler)) return
            if (.not.(this%archiver==other%archiver)) return
-           if (.not.(this%fortran_compile_flags==other%fortran_compile_flags)) return
-           if (.not.(this%c_compile_flags==other%c_compile_flags)) return
-           if (.not.(this%cxx_compile_flags==other%cxx_compile_flags)) return
-           if (.not.(this%link_flags==other%link_flags)) return
-           if (.not.(this%build_prefix==other%build_prefix)) return
-           if (.not.(this%include_dirs==other%include_dirs)) return
-           if (.not.(this%link_libraries==other%link_libraries)) return
-           if (.not.(this%external_modules==other%external_modules)) return
+           if (allocated(this%fortran_compile_flags).neqv.allocated(other%fortran_compile_flags)) return
+           if (allocated(this%fortran_compile_flags)) then
+             if (.not.(this%fortran_compile_flags==other%fortran_compile_flags)) return
+           end if
+           if (allocated(this%c_compile_flags).neqv.allocated(other%c_compile_flags)) return
+           if (allocated(this%c_compile_flags)) then
+             if (.not.(this%c_compile_flags==other%c_compile_flags)) return
+           end if
+           if (allocated(this%cxx_compile_flags).neqv.allocated(other%cxx_compile_flags)) return
+           if (allocated(this%cxx_compile_flags)) then
+             if (.not.(this%cxx_compile_flags==other%cxx_compile_flags)) return
+           end if
+           if (allocated(this%link_flags).neqv.allocated(other%link_flags)) return
+           if (allocated(this%link_flags)) then
+             if (.not.(this%link_flags==other%link_flags)) return
+           end if
+           if (allocated(this%build_prefix).neqv.allocated(other%build_prefix)) return
+           if (allocated(this%build_prefix)) then
+             if (.not.(this%build_prefix==other%build_prefix)) return
+           end if
+           if (allocated(this%include_dirs).neqv.allocated(other%include_dirs)) return
+           if (allocated(this%include_dirs)) then
+             if (.not.(this%include_dirs==other%include_dirs)) return
+           end if
+           if (allocated(this%link_libraries).neqv.allocated(other%link_libraries)) return
+           if (allocated(this%link_libraries)) then
+             if (.not.(this%link_libraries==other%link_libraries)) return
+           end if
+           if (allocated(this%external_modules).neqv.allocated(other%external_modules)) return
+           if (allocated(this%external_modules)) then
+             if (.not.(this%external_modules==other%external_modules)) return
+           end if
            if (.not.(this%deps==other%deps)) return
            if (.not.(this%include_tests.eqv.other%include_tests)) return
            if (.not.(this%enforce_module_names.eqv.other%enforce_module_names)) return

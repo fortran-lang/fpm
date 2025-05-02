@@ -132,6 +132,10 @@ type build_target_t
 
     !> Version number
     character(:), allocatable :: version
+    
+    contains
+    
+        procedure :: is_executable_target
 
 end type build_target_t
 
@@ -904,7 +908,7 @@ subroutine resolve_target_linking(targets, model)
 
                 target%output_dir = get_output_dir(model%build_prefix, &
                    & target%compile_flags//local_link_flags)
-                target%output_file = join_path(target%output_dir, target%output_name)
+                target%output_file     = join_path(target%output_dir, target%output_name)
                 target%output_log_file = join_path(target%output_dir, target%output_name)//'.log'
         end if
 
@@ -1043,7 +1047,7 @@ end subroutine filter_executable_targets
 
 
 elemental function is_executable_target(target_ptr, scope) result(is_exe)
-    type(build_target_t), intent(in) :: target_ptr
+    class(build_target_t), intent(in) :: target_ptr
     integer, intent(in) :: scope
     logical :: is_exe
     is_exe = target_ptr%target_type == FPM_TARGET_EXECUTABLE .and. &
@@ -1100,6 +1104,5 @@ function get_feature_flags(compiler, features) result(flags)
         flags = flags // compiler%get_feature_flag(features%source_form//"-form")
     end if
 end function get_feature_flags
-
 
 end module fpm_targets

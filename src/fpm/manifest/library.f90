@@ -11,8 +11,9 @@
 module fpm_manifest_library
     use fpm_error, only : error_t, syntax_error
     use fpm_strings, only: string_t, string_cat, operator(==)
-    use fpm_toml, only : toml_table, toml_key, toml_stat, get_value, get_list, serializable_t, set_value, &
-                          set_list, set_string, get_value, get_list
+    use tomlf, only : toml_table, toml_key, toml_stat
+    use fpm_toml, only : get_value, get_list, serializable_t, set_value, &
+                          set_list, set_string, get_value, has_list
     implicit none
     private
 
@@ -63,6 +64,11 @@ contains
 
         call check(table, error)
         if (allocated(error)) return
+
+        if (has_list(table, "source-dir")) then
+            call syntax_error(error, "Manifest key [library.source-dir] does not allow list input")
+            return
+        end if
 
         call get_value(table, "source-dir", self%source_dir, "src")
         call get_value(table, "build-script", self%build_script)
@@ -155,10 +161,14 @@ contains
         select type (other=>that)
            type is (library_config_t)
               if (.not.this%include_dir==other%include_dir) return
-              if (.not.allocated(this%source_dir).eqv.allocated(other%source_dir)) return
-              if (.not.this%source_dir==other%source_dir) return
-              if (.not.allocated(this%build_script).eqv.allocated(other%build_script)) return
-              if (.not.this%build_script==other%build_script) return
+              if (allocated(this%source_dir).neqv.allocated(other%source_dir)) return
+              if (allocated(this%source_dir)) then
+                if (.not.this%source_dir==other%source_dir) return
+              end if
+              if (allocated(this%build_script).neqv.allocated(other%build_script)) return
+              if (allocated(this%build_script)) then
+                if (.not.this%build_script==other%build_script) return
+              end if
            class default
               ! Not the same type
               return

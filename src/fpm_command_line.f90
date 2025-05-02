@@ -52,7 +52,8 @@ public :: fpm_cmd_settings, &
           fpm_update_settings, &
           fpm_clean_settings, &
           fpm_publish_settings, &
-          get_command_line_settings
+          get_command_line_settings, &
+          get_fpm_env
 
 type, abstract :: fpm_cmd_settings
     character(len=:), allocatable :: working_dir
@@ -108,6 +109,7 @@ type, extends(fpm_build_settings) :: fpm_install_settings
     character(len=:), allocatable :: prefix
     character(len=:), allocatable :: bindir
     character(len=:), allocatable :: libdir
+    character(len=:), allocatable :: testdir
     character(len=:), allocatable :: includedir
     logical :: no_rebuild
 end type
@@ -538,8 +540,10 @@ contains
                 & --no-rebuild F &
                 & --prefix " " &
                 & --list F &
+                & --test F &
                 & --libdir "lib" &
                 & --bindir "bin" &
+                & --testdir "test" &
                 & --includedir "include" &
                 & --config-file " " &
                 &', help_install, version_text)
@@ -552,6 +556,7 @@ contains
             config_file = sget('config-file')
             allocate(install_settings, source=fpm_install_settings(&
                 list=lget('list'), &
+                build_tests=lget('test'), &
                 profile=val_profile,&
                 prune=.not.lget('no-prune'), &
                 compiler=val_compiler, &
@@ -567,6 +572,7 @@ contains
                 verbose=lget('verbose')))
             call get_char_arg(install_settings%prefix, 'prefix')
             call get_char_arg(install_settings%libdir, 'libdir')
+            call get_char_arg(install_settings%testdir, 'testdir')
             call get_char_arg(install_settings%bindir, 'bindir')
             call get_char_arg(install_settings%includedir, 'includedir')
             call move_alloc(install_settings, cmd_settings)
@@ -1205,16 +1211,18 @@ contains
     help_text_build_common,&
     help_text_compiler, &
     help_text_flag, &
-    ' --list              list candidates instead of building or running them', &
-    ' --tests             build all tests (otherwise only if needed)         ', &
-    ' --show-model        show the model and exit (do not build)             ', &
-    ' --dump [FILENAME]   save model representation to file. use JSON format ', &
-    '                     if file name is *.json; use TOML format otherwise  ', &
-    '                     (default file name: model.toml)                    ', &
-    ' --help              print this help and exit                           ', &
-    ' --version           print program version information and exit         ', &
-    ' --config-file PATH  custom location of the global config file          ', &
-    '                                                                        ', &
+    ' --list        list candidates instead of building or running them.    ', &
+    '               all dependencies are downloaded, and the build sequence ', &
+    '               is saved to `build/compile_commands.json`.              ', &
+    ' --tests       build all tests (otherwise only if needed)              ', &
+    ' --show-model  show the model and exit (do not build)                  ', &
+    ' --dump [FILENAME] save model representation to file. use JSON format  ', &
+    '                   if file name is *.json; use TOML format otherwise   ', &
+    '                   (default file name: model.toml)                     ', &
+    ' --help        print this help and exit                                ', &
+    ' --version     print program version information and exit              ', &
+    ' --config-file PATH  custom location of the global config file         ', &    
+    '                                                                       ', &
     help_text_environment, &
     '                                                                       ', &
     'EXAMPLES                                                               ', &
@@ -1456,6 +1464,7 @@ contains
     help_text_build_common,&
     help_text_flag, &
     ' --no-rebuild        do not rebuild project before installation', &
+    ' --test              also install test programs', &    
     ' --prefix DIR        path to installation directory (requires write access),', &
     '                     the default prefix on Unix systems is $HOME/.local', &
     '                     and %APPDATA%\local on Windows', &
@@ -1464,6 +1473,7 @@ contains
     '                     (default: lib)', &
     ' --includedir DIR    subdirectory to place headers and module files in', &
     '                     (default: include)', &
+    ' --testdir DIR       subdirectory to place test programs in (default: test)', &     
     ' --config-file PATH  custom location of the global config file', &
     ' --verbose           print more information', &
     '', &
@@ -1481,6 +1491,9 @@ contains
     ' 3. Install executables to a custom prefix into the exe directory:', &
     '', &
     '    fpm install --prefix $PWD --bindir exe', &
+    ' 4. Install executables and test programs into the same "exe" directory:', &
+    '', &
+    '    fpm install --prefix $PWD --test --bindir exe --testdir exe', &
     '' ]
     help_clean=[character(len=80) :: &
     'NAME', &

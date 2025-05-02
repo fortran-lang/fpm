@@ -1,7 +1,7 @@
 module test_os
     use testsuite, only: new_unittest, unittest_t, error_t, test_failed
     use fpm_filesystem, only: join_path, mkdir, os_delete_dir, is_dir, get_local_prefix, get_home
-    use fpm_environment, only: os_is_unix, get_env
+    use fpm_environment, only: os_is_unix, get_env, set_env, delete_env
     use fpm_os, only: get_absolute_path, get_absolute_path_by_cd, get_current_directory
 
     implicit none
@@ -21,6 +21,7 @@ contains
         tests = [ &
         & new_unittest('empty-path', empty_path, should_fail=.true.), &
         & new_unittest('only-tilde', only_tilde), &
+        & new_unittest('set-environment-variable', set_environment), &
         & new_unittest('invalid-tilde-path', invalid_tilde_path, should_fail=.true.), &
         & new_unittest('tilde-correct-separator', tilde_correct_separator), &
         & new_unittest('tilde-wrong-separator', tilde_wrong_separator, should_fail=.true.), &
@@ -250,5 +251,56 @@ contains
             call test_failed(error, "Result '"//result//"' doesn't equal current directory '"//current_dir//"'"); return
         end if
     end
+
+    !> Test creation and deletion of an environment variable
+    subroutine set_environment(error)
+        type(error_t), allocatable, intent(out) :: error
+
+        character(*), parameter :: vname = 'hiufewhiugw'
+        character(*), parameter :: vvalue = '1234567890'
+
+        character(:), allocatable :: old_value,new_value,final_value
+        logical :: success
+
+        !> Ensure there's no such variable
+        old_value = get_env(vname,default='ERROR')
+        if (old_value/='ERROR') then
+            call test_failed(error, "There is already an env variable named "//vname)
+            return
+        end if
+
+        !> Create variable
+        success = set_env(vname,value=vvalue)
+        if (.not.success) then
+            call test_failed(error, "Cannot create environment variable "//vname)
+            return
+        end if
+
+        !> Check new value
+        new_value = get_env(vname,default='ERROR')
+        if (new_value/=vvalue) then
+            call test_failed(error, "Env "//vname//"="//new_value//'; expected '//vvalue)
+            return
+        end if
+
+        !> Delete variable
+        success = delete_env(vname)
+        if (.not.success) then
+            call test_failed(error, "Cannot delete environment variable "//vname)
+            return
+        end if
+
+        !> Ensure it does not exist anymore
+        !> Do not test this on Windows: due to a Windows bug, environment variables do not get deleted
+        !> https://developercommunity.visualstudio.com/t/-putenv-sname-doesnt-always-delete-windows-copy-of/1587426
+        if (os_is_unix()) then
+            final_value = get_env(vname,default='ERROR')
+            if (final_value/='ERROR') then
+                call test_failed(error, "Env "//vname//"="//final_value//'; it should not exist.')
+                return
+            end if
+        endif
+
+    end subroutine set_environment
 
 end module test_os

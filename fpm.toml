@@ -1,9 +1,11 @@
 name = "fpm"
-version = "0.10.1"
+version = "0.11.0"
 license = "MIT"
 author = "fpm maintainers"
-maintainer = ""
-copyright = "2020-2023 fpm contributors"
+maintainer = "@fortran-lang/fpm"
+copyright = "2020-2025 fpm contributors"
+homepage = "https://fpm.fortran-lang.org/"
+description = "Fortran Package Manager"
 
 [preprocess]
 [preprocess.cpp]
@@ -19,7 +21,7 @@ fortran-regex.tag  = "1.1.2"
 jonquil.git = "https://github.com/toml-f/jonquil"
 jonquil.rev = "4fbd4cf34d577c0fd25e32667ee9e41bf231ece8"
 fortran-shlex.git = "https://github.com/perazz/fortran-shlex"
-fortran-shlex.tag = "1.0.1"
+fortran-shlex.tag = "2.0.0"
 
 [[test]]
 name = "cli-test"

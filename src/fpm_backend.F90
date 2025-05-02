@@ -28,7 +28,7 @@
 module fpm_backend
 
 use,intrinsic :: iso_fortran_env, only : stdin=>input_unit, stdout=>output_unit, stderr=>error_unit
-use fpm_error, only : fpm_stop
+use fpm_error, only : fpm_stop, error_t
 use fpm_filesystem, only: basename, dirname, join_path, exists, mkdir, run, getline
 use fpm_model, only: fpm_model_t
 use fpm_strings, only: string_t, operator(.in.)
@@ -36,6 +36,7 @@ use fpm_targets, only: build_target_t, build_target_ptr, FPM_TARGET_OBJECT, &
                        FPM_TARGET_C_OBJECT, FPM_TARGET_ARCHIVE, FPM_TARGET_EXECUTABLE, &
                        FPM_TARGET_CPP_OBJECT
 use fpm_backend_output
+use fpm_compile_commands, only: compile_command_table_t
 implicit none
 
 private
@@ -53,17 +54,22 @@ end interface
 contains
 
 !> Top-level routine to build package described by `model`
-subroutine build_package(targets,model,verbose)
+subroutine build_package(targets,model,verbose,dry_run)
     type(build_target_ptr), intent(inout) :: targets(:)
     type(fpm_model_t), intent(in) :: model
     logical, intent(in) :: verbose
-
+    
+    !> If dry_run, the build process is only mocked, but the list of compile_commands 
+    !> is still created
+    logical, intent(in) :: dry_run
+ 
     integer :: i, j
     type(build_target_ptr), allocatable :: queue(:)
     integer, allocatable :: schedule_ptr(:), stat(:)
     logical :: build_failed, skip_current
     type(string_t), allocatable :: build_dirs(:)
     type(string_t) :: temp
+    type(error_t), allocatable :: error
 
     type(build_progress_t) :: progress
     logical :: plain_output
@@ -79,13 +85,13 @@ subroutine build_package(targets,model,verbose)
     end do
 
     do i = 1, size(build_dirs)
-       call mkdir(build_dirs(i)%s,verbose)
+       if (.not.dry_run) call mkdir(build_dirs(i)%s,verbose)
     end do
 
     ! Perform depth-first topological sort of targets
     do i=1,size(targets)
 
-        call sort_target(targets(i)%ptr)
+        call sort_target(targets(i)%ptr, dry_run)
 
     end do
 
@@ -93,14 +99,13 @@ subroutine build_package(targets,model,verbose)
     call schedule_targets(queue, schedule_ptr, targets)
 
     ! Check if queue is empty
-    if (.not.verbose .and. size(queue) < 1) then
+    if (.not.verbose .and. size(queue) < 1 .and. .not.dry_run) then
         write(stderr, '(a)') 'Project is up to date'
         return
     end if
 
     ! Initialise build status flags
-    allocate(stat(size(queue)))
-    stat(:) = 0
+    allocate(stat(size(queue)),source=0)
     build_failed = .false.
 
     ! Set output mode
@@ -124,9 +129,10 @@ subroutine build_package(targets,model,verbose)
             skip_current = build_failed
 
             if (.not.skip_current) then
-                call progress%compiling_status(j)
-                call build_target(model,queue(j)%ptr,verbose,stat(j))
-                call progress%completed_status(j,stat(j))
+                if (.not.dry_run) call progress%compiling_status(j)
+                call build_target(model,queue(j)%ptr,verbose,dry_run, &
+                                  progress%compile_commands,stat(j))
+                if (.not.dry_run) call progress%completed_status(j,stat(j))
             end if
 
             ! Set global flag if this target failed to build
@@ -155,7 +161,9 @@ subroutine build_package(targets,model,verbose)
 
     end do
 
-    call progress%success()
+    if (.not.dry_run) call progress%success()
+    call progress%dump_commands(error)
+    if (allocated(error)) call fpm_stop(1,'error writing compile_commands.json: '//trim(error%message))
 
 end subroutine build_package
 
@@ -172,15 +180,19 @@ end subroutine build_package
 !> If `target` is marked as sorted, `target%schedule` should be an
 !> integer greater than zero indicating the region for scheduling
 !>
-recursive subroutine sort_target(target)
+recursive subroutine sort_target(target, mock)
     type(build_target_t), intent(inout), target :: target
+    !> Optionally sort ALL targets if this is a dry run
+    logical, optional, intent(in) :: mock
 
     integer :: i, fh, stat
+    logical :: dry_run
+    
+    dry_run = .false.
+    if (present(mock)) dry_run = mock
 
     ! Check if target has already been processed (as a dependency)
-    if (target%sorted .or. target%skip) then
-        return
-    end if
+    if (target%sorted .or. target%skip) return
 
     ! Check for a circular dependency
     ! (If target has been touched but not processed)
@@ -193,20 +205,24 @@ recursive subroutine sort_target(target)
     ! Load cached source file digest if present
     if (.not.allocated(target%digest_cached) .and. &
          exists(target%output_file) .and. &
-         exists(target%output_file//'.digest')) then
+         exists(target%output_file//'.digest') .and. &
+         (.not.dry_run)) then 
 
         allocate(target%digest_cached)
         open(newunit=fh,file=target%output_file//'.digest',status='old')
         read(fh,*,iostat=stat) target%digest_cached
         close(fh)
 
-        if (stat /= 0) then    ! Cached digest is not recognized
-            deallocate(target%digest_cached)
-        end if
+        ! Cached digest is not recognized
+        if (stat /= 0) deallocate(target%digest_cached)
 
     end if
-
-    if (allocated(target%source)) then
+    
+    if (dry_run) then 
+        
+        target%skip = .false.
+        
+    elseif (allocated(target%source)) then
 
         ! Skip if target is source-based and source file is unmodified
         if (allocated(target%digest_cached)) then
@@ -225,7 +241,7 @@ recursive subroutine sort_target(target)
     do i=1,size(target%dependencies)
 
         ! Sort dependency
-        call sort_target(target%dependencies(i)%ptr)
+        call sort_target(target%dependencies(i)%ptr, dry_run)
 
         if (.not.target%dependencies(i)%ptr%skip) then
 
@@ -300,16 +316,19 @@ end subroutine schedule_targets
 !>
 !> If successful, also caches the source file digest to disk.
 !>
-subroutine build_target(model,target,verbose,stat)
+subroutine build_target(model,target,verbose,dry_run,table,stat)
     type(fpm_model_t), intent(in) :: model
     type(build_target_t), intent(in), target :: target
     logical, intent(in) :: verbose
+    !> If dry_run, the build process is only mocked, but compile_commands are still created
+    logical, intent(in) :: dry_run    
+    type(compile_command_table_t), intent(inout) :: table
     integer, intent(out) :: stat
 
     integer :: fh
 
     !$omp critical
-    if (.not.exists(dirname(target%output_file))) then
+    if (.not.exists(dirname(target%output_file)) .and. .not.dry_run) then
         call mkdir(dirname(target%output_file),verbose)
     end if
     !$omp end critical
@@ -318,27 +337,27 @@ subroutine build_target(model,target,verbose,stat)
 
     case (FPM_TARGET_OBJECT)
         call model%compiler%compile_fortran(target%source%file_name, target%output_file, &
-            & target%compile_flags, target%output_log_file, stat)
+            & target%compile_flags, target%output_log_file, stat, table, dry_run)
 
     case (FPM_TARGET_C_OBJECT)
         call model%compiler%compile_c(target%source%file_name, target%output_file, &
-            & target%compile_flags, target%output_log_file, stat)
+            & target%compile_flags, target%output_log_file, stat, table, dry_run)
 
     case (FPM_TARGET_CPP_OBJECT)
         call model%compiler%compile_cpp(target%source%file_name, target%output_file, &
-            & target%compile_flags, target%output_log_file, stat)
+            & target%compile_flags, target%output_log_file, stat, table, dry_run)
 
     case (FPM_TARGET_EXECUTABLE)
         call model%compiler%link(target%output_file, &
-            & target%compile_flags//" "//target%link_flags, target%output_log_file, stat)
+            & target%compile_flags//" "//target%link_flags, target%output_log_file, stat, dry_run)
 
     case (FPM_TARGET_ARCHIVE)
         call model%archiver%make_archive(target%output_file, target%link_objects, &
-            & target%output_log_file, stat)
+            & target%output_log_file, stat, dry_run)
 
     end select
 
-    if (stat == 0 .and. allocated(target%source)) then
+    if (stat == 0 .and. allocated(target%source) .and. .not.dry_run) then
         open(newunit=fh,file=target%output_file//'.digest',status='unknown')
         write(fh,*) target%source%digest
         close(fh)
