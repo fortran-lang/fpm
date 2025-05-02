@@ -43,10 +43,10 @@ jobs:
             mpi: mpich
           - os: ubuntu-latest
             mpi: intel
-            intel_version: 2024.1.0
+            intel_version: "2024.1.0"
           - os: ubuntu-latest
             mpi: intel
-            intel_version: 2025.0            
+            intel_version: "2025.0"        
 
     steps:
     - name: Checkout code
