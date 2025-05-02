@@ -105,7 +105,7 @@ jobs:
     - name: Log Intel oneAPI version
       if: contains(matrix.mpi, 'intel')
       shell: bash
-      run: echo "Intel oneAPI version: ${{ matrix.intel_version }}"
+      run: echo '✅ Intel oneAPI version: ${{ matrix.intel_version }}'
         
     - name: (Ubuntu) Build and Install HDF5 from source
       if: contains(matrix.os, 'ubuntu') && contains(matrix.mpi, 'intel')
