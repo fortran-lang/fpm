@@ -92,7 +92,7 @@
 
             <li class="list-inline-item" id="statements"><i class="fa fa-list-ol"></i>
               <a data-bs-toggle="tooltip" data-bs-placement="bottom" data-bs-html="true"
-                 title=" 4.2% of total for procedures.">302 statements</a>
+                 title=" 4.3% of total for procedures.">310 statements</a>
             </li>
 
             <li class="list-inline-item" id="source-file">
@@ -180,7 +180,7 @@
     <tbody>
         <tr>
             <td>
-              <span class="anchor" id="variable-cmd_settings~2"></span>
+              <span class="anchor" id="variable-cmd_settings"></span>
               class(<a href='../type/fpm_cmd_settings.html'>fpm_cmd_settings</a>),
             </td>
 <td>intent(out),</td>
@@ -222,7 +222,7 @@
 <span class="w">        </span><span class="k">type</span><span class="p">(</span><span class="n">fpm_export_settings</span><span class="p">)</span><span class="w"> </span><span class="p">,</span><span class="w"> </span><span class="k">allocatable</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">export_settings</span>
 <span class="w">        </span><span class="k">type</span><span class="p">(</span><span class="n">version_t</span><span class="p">)</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">version</span>
 <span class="w">        </span><span class="kt">character</span><span class="p">(</span><span class="nb">len</span><span class="o">=</span><span class="p">:),</span><span class="w"> </span><span class="k">allocatable</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">common_args</span><span class="p">,</span><span class="w"> </span><span class="n">compiler_args</span><span class="p">,</span><span class="w"> </span><span class="n">run_args</span><span class="p">,</span><span class="w"> </span><span class="n">working_dir</span><span class="p">,</span><span class="w"> </span><span class="p">&amp;</span>
-<span class="w">            </span><span class="p">&amp;</span><span class="w"> </span><span class="n">c_compiler</span><span class="p">,</span><span class="w"> </span><span class="n">cxx_compiler</span><span class="p">,</span><span class="w"> </span><span class="n">archiver</span><span class="p">,</span><span class="w"> </span><span class="n">version_s</span><span class="p">,</span><span class="w"> </span><span class="n">token_s</span>
+<span class="w">            </span><span class="p">&amp;</span><span class="w"> </span><span class="n">c_compiler</span><span class="p">,</span><span class="w"> </span><span class="n">cxx_compiler</span><span class="p">,</span><span class="w"> </span><span class="n">archiver</span><span class="p">,</span><span class="w"> </span><span class="n">version_s</span><span class="p">,</span><span class="w"> </span><span class="n">token_s</span><span class="p">,</span><span class="w"> </span><span class="n">config_file</span>
 
 <span class="w">        </span><span class="kt">character</span><span class="p">(</span><span class="nb">len</span><span class="o">=*</span><span class="p">),</span><span class="w"> </span><span class="k">parameter</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">fc_env</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;FC&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">cc_env</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;CC&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">ar_env</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;AR&quot;</span><span class="p">,</span><span class="w"> </span><span class="p">&amp;</span>
 <span class="w">            </span><span class="p">&amp;</span><span class="w"> </span><span class="n">fflags_env</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;FFLAGS&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">cflags_env</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;CFLAGS&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">cxxflags_env</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;CXXFLAGS&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">ldflags_env</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;LDFLAGS&quot;</span><span class="p">,</span><span class="w"> </span><span class="p">&amp;</span>
@@ -290,7 +290,8 @@
 <span class="w">        </span><span class="k">case</span><span class="p">(</span><span class="s1">&#39;run&#39;</span><span class="p">)</span>
 <span class="w">            </span><span class="k">call </span><span class="n">set_args</span><span class="p">(</span><span class="n">common_args</span><span class="w"> </span><span class="o">//</span><span class="w"> </span><span class="n">compiler_args</span><span class="w"> </span><span class="o">//</span><span class="w"> </span><span class="n">run_args</span><span class="w"> </span><span class="o">//</span><span class="s1">&#39;&amp;</span>
 <span class="s1">            &amp; --all F &amp;</span>
-<span class="s1">            &amp; --example F&amp;</span>
+<span class="s1">            &amp; --example F &amp;</span>
+<span class="s1">            &amp; --config-file &quot; &quot; &amp;</span>
 <span class="s1">            &amp; --&#39;</span><span class="p">,</span><span class="n">help_run</span><span class="p">,</span><span class="n">version_text</span><span class="p">)</span>
 
 <span class="w">            </span><span class="k">call </span><span class="n">check_build_vals</span><span class="p">()</span>
@@ -300,7 +301,6 @@
 <span class="w">            </span><span class="k">else</span>
 <span class="k">                </span><span class="n">names</span><span class="o">=</span><span class="p">[</span><span class="kt">character</span><span class="p">(</span><span class="nb">len</span><span class="o">=</span><span class="nb">len</span><span class="p">(</span><span class="n">names</span><span class="p">))</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="p">]</span>
 <span class="w">            </span><span class="k">endif</span>
-
 
 <span class="k">            if</span><span class="p">(</span><span class="n">specified</span><span class="p">(</span><span class="s1">&#39;target&#39;</span><span class="p">)</span><span class="w"> </span><span class="p">)</span><span class="k">then</span>
 <span class="k">               call </span><span class="n">split</span><span class="p">(</span><span class="n">sget</span><span class="p">(</span><span class="s1">&#39;target&#39;</span><span class="p">),</span><span class="n">tnames</span><span class="p">,</span><span class="n">delimiters</span><span class="o">=</span><span class="s1">&#39; ,:&#39;</span><span class="p">)</span>
@@ -326,6 +326,7 @@
 <span class="w">            </span><span class="n">c_compiler</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">sget</span><span class="p">(</span><span class="s1">&#39;c-compiler&#39;</span><span class="p">)</span>
 <span class="w">            </span><span class="n">cxx_compiler</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">sget</span><span class="p">(</span><span class="s1">&#39;cxx-compiler&#39;</span><span class="p">)</span>
 <span class="w">            </span><span class="n">archiver</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">sget</span><span class="p">(</span><span class="s1">&#39;archiver&#39;</span><span class="p">)</span>
+<span class="w">            </span><span class="n">config_file</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">sget</span><span class="p">(</span><span class="s1">&#39;config-file&#39;</span><span class="p">)</span>
 <span class="w">            </span><span class="k">allocate</span><span class="p">(</span><span class="n">fpm_run_settings</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">cmd_settings</span><span class="p">)</span>
 <span class="w">            </span><span class="n">val_runner</span><span class="o">=</span><span class="n">sget</span><span class="p">(</span><span class="s1">&#39;runner&#39;</span><span class="p">)</span>
 <span class="w">            </span><span class="k">if</span><span class="p">(</span><span class="n">specified</span><span class="p">(</span><span class="s1">&#39;runner&#39;</span><span class="p">)</span><span class="w"> </span><span class="p">.</span><span class="nb">and</span><span class="p">.</span><span class="w"> </span><span class="n">val_runner</span><span class="o">==</span><span class="s1">&#39;&#39;</span><span class="p">)</span><span class="n">val_runner</span><span class="o">=</span><span class="s1">&#39;echo&#39;</span>
@@ -338,6 +339,7 @@
 <span class="w">            </span><span class="p">&amp;</span><span class="w"> </span><span class="n">c_compiler</span><span class="o">=</span><span class="n">c_compiler</span><span class="p">,</span><span class="w"> </span><span class="p">&amp;</span>
 <span class="w">            </span><span class="p">&amp;</span><span class="w"> </span><span class="n">cxx_compiler</span><span class="o">=</span><span class="n">cxx_compiler</span><span class="p">,</span><span class="w"> </span><span class="p">&amp;</span>
 <span class="w">            </span><span class="p">&amp;</span><span class="w"> </span><span class="n">archiver</span><span class="o">=</span><span class="n">archiver</span><span class="p">,</span><span class="w"> </span><span class="p">&amp;</span>
+<span class="w">            </span><span class="p">&amp;</span><span class="w"> </span><span class="n">path_to_config</span><span class="o">=</span><span class="n">config_file</span><span class="p">,</span><span class="w"> </span><span class="p">&amp;</span>
 <span class="w">            </span><span class="p">&amp;</span><span class="w"> </span><span class="n">flag</span><span class="o">=</span><span class="n">val_flag</span><span class="p">,</span><span class="w"> </span><span class="p">&amp;</span>
 <span class="w">            </span><span class="p">&amp;</span><span class="w"> </span><span class="n">cflag</span><span class="o">=</span><span class="n">val_cflag</span><span class="p">,</span><span class="w"> </span><span class="p">&amp;</span>
 <span class="w">            </span><span class="p">&amp;</span><span class="w"> </span><span class="n">cxxflag</span><span class="o">=</span><span class="n">val_cxxflag</span><span class="p">,</span><span class="w"> </span><span class="p">&amp;</span>
@@ -356,6 +358,7 @@
 <span class="s1">            &amp; --show-model F &amp;</span>
 <span class="s1">            &amp; --dump &quot; &quot; &amp;</span>
 <span class="s1">            &amp; --tests F &amp;</span>
+<span class="s1">            &amp; --config-file &quot; &quot; &amp;</span>
 <span class="s1">            &amp; --&#39;</span><span class="p">,</span><span class="n">help_build</span><span class="p">,</span><span class="n">version_text</span><span class="p">)</span>
 
 <span class="w">            </span><span class="k">call </span><span class="n">check_build_vals</span><span class="p">()</span>
@@ -363,7 +366,7 @@
 <span class="w">            </span><span class="n">c_compiler</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">sget</span><span class="p">(</span><span class="s1">&#39;c-compiler&#39;</span><span class="p">)</span>
 <span class="w">            </span><span class="n">cxx_compiler</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">sget</span><span class="p">(</span><span class="s1">&#39;cxx-compiler&#39;</span><span class="p">)</span>
 <span class="w">            </span><span class="n">archiver</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">sget</span><span class="p">(</span><span class="s1">&#39;archiver&#39;</span><span class="p">)</span>
-
+<span class="w">            </span><span class="n">config_file</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">sget</span><span class="p">(</span><span class="s1">&#39;config-file&#39;</span><span class="p">)</span>
 <span class="w">            </span><span class="n">val_dump</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">sget</span><span class="p">(</span><span class="s1">&#39;dump&#39;</span><span class="p">)</span>
 <span class="w">            </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">specified</span><span class="p">(</span><span class="s1">&#39;dump&#39;</span><span class="p">)</span><span class="w"> </span><span class="p">.</span><span class="nb">and</span><span class="p">.</span><span class="w"> </span><span class="n">val_dump</span><span class="o">==</span><span class="s1">&#39;&#39;</span><span class="p">)</span><span class="n">val_dump</span><span class="o">=</span><span class="s1">&#39;fpm_model.toml&#39;</span>
 
@@ -376,6 +379,7 @@
 <span class="w">            </span><span class="p">&amp;</span><span class="w"> </span><span class="n">c_compiler</span><span class="o">=</span><span class="n">c_compiler</span><span class="p">,</span><span class="w"> </span><span class="p">&amp;</span>
 <span class="w">            </span><span class="p">&amp;</span><span class="w"> </span><span class="n">cxx_compiler</span><span class="o">=</span><span class="n">cxx_compiler</span><span class="p">,</span><span class="w"> </span><span class="p">&amp;</span>
 <span class="w">            </span><span class="p">&amp;</span><span class="w"> </span><span class="n">archiver</span><span class="o">=</span><span class="n">archiver</span><span class="p">,</span><span class="w"> </span><span class="p">&amp;</span>
+<span class="w">            </span><span class="p">&amp;</span><span class="w"> </span><span class="n">path_to_config</span><span class="o">=</span><span class="n">config_file</span><span class="p">,</span><span class="w"> </span><span class="p">&amp;</span>
 <span class="w">            </span><span class="p">&amp;</span><span class="w"> </span><span class="n">flag</span><span class="o">=</span><span class="n">val_flag</span><span class="p">,</span><span class="w"> </span><span class="p">&amp;</span>
 <span class="w">            </span><span class="p">&amp;</span><span class="w"> </span><span class="n">cflag</span><span class="o">=</span><span class="n">val_cflag</span><span class="p">,</span><span class="w"> </span><span class="p">&amp;</span>
 <span class="w">            </span><span class="p">&amp;</span><span class="w"> </span><span class="n">cxxflag</span><span class="o">=</span><span class="n">val_cxxflag</span><span class="p">,</span><span class="w"> </span><span class="p">&amp;</span>
@@ -394,8 +398,8 @@
 <span class="s1">            &amp; --example F &amp;</span>
 <span class="s1">            &amp; --backfill F &amp;</span>
 <span class="s1">            &amp; --full F &amp;</span>
-<span class="s1">            &amp; --bare F&#39;</span><span class="p">,</span><span class="w"> </span><span class="p">&amp;</span>
-<span class="w">            </span><span class="p">&amp;</span><span class="w"> </span><span class="n">help_new</span><span class="p">,</span><span class="w"> </span><span class="n">version_text</span><span class="p">)</span>
+<span class="s1">            &amp; --bare F &amp;</span>
+<span class="s1">            &amp;&#39;</span><span class="p">,</span><span class="w"> </span><span class="n">help_new</span><span class="p">,</span><span class="w"> </span><span class="n">version_text</span><span class="p">)</span>
 <span class="w">            </span><span class="k">select case</span><span class="p">(</span><span class="n">size</span><span class="p">(</span><span class="n">unnamed</span><span class="p">))</span>
 <span class="w">            </span><span class="k">case</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
 <span class="w">                </span><span class="k">if</span><span class="p">(</span><span class="n">lget</span><span class="p">(</span><span class="s1">&#39;backfill&#39;</span><span class="p">))</span><span class="k">then</span>
@@ -427,7 +431,6 @@
 <span class="w">                </span><span class="p">&amp;</span><span class="w"> </span><span class="s1">&#39;        numbers, underscores, or hyphens, and start with a letter.&#39;</span><span class="p">]</span>
 <span class="w">                </span><span class="k">call </span><span class="n">fpm_stop</span><span class="p">(</span><span class="mi">4</span><span class="p">,</span><span class="s1">&#39; &#39;</span><span class="p">)</span>
 <span class="w">            </span><span class="k">endif</span>
-
 
 <span class="k">            allocate</span><span class="p">(</span><span class="n">fpm_new_settings</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">cmd_settings</span><span class="p">)</span>
 <span class="w">            </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="nb">any</span><span class="p">(</span><span class="w"> </span><span class="n">specified</span><span class="p">([</span><span class="kt">character</span><span class="p">(</span><span class="nb">len</span><span class="o">=</span><span class="mi">10</span><span class="p">)</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="s1">&#39;src&#39;</span><span class="p">,</span><span class="s1">&#39;lib&#39;</span><span class="p">,</span><span class="s1">&#39;app&#39;</span><span class="p">,</span><span class="s1">&#39;test&#39;</span><span class="p">,</span><span class="s1">&#39;example&#39;</span><span class="p">,</span><span class="s1">&#39;bare&#39;</span><span class="p">]))</span><span class="w"> </span><span class="p">&amp;</span>
@@ -464,7 +467,7 @@
 <span class="w">                 </span><span class="p">&amp;</span><span class="w"> </span><span class="n">verbose</span><span class="o">=</span><span class="n">lget</span><span class="p">(</span><span class="s1">&#39;verbose&#39;</span><span class="p">)</span><span class="w"> </span><span class="p">)</span>
 <span class="w">            </span><span class="k">endif</span>
 
-<span class="k">        case</span><span class="p">(</span><span class="s1">&#39;help&#39;</span><span class="p">,</span><span class="s1">&#39;manual&#39;</span><span class="p">)</span>
+<span class="k">        case</span><span class="p">(</span><span class="s1">&#39;help&#39;</span><span class="p">,</span><span class="w"> </span><span class="s1">&#39;manual&#39;</span><span class="p">)</span>
 <span class="w">            </span><span class="k">call </span><span class="n">set_args</span><span class="p">(</span><span class="n">common_args</span><span class="p">,</span><span class="w"> </span><span class="n">help_help</span><span class="p">,</span><span class="n">version_text</span><span class="p">)</span>
 <span class="w">            </span><span class="k">if</span><span class="p">(</span><span class="n">size</span><span class="p">(</span><span class="n">unnamed</span><span class="p">)</span><span class="o">&lt;</span><span class="mi">2</span><span class="p">)</span><span class="k">then</span>
 <span class="k">                if</span><span class="p">(</span><span class="n">unnamed</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span><span class="o">==</span><span class="s1">&#39;help&#39;</span><span class="p">)</span><span class="k">then</span>
@@ -515,16 +518,23 @@
 
 <span class="w">        </span><span class="k">case</span><span class="p">(</span><span class="s1">&#39;install&#39;</span><span class="p">)</span>
 <span class="w">            </span><span class="k">call </span><span class="n">set_args</span><span class="p">(</span><span class="n">common_args</span><span class="w"> </span><span class="o">//</span><span class="w"> </span><span class="n">compiler_args</span><span class="w"> </span><span class="o">//</span><span class="w"> </span><span class="s1">&#39;&amp;</span>
-<span class="s1">                &amp; --no-rebuild F --prefix &quot; &quot; &amp;</span>
-<span class="s1">                &amp; --list F --test F &amp;</span>
-<span class="s1">                &amp; --libdir &quot;lib&quot; --bindir &quot;bin&quot; --testdir &quot;test&quot; --includedir &quot;include&quot;&#39;</span><span class="p">,</span><span class="w"> </span><span class="p">&amp;</span>
-<span class="w">                </span><span class="n">help_install</span><span class="p">,</span><span class="w"> </span><span class="n">version_text</span><span class="p">)</span>
+<span class="s1">                &amp; --no-rebuild F &amp;</span>
+<span class="s1">                &amp; --prefix &quot; &quot; &amp;</span>
+<span class="s1">                &amp; --list F &amp;</span>
+<span class="s1">                &amp; --test F &amp;</span>
+<span class="s1">                &amp; --libdir &quot;lib&quot; &amp;</span>
+<span class="s1">                &amp; --bindir &quot;bin&quot; &amp;</span>
+<span class="s1">                &amp; --testdir &quot;test&quot; &amp;</span>
+<span class="s1">                &amp; --includedir &quot;include&quot; &amp;</span>
+<span class="s1">                &amp; --config-file &quot; &quot; &amp;</span>
+<span class="s1">                &amp;&#39;</span><span class="p">,</span><span class="w"> </span><span class="n">help_install</span><span class="p">,</span><span class="w"> </span><span class="n">version_text</span><span class="p">)</span>
 
 <span class="w">            </span><span class="k">call </span><span class="n">check_build_vals</span><span class="p">()</span>
 
 <span class="w">            </span><span class="n">c_compiler</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">sget</span><span class="p">(</span><span class="s1">&#39;c-compiler&#39;</span><span class="p">)</span>
 <span class="w">            </span><span class="n">cxx_compiler</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">sget</span><span class="p">(</span><span class="s1">&#39;cxx-compiler&#39;</span><span class="p">)</span>
 <span class="w">            </span><span class="n">archiver</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">sget</span><span class="p">(</span><span class="s1">&#39;archiver&#39;</span><span class="p">)</span>
+<span class="w">            </span><span class="n">config_file</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">sget</span><span class="p">(</span><span class="s1">&#39;config-file&#39;</span><span class="p">)</span>
 <span class="w">            </span><span class="k">allocate</span><span class="p">(</span><span class="n">install_settings</span><span class="p">,</span><span class="w"> </span><span class="n">source</span><span class="o">=</span><span class="n">fpm_install_settings</span><span class="p">(&amp;</span>
 <span class="w">                </span><span class="n">list</span><span class="o">=</span><span class="n">lget</span><span class="p">(</span><span class="s1">&#39;list&#39;</span><span class="p">),</span><span class="w"> </span><span class="p">&amp;</span>
 <span class="w">                </span><span class="n">build_tests</span><span class="o">=</span><span class="n">lget</span><span class="p">(</span><span class="s1">&#39;test&#39;</span><span class="p">),</span><span class="w"> </span><span class="p">&amp;</span>
@@ -534,6 +544,7 @@
 <span class="w">                </span><span class="n">c_compiler</span><span class="o">=</span><span class="n">c_compiler</span><span class="p">,</span><span class="w"> </span><span class="p">&amp;</span>
 <span class="w">                </span><span class="n">cxx_compiler</span><span class="o">=</span><span class="n">cxx_compiler</span><span class="p">,</span><span class="w"> </span><span class="p">&amp;</span>
 <span class="w">                </span><span class="n">archiver</span><span class="o">=</span><span class="n">archiver</span><span class="p">,</span><span class="w"> </span><span class="p">&amp;</span>
+<span class="w">                </span><span class="n">path_to_config</span><span class="o">=</span><span class="n">config_file</span><span class="p">,</span><span class="w"> </span><span class="p">&amp;</span>
 <span class="w">                </span><span class="n">flag</span><span class="o">=</span><span class="n">val_flag</span><span class="p">,</span><span class="w"> </span><span class="p">&amp;</span>
 <span class="w">                </span><span class="n">cflag</span><span class="o">=</span><span class="n">val_cflag</span><span class="p">,</span><span class="w"> </span><span class="p">&amp;</span>
 <span class="w">                </span><span class="n">cxxflag</span><span class="o">=</span><span class="n">val_cxxflag</span><span class="p">,</span><span class="w"> </span><span class="p">&amp;</span>
@@ -549,7 +560,7 @@
 
 <span class="w">        </span><span class="k">case</span><span class="p">(</span><span class="s1">&#39;list&#39;</span><span class="p">)</span>
 <span class="w">            </span><span class="k">call </span><span class="n">set_args</span><span class="p">(</span><span class="n">common_args</span><span class="w"> </span><span class="o">//</span><span class="w"> </span><span class="s1">&#39;&amp;</span>
-<span class="s1">            &amp; --list F&amp;</span>
+<span class="s1">            &amp; --list F &amp;</span>
 <span class="s1">            &amp;&#39;</span><span class="p">,</span><span class="w"> </span><span class="n">help_list</span><span class="p">,</span><span class="w"> </span><span class="n">version_text</span><span class="p">)</span>
 <span class="w">            </span><span class="k">if</span><span class="p">(</span><span class="n">lget</span><span class="p">(</span><span class="s1">&#39;list&#39;</span><span class="p">))</span><span class="k">then</span>
 <span class="k">                </span><span class="n">help_text</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">[</span><span class="kt">character</span><span class="p">(</span><span class="n">widest</span><span class="p">)</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">help_list_nodash</span><span class="p">,</span><span class="w"> </span><span class="n">help_list_dash</span><span class="p">]</span>
@@ -559,8 +570,9 @@
 <span class="k">            call </span><span class="n">printhelp</span><span class="p">(</span><span class="n">help_text</span><span class="p">)</span>
 
 <span class="w">        </span><span class="k">case</span><span class="p">(</span><span class="s1">&#39;test&#39;</span><span class="p">)</span>
-<span class="w">            </span><span class="k">call </span><span class="n">set_args</span><span class="p">(</span><span class="n">common_args</span><span class="w"> </span><span class="o">//</span><span class="w"> </span><span class="n">compiler_args</span><span class="w"> </span><span class="o">//</span><span class="w"> </span><span class="n">run_args</span><span class="w"> </span><span class="o">//</span><span class="w"> </span><span class="s1">&#39; --&#39;</span><span class="p">,</span><span class="w"> </span><span class="p">&amp;</span>
-<span class="w">              </span><span class="n">help_test</span><span class="p">,</span><span class="n">version_text</span><span class="p">)</span>
+<span class="w">            </span><span class="k">call </span><span class="n">set_args</span><span class="p">(</span><span class="n">common_args</span><span class="w"> </span><span class="o">//</span><span class="w"> </span><span class="n">compiler_args</span><span class="w"> </span><span class="o">//</span><span class="w"> </span><span class="n">run_args</span><span class="w"> </span><span class="o">//</span><span class="w"> </span><span class="s1">&#39;&amp;</span>
+<span class="s1">            &amp; --config-file &quot; &quot; &amp;</span>
+<span class="s1">            &amp; -- &#39;</span><span class="p">,</span><span class="w"> </span><span class="n">help_test</span><span class="p">,</span><span class="n">version_text</span><span class="p">)</span>
 
 <span class="w">            </span><span class="k">call </span><span class="n">check_build_vals</span><span class="p">()</span>
 
@@ -589,6 +601,8 @@
 <span class="w">            </span><span class="n">c_compiler</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">sget</span><span class="p">(</span><span class="s1">&#39;c-compiler&#39;</span><span class="p">)</span>
 <span class="w">            </span><span class="n">cxx_compiler</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">sget</span><span class="p">(</span><span class="s1">&#39;cxx-compiler&#39;</span><span class="p">)</span>
 <span class="w">            </span><span class="n">archiver</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">sget</span><span class="p">(</span><span class="s1">&#39;archiver&#39;</span><span class="p">)</span>
+<span class="w">            </span><span class="n">config_file</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">sget</span><span class="p">(</span><span class="s1">&#39;config-file&#39;</span><span class="p">)</span>
+
 <span class="w">            </span><span class="k">allocate</span><span class="p">(</span><span class="n">fpm_test_settings</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">cmd_settings</span><span class="p">)</span>
 <span class="w">            </span><span class="n">val_runner</span><span class="o">=</span><span class="n">sget</span><span class="p">(</span><span class="s1">&#39;runner&#39;</span><span class="p">)</span>
 <span class="w">            </span><span class="k">if</span><span class="p">(</span><span class="n">specified</span><span class="p">(</span><span class="s1">&#39;runner&#39;</span><span class="p">)</span><span class="w"> </span><span class="p">.</span><span class="nb">and</span><span class="p">.</span><span class="w"> </span><span class="n">val_runner</span><span class="o">==</span><span class="s1">&#39;&#39;</span><span class="p">)</span><span class="n">val_runner</span><span class="o">=</span><span class="s1">&#39;echo&#39;</span>
@@ -601,6 +615,7 @@
 <span class="w">            </span><span class="p">&amp;</span><span class="w"> </span><span class="n">c_compiler</span><span class="o">=</span><span class="n">c_compiler</span><span class="p">,</span><span class="w"> </span><span class="p">&amp;</span>
 <span class="w">            </span><span class="p">&amp;</span><span class="w"> </span><span class="n">cxx_compiler</span><span class="o">=</span><span class="n">cxx_compiler</span><span class="p">,</span><span class="w"> </span><span class="p">&amp;</span>
 <span class="w">            </span><span class="p">&amp;</span><span class="w"> </span><span class="n">archiver</span><span class="o">=</span><span class="n">archiver</span><span class="p">,</span><span class="w"> </span><span class="p">&amp;</span>
+<span class="w">            </span><span class="p">&amp;</span><span class="w"> </span><span class="n">path_to_config</span><span class="o">=</span><span class="n">config_file</span><span class="p">,</span><span class="w"> </span><span class="p">&amp;</span>
 <span class="w">            </span><span class="p">&amp;</span><span class="w"> </span><span class="n">flag</span><span class="o">=</span><span class="n">val_flag</span><span class="p">,</span><span class="w"> </span><span class="p">&amp;</span>
 <span class="w">            </span><span class="p">&amp;</span><span class="w"> </span><span class="n">cflag</span><span class="o">=</span><span class="n">val_cflag</span><span class="p">,</span><span class="w"> </span><span class="p">&amp;</span>
 <span class="w">            </span><span class="p">&amp;</span><span class="w"> </span><span class="n">cxxflag</span><span class="o">=</span><span class="n">val_cxxflag</span><span class="p">,</span><span class="w"> </span><span class="p">&amp;</span>
@@ -614,8 +629,12 @@
 <span class="w">            </span><span class="p">&amp;</span><span class="w"> </span><span class="n">verbose</span><span class="o">=</span><span class="n">lget</span><span class="p">(</span><span class="s1">&#39;verbose&#39;</span><span class="p">))</span>
 
 <span class="w">        </span><span class="k">case</span><span class="p">(</span><span class="s1">&#39;update&#39;</span><span class="p">)</span>
-<span class="w">            </span><span class="k">call </span><span class="n">set_args</span><span class="p">(</span><span class="n">common_args</span><span class="w"> </span><span class="o">//</span><span class="w"> </span><span class="s1">&#39; --fetch-only F --clean F --dump &quot; &quot; &#39;</span><span class="p">,</span><span class="w"> </span><span class="p">&amp;</span>
-<span class="w">                </span><span class="n">help_update</span><span class="p">,</span><span class="w"> </span><span class="n">version_text</span><span class="p">)</span>
+<span class="w">            </span><span class="k">call </span><span class="n">set_args</span><span class="p">(</span><span class="n">common_args</span><span class="w"> </span><span class="o">//</span><span class="w"> </span><span class="s1">&#39;&amp;</span>
+<span class="s1">            &amp; --fetch-only F &amp;</span>
+<span class="s1">            &amp; --clean F &amp;</span>
+<span class="s1">            &amp; --dump &quot; &quot; &amp;</span>
+<span class="s1">            &amp; --config-file &quot; &quot; &amp;</span>
+<span class="s1">            &amp;&#39;</span><span class="p">,</span><span class="w"> </span><span class="n">help_update</span><span class="p">,</span><span class="w"> </span><span class="n">version_text</span><span class="p">)</span>
 
 <span class="w">            </span><span class="k">if</span><span class="p">(</span><span class="w"> </span><span class="n">size</span><span class="p">(</span><span class="n">unnamed</span><span class="p">)</span><span class="w"> </span><span class="o">&gt;</span><span class="w"> </span><span class="mi">1</span><span class="w"> </span><span class="p">)</span><span class="k">then</span>
 <span class="k">                </span><span class="n">names</span><span class="o">=</span><span class="n">unnamed</span><span class="p">(</span><span class="mi">2</span><span class="p">:)</span>
@@ -623,13 +642,19 @@
 <span class="k">                </span><span class="n">names</span><span class="o">=</span><span class="p">[</span><span class="kt">character</span><span class="p">(</span><span class="nb">len</span><span class="o">=</span><span class="nb">len</span><span class="p">(</span><span class="n">names</span><span class="p">))</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="p">]</span>
 <span class="w">            </span><span class="k">endif</span>
 
-<span class="k">            </span><span class="n">val_dump</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">sget</span><span class="p">(</span><span class="s1">&#39;dump&#39;</span><span class="p">)</span>
+
+<span class="k">            </span><span class="n">config_file</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">sget</span><span class="p">(</span><span class="s1">&#39;config-file&#39;</span><span class="p">)</span>
+<span class="w">            </span><span class="n">val_dump</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">sget</span><span class="p">(</span><span class="s1">&#39;dump&#39;</span><span class="p">)</span>
 <span class="w">            </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">specified</span><span class="p">(</span><span class="s1">&#39;dump&#39;</span><span class="p">)</span><span class="w"> </span><span class="p">.</span><span class="nb">and</span><span class="p">.</span><span class="w"> </span><span class="n">val_dump</span><span class="o">==</span><span class="s1">&#39;&#39;</span><span class="p">)</span><span class="n">val_dump</span><span class="o">=</span><span class="s1">&#39;fpm_dependencies.toml&#39;</span>
 
+
 <span class="w">            </span><span class="k">allocate</span><span class="p">(</span><span class="n">fpm_update_settings</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">cmd_settings</span><span class="p">)</span>
-<span class="w">            </span><span class="n">cmd_settings</span><span class="o">=</span><span class="n">fpm_update_settings</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="n">names</span><span class="p">,</span><span class="w"> </span><span class="n">dump</span><span class="o">=</span><span class="n">val_dump</span><span class="p">,</span><span class="w"> </span><span class="p">&amp;</span>
-<span class="w">                </span><span class="n">fetch_only</span><span class="o">=</span><span class="n">lget</span><span class="p">(</span><span class="s1">&#39;fetch-only&#39;</span><span class="p">),</span><span class="w"> </span><span class="n">verbose</span><span class="o">=</span><span class="n">lget</span><span class="p">(</span><span class="s1">&#39;verbose&#39;</span><span class="p">),</span><span class="w"> </span><span class="p">&amp;</span>
-<span class="w">                </span><span class="n">clean</span><span class="o">=</span><span class="n">lget</span><span class="p">(</span><span class="s1">&#39;clean&#39;</span><span class="p">))</span>
+<span class="w">            </span><span class="n">cmd_settings</span><span class="o">=</span><span class="n">fpm_update_settings</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="n">names</span><span class="p">,</span><span class="w"> </span><span class="p">&amp;</span>
+<span class="w">            </span><span class="p">&amp;</span><span class="w"> </span><span class="n">fetch_only</span><span class="o">=</span><span class="n">lget</span><span class="p">(</span><span class="s1">&#39;fetch-only&#39;</span><span class="p">),</span><span class="w"> </span><span class="p">&amp;</span>
+<span class="w">            </span><span class="p">&amp;</span><span class="w"> </span><span class="n">dump</span><span class="o">=</span><span class="n">val_dump</span><span class="p">,</span><span class="w"> </span><span class="p">&amp;</span>
+<span class="w">            </span><span class="p">&amp;</span><span class="w"> </span><span class="n">verbose</span><span class="o">=</span><span class="n">lget</span><span class="p">(</span><span class="s1">&#39;verbose&#39;</span><span class="p">),</span><span class="w"> </span><span class="p">&amp;</span>
+<span class="w">            </span><span class="p">&amp;</span><span class="w"> </span><span class="n">path_to_config</span><span class="o">=</span><span class="n">config_file</span><span class="p">,</span><span class="w"> </span><span class="p">&amp;</span>
+<span class="w">            </span><span class="p">&amp;</span><span class="w"> </span><span class="n">clean</span><span class="o">=</span><span class="n">lget</span><span class="p">(</span><span class="s1">&#39;clean&#39;</span><span class="p">))</span>
 
 <span class="w">        </span><span class="k">case</span><span class="p">(</span><span class="s1">&#39;export&#39;</span><span class="p">)</span>
 
@@ -667,24 +692,28 @@
 <span class="w">            </span><span class="k">call </span><span class="n">set_args</span><span class="p">(</span><span class="n">common_args</span><span class="w"> </span><span class="o">//</span><span class="w"> </span><span class="p">&amp;</span>
 <span class="w">            </span><span class="p">&amp;</span><span class="w">   </span><span class="s1">&#39; --registry-cache&#39;</span><span class="w">   </span><span class="o">//</span><span class="w"> </span><span class="p">&amp;</span>
 <span class="w">            </span><span class="p">&amp;</span><span class="w">   </span><span class="s1">&#39; --skip&#39;</span><span class="w">             </span><span class="o">//</span><span class="w"> </span><span class="p">&amp;</span>
-<span class="w">            </span><span class="p">&amp;</span><span class="w">   </span><span class="s1">&#39; --all&#39;</span><span class="p">,</span><span class="w">                </span><span class="p">&amp;</span>
-<span class="w">                </span><span class="n">help_clean</span><span class="p">,</span><span class="w"> </span><span class="n">version_text</span><span class="p">)</span>
+<span class="w">            </span><span class="p">&amp;</span><span class="w">   </span><span class="s1">&#39; --all&#39;</span><span class="w">              </span><span class="o">//</span><span class="w"> </span><span class="p">&amp;</span>
+<span class="w">            </span><span class="p">&amp;</span><span class="w">   </span><span class="s1">&#39; --config-file &quot;&quot;&#39;</span><span class="p">,</span><span class="w"> </span><span class="n">help_clean</span><span class="p">,</span><span class="w"> </span><span class="n">version_text</span><span class="p">)</span>
 
 <span class="w">            </span><span class="k">block</span>
 <span class="k">                </span><span class="kt">logical</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">skip</span><span class="p">,</span><span class="w"> </span><span class="n">clean_all</span>
 
 <span class="w">                </span><span class="n">skip</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">lget</span><span class="p">(</span><span class="s1">&#39;skip&#39;</span><span class="p">)</span>
 <span class="w">                </span><span class="n">clean_all</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">lget</span><span class="p">(</span><span class="s1">&#39;all&#39;</span><span class="p">)</span>
+<span class="w">                </span><span class="n">config_file</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">sget</span><span class="p">(</span><span class="s1">&#39;config-file&#39;</span><span class="p">)</span>
 
 <span class="w">                </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="k">all</span><span class="p">([</span><span class="n">skip</span><span class="p">,</span><span class="w"> </span><span class="n">clean_all</span><span class="p">]))</span><span class="w"> </span><span class="k">then</span>
 <span class="k">                    call </span><span class="n">fpm_stop</span><span class="p">(</span><span class="mi">6</span><span class="p">,</span><span class="w"> </span><span class="s1">&#39;Do not specify both --skip and --all options on the clean subcommand.&#39;</span><span class="p">)</span>
 <span class="w">                </span><span class="k">end if</span>
 
 <span class="k">                allocate</span><span class="p">(</span><span class="n">fpm_clean_settings</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">cmd_settings</span><span class="p">)</span>
+<span class="w">                </span><span class="k">call </span><span class="n">get_current_directory</span><span class="p">(</span><span class="n">working_dir</span><span class="p">,</span><span class="w"> </span><span class="n">error</span><span class="p">)</span>
 <span class="w">                </span><span class="n">cmd_settings</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">fpm_clean_settings</span><span class="p">(</span><span class="w"> </span><span class="p">&amp;</span>
-<span class="w">                </span><span class="p">&amp;</span><span class="w">   </span><span class="n">registry_cache</span><span class="o">=</span><span class="n">lget</span><span class="p">(</span><span class="s1">&#39;registry-cache&#39;</span><span class="p">),</span><span class="w"> </span><span class="p">&amp;</span>
+<span class="w">                </span><span class="p">&amp;</span><span class="w">   </span><span class="n">working_dir</span><span class="o">=</span><span class="n">working_dir</span><span class="p">,</span><span class="w"> </span><span class="p">&amp;</span>
 <span class="w">                </span><span class="p">&amp;</span><span class="w">   </span><span class="n">clean_skip</span><span class="o">=</span><span class="n">skip</span><span class="p">,</span><span class="w"> </span><span class="p">&amp;</span>
-<span class="w">                </span><span class="p">&amp;</span><span class="w">   </span><span class="n">clean_all</span><span class="o">=</span><span class="n">clean_all</span><span class="p">)</span>
+<span class="w">                </span><span class="p">&amp;</span><span class="w">   </span><span class="n">registry_cache</span><span class="o">=</span><span class="n">lget</span><span class="p">(</span><span class="s1">&#39;registry-cache&#39;</span><span class="p">),</span><span class="w"> </span><span class="p">&amp;</span>
+<span class="w">                </span><span class="p">&amp;</span><span class="w">   </span><span class="n">clean_all</span><span class="o">=</span><span class="n">clean_all</span><span class="p">,</span><span class="w"> </span><span class="p">&amp;</span>
+<span class="w">                </span><span class="p">&amp;</span><span class="w">   </span><span class="n">path_to_config</span><span class="o">=</span><span class="n">config_file</span><span class="p">)</span>
 <span class="w">            </span><span class="k">end block</span>
 
 <span class="k">        case</span><span class="p">(</span><span class="s1">&#39;publish&#39;</span><span class="p">)</span>
@@ -696,6 +725,7 @@
 <span class="s1">            &amp; --list F &amp;</span>
 <span class="s1">            &amp; --show-model F &amp;</span>
 <span class="s1">            &amp; --tests F &amp;</span>
+<span class="s1">            &amp; --config-file &quot; &quot; &amp;</span>
 <span class="s1">            &amp; --&#39;</span><span class="p">,</span><span class="w"> </span><span class="n">help_publish</span><span class="p">,</span><span class="w"> </span><span class="n">version_text</span><span class="p">)</span>
 
 <span class="w">            </span><span class="k">call </span><span class="n">check_build_vals</span><span class="p">()</span>
@@ -703,6 +733,7 @@
 <span class="w">            </span><span class="n">c_compiler</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">sget</span><span class="p">(</span><span class="s1">&#39;c-compiler&#39;</span><span class="p">)</span>
 <span class="w">            </span><span class="n">cxx_compiler</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">sget</span><span class="p">(</span><span class="s1">&#39;cxx-compiler&#39;</span><span class="p">)</span>
 <span class="w">            </span><span class="n">archiver</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">sget</span><span class="p">(</span><span class="s1">&#39;archiver&#39;</span><span class="p">)</span>
+<span class="w">            </span><span class="n">config_file</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">sget</span><span class="p">(</span><span class="s1">&#39;config-file&#39;</span><span class="p">)</span>
 <span class="w">            </span><span class="n">token_s</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">sget</span><span class="p">(</span><span class="s1">&#39;token&#39;</span><span class="p">)</span>
 
 <span class="w">            </span><span class="k">allocate</span><span class="p">(</span><span class="n">fpm_publish_settings</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">cmd_settings</span><span class="p">)</span>
@@ -723,6 +754,7 @@
 <span class="w">            </span><span class="p">&amp;</span><span class="w"> </span><span class="n">list</span><span class="o">=</span><span class="n">lget</span><span class="p">(</span><span class="s1">&#39;list&#39;</span><span class="p">),&amp;</span>
 <span class="w">            </span><span class="p">&amp;</span><span class="w"> </span><span class="n">show_model</span><span class="o">=</span><span class="n">lget</span><span class="p">(</span><span class="s1">&#39;show-model&#39;</span><span class="p">),&amp;</span>
 <span class="w">            </span><span class="p">&amp;</span><span class="w"> </span><span class="n">build_tests</span><span class="o">=</span><span class="n">lget</span><span class="p">(</span><span class="s1">&#39;tests&#39;</span><span class="p">),&amp;</span>
+<span class="w">            </span><span class="p">&amp;</span><span class="w"> </span><span class="n">path_to_config</span><span class="o">=</span><span class="n">config_file</span><span class="p">,</span><span class="w"> </span><span class="p">&amp;</span>
 <span class="w">            </span><span class="p">&amp;</span><span class="w"> </span><span class="n">verbose</span><span class="o">=</span><span class="n">lget</span><span class="p">(</span><span class="s1">&#39;verbose&#39;</span><span class="p">),&amp;</span>
 <span class="w">            </span><span class="p">&amp;</span><span class="w"> </span><span class="n">token</span><span class="o">=</span><span class="n">token_s</span><span class="p">)</span>
 
@@ -766,7 +798,7 @@
 
 <span class="w">        </span><span class="n">val_flag</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot; &quot;</span><span class="w"> </span><span class="o">//</span><span class="w"> </span><span class="n">sget</span><span class="p">(</span><span class="s1">&#39;flag&#39;</span><span class="p">)</span>
 <span class="w">        </span><span class="n">val_cflag</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot; &quot;</span><span class="w"> </span><span class="o">//</span><span class="w"> </span><span class="n">sget</span><span class="p">(</span><span class="s1">&#39;c-flag&#39;</span><span class="p">)</span>
-<span class="w">        </span><span class="n">val_cxxflag</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot; &quot;</span><span class="o">//</span><span class="w"> </span><span class="n">sget</span><span class="p">(</span><span class="s1">&#39;cxx-flag&#39;</span><span class="p">)</span>
+<span class="w">        </span><span class="n">val_cxxflag</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot; &quot;</span><span class="w"> </span><span class="o">//</span><span class="w"> </span><span class="n">sget</span><span class="p">(</span><span class="s1">&#39;cxx-flag&#39;</span><span class="p">)</span>
 <span class="w">        </span><span class="n">val_ldflag</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot; &quot;</span><span class="w"> </span><span class="o">//</span><span class="w"> </span><span class="n">sget</span><span class="p">(</span><span class="s1">&#39;link-flag&#39;</span><span class="p">)</span>
 <span class="w">        </span><span class="n">val_profile</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">sget</span><span class="p">(</span><span class="s1">&#39;profile&#39;</span><span class="p">)</span>
 
@@ -811,7 +843,7 @@
             <p class="text-end">
               Documentation generated by
               <a href="https://github.com/Fortran-FOSS-Programmers/ford">FORD</a>
- on 2025-05-02 15:11 +0000             </p>
+ on 2025-05-02 15:49 +0000             </p>
           </div>
         </div>
         <br>
