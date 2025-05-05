@@ -6,6 +6,12 @@ inputs:
     description: 'Operating system of the runner. Must contain "windows" or "ubuntu".'
     required: true
     type: string
+    
+  version:
+    description: 'Intel oneAPI installer version for Ubuntu (e.g. 2024.1.0).'
+    required: false
+    default: '2024.1.0'
+    type: string    
 
 runs:
   using: "composite"
@@ -87,7 +93,7 @@ runs:
       uses: fortran-lang/setup-fortran@v1
       with:
         compiler: intel
-        version: 2024.1.0  # Pinned until issue #1090 is resolved
+        version: ${{ inputs.version }}
 
     - name: (Ubuntu) Install Intel oneAPI MPI and build dependencies
       if: contains(inputs.os, 'ubuntu')

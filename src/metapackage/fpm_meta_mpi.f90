@@ -761,8 +761,8 @@ contains
                          string_t(get_env('MPIf77','mpif77'))]
 
         if (get_os_type()==OS_WINDOWS) then
-            c_wrappers = [c_wrappers,string_t('mpicc.bat')]
-            cpp_wrappers = [cpp_wrappers,string_t('mpicxx.bat')]
+            c_wrappers    = [c_wrappers,string_t('mpicc.bat')]
+            cpp_wrappers  = [cpp_wrappers,string_t('mpicxx.bat')]
             fort_wrappers = [fort_wrappers,string_t('mpifc.bat')]
         endif
 
@@ -775,10 +775,9 @@ contains
              fort_wrappers = [fort_wrappers,string_t('mpigfortran'),string_t('mpgfortran'),&
                               string_t('mpig77'),string_t('mpg77')]
 
-           case (id_intel_classic_windows,id_intel_llvm_windows, &
-                 id_intel_classic_nix,id_intel_classic_mac,id_intel_llvm_nix,id_intel_llvm_unknown)
-
-                c_wrappers = [string_t(get_env('I_MPI_CC','mpiicc'))]
+           case (id_intel_classic_windows,id_intel_classic_nix,id_intel_classic_mac)
+                 
+                c_wrappers = [string_t(get_env('I_MPI_CC' ,'mpiicc'))]
               cpp_wrappers = [string_t(get_env('I_MPI_CXX','mpiicpc'))]
              fort_wrappers = [string_t(get_env('I_MPI_F90','mpiifort'))]
 
@@ -797,6 +796,32 @@ contains
                  if (intel_wrap/="") c_wrappers = [c_wrappers,string_t(intel_wrap)]
 
                  intel_wrap = join_path(mpi_root,'mpiicpc')
+                 if (get_os_type()==OS_WINDOWS) intel_wrap = get_dos_path(intel_wrap,error)
+                 if (intel_wrap/="") cpp_wrappers = [cpp_wrappers,string_t(intel_wrap)]
+
+             end if
+
+           case (id_intel_llvm_windows,id_intel_llvm_nix,id_intel_llvm_unknown)
+                 
+                c_wrappers = [string_t(get_env('I_MPI_CC' ,'mpiicx'))]
+              cpp_wrappers = [string_t(get_env('I_MPI_CXX','mpiicpx'))]
+             fort_wrappers = [string_t(get_env('I_MPI_F90','mpiifx'))]
+
+             ! Also search MPI wrappers via the base MPI folder
+             mpi_root = get_env('I_MPI_ROOT')
+             if (mpi_root/="") then
+
+                 mpi_root = join_path(mpi_root,'bin')
+
+                 intel_wrap = join_path(mpi_root,'mpiifx')
+                 if (get_os_type()==OS_WINDOWS) intel_wrap = get_dos_path(intel_wrap,error)
+                 if (intel_wrap/="") fort_wrappers = [fort_wrappers,string_t(intel_wrap)]
+
+                 intel_wrap = join_path(mpi_root,'mpiicx')
+                 if (get_os_type()==OS_WINDOWS) intel_wrap = get_dos_path(intel_wrap,error)
+                 if (intel_wrap/="") c_wrappers = [c_wrappers,string_t(intel_wrap)]
+
+                 intel_wrap = join_path(mpi_root,'mpiicpx')
                  if (get_os_type()==OS_WINDOWS) intel_wrap = get_dos_path(intel_wrap,error)
                  if (intel_wrap/="") cpp_wrappers = [cpp_wrappers,string_t(intel_wrap)]
 
@@ -1095,11 +1120,13 @@ contains
 
                   case (MPI_TYPE_INTEL)
 
-                     ! --showme:command returns the build command of this wrapper
+                     ! -v returns the build command of this wrapper
                      call run_wrapper(wrapper,[string_t('-v')],verbose=verbose, &
                                           exitcode=stat,cmd_success=success,screen_output=screen)
 
-                     if (stat/=0 .or. .not.success) then
+                     ! LLVM wrappers bug: non-zero exit code when checking for "-v" -> only check for 
+                     ! successful command: https://github.com/spack/spack/issues/47672
+                     if (.not.success) then
                         call syntax_error(error,'local INTEL MPI library does not support -v')
                         return
                      else
