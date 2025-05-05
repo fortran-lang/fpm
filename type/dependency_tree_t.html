@@ -138,9 +138,9 @@
             <a class="list-group-item" href="../type/dependency_tree_t.html#variable-dep~2">dep</a>
             <a class="list-group-item" href="../type/dependency_tree_t.html#variable-dep_dir">dep_dir</a>
             <a class="list-group-item" href="../type/dependency_tree_t.html#variable-ndep~2">ndep</a>
-            <a class="list-group-item" href="../type/dependency_tree_t.html#variable-path_to_config~2">path_to_config</a>
-            <a class="list-group-item" href="../type/dependency_tree_t.html#variable-unit~19">unit</a>
-            <a class="list-group-item" href="../type/dependency_tree_t.html#variable-verbosity~14">verbosity</a>
+            <a class="list-group-item" href="../type/dependency_tree_t.html#variable-path_to_config">path_to_config</a>
+            <a class="list-group-item" href="../type/dependency_tree_t.html#variable-unit~21">unit</a>
+            <a class="list-group-item" href="../type/dependency_tree_t.html#variable-verbosity~11">verbosity</a>
         </div>
       </div>
     </div>
@@ -170,16 +170,16 @@
             <a class="list-group-item" href="../type/dependency_tree_t.html#boundprocedure-add">add</a>
             <a class="list-group-item" href="../type/dependency_tree_t.html#boundprocedure-dump~23">dump</a>
             <a class="list-group-item" href="../type/dependency_tree_t.html#boundprocedure-dump_cache">dump_cache</a>
-            <a class="list-group-item" href="../type/dependency_tree_t.html#boundprocedure-dump_to_toml~19">dump_to_toml</a>
+            <a class="list-group-item" href="../type/dependency_tree_t.html#boundprocedure-dump_to_toml~20">dump_to_toml</a>
             <a class="list-group-item" href="../type/dependency_tree_t.html#boundprocedure-find">find</a>
             <a class="list-group-item" href="../type/dependency_tree_t.html#boundprocedure-finished">finished</a>
             <a class="list-group-item" href="../type/dependency_tree_t.html#boundprocedure-has">has</a>
             <a class="list-group-item" href="../type/dependency_tree_t.html#boundprocedure-load~21">load</a>
             <a class="list-group-item" href="../type/dependency_tree_t.html#boundprocedure-load_cache">load_cache</a>
-            <a class="list-group-item" href="../type/dependency_tree_t.html#boundprocedure-load_from_toml~19">load_from_toml</a>
+            <a class="list-group-item" href="../type/dependency_tree_t.html#boundprocedure-load_from_toml~20">load_from_toml</a>
             <a class="list-group-item" href="../type/dependency_tree_t.html#boundprocedure-operator%28%3D%3D%29~22">operator(==)</a>
-            <a class="list-group-item" href="../type/dependency_tree_t.html#boundprocedure-resolve~2">resolve</a>
-            <a class="list-group-item" href="../type/dependency_tree_t.html#boundprocedure-serializable_is_same~19">serializable_is_same</a>
+            <a class="list-group-item" href="../type/dependency_tree_t.html#boundprocedure-resolve">resolve</a>
+            <a class="list-group-item" href="../type/dependency_tree_t.html#boundprocedure-serializable_is_same~20">serializable_is_same</a>
             <a class="list-group-item" href="../type/dependency_tree_t.html#boundprocedure-test_serialization">test_serialization</a>
             <a class="list-group-item" href="../type/dependency_tree_t.html#boundprocedure-update~2">update</a>
         </div>
@@ -290,7 +290,7 @@ with a binary-search tree or a hash table in the future.</p>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-path_to_config~2"></span>
+              <span class="anchor" id="variable-path_to_config"></span>
               character(len=:),
             </td>
               <td>public,</td>
@@ -307,7 +307,7 @@ with a binary-search tree or a hash table in the future.</p>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-unit~19"></span>
+              <span class="anchor" id="variable-unit~21"></span>
               integer,
             </td>
               <td>public</td>
@@ -324,7 +324,7 @@ with a binary-search tree or a hash table in the future.</p>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-verbosity~14"></span>
+              <span class="anchor" id="variable-verbosity~11"></span>
               integer,
             </td>
               <td>public</td>
@@ -1219,7 +1219,7 @@ Safety: reallocate if necessary</p>
           <div class="row">
               <div class="card mt-3">
     <div class="card-header codesum">
-      <span class="anchor" id="boundprocedure-dump_to_toml~19"></span>
+      <span class="anchor" id="boundprocedure-dump_to_toml~20"></span>
       <h3>
           procedure, public ::
   <strong>dump_to_toml</strong> => tree_dump_to_toml
@@ -1996,7 +1996,7 @@ Read object from TOML table</p>
           <div class="row">
               <div class="card mt-3">
     <div class="card-header codesum">
-      <span class="anchor" id="boundprocedure-load_from_toml~19"></span>
+      <span class="anchor" id="boundprocedure-load_from_toml~20"></span>
       <h3>
           procedure, public ::
   <strong>load_from_toml</strong> => tree_load_from_toml
@@ -2154,7 +2154,7 @@ All checks passed!</p>
           <div class="row">
               <div class="card mt-3">
     <div class="card-header codesum">
-      <span class="anchor" id="boundprocedure-resolve~2"></span>
+      <span class="anchor" id="boundprocedure-resolve"></span>
       <h3>
           generic, public ::
   <strong>resolve</strong> => resolve_dependencies, resolve_dependency
@@ -2339,7 +2339,7 @@ All checks passed!</p>
           <div class="row">
               <div class="card mt-3">
     <div class="card-header codesum">
-      <span class="anchor" id="boundprocedure-serializable_is_same~19"></span>
+      <span class="anchor" id="boundprocedure-serializable_is_same~20"></span>
       <h3>
           procedure, public ::
   <strong>serializable_is_same</strong> => dependency_tree_is_same
@@ -2746,7 +2746,7 @@ Check same</p>
             <p class="text-end">
               Documentation generated by
               <a href="https://github.com/Fortran-FOSS-Programmers/ford">FORD</a>
- on 2025-05-02 15:49 +0000             </p>
+ on 2025-05-05 06:46 +0000             </p>
           </div>
         </div>
         <br>
