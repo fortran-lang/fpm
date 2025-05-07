@@ -4,6 +4,7 @@
 !> The token can be obtained from the registry website. It can be used as `fpm publish --token <token>`.
 module fpm_cmd_publish
   use fpm_command_line, only: fpm_publish_settings
+  use fpm_lock, only : fpm_lock_acquire, fpm_lock_release
   use fpm_manifest, only: package_config_t, get_package_data
   use fpm_model, only: fpm_model_t
   use fpm_error, only: error_t, fpm_stop
@@ -34,6 +35,11 @@ contains
     character(len=:), allocatable :: tmp_file
     type(downloader_t) :: downloader
     integer :: i
+
+    call fpm_lock_acquire(error)
+    if (allocated(error)) then
+        call fpm_stop(1, '*cmd_publish* Lock error: '//error%message)
+    end if
 
     ! Get package data to determine package version.
     call get_package_data(package, 'fpm.toml', error, apply_defaults=.true.)
@@ -106,6 +112,12 @@ contains
     call downloader%upload_form(official_registry_base_url//'/packages', upload_data, settings%verbose, error)
     call delete_file(tmp_file)
     if (allocated(error)) call fpm_stop(1, '*cmd_publish* Upload error: '//error%message)
+
+    call fpm_lock_release(error)
+    if (allocated(error)) then
+        call fpm_stop(1, '*cmd_publish* Lock error: '//error%message)
+    end if
+
   end
 
   subroutine print_upload_data(upload_data)
