@@ -24,7 +24,7 @@
 !> Describes the type of build target — determines backend build rules
 !>
 module fpm_targets
-use iso_fortran_env, only: int64
+use iso_fortran_env, only: int64, stdout=>output_unit
 use fpm_error, only: error_t, fatal_error, fpm_stop
 use fpm_model
 use fpm_compiler, only : compiler_t
@@ -138,6 +138,9 @@ type build_target_t
     
     contains
     
+        !> Print information on this instance
+        procedure :: info    
+         
         procedure :: is_executable_target
 
 end type build_target_t
@@ -161,6 +164,76 @@ pure function FPM_TARGET_NAME(type) result(msg)
    end select
 
 end function FPM_TARGET_NAME
+
+!> Write information on a build target
+subroutine info(self, unit, verbosity)
+    class(build_target_t), intent(in) :: self
+    integer, intent(in) :: unit
+    integer, intent(in), optional :: verbosity
+
+    integer :: pr, i
+    character(len=*), parameter :: fmt = '("#", 1x, a, t30, a)'
+    character(len=*), parameter :: fmt_list = '("#", 1x, a, t30, a, " (", i0, " items)")'
+
+    if (present(verbosity)) then
+        pr = verbosity
+    else
+        pr = 1
+    end if
+    if (pr < 1) return
+
+    write(unit, fmt) "Build target"
+    write(unit, fmt) "- output file",        self%output_file
+    write(unit, fmt) "- output name",        self%output_name
+    write(unit, fmt) "- output directory",   self%output_dir
+    write(unit, fmt) "- log file",           self%output_log_file
+    write(unit, fmt) "- package",            self%package_name
+    write(unit, fmt) "- type",               FPM_TARGET_NAME(self%target_type)
+
+    if (allocated(self%source)) then
+        write(unit, fmt) "- source file", self%source%file_name
+    end if
+
+    if (allocated(self%dependencies)) then
+        write(unit, fmt_list) "- dependencies", "", size(self%dependencies)
+    end if
+
+    if (allocated(self%link_objects)) then
+        write(unit, fmt_list) "- link objects", "", size(self%link_objects)
+    end if
+
+    if (allocated(self%link_libraries)) then
+        write(unit, fmt_list) "- link libraries", "", size(self%link_libraries)
+    end if
+
+    if (allocated(self%compile_flags)) then
+        write(unit, fmt) "- compile flags", self%compile_flags
+    end if
+
+    if (allocated(self%link_flags)) then
+        write(unit, fmt) "- link flags", self%link_flags
+    end if
+
+    if (allocated(self%version)) then
+        write(unit, fmt) "- version", self%version
+    end if
+
+    if (allocated(self%macros)) then
+        write(unit, fmt_list) "- macros", "", size(self%macros)
+    end if
+
+    write(unit, fmt) "- skip", merge("yes", "no ", self%skip)
+    write(unit, fmt) "- schedule", trim(adjustl(to_string(self%schedule)))
+
+contains
+
+    pure function to_string(i) result(s)
+        integer, intent(in) :: i
+        character(len=32) :: s
+        write(s, '(i0)') i
+    end function to_string
+
+end subroutine info
 
 !> High-level wrapper to generate build target information
 subroutine targets_from_sources(targets,model,prune,library,error)
@@ -700,7 +773,7 @@ subroutine prune_build_targets(targets, root_package)
         do i=1,size(targets)
 
             if (targets(i)%ptr%package_name == root_package .and. &
-                 targets(i)%ptr%target_type /= FPM_TARGET_ARCHIVE) then
+                 all(targets(i)%ptr%target_type /= [FPM_TARGET_ARCHIVE,FPM_TARGET_SHARED])) then
 
                 call collect_used_modules(targets(i)%ptr)
 
@@ -712,7 +785,7 @@ subroutine prune_build_targets(targets, root_package)
 
     call reset_target_flags(targets)
 
-    exclude_target(:) = .false.
+    exclude_target = .false.
 
     ! Exclude purely module targets if they are not used anywhere
     do i=1,size(targets)
@@ -925,35 +998,49 @@ subroutine resolve_target_linking(targets, model)
         associate(target => targets(i)%ptr)
             allocate(target%link_objects(0))
 
-            if (target%target_type == FPM_TARGET_ARCHIVE) then
-                global_link_flags = target%output_file // global_link_flags
+            select case (target%target_type)
+                case (FPM_TARGET_ARCHIVE) 
+                    
+                    global_link_flags = target%output_file // global_link_flags
 
-                call get_link_objects(target%link_objects,target,is_exe=.false.)
+                    call get_link_objects(target%link_objects,target,is_exe=.false.)
 
-                allocate(character(0) :: target%link_flags)
+                    allocate(character(0) :: target%link_flags)
+                
+                case (FPM_TARGET_SHARED)
+                    
+                    block
+                        integer :: k
+                        do k=1,size(Targets)
+                            print *, 'target ',k,'...'
+                            call targets(i)%ptr%info(stdout)
+                        end do
+                    end block
+                    stop 'implement shared'
+                    
+                case (FPM_TARGET_EXECUTABLE)
 
-            else if (target%target_type == FPM_TARGET_EXECUTABLE) then
+                    call get_link_objects(target%link_objects,target,is_exe=.true.)
 
-                call get_link_objects(target%link_objects,target,is_exe=.true.)
+                    local_link_flags = ""
+                    if (allocated(model%link_flags)) local_link_flags = model%link_flags
+                    target%link_flags = model%link_flags//" "//string_cat(target%link_objects," ")
 
-                local_link_flags = ""
-                if (allocated(model%link_flags)) local_link_flags = model%link_flags
-                target%link_flags = model%link_flags//" "//string_cat(target%link_objects," ")
-
-                if (allocated(target%link_libraries)) then
-                    if (size(target%link_libraries) > 0) then
-                        target%link_flags = model%compiler%enumerate_libraries(target%link_flags, target%link_libraries)
-                        local_link_flags = model%compiler%enumerate_libraries(local_link_flags, target%link_libraries)
+                    if (allocated(target%link_libraries)) then
+                        if (size(target%link_libraries) > 0) then
+                            target%link_flags = model%compiler%enumerate_libraries(target%link_flags, target%link_libraries)
+                            local_link_flags = model%compiler%enumerate_libraries(local_link_flags, target%link_libraries)
+                        end if
                     end if
-                end if
 
-                target%link_flags = target%link_flags//" "//global_link_flags
+                    target%link_flags = target%link_flags//" "//global_link_flags
 
-                target%output_dir = get_output_dir(model%build_prefix, &
-                   & target%compile_flags//local_link_flags)
-                target%output_file     = join_path(target%output_dir, target%output_name)
-                target%output_log_file = join_path(target%output_dir, target%output_name)//'.log'
-        end if
+                    target%output_dir = get_output_dir(model%build_prefix, &
+                       & target%compile_flags//local_link_flags)
+                    target%output_file     = join_path(target%output_dir, target%output_name)
+                    target%output_log_file = join_path(target%output_dir, target%output_name)//'.log'
+                    
+                end select
 
         end associate
 
