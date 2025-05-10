@@ -24,6 +24,7 @@ module fpm_manifest
     private
 
     public :: get_package_data, default_executable, default_library, default_test
+    public :: get_package_dependencies
     public :: default_example
     public :: package_config_t, dependency_config_t, preprocess_config_t
 
@@ -181,6 +182,95 @@ contains
         end if
 
     end subroutine package_defaults
+    
+    ! Return an array of all dependencies in the manifest
+    subroutine get_package_dependencies(package, deps)
+
+        !> Parsed package meta data
+        type(package_config_t), intent(inout) :: package
+        
+        !> Unprocessed list of all dependencies listed in this manifest
+        type(dependency_config_t), allocatable, intent(out) :: deps(:)
+        
+        integer :: ndeps,k
+        
+        ndeps = 0
+        if (allocated(package%dependency)) &
+        ndeps = ndeps + size(package%dependency)
+        
+        if (allocated(package%dev_dependency)) &
+        ndeps = ndeps + size(package%dev_dependency)
+                
+        if (allocated(package%example)) then
+           do k = 1, size(package%example)
+              if (allocated(package%example(k)%dependency)) &
+              ndeps = ndeps + size(package%example(k)%dependency)
+           end do
+        end if
+
+        if (allocated(package%executable)) then
+           do k = 1, size(package%executable)
+              if (allocated(package%executable(k)%dependency)) &
+              ndeps = ndeps + size(package%executable(k)%dependency)
+           end do
+        end if
+        
+        if (allocated(package%test)) then
+           do k = 1, size(package%test)
+              if (allocated(package%test(k)%dependency)) &
+              ndeps = ndeps + size(package%test(k)%dependency)
+           end do
+        end if        
+        
+        allocate(deps(ndeps))
+        
+        if (ndeps > 0) then
+           
+           ndeps = 0
+           
+           if (allocated(package%dependency)) &
+           call collect(deps,ndeps,package%dependency)
+           
+           if (allocated(package%dev_dependency)) &
+           call collect(deps,ndeps,package%dependency)
+           
+           if (allocated(package%example)) then
+              do k = 1, size(package%example)
+                 if (allocated(package%example(k)%dependency)) &
+                 call collect(deps,ndeps,package%example(k)%dependency)
+              end do
+           end if
+           if (allocated(package%executable)) then
+              do k = 1, size(package%executable)
+                 if (allocated(package%executable(k)%dependency)) &
+                 call collect(deps,ndeps,package%executable(k)%dependency)
+              end do
+           end if
+           if (allocated(package%test)) then
+              do k = 1, size(package%test)
+                 if (allocated(package%test(k)%dependency)) &
+                 call collect(deps,ndeps,package%test(k)%dependency)
+              end do
+           end if    
+         
+         endif
+
+      contains
+      
+         ! Add dependencies to the list      
+         pure subroutine collect(list, nreq, new_deps)
+            type(dependency_config_t), intent(inout) :: list(:)
+            integer,                   intent(inout) :: nreq
+            type(dependency_config_t), intent(in)    :: new_deps(:)
+            
+            integer :: i
+            do i = 1, size(new_deps)
+               nreq = nreq + 1
+               list(nreq) = new_deps(i)
+            end do
+         end subroutine collect
+        
+    end subroutine get_package_dependencies
 
 
 end module fpm_manifest
