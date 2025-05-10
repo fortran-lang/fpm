@@ -334,7 +334,7 @@ subroutine build_target_list(targets,model,library)
     if (static_lib) then 
         
         lib_name = join_path(model%package_name, &
-                             model%packages(1)%library_filename(.false.,get_os_type()))
+                             model%packages(1)%library_filename(shared_lib,get_os_type()))
         
         call add_target(targets,package=model%package_name, &
                         type = FPM_TARGET_ARCHIVE,output_name = lib_name)
@@ -343,7 +343,7 @@ subroutine build_target_list(targets,model,library)
         do j=1,size(model%packages)
             
             lib_name = join_path(model%package_name, &
-                                 model%packages(j)%library_filename(.false.,get_os_type()))
+                                 model%packages(j)%library_filename(shared_lib,get_os_type()))
 
             call add_target(targets,package=model%packages(j)%name, &
                             type = FPM_TARGET_SHARED,output_name = lib_name)
@@ -999,7 +999,7 @@ subroutine resolve_target_linking(targets, model)
             allocate(target%link_objects(0))
 
             select case (target%target_type)
-                case (FPM_TARGET_ARCHIVE) 
+                case (FPM_TARGET_ARCHIVE,FPM_TARGET_SHARED) 
                     
                     global_link_flags = target%output_file // global_link_flags
 
@@ -1007,13 +1007,13 @@ subroutine resolve_target_linking(targets, model)
 
                     allocate(character(0) :: target%link_flags)
                 
-                case (FPM_TARGET_SHARED)
+            !    case (FPM_TARGET_SHARED)
                     
                     block
                         integer :: k
                         do k=1,size(Targets)
                             print *, 'target ',k,'...'
-                            call targets(i)%ptr%info(stdout)
+                            call targets(k)%ptr%info(stdout)
                         end do
                     end block
                     stop 'implement shared'
@@ -1147,7 +1147,7 @@ subroutine filter_library_targets(targets, list)
     n = 0
     call resize(list)
     do i = 1, size(targets)
-        if (targets(i)%ptr%target_type == FPM_TARGET_ARCHIVE) then
+        if (any(targets(i)%ptr%target_type == [FPM_TARGET_ARCHIVE,FPM_TARGET_SHARED]) then
             if (n >= size(list)) call resize(list)
             n = n + 1
             list(n)%s = targets(i)%ptr%output_file
