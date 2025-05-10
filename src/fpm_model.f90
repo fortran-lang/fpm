@@ -173,6 +173,9 @@ type, extends(serializable_t) :: package_t
     type(fortran_features_t) :: features
 
     contains
+    
+        !> Get library filename
+        procedure :: library_filename
 
         !> Serialization interface
         procedure :: serializable_is_same => package_is_same
@@ -236,9 +239,6 @@ type, extends(serializable_t) :: fpm_model_t
 
     contains
     
-        !> Utility: get library filename
-        procedure :: library_filename
-
         !> Serialization interface
         procedure :: serializable_is_same => model_is_same
         procedure :: dump_to_toml   => model_dump_to_toml
@@ -1140,8 +1140,8 @@ subroutine model_load_from_toml(self, table, error)
 end subroutine model_load_from_toml
 
 !> Utility function: return library filename
-pure function library_filename(model, shared, target_os) result(name)
-    class(fpm_model_t), intent(in) :: model    
+pure function library_filename(package, shared, target_os) result(name)
+    class(package_t), intent(in) :: package    
     !> Whether the library is shared
     logical, intent(in) :: shared
     !> Target library OS (from fpm_environment OS constants)
@@ -1151,17 +1151,16 @@ pure function library_filename(model, shared, target_os) result(name)
     if (shared) then 
         select case (target_os)
             case (OS_WINDOWS)
-                name = 'lib'//model%package_name//'.dll'
+                name = 'lib'//package%name//'.dll'
             case (OS_MACOS)
-                name = 'lib'//model%package_name//'.dylib'
+                name = 'lib'//package%name//'.dylib'
             case default
-                name = 'lib'//model%package_name//'.so'
+                name = 'lib'//package%name//'.so'
         end select
     else
-        name = 'lib'//model%package_name//'.a'
+        name = 'lib'//package%name//'.a'
     end if
 
 end function library_filename
-
 
 end module fpm_model

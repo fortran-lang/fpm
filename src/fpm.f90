@@ -17,7 +17,7 @@ use fpm_compiler, only: new_compiler, new_archiver, set_cpp_preprocessor_flags
 
 use fpm_sources, only: add_executable_sources, add_sources_from_dir
 use fpm_targets, only: targets_from_sources, build_target_t, build_target_ptr, &
-                        FPM_TARGET_EXECUTABLE, FPM_TARGET_ARCHIVE
+                        FPM_TARGET_EXECUTABLE
 use fpm_manifest, only : get_package_data, package_config_t
 use fpm_meta, only : resolve_metapackages
 use fpm_error, only : error_t, fatal_error, fpm_stop
@@ -447,7 +447,7 @@ if (allocated(error)) then
     call fpm_stop(1,'*cmd_build* Model error: '//error%message)
 end if
 
-call targets_from_sources(targets, model, settings%prune, error)
+call targets_from_sources(targets, model, settings%prune, package%library, error)
 if (allocated(error)) then
     call fpm_stop(1,'*cmd_build* Target error: '//error%message)
 end if
@@ -499,7 +499,7 @@ subroutine cmd_run(settings,test)
         call fpm_stop(1, '*cmd_run* Model error: '//error%message)
     end if
 
-    call targets_from_sources(targets, model, settings%prune, error)
+    call targets_from_sources(targets, model, settings%prune, package%library, error)
     if (allocated(error)) then
         call fpm_stop(1, '*cmd_run* Targets error: '//error%message)
     end if

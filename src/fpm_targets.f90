@@ -33,6 +33,7 @@ use fpm_filesystem, only: dirname, join_path, canon_path
 use fpm_strings, only: string_t, operator(.in.), string_cat, fnv_1a, resize, lower, str_ends_with
 use fpm_compiler, only: get_macros
 use fpm_sources, only: get_exe_name_with_suffix
+use fpm_manifest_library, only: library_config_t
 use fpm_manifest_preprocess, only: preprocess_config_t
 implicit none
 
@@ -61,6 +62,8 @@ integer, parameter :: FPM_TARGET_OBJECT = 3
 integer, parameter :: FPM_TARGET_C_OBJECT = 4
 !> Target type is cpp compiled object
 integer, parameter :: FPM_TARGET_CPP_OBJECT = 5
+!> Target type is a shared library
+integer, parameter :: FPM_TARGET_SHARED = 6
 
 !> Wrapper type for constructing arrays of `[[build_target_t]]` pointers
 type build_target_ptr
@@ -149,23 +152,27 @@ pure function FPM_TARGET_NAME(type) result(msg)
 
    select case (type)
       case (FPM_TARGET_ARCHIVE);    msg = 'Archive'
+      case (FPM_TARGET_SHARED);     msg = 'Shared library'
       case (FPM_TARGET_CPP_OBJECT); msg = 'C++ object'
       case (FPM_TARGET_C_OBJECT);   msg = 'C Object'
       case (FPM_TARGET_EXECUTABLE); msg = 'Executable'
-      case (FPM_TARGET_OBJECT);     msg = 'Object'
+      case (FPM_TARGET_OBJECT);     msg = 'Object'      
       case default;                 msg = 'Unknown'
    end select
 
 end function FPM_TARGET_NAME
 
 !> High-level wrapper to generate build target information
-subroutine targets_from_sources(targets,model,prune,error)
+subroutine targets_from_sources(targets,model,prune,library,error)
 
     !> The generated list of build targets
     type(build_target_ptr), intent(out), allocatable :: targets(:)
 
     !> The package model from which to construct the target list
     type(fpm_model_t), intent(inout), target :: model
+    
+    !> Library build configuration
+    type(library_config_t), intent(in), optional :: library
 
     !> Enable tree-shaking/pruning of module dependencies
     logical, intent(in) :: prune
@@ -173,7 +180,7 @@ subroutine targets_from_sources(targets,model,prune,error)
     !> Error structure
     type(error_t), intent(out), allocatable :: error
 
-    call build_target_list(targets,model)
+    call build_target_list(targets,model,library)
 
     call collect_exe_link_dependencies(targets)
 
@@ -208,17 +215,20 @@ end subroutine targets_from_sources
 !> is a library, then the executable target has an additional dependency on the library
 !> archive target.
 !>
-subroutine build_target_list(targets,model)
+subroutine build_target_list(targets,model,library)
 
     !> The generated list of build targets
     type(build_target_ptr), intent(out), allocatable :: targets(:)
 
     !> The package model from which to construct the target list
     type(fpm_model_t), intent(inout), target :: model
+    
+    !> The optional model library configuration
+    type(library_config_t), optional, intent(in) :: library
 
-    integer :: i, j, n_source, exe_type
-    character(:), allocatable :: exe_dir, compile_flags
-    logical :: with_lib
+    integer :: i, j, k, n_source, exe_type
+    character(:), allocatable :: exe_dir, compile_flags, lib_name
+    logical :: with_lib, static_lib, shared_lib
 
     ! Initialize targets
     allocate(targets(0))
@@ -232,10 +242,41 @@ subroutine build_target_list(targets,model)
     with_lib = any([((model%packages(j)%sources(i)%unit_scope == FPM_SCOPE_LIB, &
                       i=1,size(model%packages(j)%sources)), &
                       j=1,size(model%packages))])
+    
+    if (with_lib) then 
+        if (present(library)) then 
+            shared_lib = library%shared
+        else
+            shared_lib = .false.
+        end if
+        static_lib = .not.shared_lib
+    else
+        static_lib = .false.
+        shared_lib = .false.
+    end if
 
-    if (with_lib) call add_target(targets,package=model%package_name,type = FPM_TARGET_ARCHIVE,&
-                            output_name = join_path(&
-                                   model%package_name,'lib'//model%package_name//'.a'))
+    ! For a static object archive, everything from this package or all its dependencies is 
+    ! put into the same file. For a shared library configuration, each package has its own 
+    ! dynamic library file to avoid dependency collisions
+    if (static_lib) then 
+        
+        lib_name = join_path(model%package_name, &
+                             model%packages(1)%library_filename(.false.,get_os_type()))
+        
+        call add_target(targets,package=model%package_name, &
+                        type = FPM_TARGET_ARCHIVE,output_name = lib_name)
+                            
+    elseif (shared_lib) then 
+        do j=1,size(model%packages)
+            
+            lib_name = join_path(model%package_name, &
+                                 model%packages(j)%library_filename(.false.,get_os_type()))
+
+            call add_target(targets,package=model%packages(j)%name, &
+                            type = FPM_TARGET_SHARED,output_name = lib_name)
+        end do
+        
+    endif
 
     do j=1,size(model%packages)
 
@@ -254,14 +295,14 @@ subroutine build_target_list(targets,model)
                                 type = merge(FPM_TARGET_C_OBJECT,FPM_TARGET_OBJECT,&
                                                sources(i)%unit_type==FPM_UNIT_CSOURCE), &
                                 output_name = get_object_name(sources(i)), &
-                                features = model%packages(j)%features, &
-                                preprocess = model%packages(j)%preprocess, &
+                                features    = model%packages(j)%features, &
+                                preprocess  = model%packages(j)%preprocess, &
                                 version = model%packages(j)%version)
 
 
                     if (with_lib .and. sources(i)%unit_scope == FPM_SCOPE_LIB) then
                         ! Archive depends on object
-                        call add_dependency(targets(1)%ptr, targets(size(targets))%ptr)
+                        call add_dependency(targets(merge(j,1,shared_lib))%ptr, targets(size(targets))%ptr)
                     end if
 
                 case (FPM_UNIT_CPPSOURCE)
@@ -274,7 +315,7 @@ subroutine build_target_list(targets,model)
 
                     if (with_lib .and. sources(i)%unit_scope == FPM_SCOPE_LIB) then
                         ! Archive depends on object
-                        call add_dependency(targets(1)%ptr, targets(size(targets))%ptr)
+                        call add_dependency(targets(merge(j,1,shared_lib))%ptr, targets(size(targets))%ptr)
                     end if
 
                     !> Add stdc++ as a linker flag. If not already there.
@@ -340,8 +381,10 @@ subroutine build_target_list(targets,model)
                     call add_dependency(target, targets(size(targets)-1)%ptr)
 
                     if (with_lib) then
-                        ! Executable depends on library
-                        call add_dependency(target, targets(1)%ptr)
+                        ! Executable depends on library file(s)
+                        do k=1,merge(size(model%packages),1,shared_lib)
+                           call add_dependency(target, targets(k)%ptr)
+                        end do
                     end if
 
                     endassociate

@@ -38,7 +38,7 @@ contains
     call build_model(model, settings, package, error)
     call handle_error(error)
 
-    call targets_from_sources(targets, model, settings%prune, error)
+    call targets_from_sources(targets, model, settings%prune, package%library, error)
     call handle_error(error)
 
     call install_info(output_unit, settings%list, targets, ntargets)
