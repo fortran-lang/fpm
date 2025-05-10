@@ -61,7 +61,7 @@ module fpm_dependency
   use fpm_filesystem, only: exists, join_path, mkdir, canon_path, windows_path, list_files, is_dir, basename, &
                             os_delete_dir, get_temp_filename, parent_dir
   use fpm_git, only: git_target_revision, git_target_default, git_revision, serializable_t
-  use fpm_manifest, only: package_config_t, dependency_config_t, get_package_data
+  use fpm_manifest, only: package_config_t, dependency_config_t, get_package_data, get_package_dependencies
   use fpm_manifest_dependency, only: manifest_has_changed, dependency_destroy
   use fpm_manifest_preprocess, only: operator(==)
   use fpm_strings, only: string_t, operator(.in.)
@@ -99,9 +99,13 @@ module fpm_dependency
     logical :: cached = .false.
     !> Indices (in `dependency_tree_t%dep`) that this node depends on
     integer, allocatable :: requires(:)    
+    !> Temporary manifest storage to avoid reading it twice
+    type(package_config_t), allocatable :: package_tmp
   contains
+
     !> Update dependency from project manifest.
-    procedure :: register
+    procedure :: register    
+
     !> Get dependency from the registry.
     procedure :: get_from_registry
     procedure, private :: get_from_local_registry
@@ -264,8 +268,9 @@ contains
     !> Verbosity of the printout
     integer, intent(in), optional :: verbosity
 
-    integer :: pr
+    integer :: pr, i
     character(len=*), parameter :: fmt = '("#", 1x, a, t30, a)'
+    character(len=*), parameter :: fmt_int = '("#", 1x, a, t30, *(i0, 1x))'
 
     if (present(verbosity)) then
       pr = verbosity
@@ -291,7 +296,12 @@ contains
     write (unit, fmt) "- done", merge('YES', 'NO ', self%done)
     write (unit, fmt) "- update", merge('YES', 'NO ', self%update)
 
+    if (allocated(self%requires)) then
+      write (unit, fmt_int) "- requires", self%requires
+    end if
+
   end subroutine info
+
 
   !> Add project dependencies, each depth level after each other.
   !>
@@ -323,7 +333,7 @@ contains
     ! Resolve the root project
     call self%resolve(root, error)
     if (allocated(error)) return
-
+    
     ! Add the root project dependencies (depth 1)
     call self%add(package, root, .true., error)
     if (allocated(error)) return
@@ -348,6 +358,10 @@ contains
       if (allocated(error)) exit
     end do
     if (allocated(error)) return
+        
+    ! Resolve internal dependency graph and remove temporary package storage
+    call resolve_dependency_graph(self, package, error)
+    if (allocated(error)) return
 
     if (allocated(self%cache)) then
       call self%dump_cache(self%cache, error)
@@ -355,6 +369,37 @@ contains
     end if
 
   end subroutine add_project
+
+  subroutine resolve_dependency_graph(self, main, error)
+      !> Instance of the dependency tree
+      class(dependency_tree_t), intent(inout) :: self
+      !> Main project configuration 
+      type(package_config_t), intent(in) :: main      
+      !> Error handling
+      type(error_t), allocatable, intent(out) :: error
+
+      integer :: i
+      
+      if (self%ndep<1) then 
+          call fatal_error(error, "Trying to compute the dependency graph of an empty tree")
+          return
+      end if
+      
+      ! Copy manifest into the first dependency
+      allocate(self%dep(1)%package_tmp,source=main)
+  
+      do i = 1, self%ndep
+          
+          call get_required_packages(self, self%dep(i), main=i==1, error=error)
+          if (allocated(error)) return
+          
+          ! Remove temporary manifest
+          if (allocated(self%dep(i)%package_tmp)) &
+             deallocate(self%dep(i)%package_tmp)
+          
+      end do  
+
+  end subroutine resolve_dependency_graph
 
   !> Add a project and its dependencies to the dependency tree
   recursive subroutine add_project_dependencies(self, package, root, main, error)
@@ -617,7 +662,7 @@ contains
     !> Error handling
     type(error_t), allocatable, intent(out) :: error
 
-    type(package_config_t) :: package
+    type(package_config_t), allocatable :: package
     character(len=:), allocatable :: manifest, proj_dir, revision
     logical :: fetch
 
@@ -646,11 +691,13 @@ contains
     end if
 
     manifest = join_path(proj_dir, "fpm.toml")
+    allocate(package)
     call get_package_data(package, manifest, error)
     if (allocated(error)) return
 
     call dependency%register(package, proj_dir, fetch, revision, error)
     if (allocated(error)) return
+    
 
     if (self%verbosity > 1) then
       write (self%unit, out_fmt) &
@@ -660,7 +707,10 @@ contains
 
     call self%add(package, proj_dir, .false., error)
     if (allocated(error)) return
-
+    
+    ! Temporarily store the dependency manifest for usage in graph resolution
+    call move_alloc(from=package, to=dependency%package_tmp)    
+    
   end subroutine resolve_dependency
 
   !> Get a dependency from the registry. Whether the dependency is fetched
@@ -968,11 +1018,12 @@ contains
   end function finished
 
   !> Update dependency from project manifest
-  subroutine register(self, package, root, fetch, revision, error)
+  subroutine register(node, package, root, fetch, revision, error)
     !> Instance of the dependency node
-    class(dependency_node_t), intent(inout) :: self
+    class(dependency_node_t), intent(inout) :: node
     !> Package configuration data
     type(package_config_t), intent(in) :: package
+   
     !> Project has been fetched
     logical, intent(in) :: fetch
     !> Root directory of the project
@@ -985,26 +1036,78 @@ contains
     logical :: update
 
     update = .false.
-    if (self%name /= package%name) then
+    if (node%name /= package%name) then
       call fatal_error(error, "Dependency name '"//package%name// &
-        & "' found, but expected '"//self%name//"' instead")
+        & "' found, but expected '"//node%name//"' instead")
+        return
     end if
 
-    self%version = package%version
-    self%proj_dir = root
+    node%version = package%version
+    node%proj_dir = root
 
-    if (allocated(self%git) .and. present(revision)) then
-      self%revision = revision
+    if (allocated(node%git) .and. present(revision)) then
+      node%revision = revision
       if (.not. fetch) then
         ! Change in revision ID was checked already. Only update if ALL git information is missing
-        update = .not. allocated(self%git%url)
+        update = .not. allocated(node%git%url)
       end if
     end if
-
-    if (update) self%update = update
-    self%done = .true.
-
+  
+    if (update) node%update = update
+    node%done = .true.  
+    
   end subroutine register
+
+  !> Capture the list of "required" packages while the manifest is loaded. 
+  !> This subroutine should be called during the "resolve" phase, i.e. when the whole 
+  !> dependency tree has been built already
+  subroutine get_required_packages(tree,node, main, error)
+      !> Instance of the dependency tree
+      class(dependency_tree_t), intent(inout) :: tree     
+      !> Instance of the dependency node
+      class(dependency_node_t), intent(inout) :: node
+      !> Is the main project
+      logical, intent(in) :: main      
+      !> Error handling
+      type(error_t), allocatable, intent(out) :: error
+      
+      integer :: nreq,k,id
+      type(dependency_config_t), allocatable :: dependency(:)
+      
+      ! Skip the main node
+      if (main) then 
+          allocate(node%requires(0)) 
+          return
+      end if
+      
+      if (.not.allocated(node%package_tmp)) then 
+          call fatal_error(error,"Internal error: "//trim(node%name)// &
+                                 " does not have cached manifest")
+          return
+      end if      
+      
+      call get_package_dependencies(node%package_tmp, main, dependency) 
+      nreq = size(dependency)
+    
+      ! Translate names -> indices
+      if (allocated(node%requires)) deallocate(node%requires)
+      allocate(node%requires(nreq))
+
+      do k = 1, nreq
+          id = tree%find(dependency(k)%name)
+          if (id<=0) then
+             ! Shouldn't happen because tree already contains every dep
+             call fatal_error(error, "Internal error: "//trim(node%name)// &
+                  & " cannot find resolved dependency "//trim(dependency(k)%name)//" in tree")
+                  
+             return
+             
+          end if
+          node%requires(k) = id
+      end do    
+      
+  end subroutine get_required_packages  
+
 
   !> Read dependency tree from file
   subroutine load_cache_from_file(self, file, error)

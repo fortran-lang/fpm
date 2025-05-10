@@ -184,10 +184,13 @@ contains
     end subroutine package_defaults
     
     ! Return an array of all dependencies in the manifest
-    subroutine get_package_dependencies(package, deps)
+    subroutine get_package_dependencies(package, main, deps)
 
         !> Parsed package meta data
-        type(package_config_t), intent(inout) :: package
+        type(package_config_t), intent(in) :: package
+        
+        !> Is the main project
+        logical, intent(in) :: main        
         
         !> Unprocessed list of all dependencies listed in this manifest
         type(dependency_config_t), allocatable, intent(out) :: deps(:)
@@ -198,29 +201,33 @@ contains
         if (allocated(package%dependency)) &
         ndeps = ndeps + size(package%dependency)
         
-        if (allocated(package%dev_dependency)) &
-        ndeps = ndeps + size(package%dev_dependency)
-                
-        if (allocated(package%example)) then
-           do k = 1, size(package%example)
-              if (allocated(package%example(k)%dependency)) &
-              ndeps = ndeps + size(package%example(k)%dependency)
-           end do
-        end if
-
-        if (allocated(package%executable)) then
-           do k = 1, size(package%executable)
-              if (allocated(package%executable(k)%dependency)) &
-              ndeps = ndeps + size(package%executable(k)%dependency)
-           end do
-        end if
+        if (main) then 
         
-        if (allocated(package%test)) then
-           do k = 1, size(package%test)
-              if (allocated(package%test(k)%dependency)) &
-              ndeps = ndeps + size(package%test(k)%dependency)
-           end do
-        end if        
+            if (allocated(package%dev_dependency)) &
+            ndeps = ndeps + size(package%dev_dependency)
+                    
+            if (allocated(package%example)) then
+               do k = 1, size(package%example)
+                  if (allocated(package%example(k)%dependency)) &
+                  ndeps = ndeps + size(package%example(k)%dependency)
+               end do
+            end if
+
+            if (allocated(package%executable)) then
+               do k = 1, size(package%executable)
+                  if (allocated(package%executable(k)%dependency)) &
+                  ndeps = ndeps + size(package%executable(k)%dependency)
+               end do
+            end if
+            
+            if (allocated(package%test)) then
+               do k = 1, size(package%test)
+                  if (allocated(package%test(k)%dependency)) &
+                  ndeps = ndeps + size(package%test(k)%dependency)
+               end do
+            end if     
+        
+        endif   
         
         allocate(deps(ndeps))
         
@@ -231,27 +238,31 @@ contains
            if (allocated(package%dependency)) &
            call collect(deps,ndeps,package%dependency)
            
-           if (allocated(package%dev_dependency)) &
-           call collect(deps,ndeps,package%dependency)
+           if (main) then 
            
-           if (allocated(package%example)) then
-              do k = 1, size(package%example)
-                 if (allocated(package%example(k)%dependency)) &
-                 call collect(deps,ndeps,package%example(k)%dependency)
-              end do
-           end if
-           if (allocated(package%executable)) then
-              do k = 1, size(package%executable)
-                 if (allocated(package%executable(k)%dependency)) &
-                 call collect(deps,ndeps,package%executable(k)%dependency)
-              end do
-           end if
-           if (allocated(package%test)) then
-              do k = 1, size(package%test)
-                 if (allocated(package%test(k)%dependency)) &
-                 call collect(deps,ndeps,package%test(k)%dependency)
-              end do
-           end if    
+               if (allocated(package%dev_dependency)) &
+               call collect(deps,ndeps,package%dependency)
+               
+               if (allocated(package%example)) then
+                  do k = 1, size(package%example)
+                     if (allocated(package%example(k)%dependency)) &
+                     call collect(deps,ndeps,package%example(k)%dependency)
+                  end do
+               end if
+               if (allocated(package%executable)) then
+                  do k = 1, size(package%executable)
+                     if (allocated(package%executable(k)%dependency)) &
+                     call collect(deps,ndeps,package%executable(k)%dependency)
+                  end do
+               end if
+               if (allocated(package%test)) then
+                  do k = 1, size(package%test)
+                     if (allocated(package%test(k)%dependency)) &
+                     call collect(deps,ndeps,package%test(k)%dependency)
+                  end do
+               end if    
+           
+           endif
          
          endif
 
