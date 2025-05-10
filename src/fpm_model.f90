@@ -43,6 +43,7 @@ use tomlf, only: toml_table, toml_stat
 use fpm_toml, only: serializable_t, set_value, set_list, get_value, &
                     & get_list, add_table, toml_key, add_array, set_string
 use fpm_error, only: error_t, fatal_error
+use fpm_environment, only: OS_WINDOWS,OS_MACOS
 use fpm_manifest_preprocess, only: preprocess_config_t
 implicit none
 
@@ -234,6 +235,9 @@ type, extends(serializable_t) :: fpm_model_t
     type(string_t) :: module_prefix
 
     contains
+    
+        !> Utility: get library filename
+        procedure :: library_filename
 
         !> Serialization interface
         procedure :: serializable_is_same => model_is_same
@@ -243,7 +247,6 @@ type, extends(serializable_t) :: fpm_model_t
 end type fpm_model_t
 
 contains
-
 
 function info_package(p) result(s)
     ! Returns representation of package_t
@@ -1135,5 +1138,30 @@ subroutine model_load_from_toml(self, table, error)
     call get_value(table, "module-prefix", self%module_prefix%s)
 
 end subroutine model_load_from_toml
+
+!> Utility function: return library filename
+pure function library_filename(model, shared, target_os) result(name)
+    class(fpm_model_t), intent(in) :: model    
+    !> Whether the library is shared
+    logical, intent(in) :: shared
+    !> Target library OS (from fpm_environment OS constants)
+    integer, intent(in) :: target_os
+    character(len=:), allocatable :: name
+
+    if (shared) then 
+        select case (target_os)
+            case (OS_WINDOWS)
+                name = 'lib'//model%package_name//'.dll'
+            case (OS_MACOS)
+                name = 'lib'//model%package_name//'.dylib'
+            case default
+                name = 'lib'//model%package_name//'.so'
+        end select
+    else
+        name = 'lib'//model%package_name//'.a'
+    end if
+
+end function library_filename
+
 
 end module fpm_model
