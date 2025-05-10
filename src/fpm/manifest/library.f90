@@ -9,7 +9,7 @@
 !>build-script = "file"
 !>```
 module fpm_manifest_library
-    use fpm_error, only : error_t, syntax_error
+    use fpm_error, only : error_t, syntax_error, fatal_error
     use fpm_strings, only: string_t, string_cat, operator(==)
     use tomlf, only : toml_table, toml_key, toml_stat
     use fpm_toml, only : get_value, get_list, serializable_t, set_value, &
@@ -31,6 +31,9 @@ module fpm_manifest_library
 
         !> Alternative build script to be invoked
         character(len=:), allocatable :: build_script
+        
+        !> Should this be a shared library
+        logical :: shared = .false.
 
     contains
 
@@ -61,6 +64,8 @@ contains
 
         !> Error handling
         type(error_t), allocatable, intent(out) :: error
+        
+        integer :: stat
 
         call check(table, error)
         if (allocated(error)) return
@@ -75,6 +80,13 @@ contains
 
         call get_list(table, "include-dir", self%include_dir, error)
         if (allocated(error)) return
+        
+        call get_value(table, "shared", self%shared, default=.false., stat=stat)
+
+        if (stat /= toml_stat%success) then
+            call fatal_error(error,"Could not read 'shared' in fpm.toml library config, expecting logical")
+            return
+        end if        
 
         ! Set default value of include-dir if not found in manifest
         if (.not.allocated(self%include_dir)) then
@@ -107,7 +119,7 @@ contains
                 call syntax_error(error, "Key "//list(ikey)%key//" is not allowed in library")
                 exit
 
-            case("source-dir", "include-dir", "build-script")
+            case("source-dir", "include-dir", "build-script", "shared")
                 continue
 
             end select
@@ -146,6 +158,9 @@ contains
         if (allocated(self%include_dir)) then
             write(unit, fmt) "- include directory", string_cat(self%include_dir,",")
         end if
+        
+        write(unit, fmt) "- library type", merge("shared", "static", self%shared)
+        
         if (allocated(self%build_script)) then
             write(unit, fmt) "- custom build", self%build_script
         end if
@@ -169,6 +184,7 @@ contains
               if (allocated(this%build_script)) then
                 if (.not.this%build_script==other%build_script) return
               end if
+              if (this%shared.neqv.other%shared) return
            class default
               ! Not the same type
               return
@@ -197,6 +213,8 @@ contains
         if (allocated(error)) return
         call set_list(table, "include-dir", self%include_dir, error)
         if (allocated(error)) return
+        call set_value(table, "shared", self%shared, error, class_name)
+        if (allocated(error)) return
 
     end subroutine dump_to_toml
 
@@ -217,6 +235,9 @@ contains
         call get_value(table, "build-script", self%build_script)
         if (allocated(error)) return
         call get_list(table, "include-dir", self%include_dir, error)
+        if (allocated(error)) return
+        call get_value(table, "shared", self%shared, error, class_name)
+        if (allocated(error)) return
 
     end subroutine load_from_toml
 
