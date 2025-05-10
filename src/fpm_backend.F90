@@ -34,7 +34,7 @@ use fpm_model, only: fpm_model_t
 use fpm_strings, only: string_t, operator(.in.)
 use fpm_targets, only: build_target_t, build_target_ptr, FPM_TARGET_OBJECT, &
                        FPM_TARGET_C_OBJECT, FPM_TARGET_ARCHIVE, FPM_TARGET_EXECUTABLE, &
-                       FPM_TARGET_CPP_OBJECT
+                       FPM_TARGET_CPP_OBJECT, FPM_TARGET_SHARED
 use fpm_backend_output
 use fpm_compile_commands, only: compile_command_table_t
 implicit none
@@ -354,6 +354,10 @@ subroutine build_target(model,target,verbose,dry_run,table,stat)
     case (FPM_TARGET_ARCHIVE)
         call model%archiver%make_archive(target%output_file, target%link_objects, &
             & target%output_log_file, stat, dry_run)
+            
+    case (FPM_TARGET_SHARED)
+        
+        stop 'does not know how to create a shared library yet'
 
     end select
 

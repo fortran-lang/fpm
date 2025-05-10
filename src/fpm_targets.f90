@@ -39,10 +39,10 @@ implicit none
 
 private
 
-public FPM_TARGET_UNKNOWN, FPM_TARGET_EXECUTABLE, &
-       FPM_TARGET_ARCHIVE, FPM_TARGET_OBJECT, &
+public FPM_TARGET_UNKNOWN,  FPM_TARGET_EXECUTABLE, &
+       FPM_TARGET_ARCHIVE,  FPM_TARGET_OBJECT, &
        FPM_TARGET_C_OBJECT, FPM_TARGET_CPP_OBJECT, &
-       FPM_TARGET_NAME
+       FPM_TARGET_SHARED,   FPM_TARGET_NAME
 public build_target_t, build_target_ptr
 public targets_from_sources, resolve_module_dependencies
 public add_target, add_dependency
@@ -825,6 +825,15 @@ subroutine prune_build_targets(targets, root_package)
                     end do
 
                 end if
+                
+            elseif (any(target%target_type == [FPM_TARGET_ARCHIVE,FPM_TARGET_SHARED])) then 
+                
+                ! Remove empty library files
+                if (size(target%dependencies)==0) then 
+                    exclude_target(i) = .true.
+                    target%skip = .true.
+                endif
+                
             end if
 
             ! (If there aren't any executables then we only prune modules from dependencies)
@@ -1147,7 +1156,7 @@ subroutine filter_library_targets(targets, list)
     n = 0
     call resize(list)
     do i = 1, size(targets)
-        if (any(targets(i)%ptr%target_type == [FPM_TARGET_ARCHIVE,FPM_TARGET_SHARED]) then
+        if (any(targets(i)%ptr%target_type == [FPM_TARGET_ARCHIVE,FPM_TARGET_SHARED])) then
             if (n >= size(list)) call resize(list)
             n = n + 1
             list(n)%s = targets(i)%ptr%output_file
