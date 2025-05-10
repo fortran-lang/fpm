@@ -65,7 +65,7 @@ module fpm_dependency
   use fpm_manifest_dependency, only: manifest_has_changed, dependency_destroy
   use fpm_manifest_preprocess, only: operator(==)
   use fpm_strings, only: string_t, operator(.in.)
-  use tomlf, only: toml_table, toml_key, toml_error, toml_load, toml_stat
+  use tomlf, only: toml_table, toml_key, toml_error, toml_load, toml_stat, toml_array, len, add_array
   use fpm_toml, only: toml_serialize, get_value, set_value, add_table, set_string
   use fpm_versioning, only: version_t, new_version
   use fpm_settings, only: fpm_global_settings, get_global_settings, official_registry_base_url
@@ -86,7 +86,7 @@ module fpm_dependency
   !> Dependency node in the projects dependency tree
   type, extends(dependency_config_t) :: dependency_node_t
     !> Actual version of this dependency
-    type(version_t), allocatable :: version
+    type(version_t), allocatable  :: version
     !> Installation prefix of this dependencies
     character(len=:), allocatable :: proj_dir
     !> Checked out revision of the version control system
@@ -97,6 +97,8 @@ module fpm_dependency
     logical :: update = .false.
     !> Dependency was loaded from a cache
     logical :: cached = .false.
+    !> Indices (in `dependency_tree_t%dep`) that this node depends on
+    integer, allocatable :: requires(:)    
   contains
     !> Update dependency from project manifest.
     procedure :: register
@@ -108,8 +110,8 @@ module fpm_dependency
 
     !> Serialization interface
     procedure :: serializable_is_same => dependency_node_is_same
-    procedure :: dump_to_toml => node_dump_to_toml
-    procedure :: load_from_toml => node_load_from_toml
+    procedure :: dump_to_toml         => node_dump_to_toml
+    procedure :: load_from_toml       => node_load_from_toml
 
   end type dependency_node_t
 
@@ -189,8 +191,8 @@ module fpm_dependency
 
     !> Serialization interface
     procedure :: serializable_is_same => dependency_tree_is_same
-    procedure :: dump_to_toml   => tree_dump_to_toml
-    procedure :: load_from_toml => tree_load_from_toml
+    procedure :: dump_to_toml         => tree_dump_to_toml
+    procedure :: load_from_toml       => tree_load_from_toml
 
   end type dependency_tree_t
 
@@ -1321,6 +1323,12 @@ contains
               if (.not.(this%version==other%version)) return
             endif
 
+            if (allocated(this%requires).neqv.allocated(other%requires)) return
+            if (allocated(this%requires)) then
+              if (.not.size(this%requires)==size(other%requires)) return
+              if (.not.all(this%requires==other%requires)) return
+            endif
+
          class default
             ! Not the same type
             return
@@ -1343,7 +1351,8 @@ contains
         !> Error handling
         type(error_t), allocatable, intent(out) :: error
 
-        integer :: ierr
+        integer :: i,n,ierr
+        type(toml_array), pointer :: array
 
         ! Dump parent class
         call self%dependency_config_t%dump_to_toml(table, error)
@@ -1363,6 +1372,25 @@ contains
         if (allocated(error)) return
         call set_value(table, "cached", self%cached, error, 'dependency_node_t')
         if (allocated(error)) return
+        
+        call add_array(table, "requires", array, stat=ierr)
+        if (ierr/=toml_stat%success .or. .not.associated(array)) then 
+            call fatal_error(error, "cannot create 'requires' array in dependency_node_t")
+            return            
+        end if
+        
+        if (allocated(self%requires)) then 
+            
+           n = size(self%requires) 
+            
+           do i=1,n
+               call set_value(array, pos=i, val=self%requires(i), stat=ierr)
+               if (ierr/=toml_stat%success) then 
+                   call fatal_error(error,"cannot set 'requires' array in dependency_node_t")
+                   return
+               endif 
+           end do
+        endif        
 
     end subroutine node_dump_to_toml
 
@@ -1380,7 +1408,8 @@ contains
 
         !> Local variables
         character(len=:), allocatable :: version
-        integer :: ierr
+        integer :: ierr,i,n
+        type(toml_array), pointer :: array
 
         call destroy_dependency_node(self)
 
@@ -1407,6 +1436,30 @@ contains
                 return
             endif
         end if
+        
+        call get_value(table, key="requires", ptr=array, requested=.true.,stat=ierr)
+        
+        if (ierr/=toml_stat%success .or. .not.associated(array)) then 
+            
+            call fatal_error(error, "dependency_node_t table has no 'requires' key")
+            return
+            
+        else
+            
+            n = len(array)               
+            if (n<=0) return
+                    
+            allocate(self%requires(n))
+            
+            do i = 1, n
+                call get_value(array, pos=i, val=self%requires(i), stat=ierr)
+                if (ierr /= toml_stat%success) then
+                    call fatal_error(error, "dependency_node_t: entry in 'requires' field cannot be read")
+                    return
+                end if
+            end do            
+            
+        end if        
 
     end subroutine node_load_from_toml
 
@@ -1422,6 +1475,7 @@ contains
         deallocate(self%version,stat=ierr)
         deallocate(self%proj_dir,stat=ierr)
         deallocate(self%revision,stat=ierr)
+        deallocate(self%requires,stat=ierr)
         self%done = .false.
         self%update = .false.
         self%cached = .false.
