@@ -17,8 +17,8 @@ module fpm_environment
     public :: delete_env
     public :: get_command_arguments_quoted
     public :: separator
+    public :: library_filename
     
-
                         public :: OS_NAME
     integer, parameter, public :: OS_UNKNOWN = 0
     integer, parameter, public :: OS_LINUX   = 1
@@ -29,6 +29,40 @@ module fpm_environment
     integer, parameter, public :: OS_FREEBSD = 6
     integer, parameter, public :: OS_OPENBSD = 7
 contains
+
+    !> Utility function: return library filename
+    pure function library_filename(package_name, shared, import, target_os) result(name)
+        character(*), intent(in) :: package_name    
+        !> Whether it's a shared library
+        logical, intent(in) :: shared       
+        !> Whether it's for linking (import library) or actual library
+        logical, intent(in) :: import       
+        !> Build target OS: one of OS_WINDOWS, OS_MACOS, ...
+        integer, intent(in) :: target_os        
+
+        character(len=:), allocatable :: name
+
+        if (shared) then
+            select case (target_os)
+            case (OS_WINDOWS)
+                if (import) then
+                    ! Linking requires the import library
+                    name = 'lib' // package_name // '.lib'
+                else
+                    ! The actual shared object is a DLL
+                    name = 'lib' // package_name // '.dll'
+                end if
+            case (OS_MACOS)
+                name = 'lib' // package_name // '.dylib'
+            case default
+                name = 'lib' // package_name // '.so'
+            end select
+        else
+            ! Static library (same for all platforms)
+            name = 'lib' // package_name // '.a'
+        end if
+
+    end function library_filename
 
     !> Return string describing the OS type flag
     pure function OS_NAME(os)
