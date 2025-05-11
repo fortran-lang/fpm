@@ -99,8 +99,6 @@ module fpm_dependency
     logical :: cached = .false.
     !> Indices (in `dependency_tree_t%dep`) that this node depends on
     integer, allocatable :: requires(:)    
-    !> Temporary manifest storage to avoid reading it twice
-    type(package_config_t), allocatable :: package_tmp
   contains
 
     !> Update dependency from project manifest.
@@ -385,17 +383,10 @@ contains
           return
       end if
       
-      ! Copy manifest into the first dependency
-      allocate(self%dep(1)%package_tmp,source=main)
-  
       do i = 1, self%ndep
           
           call get_required_packages(self, self%dep(i), main=i==1, error=error)
           if (allocated(error)) return
-          
-          ! Remove temporary manifest
-          if (allocated(self%dep(i)%package_tmp)) &
-             deallocate(self%dep(i)%package_tmp)
           
       end do  
 
@@ -662,7 +653,7 @@ contains
     !> Error handling
     type(error_t), allocatable, intent(out) :: error
 
-    type(package_config_t), allocatable :: package
+    type(package_config_t) :: package
     character(len=:), allocatable :: manifest, proj_dir, revision
     logical :: fetch
 
@@ -691,7 +682,6 @@ contains
     end if
 
     manifest = join_path(proj_dir, "fpm.toml")
-    allocate(package)
     call get_package_data(package, manifest, error)
     if (allocated(error)) return
 
@@ -707,9 +697,6 @@ contains
 
     call self%add(package, proj_dir, .false., error)
     if (allocated(error)) return
-    
-    ! Temporarily store the dependency manifest for usage in graph resolution
-    call move_alloc(from=package, to=dependency%package_tmp)    
     
   end subroutine resolve_dependency
 
@@ -1042,7 +1029,7 @@ contains
         return
     end if
 
-    node%version = package%version
+    node%version  = package%version
     node%proj_dir = root
 
     if (allocated(node%git) .and. present(revision)) then
@@ -1073,6 +1060,7 @@ contains
       
       integer :: nreq,k,id
       type(dependency_config_t), allocatable :: dependency(:)
+      type(package_config_t) :: manifest
       
       ! Skip the main node
       if (main) then 
@@ -1080,13 +1068,11 @@ contains
           return
       end if
       
-      if (.not.allocated(node%package_tmp)) then 
-          call fatal_error(error,"Internal error: "//trim(node%name)// &
-                                 " does not have cached manifest")
-          return
-      end if      
+      ! Get manifest
+      call get_package_data(manifest, join_path(node%proj_dir,"fpm.toml"), error)
+      if (allocated(error)) return
       
-      call get_package_dependencies(node%package_tmp, main, dependency) 
+      call get_package_dependencies(manifest, main, dependency) 
       nreq = size(dependency)
     
       ! Translate names -> indices
