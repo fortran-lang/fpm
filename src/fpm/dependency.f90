@@ -376,19 +376,52 @@ contains
       !> Error handling
       type(error_t), allocatable, intent(out) :: error
 
-      integer :: i
+      integer :: i,nit
+      integer, parameter   :: MAXIT = 50
+      logical, allocatable :: finished(:)
+      integer, allocatable :: old_requires(:)
       
       if (self%ndep<1) then 
           call fatal_error(error, "Trying to compute the dependency graph of an empty tree")
           return
       end if
       
-      do i = 1, self%ndep
-          
-          call get_required_packages(self, self%dep(i), main=i==1, error=error)
-          if (allocated(error)) return
-          
-      end do  
+      nit = 0
+      allocate(finished(self%ndep),source=.false.)
+      do while (.not.all(finished) .and. nit<MAXIT)
+        
+          nit = nit+1
+      
+          do i = 1, self%ndep
+            
+              ! Save old deps
+              call move_alloc(from=self%dep(i)%requires,to=old_requires)
+              
+              call get_required_packages(self, self%dep(i), main=i==1, error=error)
+              if (allocated(error)) return
+              
+              finished(i) = all_alloc(self%dep(i)%requires, old_requires)
+              
+          end do  
+      
+      end do
+      
+      if (nit>=MAXIT) call fatal_error(error, "Infinite loop detected computing the dependency graph")
+      
+      contains
+      
+      pure logical function all_alloc(this,that)
+          integer, intent(in), allocatable :: this(:),that(:)
+          all_alloc = .false.
+          if (allocated(this).neqv.allocated(that)) return
+          if (.not.allocated(this)) then 
+              all_alloc = .true.
+          else  
+              if (size(this)/=size(that)) return
+              if (.not.all(this==that)) return
+              all_alloc = .true.
+          end if
+      end function all_alloc
 
   end subroutine resolve_dependency_graph
 
@@ -1048,7 +1081,7 @@ contains
   !> Capture the list of "required" packages while the manifest is loaded. 
   !> This subroutine should be called during the "resolve" phase, i.e. when the whole 
   !> dependency tree has been built already
-  subroutine get_required_packages(tree,node, main, error)
+  subroutine get_required_packages(tree, node, main, error)
       !> Instance of the dependency tree
       class(dependency_tree_t), intent(inout) :: tree     
       !> Instance of the dependency node
@@ -1061,12 +1094,7 @@ contains
       integer :: nreq,k,id
       type(dependency_config_t), allocatable :: dependency(:)
       type(package_config_t) :: manifest
-      
-      ! Skip the main node
-      if (main) then 
-          allocate(node%requires(0)) 
-          return
-      end if
+      logical :: required(tree%ndep)
       
       ! Get manifest
       call get_package_data(manifest, join_path(node%proj_dir,"fpm.toml"), error)
@@ -1076,8 +1104,7 @@ contains
       nreq = size(dependency)
     
       ! Translate names -> indices
-      if (allocated(node%requires)) deallocate(node%requires)
-      allocate(node%requires(nreq))
+      required = .false.
 
       do k = 1, nreq
           id = tree%find(dependency(k)%name)
@@ -1089,8 +1116,35 @@ contains
              return
              
           end if
-          node%requires(k) = id
+          
+          ! Recurse dependencies
+          call recurse_deps(tree, id, required)
+                    
       end do    
+      
+      ! Recursed list
+      nreq = count(required)
+      if (allocated(node%requires)) deallocate(node%requires)
+      allocate(node%requires(nreq))  
+      if (nreq>0) node%requires(:) = pack([(id,id=1,tree%ndep)],required) 
+      
+      contains
+                
+          pure recursive subroutine recurse_deps(tree, id, required)
+              class(dependency_tree_t), intent(in) :: tree
+              integer, intent(in) :: id
+              logical, intent(inout) :: required(:)
+
+              integer :: j
+              if (required(id)) return
+              
+              required(id) = .true.
+              if (allocated(tree%dep(id)%requires)) then
+                  do j = 1, size(tree%dep(id)%requires)
+                      call recurse_deps(tree, tree%dep(id)%requires(j), required)
+                  end do
+              end if
+          end subroutine recurse_deps         
       
   end subroutine get_required_packages  
 
