@@ -1148,6 +1148,70 @@ contains
       
   end subroutine get_required_packages  
 
+  !> Build a correct topological link order for a given dependency node.
+  !>
+  !> This routine returns the list of dependencies required to build `root_id`,
+  !> sorted such that each dependency appears *before* any node that depends on it.
+  !> This is suitable for correct linker ordering: `-lA -lB` means B can use symbols from A.
+  !>
+  !> The returned list includes both the transitive dependencies and the node itself.
+  !> Example: if node 3 requires [5, 7, 9, 2] and 9 also requires 2,
+  !> then the result will ensure that 2 appears before 9, etc.
+  subroutine build_local_link_order(tree, root_id, order, error)
+    !> The full dependency graph
+    class(dependency_tree_t), intent(in) :: tree
+    !> Index of the node for which to compute link order (e.g., the target being linked)
+    integer, intent(in) :: root_id
+    !> Ordered list of dependency indices (subset of tree%dep(:)) in link-safe order
+    integer, allocatable, intent(out) :: order(:)
+    !> Optional fatal error if a cycle is detected (not expected)
+    type(error_t), allocatable, intent(out) :: error
+
+    !> Track which nodes have been visited
+    logical, allocatable :: visited(:)
+    !> Work stack holding post-order DFS traversal
+    integer, allocatable :: stack(:)
+    !> Total number of nodes and current stack position
+    integer :: n, top
+
+    n = tree%ndep
+    allocate(visited(n), source=.false.)
+    allocate(stack(n), source=0)
+    top = 0
+
+    !> Depth-First Search from root node
+    call dfs(root_id,visited,stack,top)
+
+    !> The final link order is the reverse of the DFS post-order
+    allocate(order(top))
+    if (top>0) order(:) = stack(top:1:-1)
+
+  contains
+
+    !> Recursive depth-first search, post-order
+    recursive subroutine dfs(i,visited,stack,top)
+        integer, intent(in) :: i
+        logical, intent(inout) :: visited(:)
+        integer, intent(inout) :: stack(:),top
+        integer :: k
+
+        if (visited(i)) return
+        
+        visited(i) = .true.
+
+        ! Visit all required dependencies before this node
+        if (allocated(tree%dep(i)%requires)) then
+            do k = 1, size(tree%dep(i)%requires)
+                call dfs(tree%dep(i)%requires(k), visited, stack, top)
+            end do
+        end if
+
+        ! Now that all dependencies are handled, record this node
+        top = top + 1
+        stack(top) = i
+    end subroutine dfs
+
+  end subroutine build_local_link_order
 
   !> Read dependency tree from file
   subroutine load_cache_from_file(self, file, error)

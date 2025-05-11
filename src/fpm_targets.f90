@@ -1018,14 +1018,14 @@ subroutine resolve_target_linking(targets, model)
                 
             !    case (FPM_TARGET_SHARED)
                     
-                    block
-                        integer :: k
-                        do k=1,size(Targets)
-                            print *, 'target ',k,'...'
-                            call targets(k)%ptr%info(stdout)
-                        end do
-                    end block
-                    stop 'implement shared'
+!                    block
+!                        integer :: k
+!                        do k=1,size(Targets)
+!                            print *, 'target ',k,'...'
+!                            call targets(k)%ptr%info(stdout)
+!                        end do
+!                    end block
+!                    stop 'implement shared'
                     
                 case (FPM_TARGET_EXECUTABLE)
 
