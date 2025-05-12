@@ -1139,13 +1139,15 @@ subroutine model_load_from_toml(self, table, error)
 
 end subroutine model_load_from_toml
 
-function get_shared_libraries_link(model, package_name, prefix, exclude_self, error) result(r)
+function get_shared_libraries_link(model, package_name, prefix, exclude_self, dep_IDs, error) result(r)
     class(fpm_model_t), intent(in) :: model
     character(*), intent(in) :: package_name
     type(error_t), allocatable, intent(out) :: error
     character(*), intent(in) :: prefix
     !> Option to exclude linking to the given package (needed building it as a library)
     logical, optional, intent(in) :: exclude_self
+    !> Optionally export the list of dependency IDs
+    integer, allocatable, optional, intent(out) :: dep_IDs(:)
     character(len=:), allocatable :: r
     
     integer :: id,ndep,i
@@ -1170,6 +1172,7 @@ function get_shared_libraries_link(model, package_name, prefix, exclude_self, er
     
     if (ndep<=0) then 
        r = prefix
+       if (present(dep_IDs)) allocate(dep_IDs(0))
        return 
     end if
     
@@ -1184,6 +1187,9 @@ function get_shared_libraries_link(model, package_name, prefix, exclude_self, er
     package_deps = [(string_t(model%deps%dep(sorted_package_IDs(i))%name),i=1,ndep)]
     
     r = model%compiler%enumerate_libraries(prefix, package_deps)
+    
+    ! If requested, export the list of dependency IDs
+    if (present(dep_IDs)) call move_alloc(from=sorted_package_IDs,to=dep_IDs)
     
 end function get_shared_libraries_link
 

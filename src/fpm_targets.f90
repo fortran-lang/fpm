@@ -1039,10 +1039,19 @@ subroutine resolve_target_linking(targets, model, error)
                     ! Add dependencies' shared libraries (excluding self)
                     target%link_flags = model%get_shared_libraries_link(target%package_name, &
                                                                         target%link_flags, &
-                                                                        error=error, &
-                                                                        exclude_self=.true.)
+                                                                        exclude_self=.true., &
+                                                                        dep_IDs=package_deps, &
+                                                                        error=error)
+                    
                     if (allocated(error)) return
                     
+                    ! Now that they're available, add these dependencies to the targets
+                    if (size(package_deps)>0) then 
+                        do j=1,size(package_deps)
+                            call add_dependency(target, targets(package_deps(j))%ptr)
+                        end do
+                    end if                    
+                                                        
                     ! Add any per-target libraries (e.g., `target%link_libraries`)
                     if (allocated(target%link_libraries)) then
                         if (size(target%link_libraries) > 0) then
