@@ -310,5 +310,11 @@ fi
 
 popd
 
+# Test shared library dependencies
+pushd shared_app_only
+"$fpm" test || EXIT_CODE=$?
+test $EXIT_CODE -eq 0
+popd
+
 # Cleanup
 rm -rf ./*/build
