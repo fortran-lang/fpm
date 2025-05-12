@@ -17,7 +17,7 @@ use fpm_compiler, only: new_compiler, new_archiver, set_cpp_preprocessor_flags
 
 use fpm_sources, only: add_executable_sources, add_sources_from_dir
 use fpm_targets, only: targets_from_sources, build_target_t, build_target_ptr, &
-                        FPM_TARGET_EXECUTABLE
+                        FPM_TARGET_EXECUTABLE, get_library_dirs
 use fpm_manifest, only : get_package_data, package_config_t
 use fpm_meta, only : resolve_metapackages
 use fpm_error, only : error_t, fatal_error, fpm_stop
@@ -26,7 +26,7 @@ use, intrinsic :: iso_fortran_env, only : stdin => input_unit, &
                                         & stdout => output_unit, &
                                         & stderr => error_unit
 use iso_c_binding, only: c_char, c_ptr, c_int, c_null_char, c_associated, c_f_pointer
-use fpm_environment, only: os_is_unix
+use fpm_environment, only: os_is_unix, get_os_type, OS_WINDOWS, OS_MACOS, get_env, set_env, delete_env
 use fpm_settings, only: fpm_global_settings, get_global_settings
 
 implicit none
@@ -487,7 +487,7 @@ subroutine cmd_run(settings,test)
     type(srcfile_t), pointer :: exe_source
     integer :: run_scope,firsterror
     integer, allocatable :: stat(:),target_ID(:)
-    character(len=:),allocatable :: line,run_cmd
+    character(len=:),allocatable :: line,run_cmd,library_path
 
     call get_package_data(package, "fpm.toml", error, apply_defaults=.true.)
     if (allocated(error)) then
@@ -581,6 +581,12 @@ subroutine cmd_run(settings,test)
          call compact_list()
     else
 
+        ! Save current library path and set a new one that includes the local 
+        ! dynamic library folders
+        library_path = save_library_path()                
+        call set_library_path(model, targets, error)
+        if (allocated(error)) call fpm_stop(1, '*cmd_run* Run error: '//error%message)
+
         allocate(stat(size(executables)))
         do i=1,size(executables)
             if (exists(executables(i)%s)) then
@@ -590,7 +596,7 @@ subroutine cmd_run(settings,test)
                 if (settings%runner/=' ')     run_cmd = settings%runner_command()//' '//run_cmd
                 if (allocated(settings%args)) run_cmd = run_cmd//" "//settings%args
                 
-                call run(run_cmd,echo=settings%verbose,exitstat=stat(i))
+                call run(run_cmd,echo=settings%verbose,exitstat=stat(i))                
                 
             else
                 call fpm_stop(1,'*cmd_run*:'//executables(i)%s//' not found')
@@ -607,6 +613,10 @@ subroutine cmd_run(settings,test)
             firsterror = findloc(stat/=0,value=.true.,dim=1)
             call fpm_stop(stat(firsterror),'*cmd_run*:stopping due to failed executions')
         end if
+        
+        ! Restore original library path
+        call restore_library_path(library_path, error)
+        if (allocated(error)) call fpm_stop(1, '*cmd_run* Environment error: '//error%message)                         
 
     end if
 
@@ -784,5 +794,87 @@ logical function should_be_run(settings,run_scope,exe_target)
     endif
     
 end function should_be_run
+
+!> Save the current runtime library path (e.g., PATH or LD_LIBRARY_PATH)
+function save_library_path() result(path)
+    character(len=:), allocatable :: path
+
+    select case (get_os_type())
+    case (OS_WINDOWS)
+        path = get_env("PATH", default="")
+    case (OS_MACOS)
+        ! macOS does not use LD_LIBRARY_PATH by default for `.dylib`
+        allocate(character(0) :: path)
+    case default ! UNIX/Linux
+        path = get_env("LD_LIBRARY_PATH", default="")
+    end select
+end function save_library_path
+
+!> Set the runtime library path for the current process (used for subprocesses)
+subroutine set_library_path(model, targets, error)
+    type(fpm_model_t), intent(in) :: model
+    type(build_target_ptr), intent(inout), target :: targets(:)
+    type(error_t), allocatable, intent(out) :: error
+     
+    type(string_t), allocatable :: shared_lib_dirs(:)
+    character(len=:), allocatable :: new_path, sep
+    logical :: success
+    integer :: i
+
+    ! Get library directories
+    call get_library_dirs(model, targets, shared_lib_dirs)
+
+    ! Select platform-specific separator
+    select case (get_os_type())
+    case (OS_WINDOWS)
+        sep = ";"
+    case default
+        sep = ":"
+    end select
+
+    ! Join the directories into a path string
+    ! Manually join paths
+    new_path = ""
+    do i = 1, size(shared_lib_dirs)
+        if (i > 1) new_path = new_path // sep
+        new_path = new_path // shared_lib_dirs(i)%s
+    end do    
+
+    ! Set the appropriate environment variable
+    select case (get_os_type())
+    case (OS_WINDOWS)
+        success = set_env("PATH", new_path // sep // get_env("PATH", default=""))
+    case (OS_MACOS)
+        ! Typically not required for local .dylib use, noop or DYLD_LIBRARY_PATH if needed
+        success = .true.
+    case default ! UNIX/Linux
+        success = set_env("LD_LIBRARY_PATH", new_path // sep // get_env("LD_LIBRARY_PATH", default=""))
+    end select
+    
+    if (.not.success) call fatal_error(error," Cannot set library path: "//new_path)
+
+end subroutine set_library_path
+
+!> Restore a previously saved runtime library path
+subroutine restore_library_path(saved_path,error)
+    character(*), intent(in) :: saved_path
+    type(error_t), allocatable, intent(out) :: error
+    logical :: success
+
+    select case (get_os_type())
+    case (OS_WINDOWS)
+        success = set_env("PATH", saved_path)
+    case (OS_MACOS)
+        ! noop
+        success = .true.
+    case default ! UNIX/Linux
+        success = set_env("LD_LIBRARY_PATH", saved_path)
+    end select
+    
+    if (.not.success) call fatal_error(error, "Cannot restore library path "//saved_path)
+
+end subroutine restore_library_path
+
+
 
 end module fpm

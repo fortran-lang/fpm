@@ -409,6 +409,7 @@ logical function set_env(name,value,overwrite)
    end interface
    
    !> Overwrite setting
+   cerr = 0_c_int
    can_overwrite = .true.
    if (present(overwrite)) can_overwrite = overwrite
    cover = merge(1_c_int,0_c_int,can_overwrite)
