@@ -1156,7 +1156,8 @@ function get_shared_libraries_link(model, package_name, prefix, exclude_self, er
     ! Get dependency ID of this target 
     id = model%deps%find(package_name)
     if (id<=0) then 
-        call fatal_error(error, "Internal error: shared library does not correspond to a package")
+        call fatal_error(error, "Internal error: shared library "//package_name// &
+                                " does not correspond to a package")
         return
     end if
     
