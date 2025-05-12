@@ -223,6 +223,10 @@ character(len=:,kind=tfc),allocatable :: littlefile(:)
         &'  # files and library archive. Without this being set to "true" an "install"    ',&
         &'  # subcommand ignores parameters that specify library installation.            ',&
         &'                                                                                ',&
+        &'  # If your project is a shared library (see `[library] shared=true`), enabling ',&
+        &'  # this will install the compiled `.so`, `.dylib`, or `.dll` files in the      ',&
+        &'  # appropriate `lib/` folder, just like it does for static archives.           ',&
+        &'                                                                                ',&
         &'library = false                                                                 ',&
         &'                                                                                ',&
         &'[build] # General Build Options                                                 ',&
@@ -305,6 +309,20 @@ character(len=:,kind=tfc),allocatable :: littlefile(:)
             &'  # This rule applies generally to any number of nested directories and         ',&
             &'  # modules. For example, src/a/b/c/d.f90 must define a module called a_b_c_d.  ',&
             &'  # Again, this is not enforced but may be required in future releases.         ',&
+            &'                                                                                ',&
+            &'  # Set `shared=true` to build dynamic libraries (.so/.dylib/.dll)              ',&
+            &'  # instead of a static archive (.a). When enabled, each package in the         ',&
+            &'  # dependency graph will be compiled to its own shared library.                ',&
+            &'  #                                                                             ',&
+            &'  # This is useful for plugin systems, dynamic linking, or when building        ',&
+            &'  # language bindings.                                                          ',&
+            &'  #                                                                             ',&
+            &'  # Note: shared libraries are not installed unless `[install] library=true`    ',&
+            &'  # is also enabled.                                                            ',&
+            &'  #                                                                             ',&
+            &'  # Example:                                                                    ',&
+            &'shared = false                                                                  ',&
+            
             &'']
         endif
         ! create placeholder module src/bname.f90

@@ -68,10 +68,10 @@ subroutine build_model(model, settings, package, error)
     end if
 
     call new_compiler_flags(model,settings)
-    model%build_prefix = join_path("build", basename(model%compiler%fc))
-    model%include_tests = settings%build_tests
+    model%build_prefix         = join_path("build", basename(model%compiler%fc))
+    model%include_tests        = settings%build_tests
     model%enforce_module_names = package%build%module_naming
-    model%module_prefix = package%build%module_prefix
+    model%module_prefix        = package%build%module_prefix
 
     ! Resolve meta-dependencies into the package and the model
     call resolve_metapackages(model,package,settings,error)
