@@ -109,6 +109,8 @@ contains
     procedure :: compile_c
     !> Compile a CPP object
     procedure :: compile_cpp
+    !> Link a shared library
+    procedure :: link_shared
     !> Link executable
     procedure :: link => link_executable
     !> Check whether compiler is recognized
@@ -119,8 +121,6 @@ contains
     procedure :: is_gnu
     !> Enumerate libraries, based on compiler and platform
     procedure :: enumerate_libraries
-    !> Enumerate shared libraries, based on compiler and platform
-    procedure :: enumerate_shared_libraries
 
     !> Serialization interface
     procedure :: serializable_is_same => compiler_is_same
@@ -617,6 +617,30 @@ function get_module_flag(self, path) result(flags)
 end function get_module_flag
 
 
+function get_shared_flag(self) result(shared_flag)
+    class(compiler_t), intent(in) :: self
+    character(len=:), allocatable :: shared_flag
+
+    select case (self%id)
+    case default
+        shared_flag = "-shared"
+    case (id_gcc, id_f95, id_flang, id_flang_new, id_lfortran)
+        shared_flag = "-shared"
+    case (id_intel_classic_nix, id_intel_llvm_nix, id_pgi, id_nvhpc)
+        shared_flag = "-shared"
+    case (id_intel_classic_windows, id_intel_llvm_windows)
+        shared_flag = "/DLL"
+    case (id_nag)
+        shared_flag = "-Wl,-shared"
+    case (id_ibmxl)
+        shared_flag = "-qmkshrobj"
+    case (id_cray, id_lahey)
+        shared_flag = ""  ! Needs special handling
+    end select
+
+end function get_shared_flag
+
+
 function get_feature_flag(self, feature) result(flags)
     class(compiler_t), intent(in) :: self
     character(len=*), intent(in) :: feature
@@ -1001,55 +1025,33 @@ function enumerate_libraries(self, prefix, libs) result(r)
     type(string_t), intent(in) :: libs(:)
     character(len=:), allocatable :: r
 
-    if (self%id == id_intel_classic_windows .or. &
-        self%id == id_intel_llvm_windows) then
-        r = prefix // " " // string_cat(libs,".lib ")//".lib"
-    else
-        r = prefix // " -l" // string_cat(libs," -l")
-    end if
-end function enumerate_libraries
-
-!>
-!> Enumerate shared libraries, based on compiler and platform
-!>
-function enumerate_shared_libraries(self, prefix, package_deps, target_os) result(r)
-    class(compiler_t), intent(in) :: self
-    character(len=*), intent(in) :: prefix
-    type(string_t), intent(in) :: package_deps(:)
-    integer, intent(in) :: target_os
-    character(len=:), allocatable :: r
-
     character(len=:), allocatable :: joined
-    type(string_t), allocatable :: libnames(:)
-    integer :: i, os
 
-    os = get_os_type()
-
-    if (size(package_deps) == 0) then
+    if (size(libs) == 0) then
         r = prefix
         return
     end if
 
-    ! Convert package names to filenames (with shared=.true. and import flag)
-    allocate(libnames(size(package_deps)))
-    do i = 1, size(package_deps)
-        libnames(i) = string_t(library_filename(package_deps(i)%s, shared=.true., import=.true., target_os=os))
-    end do
+    select case (self%id)
 
-    if (os == OS_WINDOWS) then
-        ! Windows: use import libraries (i.e., .lib files) during linking
-        r = self%enumerate_libraries(prefix, libnames)
-    else
-        select case (self%id)
-        case (id_nag, id_ibmxl)
-            r = trim(prefix) // " -Wl," // string_cat(libnames, " -Wl,")
-        case default
-            joined = string_cat(libnames, " ")
-            r = trim(prefix) // " " // trim(joined)
-        end select
-    end if
+    case (id_intel_classic_windows, id_intel_llvm_windows)
+        ! Windows Intel uses `.lib` files directly
+        joined = string_cat(libs, ".lib ") // ".lib"
+        r = trim(prefix) // " " // trim(joined)
 
-end function enumerate_shared_libraries
+    case (id_nag, id_ibmxl)
+        ! NAG and IBMXL need -Wl, wrapper around linker flags
+        joined = string_cat(libs, " -Wl,")
+        r = trim(prefix) // " -Wl," // trim(joined)
+
+    case default
+        ! Generic Unix-style linker flags: use `-lfoo`
+        joined = string_cat(libs, " -l")
+        r = trim(prefix) // " -l" // trim(joined)
+
+    end select
+
+end function enumerate_libraries
 
 !> Create new compiler instance
 subroutine new_compiler(self, fc, cc, cxx, echo, verbose)
@@ -1310,6 +1312,38 @@ subroutine link_executable(self, output, args, log_file, stat, dry_run)
     call run(command, echo=self%echo, verbose=self%verbose, redirect=log_file, exitstat=stat)
     
 end subroutine link_executable
+
+!> Link a shared library
+subroutine link_shared(self, output, args, log_file, stat, dry_run)
+    !> Instance of the compiler object
+    class(compiler_t), intent(in) :: self
+    !> Output file of shared library object
+    character(len=*), intent(in) :: output
+    !> Arguments for the compiler
+    character(len=*), intent(in) :: args
+    !> Compiler output log file
+    character(len=*), intent(in) :: log_file
+    !> Status flag
+    integer, intent(out) :: stat
+    !> Optional mocking
+    logical, optional, intent(in) :: dry_run
+
+    character(len=:), allocatable :: command
+    logical :: mock
+    character(len=:), allocatable :: shared_flag
+
+    mock = .false.
+    if (present(dry_run)) mock = dry_run
+
+    shared_flag = get_shared_flag(self)
+
+    command = self%fc // " " // shared_flag // " " // args // " -o " // output
+
+    if (.not.mock) &
+        call run(command, echo=self%echo, verbose=self%verbose, redirect=log_file, exitstat=stat)
+
+end subroutine link_shared
+
 
 !> Create an archive
 !> @todo For Windows OS, use the local `delete_file_win32` in stead of `delete_file`.

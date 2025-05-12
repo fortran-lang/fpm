@@ -356,8 +356,9 @@ subroutine build_target(model,target,verbose,dry_run,table,stat)
             & target%output_log_file, stat, dry_run)
             
     case (FPM_TARGET_SHARED)
-        
-        stop 'does not know how to create a shared library yet'
+
+        call model%compiler%link_shared(target%output_file, target%link_flags, &
+            & target%output_log_file, stat, dry_run)
 
     end select
 

@@ -1139,11 +1139,10 @@ subroutine model_load_from_toml(self, table, error)
 
 end subroutine model_load_from_toml
 
-function get_shared_libraries_link(model, package_name, target_os, prefix, exclude_self, error) result(r)
+function get_shared_libraries_link(model, package_name, prefix, exclude_self, error) result(r)
     class(fpm_model_t), intent(in) :: model
     character(*), intent(in) :: package_name
     type(error_t), allocatable, intent(out) :: error
-    integer, intent(in) :: target_os
     character(*), intent(in) :: prefix
     !> Option to exclude linking to the given package (needed building it as a library)
     logical, optional, intent(in) :: exclude_self
@@ -1183,7 +1182,7 @@ function get_shared_libraries_link(model, package_name, target_os, prefix, exclu
     
     package_deps = [(string_t(model%deps%dep(sorted_package_IDs(i))%name),i=1,ndep)]
     
-    r = model%compiler%enumerate_shared_libraries(prefix, package_deps, target_os)
+    r = model%compiler%enumerate_libraries(prefix, package_deps)
     
 end function get_shared_libraries_link
 

@@ -341,11 +341,11 @@ subroutine build_target_list(targets,model,library)
                         type = FPM_TARGET_ARCHIVE,output_name = lib_name)
                             
     elseif (shared_lib) then 
+        ! Shared libraries go to the same path as the `.mod` files (consistent linking directories)
         do j=1,size(model%packages)
+                        
+            lib_name = library_filename(model%packages(j)%name,shared_lib,.false.,get_os_type())
             
-            lib_name = join_path(model%package_name, &
-                                 library_filename(model%packages(j)%name,shared_lib,.false.,get_os_type()))
-
             call add_target(targets,package=model%packages(j)%name, &
                             type = FPM_TARGET_SHARED,output_name = lib_name)
         end do
@@ -946,9 +946,10 @@ subroutine resolve_target_linking(targets, model, error)
     type(error_t), allocatable, intent(out) :: error
 
     integer :: i,j
+    logical :: shared,has_self_lib
     integer, allocatable :: package_deps(:)
     character(:), allocatable :: global_link_flags, local_link_flags
-    character(:), allocatable :: global_include_flags
+    character(:), allocatable :: global_include_flags, shared_lib_paths
 
     if (size(targets) == 0) return
 
@@ -965,8 +966,9 @@ subroutine resolve_target_linking(targets, model, error)
             global_include_flags = global_include_flags // &
             & " -I" // string_cat(model%include_dirs," -I")
         end if
-    end if
-
+        end if
+        
+    shared = .false.        
     do i=1,size(targets)
 
         associate(target => targets(i)%ptr)
@@ -996,14 +998,19 @@ subroutine resolve_target_linking(targets, model, error)
             if (len(global_include_flags) > 0) then
                 target%compile_flags = target%compile_flags//global_include_flags
             end if
-            target%output_dir = get_output_dir(model%build_prefix, target%compile_flags)
-            target%output_file = join_path(target%output_dir, target%output_name)
+            target%output_dir = get_output_dir(model%build_prefix, target%compile_flags)            
             target%output_log_file = join_path(target%output_dir, target%output_name)//'.log'
+            target%output_file = join_path(target%output_dir, target%output_name)
+            
+            ! Check shared build
+            if (target%target_type==FPM_TARGET_SHARED) shared = .true.
+            
         end associate
 
     end do
-
+    
     call add_include_build_dirs(model, targets)
+    call add_library_link_dirs(model, targets, shared_lib_paths)
 
     do i=1,size(targets)
 
@@ -1024,23 +1031,19 @@ subroutine resolve_target_linking(targets, model, error)
                     ! Gather object files from this package only
                     call get_link_objects(target%link_objects, target, is_exe=.false.)
 
-                    ! Get output location
-                    target%output_dir = get_output_dir(model%build_prefix, target%compile_flags)
-                    target%output_file = join_path(target%output_dir, target%output_name)
-                    target%output_log_file = target%output_file // '.log'
-
                     ! Build link flags
                     target%link_flags = string_cat(target%link_objects, " ")
+                    
+                    target%link_flags = target%link_flags // shared_lib_paths
 
-                    ! Step 4: Add dependencies' shared libraries (excluding self)
+                    ! Add dependencies' shared libraries (excluding self)
                     target%link_flags = model%get_shared_libraries_link(target%package_name, &
-                                                                        get_os_type(), &
                                                                         target%link_flags, &
                                                                         error=error, &
                                                                         exclude_self=.true.)
                     if (allocated(error)) return
-
-                    ! Step 5: Add any per-target libraries (e.g., `target%link_libraries`)
+                    
+                    ! Add any per-target libraries (e.g., `target%link_libraries`)
                     if (allocated(target%link_libraries)) then
                         if (size(target%link_libraries) > 0) then
                             target%link_flags = model%compiler%enumerate_libraries(target%link_flags, &
@@ -1048,26 +1051,42 @@ subroutine resolve_target_linking(targets, model, error)
                         end if
                     end if
 
-                    ! Step 6: Add global link flags (e.g., system-wide libraries)
+                    ! Add global link flags (e.g., system-wide libraries)
                     target%link_flags = target%link_flags // " " // global_link_flags                
-                
-                    call get_link_objects(target%link_objects, target, is_exe=.false.)
-                    
-                    ! Enumerate shared library dependencies from the package's dependency tree
-                    target%link_flags = model%get_shared_libraries_link(target%package_name, &
-                                                                        get_os_type(), &
-                                                                        target%link_flags, &
-                                                                        exclude_self=.true., &
-                                                                        error=error)
-                    if (allocated(error)) return
-                    
-                case (FPM_TARGET_EXECUTABLE)
 
-                    call get_link_objects(target%link_objects,target,is_exe=.true.)
+                case (FPM_TARGET_EXECUTABLE)
 
                     local_link_flags = ""
                     if (allocated(model%link_flags)) local_link_flags = model%link_flags
+
+                    call get_link_objects(target%link_objects,target,is_exe=.true.)
+
                     target%link_flags = model%link_flags//" "//string_cat(target%link_objects," ")
+                    
+                    ! Add shared libs
+                    if (shared) then 
+
+                        target%link_flags = target%link_flags // shared_lib_paths
+                        
+                        ! Check if there's a library with this name (maybe not, if it is a 
+                        ! single-file app with only external dependencies)
+                        has_self_lib = .false.
+                        find_self: do j=1,size(targets)
+                            associate(target_loop=>targets(j)%ptr)
+                                if (target_loop%target_type==FPM_TARGET_SHARED .and. &
+                                    target_loop%package_name==target%package_name) then 
+                                    has_self_lib = .true.
+                                    exit find_self
+                                end if
+                            end associate
+                        end do find_self
+                        
+                        ! Add dependencies' shared libraries (including self if there is a library)
+                        target%link_flags = model%get_shared_libraries_link(target%package_name, &
+                                                                            target%link_flags, &
+                                                                            error=error, &
+                                                                            exclude_self=.not.has_self_lib)                                                
+                    end if
 
                     if (allocated(target%link_libraries)) then
                         if (size(target%link_libraries) > 0) then
@@ -1078,11 +1097,6 @@ subroutine resolve_target_linking(targets, model, error)
 
                     target%link_flags = target%link_flags//" "//global_link_flags
 
-                    target%output_dir = get_output_dir(model%build_prefix, &
-                       & target%compile_flags//local_link_flags)
-                    target%output_file     = join_path(target%output_dir, target%output_name)
-                    target%output_log_file = join_path(target%output_dir, target%output_name)//'.log'
-                    
                 end select
 
         end associate
@@ -1168,6 +1182,32 @@ subroutine add_include_build_dirs(model, targets)
 
 end subroutine add_include_build_dirs
 
+!> Add link directories for all shared libraries in the dependency graph
+subroutine add_library_link_dirs(model, targets, shared_lib_path)
+    type(fpm_model_t), intent(in) :: model
+    type(build_target_ptr), intent(inout), target :: targets(:)
+    character(:), allocatable, intent(out) :: shared_lib_path
+
+    integer :: i, j
+    type(string_t), allocatable :: shared_lib_dirs(:)
+    character(len=:), allocatable :: dir
+    type(string_t) :: temp
+    
+    allocate(character(0) :: shared_lib_path)
+    allocate(shared_lib_dirs(0))
+
+    do i = 1, size(targets)
+        associate(target => targets(i)%ptr)
+            if (target%target_type /= FPM_TARGET_SHARED) cycle
+            if (target%output_dir .in. shared_lib_dirs) cycle
+            temp = string_t(target%output_dir)
+            shared_lib_dirs = [shared_lib_dirs, temp]
+        end associate
+    end do
+    
+    shared_lib_path = " -L" // string_cat(shared_lib_dirs, " -L")
+
+end subroutine add_library_link_dirs
 
 function get_output_dir(build_prefix, args) result(path)
     character(len=*), intent(in) :: build_prefix
