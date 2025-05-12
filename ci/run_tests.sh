@@ -311,6 +311,16 @@ fi
 popd
 
 # Test shared library dependencies
+pushd shared_lib
+"$fpm" build || EXIT_CODE=$?
+test $EXIT_CODE -eq 0
+popd
+
+pushd shared_lib_extra
+"$fpm" build || EXIT_CODE=$?
+test $EXIT_CODE -eq 0
+popd
+
 pushd shared_app_only
 "$fpm" test || EXIT_CODE=$?
 test $EXIT_CODE -eq 0
