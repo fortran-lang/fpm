@@ -241,7 +241,7 @@ contains
            if (main) then 
            
                if (allocated(package%dev_dependency)) &
-               call collect(deps,ndeps,package%dependency)
+               call collect(deps,ndeps,package%dev_dependency)
                
                if (allocated(package%example)) then
                   do k = 1, size(package%example)
