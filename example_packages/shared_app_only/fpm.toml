@@ -1,0 +1,7 @@
+# App only, use shared lib from other folder
+name = "shared_app_only"
+library.shared=true
+[dependencies]
+shared_lib_extra = { path = "../shared_lib_extra" }
+[dev-dependencies]
+test-drive = { git = "https://github.com/fortran-lang/test-drive", tag="v0.5.0" }

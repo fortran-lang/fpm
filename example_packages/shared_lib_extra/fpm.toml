@@ -1,0 +1,4 @@
+name = "shared_lib_extra"
+library.shared=true
+[dependencies]
+shared_lib = { path = "../shared_lib" }
