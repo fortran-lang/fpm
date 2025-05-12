@@ -4,7 +4,7 @@ module test_backend
     use test_module_dependencies, only: operator(.in.)
     use fpm_filesystem, only: exists, mkdir, get_temp_filename
     use fpm_targets, only: build_target_t, build_target_ptr, &
-                            FPM_TARGET_OBJECT, FPM_TARGET_ARCHIVE, &
+                            FPM_TARGET_OBJECT, FPM_TARGET_ARCHIVE, FPM_TARGET_SHARED, &
                            add_target, add_dependency
     use fpm_backend, only: sort_target, schedule_targets
     use fpm_strings, only: string_t
@@ -28,6 +28,7 @@ contains
             & new_unittest("target-sort", test_target_sort), &
             & new_unittest("target-sort-skip-all", test_target_sort_skip_all), &
             & new_unittest("target-sort-rebuild-all", test_target_sort_rebuild_all), &
+            & new_unittest("target-shared-sort", test_target_shared), &
             & new_unittest("schedule-targets", test_schedule_targets), &
             & new_unittest("schedule-targets-empty", test_schedule_empty), &
             & new_unittest("serialize-compile-commands", compile_commands_roundtrip), &
@@ -468,6 +469,62 @@ contains
         end if
 
     end subroutine compile_commands_register_from_string
+
+    !> Check sorting and scheduling for shared library targets
+    subroutine test_target_shared(error)
+
+        !> Error handling
+        type(error_t), allocatable, intent(out) :: error
+
+        type(build_target_ptr), allocatable :: targets(:)
+        integer :: i
+
+        ! Create a new test package with a shared library
+        call add_target(targets, 'test-shared', FPM_TARGET_SHARED, get_temp_filename())
+        call add_target(targets, 'test-shared', FPM_TARGET_OBJECT, get_temp_filename())
+        call add_target(targets, 'test-shared', FPM_TARGET_OBJECT, get_temp_filename())
+
+        ! Shared library depends on the two object files
+        call add_dependency(targets(1)%ptr, targets(2)%ptr)
+        call add_dependency(targets(1)%ptr, targets(3)%ptr)
+
+        do i = 1, size(targets)
+            targets(i)%ptr%output_file = targets(i)%ptr%output_name
+        end do
+
+        ! Perform topological sort
+        do i = 1, size(targets)
+            call sort_target(targets(i)%ptr)
+        end do
+
+        ! Check scheduling and flags
+        do i = 1, size(targets)
+            if (.not.targets(i)%ptr%touched) then
+                call test_failed(error, "Shared: Target not touched")
+                return
+            end if
+            if (.not.targets(i)%ptr%sorted) then
+                call test_failed(error, "Shared: Target not sorted")
+                return
+            end if
+            if (targets(i)%ptr%skip) then
+                call test_failed(error, "Shared: Target incorrectly skipped")
+                return
+            end if
+        end do
+
+        ! Check dependencies scheduled before the shared lib
+        if (targets(2)%ptr%schedule >= targets(1)%ptr%schedule) then
+            call test_failed(error, "Shared: Object 2 scheduled after shared lib")
+            return
+        end if
+        if (targets(3)%ptr%schedule >= targets(1)%ptr%schedule) then
+            call test_failed(error, "Shared: Object 3 scheduled after shared lib")
+            return
+        end if
+
+    end subroutine test_target_shared
+
 
 
 
