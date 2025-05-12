@@ -487,7 +487,7 @@ subroutine cmd_run(settings,test)
     type(srcfile_t), pointer :: exe_source
     integer :: run_scope,firsterror
     integer, allocatable :: stat(:),target_ID(:)
-    character(len=:),allocatable :: line
+    character(len=:),allocatable :: line,run_cmd
 
     call get_package_data(package, "fpm.toml", error, apply_defaults=.true.)
     if (allocated(error)) then
@@ -584,22 +584,14 @@ subroutine cmd_run(settings,test)
         allocate(stat(size(executables)))
         do i=1,size(executables)
             if (exists(executables(i)%s)) then
-                if(settings%runner /= ' ')then
-                    if(.not.allocated(settings%args))then
-                       call run(settings%runner_command()//' '//executables(i)%s, &
-                             echo=settings%verbose, exitstat=stat(i))
-                    else
-                       call run(settings%runner_command()//' '//executables(i)%s//" "//settings%args, &
-                             echo=settings%verbose, exitstat=stat(i))
-                    endif
-                else
-                    if(.not.allocated(settings%args))then
-                       call run(executables(i)%s,echo=settings%verbose, exitstat=stat(i))
-                    else
-                       call run(executables(i)%s//" "//settings%args,echo=settings%verbose, &
-                             exitstat=stat(i))
-                    endif
-                endif
+                
+                ! Prepare command line
+                                              run_cmd = executables(i)%s
+                if (settings%runner/=' ')     run_cmd = settings%runner_command()//' '//run_cmd
+                if (allocated(settings%args)) run_cmd = run_cmd//" "//settings%args
+                
+                call run(run_cmd,echo=settings%verbose,exitstat=stat(i))
+                
             else
                 call fpm_stop(1,'*cmd_run*:'//executables(i)%s//' not found')
             end if
