@@ -30,7 +30,7 @@ contains
     type(installer_t) :: installer
     type(string_t), allocatable :: list(:)
     logical :: installable
-    integer :: ntargets
+    integer :: ntargets,i
 
     call get_package_data(package, "fpm.toml", error, apply_defaults=.true.)
     call handle_error(error)
@@ -65,8 +65,10 @@ contains
       call filter_library_targets(targets, list)
 
       if (size(list) > 0) then
-        call installer%install_library(list(1)%s, error)
-        call handle_error(error)
+        do i=1,size(list)
+           call installer%install_library(list(i)%s, error)
+           call handle_error(error)
+        end do
 
         call install_module_files(installer, targets, error)
         call handle_error(error)
