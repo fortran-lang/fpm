@@ -45,7 +45,7 @@ public FPM_TARGET_UNKNOWN,  FPM_TARGET_EXECUTABLE, &
        FPM_TARGET_SHARED,   FPM_TARGET_NAME
 public build_target_t, build_target_ptr
 public targets_from_sources, resolve_module_dependencies
-public add_target, add_dependency
+public add_target, add_dependency, get_library_dirs
 public filter_library_targets, filter_executable_targets, filter_modules
 
 
@@ -1192,17 +1192,15 @@ subroutine add_include_build_dirs(model, targets)
 end subroutine add_include_build_dirs
 
 !> Add link directories for all shared libraries in the dependency graph
-subroutine add_library_link_dirs(model, targets, shared_lib_path)
+subroutine get_library_dirs(model, targets, shared_lib_dirs)
     type(fpm_model_t), intent(in) :: model
     type(build_target_ptr), intent(inout), target :: targets(:)
-    character(:), allocatable, intent(out) :: shared_lib_path
+    type(string_t), allocatable, intent(out) :: shared_lib_dirs(:)
 
     integer :: i, j
-    type(string_t), allocatable :: shared_lib_dirs(:)
     character(len=:), allocatable :: dir
     type(string_t) :: temp
     
-    allocate(character(0) :: shared_lib_path)
     allocate(shared_lib_dirs(0))
 
     do i = 1, size(targets)
@@ -1214,6 +1212,17 @@ subroutine add_library_link_dirs(model, targets, shared_lib_path)
         end associate
     end do
     
+end subroutine get_library_dirs
+
+!> Add link directories for all shared libraries in the dependency graph
+subroutine add_library_link_dirs(model, targets, shared_lib_path)
+    type(fpm_model_t), intent(in) :: model
+    type(build_target_ptr), intent(inout), target :: targets(:)
+    character(:), allocatable, intent(out) :: shared_lib_path
+
+    type(string_t), allocatable :: shared_lib_dirs(:)
+
+    call get_library_dirs(model, targets, shared_lib_dirs)    
     shared_lib_path = " -L" // string_cat(shared_lib_dirs, " -L")
 
 end subroutine add_library_link_dirs
