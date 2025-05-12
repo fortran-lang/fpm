@@ -187,7 +187,6 @@ contains
 
         call new_installer(installer, prefix="PREFIX", verbosity=0, copy="mock")
         mock%installer_t = installer
-        mock%os = OS_LINUX
         mock%expected_dir = join_path("PREFIX", "lib")
         mock%expected_run = 'mock "'//libname//'" "'//mock%expected_dir//'"'
 
