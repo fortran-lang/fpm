@@ -252,6 +252,8 @@ subroutine targets_from_sources(targets,model,prune,library,error)
 
     !> Error structure
     type(error_t), intent(out), allocatable :: error
+    
+    logical :: should_prune
 
     call build_target_list(targets,model,library)
 
@@ -260,9 +262,11 @@ subroutine targets_from_sources(targets,model,prune,library,error)
     call resolve_module_dependencies(targets,model%external_modules,error)
     if (allocated(error)) return
 
-    if (prune) then
-        call prune_build_targets(targets,root_package=model%package_name)
-    end if
+    ! Prune unused source files, unless we're building shared libraries that need 
+    ! all sources to be distributable
+    should_prune = prune
+    if (present(library)) should_prune = should_prune .and. .not.library%shared    
+    if (should_prune) call prune_build_targets(targets,root_package=model%package_name)
 
     call resolve_target_linking(targets,model,error)
     if (allocated(error)) return
@@ -364,7 +368,7 @@ subroutine build_target_list(targets,model,library)
 
                 select case (sources(i)%unit_type)
                 case (FPM_UNIT_MODULE,FPM_UNIT_SUBMODULE,FPM_UNIT_SUBPROGRAM,FPM_UNIT_CSOURCE)
-
+                    
                     call add_target(targets,package=model%packages(j)%name,source = sources(i), &
                                 type = merge(FPM_TARGET_C_OBJECT,FPM_TARGET_OBJECT,&
                                                sources(i)%unit_type==FPM_UNIT_CSOURCE), &
@@ -785,7 +789,7 @@ subroutine prune_build_targets(targets, root_package)
     end if
 
     call reset_target_flags(targets)
-
+    
     exclude_target = .false.
 
     ! Exclude purely module targets if they are not used anywhere
@@ -842,7 +846,7 @@ subroutine prune_build_targets(targets, root_package)
                 exclude_target(i) = .false.
                 target%skip = .false.
             end if
-
+            
         end associate
     end do
 
@@ -1128,13 +1132,13 @@ contains
 
         integer :: i
         type(string_t) :: temp_str
-
+        
         if (.not.allocated(target%dependencies)) return
 
         do i=1,size(target%dependencies)
 
             associate(dep => target%dependencies(i)%ptr)
-
+                
                 if (.not.allocated(dep%source)) cycle
 
                 ! Skip library dependencies for executable targets
@@ -1147,7 +1151,7 @@ contains
                 ! Add dependency object file to link object list
                 temp_str%s = dep%output_file
                 link_objects = [link_objects, temp_str]
-
+                
                 ! For executable objects, also need to include non-library
                 !  dependencies from dependencies (recurse)
                 if (is_exe) call get_link_objects(link_objects,dep,is_exe=.true.)
