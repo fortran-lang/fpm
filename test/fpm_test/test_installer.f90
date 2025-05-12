@@ -37,7 +37,8 @@ contains
             & new_unittest("install-exe-unix", test_install_exe_unix), &
             & new_unittest("install-exe-win", test_install_exe_win), &
             & new_unittest("install-test-unix", test_install_tests_unix), &
-            & new_unittest("install-test-win", test_install_tests_win)]
+            & new_unittest("install-test-win", test_install_tests_win), &
+            & new_unittest("install-shared-lib-unix", test_install_shared_library_unix)]
 
     end subroutine collect_installer
 
@@ -175,6 +176,25 @@ contains
         call mock%install_header("name", error)
 
     end subroutine test_install_mod
+
+    subroutine test_install_shared_library_unix(error)
+        !> Error handling
+        type(error_t), allocatable, intent(out) :: error
+
+        type(mock_installer_t) :: mock
+        type(installer_t) :: installer
+        character(len=*), parameter :: libname = "libname.so"
+
+        call new_installer(installer, prefix="PREFIX", verbosity=0, copy="mock")
+        mock%installer_t = installer
+        mock%os = OS_LINUX
+        mock%expected_dir = join_path("PREFIX", "lib")
+        mock%expected_run = 'mock "'//libname//'" "'//mock%expected_dir//'"'
+
+        call mock%install_library(libname, error)
+
+    end subroutine test_install_shared_library_unix
+
 
     !> Create a new directory in the prefix
     subroutine make_dir(self, dir, error)
