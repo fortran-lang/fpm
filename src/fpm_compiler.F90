@@ -36,7 +36,8 @@ use fpm_environment, only: &
         OS_SOLARIS, &
         OS_FREEBSD, &
         OS_OPENBSD, &
-        OS_UNKNOWN
+        OS_UNKNOWN, &
+        library_filename
 use fpm_filesystem, only: join_path, basename, get_temp_filename, delete_file, unix_path, &
     & getline, run
 use fpm_strings, only: split, string_cat, string_t, str_ends_with, str_begins_with_str, &
@@ -118,6 +119,8 @@ contains
     procedure :: is_gnu
     !> Enumerate libraries, based on compiler and platform
     procedure :: enumerate_libraries
+    !> Enumerate shared libraries, based on compiler and platform
+    procedure :: enumerate_shared_libraries
 
     !> Serialization interface
     procedure :: serializable_is_same => compiler_is_same
@@ -1006,6 +1009,47 @@ function enumerate_libraries(self, prefix, libs) result(r)
     end if
 end function enumerate_libraries
 
+!>
+!> Enumerate shared libraries, based on compiler and platform
+!>
+function enumerate_shared_libraries(self, prefix, package_deps, target_os) result(r)
+    class(compiler_t), intent(in) :: self
+    character(len=*), intent(in) :: prefix
+    type(string_t), intent(in) :: package_deps(:)
+    integer, intent(in) :: target_os
+    character(len=:), allocatable :: r
+
+    character(len=:), allocatable :: joined
+    type(string_t), allocatable :: libnames(:)
+    integer :: i, os
+
+    os = get_os_type()
+
+    if (size(package_deps) == 0) then
+        r = prefix
+        return
+    end if
+
+    ! Convert package names to filenames (with shared=.true. and import flag)
+    allocate(libnames(size(package_deps)))
+    do i = 1, size(package_deps)
+        libnames(i) = string_t(library_filename(package_deps(i)%s, shared=.true., import=.true., target_os=os))
+    end do
+
+    if (os == OS_WINDOWS) then
+        ! Windows: use import libraries (i.e., .lib files) during linking
+        r = self%enumerate_libraries(prefix, libnames)
+    else
+        select case (self%id)
+        case (id_nag, id_ibmxl)
+            r = trim(prefix) // " -Wl," // string_cat(libnames, " -Wl,")
+        case default
+            joined = string_cat(libnames, " ")
+            r = trim(prefix) // " " // trim(joined)
+        end select
+    end if
+
+end function enumerate_shared_libraries
 
 !> Create new compiler instance
 subroutine new_compiler(self, fc, cc, cxx, echo, verbose)

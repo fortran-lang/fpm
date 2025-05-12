@@ -174,9 +174,6 @@ type, extends(serializable_t) :: package_t
 
     contains
     
-        !> Get library filename
-        procedure :: library_filename
-
         !> Serialization interface
         procedure :: serializable_is_same => package_is_same
         procedure :: dump_to_toml   => package_dump_to_toml
@@ -238,6 +235,9 @@ type, extends(serializable_t) :: fpm_model_t
     type(string_t) :: module_prefix
 
     contains
+    
+        !> Get target link flags
+        procedure :: get_shared_libraries_link
     
         !> Serialization interface
         procedure :: serializable_is_same => model_is_same
@@ -1139,28 +1139,41 @@ subroutine model_load_from_toml(self, table, error)
 
 end subroutine model_load_from_toml
 
-!> Utility function: return library filename
-pure function library_filename(package, shared, target_os) result(name)
-    class(package_t), intent(in) :: package    
-    !> Whether the library is shared
-    logical, intent(in) :: shared
-    !> Target library OS (from fpm_environment OS constants)
+function get_shared_libraries_link(model, package_name, target_os, prefix, error) result(r)
+    class(fpm_model_t), intent(in) :: model
+    character(*), intent(in) :: package_name
+    type(error_t), allocatable, intent(out) :: error
     integer, intent(in) :: target_os
-    character(len=:), allocatable :: name
-
-    if (shared) then 
-        select case (target_os)
-            case (OS_WINDOWS)
-                name = 'lib'//package%name//'.dll'
-            case (OS_MACOS)
-                name = 'lib'//package%name//'.dylib'
-            case default
-                name = 'lib'//package%name//'.so'
-        end select
-    else
-        name = 'lib'//package%name//'.a'
+    character(*), intent(in) :: prefix
+    character(len=:), allocatable :: r
+    
+    integer :: id,ndep,i
+    integer, allocatable :: sorted_package_IDs(:)
+    type(string_t), allocatable :: package_deps(:)
+    
+    ! Get dependency ID of this target 
+    id = model%deps%find(package_name)
+    if (id<=0) then 
+        call fatal_error(error, "Internal error: shared library does not correspond to a package")
+        return
     end if
-
-end function library_filename
+    
+    ! Get ordered IDs of the shared libraries that should be linked against
+    call model%deps%local_link_order(id, sorted_package_IDs, error)
+    if (allocated(error)) return
+    
+    ! Get names of the package dependencies
+    ndep = size(sorted_package_IDs)
+    
+    if (ndep<=0) then 
+       r = prefix
+       return 
+    end if
+    
+    package_deps = [(string_t(model%deps%dep(sorted_package_IDs(i))%name),i=1,ndep)]
+    
+    r = model%compiler%enumerate_shared_libraries(prefix, package_deps, target_os)
+    
+end function get_shared_libraries_link
 
 end module fpm_model
