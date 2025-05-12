@@ -64,14 +64,13 @@ module fpm_dependency
   use fpm_manifest, only: package_config_t, dependency_config_t, get_package_data, get_package_dependencies
   use fpm_manifest_dependency, only: manifest_has_changed, dependency_destroy
   use fpm_manifest_preprocess, only: operator(==)
-  use fpm_strings, only: string_t, operator(.in.)
+  use fpm_strings, only: string_t, operator(.in.), operator(==), str
   use tomlf, only: toml_table, toml_key, toml_error, toml_load, toml_stat, toml_array, len, add_array
-  use fpm_toml, only: toml_serialize, get_value, set_value, add_table, set_string
+  use fpm_toml, only: toml_serialize, get_value, set_value, add_table, set_string, get_list, set_list
   use fpm_versioning, only: version_t, new_version
   use fpm_settings, only: fpm_global_settings, get_global_settings, official_registry_base_url
   use fpm_downloader, only: downloader_t
   use jonquil, only: json_object
-  use fpm_strings, only: str
   implicit none
   private
 
@@ -97,8 +96,8 @@ module fpm_dependency
     logical :: update = .false.
     !> Dependency was loaded from a cache
     logical :: cached = .false.
-    !> Indices (in `dependency_tree_t%dep`) that this node depends on
-    integer, allocatable :: requires(:)    
+    !> Package dependencies of this node 
+    type(string_t), allocatable :: package_dep(:)    
   contains
 
     !> Update dependency from project manifest.
@@ -270,7 +269,6 @@ contains
 
     integer :: pr, i
     character(len=*), parameter :: fmt = '("#", 1x, a, t30, a)'
-    character(len=*), parameter :: fmt_int = '("#", 1x, a, t30, *(i0, 1x))'
 
     if (present(verbosity)) then
       pr = verbosity
@@ -295,13 +293,15 @@ contains
 
     write (unit, fmt) "- done", merge('YES', 'NO ', self%done)
     write (unit, fmt) "- update", merge('YES', 'NO ', self%update)
-
-    if (allocated(self%requires)) then
-      write (unit, fmt_int) "- requires", self%requires
+    
+    if (allocated(self%package_dep)) then
+        write(unit, fmt) " - package_dep "
+        do i = 1, size(self%package_dep)
+           write(unit, fmt) "   - " // self%package_dep(i)%s
+        end do            
     end if
-
+    
   end subroutine info
-
 
   !> Add project dependencies, each depth level after each other.
   !>
@@ -381,7 +381,7 @@ contains
       integer :: i,nit
       integer, parameter   :: MAXIT = 50
       logical, allocatable :: finished(:)
-      integer, allocatable :: old_requires(:)
+      type(string_t), allocatable :: old_package_dep(:)
       
       if (self%ndep<1) then 
           call fatal_error(error, "Trying to compute the dependency graph of an empty tree")
@@ -397,12 +397,12 @@ contains
           do i = 1, self%ndep
             
               ! Save old deps
-              call move_alloc(from=self%dep(i)%requires,to=old_requires)
+              call move_alloc(from=self%dep(i)%package_dep,to=old_package_dep)
               
-              call get_required_packages(self, self%dep(i), main=i==1, error=error)
+              call get_required_packages(self, i, error=error)
               if (allocated(error)) return
               
-              finished(i) = all_alloc(self%dep(i)%requires, old_requires)
+              finished(i) = all_alloc(self%dep(i)%package_dep, old_package_dep)
               
           end do  
       
@@ -413,14 +413,14 @@ contains
       contains
       
       pure logical function all_alloc(this,that)
-          integer, intent(in), allocatable :: this(:),that(:)
+          type(string_t), intent(in), allocatable :: this(:),that(:)
           all_alloc = .false.
           if (allocated(this).neqv.allocated(that)) return
           if (.not.allocated(this)) then 
               all_alloc = .true.
           else  
               if (size(this)/=size(that)) return
-              if (.not.all(this==that)) return
+              if (.not.(this==that)) return
               all_alloc = .true.
           end if
       end function all_alloc
@@ -1083,20 +1083,23 @@ contains
   !> Capture the list of "required" packages while the manifest is loaded. 
   !> This subroutine should be called during the "resolve" phase, i.e. when the whole 
   !> dependency tree has been built already
-  subroutine get_required_packages(tree, node, main, error)
+  subroutine get_required_packages(tree, node_ID, error)
       !> Instance of the dependency tree
       class(dependency_tree_t), intent(inout) :: tree     
       !> Instance of the dependency node
-      class(dependency_node_t), intent(inout) :: node
-      !> Is the main project
-      logical, intent(in) :: main      
+      integer, intent(in) :: node_ID
       !> Error handling
       type(error_t), allocatable, intent(out) :: error
       
       integer :: nreq,k,id
       type(dependency_config_t), allocatable :: dependency(:)
       type(package_config_t) :: manifest
-      logical :: required(tree%ndep)
+      logical :: required(tree%ndep),main
+      
+      associate(node => tree%dep(node_ID))
+        
+      ! Is the main project
+      main = node_ID==1  
       
       ! Get manifest
       call get_package_data(manifest, join_path(node%proj_dir,"fpm.toml"), error)
@@ -1109,14 +1112,13 @@ contains
       required = .false.
 
       do k = 1, nreq
+        
           id = tree%find(dependency(k)%name)
           if (id<=0) then
              ! Shouldn't happen because tree already contains every dep
              call fatal_error(error, "Internal error: "//trim(node%name)// &
-                  & " cannot find resolved dependency "//trim(dependency(k)%name)//" in tree")
-                  
-             return
-             
+                  & " cannot find resolved dependency "//trim(dependency(k)%name)//" in tree")                  
+             return             
           end if
           
           ! Recurse dependencies
@@ -1126,24 +1128,33 @@ contains
       
       ! Recursed list
       nreq = count(required)
-      if (allocated(node%requires)) deallocate(node%requires)
-      allocate(node%requires(nreq))  
-      if (nreq>0) node%requires(:) = pack([(id,id=1,tree%ndep)],required) 
+      if (allocated(node%package_dep)) deallocate(node%package_dep)
+      allocate(node%package_dep(nreq))  
+      k = 0
+      do id=1,tree%ndep
+         if (.not.required(id)) cycle
+         k = k+1
+         node%package_dep(k) = string_t(tree%dep(id)%name)
+      end do
+      
+      endassociate
       
       contains
                 
-          pure recursive subroutine recurse_deps(tree, id, required)
+          recursive subroutine recurse_deps(tree, id, required)
               class(dependency_tree_t), intent(in) :: tree
               integer, intent(in) :: id
               logical, intent(inout) :: required(:)
 
-              integer :: j
+              integer :: j,dep_id
+              
               if (required(id)) return
               
               required(id) = .true.
-              if (allocated(tree%dep(id)%requires)) then
-                  do j = 1, size(tree%dep(id)%requires)
-                      call recurse_deps(tree, tree%dep(id)%requires(j), required)
+              if (allocated(tree%dep(id)%package_dep)) then
+                  do j = 1, size(tree%dep(id)%package_dep)
+                      dep_id = tree%find(tree%dep(id)%package_dep(j)%s)
+                      call recurse_deps(tree, dep_id, required)
                   end do
               end if
           end subroutine recurse_deps         
@@ -1182,29 +1193,43 @@ contains
     top = 0
 
     !> Depth-First Search from root node
-    call dfs(root_id,visited,stack,top)
+    call dfs(root_id,visited,stack,top,error)
+    if (allocated(error)) return
 
     !> The final link order is the reverse of the DFS post-order
     allocate(order(top))
     if (top>0) order(:) = stack(:top)
-
+    
   contains
 
     !> Recursive depth-first search, post-order
-    recursive subroutine dfs(i,visited,stack,top)
+    recursive subroutine dfs(i,visited,stack,top,error)
         integer, intent(in) :: i
         logical, intent(inout) :: visited(:)
         integer, intent(inout) :: stack(:),top
-        integer :: k
+        type(error_t), allocatable, intent(out) :: error
+        integer :: k, id
 
+        if (.not.(i>0 .and. i<=tree%ndep)) then 
+            call fatal_error(error,'package graph failed: invalid dependency ID')
+            return
+        end if
         if (visited(i)) return
         
         visited(i) = .true.
 
         ! Visit all required dependencies before this node
-        if (allocated(tree%dep(i)%requires)) then
-            do k = 1, size(tree%dep(i)%requires)
-                call dfs(tree%dep(i)%requires(k), visited, stack, top)
+        if (allocated(tree%dep(i)%package_dep)) then
+            do k = 1, size(tree%dep(i)%package_dep)
+                id = tree%find(tree%dep(i)%package_dep(k)%s)
+                
+                if (.not.(id>0 .and. id<=tree%ndep)) then 
+                    call fatal_error(error,'package graph failed: cannot find '//tree%dep(i)%package_dep(k)%s)
+                    return
+                end if
+
+                call dfs(id, visited, stack, top, error)
+                if (allocated(error)) return
             end do
         end if
 
@@ -1532,12 +1557,12 @@ contains
               if (.not.(this%version==other%version)) return
             endif
 
-            if (allocated(this%requires).neqv.allocated(other%requires)) return
-            if (allocated(this%requires)) then
-              if (.not.size(this%requires)==size(other%requires)) return
-              if (.not.all(this%requires==other%requires)) return
+            if (allocated(this%package_dep).neqv.allocated(other%package_dep)) return
+            if (allocated(this%package_dep)) then
+              if (.not.size(this%package_dep)==size(other%package_dep)) return
+              if (.not.(this%package_dep==other%package_dep)) return
             endif
-
+            
          class default
             ! Not the same type
             return
@@ -1580,27 +1605,10 @@ contains
         call set_value(table, "update", self%update, error, 'dependency_node_t')
         if (allocated(error)) return
         call set_value(table, "cached", self%cached, error, 'dependency_node_t')
-        if (allocated(error)) return
+        if (allocated(error)) return        
+        call set_list(table, "package-dep",self%package_dep, error)
+        if (allocated(error)) return        
         
-        call add_array(table, "requires", array, stat=ierr)
-        if (ierr/=toml_stat%success .or. .not.associated(array)) then 
-            call fatal_error(error, "cannot create 'requires' array in dependency_node_t")
-            return            
-        end if
-        
-        if (allocated(self%requires)) then 
-            
-           n = size(self%requires) 
-            
-           do i=1,n
-               call set_value(array, pos=i, val=self%requires(i), stat=ierr)
-               if (ierr/=toml_stat%success) then 
-                   call fatal_error(error,"cannot set 'requires' array in dependency_node_t")
-                   return
-               endif 
-           end do
-        endif        
-
     end subroutine node_dump_to_toml
 
     !> Read dependency from toml table (no checks made at this stage)
@@ -1644,32 +1652,11 @@ contains
                 error%message = 'dependency_node_t: version error from TOML table - '//error%message
                 return
             endif
-        end if
-        
-        call get_value(table, key="requires", ptr=array, requested=.true.,stat=ierr)
-        
-        if (ierr/=toml_stat%success .or. .not.associated(array)) then 
-            
-            call fatal_error(error, "dependency_node_t table has no 'requires' key")
-            return
-            
-        else
-            
-            n = len(array)               
-            if (n<=0) return
-                    
-            allocate(self%requires(n))
-            
-            do i = 1, n
-                call get_value(array, pos=i, val=self%requires(i), stat=ierr)
-                if (ierr /= toml_stat%success) then
-                    call fatal_error(error, "dependency_node_t: entry in 'requires' field cannot be read")
-                    return
-                end if
-            end do            
-            
         end if        
-
+        
+        call get_list(table,"package-dep",self%package_dep, error)
+        if (allocated(error)) return        
+        
     end subroutine node_load_from_toml
 
     !> Destructor
@@ -1684,7 +1671,7 @@ contains
         deallocate(self%version,stat=ierr)
         deallocate(self%proj_dir,stat=ierr)
         deallocate(self%revision,stat=ierr)
-        deallocate(self%requires,stat=ierr)
+        deallocate(self%package_dep,stat=ierr)
         self%done = .false.
         self%update = .false.
         self%cached = .false.
