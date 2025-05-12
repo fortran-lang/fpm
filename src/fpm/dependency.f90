@@ -166,6 +166,8 @@ module fpm_dependency
     generic :: find => find_name
     !> Find a dependency by its name
     procedure, private :: find_name
+    !> Establish local link order for a node's package dependencies
+    procedure :: local_link_order
     !> Depedendncy resolution finished
     procedure :: finished
     !> Reading of dependency tree
@@ -1157,7 +1159,7 @@ contains
   !> The returned list includes both the transitive dependencies and the node itself.
   !> Example: if node 3 requires [5, 7, 9, 2] and 9 also requires 2,
   !> then the result will ensure that 2 appears before 9, etc.
-  subroutine build_local_link_order(tree, root_id, order, error)
+  subroutine local_link_order(tree, root_id, order, error)
     !> The full dependency graph
     class(dependency_tree_t), intent(in) :: tree
     !> Index of the node for which to compute link order (e.g., the target being linked)
@@ -1184,7 +1186,7 @@ contains
 
     !> The final link order is the reverse of the DFS post-order
     allocate(order(top))
-    if (top>0) order(:) = stack(top:1:-1)
+    if (top>0) order(:) = stack(:top)
 
   contains
 
@@ -1211,7 +1213,7 @@ contains
         stack(top) = i
     end subroutine dfs
 
-  end subroutine build_local_link_order
+  end subroutine local_link_order
 
   !> Read dependency tree from file
   subroutine load_cache_from_file(self, file, error)
