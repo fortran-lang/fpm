@@ -28,7 +28,7 @@ use iso_fortran_env, only: int64, stdout=>output_unit
 use fpm_error, only: error_t, fatal_error, fpm_stop
 use fpm_model
 use fpm_compiler, only : compiler_t
-use fpm_environment, only: get_os_type, OS_WINDOWS, OS_MACOS
+use fpm_environment, only: get_os_type, OS_WINDOWS, OS_MACOS, library_filename
 use fpm_filesystem, only: dirname, join_path, canon_path
 use fpm_strings, only: string_t, operator(.in.), string_cat, fnv_1a, resize, lower, str_ends_with
 use fpm_compiler, only: get_macros
@@ -264,7 +264,8 @@ subroutine targets_from_sources(targets,model,prune,library,error)
         call prune_build_targets(targets,root_package=model%package_name)
     end if
 
-    call resolve_target_linking(targets,model)
+    call resolve_target_linking(targets,model,error)
+    if (allocated(error)) return
 
 end subroutine targets_from_sources
 
@@ -334,7 +335,7 @@ subroutine build_target_list(targets,model,library)
     if (static_lib) then 
         
         lib_name = join_path(model%package_name, &
-                             model%packages(1)%library_filename(shared_lib,get_os_type()))
+                             library_filename(model%packages(1)%name,shared_lib,.false.,get_os_type()))
         
         call add_target(targets,package=model%package_name, &
                         type = FPM_TARGET_ARCHIVE,output_name = lib_name)
@@ -343,7 +344,7 @@ subroutine build_target_list(targets,model,library)
         do j=1,size(model%packages)
             
             lib_name = join_path(model%package_name, &
-                                 model%packages(j)%library_filename(shared_lib,get_os_type()))
+                                 library_filename(model%packages(j)%name,shared_lib,.false.,get_os_type()))
 
             call add_target(targets,package=model%packages(j)%name, &
                             type = FPM_TARGET_SHARED,output_name = lib_name)
@@ -939,11 +940,13 @@ end subroutine prune_build_targets
 !> Construct the linker flags string for each target
 !>  `target%link_flags` includes non-library objects and library flags
 !>
-subroutine resolve_target_linking(targets, model)
+subroutine resolve_target_linking(targets, model, error)
     type(build_target_ptr), intent(inout), target :: targets(:)
     type(fpm_model_t), intent(in) :: model
+    type(error_t), allocatable, intent(out) :: error
 
-    integer :: i
+    integer :: i,j
+    integer, allocatable :: package_deps(:)
     character(:), allocatable :: global_link_flags, local_link_flags
     character(:), allocatable :: global_include_flags
 
@@ -1008,24 +1011,55 @@ subroutine resolve_target_linking(targets, model)
             allocate(target%link_objects(0))
 
             select case (target%target_type)
-                case (FPM_TARGET_ARCHIVE,FPM_TARGET_SHARED) 
+                case (FPM_TARGET_ARCHIVE) 
                     
                     global_link_flags = target%output_file // global_link_flags
 
                     call get_link_objects(target%link_objects,target,is_exe=.false.)
 
                     allocate(character(0) :: target%link_flags)
-                
-            !    case (FPM_TARGET_SHARED)
                     
-!                    block
-!                        integer :: k
-!                        do k=1,size(Targets)
-!                            print *, 'target ',k,'...'
-!                            call targets(k)%ptr%info(stdout)
-!                        end do
-!                    end block
-!                    stop 'implement shared'
+                case (FPM_TARGET_SHARED)
+                
+                    ! Gather object files from this package only
+                    call get_link_objects(target%link_objects, target, is_exe=.false.)
+
+                    ! Get output location
+                    target%output_dir = get_output_dir(model%build_prefix, target%compile_flags)
+                    target%output_file = join_path(target%output_dir, target%output_name)
+                    target%output_log_file = target%output_file // '.log'
+
+                    ! Build link flags
+                    target%link_flags = string_cat(target%link_objects, " ")
+
+                    ! Step 4: Add dependencies' shared libraries (excluding self)
+                    target%link_flags = model%get_shared_libraries_link(target%package_name, &
+                                                                        get_os_type(), &
+                                                                        target%link_flags, &
+                                                                        error=error, &
+                                                                        exclude_self=.true.)
+                    if (allocated(error)) return
+
+                    ! Step 5: Add any per-target libraries (e.g., `target%link_libraries`)
+                    if (allocated(target%link_libraries)) then
+                        if (size(target%link_libraries) > 0) then
+                            target%link_flags = model%compiler%enumerate_libraries(target%link_flags, &
+                                                                                   target%link_libraries)
+                        end if
+                    end if
+
+                    ! Step 6: Add global link flags (e.g., system-wide libraries)
+                    target%link_flags = target%link_flags // " " // global_link_flags                
+                
+                    call get_link_objects(target%link_objects, target, is_exe=.false.)
+                    
+                    ! Enumerate shared library dependencies from the package's dependency tree
+                    target%link_flags = model%get_shared_libraries_link(target%package_name, &
+                                                                        get_os_type(), &
+                                                                        target%link_flags, &
+                                                                        exclude_self=.true., &
+                                                                        error=error)
+                    if (allocated(error)) return
                     
                 case (FPM_TARGET_EXECUTABLE)
 
@@ -1054,7 +1088,7 @@ subroutine resolve_target_linking(targets, model)
         end associate
 
     end do
-
+    
 contains
 
     !> Wrapper to build link object list

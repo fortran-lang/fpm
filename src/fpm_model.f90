@@ -1139,15 +1139,18 @@ subroutine model_load_from_toml(self, table, error)
 
 end subroutine model_load_from_toml
 
-function get_shared_libraries_link(model, package_name, target_os, prefix, error) result(r)
+function get_shared_libraries_link(model, package_name, target_os, prefix, exclude_self, error) result(r)
     class(fpm_model_t), intent(in) :: model
     character(*), intent(in) :: package_name
     type(error_t), allocatable, intent(out) :: error
     integer, intent(in) :: target_os
     character(*), intent(in) :: prefix
+    !> Option to exclude linking to the given package (needed building it as a library)
+    logical, optional, intent(in) :: exclude_self
     character(len=:), allocatable :: r
     
     integer :: id,ndep,i
+    logical :: no_root
     integer, allocatable :: sorted_package_IDs(:)
     type(string_t), allocatable :: package_deps(:)
     
@@ -1169,6 +1172,14 @@ function get_shared_libraries_link(model, package_name, target_os, prefix, error
        r = prefix
        return 
     end if
+    
+    ! Optional exclusion of self (top-level) package
+    no_root = .false.
+    if (present(exclude_self)) no_root = exclude_self
+    if (no_root) then 
+        sorted_package_IDs = pack(sorted_package_IDs, sorted_package_IDs /= id)
+        ndep = size(sorted_package_IDs)
+    endif
     
     package_deps = [(string_t(model%deps%dep(sorted_package_IDs(i))%name),i=1,ndep)]
     
