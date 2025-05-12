@@ -269,11 +269,28 @@ function get_default_flags(self, release) result(flags)
     logical, intent(in) :: release
     character(len=:), allocatable :: flags
 
+    character(len=:), allocatable :: pic_flag
+
     if (release) then
         call get_release_compile_flags(self%id, flags)
     else
         call get_debug_compile_flags(self%id, flags)
     end if
+
+    ! Append position-independent code (PIC) flag, that is necessary 
+    ! building shared libraries
+    select case (self%id)
+    case (id_gcc, id_f95, id_caf, id_flang, id_flang_new, id_f18, id_lfortran, &
+          id_intel_classic_nix, id_intel_classic_mac, id_intel_llvm_nix, &
+          id_pgi, id_nvhpc, id_nag, id_cray, id_ibmxl)
+        pic_flag = " -fPIC"
+    case (id_intel_classic_windows, id_intel_llvm_windows)
+        pic_flag = ""  ! Windows does not use -fPIC
+    case default
+        pic_flag = " -fPIC"  ! Conservative fallback
+    end select
+
+    flags = flags // pic_flag
 
 end function get_default_flags
 
