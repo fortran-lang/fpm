@@ -57,5 +57,10 @@ pushd metapackage_blas
 "$fpm" run --verbose
 popd
 
+pushd metapackage_stdlib_extblas
+"$fpm" build --verbose
+"$fpm" run --verbose
+popd
+
 # Cleanup
 rm -rf ./*/build
