@@ -40,12 +40,13 @@ contains
 subroutine build_model(model, settings, package, error)
     type(fpm_model_t), intent(out) :: model
     class(fpm_build_settings), intent(inout) :: settings
-    type(package_config_t), intent(inout) :: package
+    type(package_config_t), intent(inout), target :: package
     type(error_t), allocatable, intent(out) :: error
 
     integer :: i, j
-    type(package_config_t) :: dependency
-    character(len=:), allocatable :: manifest, lib_dir
+    type(package_config_t), target  :: dependency
+    type(package_config_t), pointer :: manifest
+    character(len=:), allocatable :: file_name, lib_dir
     logical :: has_cpp
     logical :: duplicates_found
     type(string_t) :: include_dir
@@ -76,6 +77,8 @@ subroutine build_model(model, settings, package, error)
     ! Resolve meta-dependencies into the package and the model
     call resolve_metapackages(model,package,settings,error)
     if (allocated(error)) return
+    
+    if (allocated(package%preprocess)) call package%preprocess(1)%info(6,3)
 
     ! Create dependencies
     call new_dependency_tree(model%deps, cache=join_path("build", "cache.toml"), &
@@ -99,25 +102,32 @@ subroutine build_model(model, settings, package, error)
     has_cpp = .false.
     do i = 1, model%deps%ndep
         associate(dep => model%deps%dep(i))
-            manifest = join_path(dep%proj_dir, "fpm.toml")
+            file_name = join_path(dep%proj_dir, "fpm.toml")
 
-            call get_package_data(dependency, manifest, error, apply_defaults=.true.)
-            if (allocated(error)) exit
-
-            model%packages(i)%name = dependency%name
+            ! The main package manifest should not be reloaded, because it may have been 
+            ! affected by model dependencies and metapackages
+            if (i==1) then 
+                manifest => package
+            else
+                
+                call get_package_data(dependency, file_name, error, apply_defaults=.true.)
+                if (allocated(error)) exit                
+                
+                manifest => dependency
+            end if            
+            
+            model%packages(i)%name = manifest%name
             associate(features => model%packages(i)%features)
-                features%implicit_typing = dependency%fortran%implicit_typing
-                features%implicit_external = dependency%fortran%implicit_external
-                features%source_form = dependency%fortran%source_form
+                features%implicit_typing = manifest%fortran%implicit_typing
+                features%implicit_external = manifest%fortran%implicit_external
+                features%source_form = manifest%fortran%source_form
             end associate
             model%packages(i)%version = package%version%s()
 
             !> Add this dependency's manifest macros
-            call model%packages(i)%preprocess%destroy()
-
-            if (allocated(dependency%preprocess)) then
-                do j = 1, size(dependency%preprocess)
-                    call model%packages(i)%preprocess%add_config(dependency%preprocess(j))
+            if (allocated(manifest%preprocess)) then
+                do j = 1, size(manifest%preprocess)
+                    call model%packages(i)%preprocess%add_config(manifest%preprocess(j))
                 end do
             end if
 
@@ -132,10 +142,10 @@ subroutine build_model(model, settings, package, error)
 
             if (.not.allocated(model%packages(i)%sources)) allocate(model%packages(i)%sources(0))
 
-            if (allocated(dependency%library)) then
+            if (allocated(manifest%library)) then
 
-                if (allocated(dependency%library%source_dir)) then
-                    lib_dir = join_path(dep%proj_dir, dependency%library%source_dir)
+                if (allocated(manifest%library%source_dir)) then
+                    lib_dir = join_path(dep%proj_dir, manifest%library%source_dir)
                     if (is_dir(lib_dir)) then
                         call add_sources_from_dir(model%packages(i)%sources, lib_dir, FPM_SCOPE_LIB, &
                             with_f_ext=model%packages(i)%preprocess%suffixes, error=error)
@@ -143,9 +153,9 @@ subroutine build_model(model, settings, package, error)
                     end if
                 end if
 
-                if (allocated(dependency%library%include_dir)) then
-                    do j=1,size(dependency%library%include_dir)
-                        include_dir%s = join_path(dep%proj_dir, dependency%library%include_dir(j)%s)
+                if (allocated(manifest%library%include_dir)) then
+                    do j=1,size(manifest%library%include_dir)
+                        include_dir%s = join_path(dep%proj_dir, manifest%library%include_dir(j)%s)
                         if (is_dir(include_dir%s)) then
                             model%include_dirs = [model%include_dirs, include_dir]
                         end if
@@ -154,17 +164,17 @@ subroutine build_model(model, settings, package, error)
 
             end if
 
-            if (allocated(dependency%build%link)) then
-                model%link_libraries = [model%link_libraries, dependency%build%link]
+            if (allocated(manifest%build%link)) then
+                model%link_libraries = [model%link_libraries, manifest%build%link]
             end if
 
-            if (allocated(dependency%build%external_modules)) then
-                model%external_modules = [model%external_modules, dependency%build%external_modules]
+            if (allocated(manifest%build%external_modules)) then
+                model%external_modules = [model%external_modules, manifest%build%external_modules]
             end if
 
             ! Copy naming conventions from this dependency's manifest
-            model%packages(i)%enforce_module_names = dependency%build%module_naming
-            model%packages(i)%module_prefix        = dependency%build%module_prefix
+            model%packages(i)%enforce_module_names = manifest%build%module_naming
+            model%packages(i)%module_prefix        = manifest%build%module_prefix
 
         end associate
     end do

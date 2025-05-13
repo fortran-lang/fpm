@@ -192,15 +192,23 @@ module fpm_meta_base
             if (self%preprocess%is_cpp()) then 
                 
                 if (allocated(package%preprocess)) then 
-                    do i=1,size(package%preprocess)
-                        if (package%preprocess(i)%is_cpp()) then                             
-                            call package%preprocess(i)%add_config(self%preprocess)
-                            exit                            
-                        end if
-                    end do
+                    
+                    if (size(package%preprocess)<1) then 
+                        deallocate(package%preprocess)
+                        allocate(package%preprocess(1),source=self%preprocess)
+                    else
+                        do i=1,size(package%preprocess)
+                            if (package%preprocess(i)%is_cpp()) then                             
+                                call package%preprocess(i)%add_config(self%preprocess)
+                                exit                            
+                            end if
+                        end do                        
+                    end if
                 else
                     ! Copy configuration
+                    call self%preprocess%info(6,2)
                     allocate(package%preprocess(1),source=self%preprocess)
+                    
                 end if                
             
             else
