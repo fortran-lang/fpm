@@ -4,6 +4,7 @@ module fpm_meta_stdlib
     use fpm_meta_base, only: metapackage_t, destroy
     use fpm_git, only: git_target_branch
     use fpm_manifest_metapackages, only: metapackage_request_t
+    use fpm_strings, only: string_t
     use iso_fortran_env, only: stdout => output_unit
 
     implicit none
@@ -53,6 +54,10 @@ module fpm_meta_stdlib
         
         !> If an external BLAS is available, deploy appropriate macros    
         with_blas = external_blas(all_meta)
+        if (with_blas) then 
+            allocate(this%preprocess)
+            call this%preprocess%new([string_t('STDLIB_EXTERNAL_BLAS'),string_t('STDLIB_EXTERNAL_LAPACK')])
+        end if
 
         ! Stdlib is not 100% thread safe. print a warning to the user
         do i=1,size(all_meta)
