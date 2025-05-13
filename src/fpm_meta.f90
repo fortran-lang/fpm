@@ -128,6 +128,12 @@ module fpm_meta
             if (allocated(error)) return
         endif
 
+        ! blas
+        if (package%meta%blas%on) then
+            call add_metapackage_model(model,package,settings,"blas",error)
+            if (allocated(error)) return
+        endif
+
         ! stdlib
         if (package%meta%stdlib%on) then
             call add_metapackage_model(model,package,settings,"stdlib",error)
@@ -163,11 +169,7 @@ module fpm_meta
             if (allocated(error)) return
         endif
 
-        ! blas
-        if (package%meta%blas%on) then
-            call add_metapackage_model(model,package,settings,"blas",error)
-            if (allocated(error)) return
-        endif
+
 
     end subroutine resolve_metapackage_model
 
