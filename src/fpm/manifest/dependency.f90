@@ -70,6 +70,9 @@ module fpm_manifest_dependency
 
         !> Print information on this instance
         procedure :: info
+        
+        !> Add a preprocessor configuration
+        procedure :: add_preprocess
 
         !> Serialization interface
         procedure :: serializable_is_same => dependency_is_same
@@ -561,6 +564,47 @@ contains
         end if
 
     end subroutine resize_dependency_config
+    
+    subroutine add_preprocess(dep, preprocess)
+        !> Instance of the dependency config
+        class(dependency_config_t), intent(inout) :: dep
+        !> Instance of the preprocessor configuration
+        type(preprocess_config_t), intent(in) :: preprocess
+        
+        integer :: i,n
+        type(preprocess_config_t), allocatable :: new_preprocess(:)
+        
+        if (allocated(dep%preprocess)) then 
+            
+            n = size(dep%preprocess)
+            
+            if (n<1) then 
+                deallocate(dep%preprocess)
+                allocate(dep%preprocess(1),source=preprocess)
+            else
+                
+                find_similar: do i=1,n
+                    if (dep%preprocess(i)%name==dep%name) then                             
+                        call dep%preprocess(i)%add_config(preprocess)
+                        return                            
+                    end if
+                end do find_similar                   
+                
+                ! Similar preprocessor config not found: add a new one
+                allocate(new_preprocess(n+1))
+                new_preprocess(1:n) = dep%preprocess
+                new_preprocess(n+1) = preprocess
+                call move_alloc(from=new_preprocess,to=dep%preprocess)
+                
+            end if
+        else
+            
+            ! Copy configuration
+            allocate(dep%preprocess(1),source=preprocess)
+            
+        end if                
+               
+    end subroutine add_preprocess
 
 
 end module fpm_manifest_dependency

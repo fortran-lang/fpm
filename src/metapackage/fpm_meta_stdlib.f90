@@ -57,6 +57,7 @@ module fpm_meta_stdlib
         if (with_blas) then 
             allocate(this%preprocess)
             call this%preprocess%new([string_t('STDLIB_EXTERNAL_BLAS'),string_t('STDLIB_EXTERNAL_LAPACK')])
+            call this%dependency(2)%add_preprocess(this%preprocess)
         end if
 
         ! Stdlib is not 100% thread safe. print a warning to the user
