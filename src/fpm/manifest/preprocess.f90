@@ -20,7 +20,7 @@ module fpm_manifest_preprocess
    implicit none
    private
 
-   public :: preprocess_config_t, new_preprocess_config, new_preprocessors, operator(==)
+   public :: preprocess_config_t, new_preprocessors, operator(==)
 
    !> Configuration meta data for a preprocessor
    type, extends(serializable_t) :: preprocess_config_t
@@ -173,7 +173,7 @@ contains
             call syntax_error(error, "Preprocessor "//list(iprep)%key//" must be a table entry")
             exit
          end if
-         call new_preprocess_config(preprocessors(iprep), node, error)
+         call preprocessors(iprep)%new(node, error)
          if (allocated(error)) exit
       end do
 
