@@ -41,6 +41,11 @@ module fpm_manifest_preprocess
 
       !> Print information on this instance
       procedure :: info
+      
+      !> Initialization
+      procedure, private :: new_cpp_config_with_macros
+      procedure, private :: new_preprocess_config
+      generic   :: new => new_cpp_config_with_macros, new_preprocess_config
 
       !> Serialization interface
       procedure :: serializable_is_same => preprocess_is_same
@@ -61,11 +66,34 @@ module fpm_manifest_preprocess
 
 contains
 
+   !> Construct a new cpp preprocessor configuration with a list of macros
+   subroutine new_cpp_config_with_macros(self, macros)
+
+      !> Instance of the preprocess configuration
+      class(preprocess_config_t), intent(out) :: self
+      
+      !> List of macros
+      type(string_t), intent(in) :: macros(:)
+      
+      call self%destroy()
+      
+      !> Set cpp
+      self%name = "cpp"
+      
+      !> Set macros
+      if (size(macros)<=0) then 
+         allocate(self%macros(0))
+      else
+         allocate(self%macros, source=macros)
+      end if
+      
+   end subroutine new_cpp_config_with_macros
+
    !> Construct a new preprocess configuration from TOML data structure
    subroutine new_preprocess_config(self, table, error)
 
       !> Instance of the preprocess configuration
-      type(preprocess_config_t), intent(out) :: self
+      class(preprocess_config_t), intent(out) :: self
 
       !> Instance of the TOML data structure.
       type(toml_table), intent(inout) :: table
