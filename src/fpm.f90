@@ -78,8 +78,6 @@ subroutine build_model(model, settings, package, error)
     call resolve_metapackages(model,package,settings,error)
     if (allocated(error)) return
     
-    if (allocated(package%preprocess)) call package%preprocess(1)%info(6,3)
-
     ! Create dependencies
     call new_dependency_tree(model%deps, cache=join_path("build", "cache.toml"), &
     & path_to_config=settings%path_to_config)

@@ -206,7 +206,6 @@ module fpm_meta_base
                     end if
                 else
                     ! Copy configuration
-                    call self%preprocess%info(6,2)
                     allocate(package%preprocess(1),source=self%preprocess)
                     
                 end if                
