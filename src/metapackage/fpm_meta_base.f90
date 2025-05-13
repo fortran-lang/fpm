@@ -154,6 +154,8 @@ module fpm_meta_base
         class(metapackage_t), intent(in) :: self
         type(package_config_t), intent(inout) :: package
         type(error_t), allocatable, intent(out) :: error
+        
+        integer :: i
 
         ! All metapackage dependencies are added as dev-dependencies,
         ! as they may change if built upstream
@@ -164,7 +166,7 @@ module fpm_meta_base
                package%dev_dependency = self%dependency
             end if
         end if
-
+        
         ! Check if there are any special fortran requests which the package does not comply to
         if (allocated(self%fortran)) then
 
@@ -182,6 +184,33 @@ module fpm_meta_base
                 return
             end if
 
+        end if
+        
+        ! Check if there are preprocessor configurations
+        if (allocated(self%preprocess)) then 
+            
+            if (self%preprocess%is_cpp()) then 
+                
+                if (allocated(package%preprocess)) then 
+                    do i=1,size(package%preprocess)
+                        if (package%preprocess(i)%is_cpp()) then                             
+                            call package%preprocess(i)%add_config(self%preprocess)
+                            exit                            
+                        end if
+                    end do
+                else
+                    ! Copy configuration
+                    allocate(package%preprocess(1),source=self%preprocess)
+                end if                
+            
+            else
+
+                call fatal_error(error,'non-cpp preprocessor configuration '// &
+                                       self%preprocess%name//' is not supported')
+                return            
+            
+            end if
+            
         end if
 
         contains

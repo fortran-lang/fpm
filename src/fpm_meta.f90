@@ -137,11 +137,6 @@ module fpm_meta
             
         end do
         
-        ! Stdlib is not 100% thread safe. print a warning to the user
-        if (package%meta%stdlib%on .and. package%meta%openmp%on) then
-            write(stdout,'(a)')'<WARNING> both openmp and stdlib requested: some functions may not be thread-safe!'
-        end if
-
     end subroutine resolve_metapackage_model
 
 end module fpm_meta
