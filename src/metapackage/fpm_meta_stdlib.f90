@@ -4,6 +4,7 @@ module fpm_meta_stdlib
     use fpm_meta_base, only: metapackage_t, destroy
     use fpm_git, only: git_target_branch
     use fpm_manifest_metapackages, only: metapackage_request_t
+    use iso_fortran_env, only: stdout => output_unit
 
     implicit none
 
@@ -19,13 +20,16 @@ module fpm_meta_stdlib
         type(compiler_t), intent(in) :: compiler
         type(metapackage_request_t), intent(in) :: all_meta(:)
         type(error_t), allocatable, intent(out) :: error
+        
+        integer :: i
+        logical :: with_blas
 
         !> Cleanup
         call destroy(this)
         
         !> Set name
         this%name = "stdlib"
-
+        
         !> Stdlib is queried as a dependency from the official repository
         this%has_dependencies = .true.
 
@@ -46,6 +50,29 @@ module fpm_meta_stdlib
             call fatal_error(error,'cannot initialize git repo dependency for stdlib metapackage')
             return
         end if
+        
+        !> If an external BLAS is available, deploy appropriate macros    
+        with_blas = external_blas(all_meta)
+
+        ! Stdlib is not 100% thread safe. print a warning to the user
+        do i=1,size(all_meta)
+            if (all_meta(i)%name=="openmp") then 
+                write(stdout,'(a)')'<WARNING> both openmp and stdlib requested: some functions may not be thread-safe!'
+            end if                
+        end do
 
     end subroutine init_stdlib
+    
+    logical function external_blas(all_meta)
+        type(metapackage_request_t), intent(in) :: all_meta(:)
+        integer :: i
+        external_blas = .false.
+        do i=1,size(all_meta)
+            if (all_meta(i)%name=="blas") then
+                external_blas = .true.
+                exit 
+            end if                
+        end do            
+    end function external_blas
+    
 end module fpm_meta_stdlib
