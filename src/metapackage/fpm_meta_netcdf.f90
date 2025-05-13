@@ -30,6 +30,9 @@ contains
         allocate (this % link_libs(0), this % incl_dirs(0), this % external_modules(0))
         this % link_flags = string_t("")
         this % flags = string_t("")
+        
+        !> Set name
+        this%name = "netcdf"
 
         !> Assert pkg-config is installed
         if (.not. assert_pkg_config()) then

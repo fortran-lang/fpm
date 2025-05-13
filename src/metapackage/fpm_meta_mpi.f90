@@ -54,6 +54,9 @@ contains
 
         !> Cleanup
         call destroy(this)
+        
+        !> Set name
+        this%name = "mpi"
 
         !> Get all candidate MPI wrappers
         call mpi_wrappers(compiler,fort_wrappers,c_wrappers,cpp_wrappers)

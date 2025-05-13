@@ -20,6 +20,9 @@ module fpm_meta_minpack
 
         !> Cleanup
         call destroy(this)
+        
+        !> Set name
+        this%name = "minpack"
 
         !> minpack is queried as a dependency from the official repository
         this%has_dependencies = .true.

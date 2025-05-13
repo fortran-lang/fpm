@@ -16,9 +16,12 @@ module fpm_meta_base
 
     !> Type for describing a source file
     type, public :: metapackage_t
+        
+        !> Package name
+        character(:), allocatable :: name
 
-    !> Package version (if supported)
-    type(version_t), allocatable :: version
+        !> Package version (if supported)
+        type(version_t), allocatable :: version
 
         logical :: has_link_libraries   = .false.
         logical :: has_link_flags       = .false.
@@ -76,6 +79,7 @@ module fpm_meta_base
         this%has_dependencies = .false.
         this%has_run_command = .false.
         this%has_external_modules = .false.
+        if (allocated(this%name)) deallocate(this%name)
         if (allocated(this%version)) deallocate(this%version)
         if (allocated(this%flags%s)) deallocate(this%flags%s)
         if (allocated(this%link_libs)) deallocate(this%link_libs)

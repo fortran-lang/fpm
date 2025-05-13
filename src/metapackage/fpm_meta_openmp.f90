@@ -25,6 +25,9 @@ module fpm_meta_openmp
 
         !> Cleanup
         call destroy(this)
+        
+        !> Set name
+        this%name = "openmp"
 
         !> OpenMP has compiler flags
         this%has_build_flags = .true.

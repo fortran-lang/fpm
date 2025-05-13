@@ -20,6 +20,9 @@ module fpm_meta_stdlib
 
         !> Cleanup
         call destroy(this)
+        
+        !> Set name
+        this%name = "stdlib"
 
         !> Stdlib is queried as a dependency from the official repository
         this%has_dependencies = .true.

@@ -34,6 +34,9 @@ contains
         this%link_flags = string_t("")
         this%flags = string_t("")
         this%has_external_modules = .false.
+        
+        !> Set name
+        this%name = "blas"
 
         if (get_os_type() == OS_MACOS) then
             if (compile_and_link_flags_supported(compiler, "-framework Accelerate")) then
