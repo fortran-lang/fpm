@@ -3,6 +3,7 @@ module fpm_meta_minpack
     use fpm_meta_base, only: metapackage_t, destroy
     use fpm_error, only: error_t, fatal_error
     use fpm_git, only: git_target_tag
+    use fpm_manifest_metapackages, only: metapackage_request_t
 
     implicit none
 
@@ -13,9 +14,10 @@ module fpm_meta_minpack
     contains
 
     !> Initialize minpack metapackage for the current system
-    subroutine init_minpack(this,compiler,error)
+    subroutine init_minpack(this,compiler,all_meta,error)
         class(metapackage_t), intent(inout) :: this
         type(compiler_t), intent(in) :: compiler
+        type(metapackage_request_t), intent(in) :: all_meta(:)
         type(error_t), allocatable, intent(out) :: error
 
         !> Cleanup

@@ -8,6 +8,7 @@ module fpm_meta_openmp
     use fpm_strings, only: string_t
     use fpm_meta_base, only: metapackage_t, destroy
     use fpm_error, only: error_t, fatal_error
+    use fpm_manifest_metapackages, only: metapackage_request_t
 
     implicit none
 
@@ -18,9 +19,10 @@ module fpm_meta_openmp
     contains
 
     !> Initialize OpenMP metapackage for the current system
-    subroutine init_openmp(this,compiler,error)
+    subroutine init_openmp(this,compiler,all_meta,error)
         class(metapackage_t), intent(inout) :: this
         type(compiler_t), intent(in) :: compiler
+        type(metapackage_request_t), intent(in) :: all_meta(:)
         type(error_t), allocatable, intent(out) :: error
 
         !> Cleanup

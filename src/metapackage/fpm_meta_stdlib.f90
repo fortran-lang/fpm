@@ -3,6 +3,7 @@ module fpm_meta_stdlib
     use fpm_error, only: error_t, fatal_error
     use fpm_meta_base, only: metapackage_t, destroy
     use fpm_git, only: git_target_branch
+    use fpm_manifest_metapackages, only: metapackage_request_t
 
     implicit none
 
@@ -13,9 +14,10 @@ module fpm_meta_stdlib
     contains
 
     !> Initialize stdlib metapackage for the current system
-    subroutine init_stdlib(this,compiler,error)
+    subroutine init_stdlib(this,compiler,all_meta,error)
         class(metapackage_t), intent(inout) :: this
         type(compiler_t), intent(in) :: compiler
+        type(metapackage_request_t), intent(in) :: all_meta(:)
         type(error_t), allocatable, intent(out) :: error
 
         !> Cleanup
