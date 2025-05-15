@@ -270,7 +270,7 @@ subroutine targets_from_sources(targets,model,prune,library,error)
     should_prune = prune
     if (present(library)) should_prune = should_prune .and. library%monolithic()
     
-    if (should_prune) call prune_build_targets(targets,root_package=model%package_name)
+    call prune_build_targets(targets,model%package_name,should_prune)
 
     call resolve_target_linking(targets,model,library,error)
     if (allocated(error)) return
@@ -321,9 +321,7 @@ subroutine build_target_list(targets,model,library)
 
     if (n_source < 1) return
 
-    with_lib = any([((model%packages(j)%sources(i)%unit_scope == FPM_SCOPE_LIB, &
-                      i=1,size(model%packages(j)%sources)), &
-                      j=1,size(model%packages))])
+    with_lib = any(model%packages%has_library())
     
     if (with_lib .and. present(library)) then 
         shared_lib = library%shared()
@@ -737,13 +735,16 @@ end function find_module_dependency
 
 
 !> Perform tree-shaking to remove unused module targets
-subroutine prune_build_targets(targets, root_package)
+subroutine prune_build_targets(targets, root_package, prune_unused_objects)
 
     !> Build target list to prune
     type(build_target_ptr), intent(inout), allocatable :: targets(:)
 
     !> Name of root package
     character(*), intent(in) :: root_package
+    
+    !> Whether unused objects should be pruned
+    logical, intent(in) :: prune_unused_objects
 
     integer :: i, j, nexec
     type(string_t), allocatable :: modules_used(:)
@@ -805,8 +806,8 @@ subroutine prune_build_targets(targets, root_package)
             if (allocated(target%source)) then
                 if (target%source%unit_type == FPM_UNIT_MODULE) then
 
-                    exclude_target(i) = .true.
-                    target%skip = .true.
+                    exclude_target(i) = prune_unused_objects
+                    target%skip = prune_unused_objects
 
                     do j=1,size(target%source%modules_provided)
 
@@ -822,8 +823,8 @@ subroutine prune_build_targets(targets, root_package)
                 elseif (target%source%unit_type == FPM_UNIT_SUBMODULE) then
                     ! Remove submodules if their parents are not used
 
-                    exclude_target(i) = .true.
-                    target%skip = .true.
+                    exclude_target(i) = prune_unused_objects
+                    target%skip = prune_unused_objects
                     do j=1,size(target%source%parent_modules)
 
                         if (target%source%parent_modules(j)%s .in. modules_used) then
@@ -858,27 +859,32 @@ subroutine prune_build_targets(targets, root_package)
 
     targets = pack(targets,.not.exclude_target)
 
-    ! Remove unused targets from archive dependency list
-    if (targets(1)%ptr%target_type == FPM_TARGET_ARCHIVE) then
-        associate(archive=>targets(1)%ptr)
+    ! Remove unused targets from library dependency list
+    do j=1,size(targets)
+        associate(archive=>targets(j)%ptr)
+            
+            if (any(archive%target_type==[FPM_TARGET_ARCHIVE,FPM_TARGET_OBJECT])) then 
 
-            allocate(exclude_from_archive(size(archive%dependencies)))
-            exclude_from_archive(:) = .false.
+                allocate(exclude_from_archive(size(archive%dependencies)),source=.false.)
 
-            do i=1,size(archive%dependencies)
+                do i=1,size(archive%dependencies)
 
-                if (archive%dependencies(i)%ptr%skip) then
+                    if (archive%dependencies(i)%ptr%skip) then
 
-                    exclude_from_archive(i) = .true.
+                        exclude_from_archive(i) = .true.
 
-                end if
+                    end if
 
-            end do
+                end do
 
-            archive%dependencies = pack(archive%dependencies,.not.exclude_from_archive)
+                archive%dependencies = pack(archive%dependencies,.not.exclude_from_archive)
+                
+                deallocate(exclude_from_archive)
+            
+            endif
 
         end associate
-    end if
+    end do
 
     contains
 
@@ -1106,8 +1112,8 @@ subroutine resolve_target_linking(targets, model, library, error)
                         has_self_lib = .false.
                         find_self: do j=1,size(targets)
                             associate(target_loop=>targets(j)%ptr)
-                                if (target_loop%target_type==FPM_TARGET_SHARED .and. &
-                                    target_loop%package_name==target%package_name) then 
+                                if (any(target_loop%target_type==[FPM_TARGET_SHARED,FPM_TARGET_ARCHIVE]) &
+                                    .and. target_loop%package_name==target%package_name) then 
                                     has_self_lib = .true.
                                     exit find_self
                                 end if
