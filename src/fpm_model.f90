@@ -174,6 +174,9 @@ type, extends(serializable_t) :: package_t
 
     contains
     
+        !> Check if a package will create a library
+        procedure :: has_library => package_has_library
+    
         !> Serialization interface
         procedure :: serializable_is_same => package_is_same
         procedure :: dump_to_toml   => package_dump_to_toml
@@ -1153,6 +1156,7 @@ function get_package_libraries_link(model, package_name, prefix, exclude_self, d
     integer :: id,ndep,i
     logical :: no_root
     integer, allocatable :: sorted_package_IDs(:)
+    logical, allocatable :: empty_package(:)
     type(string_t), allocatable :: package_deps(:)
     
     ! Get dependency ID of this target 
@@ -1184,6 +1188,14 @@ function get_package_libraries_link(model, package_name, prefix, exclude_self, d
         ndep = size(sorted_package_IDs)
     endif
     
+    ! Exclusion of package IDs marked "empty" (i.e. they contain no sources)
+    empty_package = .not.model%packages%has_library()
+    
+    if (any(empty_package)) then 
+        sorted_package_IDs = pack(sorted_package_IDs, .not.empty_package(sorted_package_IDs))
+        ndep = size(sorted_package_IDs)
+    end if
+    
     package_deps = [(string_t(model%deps%dep(sorted_package_IDs(i))%name),i=1,ndep)]
     
     r = model%compiler%enumerate_libraries(prefix, package_deps)
@@ -1192,5 +1204,18 @@ function get_package_libraries_link(model, package_name, prefix, exclude_self, d
     if (present(dep_IDs)) call move_alloc(from=sorted_package_IDs,to=dep_IDs)
     
 end function get_package_libraries_link
+
+!> Check whether a package has an object library
+elemental logical function package_has_library(self) result(has_library)
+    class(package_t), intent(in) :: self
+    
+    if (allocated(self%sources)) then 
+        has_library = any(self%sources%unit_scope==FPM_SCOPE_LIB)
+    else
+        has_library = .false.
+    end if
+    
+end function package_has_library
+
 
 end module fpm_model

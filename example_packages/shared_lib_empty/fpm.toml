@@ -1,0 +1,5 @@
+name = "shared_lib_extra"
+library.type="shared"
+[dependencies]
+shared_lib = { path = "../shared_lib" }
+shared_app_only = { path = "../shared_app_only" }

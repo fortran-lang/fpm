@@ -321,9 +321,7 @@ subroutine build_target_list(targets,model,library)
 
     if (n_source < 1) return
 
-    with_lib = any([((model%packages(j)%sources(i)%unit_scope == FPM_SCOPE_LIB, &
-                      i=1,size(model%packages(j)%sources)), &
-                      j=1,size(model%packages))])
+    with_lib = any(model%packages%has_library())
     
     if (with_lib .and. present(library)) then 
         shared_lib = library%shared()
@@ -861,27 +859,32 @@ subroutine prune_build_targets(targets, root_package, prune_unused_objects)
 
     targets = pack(targets,.not.exclude_target)
 
-    ! Remove unused targets from archive dependency list
-    if (targets(1)%ptr%target_type == FPM_TARGET_ARCHIVE) then
-        associate(archive=>targets(1)%ptr)
+    ! Remove unused targets from library dependency list
+    do j=1,size(targets)
+        associate(archive=>targets(j)%ptr)
+            
+            if (any(archive%target_type==[FPM_TARGET_ARCHIVE,FPM_TARGET_OBJECT])) then 
 
-            allocate(exclude_from_archive(size(archive%dependencies)))
-            exclude_from_archive(:) = .false.
+                allocate(exclude_from_archive(size(archive%dependencies)),source=.false.)
 
-            do i=1,size(archive%dependencies)
+                do i=1,size(archive%dependencies)
 
-                if (archive%dependencies(i)%ptr%skip) then
+                    if (archive%dependencies(i)%ptr%skip) then
 
-                    exclude_from_archive(i) = .true.
+                        exclude_from_archive(i) = .true.
 
-                end if
+                    end if
 
-            end do
+                end do
 
-            archive%dependencies = pack(archive%dependencies,.not.exclude_from_archive)
+                archive%dependencies = pack(archive%dependencies,.not.exclude_from_archive)
+                
+                deallocate(exclude_from_archive)
+            
+            endif
 
         end associate
-    end if
+    end do
 
     contains
 
