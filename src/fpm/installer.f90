@@ -210,11 +210,6 @@ contains
           ! Handle shared library side-files only on Windows
           if (self%os==OS_WINDOWS) then 
             
-            ! Install .def if it exists
-            def_file      = join_path(library%output_dir, library%package_name // ".def")
-            if (exists(def_file)) call self%install(def_file, self%libdir, error)
-            if (allocated(error)) return            
-
             ! Try both compiler-dependent import library names
             implib_file = join_path(library%output_dir, library%package_name // ".dll.a")           
             if (exists(implib_file)) then 
