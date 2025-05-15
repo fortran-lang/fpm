@@ -26,7 +26,7 @@ contains
     type(package_config_t) :: package
     type(error_t), allocatable :: error
     type(fpm_model_t) :: model
-    type(build_target_ptr), allocatable :: targets(:)
+    type(build_target_ptr), allocatable :: targets(:), libraries(:)
     type(installer_t) :: installer
     type(string_t), allocatable :: list(:)
     logical :: installable
@@ -62,11 +62,11 @@ contains
       verbosity=merge(2, 1, settings%verbose))
 
     if (allocated(package%library) .and. package%install%library) then
-      call filter_library_targets(targets, list)
+      call filter_library_targets(targets, libraries)
 
-      if (size(list) > 0) then
-        do i=1,size(list)
-           call installer%install_library(list(i)%s, error)
+      if (size(libraries) > 0) then
+        do i=1,size(libraries)
+           call installer%install_library(libraries(i)%ptr, error)
            call handle_error(error)
         end do
 
@@ -97,11 +97,12 @@ contains
 
     integer :: ii
     type(string_t), allocatable :: install_target(:), temp(:)
+    type(build_target_ptr), allocatable :: libs(:)
 
     allocate(install_target(0))
 
-    call filter_library_targets(targets, temp)
-    install_target = [install_target, temp]
+    call filter_library_targets(targets, libs)
+    install_target = [install_target, (string_t(libs(ii)%ptr%output_file),ii=1,size(libs))]
 
     call filter_executable_targets(targets, FPM_SCOPE_APP, temp)
     install_target = [install_target, temp]

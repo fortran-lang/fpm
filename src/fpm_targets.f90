@@ -1254,23 +1254,29 @@ function get_output_dir(build_prefix, args) result(path)
     path = build_prefix//"_"//build_hash
 end function get_output_dir
 
-
+!> Returns pointers to all library targets
 subroutine filter_library_targets(targets, list)
     type(build_target_ptr), intent(in) :: targets(:)
-    type(string_t), allocatable, intent(out) :: list(:)
+    type(build_target_ptr), allocatable, intent(out) :: list(:)
 
     integer :: i, n
-
+    
     n = 0
-    call resize(list)
     do i = 1, size(targets)
         if (any(targets(i)%ptr%target_type == [FPM_TARGET_ARCHIVE,FPM_TARGET_SHARED])) then
-            if (n >= size(list)) call resize(list)
             n = n + 1
-            list(n)%s = targets(i)%ptr%output_file
+        end if
+    end do    
+    
+    allocate(list(n))
+
+    n = 0
+    do i = 1, size(targets)
+        if (any(targets(i)%ptr%target_type == [FPM_TARGET_ARCHIVE,FPM_TARGET_SHARED])) then
+            n = n + 1
+            list(n)%ptr => targets(i)%ptr
         end if
     end do
-    call resize(list, n)
 end subroutine filter_library_targets
 
 subroutine filter_executable_targets(targets, scope, list)

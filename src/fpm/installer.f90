@@ -5,8 +5,9 @@
 !> to any directory within the prefix.
 module fpm_installer
   use, intrinsic :: iso_fortran_env, only : output_unit
-  use fpm_environment, only : get_os_type, os_is_unix
+  use fpm_environment, only : get_os_type, os_is_unix, OS_WINDOWS
   use fpm_error, only : error_t, fatal_error
+  use fpm_targets, only: build_target_t, FPM_TARGET_ARCHIVE, FPM_TARGET_SHARED, FPM_TARGET_NAME
   use fpm_filesystem, only : join_path, mkdir, exists, unix_path, windows_path, get_local_prefix
 
   implicit none
@@ -193,12 +194,46 @@ contains
   subroutine install_library(self, library, error)
     !> Instance of the installer
     class(installer_t), intent(inout) :: self
-    !> Path to the library
-    character(len=*), intent(in) :: library
+    !> Library target    
+    type(build_target_t), intent(in) :: library
     !> Error handling
     type(error_t), allocatable, intent(out) :: error
+    
+    character(:), allocatable :: def_file, implib_file
+    
+    select case (library%target_type)
+       case (FPM_TARGET_ARCHIVE)
+          call self%install(library%output_file, self%libdir, error)
+       case (FPM_TARGET_SHARED)
+          call self%install(library%output_file, self%libdir, error)
+          
+          ! Handle shared library side-files only on Windows
+          if (self%os==OS_WINDOWS) then 
+            
+            ! Install .def if it exists
+            def_file      = join_path(library%output_dir, library%package_name // ".def")
+            if (exists(def_file)) call self%install(def_file, self%libdir, error)
+            if (allocated(error)) return            
 
-    call self%install(library, self%libdir, error)
+            ! Try both compiler-dependent import library names
+            implib_file = join_path(library%output_dir, library%package_name // ".dll.a")           
+            if (exists(implib_file)) then 
+                call self%install(implib_file, self%libdir, error)            
+                if (allocated(error)) return
+            else
+                implib_file = join_path(library%output_dir, library%package_name // ".lib")
+                if (exists(implib_file)) call self%install(implib_file, self%libdir, error)            
+                if (allocated(error)) return
+            endif
+
+          end if
+          
+       case default 
+          call fatal_error(error,"Installer error: "//library%package_name//" is a "// &
+                                 FPM_TARGET_NAME(library%target_type)//", not a library")
+          return        
+    end select
+    
   end subroutine install_library
 
   !> Install a test program in its correct subdirectory
