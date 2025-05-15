@@ -1,5 +1,5 @@
 # App only, use shared lib from other folder
-name = "shared_app_only"
+name = "static_app_only"
 library.type="static"
 install.library=true
 [dependencies]
