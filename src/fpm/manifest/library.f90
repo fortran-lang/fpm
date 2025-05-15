@@ -83,7 +83,7 @@ contains
         !> Instance of the library configuration
         class(library_config_t), intent(in) :: self
         
-        monolithic = self%lib_type == "monolithic"
+        monolithic = .not.(static(self) .or. shared(self))
     end function monolithic
 
 
@@ -121,6 +121,7 @@ contains
             call fatal_error(error,"Error while reading value for 'source-form' in fpm.toml, expecting logical")
             return
         end if
+        
         select case(self%lib_type)
         case("shared","static","monolithic")
             ! OK
