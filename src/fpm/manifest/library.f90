@@ -125,7 +125,8 @@ contains
         case("shared","static","monolithic")
             ! OK
         case default
-            call fatal_error(error,"Value of library.type cannot be '"//self%lib_type//"', choose shared/static/monolithic (default)")
+            call fatal_error(error,"Value of library.type cannot be '"//self%lib_type &
+                                 //"', choose shared/static/monolithic (default)")
             return
         end select        
         
