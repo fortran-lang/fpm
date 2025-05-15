@@ -63,7 +63,12 @@ contains
         !> Instance of the library configuration
         class(library_config_t), intent(in) :: self
         
-        shared = self%lib_type == "shared"
+        if (allocated(self%lib_type)) then 
+           shared = self%lib_type == "shared"
+        else
+           shared = .false.
+        endif
+        
     end function shared
 
 
@@ -73,7 +78,11 @@ contains
         !> Instance of the library configuration
         class(library_config_t), intent(in) :: self
         
-        static = self%lib_type == "static"
+        if (allocated(self%lib_type)) then 
+           static = self%lib_type == "static"
+        else
+           static = .false.
+        endif
     end function static
 
 
@@ -109,18 +118,18 @@ contains
             return
         end if
 
+        if (has_list(table, "type")) then
+            call syntax_error(error, "Manifest key [library.type] does not allow list input")
+            return
+        end if
+
         call get_value(table, "source-dir", self%source_dir, "src")
         call get_value(table, "build-script", self%build_script)
 
         call get_list(table, "include-dir", self%include_dir, error)
         if (allocated(error)) return
         
-        call get_value(table, "type", self%lib_type, "monolithic", stat=stat)
-
-        if (stat /= toml_stat%success) then
-            call fatal_error(error,"Error while reading value for 'source-form' in fpm.toml, expecting logical")
-            return
-        end if
+        call get_value(table, "type", self%lib_type, "monolithic")
         
         select case(self%lib_type)
         case("shared","static","monolithic")
@@ -134,6 +143,10 @@ contains
         ! Set default value of include-dir if not found in manifest
         if (.not.allocated(self%include_dir)) then
             self%include_dir = [string_t("include")]
+        end if
+        
+        if (.not.allocated(self%lib_type)) then 
+            self%lib_type = "monolithic"
         end if
 
     end subroutine new_library
