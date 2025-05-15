@@ -1191,7 +1191,7 @@ function get_package_libraries_link(model, package_name, prefix, exclude_self, d
     ! Exclusion of package IDs marked "empty" (i.e. they contain no sources)
     has_lib = model%packages%has_library()
     
-    if (any(has_lib)) then 
+    if (any(.not.has_lib)) then 
         sorted_package_IDs = pack(sorted_package_IDs, has_lib(sorted_package_IDs))
         ndep = size(sorted_package_IDs)
     end if
