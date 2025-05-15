@@ -1371,7 +1371,7 @@ contains
         call new_table(table)
         table%key = "example"
 
-        call new_preprocess_config(preprocess, table, error)
+        call preprocess%new(table, error)
 
     end subroutine test_preprocess_empty
 
@@ -1391,7 +1391,7 @@ contains
         table%key = 'example'
         call add_table(table, 'wrong-field', child, stat)
 
-        call new_preprocess_config(preprocess, table, error)
+        call preprocess%new(table, error)
 
     end subroutine test_preprocess_wrongkey
 

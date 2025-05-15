@@ -32,6 +32,7 @@ module fpm_meta
     use fpm_meta_hdf5, only: init_hdf5
     use fpm_meta_netcdf, only: init_netcdf
     use fpm_meta_blas, only: init_blas
+    use fpm_manifest_metapackages, only: metapackage_request_t
 
     use shlex_module, only: shlex_split => split
     use regex_module, only: regex
@@ -50,41 +51,37 @@ module fpm_meta
     contains
 
     !> Initialize a metapackage from the given name
-    subroutine init_from_name(this,name,compiler,error)
+    subroutine init_from_request(this,request,compiler,all_meta,error)
         class(metapackage_t), intent(inout) :: this
-        character(*), intent(in) :: name
+        type(metapackage_request_t), intent(in) :: request
         type(compiler_t), intent(in) :: compiler
+        !> Pass a list of all metapackage requests so dependencies can be sorted out
+        type(metapackage_request_t), intent(in) :: all_meta(:)
         type(error_t), allocatable, intent(out) :: error
 
         !> Initialize metapackage by name
-        select case(name)
-            case("openmp");  call init_openmp (this,compiler,error)
-            case("stdlib");  call init_stdlib (this,compiler,error)
-            case("minpack"); call init_minpack(this,compiler,error)
-            case("mpi");     call init_mpi    (this,compiler,error)
-            case("hdf5");    call init_hdf5   (this,compiler,error)
-            case("netcdf");  call init_netcdf (this,compiler,error)
-            case("blas");    call init_blas   (this,compiler,error)
+        select case(request%name)
+            case("openmp");  call init_openmp (this,compiler,all_meta,error)
+            case("stdlib");  call init_stdlib (this,compiler,all_meta,error)
+            case("minpack"); call init_minpack(this,compiler,all_meta,error)
+            case("mpi");     call init_mpi    (this,compiler,all_meta,error)
+            case("hdf5");    call init_hdf5   (this,compiler,all_meta,error)
+            case("netcdf");  call init_netcdf (this,compiler,all_meta,error)
+            case("blas");    call init_blas   (this,compiler,all_meta,error)
             case default
-                call syntax_error(error, "Package "//name//" is not supported in [metapackages]")
+                call syntax_error(error, "Package "//request%name//" is not supported in [metapackages]")
                 return
         end select
 
-    end subroutine init_from_name
+    end subroutine init_from_request
 
     !> Add named metapackage dependency to the model
-    subroutine add_metapackage_model(model,package,settings,name,error)
+    subroutine add_metapackage_model(model,package,settings,meta,error)
         type(fpm_model_t), intent(inout) :: model
         type(package_config_t), intent(inout) :: package
         class(fpm_cmd_settings), intent(inout) :: settings
-        character(*), intent(in) :: name
+        type(metapackage_t), intent(inout) :: meta
         type(error_t), allocatable, intent(out) :: error
-
-        type(metapackage_t) :: meta
-
-        !> Init metapackage
-        call init_from_name(meta,name,model%compiler,error)
-        if (allocated(error)) return
 
         !> Add it into the model
         call meta%resolve(model,error)
@@ -99,7 +96,7 @@ module fpm_meta
         if (allocated(error)) return
 
         ! If we need to run executables, there should be an MPI runner
-        if (name=="mpi") then
+        if (meta%name=="mpi") then
             select type (settings)
                class is (fpm_run_settings) ! run, test
                   if (.not.meta%has_run_command) &
@@ -115,60 +112,31 @@ module fpm_meta
         type(package_config_t), intent(inout) :: package
         class(fpm_build_settings), intent(inout) :: settings
         type(error_t), allocatable, intent(out) :: error
+        
+        integer :: m
+        type(metapackage_t) :: meta
+        type(metapackage_request_t), allocatable :: requested(:)
 
         ! Dependencies are added to the package config, so they're properly resolved
         ! into the dependency tree later.
         ! Flags are added to the model (whose compiler needs to be already initialized)
         if (model%compiler%is_unknown()) &
         write(stdout,'(a)') '<WARNING> compiler not initialized: metapackages may not be available'
-
-        ! OpenMP
-        if (package%meta%openmp%on) then
-            call add_metapackage_model(model,package,settings,"openmp",error)
+        
+        ! Get all requested metapackages
+        requested = package%meta%get_requests()
+        if (size(requested)<1) return
+        
+        do m=1,size(requested)
+            
+            call init_from_request(meta,requested(m),model%compiler,requested,error)
             if (allocated(error)) return
-        endif
-
-        ! stdlib
-        if (package%meta%stdlib%on) then
-            call add_metapackage_model(model,package,settings,"stdlib",error)
+            
+            call add_metapackage_model(model,package,settings,meta,error)
             if (allocated(error)) return
-        endif
-
-        ! minpack
-        if (package%meta%minpack%on) then
-            call add_metapackage_model(model,package,settings,"minpack",error)
-            if (allocated(error)) return
-        endif
-
-        ! Stdlib is not 100% thread safe. print a warning to the user
-        if (package%meta%stdlib%on .and. package%meta%openmp%on) then
-            write(stdout,'(a)')'<WARNING> both openmp and stdlib requested: some functions may not be thread-safe!'
-        end if
-
-        ! MPI
-        if (package%meta%mpi%on) then
-            call add_metapackage_model(model,package,settings,"mpi",error)
-            if (allocated(error)) return
-        endif
-
-        ! hdf5
-        if (package%meta%hdf5%on) then
-            call add_metapackage_model(model,package,settings,"hdf5",error)
-            if (allocated(error)) return
-        endif
-
-        ! netcdf
-        if (package%meta%netcdf%on) then
-            call add_metapackage_model(model,package,settings,"netcdf",error)
-            if (allocated(error)) return
-        endif
-
-        ! blas
-        if (package%meta%blas%on) then
-            call add_metapackage_model(model,package,settings,"blas",error)
-            if (allocated(error)) return
-        endif
-
+            
+        end do
+        
     end subroutine resolve_metapackage_model
 
 end module fpm_meta

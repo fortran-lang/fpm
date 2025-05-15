@@ -5,6 +5,7 @@ module fpm_meta_netcdf
     use fpm_pkg_config, only: assert_pkg_config, pkgcfg_has_package
     use fpm_strings, only: string_t
     use fpm_error, only: error_t, fatal_error
+    use fpm_manifest_metapackages, only: metapackage_request_t
 
     implicit none
 
@@ -15,9 +16,10 @@ module fpm_meta_netcdf
 contains
 
     !> Initialize NetCDF metapackage for the current system
-    subroutine init_netcdf(this, compiler, error)
+    subroutine init_netcdf(this, compiler, all_meta, error)
         class(metapackage_t), intent(inout) :: this
         type(compiler_t), intent(in) :: compiler
+        type(metapackage_request_t), intent(in) :: all_meta(:)
         type(error_t), allocatable, intent(out) :: error
 
         logical :: s
@@ -30,6 +32,9 @@ contains
         allocate (this % link_libs(0), this % incl_dirs(0), this % external_modules(0))
         this % link_flags = string_t("")
         this % flags = string_t("")
+        
+        !> Set name
+        this%name = "netcdf"
 
         !> Assert pkg-config is installed
         if (.not. assert_pkg_config()) then
