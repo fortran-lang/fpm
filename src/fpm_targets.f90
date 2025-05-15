@@ -787,7 +787,7 @@ end function find_module_dependency
 
 
 !> Perform tree-shaking to remove unused module targets
-subroutine prune_build_targets(targets, root_package, prune_unused_objects)
+subroutine prune_build_targets(targets, root_package, prune_unused_objects, prune_unused_objects)
 
     !> Build target list to prune
     type(build_target_ptr), intent(inout), allocatable :: targets(:)
@@ -920,15 +920,15 @@ subroutine prune_build_targets(targets, root_package, prune_unused_objects)
 
                 allocate(exclude_from_archive(size(archive%dependencies)),source=.false.)
 
-                do i=1,size(archive%dependencies)
+                    do i=1,size(archive%dependencies)
 
-                    if (archive%dependencies(i)%ptr%skip) then
+                        if (archive%dependencies(i)%ptr%skip) then
 
-                        exclude_from_archive(i) = .true.
+                            exclude_from_archive(i) = .true.
 
-                    end if
+                        end if
 
-                end do
+                    end do
 
                 archive%dependencies = pack(archive%dependencies,.not.exclude_from_archive)
                 
