@@ -326,5 +326,11 @@ pushd shared_app_only
 test $EXIT_CODE -eq 0
 popd
 
+# Static library dependencies
+pushd static_app_only
+"$fpm" test || EXIT_CODE=$?
+test $EXIT_CODE -eq 0
+popd
+
 # Cleanup
 rm -rf ./*/build

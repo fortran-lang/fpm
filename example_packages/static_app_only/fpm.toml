@@ -1,6 +1,6 @@
 # App only, use shared lib from other folder
 name = "shared_app_only"
-library.type="shared"
+library.type="static"
 install.library=true
 [dependencies]
 shared_lib_extra = { path = "../shared_lib_extra" }
