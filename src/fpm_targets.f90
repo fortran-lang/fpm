@@ -171,7 +171,7 @@ subroutine info(self, unit, verbosity)
     integer, intent(in) :: unit
     integer, intent(in), optional :: verbosity
 
-    integer :: pr, i
+    integer :: pr
     character(len=*), parameter :: fmt = '("#", 1x, a, t30, a)'
     character(len=*), parameter :: fmt_list = '("#", 1x, a, t30, a, " (", i0, " items)")'
 
@@ -265,7 +265,7 @@ subroutine targets_from_sources(targets,model,prune,library,error)
     ! Prune unused source files, unless we're building shared libraries that need 
     ! all sources to be distributable
     should_prune = prune
-    if (present(library)) should_prune = should_prune .and. .not.library%shared    
+    if (present(library)) should_prune = should_prune .and. (library%lib_type/="")
     if (should_prune) call prune_build_targets(targets,root_package=model%package_name)
 
     call resolve_target_linking(targets,model,error)
@@ -306,7 +306,7 @@ subroutine build_target_list(targets,model,library)
 
     integer :: i, j, k, n_source, exe_type
     character(:), allocatable :: exe_dir, compile_flags, lib_name
-    logical :: with_lib, static_lib, shared_lib
+    logical :: with_lib, monolithic, shared_lib
 
     ! Initialize targets
     allocate(targets(0))
@@ -323,20 +323,20 @@ subroutine build_target_list(targets,model,library)
     
     if (with_lib) then 
         if (present(library)) then 
-            shared_lib = library%shared
+            shared_lib = library%shared()
         else
             shared_lib = .false.
         end if
-        static_lib = .not.shared_lib
+        monolithic = .not.shared_lib
     else
-        static_lib = .false.
+        monolithic = .false.
         shared_lib = .false.
     end if
 
     ! For a static object archive, everything from this package or all its dependencies is 
     ! put into the same file. For a shared library configuration, each package has its own 
     ! dynamic library file to avoid dependency collisions
-    if (static_lib) then 
+    if (monolithic) then 
         
         lib_name = join_path(model%package_name, &
                              library_filename(model%packages(1)%name,shared_lib,.false.,get_os_type()))
@@ -1201,8 +1201,7 @@ subroutine get_library_dirs(model, targets, shared_lib_dirs)
     type(build_target_ptr), intent(inout), target :: targets(:)
     type(string_t), allocatable, intent(out) :: shared_lib_dirs(:)
 
-    integer :: i, j
-    character(len=:), allocatable :: dir
+    integer :: i
     type(string_t) :: temp
     
     allocate(shared_lib_dirs(0))

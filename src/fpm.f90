@@ -761,8 +761,6 @@ logical function should_be_run(settings,run_scope,exe_target)
     integer, intent(in) :: run_scope
     type(build_target_t), intent(in) :: exe_target
     
-    integer :: j
-    
     if (exe_target%is_executable_target(run_scope)) then
         
         associate(exe_source => exe_target%dependencies(1)%ptr%source)

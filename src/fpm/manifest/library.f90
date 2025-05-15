@@ -44,6 +44,11 @@ module fpm_manifest_library
         procedure :: serializable_is_same => library_is_same
         procedure :: dump_to_toml
         procedure :: load_from_toml
+        
+        !> Check library types
+        procedure, non_overridable :: monolithic
+        procedure, non_overridable :: shared
+        procedure, non_overridable :: static
 
     end type library_config_t
 
@@ -51,6 +56,35 @@ module fpm_manifest_library
 
 
 contains
+
+    !> Check if this is a shared library config 
+    !> (full packages built as shared libs)
+    elemental logical function shared(self)
+        !> Instance of the library configuration
+        class(library_config_t), intent(in) :: self
+        
+        shared = self%lib_type == "shared"
+    end function shared
+
+
+    !> Check if this is a static library config
+    !> (full packages built as static libs)
+    elemental logical function static(self)
+        !> Instance of the library configuration
+        class(library_config_t), intent(in) :: self
+        
+        static = self%lib_type == "static"
+    end function static
+
+
+    !> Check if this is a monolithic library config
+    !> (single monolithic archive with all objects used by this project)
+    elemental logical function monolithic(self)
+        !> Instance of the library configuration
+        class(library_config_t), intent(in) :: self
+        
+        monolithic = self%lib_type == "monolithic"
+    end function monolithic
 
 
     !> Construct a new library configuration from a TOML data structure
