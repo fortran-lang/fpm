@@ -1,4 +1,4 @@
-# App only, use shared lib from other folder
+# App only, use shared libs from other folder, no provided sources
 name = "static_app_only"
 library.type="static"
 install.library=true

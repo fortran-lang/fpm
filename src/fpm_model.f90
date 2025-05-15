@@ -1156,7 +1156,7 @@ function get_package_libraries_link(model, package_name, prefix, exclude_self, d
     integer :: id,ndep,i
     logical :: no_root
     integer, allocatable :: sorted_package_IDs(:)
-    logical, allocatable :: empty_package(:)
+    logical, allocatable :: has_lib(:)
     type(string_t), allocatable :: package_deps(:)
     
     ! Get dependency ID of this target 
@@ -1189,10 +1189,10 @@ function get_package_libraries_link(model, package_name, prefix, exclude_self, d
     endif
     
     ! Exclusion of package IDs marked "empty" (i.e. they contain no sources)
-    empty_package = .not.model%packages%has_library()
+    has_lib = model%packages%has_library()
     
-    if (any(empty_package)) then 
-        sorted_package_IDs = pack(sorted_package_IDs, .not.empty_package(sorted_package_IDs))
+    if (any(has_lib)) then 
+        sorted_package_IDs = pack(sorted_package_IDs, has_lib(sorted_package_IDs))
         ndep = size(sorted_package_IDs)
     end if
     
