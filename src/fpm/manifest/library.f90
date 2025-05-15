@@ -32,8 +32,8 @@ module fpm_manifest_library
         !> Alternative build script to be invoked
         character(len=:), allocatable :: build_script
         
-        !> Should this be a shared library
-        logical :: shared = .false.
+        !> Shared / Static / Monolithic library 
+        character(:), allocatable :: lib_type
 
     contains
 
@@ -81,13 +81,20 @@ contains
         call get_list(table, "include-dir", self%include_dir, error)
         if (allocated(error)) return
         
-        call get_value(table, "shared", self%shared, default=.false., stat=stat)
+        call get_value(table, "type", self%lib_type, "monolithic", stat=stat)
 
         if (stat /= toml_stat%success) then
-            call fatal_error(error,"Could not read 'shared' in fpm.toml library config, expecting logical")
+            call fatal_error(error,"Error while reading value for 'source-form' in fpm.toml, expecting logical")
             return
-        end if        
-
+        end if
+        select case(self%lib_type)
+        case("shared","static","monolithic")
+            ! OK
+        case default
+            call fatal_error(error,"Value of library.type cannot be '"//self%lib_type//"', choose shared/static/monolithic (default)")
+            return
+        end select        
+        
         ! Set default value of include-dir if not found in manifest
         if (.not.allocated(self%include_dir)) then
             self%include_dir = [string_t("include")]
@@ -119,7 +126,7 @@ contains
                 call syntax_error(error, "Key "//list(ikey)%key//" is not allowed in library")
                 exit
 
-            case("source-dir", "include-dir", "build-script", "shared")
+            case("source-dir", "include-dir", "build-script", "type")
                 continue
 
             end select
@@ -159,7 +166,7 @@ contains
             write(unit, fmt) "- include directory", string_cat(self%include_dir,",")
         end if
         
-        write(unit, fmt) "- library type", merge("shared", "static", self%shared)
+        write(unit, fmt) "- library type", self%lib_type
         
         if (allocated(self%build_script)) then
             write(unit, fmt) "- custom build", self%build_script
@@ -184,7 +191,10 @@ contains
               if (allocated(this%build_script)) then
                 if (.not.this%build_script==other%build_script) return
               end if
-              if (this%shared.neqv.other%shared) return
+              if (allocated(this%lib_type).neqv.allocated(other%lib_type)) return
+              if (allocated(this%lib_type)) then
+                if (.not.this%lib_type==other%lib_type) return
+              end if
            class default
               ! Not the same type
               return
@@ -213,7 +223,7 @@ contains
         if (allocated(error)) return
         call set_list(table, "include-dir", self%include_dir, error)
         if (allocated(error)) return
-        call set_value(table, "shared", self%shared, error, class_name)
+        call set_string(table, "type", self%lib_type, error, class_name)
         if (allocated(error)) return
 
     end subroutine dump_to_toml
@@ -236,7 +246,7 @@ contains
         if (allocated(error)) return
         call get_list(table, "include-dir", self%include_dir, error)
         if (allocated(error)) return
-        call get_value(table, "shared", self%shared, error, class_name)
+        call get_value(table, "type", self%lib_type)
         if (allocated(error)) return
 
     end subroutine load_from_toml
