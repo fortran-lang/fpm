@@ -47,7 +47,7 @@ use fpm_error, only: error_t, fatal_error
 use tomlf, only: toml_table
 use fpm_toml, only: serializable_t, set_string, set_value, toml_stat, get_value
 use fpm_compile_commands, only: compile_command_t, compile_command_table_t
-use shlex_module, only: sh_split => split, ms_split
+use shlex_module, only: sh_split => split, ms_split, quote => ms_quote
 implicit none
 public :: compiler_t, new_compiler, archiver_t, new_archiver, get_macros
 public :: append_clean_flags, append_clean_flags_array
@@ -103,6 +103,8 @@ contains
     procedure :: get_feature_flag
     !> Get flags for the main linking command
     procedure :: get_main_flags
+    !> Get library export flags
+    procedure :: get_export_flags    
     !> Compile a Fortran object
     procedure :: compile_fortran
     !> Compile a C object
@@ -121,6 +123,7 @@ contains
     procedure :: is_gnu
     !> Enumerate libraries, based on compiler and platform
     procedure :: enumerate_libraries
+
 
     !> Serialization interface
     procedure :: serializable_is_same => compiler_is_same
@@ -1069,6 +1072,50 @@ function enumerate_libraries(self, prefix, libs) result(r)
     end select
 
 end function enumerate_libraries
+
+!>
+!> Generate library export flags for a shared library build
+!>
+function get_export_flags(self, target_dir, target_name) result(export_flags)
+    !> Instance of the compiler
+    class(compiler_t), intent(in) :: self
+    !> Path and package name
+    character(len=*), intent(in) :: target_dir, target_name
+    character(len=:), allocatable :: export_flags
+
+    character(len=:), allocatable :: implib_path, def_path
+
+    ! Only apply on Windows
+    if (get_os_type() /= OS_WINDOWS) then
+        export_flags = ""
+        return
+    end if
+
+    select case (self%id)
+
+    case (id_gcc, id_caf, id_f95)
+        ! GNU-based: emit both import library and def file
+        implib_path = quote(join_path(target_dir, target_name // ".dll.a") , for_cmd=.true.)
+        def_path    = quote(join_path(target_dir, target_name // ".def" ) , for_cmd=.true.)
+
+        export_flags = " -Wl,--out-implib," // implib_path // &
+                       " -Wl,--output-def," // def_path
+
+    case (id_intel_classic_windows, id_intel_llvm_windows)
+        ! Intel/MSVC-style
+        implib_path = quote(join_path(target_dir, target_name // ".lib") , for_cmd=.true.)
+        def_path    = quote(join_path(target_dir, target_name // ".def") , for_cmd=.true.)
+                
+        export_flags = " /IMPLIB:" // implib_path // &
+                       " /DEF:" // def_path
+
+    case default
+        
+        export_flags = ""  ! Do nothing elsewhere
+
+    end select
+
+end function get_export_flags
 
 !> Create new compiler instance
 subroutine new_compiler(self, fc, cc, cxx, echo, verbose)

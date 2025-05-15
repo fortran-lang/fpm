@@ -1055,7 +1055,7 @@ subroutine resolve_target_linking(targets, model, library, error)
                                                                         exclude_self=.true., &
                                                                         dep_IDs=package_deps, &
                                                                         error=error)
-                    
+                                                                        
                     if (allocated(error)) return
                     
                     ! Now that they're available, add these dependencies to the targets
@@ -1073,6 +1073,10 @@ subroutine resolve_target_linking(targets, model, library, error)
                         end if
                     end if
 
+                    ! Add shared library exports (import library + .def)
+                    target%link_flags = target%link_flags // " " // &
+                                        model%compiler%get_export_flags(target%output_dir,target%package_name)
+                    
                     ! Add global link flags (e.g., system-wide libraries)
                     target%link_flags = target%link_flags // " " // global_link_flags                
 
