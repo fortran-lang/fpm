@@ -268,7 +268,8 @@ subroutine targets_from_sources(targets,model,prune,library,error)
     ! Prune unused source files, unless we're building shared libraries that need 
     ! all sources to be distributable
     should_prune = prune
-    if (present(library)) should_prune = should_prune .and. (library%lib_type/="")
+    if (present(library)) should_prune = should_prune .and. library%monolithic()
+    
     if (should_prune) call prune_build_targets(targets,root_package=model%package_name)
 
     call resolve_target_linking(targets,model,library,error)
