@@ -4,6 +4,7 @@ module fpm_meta_base
     use fpm_model, only: fpm_model_t, fortran_features_t
     use fpm_command_line, only: fpm_cmd_settings, fpm_run_settings
     use fpm_manifest_dependency, only: dependency_config_t
+    use fpm_manifest_preprocess, only: preprocess_config_t
     use fpm_manifest, only: package_config_t
     use fpm_strings, only: string_t, len_trim, split, join
     use fpm_compiler, only: append_clean_flags, append_clean_flags_array
@@ -16,9 +17,12 @@ module fpm_meta_base
 
     !> Type for describing a source file
     type, public :: metapackage_t
+        
+        !> Package name
+        character(:), allocatable :: name
 
-    !> Package version (if supported)
-    type(version_t), allocatable :: version
+        !> Package version (if supported)
+        type(version_t), allocatable :: version
 
         logical :: has_link_libraries   = .false.
         logical :: has_link_flags       = .false.
@@ -44,6 +48,9 @@ module fpm_meta_base
 
         !> Special fortran features
         type(fortran_features_t), allocatable :: fortran
+        
+        !> Preprocessor configuration
+        type(preprocess_config_t), allocatable :: preprocess
 
         !> List of Development dependency meta data.
         !> Metapackage dependencies are never exported from the model
@@ -76,6 +83,9 @@ module fpm_meta_base
         this%has_dependencies = .false.
         this%has_run_command = .false.
         this%has_external_modules = .false.
+        if (allocated(this%fortran)) deallocate(this%fortran)
+        if (allocated(this%preprocess)) deallocate(this%preprocess)
+        if (allocated(this%name)) deallocate(this%name)
         if (allocated(this%version)) deallocate(this%version)
         if (allocated(this%flags%s)) deallocate(this%flags%s)
         if (allocated(this%link_libs)) deallocate(this%link_libs)
@@ -144,6 +154,8 @@ module fpm_meta_base
         class(metapackage_t), intent(in) :: self
         type(package_config_t), intent(inout) :: package
         type(error_t), allocatable, intent(out) :: error
+        
+        integer :: i
 
         ! All metapackage dependencies are added as dev-dependencies,
         ! as they may change if built upstream
@@ -154,7 +166,7 @@ module fpm_meta_base
                package%dev_dependency = self%dependency
             end if
         end if
-
+        
         ! Check if there are any special fortran requests which the package does not comply to
         if (allocated(self%fortran)) then
 
@@ -172,6 +184,40 @@ module fpm_meta_base
                 return
             end if
 
+        end if
+        
+        ! Check if there are preprocessor configurations
+        if (allocated(self%preprocess)) then 
+            
+            if (self%preprocess%is_cpp()) then 
+                
+                if (allocated(package%preprocess)) then 
+                    
+                    if (size(package%preprocess)<1) then 
+                        deallocate(package%preprocess)
+                        allocate(package%preprocess(1),source=self%preprocess)
+                    else
+                        do i=1,size(package%preprocess)
+                            if (package%preprocess(i)%is_cpp()) then                             
+                                call package%preprocess(i)%add_config(self%preprocess)
+                                exit                            
+                            end if
+                        end do                        
+                    end if
+                else
+                    ! Copy configuration
+                    allocate(package%preprocess(1),source=self%preprocess)
+                    
+                end if                
+            
+            else
+
+                call fatal_error(error,'non-cpp preprocessor configuration '// &
+                                       self%preprocess%name//' is not supported')
+                return            
+            
+            end if
+            
         end if
 
         contains

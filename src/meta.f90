@@ -58,6 +58,10 @@ module fpm_manifest_metapackages
 
         !> BLAS
         type(metapackage_request_t) :: blas
+        
+        contains
+        
+           procedure :: get_requests
 
     end type metapackage_config_t
 
@@ -217,7 +221,7 @@ contains
         if (allocated(error)) return
 
     end subroutine new_meta_config
-
+    
     !> Check local schema for allowed entries
     logical function is_meta_package(key)
 
@@ -236,5 +240,62 @@ contains
         end select
 
     end function is_meta_package
+    
+    !> Return a list of metapackages requested for the current build
+    function get_requests(meta) result(requests)
+
+        !> Instance of the build configuration
+        class(metapackage_config_t), intent(in) :: meta
+
+        !> The list of requested metapackages (always allocated)
+        type(metapackage_request_t), allocatable :: requests(:)
+
+        integer :: nreq
+
+        !> Count requests
+        nreq = 0
+        if (meta%mpi%on)     nreq = nreq + 1
+        if (meta%openmp%on)  nreq = nreq + 1
+        if (meta%stdlib%on)  nreq = nreq + 1
+        if (meta%minpack%on) nreq = nreq + 1
+        if (meta%hdf5%on)    nreq = nreq + 1
+        if (meta%netcdf%on)  nreq = nreq + 1
+        if (meta%blas%on)    nreq = nreq + 1
+
+        !> Prepare requests
+        allocate(requests(nreq)); if (nreq <= 0) return
+
+        nreq = 0
+        if (meta%mpi%on) then
+            nreq = nreq + 1
+            requests(nreq) = meta%mpi
+        end if
+        if (meta%openmp%on) then
+            nreq = nreq + 1
+            requests(nreq) = meta%openmp
+        end if
+        if (meta%stdlib%on) then
+            nreq = nreq + 1
+            requests(nreq) = meta%stdlib
+        end if
+        if (meta%minpack%on) then
+            nreq = nreq + 1
+            requests(nreq) = meta%minpack
+        end if
+        if (meta%hdf5%on) then
+            nreq = nreq + 1
+            requests(nreq) = meta%hdf5
+        end if
+        if (meta%netcdf%on) then
+            nreq = nreq + 1
+            requests(nreq) = meta%netcdf
+        end if
+        if (meta%blas%on) then
+            nreq = nreq + 1
+            requests(nreq) = meta%blas
+        end if
+
+    end function get_requests
+
 
 end module fpm_manifest_metapackages

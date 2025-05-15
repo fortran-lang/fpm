@@ -171,7 +171,8 @@ All checks passed!</p></td>
                  <td><a href='../module/fpm.html'>fpm</a></td>
                  <td>Subroutine</td>
                  <td><p>Constructs a valid fpm model from command line settings and the toml manifest.
-Add this dependency&rsquo;s manifest macros</p><a href="../proc/build_model.html" class="pull-right"><emph>Read more&hellip;</emph></a></td>
+Add this dependency&rsquo;s manifest macros
+Add this dependency&rsquo;s package-level macros</p></td>
                </tr>
 			   <tr>
                  <td><a href='../proc/build_package.html'>build_package</a></td>
@@ -497,7 +498,7 @@ Returns an error if the variable did not exist in the first place</p><a href="..
                  <td><p>Code git descriptor to a string</p></td>
                </tr>
 			   <tr>
-                 <td><a href='../proc/destroy.html'>destroy</a></td>
+                 <td><a href='../proc/destroy~2.html'>destroy</a></td>
                  <td><a href='../module/fpm_meta_base.html'>fpm_meta_base</a></td>
                  <td>Subroutine</td>
                  <td></td>
@@ -527,10 +528,10 @@ Returns an error if the variable did not exist in the first place</p><a href="..
                  <td><p>Dump dependency to toml table</p></td>
                </tr>
 			   <tr>
-                 <td><a href='../proc/dump_to_toml~6.html'>dump_to_toml</a></td>
+                 <td><a href='../proc/dump_to_toml~5.html'>dump_to_toml</a></td>
                  <td><a href='../module/fpm_compiler.html'>fpm_compiler</a></td>
                  <td>Subroutine</td>
-                 <td><p>Dump dependency to toml table</p><a href="../proc/dump_to_toml~6.html" class="pull-right"><emph>Read more&hellip;</emph></a></td>
+                 <td><p>Dump dependency to toml table</p><a href="../proc/dump_to_toml~5.html" class="pull-right"><emph>Read more&hellip;</emph></a></td>
                </tr>
 			   <tr>
                  <td><a href='../proc/enumerate_libraries.html'>enumerate_libraries</a></td>
@@ -948,7 +949,7 @@ All checks passed!</p></td>
    contain wildcard characters.</p><a href="../proc/glob.html" class="pull-right"><emph>Read more&hellip;</emph></a></td>
                </tr>
 			   <tr>
-                 <td><a href='../proc/handle_error.html'>handle_error</a></td>
+                 <td><a href='../proc/handle_error~2.html'>handle_error</a></td>
                  <td><a href='../program/main.html'>main</a></td>
                  <td>Subroutine</td>
                  <td></td>
@@ -984,16 +985,16 @@ All checks passed!</p></td>
 3) If longer, package name must be followed by default separator plus at least one char</p><a href="../proc/has_valid_standard_prefix.html" class="pull-right"><emph>Read more&hellip;</emph></a></td>
                </tr>
 			   <tr>
-                 <td><a href='../proc/info.html'>info</a></td>
-                 <td><a href='../module/fpm_manifest_profile.html'>fpm_manifest_profile</a></td>
-                 <td>Subroutine</td>
-                 <td><p>Write information on instance</p></td>
-               </tr>
-			   <tr>
-                 <td><a href='../proc/info~5.html'>info</a></td>
+                 <td><a href='../proc/info~4.html'>info</a></td>
                  <td><a href='../module/fpm_git.html'>fpm_git</a></td>
                  <td>Subroutine</td>
                  <td><p>Show information on git target</p></td>
+               </tr>
+			   <tr>
+                 <td><a href='../proc/info~12.html'>info</a></td>
+                 <td><a href='../module/fpm_manifest_profile.html'>fpm_manifest_profile</a></td>
+                 <td>Subroutine</td>
+                 <td><p>Write information on instance</p></td>
                </tr>
 			   <tr>
                  <td><a href='../proc/info_profile.html'>info_profile</a></td>
@@ -1007,7 +1008,7 @@ All checks passed!</p></td>
                  <td>Subroutine</td>
                  <td><p>Initialize blas metapackage for the current system
 Cleanup
-Assert pkg-config is installed</p></td>
+Set name</p><a href="../proc/init_blas.html" class="pull-right"><emph>Read more&hellip;</emph></a></td>
                </tr>
 			   <tr>
                  <td><a href='../proc/init_hdf5.html'>init_hdf5</a></td>
@@ -1015,10 +1016,7 @@ Assert pkg-config is installed</p></td>
                  <td>Subroutine</td>
                  <td><p>Initialize HDF5 metapackage for the current system
 Cleanup
-Assert pkg-config is installed
-Find pkg-config package file by priority
-some distros put hdf5-1.2.3.pc with version number in .pc filename.
-Add HDF5 modules as external</p></td>
+Set name</p><a href="../proc/init_hdf5.html" class="pull-right"><emph>Read more&hellip;</emph></a></td>
                </tr>
 			   <tr>
                  <td><a href='../proc/init_minpack.html'>init_minpack</a></td>
@@ -1040,8 +1038,7 @@ Cleanup</p><a href="../proc/init_mpi.html" class="pull-right"><emph>Read more&he
                  <td>Subroutine</td>
                  <td><p>Initialize NetCDF metapackage for the current system
 Cleanup
-Assert pkg-config is installed
-Add NetCDF modules as external</p></td>
+Set name</p><a href="../proc/init_netcdf.html" class="pull-right"><emph>Read more&hellip;</emph></a></td>
                </tr>
 			   <tr>
                  <td><a href='../proc/init_openmp.html'>init_openmp</a></td>
@@ -1168,7 +1165,7 @@ Cleanup</p><a href="../proc/init_stdlib.html" class="pull-right"><emph>Read more
                  <td><p>Read dependency from toml table (no checks made at this stage)</p><a href="../proc/load_from_toml~4.html" class="pull-right"><emph>Read more&hellip;</emph></a></td>
                </tr>
 			   <tr>
-                 <td><a href='../proc/load_from_toml~6.html'>load_from_toml</a></td>
+                 <td><a href='../proc/load_from_toml~5.html'>load_from_toml</a></td>
                  <td><a href='../module/fpm_compiler.html'>fpm_compiler</a></td>
                  <td>Subroutine</td>
                  <td><p>Read dependency from toml table (no checks made at this stage)</p></td>
@@ -1322,12 +1319,6 @@ Cleanup</p><a href="../proc/init_stdlib.html" class="pull-right"><emph>Read more
                  <td><a href='../module/fpm_manifest_package.html'>fpm_manifest_package</a></td>
                  <td>Subroutine</td>
                  <td><p>Construct a new package configuration from a TOML data structure</p></td>
-               </tr>
-			   <tr>
-                 <td><a href='../proc/new_preprocess_config.html'>new_preprocess_config</a></td>
-                 <td><a href='../module/fpm_manifest_preprocess.html'>fpm_manifest_preprocess</a></td>
-                 <td>Subroutine</td>
-                 <td><p>Construct a new preprocess configuration from TOML data structure</p></td>
                </tr>
 			   <tr>
                  <td><a href='../proc/new_preprocessors.html'>new_preprocessors</a></td>
@@ -1533,7 +1524,7 @@ gfortran does not look into by default)</p></td>
                </tr>
 			   <tr>
                  <td><a href='../interface/resize.html'>resize</a></td>
-                 <td><a href='../module/fpm_manifest_dependency.html'>fpm_manifest_dependency</a></td>
+                 <td><a href='../module/fpm_strings.html'>fpm_strings</a></td>
                  <td>Interface</td>
                  <td></td>
                </tr>
@@ -1545,7 +1536,7 @@ gfortran does not look into by default)</p></td>
                </tr>
 			   <tr>
                  <td><a href='../interface/resize~3.html'>resize</a></td>
-                 <td><a href='../module/fpm_strings.html'>fpm_strings</a></td>
+                 <td><a href='../module/fpm_manifest_dependency.html'>fpm_manifest_dependency</a></td>
                  <td>Interface</td>
                  <td></td>
                </tr>
@@ -1563,10 +1554,10 @@ gfortran does not look into by default)</p></td>
  based on any modules used by the corresponding source file.</p><a href="../proc/resolve_module_dependencies.html" class="pull-right"><emph>Read more&hellip;</emph></a></td>
                </tr>
 			   <tr>
-                 <td><a href='../proc/run.html'>run</a></td>
+                 <td><a href='../proc/run~2.html'>run</a></td>
                  <td><a href='../module/fpm_filesystem.html'>fpm_filesystem</a></td>
                  <td>Subroutine</td>
-                 <td><p>Execute the specified system command. Optionally</p><a href="../proc/run.html" class="pull-right"><emph>Read more&hellip;</emph></a></td>
+                 <td><p>Execute the specified system command. Optionally</p><a href="../proc/run~2.html" class="pull-right"><emph>Read more&hellip;</emph></a></td>
                </tr>
 			   <tr>
                  <td><a href='../proc/run_wrapper.html'>run_wrapper</a></td>
@@ -1817,7 +1808,7 @@ in case of errors.</p></td>
             <p class="text-end">
               Documentation generated by
               <a href="https://github.com/Fortran-FOSS-Programmers/ford">FORD</a>
- on 2025-05-05 06:46 +0000             </p>
+ on 2025-05-15 15:08 +0000             </p>
           </div>
         </div>
         <br>

@@ -92,7 +92,7 @@
 
             <li class="list-inline-item" id="statements"><i class="fa fa-list-ol"></i>
               <a data-bs-toggle="tooltip" data-bs-placement="bottom" data-bs-html="true"
-                 title="<p> 5.2% of total for derived types.</p>Including implementation: 116 statements,  2.1% of total for derived types.">30 statements</a>
+                 title="<p> 5.5% of total for derived types.</p>Including implementation: 144 statements,  2.6% of total for derived types.">32 statements</a>
             </li>
 
             <li class="list-inline-item" id="source-file">
@@ -136,11 +136,11 @@
         <div class="list-group list-group-flush">
             <a class="list-group-item" href="../type/metapackage_t.html#variable-cflags~2">cflags</a>
             <a class="list-group-item" href="../type/metapackage_t.html#variable-cxxflags~2">cxxflags</a>
-            <a class="list-group-item" href="../type/metapackage_t.html#variable-dependency~12">dependency</a>
-            <a class="list-group-item" href="../type/metapackage_t.html#variable-external_modules~4">external_modules</a>
+            <a class="list-group-item" href="../type/metapackage_t.html#variable-dependency~3">dependency</a>
+            <a class="list-group-item" href="../type/metapackage_t.html#variable-external_modules~3">external_modules</a>
             <a class="list-group-item" href="../type/metapackage_t.html#variable-fflags">fflags</a>
-            <a class="list-group-item" href="../type/metapackage_t.html#variable-flags~24">flags</a>
-            <a class="list-group-item" href="../type/metapackage_t.html#variable-fortran~2">fortran</a>
+            <a class="list-group-item" href="../type/metapackage_t.html#variable-flags~15">flags</a>
+            <a class="list-group-item" href="../type/metapackage_t.html#variable-fortran">fortran</a>
             <a class="list-group-item" href="../type/metapackage_t.html#variable-has_build_flags">has_build_flags</a>
             <a class="list-group-item" href="../type/metapackage_t.html#variable-has_c_flags">has_c_flags</a>
             <a class="list-group-item" href="../type/metapackage_t.html#variable-has_cxx_flags">has_cxx_flags</a>
@@ -152,10 +152,12 @@
             <a class="list-group-item" href="../type/metapackage_t.html#variable-has_link_libraries">has_link_libraries</a>
             <a class="list-group-item" href="../type/metapackage_t.html#variable-has_run_command">has_run_command</a>
             <a class="list-group-item" href="../type/metapackage_t.html#variable-incl_dirs">incl_dirs</a>
-            <a class="list-group-item" href="../type/metapackage_t.html#variable-link_flags~5">link_flags</a>
+            <a class="list-group-item" href="../type/metapackage_t.html#variable-link_flags~4">link_flags</a>
             <a class="list-group-item" href="../type/metapackage_t.html#variable-link_libs">link_libs</a>
+            <a class="list-group-item" href="../type/metapackage_t.html#variable-name~18">name</a>
+            <a class="list-group-item" href="../type/metapackage_t.html#variable-preprocess~2">preprocess</a>
             <a class="list-group-item" href="../type/metapackage_t.html#variable-run_command">run_command</a>
-            <a class="list-group-item" href="../type/metapackage_t.html#variable-version~19">version</a>
+            <a class="list-group-item" href="../type/metapackage_t.html#variable-version~7">version</a>
         </div>
       </div>
     </div>
@@ -182,8 +184,8 @@
       </a>
       <div id="boundprocs-0" class="collapse">
         <div class="list-group list-group-flush">
-            <a class="list-group-item" href="../type/metapackage_t.html#boundprocedure-destroy~3">destroy</a>
-            <a class="list-group-item" href="../type/metapackage_t.html#boundprocedure-resolve~2">resolve</a>
+            <a class="list-group-item" href="../type/metapackage_t.html#boundprocedure-destroy~4">destroy</a>
+            <a class="list-group-item" href="../type/metapackage_t.html#boundprocedure-resolve">resolve</a>
         </div>
       </div>
     </div>
@@ -256,7 +258,7 @@
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-dependency~12"></span>
+              <span class="anchor" id="variable-dependency~3"></span>
               type(<a href='dependency_config_t.html'>dependency_config_t</a>),
             </td>
               <td>public,</td>
@@ -274,7 +276,7 @@ Metapackage dependencies are never exported from the model</p>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-external_modules~4"></span>
+              <span class="anchor" id="variable-external_modules~3"></span>
               type(<a href='string_t.html'>string_t</a>),
             </td>
               <td>public,</td>
@@ -308,7 +310,7 @@ Metapackage dependencies are never exported from the model</p>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-flags~24"></span>
+              <span class="anchor" id="variable-flags~15"></span>
               type(<a href='string_t.html'>string_t</a>),
             </td>
               <td>public</td>
@@ -325,7 +327,7 @@ Metapackage dependencies are never exported from the model</p>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-fortran~2"></span>
+              <span class="anchor" id="variable-fortran"></span>
               type(<a href='fortran_features_t.html'>fortran_features_t</a>),
             </td>
               <td>public,</td>
@@ -529,7 +531,7 @@ Metapackage dependencies are never exported from the model</p>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-link_flags~5"></span>
+              <span class="anchor" id="variable-link_flags~4"></span>
               type(<a href='string_t.html'>string_t</a>),
             </td>
               <td>public</td>
@@ -563,6 +565,40 @@ Metapackage dependencies are never exported from the model</p>
         </tr>
         <tr>
             <td>
+              <span class="anchor" id="variable-name~18"></span>
+              character(len=:),
+            </td>
+              <td>public,</td>
+            <td>
+              allocatable
+            </td>
+            <td>::</td>
+            <td><strong>name</strong></td>
+                <td></td>
+                <td></td>
+            <td>
+                <p>Package name</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-preprocess~2"></span>
+              type(<a href='preprocess_config_t.html'>preprocess_config_t</a>),
+            </td>
+              <td>public,</td>
+            <td>
+              allocatable
+            </td>
+            <td>::</td>
+            <td><strong>preprocess</strong></td>
+                <td></td>
+                <td></td>
+            <td>
+                <p>Preprocessor configuration</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
               <span class="anchor" id="variable-run_command"></span>
               type(<a href='string_t.html'>string_t</a>),
             </td>
@@ -580,7 +616,7 @@ Metapackage dependencies are never exported from the model</p>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-version~19"></span>
+              <span class="anchor" id="variable-version~7"></span>
               type(<a href='version_t.html'>version_t</a>),
             </td>
               <td>public,</td>
@@ -608,7 +644,7 @@ Metapackage dependencies are never exported from the model</p>
           <div class="row">
               <div class="card mt-3">
     <div class="card-header codesum">
-      <span class="anchor" id="boundprocedure-destroy~3"></span>
+      <span class="anchor" id="boundprocedure-destroy~4"></span>
       <h3>
           procedure, public ::
   <strong>destroy</strong>
@@ -622,7 +658,7 @@ Metapackage dependencies are never exported from the model</p>
       <ul class="list-group">
           <li class="list-group-item">
                     <h3>
-    public elemental subroutine <a href='../proc/destroy.html'>destroy</a>(this)  
+    public elemental subroutine <a href='../proc/destroy~2.html'>destroy</a>(this)  
 </h3>
     
 
@@ -666,7 +702,7 @@ Metapackage dependencies are never exported from the model</p>
           <div class="row">
               <div class="card mt-3">
     <div class="card-header codesum">
-      <span class="anchor" id="boundprocedure-resolve~2"></span>
+      <span class="anchor" id="boundprocedure-resolve"></span>
       <h3>
           generic, public ::
   <strong>resolve</strong> => resolve_cmd, resolve_model, resolve_package_config
@@ -887,9 +923,12 @@ Metapackage dependencies are never exported from the model</p>
     <section>
     <h3><span class="anchor" id="src"></span>Source Code</h3>
     <div class="hl codehilite"><pre><span></span><span class="w">    </span><span class="k">type</span><span class="p">,</span><span class="w"> </span><span class="k">public</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">metapackage_t</span>
+<span class="w">        </span>
+<span class="w">        </span><span class="c">!&gt; Package name</span>
+<span class="w">        </span><span class="kt">character</span><span class="p">(:),</span><span class="w"> </span><span class="k">allocatable</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">name</span>
 
-<span class="w">    </span><span class="c">!&gt; Package version (if supported)</span>
-<span class="w">    </span><span class="k">type</span><span class="p">(</span><span class="n">version_t</span><span class="p">),</span><span class="w"> </span><span class="k">allocatable</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">version</span>
+<span class="w">        </span><span class="c">!&gt; Package version (if supported)</span>
+<span class="w">        </span><span class="k">type</span><span class="p">(</span><span class="n">version_t</span><span class="p">),</span><span class="w"> </span><span class="k">allocatable</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">version</span>
 
 <span class="w">        </span><span class="kt">logical</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">has_link_libraries</span><span class="w">   </span><span class="o">=</span><span class="w"> </span><span class="p">.</span><span class="n">false</span><span class="p">.</span>
 <span class="w">        </span><span class="kt">logical</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">has_link_flags</span><span class="w">       </span><span class="o">=</span><span class="w"> </span><span class="p">.</span><span class="n">false</span><span class="p">.</span>
@@ -915,6 +954,9 @@ Metapackage dependencies are never exported from the model</p>
 
 <span class="w">        </span><span class="c">!&gt; Special fortran features</span>
 <span class="w">        </span><span class="k">type</span><span class="p">(</span><span class="n">fortran_features_t</span><span class="p">),</span><span class="w"> </span><span class="k">allocatable</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">fortran</span>
+<span class="w">        </span>
+<span class="w">        </span><span class="c">!&gt; Preprocessor configuration</span>
+<span class="w">        </span><span class="k">type</span><span class="p">(</span><span class="n">preprocess_config_t</span><span class="p">),</span><span class="w"> </span><span class="k">allocatable</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">preprocess</span>
 
 <span class="w">        </span><span class="c">!&gt; List of Development dependency meta data.</span>
 <span class="w">        </span><span class="c">!&gt; Metapackage dependencies are never exported from the model</span>
@@ -954,7 +996,7 @@ Metapackage dependencies are never exported from the model</p>
             <p class="text-end">
               Documentation generated by
               <a href="https://github.com/Fortran-FOSS-Programmers/ford">FORD</a>
- on 2025-05-05 06:46 +0000             </p>
+ on 2025-05-15 15:08 +0000             </p>
           </div>
         </div>
         <br>

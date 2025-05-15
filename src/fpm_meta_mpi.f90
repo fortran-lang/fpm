@@ -12,6 +12,7 @@ module fpm_meta_mpi
         remove_newline_characters
     use fpm_environment, only: get_env, get_os_type, os_is_unix, OS_MACOS, OS_WINDOWS
     use fpm_meta_base, only: metapackage_t, destroy
+    use fpm_manifest_metapackages, only: metapackage_request_t
     use fpm_pkg_config, only: run_wrapper
     use shlex_module, only: shlex_split => split
 
@@ -39,9 +40,10 @@ module fpm_meta_mpi
 contains
 
     !> Initialize MPI metapackage for the current system
-    subroutine init_mpi(this,compiler,error)
+    subroutine init_mpi(this,compiler,all_meta,error)
         class(metapackage_t), intent(inout) :: this
         type(compiler_t), intent(in) :: compiler
+        type(metapackage_request_t), intent(in) :: all_meta(:)
         type(error_t), allocatable, intent(out) :: error
 
 
@@ -54,6 +56,9 @@ contains
 
         !> Cleanup
         call destroy(this)
+        
+        !> Set name
+        this%name = "mpi"
 
         !> Get all candidate MPI wrappers
         call mpi_wrappers(compiler,fort_wrappers,c_wrappers,cpp_wrappers)

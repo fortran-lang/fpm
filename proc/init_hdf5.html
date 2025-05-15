@@ -92,7 +92,7 @@
 
             <li class="list-inline-item" id="statements"><i class="fa fa-list-ol"></i>
               <a data-bs-toggle="tooltip" data-bs-placement="bottom" data-bs-html="true"
-                 title=" 0.9% of total for procedures.">67 statements</a>
+                 title=" 1.0% of total for procedures.">69 statements</a>
             </li>
 
             <li class="list-inline-item" id="source-file">
@@ -159,13 +159,14 @@
     </div>
     
     <div class="col-md-9" id='text'>
-    <h2>public  subroutine init_hdf5(this, compiler, error)  
+    <h2>public  subroutine init_hdf5(this, compiler, all_meta, error)  
 </h2>
     
 
     <p>Initialize HDF5 metapackage for the current system
 Cleanup
-Assert pkg-config is installed
+Set name</p>
+<p>Assert pkg-config is installed
 Find pkg-config package file by priority
 some distros put hdf5-1.2.3.pc with version number in .pc filename.
 Add HDF5 modules as external</p>
@@ -184,7 +185,7 @@ Add HDF5 modules as external</p>
     <tbody>
         <tr>
             <td>
-              <span class="anchor" id="variable-this~36"></span>
+              <span class="anchor" id="variable-this~34"></span>
               class(<a href='../type/metapackage_t.html'>metapackage_t</a>),
             </td>
 <td>intent(inout)</td>
@@ -199,7 +200,7 @@ Add HDF5 modules as external</p>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-compiler~30"></span>
+              <span class="anchor" id="variable-compiler~14"></span>
               type(<a href='../type/compiler_t.html'>compiler_t</a>),
             </td>
 <td>intent(in)</td>
@@ -214,7 +215,22 @@ Add HDF5 modules as external</p>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-error~202"></span>
+              <span class="anchor" id="variable-all_meta~7"></span>
+              type(<a href='../type/metapackage_request_t.html'>metapackage_request_t</a>),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>all_meta</strong>(:)</td>
+            <td>
+                
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-error~188"></span>
               type(<a href='../type/error_t.html'>error_t</a>),
             </td>
 <td>intent(out),</td>
@@ -244,9 +260,10 @@ Add HDF5 modules as external</p>
     
     <section>
     <h2><span class="anchor" id="src"></span>Source Code</h2>
-    <div class="hl codehilite"><pre><span></span><span class="w">    </span><span class="k">subroutine </span><span class="n">init_hdf5</span><span class="p">(</span><span class="n">this</span><span class="p">,</span><span class="n">compiler</span><span class="p">,</span><span class="n">error</span><span class="p">)</span>
+    <div class="hl codehilite"><pre><span></span><span class="w">    </span><span class="k">subroutine </span><span class="n">init_hdf5</span><span class="p">(</span><span class="n">this</span><span class="p">,</span><span class="n">compiler</span><span class="p">,</span><span class="n">all_meta</span><span class="p">,</span><span class="n">error</span><span class="p">)</span>
 <span class="w">        </span><span class="k">class</span><span class="p">(</span><span class="n">metapackage_t</span><span class="p">),</span><span class="w"> </span><span class="k">intent</span><span class="p">(</span><span class="n">inout</span><span class="p">)</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">this</span>
 <span class="w">        </span><span class="k">type</span><span class="p">(</span><span class="n">compiler_t</span><span class="p">),</span><span class="w"> </span><span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">)</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">compiler</span>
+<span class="w">        </span><span class="k">type</span><span class="p">(</span><span class="n">metapackage_request_t</span><span class="p">),</span><span class="w"> </span><span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">)</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">all_meta</span><span class="p">(:)</span>
 <span class="w">        </span><span class="k">type</span><span class="p">(</span><span class="n">error_t</span><span class="p">),</span><span class="w"> </span><span class="k">allocatable</span><span class="p">,</span><span class="w"> </span><span class="k">intent</span><span class="p">(</span><span class="n">out</span><span class="p">)</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">error</span>
 
 <span class="w">        </span><span class="kt">character</span><span class="p">(</span><span class="o">*</span><span class="p">),</span><span class="w"> </span><span class="k">parameter</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">find_hl</span><span class="p">(</span><span class="o">*</span><span class="p">)</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">&amp;</span>
@@ -268,6 +285,9 @@ Add HDF5 modules as external</p>
 <span class="w">        </span><span class="k">allocate</span><span class="p">(</span><span class="n">this</span><span class="p">%</span><span class="n">link_libs</span><span class="p">(</span><span class="mi">0</span><span class="p">),</span><span class="n">this</span><span class="p">%</span><span class="n">incl_dirs</span><span class="p">(</span><span class="mi">0</span><span class="p">),</span><span class="n">this</span><span class="p">%</span><span class="n">external_modules</span><span class="p">(</span><span class="mi">0</span><span class="p">),</span><span class="n">non_fortran</span><span class="p">(</span><span class="mi">0</span><span class="p">))</span>
 <span class="w">        </span><span class="n">this</span><span class="p">%</span><span class="n">link_flags</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">string_t</span><span class="p">(</span><span class="s2">&quot;&quot;</span><span class="p">)</span>
 <span class="w">        </span><span class="n">this</span><span class="p">%</span><span class="n">flags</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">string_t</span><span class="p">(</span><span class="s2">&quot;&quot;</span><span class="p">)</span>
+<span class="w">        </span>
+<span class="w">        </span><span class="c">!&gt; Set name</span>
+<span class="w">        </span><span class="n">this</span><span class="p">%</span><span class="n">name</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;hdf5&quot;</span>
 
 <span class="w">        </span><span class="c">!&gt; Assert pkg-config is installed</span>
 <span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(.</span><span class="nb">not</span><span class="p">.</span><span class="n">assert_pkg_config</span><span class="p">())</span><span class="w"> </span><span class="k">then</span>
@@ -393,7 +413,7 @@ Add HDF5 modules as external</p>
             <p class="text-end">
               Documentation generated by
               <a href="https://github.com/Fortran-FOSS-Programmers/ford">FORD</a>
- on 2025-05-05 06:46 +0000             </p>
+ on 2025-05-15 15:08 +0000             </p>
           </div>
         </div>
         <br>

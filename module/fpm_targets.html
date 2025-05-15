@@ -234,15 +234,15 @@
         <ul class="list-group list-group-flush">
             <li class="list-group-item">
               <ul class="list-inline">
-                  <li class="list-inline-item"><a href='fpm_manifest_preprocess.html'>fpm_manifest_preprocess</a></li>
                   <li class="list-inline-item"><a href='fpm_model.html'>fpm_model</a></li>
-                  <li class="list-inline-item"><a href='fpm_sources.html'>fpm_sources</a></li>
-                  <li class="list-inline-item"><a href='http://fortranwiki.org/fortran/show/iso_fortran_env'>iso_fortran_env</a></li>
+                  <li class="list-inline-item"><a href='fpm_compiler.html'>fpm_compiler</a></li>
+                  <li class="list-inline-item"><a href='fpm_strings.html'>fpm_strings</a></li>
                   <li class="list-inline-item"><a href='fpm_error.html'>fpm_error</a></li>
                   <li class="list-inline-item"><a href='fpm_filesystem.html'>fpm_filesystem</a></li>
-                  <li class="list-inline-item"><a href='fpm_strings.html'>fpm_strings</a></li>
-                  <li class="list-inline-item"><a href='fpm_compiler.html'>fpm_compiler</a></li>
+                  <li class="list-inline-item"><a href='fpm_manifest_preprocess.html'>fpm_manifest_preprocess</a></li>
+                  <li class="list-inline-item"><a href='http://fortranwiki.org/fortran/show/iso_fortran_env'>iso_fortran_env</a></li>
                   <li class="list-inline-item"><a href='fpm_environment.html'>fpm_environment</a></li>
+                  <li class="list-inline-item"><a href='fpm_sources.html'>fpm_sources</a></li>
               </ul>
             </li>
         </ul>
@@ -403,7 +403,7 @@ parameter
     <tbody>
         <tr>
             <td>
-              <span class="anchor" id="variable-ptr~12"></span>
+              <span class="anchor" id="variable-ptr~5"></span>
               type(<a href='../type/build_target_t.html'>build_target_t</a>),
             </td>
               <td>public,</td>
@@ -503,7 +503,7 @@ parameter
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-features~2"></span>
+              <span class="anchor" id="variable-features"></span>
               type(<a href='../type/fortran_features_t.html'>fortran_features_t</a>),
             </td>
               <td>public</td>
@@ -520,7 +520,7 @@ parameter
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-link_flags~2"></span>
+              <span class="anchor" id="variable-link_flags"></span>
               character(len=:),
             </td>
               <td>public,</td>
@@ -537,7 +537,7 @@ parameter
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-link_libraries~3"></span>
+              <span class="anchor" id="variable-link_libraries"></span>
               type(<a href='../type/string_t.html'>string_t</a>),
             </td>
               <td>public,</td>
@@ -571,7 +571,7 @@ parameter
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-macros"></span>
+              <span class="anchor" id="variable-macros~3"></span>
               type(<a href='../type/string_t.html'>string_t</a>),
             </td>
               <td>public,</td>
@@ -775,7 +775,7 @@ parameter
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-version~6"></span>
+              <span class="anchor" id="variable-version~2"></span>
               character(len=:),
             </td>
               <td>public,</td>
@@ -899,7 +899,7 @@ parameter
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-dependency~4"></span>
+              <span class="anchor" id="variable-dependency"></span>
               type(<a href='../type/build_target_t.html'>build_target_t</a>),
             </td>
 <td>intent(in),</td>
@@ -939,7 +939,7 @@ parameter
     <tbody>
         <tr>
             <td>
-              <span class="anchor" id="variable-targets~8"></span>
+              <span class="anchor" id="variable-targets~6"></span>
               type(<a href='../type/build_target_ptr.html'>build_target_ptr</a>),
             </td>
 <td>intent(inout),</td>
@@ -954,7 +954,7 @@ parameter
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-package~11"></span>
+              <span class="anchor" id="variable-package~7"></span>
               character(len=*),
             </td>
 <td>intent(in)</td>
@@ -1014,7 +1014,7 @@ parameter
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-link_libraries~4"></span>
+              <span class="anchor" id="variable-link_libraries~2"></span>
               type(<a href='../type/string_t.html'>string_t</a>),
             </td>
 <td>intent(in),</td>
@@ -1029,7 +1029,7 @@ parameter
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-features~3"></span>
+              <span class="anchor" id="variable-features~2"></span>
               type(<a href='../type/fortran_features_t.html'>fortran_features_t</a>),
             </td>
 <td>intent(in),</td>
@@ -1044,7 +1044,7 @@ parameter
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-preprocess~3"></span>
+              <span class="anchor" id="variable-preprocess"></span>
               type(<a href='../type/preprocess_config_t.html'>preprocess_config_t</a>),
             </td>
 <td>intent(in),</td>
@@ -1059,7 +1059,7 @@ parameter
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-version~7"></span>
+              <span class="anchor" id="variable-version~3"></span>
               character(len=*),
             </td>
 <td>intent(in),</td>
@@ -1099,7 +1099,7 @@ parameter
     <tbody>
         <tr>
             <td>
-              <span class="anchor" id="variable-targets~16"></span>
+              <span class="anchor" id="variable-targets~14"></span>
               type(<a href='../type/build_target_ptr.html'>build_target_ptr</a>),
             </td>
 <td>intent(in)</td>
@@ -1114,7 +1114,7 @@ parameter
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-scope~2"></span>
+              <span class="anchor" id="variable-scope~3"></span>
               integer,
             </td>
 <td>intent(in)</td>
@@ -1129,7 +1129,7 @@ parameter
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-list~8"></span>
+              <span class="anchor" id="variable-list~6"></span>
               type(<a href='../type/string_t.html'>string_t</a>),
             </td>
 <td>intent(out),</td>
@@ -1151,6 +1151,61 @@ parameter
 
               <div class="card">
     <div class="card-header codesum"><span class="anchor" id="proc-filter_library_targets"></span> <h3>public  subroutine <a href='../proc/filter_library_targets.html'>filter_library_targets</a>(targets, list)  
+</h3></div>
+    <div class="card-body">
+          
+  
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-targets~13"></span>
+              type(<a href='../type/build_target_ptr.html'>build_target_ptr</a>),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>targets</strong>(:)</td>
+            <td>
+
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-list~5"></span>
+              type(<a href='../type/string_t.html'>string_t</a>),
+            </td>
+<td>intent(out),</td>
+              <td></td>            <td>
+              allocatable
+            </td>
+            <td>::</td>
+            <td><strong>list</strong>(:)</td>
+            <td>
+
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+
+    </div>
+  </div>
+
+              <div class="card">
+    <div class="card-header codesum"><span class="anchor" id="proc-filter_modules"></span> <h3>public  subroutine <a href='../proc/filter_modules.html'>filter_modules</a>(targets, list)  
 </h3></div>
     <div class="card-body">
           
@@ -1205,61 +1260,6 @@ parameter
   </div>
 
               <div class="card">
-    <div class="card-header codesum"><span class="anchor" id="proc-filter_modules"></span> <h3>public  subroutine <a href='../proc/filter_modules.html'>filter_modules</a>(targets, list)  
-</h3></div>
-    <div class="card-body">
-          
-  
-
-  <h4>Arguments</h4>
-      <table class="table table-striped varlist">
-    <thead>
-      <tr>
-        <th scope="col">Type</th>
-<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
-        <th scope="col"></th>
-        <th scope="col">Name</th>
-        <th scope="col"></th>
-    </thead>
-    <tbody>
-        <tr>
-            <td>
-              <span class="anchor" id="variable-targets~17"></span>
-              type(<a href='../type/build_target_ptr.html'>build_target_ptr</a>),
-            </td>
-<td>intent(in)</td>
-              <td></td>            <td>
-              
-            </td>
-            <td>::</td>
-            <td><strong>targets</strong>(:)</td>
-            <td>
-
-            </td>
-        </tr>
-        <tr>
-            <td>
-              <span class="anchor" id="variable-list~9"></span>
-              type(<a href='../type/string_t.html'>string_t</a>),
-            </td>
-<td>intent(out),</td>
-              <td></td>            <td>
-              allocatable
-            </td>
-            <td>::</td>
-            <td><strong>list</strong>(:)</td>
-            <td>
-
-            </td>
-        </tr>
-    </tbody>
-  </table>
-
-
-    </div>
-  </div>
-
-              <div class="card">
     <div class="card-header codesum"><span class="anchor" id="proc-resolve_module_dependencies"></span> <h3>public  subroutine <a href='../proc/resolve_module_dependencies.html'>resolve_module_dependencies</a>(targets, external_modules, error)  
 </h3></div>
     <div class="card-body">
@@ -1280,7 +1280,7 @@ parameter
     <tbody>
         <tr>
             <td>
-              <span class="anchor" id="variable-targets~9"></span>
+              <span class="anchor" id="variable-targets~7"></span>
               type(<a href='../type/build_target_ptr.html'>build_target_ptr</a>),
             </td>
 <td>intent(inout),</td>
@@ -1310,7 +1310,7 @@ parameter
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-error~106"></span>
+              <span class="anchor" id="variable-error~47"></span>
               type(<a href='../type/error_t.html'>error_t</a>),
             </td>
 <td>intent(out),</td>
@@ -1350,7 +1350,7 @@ parameter
     <tbody>
         <tr>
             <td>
-              <span class="anchor" id="variable-targets~5"></span>
+              <span class="anchor" id="variable-targets~3"></span>
               type(<a href='../type/build_target_ptr.html'>build_target_ptr</a>),
             </td>
 <td>intent(out),</td>
@@ -1365,7 +1365,7 @@ parameter
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-model~14"></span>
+              <span class="anchor" id="variable-model~7"></span>
               type(<a href='../type/fpm_model_t.html'>fpm_model_t</a>),
             </td>
 <td>intent(inout),</td>
@@ -1395,7 +1395,7 @@ parameter
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-error~105"></span>
+              <span class="anchor" id="variable-error~46"></span>
               type(<a href='../type/error_t.html'>error_t</a>),
             </td>
 <td>intent(out),</td>
@@ -1438,7 +1438,7 @@ parameter
             <p class="text-end">
               Documentation generated by
               <a href="https://github.com/Fortran-FOSS-Programmers/ford">FORD</a>
- on 2025-05-05 06:46 +0000             </p>
+ on 2025-05-15 15:08 +0000             </p>
           </div>
         </div>
         <br>

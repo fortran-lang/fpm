@@ -5,6 +5,7 @@ module fpm_meta_hdf5
     use fpm_pkg_config, only: assert_pkg_config, pkgcfg_has_package, pkgcfg_list_all
     use fpm_meta_base, only: metapackage_t, destroy
     use fpm_meta_util, only: add_pkg_config_compile_options, lib_get_trailing
+    use fpm_manifest_metapackages, only: metapackage_request_t
     use fpm_error, only: error_t, fatal_error
 
     implicit none
@@ -16,9 +17,10 @@ module fpm_meta_hdf5
     contains
 
     !> Initialize HDF5 metapackage for the current system
-    subroutine init_hdf5(this,compiler,error)
+    subroutine init_hdf5(this,compiler,all_meta,error)
         class(metapackage_t), intent(inout) :: this
         type(compiler_t), intent(in) :: compiler
+        type(metapackage_request_t), intent(in) :: all_meta(:)
         type(error_t), allocatable, intent(out) :: error
 
         character(*), parameter :: find_hl(*) = &
@@ -40,6 +42,9 @@ module fpm_meta_hdf5
         allocate(this%link_libs(0),this%incl_dirs(0),this%external_modules(0),non_fortran(0))
         this%link_flags = string_t("")
         this%flags = string_t("")
+        
+        !> Set name
+        this%name = "hdf5"
 
         !> Assert pkg-config is installed
         if (.not.assert_pkg_config()) then

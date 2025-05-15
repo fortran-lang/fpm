@@ -4,6 +4,7 @@ module fpm_meta_blas
     use fpm_meta_base, only: metapackage_t, destroy
     use fpm_meta_util, only: add_pkg_config_compile_options
     use fpm_pkg_config, only: assert_pkg_config, pkgcfg_has_package
+    use fpm_manifest_metapackages, only: metapackage_request_t
     use fpm_strings, only: string_t
     use fpm_error, only: error_t, fatal_error
 
@@ -16,9 +17,10 @@ module fpm_meta_blas
 contains
 
     !> Initialize blas metapackage for the current system
-    subroutine init_blas(this, compiler, error)
+    subroutine init_blas(this, compiler, all_meta, error)
         class(metapackage_t), intent(inout) :: this
         type(compiler_t), intent(in) :: compiler
+        type(metapackage_request_t), intent(in) :: all_meta(:)
         type(error_t), allocatable, intent(out) :: error
 
         integer :: i
@@ -34,6 +36,9 @@ contains
         this%link_flags = string_t("")
         this%flags = string_t("")
         this%has_external_modules = .false.
+        
+        !> Set name
+        this%name = ""
 
         if (get_os_type() == OS_MACOS) then
             if (compile_and_link_flags_supported(compiler, "-framework Accelerate")) then
