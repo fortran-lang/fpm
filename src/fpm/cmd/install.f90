@@ -38,7 +38,12 @@ contains
     call build_model(model, settings, package, error)
     call handle_error(error)
 
-    call targets_from_sources(targets, model, settings%prune, package%library, error)
+    ! ifx bug: does not resolve allocatable -> optional
+    if (allocated(package%library)) then 
+       call targets_from_sources(targets, model, settings%prune, package%library, error)
+    else
+       call targets_from_sources(targets, model, settings%prune, error=error) 
+    endif
     call handle_error(error)
 
     call install_info(output_unit, settings%list, targets, ntargets)
