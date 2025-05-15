@@ -787,7 +787,7 @@ end function find_module_dependency
 
 
 !> Perform tree-shaking to remove unused module targets
-subroutine prune_build_targets(targets, root_package, prune_unused_objects, prune_unused_objects)
+subroutine prune_build_targets(targets, root_package, prune_unused_objects)
 
     !> Build target list to prune
     type(build_target_ptr), intent(inout), allocatable :: targets(:)
