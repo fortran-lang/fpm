@@ -237,7 +237,7 @@ type, extends(serializable_t) :: fpm_model_t
     contains
     
         !> Get target link flags
-        procedure :: get_shared_libraries_link
+        procedure :: get_package_libraries_link
     
         !> Serialization interface
         procedure :: serializable_is_same => model_is_same
@@ -1139,7 +1139,7 @@ subroutine model_load_from_toml(self, table, error)
 
 end subroutine model_load_from_toml
 
-function get_shared_libraries_link(model, package_name, prefix, exclude_self, dep_IDs, error) result(r)
+function get_package_libraries_link(model, package_name, prefix, exclude_self, dep_IDs, error) result(r)
     class(fpm_model_t), intent(in) :: model
     character(*), intent(in) :: package_name
     type(error_t), allocatable, intent(out) :: error
@@ -1191,6 +1191,6 @@ function get_shared_libraries_link(model, package_name, prefix, exclude_self, de
     ! If requested, export the list of dependency IDs
     if (present(dep_IDs)) call move_alloc(from=sorted_package_IDs,to=dep_IDs)
     
-end function get_shared_libraries_link
+end function get_package_libraries_link
 
 end module fpm_model

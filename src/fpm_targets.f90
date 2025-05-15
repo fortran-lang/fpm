@@ -268,7 +268,7 @@ subroutine targets_from_sources(targets,model,prune,library,error)
     if (present(library)) should_prune = should_prune .and. (library%lib_type/="")
     if (should_prune) call prune_build_targets(targets,root_package=model%package_name)
 
-    call resolve_target_linking(targets,model,error)
+    call resolve_target_linking(targets,model,library,error)
     if (allocated(error)) return
 
 end subroutine targets_from_sources
@@ -306,7 +306,7 @@ subroutine build_target_list(targets,model,library)
 
     integer :: i, j, k, n_source, exe_type
     character(:), allocatable :: exe_dir, compile_flags, lib_name
-    logical :: with_lib, monolithic, shared_lib
+    logical :: with_lib, monolithic, shared_lib, static_lib
 
     ! Initialize targets
     allocate(targets(0))
@@ -321,16 +321,14 @@ subroutine build_target_list(targets,model,library)
                       i=1,size(model%packages(j)%sources)), &
                       j=1,size(model%packages))])
     
-    if (with_lib) then 
-        if (present(library)) then 
-            shared_lib = library%shared()
-        else
-            shared_lib = .false.
-        end if
-        monolithic = .not.shared_lib
+    if (with_lib .and. present(library)) then 
+        shared_lib = library%shared()
+        static_lib = library%static()
+        monolithic = library%monolithic()
     else
-        monolithic = .false.
+        monolithic = with_lib
         shared_lib = .false.
+        static_lib = .false.            
     end if
 
     ! For a static object archive, everything from this package or all its dependencies is 
@@ -339,19 +337,19 @@ subroutine build_target_list(targets,model,library)
     if (monolithic) then 
         
         lib_name = join_path(model%package_name, &
-                             library_filename(model%packages(1)%name,shared_lib,.false.,get_os_type()))
+                             library_filename(model%packages(1)%name,.false.,.false.,get_os_type()))
         
         call add_target(targets,package=model%package_name, &
                         type = FPM_TARGET_ARCHIVE,output_name = lib_name)
                             
-    elseif (shared_lib) then 
-        ! Shared libraries go to the same path as the `.mod` files (consistent linking directories)
+    elseif (shared_lib .or. static_lib) then 
+        ! Package libraries go to the same path as the `.mod` files (consistent linking directories)
         do j=1,size(model%packages)
                         
             lib_name = library_filename(model%packages(j)%name,shared_lib,.false.,get_os_type())
             
             call add_target(targets,package=model%packages(j)%name, &
-                            type = FPM_TARGET_SHARED,output_name = lib_name)
+                            type = merge(FPM_TARGET_SHARED,FPM_TARGET_ARCHIVE,shared_lib),output_name = lib_name)
         end do
         
     endif
@@ -380,7 +378,7 @@ subroutine build_target_list(targets,model,library)
 
                     if (with_lib .and. sources(i)%unit_scope == FPM_SCOPE_LIB) then
                         ! Archive depends on object
-                        call add_dependency(targets(merge(j,1,shared_lib))%ptr, targets(size(targets))%ptr)
+                        call add_dependency(targets(merge(1,j,monolithic))%ptr, targets(size(targets))%ptr)
                     end if
 
                 case (FPM_UNIT_CPPSOURCE)
@@ -393,7 +391,7 @@ subroutine build_target_list(targets,model,library)
 
                     if (with_lib .and. sources(i)%unit_scope == FPM_SCOPE_LIB) then
                         ! Archive depends on object
-                        call add_dependency(targets(merge(j,1,shared_lib))%ptr, targets(size(targets))%ptr)
+                        call add_dependency(targets(merge(1,j,monolithic))%ptr, targets(size(targets))%ptr)
                     end if
 
                     !> Add stdc++ as a linker flag. If not already there.
@@ -460,7 +458,7 @@ subroutine build_target_list(targets,model,library)
 
                     if (with_lib) then
                         ! Executable depends on library file(s)
-                        do k=1,merge(size(model%packages),1,shared_lib)
+                        do k=1,merge(1,size(model%packages),monolithic)
                            call add_dependency(target, targets(k)%ptr)
                         end do
                     end if
@@ -944,13 +942,14 @@ end subroutine prune_build_targets
 !> Construct the linker flags string for each target
 !>  `target%link_flags` includes non-library objects and library flags
 !>
-subroutine resolve_target_linking(targets, model, error)
+subroutine resolve_target_linking(targets, model, library, error)
     type(build_target_ptr), intent(inout), target :: targets(:)
     type(fpm_model_t), intent(in) :: model
+    type(library_config_t), intent(in), optional :: library    
     type(error_t), allocatable, intent(out) :: error
 
     integer :: i,j
-    logical :: shared,has_self_lib
+    logical :: shared,static,monolithic,has_self_lib
     integer, allocatable :: package_deps(:)
     character(:), allocatable :: global_link_flags, local_link_flags
     character(:), allocatable :: global_include_flags, shared_lib_paths
@@ -963,7 +962,7 @@ subroutine resolve_target_linking(targets, model, error)
             global_link_flags = model%compiler%enumerate_libraries(global_link_flags, model%link_libraries)
         end if
     end if
-
+    
     allocate(character(0) :: global_include_flags)
     if (allocated(model%include_dirs)) then
         if (size(model%include_dirs) > 0) then
@@ -972,7 +971,16 @@ subroutine resolve_target_linking(targets, model, error)
         end if
         end if
         
-    shared = .false.        
+    if (present(library)) then 
+        shared     = library%shared()
+        static     = library%static()
+        monolithic = library%monolithic()
+    else
+        shared     = .false.
+        static     = .false.
+        monolithic = .true.
+    end if
+    
     do i=1,size(targets)
 
         associate(target => targets(i)%ptr)
@@ -1024,7 +1032,8 @@ subroutine resolve_target_linking(targets, model, error)
             select case (target%target_type)
                 case (FPM_TARGET_ARCHIVE) 
                     
-                    global_link_flags = target%output_file // global_link_flags
+                    ! This adds the monolithic archive to the link flags
+                    if (monolithic) global_link_flags = " " // target%output_file // global_link_flags
 
                     call get_link_objects(target%link_objects,target,is_exe=.false.)
 
@@ -1041,7 +1050,7 @@ subroutine resolve_target_linking(targets, model, error)
                     target%link_flags = target%link_flags // shared_lib_paths
 
                     ! Add dependencies' shared libraries (excluding self)
-                    target%link_flags = model%get_shared_libraries_link(target%package_name, &
+                    target%link_flags = model%get_package_libraries_link(target%package_name, &
                                                                         target%link_flags, &
                                                                         exclude_self=.true., &
                                                                         dep_IDs=package_deps, &
@@ -1077,7 +1086,7 @@ subroutine resolve_target_linking(targets, model, error)
                     target%link_flags = model%link_flags//" "//string_cat(target%link_objects," ")
                     
                     ! Add shared libs
-                    if (shared) then 
+                    if (.not.monolithic) then 
 
                         target%link_flags = target%link_flags // shared_lib_paths
                         
@@ -1095,7 +1104,7 @@ subroutine resolve_target_linking(targets, model, error)
                         end do find_self
                         
                         ! Add dependencies' shared libraries (including self if there is a library)
-                        target%link_flags = model%get_shared_libraries_link(target%package_name, &
+                        target%link_flags = model%get_package_libraries_link(target%package_name, &
                                                                             target%link_flags, &
                                                                             error=error, &
                                                                             exclude_self=.not.has_self_lib)                                                
@@ -1109,7 +1118,7 @@ subroutine resolve_target_linking(targets, model, error)
                     end if
 
                     target%link_flags = target%link_flags//" "//global_link_flags
-
+                    
                 end select
 
         end associate
@@ -1208,7 +1217,7 @@ subroutine get_library_dirs(model, targets, shared_lib_dirs)
 
     do i = 1, size(targets)
         associate(target => targets(i)%ptr)
-            if (target%target_type /= FPM_TARGET_SHARED) cycle
+            if (all(target%target_type /= [FPM_TARGET_SHARED,FPM_TARGET_ARCHIVE])) cycle
             if (target%output_dir .in. shared_lib_dirs) cycle
             temp = string_t(target%output_dir)
             shared_lib_dirs = [shared_lib_dirs, temp]
