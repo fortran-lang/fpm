@@ -355,10 +355,6 @@ contains
         call add_dependency(targets(2)%ptr,targets(4)%ptr)
         call add_dependency(targets(3)%ptr,targets(4)%ptr)
 
-        do i = 1, size(targets)
-          targets(i)%ptr%output_file = targets(i)%ptr%output_name
-        end do
-
     end function new_test_package
 
     subroutine compile_commands_roundtrip(error)
@@ -487,10 +483,6 @@ contains
         ! Shared library depends on the two object files
         call add_dependency(targets(1)%ptr, targets(2)%ptr)
         call add_dependency(targets(1)%ptr, targets(3)%ptr)
-
-        do i = 1, size(targets)
-            targets(i)%ptr%output_file = targets(i)%ptr%output_name
-        end do
 
         ! Perform topological sort
         do i = 1, size(targets)

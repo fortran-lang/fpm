@@ -140,6 +140,9 @@ type build_target_t
     
         !> Print information on this instance
         procedure :: info    
+        
+        !> Set output directory
+        procedure :: set_output_dir
          
         procedure :: is_executable_target
 
@@ -554,7 +557,7 @@ end subroutine collect_exe_link_dependencies
 
 !> Allocate a new target and append to target list
 subroutine add_target(targets, package, type, output_name, source, link_libraries, &
-        & features, preprocess, version)
+        & features, preprocess, version, output_dir)
     type(build_target_ptr), allocatable, intent(inout) :: targets(:)
     character(*), intent(in) :: package
     integer, intent(in) :: type
@@ -564,6 +567,7 @@ subroutine add_target(targets, package, type, output_name, source, link_librarie
     type(fortran_features_t), intent(in), optional :: features
     type(preprocess_config_t), intent(in), optional :: preprocess
     character(*), intent(in), optional :: version
+    character(*), intent(in), optional :: output_dir
 
     integer :: i
     type(build_target_t), pointer :: new_target
@@ -596,6 +600,9 @@ subroutine add_target(targets, package, type, output_name, source, link_librarie
     endif
     if (present(version)) new_target%version = version
     allocate(new_target%dependencies(0))
+    
+    call new_target%set_output_dir(output_dir)
+    
 
     targets = [targets, build_target_ptr(new_target)]
 
@@ -1010,9 +1017,8 @@ subroutine resolve_target_linking(targets, model, library, error)
             if (len(global_include_flags) > 0) then
                 target%compile_flags = target%compile_flags//global_include_flags
             end if
-            target%output_dir = get_output_dir(model%build_prefix, target%compile_flags)            
-            target%output_log_file = join_path(target%output_dir, target%output_name)//'.log'
-            target%output_file = join_path(target%output_dir, target%output_name)
+            
+            call target%set_output_dir(get_output_dir(model%build_prefix, target%compile_flags))
             
             ! Check shared build
             if (target%target_type==FPM_TARGET_SHARED) shared = .true.
@@ -1357,5 +1363,23 @@ function get_feature_flags(compiler, features) result(flags)
         flags = flags // compiler%get_feature_flag(features%source_form//"-form")
     end if
 end function get_feature_flags
+
+!> Helper function: update output directory of a target
+subroutine set_output_dir(self, output_dir)
+    class(build_target_t), intent(inout) :: self
+    character(*), optional, intent(in) :: output_dir
+
+    character(:), allocatable :: outdir
+
+    ! Normalize: if output_dir is empty, use no path
+    outdir = ""
+    if (present(output_dir)) outdir = trim(output_dir)
+        
+    self%output_dir = outdir
+    self%output_file = join_path(outdir, self%output_name)
+    self%output_log_file = self%output_file // ".log"
+
+end subroutine set_output_dir
+
 
 end module fpm_targets

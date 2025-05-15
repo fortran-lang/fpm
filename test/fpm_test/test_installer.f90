@@ -8,6 +8,8 @@ module test_installer
     use fpm_environment, only : OS_WINDOWS, OS_LINUX
     use fpm_filesystem, only : join_path
     use fpm_installer
+    use fpm_targets, only: build_target_ptr, add_target, FPM_TARGET_ARCHIVE, &
+        FPM_TARGET_SHARED
     implicit none
     private
 
@@ -116,13 +118,18 @@ contains
 
         type(mock_installer_t) :: mock
         type(installer_t) :: installer
+        type(build_target_ptr), allocatable :: targets(:)
 
         call new_installer(installer, prefix="PREFIX", verbosity=0, copy="mock")
         mock%installer_t = installer
         mock%expected_dir = join_path("PREFIX", "lib")
         mock%expected_run = 'mock "name" "'//join_path("PREFIX", "lib")//'"'
+        
+        call add_target(targets,"name",FPM_TARGET_ARCHIVE,"name")
 
-        call mock%install_library("name", error)
+        call mock%install_library(targets(1)%ptr, error)
+        
+        deallocate(targets(1)%ptr)
 
     end subroutine test_install_lib
 
@@ -131,16 +138,16 @@ contains
         type(error_t), allocatable, intent(out) :: error
 
         type(mock_installer_t) :: mock
-        type(installer_t) :: installer
+        type(installer_t) :: installer        
 
         call new_installer(installer, prefix="PREFIX", verbosity=0, copy="mock")
         mock%installer_t = installer
         mock%os = OS_WINDOWS
         mock%expected_dir = "PREFIX\lib\pkgconfig"
         mock%expected_run = 'mock "name" "'//mock%expected_dir//'"'
-
+        
         call mock%install("name", "lib/pkgconfig", error)
-
+        
     end subroutine test_install_pkgconfig
 
     subroutine test_install_sitepackages(error)
@@ -184,13 +191,18 @@ contains
         type(mock_installer_t) :: mock
         type(installer_t) :: installer
         character(len=*), parameter :: libname = "libname.so"
+        type(build_target_ptr), allocatable :: targets(:)        
 
         call new_installer(installer, prefix="PREFIX", verbosity=0, copy="mock")
         mock%installer_t = installer
         mock%expected_dir = join_path("PREFIX", "lib")
         mock%expected_run = 'mock "'//libname//'" "'//mock%expected_dir//'"'
+        
+        call add_target(targets,"name",FPM_TARGET_SHARED,libname)
 
-        call mock%install_library(libname, error)
+        call mock%install_library(targets(1)%ptr, error)
+        
+        deallocate(targets(1)%ptr)
 
     end subroutine test_install_shared_library_unix
 
