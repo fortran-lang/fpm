@@ -310,19 +310,28 @@ character(len=:,kind=tfc),allocatable :: littlefile(:)
             &'  # modules. For example, src/a/b/c/d.f90 must define a module called a_b_c_d.  ',&
             &'  # Again, this is not enforced but may be required in future releases.         ',&
             &'                                                                                ',&
-            &'  # Set `shared=true` to build dynamic libraries (.so/.dylib/.dll)              ',&
-            &'  # instead of a static archive (.a). When enabled, each package in the         ',&
-            &'  # dependency graph will be compiled to its own shared library.                ',&
+            &'  ### Library type                                                              ',&
+            &'  # Set `type = "shared"` to build dynamic libraries (.so/.dylib/.dll)          ',&
+            &'  # instead of a static archive. You can also set `type = "static"` to          ',&
+            &'  # generate per-package archives, or use `type = "monolithic"` (default)       ',&
+            &'  # to bundle all sources and dependencies into a single archive.               ',&
             &'  #                                                                             ',&
-            &'  # This is useful for plugin systems, dynamic linking, or when building        ',&
-            &'  # language bindings.                                                          ',&
+            &'  # Supported types:                                                            ',&
             &'  #                                                                             ',&
-            &'  # Note: shared libraries are not installed unless `[install] library=true`    ',&
+            &'  #  + "monolithic": Single archive with used sources and dependencies.         ',&
+            &'  #  + "static":    One full archive per package (for external integration).    ',&
+            &'  #  + "shared":    One shared library per package, for dynamic linking.        ',&
+            &'  #                                                                             ',&
+            &'  # Shared libraries are useful for plugin systems, dynamic linking, or         ',&
+            &'  # language bindings. Static per-package archives may aid external reuse.      ',&
+            &'  #                                                                             ',&
+            &'  # Note: library files are not installed unless `[install] library=true`       ',&
             &'  # is also enabled.                                                            ',&
             &'  #                                                                             ',&
             &'  # Example:                                                                    ',&
-            &'shared = false                                                                  ',&
-            
+            &'                                                                                ',&            
+            &'type = "shared"                                                                 ',&
+            &'                                                                                ',&
             &'']
         endif
         ! create placeholder module src/bname.f90
