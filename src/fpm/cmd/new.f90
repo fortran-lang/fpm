@@ -327,6 +327,9 @@ character(len=:,kind=tfc),allocatable :: littlefile(:)
             &'  # Shared libraries are useful for plugin systems, dynamic linking, or         ',&
             &'  # language bindings. Static per-package archives may aid external reuse.      ',&
             &'  #                                                                             ',&
+            &'  # When running with `fpm run`, shared library paths are automatically         ',&
+            &'  # added to the environment (e.g. `LD_LIBRARY_PATH`, `PATH`) at runtime.       ',&
+            &'  #                                                                             ',&            
             &'  # Note: library files are not installed unless `[install] library=true`       ',&
             &'  # is also enabled.                                                            ',&
             &'  #                                                                             ',&
