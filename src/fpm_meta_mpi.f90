@@ -450,7 +450,7 @@ contains
         logical, intent(in) :: verbose
         type(error_t), allocatable, intent(out) :: error
 
-        character(*), parameter :: try(*) = ['mpiexec    ','mpirun     ','mpiexec.exe','mpirun.exe ']
+        character(*), parameter :: try(*) = [character(11) :: 'mpiexec','mpirun','mpiexec.exe','mpirun.exe','srun']
         character(:), allocatable :: bindir
         integer :: itri
         logical :: success
