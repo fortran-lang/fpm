@@ -26,11 +26,11 @@ contains
     type(package_config_t) :: package
     type(error_t), allocatable :: error
     type(fpm_model_t) :: model
-    type(build_target_ptr), allocatable :: targets(:)
+    type(build_target_ptr), allocatable :: targets(:), libraries(:)
     type(installer_t) :: installer
     type(string_t), allocatable :: list(:)
     logical :: installable
-    integer :: ntargets
+    integer :: ntargets,i
 
     call get_package_data(package, "fpm.toml", error, apply_defaults=.true.)
     call handle_error(error)
@@ -38,7 +38,12 @@ contains
     call build_model(model, settings, package, error)
     call handle_error(error)
 
-    call targets_from_sources(targets, model, settings%prune, error)
+    ! ifx bug: does not resolve allocatable -> optional
+    if (allocated(package%library)) then 
+       call targets_from_sources(targets, model, settings%prune, package%library, error)
+    else
+       call targets_from_sources(targets, model, settings%prune, error=error) 
+    endif
     call handle_error(error)
 
     call install_info(output_unit, settings%list, targets, ntargets)
@@ -62,11 +67,13 @@ contains
       verbosity=merge(2, 1, settings%verbose))
 
     if (allocated(package%library) .and. package%install%library) then
-      call filter_library_targets(targets, list)
+      call filter_library_targets(targets, libraries)
 
-      if (size(list) > 0) then
-        call installer%install_library(list(1)%s, error)
-        call handle_error(error)
+      if (size(libraries) > 0) then
+        do i=1,size(libraries)
+           call installer%install_library(libraries(i)%ptr, error)
+           call handle_error(error)
+        end do
 
         call install_module_files(installer, targets, error)
         call handle_error(error)
@@ -95,11 +102,12 @@ contains
 
     integer :: ii
     type(string_t), allocatable :: install_target(:), temp(:)
+    type(build_target_ptr), allocatable :: libs(:)
 
     allocate(install_target(0))
 
-    call filter_library_targets(targets, temp)
-    install_target = [install_target, temp]
+    call filter_library_targets(targets, libs)
+    install_target = [install_target, (string_t(libs(ii)%ptr%output_file),ii=1,size(libs))]
 
     call filter_executable_targets(targets, FPM_SCOPE_APP, temp)
     install_target = [install_target, temp]

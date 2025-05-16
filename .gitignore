@@ -6,3 +6,6 @@ build/*
 # CodeBlocks
 project/
 
+# Temporary files
+*.swp
+

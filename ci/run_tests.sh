@@ -310,5 +310,39 @@ fi
 
 popd
 
+# Test shared library dependencies
+pushd shared_lib
+"$fpm" build || EXIT_CODE=$?
+test $EXIT_CODE -eq 0
+popd
+
+pushd shared_lib_extra
+"$fpm" build || EXIT_CODE=$?
+test $EXIT_CODE -eq 0
+popd
+
+pushd shared_lib_empty
+"$fpm" build
+"$fpm" run
+"$fpm" test
+popd
+
+pushd static_lib_empty
+"$fpm" build
+"$fpm" run
+"$fpm" test
+popd
+
+pushd shared_app_only
+"$fpm" test || EXIT_CODE=$?
+test $EXIT_CODE -eq 0
+popd
+
+# Static library dependencies
+pushd static_app_only
+"$fpm" test || EXIT_CODE=$?
+test $EXIT_CODE -eq 0
+popd
+
 # Cleanup
 rm -rf ./*/build

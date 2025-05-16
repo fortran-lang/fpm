@@ -9,7 +9,7 @@
 !>build-script = "file"
 !>```
 module fpm_manifest_library
-    use fpm_error, only : error_t, syntax_error
+    use fpm_error, only : error_t, syntax_error, fatal_error
     use fpm_strings, only: string_t, string_cat, operator(==)
     use tomlf, only : toml_table, toml_key, toml_stat
     use fpm_toml, only : get_value, get_list, serializable_t, set_value, &
@@ -31,6 +31,9 @@ module fpm_manifest_library
 
         !> Alternative build script to be invoked
         character(len=:), allocatable :: build_script
+        
+        !> Shared / Static / Monolithic library 
+        character(:), allocatable :: lib_type
 
     contains
 
@@ -41,6 +44,11 @@ module fpm_manifest_library
         procedure :: serializable_is_same => library_is_same
         procedure :: dump_to_toml
         procedure :: load_from_toml
+        
+        !> Check library types
+        procedure, non_overridable :: monolithic
+        procedure, non_overridable :: shared
+        procedure, non_overridable :: static
 
     end type library_config_t
 
@@ -48,6 +56,44 @@ module fpm_manifest_library
 
 
 contains
+
+    !> Check if this is a shared library config 
+    !> (full packages built as shared libs)
+    elemental logical function shared(self)
+        !> Instance of the library configuration
+        class(library_config_t), intent(in) :: self
+        
+        if (allocated(self%lib_type)) then 
+           shared = self%lib_type == "shared"
+        else
+           shared = .false.
+        endif
+        
+    end function shared
+
+
+    !> Check if this is a static library config
+    !> (full packages built as static libs)
+    elemental logical function static(self)
+        !> Instance of the library configuration
+        class(library_config_t), intent(in) :: self
+        
+        if (allocated(self%lib_type)) then 
+           static = self%lib_type == "static"
+        else
+           static = .false.
+        endif
+    end function static
+
+
+    !> Check if this is a monolithic library config
+    !> (single monolithic archive with all objects used by this project)
+    elemental logical function monolithic(self)
+        !> Instance of the library configuration
+        class(library_config_t), intent(in) :: self
+        
+        monolithic = .not.(static(self) .or. shared(self))
+    end function monolithic
 
 
     !> Construct a new library configuration from a TOML data structure
@@ -61,6 +107,8 @@ contains
 
         !> Error handling
         type(error_t), allocatable, intent(out) :: error
+        
+        integer :: stat
 
         call check(table, error)
         if (allocated(error)) return
@@ -70,15 +118,35 @@ contains
             return
         end if
 
+        if (has_list(table, "type")) then
+            call syntax_error(error, "Manifest key [library.type] does not allow list input")
+            return
+        end if
+
         call get_value(table, "source-dir", self%source_dir, "src")
         call get_value(table, "build-script", self%build_script)
 
         call get_list(table, "include-dir", self%include_dir, error)
         if (allocated(error)) return
-
+        
+        call get_value(table, "type", self%lib_type, "monolithic")
+        
+        select case(self%lib_type)
+        case("shared","static","monolithic")
+            ! OK
+        case default
+            call fatal_error(error,"Value of library.type cannot be '"//self%lib_type &
+                                 //"', choose shared/static/monolithic (default)")
+            return
+        end select        
+        
         ! Set default value of include-dir if not found in manifest
         if (.not.allocated(self%include_dir)) then
             self%include_dir = [string_t("include")]
+        end if
+        
+        if (.not.allocated(self%lib_type)) then 
+            self%lib_type = "monolithic"
         end if
 
     end subroutine new_library
@@ -107,7 +175,7 @@ contains
                 call syntax_error(error, "Key "//list(ikey)%key//" is not allowed in library")
                 exit
 
-            case("source-dir", "include-dir", "build-script")
+            case("source-dir", "include-dir", "build-script", "type")
                 continue
 
             end select
@@ -146,6 +214,9 @@ contains
         if (allocated(self%include_dir)) then
             write(unit, fmt) "- include directory", string_cat(self%include_dir,",")
         end if
+        
+        write(unit, fmt) "- library type", self%lib_type
+        
         if (allocated(self%build_script)) then
             write(unit, fmt) "- custom build", self%build_script
         end if
@@ -168,6 +239,10 @@ contains
               if (allocated(this%build_script).neqv.allocated(other%build_script)) return
               if (allocated(this%build_script)) then
                 if (.not.this%build_script==other%build_script) return
+              end if
+              if (allocated(this%lib_type).neqv.allocated(other%lib_type)) return
+              if (allocated(this%lib_type)) then
+                if (.not.this%lib_type==other%lib_type) return
               end if
            class default
               ! Not the same type
@@ -197,6 +272,8 @@ contains
         if (allocated(error)) return
         call set_list(table, "include-dir", self%include_dir, error)
         if (allocated(error)) return
+        call set_string(table, "type", self%lib_type, error, class_name)
+        if (allocated(error)) return
 
     end subroutine dump_to_toml
 
@@ -217,6 +294,9 @@ contains
         call get_value(table, "build-script", self%build_script)
         if (allocated(error)) return
         call get_list(table, "include-dir", self%include_dir, error)
+        if (allocated(error)) return
+        call get_value(table, "type", self%lib_type)
+        if (allocated(error)) return
 
     end subroutine load_from_toml
 

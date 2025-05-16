@@ -641,7 +641,7 @@ contains
        !> Error handling
        type(error_t), allocatable, intent(out) :: error
 
-       integer :: ierr, ii
+       integer :: ii
        type(toml_table), pointer :: ptr,ptr_pkg
        character(30) :: unnamed
        character(128) :: profile_name
@@ -898,7 +898,7 @@ contains
         type(error_t), allocatable, intent(out) :: error
 
         type(toml_key), allocatable :: keys(:),pkg_keys(:)
-        integer :: ierr, ii, jj
+        integer :: ii, jj
         character(len=:), allocatable :: flag
         type(toml_table), pointer :: ptr,ptr_pkg
 

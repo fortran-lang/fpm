@@ -36,7 +36,8 @@ use fpm_environment, only: &
         OS_SOLARIS, &
         OS_FREEBSD, &
         OS_OPENBSD, &
-        OS_UNKNOWN
+        OS_UNKNOWN, &
+        library_filename
 use fpm_filesystem, only: join_path, basename, get_temp_filename, delete_file, unix_path, &
     & getline, run
 use fpm_strings, only: split, string_cat, string_t, str_ends_with, str_begins_with_str, &
@@ -46,7 +47,7 @@ use fpm_error, only: error_t, fatal_error
 use tomlf, only: toml_table
 use fpm_toml, only: serializable_t, set_string, set_value, toml_stat, get_value
 use fpm_compile_commands, only: compile_command_t, compile_command_table_t
-use shlex_module, only: sh_split => split, ms_split
+use shlex_module, only: sh_split => split, ms_split, quote => ms_quote
 implicit none
 public :: compiler_t, new_compiler, archiver_t, new_archiver, get_macros
 public :: append_clean_flags, append_clean_flags_array
@@ -102,12 +103,16 @@ contains
     procedure :: get_feature_flag
     !> Get flags for the main linking command
     procedure :: get_main_flags
+    !> Get library export flags
+    procedure :: get_export_flags    
     !> Compile a Fortran object
     procedure :: compile_fortran
     !> Compile a C object
     procedure :: compile_c
     !> Compile a CPP object
     procedure :: compile_cpp
+    !> Link a shared library
+    procedure :: link_shared
     !> Link executable
     procedure :: link => link_executable
     !> Check whether compiler is recognized
@@ -118,6 +123,7 @@ contains
     procedure :: is_gnu
     !> Enumerate libraries, based on compiler and platform
     procedure :: enumerate_libraries
+
 
     !> Serialization interface
     procedure :: serializable_is_same => compiler_is_same
@@ -266,11 +272,28 @@ function get_default_flags(self, release) result(flags)
     logical, intent(in) :: release
     character(len=:), allocatable :: flags
 
+    character(len=:), allocatable :: pic_flag
+
     if (release) then
         call get_release_compile_flags(self%id, flags)
     else
         call get_debug_compile_flags(self%id, flags)
     end if
+
+    ! Append position-independent code (PIC) flag, that is necessary 
+    ! building shared libraries
+    select case (self%id)
+    case (id_gcc, id_f95, id_caf, id_flang, id_flang_new, id_f18, id_lfortran, &
+          id_intel_classic_nix, id_intel_classic_mac, id_intel_llvm_nix, &
+          id_pgi, id_nvhpc, id_nag, id_cray, id_ibmxl)
+        pic_flag = " -fPIC"
+    case (id_intel_classic_windows, id_intel_llvm_windows)
+        pic_flag = ""  ! Windows does not use -fPIC
+    case default
+        pic_flag = " -fPIC"  ! Conservative fallback
+    end select
+
+    flags = flags // pic_flag
 
 end function get_default_flags
 
@@ -612,6 +635,30 @@ function get_module_flag(self, path) result(flags)
     end select
 
 end function get_module_flag
+
+
+function get_shared_flag(self) result(shared_flag)
+    class(compiler_t), intent(in) :: self
+    character(len=:), allocatable :: shared_flag
+
+    select case (self%id)
+    case default
+        shared_flag = "-shared"
+    case (id_gcc, id_f95, id_flang, id_flang_new, id_lfortran)
+        shared_flag = "-shared"
+    case (id_intel_classic_nix, id_intel_llvm_nix, id_pgi, id_nvhpc)
+        shared_flag = "-shared"
+    case (id_intel_classic_windows, id_intel_llvm_windows)
+        shared_flag = "/DLL"
+    case (id_nag)
+        shared_flag = "-Wl,-shared"
+    case (id_ibmxl)
+        shared_flag = "-qmkshrobj"
+    case (id_cray, id_lahey)
+        shared_flag = ""  ! Needs special handling
+    end select
+
+end function get_shared_flag
 
 
 function get_feature_flag(self, feature) result(flags)
@@ -998,14 +1045,77 @@ function enumerate_libraries(self, prefix, libs) result(r)
     type(string_t), intent(in) :: libs(:)
     character(len=:), allocatable :: r
 
-    if (self%id == id_intel_classic_windows .or. &
-        self%id == id_intel_llvm_windows) then
-        r = prefix // " " // string_cat(libs,".lib ")//".lib"
-    else
-        r = prefix // " -l" // string_cat(libs," -l")
+    character(len=:), allocatable :: joined
+
+    if (size(libs) == 0) then
+        r = prefix
+        return
     end if
+
+    select case (self%id)
+
+    case (id_intel_classic_windows, id_intel_llvm_windows)
+        ! Windows Intel uses `.lib` files directly
+        joined = string_cat(libs, ".lib ") // ".lib"
+        r = trim(prefix) // " " // trim(joined)
+
+    case (id_nag, id_ibmxl)
+        ! NAG and IBMXL need -Wl, wrapper around linker flags
+        joined = string_cat(libs, " -Wl,")
+        r = trim(prefix) // " -Wl," // trim(joined)
+
+    case default
+        ! Generic Unix-style linker flags: use `-lfoo`
+        joined = string_cat(libs, " -l")
+        r = trim(prefix) // " -l" // trim(joined)
+
+    end select
+
 end function enumerate_libraries
 
+!>
+!> Generate library export flags for a shared library build
+!>
+function get_export_flags(self, target_dir, target_name) result(export_flags)
+    !> Instance of the compiler
+    class(compiler_t), intent(in) :: self
+    !> Path and package name
+    character(len=*), intent(in) :: target_dir, target_name
+    character(len=:), allocatable :: export_flags
+
+    character(len=:), allocatable :: implib_path, def_path
+
+    ! Only apply on Windows
+    if (get_os_type() /= OS_WINDOWS) then
+        export_flags = ""
+        return
+    end if
+
+    select case (self%id)
+
+    case (id_gcc, id_caf, id_f95)
+        ! GNU-based: emit both import library and def file
+        implib_path = quote(join_path(target_dir, target_name // ".dll.a") , for_cmd=.true.)
+        def_path    = quote(join_path(target_dir, target_name // ".def" ) , for_cmd=.true.)
+
+        export_flags = " -Wl,--out-implib," // implib_path // &
+                       " -Wl,--output-def," // def_path
+
+    case (id_intel_classic_windows, id_intel_llvm_windows)
+        ! Intel/MSVC-style
+        implib_path = quote(join_path(target_dir, target_name // ".lib") , for_cmd=.true.)
+        def_path    = quote(join_path(target_dir, target_name // ".def") , for_cmd=.true.)
+                
+        export_flags = " /IMPLIB:" // implib_path // &
+                       " /DEF:" // def_path
+
+    case default
+        
+        export_flags = ""  ! Do nothing elsewhere
+
+    end select
+
+end function get_export_flags
 
 !> Create new compiler instance
 subroutine new_compiler(self, fc, cc, cxx, echo, verbose)
@@ -1266,6 +1376,38 @@ subroutine link_executable(self, output, args, log_file, stat, dry_run)
     call run(command, echo=self%echo, verbose=self%verbose, redirect=log_file, exitstat=stat)
     
 end subroutine link_executable
+
+!> Link a shared library
+subroutine link_shared(self, output, args, log_file, stat, dry_run)
+    !> Instance of the compiler object
+    class(compiler_t), intent(in) :: self
+    !> Output file of shared library object
+    character(len=*), intent(in) :: output
+    !> Arguments for the compiler
+    character(len=*), intent(in) :: args
+    !> Compiler output log file
+    character(len=*), intent(in) :: log_file
+    !> Status flag
+    integer, intent(out) :: stat
+    !> Optional mocking
+    logical, optional, intent(in) :: dry_run
+
+    character(len=:), allocatable :: command
+    logical :: mock
+    character(len=:), allocatable :: shared_flag
+
+    mock = .false.
+    if (present(dry_run)) mock = dry_run
+
+    shared_flag = get_shared_flag(self)
+
+    command = self%fc // " " // shared_flag // " " // args // " -o " // output
+
+    if (.not.mock) &
+        call run(command, echo=self%echo, verbose=self%verbose, redirect=log_file, exitstat=stat)
+
+end subroutine link_shared
+
 
 !> Create an archive
 !> @todo For Windows OS, use the local `delete_file_win32` in stead of `delete_file`.

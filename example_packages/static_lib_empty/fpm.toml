@@ -1,0 +1,5 @@
+name = "static_lib_empty"
+library.type="static"
+[dependencies]
+shared_lib = { path = "../shared_lib" }
+shared_app_only = { path = "../shared_app_only" }

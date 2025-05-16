@@ -22,7 +22,6 @@ contains
     type(fpm_model_t) :: model
     type(error_t), allocatable :: error
 
-    integer :: ii
     character(len=:), allocatable :: filename
 
     if (len_trim(settings%dump_manifest)<=0 .and. &
