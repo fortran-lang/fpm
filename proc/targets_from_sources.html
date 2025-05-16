@@ -92,7 +92,7 @@
 
             <li class="list-inline-item" id="statements"><i class="fa fa-list-ol"></i>
               <a data-bs-toggle="tooltip" data-bs-placement="bottom" data-bs-html="true"
-                 title=" 0.2% of total for procedures.">14 statements</a>
+                 title=" 0.2% of total for procedures.">17 statements</a>
             </li>
 
             <li class="list-inline-item" id="source-file">
@@ -159,7 +159,7 @@
     </div>
     
     <div class="col-md-9" id='text'>
-    <h2>public  subroutine targets_from_sources(targets, model, prune, error)  
+    <h2>public  subroutine targets_from_sources(targets, model, prune, library, error)  
 </h2>
     
 
@@ -179,7 +179,7 @@
     <tbody>
         <tr>
             <td>
-              <span class="anchor" id="variable-targets~8"></span>
+              <span class="anchor" id="variable-targets"></span>
               type(<a href='../type/build_target_ptr.html'>build_target_ptr</a>),
             </td>
 <td>intent(out),</td>
@@ -194,7 +194,7 @@
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-model~9"></span>
+              <span class="anchor" id="variable-model~2"></span>
               type(<a href='../type/fpm_model_t.html'>fpm_model_t</a>),
             </td>
 <td>intent(inout),</td>
@@ -209,7 +209,7 @@
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-prune~2"></span>
+              <span class="anchor" id="variable-prune"></span>
               logical,
             </td>
 <td>intent(in)</td>
@@ -224,7 +224,22 @@
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-error~102"></span>
+              <span class="anchor" id="variable-library"></span>
+              type(<a href='../type/library_config_t.html'>library_config_t</a>),
+            </td>
+<td>intent(in),</td>
+              <td>optional</td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>library</strong></td>
+            <td>
+                <p>Library build configuration</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-error~11"></span>
               type(<a href='../type/error_t.html'>error_t</a>),
             </td>
 <td>intent(out),</td>
@@ -254,32 +269,41 @@
     
     <section>
     <h2><span class="anchor" id="src"></span>Source Code</h2>
-    <div class="hl codehilite"><pre><span></span><span class="k">subroutine </span><span class="n">targets_from_sources</span><span class="p">(</span><span class="n">targets</span><span class="p">,</span><span class="n">model</span><span class="p">,</span><span class="n">prune</span><span class="p">,</span><span class="n">error</span><span class="p">)</span>
+    <div class="hl codehilite"><pre><span></span><span class="k">subroutine </span><span class="n">targets_from_sources</span><span class="p">(</span><span class="n">targets</span><span class="p">,</span><span class="n">model</span><span class="p">,</span><span class="n">prune</span><span class="p">,</span><span class="n">library</span><span class="p">,</span><span class="n">error</span><span class="p">)</span>
 
 <span class="w">    </span><span class="c">!&gt; The generated list of build targets</span>
 <span class="w">    </span><span class="k">type</span><span class="p">(</span><span class="n">build_target_ptr</span><span class="p">),</span><span class="w"> </span><span class="k">intent</span><span class="p">(</span><span class="n">out</span><span class="p">),</span><span class="w"> </span><span class="k">allocatable</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">targets</span><span class="p">(:)</span>
 
 <span class="w">    </span><span class="c">!&gt; The package model from which to construct the target list</span>
 <span class="w">    </span><span class="k">type</span><span class="p">(</span><span class="n">fpm_model_t</span><span class="p">),</span><span class="w"> </span><span class="k">intent</span><span class="p">(</span><span class="n">inout</span><span class="p">),</span><span class="w"> </span><span class="k">target</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">model</span>
+<span class="w">    </span>
+<span class="w">    </span><span class="c">!&gt; Library build configuration</span>
+<span class="w">    </span><span class="k">type</span><span class="p">(</span><span class="n">library_config_t</span><span class="p">),</span><span class="w"> </span><span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">),</span><span class="w"> </span><span class="k">optional</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">library</span>
 
 <span class="w">    </span><span class="c">!&gt; Enable tree-shaking/pruning of module dependencies</span>
 <span class="w">    </span><span class="kt">logical</span><span class="p">,</span><span class="w"> </span><span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">)</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">prune</span>
 
 <span class="w">    </span><span class="c">!&gt; Error structure</span>
 <span class="w">    </span><span class="k">type</span><span class="p">(</span><span class="n">error_t</span><span class="p">),</span><span class="w"> </span><span class="k">intent</span><span class="p">(</span><span class="n">out</span><span class="p">),</span><span class="w"> </span><span class="k">allocatable</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">error</span>
+<span class="w">    </span>
+<span class="w">    </span><span class="kt">logical</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">should_prune</span>
 
-<span class="w">    </span><span class="k">call </span><span class="n">build_target_list</span><span class="p">(</span><span class="n">targets</span><span class="p">,</span><span class="n">model</span><span class="p">)</span>
+<span class="w">    </span><span class="k">call </span><span class="n">build_target_list</span><span class="p">(</span><span class="n">targets</span><span class="p">,</span><span class="n">model</span><span class="p">,</span><span class="n">library</span><span class="p">)</span>
 
 <span class="w">    </span><span class="k">call </span><span class="n">collect_exe_link_dependencies</span><span class="p">(</span><span class="n">targets</span><span class="p">)</span>
 
 <span class="w">    </span><span class="k">call </span><span class="n">resolve_module_dependencies</span><span class="p">(</span><span class="n">targets</span><span class="p">,</span><span class="n">model</span><span class="p">%</span><span class="n">external_modules</span><span class="p">,</span><span class="n">error</span><span class="p">)</span>
 <span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="nb">allocated</span><span class="p">(</span><span class="n">error</span><span class="p">))</span><span class="w"> </span><span class="k">return</span>
 
-<span class="k">    if</span><span class="w"> </span><span class="p">(</span><span class="n">prune</span><span class="p">)</span><span class="w"> </span><span class="k">then</span>
-<span class="k">        call </span><span class="n">prune_build_targets</span><span class="p">(</span><span class="n">targets</span><span class="p">,</span><span class="n">root_package</span><span class="o">=</span><span class="n">model</span><span class="p">%</span><span class="n">package_name</span><span class="p">)</span>
-<span class="w">    </span><span class="k">end if</span>
+<span class="w">    </span><span class="c">! Prune unused source files, unless we&#39;re building shared libraries that need </span>
+<span class="w">    </span><span class="c">! all sources to be distributable</span>
+<span class="w">    </span><span class="n">should_prune</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">prune</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="nb">present</span><span class="p">(</span><span class="n">library</span><span class="p">))</span><span class="w"> </span><span class="n">should_prune</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">should_prune</span><span class="w"> </span><span class="p">.</span><span class="nb">and</span><span class="p">.</span><span class="w"> </span><span class="n">library</span><span class="p">%</span><span class="n">monolithic</span><span class="p">()</span>
+<span class="w">        </span>
+<span class="w">    </span><span class="k">call </span><span class="n">prune_build_targets</span><span class="p">(</span><span class="n">targets</span><span class="p">,</span><span class="n">model</span><span class="p">%</span><span class="n">packages</span><span class="p">(</span><span class="mi">1</span><span class="p">),</span><span class="n">should_prune</span><span class="p">)</span>
 
-<span class="k">    call </span><span class="n">resolve_target_linking</span><span class="p">(</span><span class="n">targets</span><span class="p">,</span><span class="n">model</span><span class="p">)</span>
+<span class="w">    </span><span class="k">call </span><span class="n">resolve_target_linking</span><span class="p">(</span><span class="n">targets</span><span class="p">,</span><span class="n">model</span><span class="p">,</span><span class="n">library</span><span class="p">,</span><span class="n">error</span><span class="p">)</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="nb">allocated</span><span class="p">(</span><span class="n">error</span><span class="p">))</span><span class="w"> </span><span class="k">return</span>
 
 <span class="k">end subroutine </span><span class="n">targets_from_sources</span>
 </pre></div>
@@ -305,7 +329,7 @@
             <p class="text-end">
               Documentation generated by
               <a href="https://github.com/Fortran-FOSS-Programmers/ford">FORD</a>
- on 2025-05-16 20:21 +0000             </p>
+ on 2025-05-16 20:23 +0000             </p>
           </div>
         </div>
         <br>

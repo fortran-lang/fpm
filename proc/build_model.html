@@ -92,7 +92,7 @@
 
             <li class="list-inline-item" id="statements"><i class="fa fa-list-ol"></i>
               <a data-bs-toggle="tooltip" data-bs-placement="bottom" data-bs-html="true"
-                 title=" 2.1% of total for procedures.">151 statements</a>
+                 title=" 2.0% of total for procedures.">151 statements</a>
             </li>
 
             <li class="list-inline-item" id="source-file">
@@ -181,7 +181,7 @@ Add this dependency&rsquo;s package-level macros</p>
     <tbody>
         <tr>
             <td>
-              <span class="anchor" id="variable-model~14"></span>
+              <span class="anchor" id="variable-model~12"></span>
               type(<a href='../type/fpm_model_t.html'>fpm_model_t</a>),
             </td>
 <td>intent(out)</td>
@@ -196,7 +196,7 @@ Add this dependency&rsquo;s package-level macros</p>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-settings~9"></span>
+              <span class="anchor" id="variable-settings~5"></span>
               class(<a href='../type/fpm_build_settings.html'>fpm_build_settings</a>),
             </td>
 <td>intent(inout)</td>
@@ -211,7 +211,7 @@ Add this dependency&rsquo;s package-level macros</p>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-package~13"></span>
+              <span class="anchor" id="variable-package~10"></span>
               type(<a href='../type/package_config_t.html'>package_config_t</a>),
             </td>
 <td>intent(inout),</td>
@@ -226,7 +226,7 @@ Add this dependency&rsquo;s package-level macros</p>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-error~175"></span>
+              <span class="anchor" id="variable-error~93"></span>
               type(<a href='../type/error_t.html'>error_t</a>),
             </td>
 <td>intent(out),</td>
@@ -288,10 +288,10 @@ Add this dependency&rsquo;s package-level macros</p>
 <span class="w">    </span><span class="k">end if</span>
 
 <span class="k">    call </span><span class="n">new_compiler_flags</span><span class="p">(</span><span class="n">model</span><span class="p">,</span><span class="n">settings</span><span class="p">)</span>
-<span class="w">    </span><span class="n">model</span><span class="p">%</span><span class="n">build_prefix</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">join_path</span><span class="p">(</span><span class="s2">&quot;build&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">basename</span><span class="p">(</span><span class="n">model</span><span class="p">%</span><span class="n">compiler</span><span class="p">%</span><span class="n">fc</span><span class="p">))</span>
-<span class="w">    </span><span class="n">model</span><span class="p">%</span><span class="n">include_tests</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">settings</span><span class="p">%</span><span class="n">build_tests</span>
+<span class="w">    </span><span class="n">model</span><span class="p">%</span><span class="n">build_prefix</span><span class="w">         </span><span class="o">=</span><span class="w"> </span><span class="n">join_path</span><span class="p">(</span><span class="s2">&quot;build&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">basename</span><span class="p">(</span><span class="n">model</span><span class="p">%</span><span class="n">compiler</span><span class="p">%</span><span class="n">fc</span><span class="p">))</span>
+<span class="w">    </span><span class="n">model</span><span class="p">%</span><span class="n">include_tests</span><span class="w">        </span><span class="o">=</span><span class="w"> </span><span class="n">settings</span><span class="p">%</span><span class="n">build_tests</span>
 <span class="w">    </span><span class="n">model</span><span class="p">%</span><span class="n">enforce_module_names</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">package</span><span class="p">%</span><span class="n">build</span><span class="p">%</span><span class="n">module_naming</span>
-<span class="w">    </span><span class="n">model</span><span class="p">%</span><span class="n">module_prefix</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">package</span><span class="p">%</span><span class="n">build</span><span class="p">%</span><span class="n">module_prefix</span>
+<span class="w">    </span><span class="n">model</span><span class="p">%</span><span class="n">module_prefix</span><span class="w">        </span><span class="o">=</span><span class="w"> </span><span class="n">package</span><span class="p">%</span><span class="n">build</span><span class="p">%</span><span class="n">module_prefix</span>
 
 <span class="w">    </span><span class="c">! Resolve meta-dependencies into the package and the model</span>
 <span class="w">    </span><span class="k">call </span><span class="n">resolve_metapackages</span><span class="p">(</span><span class="n">model</span><span class="p">,</span><span class="n">package</span><span class="p">,</span><span class="n">settings</span><span class="p">,</span><span class="n">error</span><span class="p">)</span>
@@ -511,7 +511,7 @@ Add this dependency&rsquo;s package-level macros</p>
             <p class="text-end">
               Documentation generated by
               <a href="https://github.com/Fortran-FOSS-Programmers/ford">FORD</a>
- on 2025-05-16 20:21 +0000             </p>
+ on 2025-05-16 20:23 +0000             </p>
           </div>
         </div>
         <br>

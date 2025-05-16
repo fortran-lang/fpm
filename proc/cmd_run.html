@@ -92,7 +92,7 @@
 
             <li class="list-inline-item" id="statements"><i class="fa fa-list-ol"></i>
               <a data-bs-toggle="tooltip" data-bs-placement="bottom" data-bs-html="true"
-                 title=" 2.0% of total for procedures.">146 statements</a>
+                 title=" 1.9% of total for procedures.">142 statements</a>
             </li>
 
             <li class="list-inline-item" id="source-file">
@@ -178,7 +178,7 @@
     <tbody>
         <tr>
             <td>
-              <span class="anchor" id="variable-settings~12"></span>
+              <span class="anchor" id="variable-settings~8"></span>
               class(<a href='../type/fpm_run_settings.html'>fpm_run_settings</a>),
             </td>
 <td>intent(inout)</td>
@@ -193,7 +193,7 @@
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-test~4"></span>
+              <span class="anchor" id="variable-test~2"></span>
               logical,
             </td>
 <td>intent(in)</td>
@@ -239,7 +239,7 @@
 <span class="w">    </span><span class="k">type</span><span class="p">(</span><span class="n">srcfile_t</span><span class="p">),</span><span class="w"> </span><span class="k">pointer</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">exe_source</span>
 <span class="w">    </span><span class="kt">integer</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">run_scope</span><span class="p">,</span><span class="n">firsterror</span>
 <span class="w">    </span><span class="kt">integer</span><span class="p">,</span><span class="w"> </span><span class="k">allocatable</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="nb">stat</span><span class="p">(:),</span><span class="n">target_ID</span><span class="p">(:)</span>
-<span class="w">    </span><span class="kt">character</span><span class="p">(</span><span class="nb">len</span><span class="o">=</span><span class="p">:),</span><span class="k">allocatable</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">line</span>
+<span class="w">    </span><span class="kt">character</span><span class="p">(</span><span class="nb">len</span><span class="o">=</span><span class="p">:),</span><span class="k">allocatable</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">line</span><span class="p">,</span><span class="n">run_cmd</span><span class="p">,</span><span class="n">library_path</span>
 
 <span class="w">    </span><span class="k">call </span><span class="n">get_package_data</span><span class="p">(</span><span class="n">package</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;fpm.toml&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">error</span><span class="p">,</span><span class="w"> </span><span class="n">apply_defaults</span><span class="o">=</span><span class="p">.</span><span class="n">true</span><span class="p">.)</span>
 <span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="nb">allocated</span><span class="p">(</span><span class="n">error</span><span class="p">))</span><span class="w"> </span><span class="k">then</span>
@@ -251,7 +251,7 @@
 <span class="k">        call </span><span class="n">fpm_stop</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="s1">&#39;*cmd_run* Model error: &#39;</span><span class="o">//</span><span class="n">error</span><span class="p">%</span><span class="n">message</span><span class="p">)</span>
 <span class="w">    </span><span class="k">end if</span>
 
-<span class="k">    call </span><span class="n">targets_from_sources</span><span class="p">(</span><span class="n">targets</span><span class="p">,</span><span class="w"> </span><span class="n">model</span><span class="p">,</span><span class="w"> </span><span class="n">settings</span><span class="p">%</span><span class="n">prune</span><span class="p">,</span><span class="w"> </span><span class="n">error</span><span class="p">)</span>
+<span class="k">    call </span><span class="n">targets_from_sources</span><span class="p">(</span><span class="n">targets</span><span class="p">,</span><span class="w"> </span><span class="n">model</span><span class="p">,</span><span class="w"> </span><span class="n">settings</span><span class="p">%</span><span class="n">prune</span><span class="p">,</span><span class="w"> </span><span class="n">package</span><span class="p">%</span><span class="n">library</span><span class="p">,</span><span class="w"> </span><span class="n">error</span><span class="p">)</span>
 <span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="nb">allocated</span><span class="p">(</span><span class="n">error</span><span class="p">))</span><span class="w"> </span><span class="k">then</span>
 <span class="k">        call </span><span class="n">fpm_stop</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="s1">&#39;*cmd_run* Targets error: &#39;</span><span class="o">//</span><span class="n">error</span><span class="p">%</span><span class="n">message</span><span class="p">)</span>
 <span class="w">    </span><span class="k">end if</span>
@@ -333,26 +333,24 @@
 <span class="k">         call </span><span class="n">compact_list</span><span class="p">()</span>
 <span class="w">    </span><span class="k">else</span>
 
-<span class="k">        allocate</span><span class="p">(</span><span class="nb">stat</span><span class="p">(</span><span class="n">size</span><span class="p">(</span><span class="n">executables</span><span class="p">)))</span>
+<span class="w">        </span><span class="c">! Save current library path and set a new one that includes the local </span>
+<span class="w">        </span><span class="c">! dynamic library folders</span>
+<span class="w">        </span><span class="n">library_path</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">save_library_path</span><span class="p">()</span><span class="w">                </span>
+<span class="w">        </span><span class="k">call </span><span class="n">set_library_path</span><span class="p">(</span><span class="n">model</span><span class="p">,</span><span class="w"> </span><span class="n">targets</span><span class="p">,</span><span class="w"> </span><span class="n">error</span><span class="p">)</span>
+<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="nb">allocated</span><span class="p">(</span><span class="n">error</span><span class="p">))</span><span class="w"> </span><span class="k">call </span><span class="n">fpm_stop</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="s1">&#39;*cmd_run* Run error: &#39;</span><span class="o">//</span><span class="n">error</span><span class="p">%</span><span class="n">message</span><span class="p">)</span>
+
+<span class="w">        </span><span class="k">allocate</span><span class="p">(</span><span class="nb">stat</span><span class="p">(</span><span class="n">size</span><span class="p">(</span><span class="n">executables</span><span class="p">)))</span>
 <span class="w">        </span><span class="k">do </span><span class="n">i</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span><span class="n">size</span><span class="p">(</span><span class="n">executables</span><span class="p">)</span>
 <span class="w">            </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">exists</span><span class="p">(</span><span class="n">executables</span><span class="p">(</span><span class="n">i</span><span class="p">)%</span><span class="n">s</span><span class="p">))</span><span class="w"> </span><span class="k">then</span>
-<span class="k">                if</span><span class="p">(</span><span class="n">settings</span><span class="p">%</span><span class="n">runner</span><span class="w"> </span><span class="o">/=</span><span class="w"> </span><span class="s1">&#39; &#39;</span><span class="p">)</span><span class="k">then</span>
-<span class="k">                    if</span><span class="p">(.</span><span class="nb">not</span><span class="p">.</span><span class="nb">allocated</span><span class="p">(</span><span class="n">settings</span><span class="p">%</span><span class="n">args</span><span class="p">))</span><span class="k">then</span>
-<span class="k">                       call </span><span class="n">run</span><span class="p">(</span><span class="n">settings</span><span class="p">%</span><span class="n">runner_command</span><span class="p">()</span><span class="o">//</span><span class="s1">&#39; &#39;</span><span class="o">//</span><span class="n">executables</span><span class="p">(</span><span class="n">i</span><span class="p">)%</span><span class="n">s</span><span class="p">,</span><span class="w"> </span><span class="p">&amp;</span>
-<span class="w">                             </span><span class="n">echo</span><span class="o">=</span><span class="n">settings</span><span class="p">%</span><span class="n">verbose</span><span class="p">,</span><span class="w"> </span><span class="n">exitstat</span><span class="o">=</span><span class="nb">stat</span><span class="p">(</span><span class="n">i</span><span class="p">))</span>
-<span class="w">                    </span><span class="k">else</span>
-<span class="k">                       call </span><span class="n">run</span><span class="p">(</span><span class="n">settings</span><span class="p">%</span><span class="n">runner_command</span><span class="p">()</span><span class="o">//</span><span class="s1">&#39; &#39;</span><span class="o">//</span><span class="n">executables</span><span class="p">(</span><span class="n">i</span><span class="p">)%</span><span class="n">s</span><span class="o">//</span><span class="s2">&quot; &quot;</span><span class="o">//</span><span class="n">settings</span><span class="p">%</span><span class="n">args</span><span class="p">,</span><span class="w"> </span><span class="p">&amp;</span>
-<span class="w">                             </span><span class="n">echo</span><span class="o">=</span><span class="n">settings</span><span class="p">%</span><span class="n">verbose</span><span class="p">,</span><span class="w"> </span><span class="n">exitstat</span><span class="o">=</span><span class="nb">stat</span><span class="p">(</span><span class="n">i</span><span class="p">))</span>
-<span class="w">                    </span><span class="k">endif</span>
-<span class="k">                else</span>
-<span class="k">                    if</span><span class="p">(.</span><span class="nb">not</span><span class="p">.</span><span class="nb">allocated</span><span class="p">(</span><span class="n">settings</span><span class="p">%</span><span class="n">args</span><span class="p">))</span><span class="k">then</span>
-<span class="k">                       call </span><span class="n">run</span><span class="p">(</span><span class="n">executables</span><span class="p">(</span><span class="n">i</span><span class="p">)%</span><span class="n">s</span><span class="p">,</span><span class="n">echo</span><span class="o">=</span><span class="n">settings</span><span class="p">%</span><span class="n">verbose</span><span class="p">,</span><span class="w"> </span><span class="n">exitstat</span><span class="o">=</span><span class="nb">stat</span><span class="p">(</span><span class="n">i</span><span class="p">))</span>
-<span class="w">                    </span><span class="k">else</span>
-<span class="k">                       call </span><span class="n">run</span><span class="p">(</span><span class="n">executables</span><span class="p">(</span><span class="n">i</span><span class="p">)%</span><span class="n">s</span><span class="o">//</span><span class="s2">&quot; &quot;</span><span class="o">//</span><span class="n">settings</span><span class="p">%</span><span class="n">args</span><span class="p">,</span><span class="n">echo</span><span class="o">=</span><span class="n">settings</span><span class="p">%</span><span class="n">verbose</span><span class="p">,</span><span class="w"> </span><span class="p">&amp;</span>
-<span class="w">                             </span><span class="n">exitstat</span><span class="o">=</span><span class="nb">stat</span><span class="p">(</span><span class="n">i</span><span class="p">))</span>
-<span class="w">                    </span><span class="k">endif</span>
-<span class="k">                endif</span>
-<span class="k">            else</span>
+<span class="w">                </span>
+<span class="w">                </span><span class="c">! Prepare command line</span>
+<span class="w">                                              </span><span class="n">run_cmd</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">executables</span><span class="p">(</span><span class="n">i</span><span class="p">)%</span><span class="n">s</span>
+<span class="w">                </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">settings</span><span class="p">%</span><span class="n">runner</span><span class="o">/=</span><span class="s1">&#39; &#39;</span><span class="p">)</span><span class="w">     </span><span class="n">run_cmd</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">settings</span><span class="p">%</span><span class="n">runner_command</span><span class="p">()</span><span class="o">//</span><span class="s1">&#39; &#39;</span><span class="o">//</span><span class="n">run_cmd</span>
+<span class="w">                </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="nb">allocated</span><span class="p">(</span><span class="n">settings</span><span class="p">%</span><span class="n">args</span><span class="p">))</span><span class="w"> </span><span class="n">run_cmd</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">run_cmd</span><span class="o">//</span><span class="s2">&quot; &quot;</span><span class="o">//</span><span class="n">settings</span><span class="p">%</span><span class="n">args</span>
+<span class="w">                </span>
+<span class="w">                </span><span class="k">call </span><span class="n">run</span><span class="p">(</span><span class="n">run_cmd</span><span class="p">,</span><span class="n">echo</span><span class="o">=</span><span class="n">settings</span><span class="p">%</span><span class="n">verbose</span><span class="p">,</span><span class="n">exitstat</span><span class="o">=</span><span class="nb">stat</span><span class="p">(</span><span class="n">i</span><span class="p">))</span><span class="w">                </span>
+<span class="w">                </span>
+<span class="w">            </span><span class="k">else</span>
 <span class="k">                call </span><span class="n">fpm_stop</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="s1">&#39;*cmd_run*:&#39;</span><span class="o">//</span><span class="n">executables</span><span class="p">(</span><span class="n">i</span><span class="p">)%</span><span class="n">s</span><span class="o">//</span><span class="s1">&#39; not found&#39;</span><span class="p">)</span>
 <span class="w">            </span><span class="k">end if</span>
 <span class="k">        end do</span>
@@ -367,8 +365,12 @@
 <span class="k">            </span><span class="n">firsterror</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">findloc</span><span class="p">(</span><span class="nb">stat</span><span class="o">/=</span><span class="mi">0</span><span class="p">,</span><span class="k">value</span><span class="o">=</span><span class="p">.</span><span class="n">true</span><span class="p">.,</span><span class="nb">dim</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
 <span class="w">            </span><span class="k">call </span><span class="n">fpm_stop</span><span class="p">(</span><span class="nb">stat</span><span class="p">(</span><span class="n">firsterror</span><span class="p">),</span><span class="s1">&#39;*cmd_run*:stopping due to failed executions&#39;</span><span class="p">)</span>
 <span class="w">        </span><span class="k">end if</span>
+<span class="w">        </span>
+<span class="w">        </span><span class="c">! Restore original library path</span>
+<span class="w">        </span><span class="k">call </span><span class="n">restore_library_path</span><span class="p">(</span><span class="n">library_path</span><span class="p">,</span><span class="w"> </span><span class="n">error</span><span class="p">)</span>
+<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="nb">allocated</span><span class="p">(</span><span class="n">error</span><span class="p">))</span><span class="w"> </span><span class="k">call </span><span class="n">fpm_stop</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="s1">&#39;*cmd_run* Environment error: &#39;</span><span class="o">//</span><span class="n">error</span><span class="p">%</span><span class="n">message</span><span class="p">)</span><span class="w">                         </span>
 
-<span class="k">    end if</span>
+<span class="w">    </span><span class="k">end if</span>
 
 <span class="k">    contains</span>
 
@@ -435,7 +437,7 @@
             <p class="text-end">
               Documentation generated by
               <a href="https://github.com/Fortran-FOSS-Programmers/ford">FORD</a>
- on 2025-05-16 20:21 +0000             </p>
+ on 2025-05-16 20:23 +0000             </p>
           </div>
         </div>
         <br>

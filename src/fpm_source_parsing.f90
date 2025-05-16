@@ -21,8 +21,7 @@ use fpm_model, only: srcfile_t, &
                     FPM_UNIT_UNKNOWN, FPM_UNIT_PROGRAM, FPM_UNIT_MODULE, &
                     FPM_UNIT_SUBMODULE, FPM_UNIT_SUBPROGRAM, &
                     FPM_UNIT_CSOURCE, FPM_UNIT_CHEADER, FPM_SCOPE_UNKNOWN, &
-                    FPM_SCOPE_LIB, FPM_SCOPE_DEP, FPM_SCOPE_APP, FPM_SCOPE_TEST, &
-                    FPM_UNIT_CPPSOURCE
+                    FPM_SCOPE_DEP, FPM_SCOPE_APP, FPM_SCOPE_TEST, FPM_UNIT_CPPSOURCE
 use fpm_filesystem, only: read_lines, read_lines_expanded, exists
 implicit none
 

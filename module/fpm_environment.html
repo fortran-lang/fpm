@@ -92,7 +92,7 @@
 
             <li class="list-inline-item" id="statements"><i class="fa fa-list-ol"></i>
               <a data-bs-toggle="tooltip" data-bs-placement="bottom" data-bs-html="true"
-                 title=" 2.0% of total for modules and submodules.">286 statements</a>
+                 title=" 2.0% of total for modules and submodules.">311 statements</a>
             </li>
 
             <li class="list-inline-item" id="source-file">
@@ -166,6 +166,7 @@
             <a class="list-group-item" href="../module/fpm_environment.html#proc-get_command_arguments_quoted">get_command_arguments_quoted</a>
             <a class="list-group-item" href="../module/fpm_environment.html#proc-get_env">get_env</a>
             <a class="list-group-item" href="../module/fpm_environment.html#proc-get_os_type">get_os_type</a>
+            <a class="list-group-item" href="../module/fpm_environment.html#proc-library_filename">library_filename</a>
             <a class="list-group-item" href="../module/fpm_environment.html#proc-os_is_unix">os_is_unix</a>
             <a class="list-group-item" href="../module/fpm_environment.html#proc-separator">separator</a>
             <a class="list-group-item" href="../module/fpm_environment.html#proc-set_env">set_env</a>
@@ -392,7 +393,7 @@ parameter
     <tbody>
         <tr>
             <td>
-              <span class="anchor" id="variable-os~3"></span>
+              <span class="anchor" id="variable-os"></span>
               integer,
             </td>
 <td>intent(in)</td>
@@ -438,7 +439,7 @@ Returns an error if the variable did not exist in the first place</p><a href="..
     <tbody>
         <tr>
             <td>
-              <span class="anchor" id="variable-name~28"></span>
+              <span class="anchor" id="variable-name~7"></span>
               character(len=*),
             </td>
 <td>intent(in)</td>
@@ -563,6 +564,96 @@ Returns an error if the variable did not exist in the first place</p><a href="..
   </div>
 
               <div class="card">
+    <div class="card-header codesum"><span class="anchor" id="proc-library_filename"></span> <h3>public pure function <a href='../proc/library_filename.html'>library_filename</a>(package_name, shared, import, target_os) result(name)  
+</h3></div>
+    <div class="card-body">
+          
+  <p>Utility function: return library filename</p>
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-package_name~2"></span>
+              character(len=*),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>package_name</strong></td>
+            <td>
+
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-shared~2"></span>
+              logical,
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>shared</strong></td>
+            <td>
+<p>Whether it&rsquo;s a shared library</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-import"></span>
+              logical,
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>import</strong></td>
+            <td>
+<p>Whether it&rsquo;s for linking (import library) or actual library</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-target_os"></span>
+              integer,
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>target_os</strong></td>
+            <td>
+<p>Build target OS: one of OS_WINDOWS, OS_MACOS, &hellip;</p>
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+    <h4>
+    Return Value
+    <small>character(len=:), allocatable</small>
+    </h4>
+    
+
+    </div>
+  </div>
+
+              <div class="card">
     <div class="card-header codesum"><span class="anchor" id="proc-os_is_unix"></span> <h3>public  function <a href='../proc/os_is_unix.html'>os_is_unix</a>(os)  
 </h3></div>
     <div class="card-body">
@@ -584,7 +675,7 @@ and return .TRUE. if they match and .FALSE. otherwise</p>
     <tbody>
         <tr>
             <td>
-              <span class="anchor" id="variable-os~4"></span>
+              <span class="anchor" id="variable-os~2"></span>
               integer,
             </td>
 <td>intent(in),</td>
@@ -647,7 +738,7 @@ and return .TRUE. if they match and .FALSE. otherwise</p>
     <tbody>
         <tr>
             <td>
-              <span class="anchor" id="variable-name~27"></span>
+              <span class="anchor" id="variable-name~6"></span>
               character(len=*),
             </td>
 <td>intent(in)</td>
@@ -726,7 +817,7 @@ and return .TRUE. if they match and .FALSE. otherwise</p>
             <p class="text-end">
               Documentation generated by
               <a href="https://github.com/Fortran-FOSS-Programmers/ford">FORD</a>
- on 2025-05-16 20:21 +0000             </p>
+ on 2025-05-16 20:23 +0000             </p>
           </div>
         </div>
         <br>

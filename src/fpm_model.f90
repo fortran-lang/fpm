@@ -43,6 +43,7 @@ use tomlf, only: toml_table, toml_stat
 use fpm_toml, only: serializable_t, set_value, set_list, get_value, &
                     & get_list, add_table, toml_key, add_array, set_string
 use fpm_error, only: error_t, fatal_error
+use fpm_environment, only: OS_WINDOWS,OS_MACOS
 use fpm_manifest_preprocess, only: preprocess_config_t
 implicit none
 
@@ -172,7 +173,10 @@ type, extends(serializable_t) :: package_t
     type(fortran_features_t) :: features
 
     contains
-
+    
+        !> Check if a package will create a library
+        procedure :: has_library => package_has_library
+    
         !> Serialization interface
         procedure :: serializable_is_same => package_is_same
         procedure :: dump_to_toml   => package_dump_to_toml
@@ -234,7 +238,10 @@ type, extends(serializable_t) :: fpm_model_t
     type(string_t) :: module_prefix
 
     contains
-
+    
+        !> Get target link flags
+        procedure :: get_package_libraries_link
+    
         !> Serialization interface
         procedure :: serializable_is_same => model_is_same
         procedure :: dump_to_toml   => model_dump_to_toml
@@ -243,7 +250,6 @@ type, extends(serializable_t) :: fpm_model_t
 end type fpm_model_t
 
 contains
-
 
 function info_package(p) result(s)
     ! Returns representation of package_t
@@ -1135,5 +1141,81 @@ subroutine model_load_from_toml(self, table, error)
     call get_value(table, "module-prefix", self%module_prefix%s)
 
 end subroutine model_load_from_toml
+
+function get_package_libraries_link(model, package_name, prefix, exclude_self, dep_IDs, error) result(r)
+    class(fpm_model_t), intent(in) :: model
+    character(*), intent(in) :: package_name
+    type(error_t), allocatable, intent(out) :: error
+    character(*), intent(in) :: prefix
+    !> Option to exclude linking to the given package (needed building it as a library)
+    logical, optional, intent(in) :: exclude_self
+    !> Optionally export the list of dependency IDs
+    integer, allocatable, optional, intent(out) :: dep_IDs(:)
+    character(len=:), allocatable :: r
+    
+    integer :: id,ndep,i
+    logical :: no_root
+    integer, allocatable :: sorted_package_IDs(:)
+    logical, allocatable :: has_lib(:)
+    type(string_t), allocatable :: package_deps(:)
+    
+    ! Get dependency ID of this target 
+    id = model%deps%find(package_name)
+    if (id<=0) then 
+        call fatal_error(error, "Internal error: shared library "//package_name// &
+                                " does not correspond to a package")
+        return
+    end if
+    
+    ! Get ordered IDs of the shared libraries that should be linked against
+    call model%deps%local_link_order(id, sorted_package_IDs, error)
+    if (allocated(error)) return
+    
+    ! Get names of the package dependencies
+    ndep = size(sorted_package_IDs)
+    
+    if (ndep<=0) then 
+       r = prefix
+       if (present(dep_IDs)) allocate(dep_IDs(0))
+       return 
+    end if
+    
+    ! Optional exclusion of self (top-level) package
+    no_root = .false.
+    if (present(exclude_self)) no_root = exclude_self
+    if (no_root) then 
+        sorted_package_IDs = pack(sorted_package_IDs, sorted_package_IDs /= id)
+        ndep = size(sorted_package_IDs)
+    endif
+    
+    ! Exclusion of package IDs marked "empty" (i.e. they contain no sources)
+    has_lib = model%packages%has_library()
+    
+    if (any(.not.has_lib)) then 
+        sorted_package_IDs = pack(sorted_package_IDs, has_lib(sorted_package_IDs))
+        ndep = size(sorted_package_IDs)
+    end if
+    
+    package_deps = [(string_t(model%deps%dep(sorted_package_IDs(i))%name),i=1,ndep)]
+    
+    r = model%compiler%enumerate_libraries(prefix, package_deps)
+    
+    ! If requested, export the list of dependency IDs
+    if (present(dep_IDs)) call move_alloc(from=sorted_package_IDs,to=dep_IDs)
+    
+end function get_package_libraries_link
+
+!> Check whether a package has an object library
+elemental logical function package_has_library(self) result(has_library)
+    class(package_t), intent(in) :: self
+    
+    if (allocated(self%sources)) then 
+        has_library = any(self%sources%unit_scope==FPM_SCOPE_LIB)
+    else
+        has_library = .false.
+    end if
+    
+end function package_has_library
+
 
 end module fpm_model

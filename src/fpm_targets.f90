@@ -24,27 +24,28 @@
 !> Describes the type of build target — determines backend build rules
 !>
 module fpm_targets
-use iso_fortran_env, only: int64
+use iso_fortran_env, only: int64, stdout=>output_unit
 use fpm_error, only: error_t, fatal_error, fpm_stop
 use fpm_model
 use fpm_compiler, only : compiler_t
-use fpm_environment, only: get_os_type, OS_WINDOWS, OS_MACOS
+use fpm_environment, only: get_os_type, OS_WINDOWS, OS_MACOS, library_filename
 use fpm_filesystem, only: dirname, join_path, canon_path
 use fpm_strings, only: string_t, operator(.in.), string_cat, fnv_1a, resize, lower, str_ends_with
 use fpm_compiler, only: get_macros
 use fpm_sources, only: get_exe_name_with_suffix
+use fpm_manifest_library, only: library_config_t
 use fpm_manifest_preprocess, only: preprocess_config_t
 implicit none
 
 private
 
-public FPM_TARGET_UNKNOWN, FPM_TARGET_EXECUTABLE, &
-       FPM_TARGET_ARCHIVE, FPM_TARGET_OBJECT, &
+public FPM_TARGET_UNKNOWN,  FPM_TARGET_EXECUTABLE, &
+       FPM_TARGET_ARCHIVE,  FPM_TARGET_OBJECT, &
        FPM_TARGET_C_OBJECT, FPM_TARGET_CPP_OBJECT, &
-       FPM_TARGET_NAME
+       FPM_TARGET_SHARED,   FPM_TARGET_NAME
 public build_target_t, build_target_ptr
 public targets_from_sources, resolve_module_dependencies
-public add_target, add_dependency
+public add_target, new_target, add_dependency, get_library_dirs
 public filter_library_targets, filter_executable_targets, filter_modules
 
 
@@ -61,6 +62,8 @@ integer, parameter :: FPM_TARGET_OBJECT = 3
 integer, parameter :: FPM_TARGET_C_OBJECT = 4
 !> Target type is cpp compiled object
 integer, parameter :: FPM_TARGET_CPP_OBJECT = 5
+!> Target type is a shared library
+integer, parameter :: FPM_TARGET_SHARED = 6
 
 !> Wrapper type for constructing arrays of `[[build_target_t]]` pointers
 type build_target_ptr
@@ -135,10 +138,21 @@ type build_target_t
     
     contains
     
+        !> Print information on this instance
+        procedure :: info    
+        
+        !> Set output directory
+        procedure :: set_output_dir
+         
         procedure :: is_executable_target
 
 end type build_target_t
 
+interface add_target
+    module procedure add_new_target
+    module procedure add_old_target
+    module procedure add_old_targets
+end interface
 
 contains
 
@@ -149,42 +163,122 @@ pure function FPM_TARGET_NAME(type) result(msg)
 
    select case (type)
       case (FPM_TARGET_ARCHIVE);    msg = 'Archive'
+      case (FPM_TARGET_SHARED);     msg = 'Shared library'
       case (FPM_TARGET_CPP_OBJECT); msg = 'C++ object'
       case (FPM_TARGET_C_OBJECT);   msg = 'C Object'
       case (FPM_TARGET_EXECUTABLE); msg = 'Executable'
-      case (FPM_TARGET_OBJECT);     msg = 'Object'
+      case (FPM_TARGET_OBJECT);     msg = 'Object'      
       case default;                 msg = 'Unknown'
    end select
 
 end function FPM_TARGET_NAME
 
+!> Write information on a build target
+subroutine info(self, unit, verbosity)
+    class(build_target_t), intent(in) :: self
+    integer, intent(in) :: unit
+    integer, intent(in), optional :: verbosity
+
+    integer :: pr
+    character(len=*), parameter :: fmt = '("#", 1x, a, t30, a)'
+    character(len=*), parameter :: fmt_list = '("#", 1x, a, t30, a, " (", i0, " items)")'
+
+    if (present(verbosity)) then
+        pr = verbosity
+    else
+        pr = 1
+    end if
+    if (pr < 1) return
+
+    write(unit, fmt) "Build target"
+    write(unit, fmt) "- output file",        self%output_file
+    write(unit, fmt) "- output name",        self%output_name
+    write(unit, fmt) "- output directory",   self%output_dir
+    write(unit, fmt) "- log file",           self%output_log_file
+    write(unit, fmt) "- package",            self%package_name
+    write(unit, fmt) "- type",               FPM_TARGET_NAME(self%target_type)
+
+    if (allocated(self%source)) then
+        write(unit, fmt) "- source file", self%source%file_name
+    end if
+
+    if (allocated(self%dependencies)) then
+        write(unit, fmt_list) "- dependencies", "", size(self%dependencies)
+    end if
+
+    if (allocated(self%link_objects)) then
+        write(unit, fmt_list) "- link objects", "", size(self%link_objects)
+    end if
+
+    if (allocated(self%link_libraries)) then
+        write(unit, fmt_list) "- link libraries", "", size(self%link_libraries)
+    end if
+
+    if (allocated(self%compile_flags)) then
+        write(unit, fmt) "- compile flags", self%compile_flags
+    end if
+
+    if (allocated(self%link_flags)) then
+        write(unit, fmt) "- link flags", self%link_flags
+    end if
+
+    if (allocated(self%version)) then
+        write(unit, fmt) "- version", self%version
+    end if
+
+    if (allocated(self%macros)) then
+        write(unit, fmt_list) "- macros", "", size(self%macros)
+    end if
+
+    write(unit, fmt) "- skip", merge("yes", "no ", self%skip)
+    write(unit, fmt) "- schedule", trim(adjustl(to_string(self%schedule)))
+
+contains
+
+    pure function to_string(i) result(s)
+        integer, intent(in) :: i
+        character(len=32) :: s
+        write(s, '(i0)') i
+    end function to_string
+
+end subroutine info
+
 !> High-level wrapper to generate build target information
-subroutine targets_from_sources(targets,model,prune,error)
+subroutine targets_from_sources(targets,model,prune,library,error)
 
     !> The generated list of build targets
     type(build_target_ptr), intent(out), allocatable :: targets(:)
 
     !> The package model from which to construct the target list
     type(fpm_model_t), intent(inout), target :: model
+    
+    !> Library build configuration
+    type(library_config_t), intent(in), optional :: library
 
     !> Enable tree-shaking/pruning of module dependencies
     logical, intent(in) :: prune
 
     !> Error structure
     type(error_t), intent(out), allocatable :: error
+    
+    logical :: should_prune
 
-    call build_target_list(targets,model)
+    call build_target_list(targets,model,library)
 
     call collect_exe_link_dependencies(targets)
 
     call resolve_module_dependencies(targets,model%external_modules,error)
     if (allocated(error)) return
 
-    if (prune) then
-        call prune_build_targets(targets,root_package=model%package_name)
-    end if
+    ! Prune unused source files, unless we're building shared libraries that need 
+    ! all sources to be distributable
+    should_prune = prune
+    if (present(library)) should_prune = should_prune .and. library%monolithic()
+        
+    call prune_build_targets(targets,model%packages(1),should_prune)
 
-    call resolve_target_linking(targets,model)
+    call resolve_target_linking(targets,model,library,error)
+    if (allocated(error)) return
 
 end subroutine targets_from_sources
 
@@ -208,17 +302,20 @@ end subroutine targets_from_sources
 !> is a library, then the executable target has an additional dependency on the library
 !> archive target.
 !>
-subroutine build_target_list(targets,model)
+subroutine build_target_list(targets,model,library)
 
     !> The generated list of build targets
     type(build_target_ptr), intent(out), allocatable :: targets(:)
 
     !> The package model from which to construct the target list
     type(fpm_model_t), intent(inout), target :: model
+    
+    !> The optional model library configuration
+    type(library_config_t), optional, intent(in) :: library
 
-    integer :: i, j, n_source, exe_type
-    character(:), allocatable :: exe_dir, compile_flags
-    logical :: with_lib
+    integer :: i, j, k, n_source, exe_type
+    character(:), allocatable :: exe_dir, compile_flags, lib_name
+    logical :: with_lib, monolithic, shared_lib, static_lib
 
     ! Initialize targets
     allocate(targets(0))
@@ -229,14 +326,44 @@ subroutine build_target_list(targets,model)
 
     if (n_source < 1) return
 
-    with_lib = any([((model%packages(j)%sources(i)%unit_scope == FPM_SCOPE_LIB, &
-                      i=1,size(model%packages(j)%sources)), &
-                      j=1,size(model%packages))])
+    with_lib = any(model%packages%has_library())
+    
+    if (with_lib .and. present(library)) then 
+        shared_lib = library%shared()
+        static_lib = library%static()
+        monolithic = library%monolithic()
+    else
+        monolithic = with_lib
+        shared_lib = .false.
+        static_lib = .false.            
+    end if
 
-    if (with_lib) call add_target(targets,package=model%package_name,type = FPM_TARGET_ARCHIVE,&
-                            output_name = join_path(&
-                                   model%package_name,'lib'//model%package_name//'.a'))
-
+    ! For a static object archive, everything from this package or all its dependencies is 
+    ! put into the same file. For a shared library configuration, each package has its own 
+    ! dynamic library file to avoid dependency collisions
+    if (monolithic) then 
+        
+        lib_name = join_path(model%package_name, &
+                             library_filename(model%packages(1)%name,.false.,.false.,get_os_type()))
+        
+        call add_target(targets,package=model%package_name, &
+                        type = FPM_TARGET_ARCHIVE,output_name = lib_name)
+                            
+    elseif (shared_lib .or. static_lib) then 
+        
+        ! Individual package libraries are built. 
+        ! Create as many targets as the packages in the dependency tree
+        do j=1,size(model%packages)
+                        
+            lib_name = library_filename(model%packages(j)%name,shared_lib,.false.,get_os_type())
+            
+            call add_target(targets,package=model%packages(j)%name, &
+                            type=merge(FPM_TARGET_SHARED,FPM_TARGET_ARCHIVE,shared_lib), &
+                            output_name=lib_name)
+        end do
+        
+    endif
+    
     do j=1,size(model%packages)
 
         associate(sources=>model%packages(j)%sources)
@@ -249,19 +376,19 @@ subroutine build_target_list(targets,model)
 
                 select case (sources(i)%unit_type)
                 case (FPM_UNIT_MODULE,FPM_UNIT_SUBMODULE,FPM_UNIT_SUBPROGRAM,FPM_UNIT_CSOURCE)
-
+                    
                     call add_target(targets,package=model%packages(j)%name,source = sources(i), &
                                 type = merge(FPM_TARGET_C_OBJECT,FPM_TARGET_OBJECT,&
                                                sources(i)%unit_type==FPM_UNIT_CSOURCE), &
                                 output_name = get_object_name(sources(i)), &
-                                features = model%packages(j)%features, &
-                                preprocess = model%packages(j)%preprocess, &
+                                features    = model%packages(j)%features, &
+                                preprocess  = model%packages(j)%preprocess, &
                                 version = model%packages(j)%version)
 
 
                     if (with_lib .and. sources(i)%unit_scope == FPM_SCOPE_LIB) then
                         ! Archive depends on object
-                        call add_dependency(targets(1)%ptr, targets(size(targets))%ptr)
+                        call add_dependency(targets(merge(1,j,monolithic))%ptr, targets(size(targets))%ptr)
                     end if
 
                 case (FPM_UNIT_CPPSOURCE)
@@ -274,7 +401,7 @@ subroutine build_target_list(targets,model)
 
                     if (with_lib .and. sources(i)%unit_scope == FPM_SCOPE_LIB) then
                         ! Archive depends on object
-                        call add_dependency(targets(1)%ptr, targets(size(targets))%ptr)
+                        call add_dependency(targets(merge(1,j,monolithic))%ptr, targets(size(targets))%ptr)
                     end if
 
                     !> Add stdc++ as a linker flag. If not already there.
@@ -340,8 +467,10 @@ subroutine build_target_list(targets,model)
                     call add_dependency(target, targets(size(targets)-1)%ptr)
 
                     if (with_lib) then
-                        ! Executable depends on library
-                        call add_dependency(target, targets(1)%ptr)
+                        ! Executable depends on library file(s)
+                        do k=1,merge(1,size(model%packages),monolithic)
+                           call add_dependency(target, targets(k)%ptr)
+                        end do
                     end if
 
                     endassociate
@@ -432,10 +561,44 @@ subroutine collect_exe_link_dependencies(targets)
 
 end subroutine collect_exe_link_dependencies
 
+!> Allocate a new target 
+type(build_target_ptr) function new_target(package, type, output_name, source, link_libraries, &
+        & features, preprocess, version, output_dir)
+    character(*), intent(in) :: package
+    integer, intent(in) :: type
+    character(*), intent(in) :: output_name
+    type(srcfile_t), intent(in), optional :: source
+    type(string_t), intent(in), optional :: link_libraries(:)
+    type(fortran_features_t), intent(in), optional :: features
+    type(preprocess_config_t), intent(in), optional :: preprocess
+    character(*), intent(in), optional :: version
+    character(*), intent(in), optional :: output_dir
+
+    allocate(new_target%ptr)
+    
+    associate(target=>new_target%ptr)
+    
+        target%target_type = type
+        target%output_name = output_name
+        target%package_name = package
+        if (present(source)) target%source = source
+        if (present(link_libraries)) target%link_libraries = link_libraries
+        if (present(features)) target%features = features
+        if (present(preprocess)) then
+            if (allocated(preprocess%macros)) target%macros = preprocess%macros
+        endif
+        if (present(version)) target%version = version
+        allocate(target%dependencies(0))
+        
+        call target%set_output_dir(output_dir)
+    
+    endassociate
+    
+end function new_target
 
 !> Allocate a new target and append to target list
-subroutine add_target(targets, package, type, output_name, source, link_libraries, &
-        & features, preprocess, version)
+subroutine add_new_target(targets, package, type, output_name, source, link_libraries, &
+        & features, preprocess, version, output_dir)
     type(build_target_ptr), allocatable, intent(inout) :: targets(:)
     character(*), intent(in) :: package
     integer, intent(in) :: type
@@ -445,43 +608,57 @@ subroutine add_target(targets, package, type, output_name, source, link_librarie
     type(fortran_features_t), intent(in), optional :: features
     type(preprocess_config_t), intent(in), optional :: preprocess
     character(*), intent(in), optional :: version
+    character(*), intent(in), optional :: output_dir
 
-    integer :: i
-    type(build_target_t), pointer :: new_target
+    type(build_target_ptr) :: added
 
     if (.not.allocated(targets)) allocate(targets(0))
+    
+    ! Create new target 
+    added = new_target(package,type,output_name,source,link_libraries,features,preprocess,&
+                     version,output_dir)
 
+    call add_old_target(targets, added)
+
+end subroutine add_new_target
+
+subroutine add_old_targets(targets, add_targets)
+    type(build_target_ptr), allocatable, intent(inout) :: targets(:)
+    type(build_target_ptr), intent(in) :: add_targets(:)
+
+    integer :: i,j
+
+    if (.not.allocated(targets)) allocate(targets(0))
+    
     ! Check for duplicate outputs
-    do i=1,size(targets)
+    do j=1,size(add_targets)
+        associate(added=>add_targets(j)%ptr)
 
-        if (targets(i)%ptr%output_name == output_name) then
+        do i=1,size(targets)
 
-            write(*,*) 'Error while building target list: duplicate output object "',&
-                        output_name,'"'
-            if (present(source)) write(*,*) ' Source file: "',source%file_name,'"'
-            call fpm_stop(1,' ')
+            if (targets(i)%ptr%output_name == added%output_name) then
 
-        end if
+                write(*,*) 'Error while building target list: duplicate output object "',&
+                            added%output_name,'"'
+                if (allocated(added%source)) write(*,*) ' Source file: "',added%source%file_name,'"'
+                call fpm_stop(1,' ')
 
+            end if
+
+        end do
+        
+        endassociate
     end do
+    
+    targets = [targets, add_targets ]
 
-    allocate(new_target)
-    new_target%target_type = type
-    new_target%output_name = output_name
-    new_target%package_name = package
-    if (present(source)) new_target%source = source
-    if (present(link_libraries)) new_target%link_libraries = link_libraries
-    if (present(features)) new_target%features = features
-    if (present(preprocess)) then
-        if (allocated(preprocess%macros)) new_target%macros = preprocess%macros
-    endif
-    if (present(version)) new_target%version = version
-    allocate(new_target%dependencies(0))
+end subroutine add_old_targets
 
-    targets = [targets, build_target_ptr(new_target)]
-
-end subroutine add_target
-
+subroutine add_old_target(targets, add_target)
+    type(build_target_ptr), allocatable, intent(inout) :: targets(:)
+    type(build_target_ptr), intent(in) :: add_target
+    call add_old_targets(targets, [add_target])
+end subroutine add_old_target
 
 !> Add pointer to dependeny in target%dependencies
 subroutine add_dependency(target, dependency)
@@ -610,13 +787,16 @@ end function find_module_dependency
 
 
 !> Perform tree-shaking to remove unused module targets
-subroutine prune_build_targets(targets, root_package)
+subroutine prune_build_targets(targets, root_package, prune_unused_objects)
 
     !> Build target list to prune
     type(build_target_ptr), intent(inout), allocatable :: targets(:)
 
-    !> Name of root package
-    character(*), intent(in) :: root_package
+    !> Root package
+    type(package_t), intent(in) :: root_package
+    
+    !> Whether unused objects should be pruned
+    logical, intent(in) :: prune_unused_objects
 
     integer :: i, j, nexec
     type(string_t), allocatable :: modules_used(:)
@@ -656,8 +836,8 @@ subroutine prune_build_targets(targets, root_package)
 
         do i=1,size(targets)
 
-            if (targets(i)%ptr%package_name == root_package .and. &
-                 targets(i)%ptr%target_type /= FPM_TARGET_ARCHIVE) then
+            if (targets(i)%ptr%package_name == root_package%name .and. &
+                 all(targets(i)%ptr%target_type /= [FPM_TARGET_ARCHIVE,FPM_TARGET_SHARED])) then
 
                 call collect_used_modules(targets(i)%ptr)
 
@@ -668,8 +848,8 @@ subroutine prune_build_targets(targets, root_package)
     end if
 
     call reset_target_flags(targets)
-
-    exclude_target(:) = .false.
+    
+    exclude_target = .false.
 
     ! Exclude purely module targets if they are not used anywhere
     do i=1,size(targets)
@@ -678,8 +858,8 @@ subroutine prune_build_targets(targets, root_package)
             if (allocated(target%source)) then
                 if (target%source%unit_type == FPM_UNIT_MODULE) then
 
-                    exclude_target(i) = .true.
-                    target%skip = .true.
+                    exclude_target(i) = prune_unused_objects
+                    target%skip = prune_unused_objects
 
                     do j=1,size(target%source%modules_provided)
 
@@ -695,8 +875,8 @@ subroutine prune_build_targets(targets, root_package)
                 elseif (target%source%unit_type == FPM_UNIT_SUBMODULE) then
                     ! Remove submodules if their parents are not used
 
-                    exclude_target(i) = .true.
-                    target%skip = .true.
+                    exclude_target(i) = prune_unused_objects
+                    target%skip = prune_unused_objects
                     do j=1,size(target%source%parent_modules)
 
                         if (target%source%parent_modules(j)%s .in. modules_used) then
@@ -709,40 +889,55 @@ subroutine prune_build_targets(targets, root_package)
                     end do
 
                 end if
+                
+            elseif (any(target%target_type == [FPM_TARGET_ARCHIVE,FPM_TARGET_SHARED])) then 
+                
+                ! Remove empty library files
+                if (size(target%dependencies)==0) then 
+                    exclude_target(i) = .true.
+                    target%skip = .true.
+                endif
+                
             end if
 
-            ! (If there aren't any executables then we only prune modules from dependencies)
-            if (nexec < 1 .and. target%package_name == root_package) then
-                exclude_target(i) = .false.
-                target%skip = .false.
+            ! (If there aren't any executables then we only prune modules from dependencies, 
+            ! unless the root package is also empty)
+            if (nexec < 1 .and. target%package_name == root_package%name) then
+                exclude_target(i) = .not.root_package%has_library()
+                target%skip = exclude_target(i)
             end if
-
+            
         end associate
     end do
 
     targets = pack(targets,.not.exclude_target)
 
-    ! Remove unused targets from archive dependency list
-    if (targets(1)%ptr%target_type == FPM_TARGET_ARCHIVE) then
-        associate(archive=>targets(1)%ptr)
+    ! Remove unused targets from library dependency list
+    do j=1,size(targets)
+        associate(archive=>targets(j)%ptr)
+            
+            if (any(archive%target_type==[FPM_TARGET_ARCHIVE,FPM_TARGET_OBJECT])) then 
 
-            allocate(exclude_from_archive(size(archive%dependencies)))
-            exclude_from_archive(:) = .false.
+                allocate(exclude_from_archive(size(archive%dependencies)),source=.false.)
 
-            do i=1,size(archive%dependencies)
+                    do i=1,size(archive%dependencies)
 
-                if (archive%dependencies(i)%ptr%skip) then
+                        if (archive%dependencies(i)%ptr%skip) then
 
-                    exclude_from_archive(i) = .true.
+                            exclude_from_archive(i) = .true.
 
-                end if
+                        end if
 
-            end do
+                    end do
 
-            archive%dependencies = pack(archive%dependencies,.not.exclude_from_archive)
+                archive%dependencies = pack(archive%dependencies,.not.exclude_from_archive)
+                
+                deallocate(exclude_from_archive)
+            
+            endif
 
         end associate
-    end if
+    end do
 
     contains
 
@@ -814,13 +1009,17 @@ end subroutine prune_build_targets
 !> Construct the linker flags string for each target
 !>  `target%link_flags` includes non-library objects and library flags
 !>
-subroutine resolve_target_linking(targets, model)
+subroutine resolve_target_linking(targets, model, library, error)
     type(build_target_ptr), intent(inout), target :: targets(:)
     type(fpm_model_t), intent(in) :: model
+    type(library_config_t), intent(in), optional :: library    
+    type(error_t), allocatable, intent(out) :: error
 
-    integer :: i
+    integer :: i,j
+    logical :: shared,static,monolithic,has_self_lib
+    integer, allocatable :: package_deps(:),dep_target_ID(:)
     character(:), allocatable :: global_link_flags, local_link_flags
-    character(:), allocatable :: global_include_flags
+    character(:), allocatable :: global_include_flags, shared_lib_paths
 
     if (size(targets) == 0) return
 
@@ -830,15 +1029,25 @@ subroutine resolve_target_linking(targets, model)
             global_link_flags = model%compiler%enumerate_libraries(global_link_flags, model%link_libraries)
         end if
     end if
-
+    
     allocate(character(0) :: global_include_flags)
     if (allocated(model%include_dirs)) then
         if (size(model%include_dirs) > 0) then
             global_include_flags = global_include_flags // &
             & " -I" // string_cat(model%include_dirs," -I")
         end if
+        end if
+        
+    if (present(library)) then 
+        shared     = library%shared()
+        static     = library%static()
+        monolithic = library%monolithic()
+    else
+        shared     = .false.
+        static     = .false.
+        monolithic = .true.
     end if
-
+    
     do i=1,size(targets)
 
         associate(target => targets(i)%ptr)
@@ -868,54 +1077,123 @@ subroutine resolve_target_linking(targets, model)
             if (len(global_include_flags) > 0) then
                 target%compile_flags = target%compile_flags//global_include_flags
             end if
-            target%output_dir = get_output_dir(model%build_prefix, target%compile_flags)
-            target%output_file = join_path(target%output_dir, target%output_name)
-            target%output_log_file = join_path(target%output_dir, target%output_name)//'.log'
+            
+            call target%set_output_dir(get_output_dir(model%build_prefix, target%compile_flags))
+            
         end associate
 
     end do
-
+    
     call add_include_build_dirs(model, targets)
-
+    call add_library_link_dirs(model, targets, shared_lib_paths)
+    call library_targets_to_deps(model, targets, dep_target_ID)
+    
     do i=1,size(targets)
 
         associate(target => targets(i)%ptr)
             allocate(target%link_objects(0))
 
-            if (target%target_type == FPM_TARGET_ARCHIVE) then
-                global_link_flags = target%output_file // global_link_flags
+            select case (target%target_type)
+                case (FPM_TARGET_ARCHIVE) 
+                    
+                    ! This adds the monolithic archive to the link flags
+                    if (monolithic) global_link_flags = " " // target%output_file // global_link_flags
 
-                call get_link_objects(target%link_objects,target,is_exe=.false.)
+                    call get_link_objects(target%link_objects,target,is_exe=.false.)
 
-                allocate(character(0) :: target%link_flags)
+                    allocate(character(0) :: target%link_flags)
+                    
+                case (FPM_TARGET_SHARED)
+                
+                    ! Gather object files from this package only
+                    call get_link_objects(target%link_objects, target, is_exe=.false.)
 
-            else if (target%target_type == FPM_TARGET_EXECUTABLE) then
+                    ! Build link flags
+                    target%link_flags = string_cat(target%link_objects, " ")
+                    
+                    target%link_flags = target%link_flags // shared_lib_paths
 
-                call get_link_objects(target%link_objects,target,is_exe=.true.)
-
-                local_link_flags = ""
-                if (allocated(model%link_flags)) local_link_flags = model%link_flags
-                target%link_flags = model%link_flags//" "//string_cat(target%link_objects," ")
-
-                if (allocated(target%link_libraries)) then
-                    if (size(target%link_libraries) > 0) then
-                        target%link_flags = model%compiler%enumerate_libraries(target%link_flags, target%link_libraries)
-                        local_link_flags = model%compiler%enumerate_libraries(local_link_flags, target%link_libraries)
+                    ! Add dependencies' shared libraries (excluding self)
+                    target%link_flags = model%get_package_libraries_link(target%package_name, &
+                                                                        target%link_flags, &
+                                                                        exclude_self=.true., &
+                                                                        dep_IDs=package_deps, &
+                                                                        error=error)
+                                                                        
+                    if (allocated(error)) return
+                    
+                    ! Now that they're available, add these dependencies to the targets
+                    if (size(package_deps)>0) then 
+                        do j=1,size(package_deps)
+                            if (dep_target_ID(package_deps(j))<=0) cycle
+                            call add_dependency(target, targets(dep_target_ID(package_deps(j)))%ptr)
+                        end do
+                    end if                    
+                                                        
+                    ! Add any per-target libraries (e.g., `target%link_libraries`)
+                    if (allocated(target%link_libraries)) then
+                        if (size(target%link_libraries) > 0) then
+                            target%link_flags = model%compiler%enumerate_libraries(target%link_flags, &
+                                                                                   target%link_libraries)
+                        end if
                     end if
-                end if
 
-                target%link_flags = target%link_flags//" "//global_link_flags
+                    ! Add shared library exports (import library + .def)
+                    target%link_flags = target%link_flags // " " // &
+                                        model%compiler%get_export_flags(target%output_dir,target%package_name)
+                    
+                    ! Add global link flags (e.g., system-wide libraries)
+                    target%link_flags = target%link_flags // " " // global_link_flags                
 
-                target%output_dir = get_output_dir(model%build_prefix, &
-                   & target%compile_flags//local_link_flags)
-                target%output_file     = join_path(target%output_dir, target%output_name)
-                target%output_log_file = join_path(target%output_dir, target%output_name)//'.log'
-        end if
+                case (FPM_TARGET_EXECUTABLE)
+
+                    local_link_flags = ""
+                    if (allocated(model%link_flags)) local_link_flags = model%link_flags
+
+                    call get_link_objects(target%link_objects,target,is_exe=.true.)
+
+                    target%link_flags = model%link_flags//" "//string_cat(target%link_objects," ")
+                    
+                    ! Add shared libs
+                    if (.not.monolithic) then 
+
+                        target%link_flags = target%link_flags // shared_lib_paths
+                        
+                        ! Check if there's a library with this name (maybe not, if it is a 
+                        ! single-file app with only external dependencies)
+                        has_self_lib = .false.
+                        find_self: do j=1,size(targets)
+                            associate(target_loop=>targets(j)%ptr)
+                                if (any(target_loop%target_type==[FPM_TARGET_SHARED,FPM_TARGET_ARCHIVE]) &
+                                    .and. target_loop%package_name==target%package_name) then 
+                                    has_self_lib = .true.
+                                    exit find_self
+                                end if
+                            end associate
+                        end do find_self
+                        
+                        ! Add dependencies' shared libraries (including self if there is a library)
+                        target%link_flags = model%get_package_libraries_link(target%package_name, &
+                                                                            target%link_flags, &
+                                                                            error=error, &
+                                                                            exclude_self=.not.has_self_lib)                                                
+                    end if
+
+                    if (allocated(target%link_libraries)) then
+                        if (size(target%link_libraries) > 0) then
+                            target%link_flags = model%compiler%enumerate_libraries(target%link_flags, target%link_libraries)
+                            local_link_flags = model%compiler%enumerate_libraries(local_link_flags, target%link_libraries)
+                        end if
+                    end if
+
+                    target%link_flags = target%link_flags//" "//global_link_flags
+                    
+                end select
 
         end associate
 
     end do
-
+    
 contains
 
     !> Wrapper to build link object list
@@ -932,13 +1210,13 @@ contains
 
         integer :: i
         type(string_t) :: temp_str
-
+        
         if (.not.allocated(target%dependencies)) return
 
         do i=1,size(target%dependencies)
 
             associate(dep => target%dependencies(i)%ptr)
-
+                
                 if (.not.allocated(dep%source)) cycle
 
                 ! Skip library dependencies for executable targets
@@ -951,7 +1229,7 @@ contains
                 ! Add dependency object file to link object list
                 temp_str%s = dep%output_file
                 link_objects = [link_objects, temp_str]
-
+                
                 ! For executable objects, also need to include non-library
                 !  dependencies from dependencies (recurse)
                 if (is_exe) call get_link_objects(link_objects,dep,is_exe=.true.)
@@ -995,6 +1273,40 @@ subroutine add_include_build_dirs(model, targets)
 
 end subroutine add_include_build_dirs
 
+!> Add link directories for all shared libraries in the dependency graph
+subroutine get_library_dirs(model, targets, shared_lib_dirs)
+    type(fpm_model_t), intent(in) :: model
+    type(build_target_ptr), intent(inout), target :: targets(:)
+    type(string_t), allocatable, intent(out) :: shared_lib_dirs(:)
+
+    integer :: i
+    type(string_t) :: temp
+    
+    allocate(shared_lib_dirs(0))
+
+    do i = 1, size(targets)
+        associate(target => targets(i)%ptr)
+            if (all(target%target_type /= [FPM_TARGET_SHARED,FPM_TARGET_ARCHIVE])) cycle
+            if (target%output_dir .in. shared_lib_dirs) cycle
+            temp = string_t(target%output_dir)
+            shared_lib_dirs = [shared_lib_dirs, temp]
+        end associate
+    end do
+    
+end subroutine get_library_dirs
+
+!> Add link directories for all shared libraries in the dependency graph
+subroutine add_library_link_dirs(model, targets, shared_lib_path)
+    type(fpm_model_t), intent(in) :: model
+    type(build_target_ptr), intent(inout), target :: targets(:)
+    character(:), allocatable, intent(out) :: shared_lib_path
+
+    type(string_t), allocatable :: shared_lib_dirs(:)
+
+    call get_library_dirs(model, targets, shared_lib_dirs)    
+    shared_lib_path = " -L" // string_cat(shared_lib_dirs, " -L")
+
+end subroutine add_library_link_dirs
 
 function get_output_dir(build_prefix, args) result(path)
     character(len=*), intent(in) :: build_prefix
@@ -1007,23 +1319,29 @@ function get_output_dir(build_prefix, args) result(path)
     path = build_prefix//"_"//build_hash
 end function get_output_dir
 
-
+!> Returns pointers to all library targets
 subroutine filter_library_targets(targets, list)
     type(build_target_ptr), intent(in) :: targets(:)
-    type(string_t), allocatable, intent(out) :: list(:)
+    type(build_target_ptr), allocatable, intent(out) :: list(:)
 
     integer :: i, n
+    
+    n = 0
+    do i = 1, size(targets)
+        if (any(targets(i)%ptr%target_type == [FPM_TARGET_ARCHIVE,FPM_TARGET_SHARED])) then
+            n = n + 1
+        end if
+    end do    
+    
+    allocate(list(n))
 
     n = 0
-    call resize(list)
     do i = 1, size(targets)
-        if (targets(i)%ptr%target_type == FPM_TARGET_ARCHIVE) then
-            if (n >= size(list)) call resize(list)
+        if (any(targets(i)%ptr%target_type == [FPM_TARGET_ARCHIVE,FPM_TARGET_SHARED])) then
             n = n + 1
-            list(n)%s = targets(i)%ptr%output_file
+            list(n)%ptr => targets(i)%ptr
         end if
     end do
-    call resize(list, n)
 end subroutine filter_library_targets
 
 subroutine filter_executable_targets(targets, scope, list)
@@ -1104,5 +1422,52 @@ function get_feature_flags(compiler, features) result(flags)
         flags = flags // compiler%get_feature_flag(features%source_form//"-form")
     end if
 end function get_feature_flags
+
+!> Helper function: update output directory of a target
+subroutine set_output_dir(self, output_dir)
+    class(build_target_t), intent(inout) :: self
+    character(*), optional, intent(in) :: output_dir
+
+    character(:), allocatable :: outdir
+
+    ! Normalize: if output_dir is empty, use no path
+    outdir = ""
+    if (present(output_dir)) outdir = trim(output_dir)
+        
+    self%output_dir = outdir
+    self%output_file = join_path(outdir, self%output_name)
+    self%output_log_file = self%output_file // ".log"
+
+end subroutine set_output_dir
+
+!> Build a lookup table mapping each package dependency to its corresponding
+!> shared or archive build target in the targets list.
+!>
+!> This mapping is essential when model%deps%dep(i) indices do not match
+!> the pruned or reordered targets(:) array.
+subroutine library_targets_to_deps(model, targets, target_ID)
+    class(fpm_model_t), intent(in)           :: model
+    type(build_target_ptr), intent(in)       :: targets(:)
+
+    !> For each package (by dependency index), gives the index of the corresponding target
+    integer, allocatable, intent(out)        :: target_ID(:)
+
+    integer :: it, ip, n
+
+    n = size(model%deps%dep)
+    allocate(target_ID(n), source=0)
+
+    do it = 1, size(targets)
+        associate(target => targets(it)%ptr)
+            ! Only shared libraries and archives are mapped
+            if (all(target%target_type /= [FPM_TARGET_ARCHIVE, FPM_TARGET_SHARED])) cycle
+
+            ! Get the dependency graph index of this package
+            ip = model%deps%find(target%package_name)
+            if (ip > 0) target_ID(ip) = it
+        end associate
+    end do
+
+end subroutine library_targets_to_deps
 
 end module fpm_targets

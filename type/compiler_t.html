@@ -92,7 +92,7 @@
 
             <li class="list-inline-item" id="statements"><i class="fa fa-list-ol"></i>
               <a data-bs-toggle="tooltip" data-bs-placement="bottom" data-bs-html="true"
-                 title="<p> 5.1% of total for derived types.</p>Including implementation: 474 statements,  8.5% of total for derived types.">30 statements</a>
+                 title="<p> 5.4% of total for derived types.</p>Including implementation: 535 statements,  9.1% of total for derived types.">32 statements</a>
             </li>
 
             <li class="list-inline-item" id="source-file">
@@ -138,8 +138,8 @@
             <a class="list-group-item" href="../type/compiler_t.html#variable-cxx">cxx</a>
             <a class="list-group-item" href="../type/compiler_t.html#variable-echo~5">echo</a>
             <a class="list-group-item" href="../type/compiler_t.html#variable-fc">fc</a>
-            <a class="list-group-item" href="../type/compiler_t.html#variable-id">id</a>
-            <a class="list-group-item" href="../type/compiler_t.html#variable-verbose~15">verbose</a>
+            <a class="list-group-item" href="../type/compiler_t.html#variable-id~8">id</a>
+            <a class="list-group-item" href="../type/compiler_t.html#variable-verbose~17">verbose</a>
         </div>
       </div>
     </div>
@@ -171,10 +171,11 @@
             <a class="list-group-item" href="../type/compiler_t.html#boundprocedure-compile_c">compile_c</a>
             <a class="list-group-item" href="../type/compiler_t.html#boundprocedure-compile_cpp">compile_cpp</a>
             <a class="list-group-item" href="../type/compiler_t.html#boundprocedure-compile_fortran">compile_fortran</a>
-            <a class="list-group-item" href="../type/compiler_t.html#boundprocedure-dump~6">dump</a>
-            <a class="list-group-item" href="../type/compiler_t.html#boundprocedure-dump_to_toml~2">dump_to_toml</a>
+            <a class="list-group-item" href="../type/compiler_t.html#boundprocedure-dump~25">dump</a>
+            <a class="list-group-item" href="../type/compiler_t.html#boundprocedure-dump_to_toml~20">dump_to_toml</a>
             <a class="list-group-item" href="../type/compiler_t.html#boundprocedure-enumerate_libraries">enumerate_libraries</a>
             <a class="list-group-item" href="../type/compiler_t.html#boundprocedure-get_default_flags">get_default_flags</a>
+            <a class="list-group-item" href="../type/compiler_t.html#boundprocedure-get_export_flags">get_export_flags</a>
             <a class="list-group-item" href="../type/compiler_t.html#boundprocedure-get_feature_flag">get_feature_flag</a>
             <a class="list-group-item" href="../type/compiler_t.html#boundprocedure-get_include_flag">get_include_flag</a>
             <a class="list-group-item" href="../type/compiler_t.html#boundprocedure-get_main_flags">get_main_flags</a>
@@ -182,12 +183,13 @@
             <a class="list-group-item" href="../type/compiler_t.html#boundprocedure-is_gnu">is_gnu</a>
             <a class="list-group-item" href="../type/compiler_t.html#boundprocedure-is_intel">is_intel</a>
             <a class="list-group-item" href="../type/compiler_t.html#boundprocedure-is_unknown">is_unknown</a>
-            <a class="list-group-item" href="../type/compiler_t.html#boundprocedure-link">link</a>
-            <a class="list-group-item" href="../type/compiler_t.html#boundprocedure-load~4">load</a>
-            <a class="list-group-item" href="../type/compiler_t.html#boundprocedure-load_from_toml~2">load_from_toml</a>
-            <a class="list-group-item" href="../type/compiler_t.html#boundprocedure-name~4">name</a>
-            <a class="list-group-item" href="../type/compiler_t.html#boundprocedure-operator%28%3D%3D%29~5">operator(==)</a>
-            <a class="list-group-item" href="../type/compiler_t.html#boundprocedure-serializable_is_same~2">serializable_is_same</a>
+            <a class="list-group-item" href="../type/compiler_t.html#boundprocedure-link~3">link</a>
+            <a class="list-group-item" href="../type/compiler_t.html#boundprocedure-link_shared">link_shared</a>
+            <a class="list-group-item" href="../type/compiler_t.html#boundprocedure-load~23">load</a>
+            <a class="list-group-item" href="../type/compiler_t.html#boundprocedure-load_from_toml~20">load_from_toml</a>
+            <a class="list-group-item" href="../type/compiler_t.html#boundprocedure-name~36">name</a>
+            <a class="list-group-item" href="../type/compiler_t.html#boundprocedure-operator%28%3D%3D%29~24">operator(==)</a>
+            <a class="list-group-item" href="../type/compiler_t.html#boundprocedure-serializable_is_same~20">serializable_is_same</a>
             <a class="list-group-item" href="../type/compiler_t.html#boundprocedure-test_serialization">test_serialization</a>
             <a class="list-group-item" href="../type/compiler_t.html#boundprocedure-with_qp">with_qp</a>
             <a class="list-group-item" href="../type/compiler_t.html#boundprocedure-with_xdp">with_xdp</a>
@@ -297,7 +299,7 @@
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-id"></span>
+              <span class="anchor" id="variable-id~8"></span>
               integer(kind=compiler_enum),
             </td>
               <td>public</td>
@@ -314,7 +316,7 @@
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-verbose~15"></span>
+              <span class="anchor" id="variable-verbose~17"></span>
               logical,
             </td>
               <td>public</td>
@@ -1035,10 +1037,10 @@ Run and retrieve exit code</p><a href="../proc/check_fortran_source_runs.html" c
           <div class="row">
               <div class="card mt-3">
     <div class="card-header codesum">
-      <span class="anchor" id="boundprocedure-dump~6"></span>
+      <span class="anchor" id="boundprocedure-dump~25"></span>
       <h3>
           generic, public ::
-  <strong>dump</strong> => <a href='/home/runner/work/fpm/fpm/fpm-doc/type/srcfile_t.html#boundprocedure-dump_to_toml~9'>dump_to_toml</a>, dump_to_file, dump_to_unit
+  <strong>dump</strong> => <a href='/home/runner/work/fpm/fpm/fpm-doc/type/srcfile_t.html#boundprocedure-dump_to_toml~15'>dump_to_toml</a>, dump_to_file, dump_to_unit
         
       </h3>
     </div>
@@ -1284,7 +1286,7 @@ Run and retrieve exit code</p><a href="../proc/check_fortran_source_runs.html" c
           <div class="row">
               <div class="card mt-3">
     <div class="card-header codesum">
-      <span class="anchor" id="boundprocedure-dump_to_toml~2"></span>
+      <span class="anchor" id="boundprocedure-dump_to_toml~20"></span>
       <h3>
           procedure, public ::
   <strong>dump_to_toml</strong> => <a href='/home/runner/work/fpm/fpm/fpm-doc/proc/compiler_dump.html'>compiler_dump</a>
@@ -1520,6 +1522,99 @@ Run and retrieve exit code</p><a href="../proc/check_fortran_source_runs.html" c
             <td><strong>release</strong></td>
             <td>
 
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+    <h4>
+    Return Value
+    <small>character(len=:), allocatable</small>
+    </h4>
+    
+
+          </li>
+      </ul>
+  </div>
+
+          </div>
+          <div class="row">
+              <div class="card mt-3">
+    <div class="card-header codesum">
+      <span class="anchor" id="boundprocedure-get_export_flags"></span>
+      <h3>
+          procedure, public ::
+  <strong>get_export_flags</strong>
+        
+      </h3>
+    </div>
+        <div class="card-body">
+          
+          <p>Get library export flags</p>
+        </div>
+      <ul class="list-group">
+          <li class="list-group-item">
+                    <h3>
+    public  function <a href='../proc/get_export_flags.html'>get_export_flags</a>(self, target_dir, target_name) result(export_flags)  
+</h3>
+    
+
+  <p>Generate library export flags for a shared library build</p>
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" ></span>
+              class(<a href='compiler_t.html'>compiler_t</a>),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>self</strong></td>
+            <td>
+<p>Instance of the compiler</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" ></span>
+              character(len=*),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>target_dir</strong></td>
+            <td>
+<p>Path and package name</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" ></span>
+              character(len=*),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>target_name</strong></td>
+            <td>
+<p>Path and package name</p>
             </td>
         </tr>
     </tbody>
@@ -2050,7 +2145,7 @@ Run and retrieve exit code</p><a href="../proc/check_fortran_source_runs.html" c
           <div class="row">
               <div class="card mt-3">
     <div class="card-header codesum">
-      <span class="anchor" id="boundprocedure-link"></span>
+      <span class="anchor" id="boundprocedure-link~3"></span>
       <h3>
           procedure, public ::
   <strong>link</strong> => <a href='/home/runner/work/fpm/fpm/fpm-doc/proc/link_executable.html'>link_executable</a>
@@ -2183,10 +2278,143 @@ Run and retrieve exit code</p><a href="../proc/check_fortran_source_runs.html" c
           <div class="row">
               <div class="card mt-3">
     <div class="card-header codesum">
-      <span class="anchor" id="boundprocedure-load~4"></span>
+      <span class="anchor" id="boundprocedure-link_shared"></span>
+      <h3>
+          procedure, public ::
+  <strong>link_shared</strong>
+        
+      </h3>
+    </div>
+        <div class="card-body">
+          
+          <p>Link a shared library</p>
+        </div>
+      <ul class="list-group">
+          <li class="list-group-item">
+                    <h3>
+    public  subroutine <a href='../proc/link_shared.html'>link_shared</a>(self, output, args, log_file, stat, dry_run)  
+</h3>
+    
+
+  <p>Link a shared library</p>
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" ></span>
+              class(<a href='compiler_t.html'>compiler_t</a>),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>self</strong></td>
+            <td>
+<p>Instance of the compiler object</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" ></span>
+              character(len=*),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>output</strong></td>
+            <td>
+<p>Output file of shared library object</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" ></span>
+              character(len=*),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>args</strong></td>
+            <td>
+<p>Arguments for the compiler</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" ></span>
+              character(len=*),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>log_file</strong></td>
+            <td>
+<p>Compiler output log file</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" ></span>
+              integer,
+            </td>
+<td>intent(out)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>stat</strong></td>
+            <td>
+<p>Status flag</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" ></span>
+              logical,
+            </td>
+<td>intent(in),</td>
+              <td>optional</td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>dry_run</strong></td>
+            <td>
+<p>Optional mocking</p>
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+
+          </li>
+      </ul>
+  </div>
+
+          </div>
+          <div class="row">
+              <div class="card mt-3">
+    <div class="card-header codesum">
+      <span class="anchor" id="boundprocedure-load~23"></span>
       <h3>
           generic, public ::
-  <strong>load</strong> => <a href='/home/runner/work/fpm/fpm/fpm-doc/type/srcfile_t.html#boundprocedure-load_from_toml~9'>load_from_toml</a>, load_from_file, load_from_unit
+  <strong>load</strong> => <a href='/home/runner/work/fpm/fpm/fpm-doc/type/srcfile_t.html#boundprocedure-load_from_toml~15'>load_from_toml</a>, load_from_file, load_from_unit
         
       </h3>
     </div>
@@ -2436,7 +2664,7 @@ Read object from TOML table</p>
           <div class="row">
               <div class="card mt-3">
     <div class="card-header codesum">
-      <span class="anchor" id="boundprocedure-load_from_toml~2"></span>
+      <span class="anchor" id="boundprocedure-load_from_toml~20"></span>
       <h3>
           procedure, public ::
   <strong>load_from_toml</strong> => <a href='/home/runner/work/fpm/fpm/fpm-doc/proc/compiler_load.html'>compiler_load</a>
@@ -2520,7 +2748,7 @@ Read object from TOML table</p>
           <div class="row">
               <div class="card mt-3">
     <div class="card-header codesum">
-      <span class="anchor" id="boundprocedure-name~4"></span>
+      <span class="anchor" id="boundprocedure-name~36"></span>
       <h3>
           procedure, public ::
   <strong>name</strong> => <a href='/home/runner/work/fpm/fpm/fpm-doc/proc/compiler_name.html'>compiler_name</a>
@@ -2583,10 +2811,10 @@ Read object from TOML table</p>
           <div class="row">
               <div class="card mt-3">
     <div class="card-header codesum">
-      <span class="anchor" id="boundprocedure-operator%28%3D%3D%29~5"></span>
+      <span class="anchor" id="boundprocedure-operator%28%3D%3D%29~24"></span>
       <h3>
           generic, public ::
-  <strong>operator(==)</strong> => <a href='/home/runner/work/fpm/fpm/fpm-doc/type/srcfile_t.html#boundprocedure-serializable_is_same~9'>serializable_is_same</a>
+  <strong>operator(==)</strong> => <a href='/home/runner/work/fpm/fpm/fpm-doc/type/srcfile_t.html#boundprocedure-serializable_is_same~15'>serializable_is_same</a>
         
       </h3>
     </div>
@@ -2657,7 +2885,7 @@ All checks passed!</p>
           <div class="row">
               <div class="card mt-3">
     <div class="card-header codesum">
-      <span class="anchor" id="boundprocedure-serializable_is_same~2"></span>
+      <span class="anchor" id="boundprocedure-serializable_is_same~20"></span>
       <h3>
           procedure, public ::
   <strong>serializable_is_same</strong> => <a href='/home/runner/work/fpm/fpm/fpm-doc/proc/compiler_is_same.html'>compiler_is_same</a>
@@ -2969,12 +3197,16 @@ Check same</p>
 <span class="w">    </span><span class="k">procedure</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">get_feature_flag</span>
 <span class="w">    </span><span class="c">!&gt; Get flags for the main linking command</span>
 <span class="w">    </span><span class="k">procedure</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">get_main_flags</span>
+<span class="w">    </span><span class="c">!&gt; Get library export flags</span>
+<span class="w">    </span><span class="k">procedure</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">get_export_flags</span><span class="w">    </span>
 <span class="w">    </span><span class="c">!&gt; Compile a Fortran object</span>
 <span class="w">    </span><span class="k">procedure</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">compile_fortran</span>
 <span class="w">    </span><span class="c">!&gt; Compile a C object</span>
 <span class="w">    </span><span class="k">procedure</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">compile_c</span>
 <span class="w">    </span><span class="c">!&gt; Compile a CPP object</span>
 <span class="w">    </span><span class="k">procedure</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">compile_cpp</span>
+<span class="w">    </span><span class="c">!&gt; Link a shared library</span>
+<span class="w">    </span><span class="k">procedure</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">link_shared</span>
 <span class="w">    </span><span class="c">!&gt; Link executable</span>
 <span class="w">    </span><span class="k">procedure</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="nb">link</span><span class="w"> </span><span class="o">=&gt;</span><span class="w"> </span><span class="n">link_executable</span>
 <span class="w">    </span><span class="c">!&gt; Check whether compiler is recognized</span>
@@ -2985,6 +3217,7 @@ Check same</p>
 <span class="w">    </span><span class="k">procedure</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">is_gnu</span>
 <span class="w">    </span><span class="c">!&gt; Enumerate libraries, based on compiler and platform</span>
 <span class="w">    </span><span class="k">procedure</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">enumerate_libraries</span>
+
 
 <span class="w">    </span><span class="c">!&gt; Serialization interface</span>
 <span class="w">    </span><span class="k">procedure</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">serializable_is_same</span><span class="w"> </span><span class="o">=&gt;</span><span class="w"> </span><span class="n">compiler_is_same</span>
@@ -3021,7 +3254,7 @@ Check same</p>
             <p class="text-end">
               Documentation generated by
               <a href="https://github.com/Fortran-FOSS-Programmers/ford">FORD</a>
- on 2025-05-16 20:21 +0000             </p>
+ on 2025-05-16 20:23 +0000             </p>
           </div>
         </div>
         <br>

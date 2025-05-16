@@ -92,7 +92,7 @@
 
             <li class="list-inline-item" id="statements"><i class="fa fa-list-ol"></i>
               <a data-bs-toggle="tooltip" data-bs-placement="bottom" data-bs-html="true"
-                 title=" 1.4% of total for source files.">202 statements</a>
+                 title=" 1.3% of total for source files.">204 statements</a>
             </li>
 
             <li class="list-inline-item" id="source-file">
@@ -207,7 +207,7 @@
 <a id="ln-34" name="ln-34" href="#ln-34"></a><span class="k">use </span><span class="n">fpm_strings</span><span class="p">,</span><span class="w"> </span><span class="k">only</span><span class="p">:</span><span class="w"> </span><span class="n">string_t</span><span class="p">,</span><span class="w"> </span><span class="n">operator</span><span class="p">(.</span><span class="n">in</span><span class="p">.)</span>
 <a id="ln-35" name="ln-35" href="#ln-35"></a><span class="k">use </span><span class="n">fpm_targets</span><span class="p">,</span><span class="w"> </span><span class="k">only</span><span class="p">:</span><span class="w"> </span><span class="n">build_target_t</span><span class="p">,</span><span class="w"> </span><span class="n">build_target_ptr</span><span class="p">,</span><span class="w"> </span><span class="n">FPM_TARGET_OBJECT</span><span class="p">,</span><span class="w"> </span><span class="p">&amp;</span>
 <a id="ln-36" name="ln-36" href="#ln-36"></a><span class="w">                       </span><span class="n">FPM_TARGET_C_OBJECT</span><span class="p">,</span><span class="w"> </span><span class="n">FPM_TARGET_ARCHIVE</span><span class="p">,</span><span class="w"> </span><span class="n">FPM_TARGET_EXECUTABLE</span><span class="p">,</span><span class="w"> </span><span class="p">&amp;</span>
-<a id="ln-37" name="ln-37" href="#ln-37"></a><span class="w">                       </span><span class="n">FPM_TARGET_CPP_OBJECT</span>
+<a id="ln-37" name="ln-37" href="#ln-37"></a><span class="w">                       </span><span class="n">FPM_TARGET_CPP_OBJECT</span><span class="p">,</span><span class="w"> </span><span class="n">FPM_TARGET_SHARED</span>
 <a id="ln-38" name="ln-38" href="#ln-38"></a><span class="k">use </span><span class="n">fpm_backend_output</span>
 <a id="ln-39" name="ln-39" href="#ln-39"></a><span class="k">use </span><span class="n">fpm_compile_commands</span><span class="p">,</span><span class="w"> </span><span class="k">only</span><span class="p">:</span><span class="w"> </span><span class="n">compile_command_table_t</span>
 <a id="ln-40" name="ln-40" href="#ln-40"></a><span class="k">implicit none</span>
@@ -527,45 +527,50 @@
 <a id="ln-354" name="ln-354" href="#ln-354"></a><span class="w">    </span><span class="k">case</span><span class="w"> </span><span class="p">(</span><span class="n">FPM_TARGET_ARCHIVE</span><span class="p">)</span>
 <a id="ln-355" name="ln-355" href="#ln-355"></a><span class="w">        </span><span class="k">call </span><span class="n">model</span><span class="p">%</span><span class="n">archiver</span><span class="p">%</span><span class="n">make_archive</span><span class="p">(</span><span class="k">target</span><span class="p">%</span><span class="n">output_file</span><span class="p">,</span><span class="w"> </span><span class="k">target</span><span class="p">%</span><span class="n">link_objects</span><span class="p">,</span><span class="w"> </span><span class="p">&amp;</span>
 <a id="ln-356" name="ln-356" href="#ln-356"></a><span class="w">            </span><span class="p">&amp;</span><span class="w"> </span><span class="k">target</span><span class="p">%</span><span class="n">output_log_file</span><span class="p">,</span><span class="w"> </span><span class="nb">stat</span><span class="p">,</span><span class="w"> </span><span class="n">dry_run</span><span class="p">)</span>
-<a id="ln-357" name="ln-357" href="#ln-357"></a>
-<a id="ln-358" name="ln-358" href="#ln-358"></a><span class="w">    </span><span class="k">end select</span>
+<a id="ln-357" name="ln-357" href="#ln-357"></a><span class="w">            </span>
+<a id="ln-358" name="ln-358" href="#ln-358"></a><span class="w">    </span><span class="k">case</span><span class="w"> </span><span class="p">(</span><span class="n">FPM_TARGET_SHARED</span><span class="p">)</span>
 <a id="ln-359" name="ln-359" href="#ln-359"></a>
-<a id="ln-360" name="ln-360" href="#ln-360"></a><span class="k">    if</span><span class="w"> </span><span class="p">(</span><span class="nb">stat</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="mi">0</span><span class="w"> </span><span class="p">.</span><span class="nb">and</span><span class="p">.</span><span class="w"> </span><span class="nb">allocated</span><span class="p">(</span><span class="k">target</span><span class="p">%</span><span class="n">source</span><span class="p">)</span><span class="w"> </span><span class="p">.</span><span class="nb">and</span><span class="p">.</span><span class="w"> </span><span class="p">.</span><span class="nb">not</span><span class="p">.</span><span class="n">dry_run</span><span class="p">)</span><span class="w"> </span><span class="k">then</span>
-<a id="ln-361" name="ln-361" href="#ln-361"></a><span class="k">        open</span><span class="p">(</span><span class="n">newunit</span><span class="o">=</span><span class="n">fh</span><span class="p">,</span><span class="k">file</span><span class="o">=</span><span class="k">target</span><span class="p">%</span><span class="n">output_file</span><span class="o">//</span><span class="s1">&#39;.digest&#39;</span><span class="p">,</span><span class="n">status</span><span class="o">=</span><span class="s1">&#39;unknown&#39;</span><span class="p">)</span>
-<a id="ln-362" name="ln-362" href="#ln-362"></a><span class="w">        </span><span class="k">write</span><span class="p">(</span><span class="n">fh</span><span class="p">,</span><span class="o">*</span><span class="p">)</span><span class="w"> </span><span class="k">target</span><span class="p">%</span><span class="n">source</span><span class="p">%</span><span class="n">digest</span>
-<a id="ln-363" name="ln-363" href="#ln-363"></a><span class="w">        </span><span class="k">close</span><span class="p">(</span><span class="n">fh</span><span class="p">)</span>
-<a id="ln-364" name="ln-364" href="#ln-364"></a><span class="w">    </span><span class="k">end if</span>
-<a id="ln-365" name="ln-365" href="#ln-365"></a>
-<a id="ln-366" name="ln-366" href="#ln-366"></a><span class="k">end subroutine </span><span class="n">build_target</span>
-<a id="ln-367" name="ln-367" href="#ln-367"></a>
-<a id="ln-368" name="ln-368" href="#ln-368"></a>
-<a id="ln-369" name="ln-369" href="#ln-369"></a><span class="c">!&gt; Read and print the build log for target</span>
-<a id="ln-370" name="ln-370" href="#ln-370"></a><span class="c">!&gt;</span>
-<a id="ln-371" name="ln-371" href="#ln-371"></a><span class="k">subroutine </span><span class="n">print_build_log</span><span class="p">(</span><span class="k">target</span><span class="p">)</span>
-<a id="ln-372" name="ln-372" href="#ln-372"></a><span class="w">    </span><span class="k">type</span><span class="p">(</span><span class="n">build_target_t</span><span class="p">),</span><span class="w"> </span><span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">),</span><span class="w"> </span><span class="k">target</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="k">target</span>
+<a id="ln-360" name="ln-360" href="#ln-360"></a><span class="w">        </span><span class="k">call </span><span class="n">model</span><span class="p">%</span><span class="n">compiler</span><span class="p">%</span><span class="n">link_shared</span><span class="p">(</span><span class="k">target</span><span class="p">%</span><span class="n">output_file</span><span class="p">,</span><span class="w"> </span><span class="k">target</span><span class="p">%</span><span class="n">link_flags</span><span class="p">,</span><span class="w"> </span><span class="p">&amp;</span>
+<a id="ln-361" name="ln-361" href="#ln-361"></a><span class="w">            </span><span class="p">&amp;</span><span class="w"> </span><span class="k">target</span><span class="p">%</span><span class="n">output_log_file</span><span class="p">,</span><span class="w"> </span><span class="nb">stat</span><span class="p">,</span><span class="w"> </span><span class="n">dry_run</span><span class="p">)</span>
+<a id="ln-362" name="ln-362" href="#ln-362"></a>
+<a id="ln-363" name="ln-363" href="#ln-363"></a><span class="w">    </span><span class="k">end select</span>
+<a id="ln-364" name="ln-364" href="#ln-364"></a>
+<a id="ln-365" name="ln-365" href="#ln-365"></a><span class="k">    if</span><span class="w"> </span><span class="p">(</span><span class="nb">stat</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="mi">0</span><span class="w"> </span><span class="p">.</span><span class="nb">and</span><span class="p">.</span><span class="w"> </span><span class="nb">allocated</span><span class="p">(</span><span class="k">target</span><span class="p">%</span><span class="n">source</span><span class="p">)</span><span class="w"> </span><span class="p">.</span><span class="nb">and</span><span class="p">.</span><span class="w"> </span><span class="p">.</span><span class="nb">not</span><span class="p">.</span><span class="n">dry_run</span><span class="p">)</span><span class="w"> </span><span class="k">then</span>
+<a id="ln-366" name="ln-366" href="#ln-366"></a><span class="k">        open</span><span class="p">(</span><span class="n">newunit</span><span class="o">=</span><span class="n">fh</span><span class="p">,</span><span class="k">file</span><span class="o">=</span><span class="k">target</span><span class="p">%</span><span class="n">output_file</span><span class="o">//</span><span class="s1">&#39;.digest&#39;</span><span class="p">,</span><span class="n">status</span><span class="o">=</span><span class="s1">&#39;unknown&#39;</span><span class="p">)</span>
+<a id="ln-367" name="ln-367" href="#ln-367"></a><span class="w">        </span><span class="k">write</span><span class="p">(</span><span class="n">fh</span><span class="p">,</span><span class="o">*</span><span class="p">)</span><span class="w"> </span><span class="k">target</span><span class="p">%</span><span class="n">source</span><span class="p">%</span><span class="n">digest</span>
+<a id="ln-368" name="ln-368" href="#ln-368"></a><span class="w">        </span><span class="k">close</span><span class="p">(</span><span class="n">fh</span><span class="p">)</span>
+<a id="ln-369" name="ln-369" href="#ln-369"></a><span class="w">    </span><span class="k">end if</span>
+<a id="ln-370" name="ln-370" href="#ln-370"></a>
+<a id="ln-371" name="ln-371" href="#ln-371"></a><span class="k">end subroutine </span><span class="n">build_target</span>
+<a id="ln-372" name="ln-372" href="#ln-372"></a>
 <a id="ln-373" name="ln-373" href="#ln-373"></a>
-<a id="ln-374" name="ln-374" href="#ln-374"></a><span class="k">    </span><span class="kt">integer</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">fh</span><span class="p">,</span><span class="w"> </span><span class="n">ios</span>
-<a id="ln-375" name="ln-375" href="#ln-375"></a><span class="w">    </span><span class="kt">character</span><span class="p">(:),</span><span class="w"> </span><span class="k">allocatable</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">line</span>
-<a id="ln-376" name="ln-376" href="#ln-376"></a>
-<a id="ln-377" name="ln-377" href="#ln-377"></a><span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">exists</span><span class="p">(</span><span class="k">target</span><span class="p">%</span><span class="n">output_log_file</span><span class="p">))</span><span class="w"> </span><span class="k">then</span>
+<a id="ln-374" name="ln-374" href="#ln-374"></a><span class="c">!&gt; Read and print the build log for target</span>
+<a id="ln-375" name="ln-375" href="#ln-375"></a><span class="c">!&gt;</span>
+<a id="ln-376" name="ln-376" href="#ln-376"></a><span class="k">subroutine </span><span class="n">print_build_log</span><span class="p">(</span><span class="k">target</span><span class="p">)</span>
+<a id="ln-377" name="ln-377" href="#ln-377"></a><span class="w">    </span><span class="k">type</span><span class="p">(</span><span class="n">build_target_t</span><span class="p">),</span><span class="w"> </span><span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">),</span><span class="w"> </span><span class="k">target</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="k">target</span>
 <a id="ln-378" name="ln-378" href="#ln-378"></a>
-<a id="ln-379" name="ln-379" href="#ln-379"></a><span class="k">        open</span><span class="p">(</span><span class="n">newunit</span><span class="o">=</span><span class="n">fh</span><span class="p">,</span><span class="k">file</span><span class="o">=</span><span class="k">target</span><span class="p">%</span><span class="n">output_log_file</span><span class="p">,</span><span class="n">status</span><span class="o">=</span><span class="s1">&#39;old&#39;</span><span class="p">)</span>
-<a id="ln-380" name="ln-380" href="#ln-380"></a><span class="w">        </span><span class="k">do</span>
-<a id="ln-381" name="ln-381" href="#ln-381"></a><span class="k">            call </span><span class="n">getline</span><span class="p">(</span><span class="n">fh</span><span class="p">,</span><span class="w"> </span><span class="n">line</span><span class="p">,</span><span class="w"> </span><span class="n">ios</span><span class="p">)</span>
-<a id="ln-382" name="ln-382" href="#ln-382"></a><span class="w">            </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">ios</span><span class="w"> </span><span class="o">/=</span><span class="w"> </span><span class="mi">0</span><span class="p">)</span><span class="w"> </span><span class="k">exit</span>
-<a id="ln-383" name="ln-383" href="#ln-383"></a><span class="k">            write</span><span class="p">(</span><span class="o">*</span><span class="p">,</span><span class="s1">&#39;(A)&#39;</span><span class="p">)</span><span class="w"> </span><span class="nb">trim</span><span class="p">(</span><span class="n">line</span><span class="p">)</span>
-<a id="ln-384" name="ln-384" href="#ln-384"></a><span class="w">        </span><span class="k">end do</span>
-<a id="ln-385" name="ln-385" href="#ln-385"></a><span class="k">        close</span><span class="p">(</span><span class="n">fh</span><span class="p">)</span>
-<a id="ln-386" name="ln-386" href="#ln-386"></a>
-<a id="ln-387" name="ln-387" href="#ln-387"></a><span class="w">    </span><span class="k">else</span>
-<a id="ln-388" name="ln-388" href="#ln-388"></a>
-<a id="ln-389" name="ln-389" href="#ln-389"></a><span class="k">        write</span><span class="p">(</span><span class="n">stderr</span><span class="p">,</span><span class="s1">&#39;(*(g0:,1x))&#39;</span><span class="p">)</span><span class="w"> </span><span class="s1">&#39;&lt;ERROR&gt; Unable to find build log &quot;&#39;</span><span class="p">,</span><span class="n">basename</span><span class="p">(</span><span class="k">target</span><span class="p">%</span><span class="n">output_log_file</span><span class="p">),</span><span class="s1">&#39;&quot;&#39;</span>
-<a id="ln-390" name="ln-390" href="#ln-390"></a>
-<a id="ln-391" name="ln-391" href="#ln-391"></a><span class="w">    </span><span class="k">end if</span>
-<a id="ln-392" name="ln-392" href="#ln-392"></a>
-<a id="ln-393" name="ln-393" href="#ln-393"></a><span class="k">end subroutine </span><span class="n">print_build_log</span>
-<a id="ln-394" name="ln-394" href="#ln-394"></a>
-<a id="ln-395" name="ln-395" href="#ln-395"></a><span class="k">end module </span><span class="n">fpm_backend</span>
+<a id="ln-379" name="ln-379" href="#ln-379"></a><span class="k">    </span><span class="kt">integer</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">fh</span><span class="p">,</span><span class="w"> </span><span class="n">ios</span>
+<a id="ln-380" name="ln-380" href="#ln-380"></a><span class="w">    </span><span class="kt">character</span><span class="p">(:),</span><span class="w"> </span><span class="k">allocatable</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">line</span>
+<a id="ln-381" name="ln-381" href="#ln-381"></a>
+<a id="ln-382" name="ln-382" href="#ln-382"></a><span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">exists</span><span class="p">(</span><span class="k">target</span><span class="p">%</span><span class="n">output_log_file</span><span class="p">))</span><span class="w"> </span><span class="k">then</span>
+<a id="ln-383" name="ln-383" href="#ln-383"></a>
+<a id="ln-384" name="ln-384" href="#ln-384"></a><span class="k">        open</span><span class="p">(</span><span class="n">newunit</span><span class="o">=</span><span class="n">fh</span><span class="p">,</span><span class="k">file</span><span class="o">=</span><span class="k">target</span><span class="p">%</span><span class="n">output_log_file</span><span class="p">,</span><span class="n">status</span><span class="o">=</span><span class="s1">&#39;old&#39;</span><span class="p">)</span>
+<a id="ln-385" name="ln-385" href="#ln-385"></a><span class="w">        </span><span class="k">do</span>
+<a id="ln-386" name="ln-386" href="#ln-386"></a><span class="k">            call </span><span class="n">getline</span><span class="p">(</span><span class="n">fh</span><span class="p">,</span><span class="w"> </span><span class="n">line</span><span class="p">,</span><span class="w"> </span><span class="n">ios</span><span class="p">)</span>
+<a id="ln-387" name="ln-387" href="#ln-387"></a><span class="w">            </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">ios</span><span class="w"> </span><span class="o">/=</span><span class="w"> </span><span class="mi">0</span><span class="p">)</span><span class="w"> </span><span class="k">exit</span>
+<a id="ln-388" name="ln-388" href="#ln-388"></a><span class="k">            write</span><span class="p">(</span><span class="o">*</span><span class="p">,</span><span class="s1">&#39;(A)&#39;</span><span class="p">)</span><span class="w"> </span><span class="nb">trim</span><span class="p">(</span><span class="n">line</span><span class="p">)</span>
+<a id="ln-389" name="ln-389" href="#ln-389"></a><span class="w">        </span><span class="k">end do</span>
+<a id="ln-390" name="ln-390" href="#ln-390"></a><span class="k">        close</span><span class="p">(</span><span class="n">fh</span><span class="p">)</span>
+<a id="ln-391" name="ln-391" href="#ln-391"></a>
+<a id="ln-392" name="ln-392" href="#ln-392"></a><span class="w">    </span><span class="k">else</span>
+<a id="ln-393" name="ln-393" href="#ln-393"></a>
+<a id="ln-394" name="ln-394" href="#ln-394"></a><span class="k">        write</span><span class="p">(</span><span class="n">stderr</span><span class="p">,</span><span class="s1">&#39;(*(g0:,1x))&#39;</span><span class="p">)</span><span class="w"> </span><span class="s1">&#39;&lt;ERROR&gt; Unable to find build log &quot;&#39;</span><span class="p">,</span><span class="n">basename</span><span class="p">(</span><span class="k">target</span><span class="p">%</span><span class="n">output_log_file</span><span class="p">),</span><span class="s1">&#39;&quot;&#39;</span>
+<a id="ln-395" name="ln-395" href="#ln-395"></a>
+<a id="ln-396" name="ln-396" href="#ln-396"></a><span class="w">    </span><span class="k">end if</span>
+<a id="ln-397" name="ln-397" href="#ln-397"></a>
+<a id="ln-398" name="ln-398" href="#ln-398"></a><span class="k">end subroutine </span><span class="n">print_build_log</span>
+<a id="ln-399" name="ln-399" href="#ln-399"></a>
+<a id="ln-400" name="ln-400" href="#ln-400"></a><span class="k">end module </span><span class="n">fpm_backend</span>
 </pre></div>
 
       </section>
@@ -587,7 +592,7 @@
             <p class="text-end">
               Documentation generated by
               <a href="https://github.com/Fortran-FOSS-Programmers/ford">FORD</a>
- on 2025-05-16 20:21 +0000             </p>
+ on 2025-05-16 20:23 +0000             </p>
           </div>
         </div>
         <br>

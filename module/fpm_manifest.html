@@ -92,7 +92,7 @@
 
             <li class="list-inline-item" id="statements"><i class="fa fa-list-ol"></i>
               <a data-bs-toggle="tooltip" data-bs-placement="bottom" data-bs-html="true"
-                 title=" 0.7% of total for modules and submodules.">96 statements</a>
+                 title=" 1.0% of total for modules and submodules.">157 statements</a>
             </li>
 
             <li class="list-inline-item" id="source-file">
@@ -149,6 +149,7 @@
             <a class="list-group-item" href="../module/fpm_manifest.html#proc-default_library">default_library</a>
             <a class="list-group-item" href="../module/fpm_manifest.html#proc-default_test">default_test</a>
             <a class="list-group-item" href="../module/fpm_manifest.html#proc-get_package_data">get_package_data</a>
+            <a class="list-group-item" href="../module/fpm_manifest.html#proc-get_package_dependencies">get_package_dependencies</a>
         </div>
       </div>
     </div>
@@ -179,19 +180,19 @@ to hide the actual implementation details.</p>
         <ul class="list-group list-group-flush">
             <li class="list-group-item">
               <ul class="list-inline">
-                  <li class="list-inline-item"><a href='fpm_manifest_example.html'>fpm_manifest_example</a></li>
-                  <li class="list-inline-item"><a href='https://toml-f.github.io/toml-f'>tomlf</a></li>
-                  <li class="list-inline-item"><a href='fpm_manifest_test.html'>fpm_manifest_test</a></li>
-                  <li class="list-inline-item"><a href='fpm_manifest_preprocess.html'>fpm_manifest_preprocess</a></li>
-                  <li class="list-inline-item"><a href='fpm_error.html'>fpm_error</a></li>
-                  <li class="list-inline-item"><a href='fpm_manifest_dependency.html'>fpm_manifest_dependency</a></li>
-                  <li class="list-inline-item"><a href='fpm_environment.html'>fpm_environment</a></li>
-                  <li class="list-inline-item"><a href='fpm_manifest_package.html'>fpm_manifest_package</a></li>
-                  <li class="list-inline-item"><a href='fpm_toml.html'>fpm_toml</a></li>
                   <li class="list-inline-item"><a href='fpm_filesystem.html'>fpm_filesystem</a></li>
-                  <li class="list-inline-item"><a href='fpm_strings.html'>fpm_strings</a></li>
+                  <li class="list-inline-item"><a href='fpm_manifest_dependency.html'>fpm_manifest_dependency</a></li>
+                  <li class="list-inline-item"><a href='https://toml-f.github.io/toml-f'>tomlf</a></li>
+                  <li class="list-inline-item"><a href='fpm_toml.html'>fpm_toml</a></li>
+                  <li class="list-inline-item"><a href='fpm_manifest_test.html'>fpm_manifest_test</a></li>
                   <li class="list-inline-item"><a href='fpm_manifest_library.html'>fpm_manifest_library</a></li>
                   <li class="list-inline-item"><a href='fpm_manifest_executable.html'>fpm_manifest_executable</a></li>
+                  <li class="list-inline-item"><a href='fpm_strings.html'>fpm_strings</a></li>
+                  <li class="list-inline-item"><a href='fpm_manifest_package.html'>fpm_manifest_package</a></li>
+                  <li class="list-inline-item"><a href='fpm_environment.html'>fpm_environment</a></li>
+                  <li class="list-inline-item"><a href='fpm_manifest_example.html'>fpm_manifest_example</a></li>
+                  <li class="list-inline-item"><a href='fpm_error.html'>fpm_error</a></li>
+                  <li class="list-inline-item"><a href='fpm_manifest_preprocess.html'>fpm_manifest_preprocess</a></li>
               </ul>
             </li>
         </ul>
@@ -230,7 +231,7 @@ to hide the actual implementation details.</p>
     <tbody>
         <tr>
             <td>
-              <span class="anchor" id="variable-self~58"></span>
+              <span class="anchor" id="variable-self~153"></span>
               type(<a href='../type/example_config_t.html'>example_config_t</a>),
             </td>
 <td>intent(out)</td>
@@ -245,7 +246,7 @@ to hide the actual implementation details.</p>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-name~18"></span>
+              <span class="anchor" id="variable-name~40"></span>
               character(len=*),
             </td>
 <td>intent(in)</td>
@@ -285,7 +286,7 @@ to hide the actual implementation details.</p>
     <tbody>
         <tr>
             <td>
-              <span class="anchor" id="variable-self~57"></span>
+              <span class="anchor" id="variable-self~152"></span>
               type(<a href='../type/executable_config_t.html'>executable_config_t</a>),
             </td>
 <td>intent(out)</td>
@@ -300,7 +301,7 @@ to hide the actual implementation details.</p>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-name~17"></span>
+              <span class="anchor" id="variable-name~39"></span>
               character(len=*),
             </td>
 <td>intent(in)</td>
@@ -340,7 +341,7 @@ to hide the actual implementation details.</p>
     <tbody>
         <tr>
             <td>
-              <span class="anchor" id="variable-self~56"></span>
+              <span class="anchor" id="variable-self~151"></span>
               type(<a href='../type/library_config_t.html'>library_config_t</a>),
             </td>
 <td>intent(out)</td>
@@ -380,7 +381,7 @@ to hide the actual implementation details.</p>
     <tbody>
         <tr>
             <td>
-              <span class="anchor" id="variable-self~59"></span>
+              <span class="anchor" id="variable-self~154"></span>
               type(<a href='../type/test_config_t.html'>test_config_t</a>),
             </td>
 <td>intent(out)</td>
@@ -395,7 +396,7 @@ to hide the actual implementation details.</p>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-name~19"></span>
+              <span class="anchor" id="variable-name~41"></span>
               character(len=*),
             </td>
 <td>intent(in)</td>
@@ -435,7 +436,7 @@ to hide the actual implementation details.</p>
     <tbody>
         <tr>
             <td>
-              <span class="anchor" id="variable-package~8"></span>
+              <span class="anchor" id="variable-package~20"></span>
               type(<a href='../type/package_config_t.html'>package_config_t</a>),
             </td>
 <td>intent(out)</td>
@@ -450,7 +451,7 @@ to hide the actual implementation details.</p>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-file~3"></span>
+              <span class="anchor" id="variable-file~8"></span>
               character(len=*),
             </td>
 <td>intent(in)</td>
@@ -465,7 +466,7 @@ to hide the actual implementation details.</p>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-error~86"></span>
+              <span class="anchor" id="variable-error~217"></span>
               type(<a href='../type/error_t.html'>error_t</a>),
             </td>
 <td>intent(out),</td>
@@ -500,6 +501,76 @@ to hide the actual implementation details.</p>
     </div>
   </div>
 
+              <div class="card">
+    <div class="card-header codesum"><span class="anchor" id="proc-get_package_dependencies"></span> <h3>public  subroutine <a href='../proc/get_package_dependencies.html'>get_package_dependencies</a>(package, main, deps)  
+</h3></div>
+    <div class="card-body">
+          
+  
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-package~22"></span>
+              type(<a href='../type/package_config_t.html'>package_config_t</a>),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>package</strong></td>
+            <td>
+<p>Parsed package meta data</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-main~5"></span>
+              logical,
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>main</strong></td>
+            <td>
+<p>Is the main project</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-deps~5"></span>
+              type(<a href='../type/dependency_config_t.html'>dependency_config_t</a>),
+            </td>
+<td>intent(out),</td>
+              <td></td>            <td>
+              allocatable
+            </td>
+            <td>::</td>
+            <td><strong>deps</strong>(:)</td>
+            <td>
+<p>Unprocessed list of all dependencies listed in this manifest</p>
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+
+    </div>
+  </div>
+
         </section>
         <br>
 
@@ -523,7 +594,7 @@ to hide the actual implementation details.</p>
             <p class="text-end">
               Documentation generated by
               <a href="https://github.com/Fortran-FOSS-Programmers/ford">FORD</a>
- on 2025-05-16 20:21 +0000             </p>
+ on 2025-05-16 20:23 +0000             </p>
           </div>
         </div>
         <br>
