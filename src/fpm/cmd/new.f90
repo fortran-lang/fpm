@@ -223,9 +223,11 @@ character(len=:,kind=tfc),allocatable :: littlefile(:)
         &'  # files and library archive. Without this being set to "true" an "install"    ',&
         &'  # subcommand ignores parameters that specify library installation.            ',&
         &'                                                                                ',&
-        &'  # If your project is a shared library (see `[library] shared=true`), enabling ',&
-        &'  # this will install the compiled `.so`, `.dylib`, or `.dll` files in the      ',&
-        &'  # appropriate `lib/` folder, just like it does for static archives.           ',&
+        &'  # If your project sets `[library] type = "shared"`, enabling this option      ',&
+        &'  # will install the compiled `.so`, `.dylib`, or `.dll` files into the         ',&
+        &'  # appropriate `lib/` folder. This applies equally to static archives.         ',&
+        &'  #                                                                             ',&
+        &'  # For shared libraries, installing is typically required for runtime usage.   ',&
         &'                                                                                ',&
         &'library = false                                                                 ',&
         &'                                                                                ',&
