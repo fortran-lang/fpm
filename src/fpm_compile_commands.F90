@@ -287,7 +287,9 @@ module fpm_compile_commands
                                 file = string_t(source_file))
         
         ! Add it to the structure
+        !$omp critical (command_update)
         call cct_register_object(self, cmd, error)
+        !$omp end critical (command_update)
 
     end subroutine cct_register
     
