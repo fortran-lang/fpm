@@ -3,6 +3,7 @@ module fpm_cmd_export
   use fpm_dependency, only : dependency_tree_t, new_dependency_tree
   use fpm_error, only : error_t, fpm_stop
   use fpm_filesystem, only : join_path
+  use fpm_lock, only : fpm_lock_acquire, fpm_lock_release
   use fpm_manifest, only : package_config_t, get_package_data
   use fpm_toml, only: name_is_json
   use fpm_model, only: fpm_model_t
@@ -23,6 +24,9 @@ contains
     type(error_t), allocatable :: error
 
     character(len=:), allocatable :: filename
+
+    call fpm_lock_acquire(error)
+    call handle_error(error)
 
     if (len_trim(settings%dump_manifest)<=0 .and. &
         len_trim(settings%dump_model)<=0 .and. &
@@ -67,6 +71,9 @@ contains
         call model%dump(filename, error, json=name_is_json(filename))
         call handle_error(error)
     end if
+
+    call fpm_lock_release(error)
+    call handle_error(error)
 
   end subroutine cmd_export
 
