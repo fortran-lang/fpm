@@ -993,7 +993,8 @@ contains
     '  Their syntax is                                                      ', &
     '                                                                                ', &
     '    build [--profile PROF] [--flag FFLAGS] [--list] [--compiler COMPILER_NAME]  ', &
-    '          [--tests] [--no-prune] [--config-file PATH] [--dump [FILENAME]]       ', &
+    '          [--tests] [--no-prune] [--config-file PATH]                           ', &
+    '          [--dump [FILENAME]]                                                   ', &
     '    new NAME [[--lib|--src] [--app] [--test] [--example]]|                      ', &
     '             [--full|--bare][--backfill]                                        ', &
     '    update [NAME(s)] [--fetch-only] [--clean] [--config-file PATH] [--dump [FILENAME]]', &
