@@ -809,8 +809,7 @@ function save_library_path() result(path)
     case (OS_WINDOWS)
         path = get_env("PATH", default="")
     case (OS_MACOS)
-        ! macOS does not use LD_LIBRARY_PATH by default for `.dylib`
-        allocate(character(0) :: path)
+        path = get_env("DYLD_LIBRARY_PATH", default="")
     case default ! UNIX/Linux
         path = get_env("LD_LIBRARY_PATH", default="")
     end select
@@ -823,7 +822,7 @@ subroutine set_library_path(model, targets, error)
     type(error_t), allocatable, intent(out) :: error
      
     type(string_t), allocatable :: shared_lib_dirs(:)
-    character(len=:), allocatable :: new_path, sep
+    character(len=:), allocatable :: new_path, sep, current
     logical :: success
     integer :: i
 
@@ -839,30 +838,32 @@ subroutine set_library_path(model, targets, error)
     end select
 
     ! Join the directories into a path string
-    ! Manually join paths
     new_path = ""
     do i = 1, size(shared_lib_dirs)
         if (i > 1) new_path = new_path // sep
         new_path = new_path // shared_lib_dirs(i)%s
     end do    
+    
+    ! Get current library path
+    current = save_library_path()
 
     ! Set the appropriate environment variable
     select case (get_os_type())
     case (OS_WINDOWS)
-        success = set_env("PATH", new_path // sep // get_env("PATH", default=""))
+        success = set_env("PATH", new_path // sep // current)
     case (OS_MACOS)
-        ! Typically not required for local .dylib use, noop or DYLD_LIBRARY_PATH if needed
-        success = .true.
+        success = set_env("DYLD_LIBRARY_PATH", new_path // sep // current)
     case default ! UNIX/Linux
-        success = set_env("LD_LIBRARY_PATH", new_path // sep // get_env("LD_LIBRARY_PATH", default=""))
+        success = set_env("LD_LIBRARY_PATH", new_path // sep // current)
     end select
     
-    if (.not.success) call fatal_error(error," Cannot set library path: "//new_path)
+    if (.not.success) call fatal_error(error,"Cannot set library path: "//new_path)
 
 end subroutine set_library_path
 
+
 !> Restore a previously saved runtime library path
-subroutine restore_library_path(saved_path,error)
+subroutine restore_library_path(saved_path, error)
     character(*), intent(in) :: saved_path
     type(error_t), allocatable, intent(out) :: error
     logical :: success
@@ -871,15 +872,15 @@ subroutine restore_library_path(saved_path,error)
     case (OS_WINDOWS)
         success = set_env("PATH", saved_path)
     case (OS_MACOS)
-        ! noop
-        success = .true.
+        success = set_env("DYLD_LIBRARY_PATH", saved_path)
     case default ! UNIX/Linux
         success = set_env("LD_LIBRARY_PATH", saved_path)
     end select
     
-    if (.not.success) call fatal_error(error, "Cannot restore library path "//saved_path)
+    if (.not.success) call fatal_error(error, "Cannot restore library path: "//saved_path)
 
 end subroutine restore_library_path
+
 
 
 
