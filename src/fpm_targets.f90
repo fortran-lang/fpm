@@ -1142,8 +1142,13 @@ subroutine resolve_target_linking(targets, model, library, error)
                     target%link_flags = target%link_flags // " " // &
                                         model%compiler%get_export_flags(target%output_dir,target%package_name)
                     
+                    ! Add install_name flag (macOS only)
+                    target%link_flags = target%link_flags // " " // &
+                                        model%compiler%get_install_name_flags(target%output_dir, target%package_name)                    
+                    
                     ! Add global link flags (e.g., system-wide libraries)
-                    target%link_flags = target%link_flags // " " // global_link_flags                
+                    target%link_flags = target%link_flags // " " // global_link_flags     
+                            
 
                 case (FPM_TARGET_EXECUTABLE)
 

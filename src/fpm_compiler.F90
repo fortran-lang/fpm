@@ -105,6 +105,8 @@ contains
     procedure :: get_main_flags
     !> Get library export flags
     procedure :: get_export_flags    
+    !> Get library install name flags
+    procedure :: get_install_name_flags
     !> Compile a Fortran object
     procedure :: compile_fortran
     !> Compile a C object
@@ -1116,6 +1118,28 @@ function get_export_flags(self, target_dir, target_name) result(export_flags)
     end select
 
 end function get_export_flags
+
+!>
+!> Generate `install_name` flag for a shared library build on macOS
+!>
+function get_install_name_flags(self, target_dir, target_name) result(flags)
+    class(compiler_t), intent(in) :: self
+    character(len=*), intent(in) :: target_dir, target_name
+    character(len=:), allocatable :: flags
+
+    if (get_os_type() /= OS_MACOS) then
+        flags = ""
+        return
+    end if
+
+    ! Shared library basename (e.g., libfoo.dylib)
+    if (str_ends_with(target_name, ".dylib")) then
+        flags = " -Wl,-install_name,@rpath/" // target_name
+    else
+        flags = " -Wl,-install_name,@rpath/" // target_name // ".dylib"
+    end if
+
+end function get_install_name_flags
 
 !> Create new compiler instance
 subroutine new_compiler(self, fc, cc, cxx, echo, verbose)
