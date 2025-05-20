@@ -1126,6 +1126,7 @@ function get_install_name_flags(self, target_dir, target_name) result(flags)
     class(compiler_t), intent(in) :: self
     character(len=*), intent(in) :: target_dir, target_name
     character(len=:), allocatable :: flags
+    character(len=:), allocatable :: library_file
 
     if (get_os_type() /= OS_MACOS) then
         flags = ""
@@ -1134,10 +1135,12 @@ function get_install_name_flags(self, target_dir, target_name) result(flags)
 
     ! Shared library basename (e.g., libfoo.dylib)
     if (str_ends_with(target_name, ".dylib")) then
-        flags = " -Wl,-install_name,@rpath/" // target_name
+        library_file = target_name        
     else
-        flags = " -Wl,-install_name,@rpath/" // target_name // ".dylib"
+        library_file = library_filename(target_name,.true.,.false.,OS_MACOS)
     end if
+    
+    flags = " -Wl,-install_name,@rpath/" // library_file
 
 end function get_install_name_flags
 

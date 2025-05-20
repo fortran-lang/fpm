@@ -604,6 +604,12 @@ subroutine cmd_run(settings,test)
                 if (settings%runner/=' ')     run_cmd = settings%runner_command()//' '//run_cmd
                 if (allocated(settings%args)) run_cmd = run_cmd//" "//settings%args
                 
+                ! System Integrity Protection will not propagate the .dylib environment variables
+                ! to the child process: add paths manually
+                if (get_os_type()==OS_MACOS)  run_cmd = "env DYLD_LIBRARY_PATH=" // &
+                                                         get_env("DYLD_LIBRARY_PATH","") // &
+                                                         " " // run_cmd
+
                 call run(run_cmd,echo=settings%verbose,exitstat=stat(i))                
                 
             else
