@@ -1181,7 +1181,12 @@ subroutine resolve_target_linking(targets, model, library, error)
                         target%link_flags = model%get_package_libraries_link(target%package_name, &
                                                                             target%link_flags, &
                                                                             error=error, &
-                                                                            exclude_self=.not.has_self_lib)                                                
+                                                                            exclude_self=.not.has_self_lib)   
+                                                                            
+                        
+                        ! On macOS, add room for 2 install_name_tool paths
+                        target%link_flags = target%link_flags // model%compiler%get_headerpad_flags()
+                        
                     end if
 
                     if (allocated(target%link_libraries)) then

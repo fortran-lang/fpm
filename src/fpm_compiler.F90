@@ -107,6 +107,8 @@ contains
     procedure :: get_export_flags    
     !> Get library install name flags
     procedure :: get_install_name_flags
+    !> Generate header padding flags for macOS executables
+    procedure :: get_headerpad_flags
     !> Compile a Fortran object
     procedure :: compile_fortran
     !> Compile a C object
@@ -1143,6 +1145,23 @@ function get_install_name_flags(self, target_dir, target_name) result(flags)
     flags = " -Wl,-install_name,@rpath/" // library_file
 
 end function get_install_name_flags
+
+!>
+!> Generate header padding flags for install_name_tool compatibility on macOS
+!>
+function get_headerpad_flags(self) result(flags)
+    class(compiler_t), intent(in) :: self
+    character(len=:), allocatable :: flags
+
+    if (get_os_type() /= OS_MACOS) then
+        flags = ""
+        return
+    end if
+
+    ! Reserve enough space in the Mach-O header to safely add two install_name or rpath later
+    flags = " -Wl,-headerpad,0x200"
+
+end function get_headerpad_flags
 
 !> Create new compiler instance
 subroutine new_compiler(self, fc, cc, cxx, echo, verbose)
