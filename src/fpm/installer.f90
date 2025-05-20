@@ -5,10 +5,11 @@
 !> to any directory within the prefix.
 module fpm_installer
   use, intrinsic :: iso_fortran_env, only : output_unit
-  use fpm_environment, only : get_os_type, os_is_unix, OS_WINDOWS
+  use fpm_environment, only : get_os_type, os_is_unix, OS_WINDOWS, OS_MACOS
   use fpm_error, only : error_t, fatal_error
   use fpm_targets, only: build_target_t, FPM_TARGET_ARCHIVE, FPM_TARGET_SHARED, FPM_TARGET_NAME
-  use fpm_filesystem, only : join_path, mkdir, exists, unix_path, windows_path, get_local_prefix
+  use fpm_filesystem, only : join_path, mkdir, exists, unix_path, windows_path, get_local_prefix, &
+      basename
 
   implicit none
   private
@@ -37,6 +38,8 @@ module fpm_installer
     !> Cached operating system
     integer :: os
   contains
+    !> Evaluate the installation path
+    procedure :: install_destination  
     !> Install an executable in its correct subdirectory
     procedure :: install_executable
     !> Install a library in its correct subdirectory
@@ -51,6 +54,7 @@ module fpm_installer
     procedure :: run
     !> Create a new directory in the prefix, type-bound for unit testing purposes
     procedure :: make_dir
+
   end type installer_t
 
   !> Default name of the binary subdirectory
@@ -177,6 +181,8 @@ contains
     !> Error handling
     type(error_t), allocatable, intent(out) :: error
     integer :: ll
+    
+    character(len=:), allocatable :: exe_path, cmd
 
     if (.not.os_is_unix(self%os)) then
         ll = len(executable)
@@ -185,8 +191,25 @@ contains
             return
         end if
     end if
-
+    
     call self%install(executable, self%bindir, error)
+
+    ! on MacOS, add two relative paths for search of dynamic library dependencies: 
+    add_rpath: if (self%os==OS_MACOS) then  
+        
+        exe_path = join_path(self%install_destination(self%bindir) , basename(executable))
+        
+        ! First path: for bin/lib/include structure
+        cmd = "install_name_tool -add_rpath @executable_path/../lib " // exe_path
+        call self%run(cmd, error)
+        if (allocated(error)) return
+
+        ! Second path: same as executable folder
+        cmd = "install_name_tool -add_rpath @executable_path " // exe_path
+        call self%run(cmd, error)
+        if (allocated(error)) return
+        
+    end if add_rpath
 
   end subroutine install_executable
 
@@ -278,12 +301,7 @@ contains
 
     character(len=:), allocatable :: install_dest
 
-    install_dest = join_path(self%prefix, destination)
-    if (os_is_unix(self%os)) then
-      install_dest = unix_path(install_dest)
-    else
-      install_dest = windows_path(install_dest)
-    end if
+    install_dest = self%install_destination(destination)
     call self%make_dir(install_dest, error)
     if (allocated(error)) return
 
@@ -303,6 +321,24 @@ contains
     if (allocated(error)) return
 
   end subroutine install
+  
+  !> Evaluate the installation path
+  function install_destination(self, destination) result(install_dest)
+    !> Instance of the installer
+    class(installer_t), intent(inout) :: self
+    !> Path to the destination inside the prefix
+    character(len=*), intent(in) :: destination    
+    
+    character(len=:), allocatable :: install_dest
+
+    install_dest = join_path(self%prefix, destination)
+    if (os_is_unix(self%os)) then
+      install_dest = unix_path(install_dest)
+    else
+      install_dest = windows_path(install_dest)
+    end if    
+    
+  end function install_destination
 
   !> Create a new directory in the prefix
   subroutine make_dir(self, dir, error)
