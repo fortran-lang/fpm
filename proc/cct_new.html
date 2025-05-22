@@ -10,7 +10,7 @@
     <meta name="author" content="fortran-lang/fpm contributors" >
     <link rel="icon" href="../favicon.png">
 
-    <title>dump_to_toml &ndash; Fortran-lang/fpm</title>
+    <title>cct_new &ndash; Fortran-lang/fpm</title>
 
     <!-- Bootstrap -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet"
@@ -81,8 +81,8 @@
 
     <div class="container">
   <div class="row">
-    <h1>dump_to_toml
-      <small>Subroutine</small>
+    <h1>cct_new
+      <small>Function</small>
       
     </h1>
       <div class="container p-2 mb-4 bg-light border rounded-3">
@@ -92,21 +92,21 @@
 
             <li class="list-inline-item" id="statements"><i class="fa fa-list-ol"></i>
               <a data-bs-toggle="tooltip" data-bs-placement="bottom" data-bs-html="true"
-                 title=" 0.2% of total for procedures.">12 statements</a>
+                 title=" 0.2% of total for procedures.">16 statements</a>
             </li>
 
             <li class="list-inline-item" id="source-file">
               <i class="fa fa-code"></i>
-              <a href="../src/git.f90"> Source File</a>
+              <a href="../src/fpm_compile_commands.F90"> Source File</a>
             </li>
         </ul>
       </div>
       <div class="col">
         <nav aria-label="breadcrumb">
           <ol class="breadcrumb justify-content-end mb-0">
-                <li class="breadcrumb-item"><a href='../sourcefile/git.f90.html'>git.f90</a></li>
-                <li class="breadcrumb-item"><a href='../module/fpm_git.html'>fpm_git</a></li>
-            <li class="breadcrumb-item active" aria-current="page">dump_to_toml</li>
+                <li class="breadcrumb-item"><a href='../sourcefile/fpm_compile_commands.f90.html'>fpm_compile_commands.F90</a></li>
+                <li class="breadcrumb-item"><a href='../module/fpm_compile_commands.html'>fpm_compile_commands</a></li>
+            <li class="breadcrumb-item active" aria-current="page">cct_new</li>
           </ol>
         </nav>
       </div>
@@ -134,7 +134,8 @@
       </a>
       <div id="vars-0" class="collapse">
         <div class="list-group list-group-flush">
-            <a class="list-group-item" href="../proc/dump_to_toml~3.html#variable-ierr~10">ierr</a>
+            <a class="list-group-item" href="../proc/cct_new.html#variable-i~104">i</a>
+            <a class="list-group-item" href="../proc/cct_new.html#variable-n~27">n</a>
         </div>
       </div>
     </div>
@@ -160,7 +161,7 @@
     <div class="card card-primary">
       <div class="card-header text-left"><h3 class="card-title">Source Code</h3></div>
       <div class="list-group">
-        <a class="list-group-item" href="../proc/dump_to_toml~3.html#src">dump_to_toml</a>
+        <a class="list-group-item" href="../proc/cct_new.html#src">cct_new</a>
       </div>
     </div>
 
@@ -170,14 +171,12 @@
     </div>
     
     <div class="col-md-9" id='text'>
-    <h2>public  subroutine dump_to_toml(self, table, error)  
+    <h2>public  function cct_new(directory, arguments, file) result(cct)  
 </h2>
     
 
-    <p>Dump dependency to toml table</p>
+    <p>Override default initializer (GCC 15 bug)</p>
 
-    <h3>Type Bound</h3>
-    <p><a href='../type/git_target_t.html'>git_target_t</a></p>
 
     <h3>Arguments</h3>
         <table class="table table-striped varlist">
@@ -192,52 +191,59 @@
     <tbody>
         <tr>
             <td>
-              <span class="anchor" id="variable-self~36"></span>
-              class(<a href='../type/git_target_t.html'>git_target_t</a>),
+              <span class="anchor" id="variable-directory~3"></span>
+              character(len=*),
             </td>
-<td>intent(inout)</td>
+<td>intent(in)</td>
               <td></td>            <td>
               
             </td>
             <td>::</td>
-            <td><strong>self</strong></td>
+            <td><strong>directory</strong></td>
             <td>
-                <p>Instance of the serializable object</p>
+                
             </td>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-table~25"></span>
-              type(toml_table),
+              <span class="anchor" id="variable-arguments~2"></span>
+              character(len=*),
             </td>
-<td>intent(inout)</td>
+<td>intent(in),</td>
+              <td>optional</td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>arguments</strong>(:)</td>
+            <td>
+                
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-file~9"></span>
+              character(len=*),
+            </td>
+<td>intent(in)</td>
               <td></td>            <td>
               
             </td>
             <td>::</td>
-            <td><strong>table</strong></td>
+            <td><strong>file</strong></td>
             <td>
-                <p>Data structure</p>
-            </td>
-        </tr>
-        <tr>
-            <td>
-              <span class="anchor" id="variable-error~36"></span>
-              type(<a href='../type/error_t.html'>error_t</a>),
-            </td>
-<td>intent(out),</td>
-              <td></td>            <td>
-              allocatable
-            </td>
-            <td>::</td>
-            <td><strong>error</strong></td>
-            <td>
-                <p>Error handling</p>
+                
             </td>
         </tr>
     </tbody>
   </table>
 
+      <h3>Return Value
+        <small>
+          <span class="anchor" id="variable-cct"></span>
+          type(<a href='../type/compile_command_t.html'>compile_command_t</a>)
+        </small>
+      </h3>
+      
     <br>
 
 
@@ -255,7 +261,7 @@
     <tbody>
         <tr>
             <td>
-              <span class="anchor" id="variable-ierr~10"></span>
+              <span class="anchor" id="variable-i~104"></span>
               integer,
             </td>
               <td>public</td>
@@ -263,7 +269,24 @@
               
             </td>
             <td>::</td>
-            <td><strong>ierr</strong></td>
+            <td><strong>i</strong></td>
+                <td></td>
+                <td></td>
+            <td>
+                
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-n~27"></span>
+              integer,
+            </td>
+              <td>public</td>
+            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>n</strong></td>
                 <td></td>
                 <td></td>
             <td>
@@ -286,27 +309,26 @@
     
     <section>
     <h2><span class="anchor" id="src"></span>Source Code</h2>
-    <div class="hl codehilite"><pre><span></span><span class="w">    </span><span class="k">subroutine </span><span class="n">dump_to_toml</span><span class="p">(</span><span class="n">self</span><span class="p">,</span><span class="w"> </span><span class="n">table</span><span class="p">,</span><span class="w"> </span><span class="n">error</span><span class="p">)</span>
-
-<span class="w">        </span><span class="c">!&gt; Instance of the serializable object</span>
-<span class="w">        </span><span class="k">class</span><span class="p">(</span><span class="n">git_target_t</span><span class="p">),</span><span class="w"> </span><span class="k">intent</span><span class="p">(</span><span class="n">inout</span><span class="p">)</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">self</span>
-
-<span class="w">        </span><span class="c">!&gt; Data structure</span>
-<span class="w">        </span><span class="k">type</span><span class="p">(</span><span class="n">toml_table</span><span class="p">),</span><span class="w"> </span><span class="k">intent</span><span class="p">(</span><span class="n">inout</span><span class="p">)</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">table</span>
-
-<span class="w">        </span><span class="c">!&gt; Error handling</span>
-<span class="w">        </span><span class="k">type</span><span class="p">(</span><span class="n">error_t</span><span class="p">),</span><span class="w"> </span><span class="k">allocatable</span><span class="p">,</span><span class="w"> </span><span class="k">intent</span><span class="p">(</span><span class="n">out</span><span class="p">)</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">error</span>
-
-<span class="w">        </span><span class="kt">integer</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">ierr</span>
-
-<span class="w">        </span><span class="k">call </span><span class="n">set_string</span><span class="p">(</span><span class="n">table</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;descriptor&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">descriptor_name</span><span class="p">(</span><span class="n">self</span><span class="p">%</span><span class="n">descriptor</span><span class="p">),</span><span class="w"> </span><span class="n">error</span><span class="p">,</span><span class="w"> </span><span class="s1">&#39;git_target_t&#39;</span><span class="p">)</span>
-<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="nb">allocated</span><span class="p">(</span><span class="n">error</span><span class="p">))</span><span class="w"> </span><span class="k">return</span>
-<span class="k">        call </span><span class="n">set_string</span><span class="p">(</span><span class="n">table</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;url&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">self</span><span class="p">%</span><span class="n">url</span><span class="p">,</span><span class="w"> </span><span class="n">error</span><span class="p">,</span><span class="w"> </span><span class="s1">&#39;git_target_t&#39;</span><span class="p">)</span>
-<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="nb">allocated</span><span class="p">(</span><span class="n">error</span><span class="p">))</span><span class="w"> </span><span class="k">return</span>
-<span class="k">        call </span><span class="n">set_string</span><span class="p">(</span><span class="n">table</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;object&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">self</span><span class="p">%</span><span class="n">object</span><span class="p">,</span><span class="w"> </span><span class="n">error</span><span class="p">,</span><span class="w"> </span><span class="s1">&#39;git_target_t&#39;</span><span class="p">)</span>
-<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="nb">allocated</span><span class="p">(</span><span class="n">error</span><span class="p">))</span><span class="w"> </span><span class="k">return</span>
-
-<span class="k">    end subroutine </span><span class="n">dump_to_toml</span>
+    <div class="hl codehilite"><pre><span></span><span class="w">    </span><span class="k">type</span><span class="p">(</span><span class="n">compile_command_t</span><span class="p">)</span><span class="w"> </span><span class="k">function </span><span class="n">cct_new</span><span class="p">(</span><span class="n">directory</span><span class="p">,</span><span class="n">arguments</span><span class="p">,</span><span class="k">file</span><span class="p">)</span><span class="w"> </span><span class="k">result</span><span class="p">(</span><span class="n">cct</span><span class="p">)</span>
+<span class="w">        </span><span class="kt">character</span><span class="p">(</span><span class="nb">len</span><span class="o">=*</span><span class="p">),</span><span class="w"> </span><span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">)</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">directory</span><span class="p">,</span><span class="k">file</span>
+<span class="k">        </span><span class="kt">character</span><span class="p">(</span><span class="nb">len</span><span class="o">=*</span><span class="p">),</span><span class="w"> </span><span class="k">optional</span><span class="p">,</span><span class="w"> </span><span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">)</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">arguments</span><span class="p">(:)</span>
+<span class="w">        </span>
+<span class="w">        </span><span class="kt">integer</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">i</span><span class="p">,</span><span class="n">n</span>
+<span class="w">        </span>
+<span class="w">        </span><span class="n">cct</span><span class="p">%</span><span class="n">directory</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">string_t</span><span class="p">(</span><span class="nb">trim</span><span class="p">(</span><span class="n">directory</span><span class="p">))</span>
+<span class="w">        </span><span class="n">cct</span><span class="p">%</span><span class="k">file</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">string_t</span><span class="p">(</span><span class="nb">trim</span><span class="p">(</span><span class="k">file</span><span class="p">))</span>
+<span class="w">        </span>
+<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="nb">present</span><span class="p">(</span><span class="n">arguments</span><span class="p">))</span><span class="w"> </span><span class="k">then </span>
+<span class="k">           </span><span class="n">n</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">size</span><span class="p">(</span><span class="n">arguments</span><span class="p">)</span>
+<span class="w">        </span><span class="k">else</span>
+<span class="k">           </span><span class="n">n</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span>
+<span class="w">        </span><span class="k">endif</span>
+<span class="k">        allocate</span><span class="p">(</span><span class="n">cct</span><span class="p">%</span><span class="n">arguments</span><span class="p">(</span><span class="n">n</span><span class="p">))</span>
+<span class="w">        </span><span class="k">do </span><span class="n">i</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span><span class="n">n</span>
+<span class="w">            </span><span class="n">cct</span><span class="p">%</span><span class="n">arguments</span><span class="p">(</span><span class="n">i</span><span class="p">)</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">string_t</span><span class="p">(</span><span class="nb">trim</span><span class="p">(</span><span class="n">arguments</span><span class="p">(</span><span class="n">i</span><span class="p">)))</span>
+<span class="w">        </span><span class="k">end do</span>
+<span class="k">        </span>
+<span class="k">    end function </span><span class="n">cct_new</span><span class="w">  </span>
 </pre></div>
 
     </section>
@@ -330,7 +352,7 @@
             <p class="text-end">
               Documentation generated by
               <a href="https://github.com/Fortran-FOSS-Programmers/ford">FORD</a>
- on 2025-05-18 13:42 +0000             </p>
+ on 2025-05-22 06:46 +0000             </p>
           </div>
         </div>
         <br>

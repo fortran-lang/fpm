@@ -92,7 +92,7 @@
 
             <li class="list-inline-item" id="statements"><i class="fa fa-list-ol"></i>
               <a data-bs-toggle="tooltip" data-bs-placement="bottom" data-bs-html="true"
-                 title="<p> 1.7% of total for derived types.</p>Including implementation: 80 statements,  1.4% of total for derived types.">10 statements</a>
+                 title="<p> 2.2% of total for derived types.</p>Including implementation: 80 statements,  1.4% of total for derived types.">13 statements</a>
             </li>
 
             <li class="list-inline-item" id="source-file">
@@ -142,7 +142,18 @@
     </div>
 
   
-  
+      <div class="card mb-4">
+      <a data-bs-toggle="collapse" href="#cons-0"
+         aria-expanded="false" aria-controls="cons-0">
+         <h4 class="card-header bg-primary text-white">Constructor</h4>
+      </a>
+      <div id="cons-0" class="collapse">
+        <div class="list-group list-group-flush">
+            <a class="list-group-item" href="../type/compile_command_t.html#interface-compile_command_t">compile_command_t</a>
+        </div>
+      </div>
+    </div>
+
   
   
   
@@ -164,12 +175,12 @@
       <div id="boundprocs-0" class="collapse">
         <div class="list-group list-group-flush">
             <a class="list-group-item" href="../type/compile_command_t.html#boundprocedure-destroy~3">destroy</a>
-            <a class="list-group-item" href="../type/compile_command_t.html#boundprocedure-dump~23">dump</a>
-            <a class="list-group-item" href="../type/compile_command_t.html#boundprocedure-dump_to_toml~19">dump_to_toml</a>
-            <a class="list-group-item" href="../type/compile_command_t.html#boundprocedure-load~21">load</a>
-            <a class="list-group-item" href="../type/compile_command_t.html#boundprocedure-load_from_toml~19">load_from_toml</a>
-            <a class="list-group-item" href="../type/compile_command_t.html#boundprocedure-operator%28%3D%3D%29~22">operator(==)</a>
-            <a class="list-group-item" href="../type/compile_command_t.html#boundprocedure-serializable_is_same~19">serializable_is_same</a>
+            <a class="list-group-item" href="../type/compile_command_t.html#boundprocedure-dump~25">dump</a>
+            <a class="list-group-item" href="../type/compile_command_t.html#boundprocedure-dump_to_toml~21">dump_to_toml</a>
+            <a class="list-group-item" href="../type/compile_command_t.html#boundprocedure-load~23">load</a>
+            <a class="list-group-item" href="../type/compile_command_t.html#boundprocedure-load_from_toml~21">load_from_toml</a>
+            <a class="list-group-item" href="../type/compile_command_t.html#boundprocedure-operator%28%3D%3D%29~24">operator(==)</a>
+            <a class="list-group-item" href="../type/compile_command_t.html#boundprocedure-serializable_is_same~21">serializable_is_same</a>
             <a class="list-group-item" href="../type/compile_command_t.html#boundprocedure-test_serialization">test_serialization</a>
         </div>
       </div>
@@ -264,6 +275,94 @@
     </section>
     <br>
     
+      <section>
+        <h2>Constructor</h2>
+            <div class="card">
+    <div class="card-header bg-light codesum">
+      <span class="anchor" id="interface-compile_command_t"></span>
+      <h3>public        interface <a href='../interface/compile_command_t.html'>compile_command_t</a> 
+      </h3>
+    </div>
+    <ul class="list-group">
+          <li class="list-group-item">
+                <h3>
+    public  function <a href='../proc/cct_new.html'>cct_new</a>(directory, arguments, file) result(cct)  
+
+    </h3>
+    
+  <p>Override default initializer (GCC 15 bug)</p>
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-directory~3"></span>
+              character(len=*),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>directory</strong></td>
+            <td>
+
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-arguments~2"></span>
+              character(len=*),
+            </td>
+<td>intent(in),</td>
+              <td>optional</td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>arguments</strong>(:)</td>
+            <td>
+
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-file~9"></span>
+              character(len=*),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>file</strong></td>
+            <td>
+
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+    <h4>
+    Return Value
+    <small>type(<a href='compile_command_t.html'>compile_command_t</a>)</small>
+    </h4>
+    
+
+          </li>
+    </ul>
+  </div>
+
+      </section>
+      <br>
 
 
       <section>
@@ -329,10 +428,10 @@
           <div class="row">
               <div class="card mt-3">
     <div class="card-header codesum">
-      <span class="anchor" id="boundprocedure-dump~23"></span>
+      <span class="anchor" id="boundprocedure-dump~25"></span>
       <h3>
           generic, public ::
-  <strong>dump</strong> => <a href='/home/runner/work/fpm/fpm/fpm-doc/type/srcfile_t.html#boundprocedure-dump_to_toml~4'>dump_to_toml</a>, dump_to_file, dump_to_unit
+  <strong>dump</strong> => <a href='/home/runner/work/fpm/fpm/fpm-doc/type/srcfile_t.html#boundprocedure-dump_to_toml~5'>dump_to_toml</a>, dump_to_file, dump_to_unit
         
       </h3>
     </div>
@@ -578,7 +677,7 @@
           <div class="row">
               <div class="card mt-3">
     <div class="card-header codesum">
-      <span class="anchor" id="boundprocedure-dump_to_toml~19"></span>
+      <span class="anchor" id="boundprocedure-dump_to_toml~21"></span>
       <h3>
           procedure, public ::
   <strong>dump_to_toml</strong> => <a href='/home/runner/work/fpm/fpm/fpm-doc/proc/compile_command_dump_toml.html'>compile_command_dump_toml</a>
@@ -662,10 +761,10 @@
           <div class="row">
               <div class="card mt-3">
     <div class="card-header codesum">
-      <span class="anchor" id="boundprocedure-load~21"></span>
+      <span class="anchor" id="boundprocedure-load~23"></span>
       <h3>
           generic, public ::
-  <strong>load</strong> => <a href='/home/runner/work/fpm/fpm/fpm-doc/type/srcfile_t.html#boundprocedure-load_from_toml~4'>load_from_toml</a>, load_from_file, load_from_unit
+  <strong>load</strong> => <a href='/home/runner/work/fpm/fpm/fpm-doc/type/srcfile_t.html#boundprocedure-load_from_toml~5'>load_from_toml</a>, load_from_file, load_from_unit
         
       </h3>
     </div>
@@ -915,7 +1014,7 @@ Read object from TOML table</p>
           <div class="row">
               <div class="card mt-3">
     <div class="card-header codesum">
-      <span class="anchor" id="boundprocedure-load_from_toml~19"></span>
+      <span class="anchor" id="boundprocedure-load_from_toml~21"></span>
       <h3>
           procedure, public ::
   <strong>load_from_toml</strong> => <a href='/home/runner/work/fpm/fpm/fpm-doc/proc/compile_command_load_toml.html'>compile_command_load_toml</a>
@@ -999,10 +1098,10 @@ Read object from TOML table</p>
           <div class="row">
               <div class="card mt-3">
     <div class="card-header codesum">
-      <span class="anchor" id="boundprocedure-operator%28%3D%3D%29~22"></span>
+      <span class="anchor" id="boundprocedure-operator%28%3D%3D%29~24"></span>
       <h3>
           generic, public ::
-  <strong>operator(==)</strong> => <a href='/home/runner/work/fpm/fpm/fpm-doc/type/srcfile_t.html#boundprocedure-serializable_is_same~4'>serializable_is_same</a>
+  <strong>operator(==)</strong> => <a href='/home/runner/work/fpm/fpm/fpm-doc/type/srcfile_t.html#boundprocedure-serializable_is_same~5'>serializable_is_same</a>
         
       </h3>
     </div>
@@ -1073,7 +1172,7 @@ All checks passed!</p>
           <div class="row">
               <div class="card mt-3">
     <div class="card-header codesum">
-      <span class="anchor" id="boundprocedure-serializable_is_same~19"></span>
+      <span class="anchor" id="boundprocedure-serializable_is_same~21"></span>
       <h3>
           procedure, public ::
   <strong>serializable_is_same</strong> => <a href='/home/runner/work/fpm/fpm/fpm-doc/proc/compile_command_is_same.html'>compile_command_is_same</a>
@@ -1284,7 +1383,7 @@ Check same</p>
             <p class="text-end">
               Documentation generated by
               <a href="https://github.com/Fortran-FOSS-Programmers/ford">FORD</a>
- on 2025-05-18 13:42 +0000             </p>
+ on 2025-05-22 06:46 +0000             </p>
           </div>
         </div>
         <br>

@@ -137,8 +137,8 @@
             <a class="list-group-item" href="../proc/cct_register.html#variable-args~11">args</a>
             <a class="list-group-item" href="../proc/cct_register.html#variable-cmd~5">cmd</a>
             <a class="list-group-item" href="../proc/cct_register.html#variable-cwd">cwd</a>
-            <a class="list-group-item" href="../proc/cct_register.html#variable-i~94">i</a>
-            <a class="list-group-item" href="../proc/cct_register.html#variable-n~26">n</a>
+            <a class="list-group-item" href="../proc/cct_register.html#variable-i~105">i</a>
+            <a class="list-group-item" href="../proc/cct_register.html#variable-n~28">n</a>
             <a class="list-group-item" href="../proc/cct_register.html#variable-sh_success">sh_success</a>
             <a class="list-group-item" href="../proc/cct_register.html#variable-source_file">source_file</a>
         </div>
@@ -198,7 +198,7 @@
     <tbody>
         <tr>
             <td>
-              <span class="anchor" id="variable-self~157"></span>
+              <span class="anchor" id="variable-self~165"></span>
               class(<a href='../type/compile_command_table_t.html'>compile_command_table_t</a>),
             </td>
 <td>intent(inout)</td>
@@ -243,7 +243,7 @@
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-error~206"></span>
+              <span class="anchor" id="variable-error~224"></span>
               type(<a href='../type/error_t.html'>error_t</a>),
             </td>
 <td>intent(out),</td>
@@ -327,7 +327,7 @@
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-i~94"></span>
+              <span class="anchor" id="variable-i~105"></span>
               integer,
             </td>
               <td>public</td>
@@ -344,7 +344,7 @@
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-n~26"></span>
+              <span class="anchor" id="variable-n~28"></span>
               integer,
             </td>
               <td>public</td>
@@ -464,10 +464,9 @@
 <span class="w">        </span><span class="c">! Fallback: use last argument if not found</span>
 <span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="nb">len_trim</span><span class="p">(</span><span class="n">source_file</span><span class="p">)</span><span class="o">==</span><span class="mi">0</span><span class="p">)</span><span class="w"> </span><span class="n">source_file</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">trim</span><span class="p">(</span><span class="n">args</span><span class="p">(</span><span class="n">n</span><span class="p">))</span>
 
-<span class="w">        </span><span class="c">! Fill in the compile_command_t</span>
-<span class="w">        </span><span class="n">cmd</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">compile_command_t</span><span class="p">(</span><span class="n">directory</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">string_t</span><span class="p">(</span><span class="n">cwd</span><span class="p">),</span><span class="w"> </span><span class="p">&amp;</span>
-<span class="w">                                </span><span class="n">arguments</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">[(</span><span class="n">string_t</span><span class="p">(</span><span class="nb">trim</span><span class="p">(</span><span class="n">args</span><span class="p">(</span><span class="n">i</span><span class="p">))),</span><span class="w"> </span><span class="n">i</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span><span class="n">n</span><span class="p">)],</span><span class="w"> </span><span class="p">&amp;</span>
-<span class="w">                                </span><span class="k">file</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">string_t</span><span class="p">(</span><span class="n">source_file</span><span class="p">))</span>
+<span class="w">        </span><span class="c">! Fill in the compile_command_t. </span>
+<span class="w">        </span><span class="c">! Use non-default initializer due to gcc 15 bug</span>
+<span class="w">        </span><span class="n">cmd</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">compile_command_t</span><span class="p">(</span><span class="n">cwd</span><span class="p">,</span><span class="w"> </span><span class="n">args</span><span class="p">,</span><span class="w"> </span><span class="n">source_file</span><span class="p">)</span>
 <span class="w">        </span>
 <span class="w">        </span><span class="c">! Add it to the structure</span>
 <span class="w">        </span><span class="c">!$omp critical (command_update)</span>
@@ -498,7 +497,7 @@
             <p class="text-end">
               Documentation generated by
               <a href="https://github.com/Fortran-FOSS-Programmers/ford">FORD</a>
- on 2025-05-18 13:42 +0000             </p>
+ on 2025-05-22 06:46 +0000             </p>
           </div>
         </div>
         <br>
