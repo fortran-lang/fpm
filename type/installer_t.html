@@ -92,7 +92,7 @@
 
             <li class="list-inline-item" id="statements"><i class="fa fa-list-ol"></i>
               <a data-bs-toggle="tooltip" data-bs-placement="bottom" data-bs-html="true"
-                 title="<p> 3.3% of total for derived types.</p>Including implementation: 129 statements,  2.2% of total for derived types.">20 statements</a>
+                 title="<p> 3.5% of total for derived types.</p>Including implementation: 146 statements,  2.5% of total for derived types.">21 statements</a>
             </li>
 
             <li class="list-inline-item" id="source-file">
@@ -137,13 +137,13 @@
             <a class="list-group-item" href="../type/installer_t.html#variable-bindir~4">bindir</a>
             <a class="list-group-item" href="../type/installer_t.html#variable-copy~2">copy</a>
             <a class="list-group-item" href="../type/installer_t.html#variable-includedir~2">includedir</a>
-            <a class="list-group-item" href="../type/installer_t.html#variable-libdir~6">libdir</a>
+            <a class="list-group-item" href="../type/installer_t.html#variable-libdir~5">libdir</a>
             <a class="list-group-item" href="../type/installer_t.html#variable-move">move</a>
-            <a class="list-group-item" href="../type/installer_t.html#variable-os~5">os</a>
-            <a class="list-group-item" href="../type/installer_t.html#variable-prefix~6">prefix</a>
+            <a class="list-group-item" href="../type/installer_t.html#variable-os~4">os</a>
+            <a class="list-group-item" href="../type/installer_t.html#variable-prefix~3">prefix</a>
             <a class="list-group-item" href="../type/installer_t.html#variable-testdir~2">testdir</a>
-            <a class="list-group-item" href="../type/installer_t.html#variable-unit~32">unit</a>
-            <a class="list-group-item" href="../type/installer_t.html#variable-verbosity~17">verbosity</a>
+            <a class="list-group-item" href="../type/installer_t.html#variable-unit~22">unit</a>
+            <a class="list-group-item" href="../type/installer_t.html#variable-verbosity~13">verbosity</a>
         </div>
       </div>
     </div>
@@ -171,6 +171,7 @@
       <div id="boundprocs-0" class="collapse">
         <div class="list-group list-group-flush">
             <a class="list-group-item" href="../type/installer_t.html#boundprocedure-install~2">install</a>
+            <a class="list-group-item" href="../type/installer_t.html#boundprocedure-install_destination">install_destination</a>
             <a class="list-group-item" href="../type/installer_t.html#boundprocedure-install_executable">install_executable</a>
             <a class="list-group-item" href="../type/installer_t.html#boundprocedure-install_header">install_header</a>
             <a class="list-group-item" href="../type/installer_t.html#boundprocedure-install_library">install_library</a>
@@ -266,7 +267,7 @@
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-libdir~6"></span>
+              <span class="anchor" id="variable-libdir~5"></span>
               character(len=:),
             </td>
               <td>public,</td>
@@ -300,7 +301,7 @@
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-os~5"></span>
+              <span class="anchor" id="variable-os~4"></span>
               integer,
             </td>
               <td>public</td>
@@ -317,7 +318,7 @@
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-prefix~6"></span>
+              <span class="anchor" id="variable-prefix~3"></span>
               character(len=:),
             </td>
               <td>public,</td>
@@ -351,7 +352,7 @@
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-unit~32"></span>
+              <span class="anchor" id="variable-unit~22"></span>
               integer,
             </td>
               <td>public</td>
@@ -368,7 +369,7 @@
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-verbosity~17"></span>
+              <span class="anchor" id="variable-verbosity~13"></span>
               integer,
             </td>
               <td>public</td>
@@ -489,6 +490,83 @@
     </tbody>
   </table>
 
+
+          </li>
+      </ul>
+  </div>
+
+          </div>
+          <div class="row">
+              <div class="card mt-3">
+    <div class="card-header codesum">
+      <span class="anchor" id="boundprocedure-install_destination"></span>
+      <h3>
+          procedure, public ::
+  <strong>install_destination</strong>
+        
+      </h3>
+    </div>
+        <div class="card-body">
+          
+          <p>Evaluate the installation path</p>
+        </div>
+      <ul class="list-group">
+          <li class="list-group-item">
+                    <h3>
+    private  function install_destination(self, destination) result(install_dest)  
+</h3>
+
+  <p>Evaluate the installation path</p>
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" ></span>
+              class(<a href='installer_t.html'>installer_t</a>),
+            </td>
+<td>intent(inout)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>self</strong></td>
+            <td>
+                <p>Instance of the installer</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" ></span>
+              character(len=*),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>destination</strong></td>
+            <td>
+                <p>Path to the destination inside the prefix</p>
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+    <h4>
+    Return Value
+    <small>character(len=:), allocatable</small>
+    </h4>
+    
 
           </li>
       </ul>
@@ -1043,6 +1121,8 @@
 <span class="w">    </span><span class="c">!&gt; Cached operating system</span>
 <span class="w">    </span><span class="kt">integer</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">os</span>
 <span class="w">  </span><span class="k">contains</span>
+<span class="w">    </span><span class="c">!&gt; Evaluate the installation path</span>
+<span class="w">    </span><span class="k">procedure</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">install_destination</span><span class="w">  </span>
 <span class="w">    </span><span class="c">!&gt; Install an executable in its correct subdirectory</span>
 <span class="w">    </span><span class="k">procedure</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">install_executable</span>
 <span class="w">    </span><span class="c">!&gt; Install a library in its correct subdirectory</span>
@@ -1057,6 +1137,7 @@
 <span class="w">    </span><span class="k">procedure</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">run</span>
 <span class="w">    </span><span class="c">!&gt; Create a new directory in the prefix, type-bound for unit testing purposes</span>
 <span class="w">    </span><span class="k">procedure</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">make_dir</span>
+
 <span class="w">  </span><span class="k">end type </span><span class="n">installer_t</span>
 </pre></div>
 
@@ -1080,7 +1161,7 @@
             <p class="text-end">
               Documentation generated by
               <a href="https://github.com/Fortran-FOSS-Programmers/ford">FORD</a>
- on 2025-05-22 06:46 +0000             </p>
+ on 2025-06-07 07:02 +0000             </p>
           </div>
         </div>
         <br>
