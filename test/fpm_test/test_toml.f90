@@ -873,7 +873,7 @@ contains
 
         allocate(character(len=0) :: fpm)
         fpm = fpm//NL//'package-name = "fpm"'
-        fpm = fpm//NL//'fortran-flags = " -Wall -Wextra -fPIC -fmax-errors=1 -g "'
+        fpm = fpm//NL//'fortran-flags = " -Wall -Wextra -Wno-external-argument-mismatch -fPIC -fmax-errors=1 -g "'
         fpm = fpm//NL//'c-flags = ""'
         fpm = fpm//NL//'cxx-flags = ""'
         fpm = fpm//NL//'link-flags = ""'
@@ -1144,7 +1144,7 @@ contains
 
         allocate(character(len=0) :: fpm)
         fpm = fpm//NL//'package-name = "fpm"'
-        fpm = fpm//NL//'fortran-flags = " -Wall -Wextra -fPIC -fmax-errors=1 -g "'
+        fpm = fpm//NL//'fortran-flags = " -Wall -Wextra -Wno-external-argument-mismatch -fPIC -fmax-errors=1 -g "'
         fpm = fpm//NL//'c-flags = ""'
         fpm = fpm//NL//'cxx-flags = ""'
         fpm = fpm//NL//'link-flags = ""'

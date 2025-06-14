@@ -101,30 +101,32 @@ contains
     integer, intent(out) :: ntargets
 
     integer :: ii
-    type(string_t), allocatable :: install_target(:), temp(:)
+    type(string_t), allocatable :: install_target(:), apps(:), tests(:)
     type(build_target_ptr), allocatable :: libs(:)
 
-    allocate(install_target(0))
-
     call filter_library_targets(targets, libs)
-    install_target = [install_target, (string_t(libs(ii)%ptr%output_file),ii=1,size(libs))]
+    call filter_executable_targets(targets, FPM_SCOPE_APP, apps)
+    call filter_executable_targets(targets, FPM_SCOPE_TEST, tests)
 
-    call filter_executable_targets(targets, FPM_SCOPE_APP, temp)
-    install_target = [install_target, temp]
-
-    call filter_executable_targets(targets, FPM_SCOPE_TEST, temp)
-    install_target = [install_target, temp]
-
-    ntargets = size(install_target)
+    ntargets = size(libs) + size(apps) + size(tests)
+    allocate(install_target(ntargets))
+    
+    do ii = 1, size(libs)
+        install_target(ii) = string_t(libs(ii)%ptr%output_file)
+    end do
+    do ii = 1, size(apps)
+        install_target(size(libs) + ii) = string_t(apps(ii)%s)
+    end do
+    do ii = 1, size(tests)
+        install_target(size(libs) + size(apps) + ii) = string_t(tests(ii)%s)
+    end do
     
     if (verbose) then 
-
         write(unit, '("#", *(1x, g0))') &
           "total number of installable targets:", ntargets
         do ii = 1, ntargets
           write(unit, '("-", *(1x, g0))') install_target(ii)%s
         end do
-    
     endif
 
   end subroutine install_info
