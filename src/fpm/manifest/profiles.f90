@@ -783,19 +783,22 @@ module fpm_manifest_profile
               & new_profile('debug', &
                 & 'caf', &
                 & OS_ALL, &
-                & flags = ' -Wall -Wextra -Wimplicit-interface -fPIC -fmax-errors=1 -g -fcheck=bounds&
+                & flags = ' -Wall -Wextra -Wimplicit-interface -Wno-external-argument-mismatch&
+                          & -fPIC -fmax-errors=1 -g -fcheck=bounds&
                           & -fcheck=array-temps -fbacktrace', &
                 & is_built_in=.true.), &
               & new_profile('debug', &
                 & 'gfortran', &
                 & OS_ALL, &
-                & flags = ' -Wall -Wextra -Wimplicit-interface -fPIC -fmax-errors=1 -g -fcheck=bounds&
+                & flags = ' -Wall -Wextra -Wimplicit-interface -Wno-external-argument-mismatch&
+                          & -fPIC -fmax-errors=1 -g -fcheck=bounds&
                           & -fcheck=array-temps -fbacktrace -fcoarray=single', &
                 & is_built_in=.true.), &
               & new_profile('debug', &
                 & 'f95', &
                 & OS_ALL, &
-                & flags = ' -Wall -Wextra -Wimplicit-interface -fPIC -fmax-errors=1 -g -fcheck=bounds&
+                & flags = ' -Wall -Wextra -Wimplicit-interface -Wno-external-argument-mismatch&
+                          & -fPIC -fmax-errors=1 -g -fcheck=bounds&
                           & -fcheck=array-temps -Wno-maybe-uninitialized -Wno-uninitialized -fbacktrace', &
                 & is_built_in=.true.), &
               & new_profile('debug', &
