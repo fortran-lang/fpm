@@ -30,6 +30,8 @@ jobs:
           - {compiler: gcc, version: 15}
           - {compiler: intel, version: 2025.1}
         exclude:
+          - os: ubuntu-latest  # gcc 15 not available on Ubuntu yet
+            toolchain: {compiler: gcc, version: 15}
           - os: macos-13  # No Intel on MacOS anymore since 2024
             toolchain: {compiler: intel, version: '2025.1'}
           - os: windows-latest  # Doesn't pass build and tests yet

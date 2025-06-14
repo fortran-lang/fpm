@@ -178,7 +178,7 @@ character(*), parameter :: &
     flag_gnu_opt = " -O3 -funroll-loops", &
     flag_gnu_debug = " -g", &
     flag_gnu_pic = " -fPIC", &
-    flag_gnu_warn = " -Wall -Wextra", &
+    flag_gnu_warn = " -Wall -Wextra -Wno-external-argument-mismatch", &
     flag_gnu_check = " -fcheck=bounds -fcheck=array-temps", &
     flag_gnu_limit = " -fmax-errors=1", &
     flag_gnu_external = " -Wimplicit-interface", &
