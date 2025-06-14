@@ -23,23 +23,19 @@ jobs:
       matrix:
         os: [ubuntu-latest, macos-13, windows-latest]
         toolchain:
+          - {compiler: gcc, version: 10}
           - {compiler: gcc, version: 11}
           - {compiler: gcc, version: 12}
           - {compiler: gcc, version: 13}
           - {compiler: gcc, version: 14}
-          - {compiler: gcc, version: 15}
           - {compiler: intel, version: 2025.1}
         exclude:
-          - os: ubuntu-latest  # gcc 15 not available on Ubuntu yet
-            toolchain: {compiler: gcc, version: 15}
           - os: macos-13  # No Intel on MacOS anymore since 2024
             toolchain: {compiler: intel, version: '2025.1'}
           - os: windows-latest  # Doesn't pass build and tests yet
             toolchain: {compiler: intel, version: '2025.1'}
           - os: windows-latest  # gcc 14 not available on Windows yet
             toolchain: {compiler: gcc, version: 14}
-          - os: windows-latest  # gcc 15 not available on Windows yet
-            toolchain: {compiler: gcc, version: 15}
         include:
           - os: ubuntu-latest
             os-arch: linux-x86_64
