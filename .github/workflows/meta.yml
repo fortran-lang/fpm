@@ -31,17 +31,20 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
-      matrix:
-        release-flags: ["--flag -Wno-external-argument-mismatch"]            
+      matrix:        
         include:
           - os: ubuntu-latest
             mpi: openmpi
+            release-flags: ["--flag -Wno-external-argument-mismatch"]            
           - os: ubuntu-latest
             mpi: mpich
+            release-flags: ["--flag -Wno-external-argument-mismatch"]            
           - os: macos-13
             mpi: openmpi
+            release-flags: ["--flag -Wno-external-argument-mismatch"]            
           - os: macos-13
             mpi: mpich
+            release-flags: ["--flag -Wno-external-argument-mismatch"]            
           - os: ubuntu-latest
             mpi: intel
             intel_version: "2024.1.0"
