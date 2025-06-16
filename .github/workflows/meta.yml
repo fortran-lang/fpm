@@ -212,7 +212,7 @@ jobs:
     - name: (macOS) Install homebrew OpenMPI
       if: contains(matrix.mpi,'openmpi') && contains(matrix.os,'macos')
       run: |
-        brew install --cc=gcc-${{ env.GCC_V }} openmpi
+        brew install openmpi
 
     - name: (macOS) Install homebrew HDF5
       if: contains(matrix.os,'macos')
@@ -226,7 +226,7 @@ jobs:
         brew install netcdf-fortran
 
     - name: (macOS) Patch gfortran paths
-      if: contains(matrix.mpi,'openmpi') && contains(matrix.os,'macos')
+      if: contains(matrix.os,'macos')
       run: |        
         # Backport gfortran shared libraries to version 10 folder. This is necessary because all macOS releases of fpm
         # have these paths hardcoded in the executable (no PIC?). Current bootstrap version 0.8.0 has gcc-10
