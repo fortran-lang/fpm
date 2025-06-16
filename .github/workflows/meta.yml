@@ -32,6 +32,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
+        release-flags: ["--flag -Wno-external-argument-mismatch"]            
         include:
           - os: ubuntu-latest
             mpi: openmpi
@@ -44,9 +45,11 @@ jobs:
           - os: ubuntu-latest
             mpi: intel
             intel_version: "2024.1.0"
+            release-flags: ""            # override: no GCC flags
           - os: ubuntu-latest
             mpi: intel
-            intel_version: "2025.0"        
+            intel_version: "2025.0" 
+            release-flags: ""            # override: no GCC flags       
 
     steps:
     - name: Checkout code
@@ -276,7 +279,7 @@ jobs:
       if: (!contains(matrix.mpi,'intel'))
       shell: bash
       run: |
-        ${{ env.BOOTSTRAP }} test
+        ${{ env.BOOTSTRAP }} test ${{ matrix.release-flags }}
 
     - name: Install Fortran fpm (bootstrap)
       shell: bash
