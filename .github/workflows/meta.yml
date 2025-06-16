@@ -220,12 +220,6 @@ jobs:
         brew install netcdf
         brew install netcdf-fortran
 
-    # Phase 1: Bootstrap fpm with existing version
-    - name: Install fpm
-      uses: fortran-lang/setup-fpm@v7
-      with:
-        fpm-version: 'v0.8.0'
-
     - name: (macOS) Patch gfortran paths
       if: contains(matrix.mpi,'openmpi') && contains(matrix.os,'macos')
       run: |        
@@ -240,6 +234,12 @@ jobs:
         ln -fs /usr/local/opt/gcc@${{ env.GCC_V }}/lib/gcc/${{ env.GCC_V }}/libgfortran.5.dylib /usr/local/opt/gcc@10/lib/gcc/10/libgfortran.5.dylib
         # Newer gcc versions use libgcc_s.1.1.dylib
         ln -fs /usr/local/lib/gcc/${{ env.GCC_V }}/libgcc_s.1.dylib /usr/local/lib/gcc/10/libgcc_s.1.dylib || ln -fs /usr/local/lib/gcc/${{ env.GCC_V }}/libgcc_s.1.1.dylib /usr/local/lib/gcc/10/libgcc_s.1.dylib
+       
+    # Phase 1: Bootstrap fpm with existing version
+    - name: Install fpm
+      uses: fortran-lang/setup-fpm@v7
+      with:
+        fpm-version: 'v0.8.0'       
         
     - name: Remove fpm from path
       shell: bash
