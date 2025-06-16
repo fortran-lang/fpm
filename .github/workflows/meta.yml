@@ -52,11 +52,16 @@ jobs:
     - name: Checkout code
       uses: actions/checkout@v4
 
-    - name: (Ubuntu/macOS) setup gcc version
-      if: contains(matrix.os,'ubuntu') || contains(matrix.os,'macos')
+    - name: (Ubuntu) setup gcc version
+      if: contains(matrix.os,'ubuntu') 
       run: |
         echo "GCC_V=14" >> $GITHUB_ENV
 
+    - name: (macOS) setup gcc version
+      if: contains(matrix.os,'macos')
+      run: |
+        echo "GCC_V=15" >> $GITHUB_ENV        
+        
     - name: (Windows) Install MSYS2
       uses: msys2/setup-msys2@v2
       if: contains(matrix.os,'windows') && contains(matrix.mpi,'msmpi')
@@ -207,7 +212,7 @@ jobs:
     - name: (macOS) Install homebrew OpenMPI
       if: contains(matrix.mpi,'openmpi') && contains(matrix.os,'macos')
       run: |
-        brew install openmpi #--cc=gcc-${{ env.GCC_V }} openmpi
+        brew install --cc=gcc-${{ env.GCC_V }} openmpi
 
     - name: (macOS) Install homebrew HDF5
       if: contains(matrix.os,'macos')
