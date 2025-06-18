@@ -35,6 +35,7 @@ use fpm_compiler, only: get_macros
 use fpm_sources, only: get_exe_name_with_suffix
 use fpm_manifest_library, only: library_config_t
 use fpm_manifest_preprocess, only: preprocess_config_t
+use fpm_versioning, only: version_t, new_version
 implicit none
 
 private
@@ -134,7 +135,7 @@ type build_target_t
     type(string_t), allocatable :: macros(:)
 
     !> Version number
-    character(:), allocatable :: version
+    type(version_t), allocatable :: version
     
     contains
     
@@ -223,7 +224,7 @@ subroutine info(self, unit, verbosity)
     end if
 
     if (allocated(self%version)) then
-        write(unit, fmt) "- version", self%version
+        write(unit, fmt) "- version", self%version%s()
     end if
 
     if (allocated(self%macros)) then
@@ -383,7 +384,7 @@ subroutine build_target_list(targets,model,library)
                                 output_name = get_object_name(sources(i)), &
                                 features    = model%packages(j)%features, &
                                 preprocess  = model%packages(j)%preprocess, &
-                                version = model%packages(j)%version)
+                                version     = model%packages(j)%version)
 
 
                     if (with_lib .and. sources(i)%unit_scope == FPM_SCOPE_LIB) then
@@ -571,7 +572,7 @@ type(build_target_ptr) function new_target(package, type, output_name, source, l
     type(string_t), intent(in), optional :: link_libraries(:)
     type(fortran_features_t), intent(in), optional :: features
     type(preprocess_config_t), intent(in), optional :: preprocess
-    character(*), intent(in), optional :: version
+    type(version_t), intent(in), optional :: version
     character(*), intent(in), optional :: output_dir
 
     allocate(new_target%ptr)
@@ -587,7 +588,8 @@ type(build_target_ptr) function new_target(package, type, output_name, source, l
         if (present(preprocess)) then
             if (allocated(preprocess%macros)) target%macros = preprocess%macros
         endif
-        if (present(version)) target%version = version
+        if (present(version)) allocate(target%version, source = version)
+            
         allocate(target%dependencies(0))
         
         call target%set_output_dir(output_dir)
@@ -607,7 +609,7 @@ subroutine add_new_target(targets, package, type, output_name, source, link_libr
     type(string_t), intent(in), optional :: link_libraries(:)
     type(fortran_features_t), intent(in), optional :: features
     type(preprocess_config_t), intent(in), optional :: preprocess
-    character(*), intent(in), optional :: version
+    type(version_t), intent(in), optional :: version
     character(*), intent(in), optional :: output_dir
 
     type(build_target_ptr) :: added

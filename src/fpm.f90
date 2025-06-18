@@ -120,7 +120,7 @@ subroutine build_model(model, settings, package, error)
                 features%implicit_external = manifest%fortran%implicit_external
                 features%source_form = manifest%fortran%source_form
             end associate
-            model%packages(i)%version = package%version%s()
+            model%packages(i)%version = manifest%version
 
             !> Add this dependency's manifest macros
             if (allocated(manifest%preprocess)) then
