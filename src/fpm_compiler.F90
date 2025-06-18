@@ -576,7 +576,7 @@ function get_macros(id, macros_list, version) result(macros)
                         
                         else
                             
-                           call fpm_stop(1,'Internal error: cannot expand {version} macro')
+                           call fpm_stop(1,'Internal error: cannot expand {version} macro in '//macros)
                         
                         endif
                         
