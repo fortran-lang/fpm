@@ -428,10 +428,10 @@ subroutine build_target_list(targets,model,library)
 
                     call add_target(targets,package=model%packages(j)%name,type = exe_type,&
                                 output_name = get_object_name(sources(i)), &
-                                source = sources(i), &
-                                features = model%packages(j)%features, &
-                                preprocess = model%packages(j)%preprocess &
-                                )
+                                source      = sources(i), &
+                                features    = model%packages(j)%features, &
+                                preprocess  = model%packages(j)%preprocess, &
+                                version     = model%packages(j)%version)
 
                     if (sources(i)%unit_scope == FPM_SCOPE_APP) then
 
@@ -1072,7 +1072,6 @@ subroutine resolve_target_linking(targets, model, library, error)
             end select
 
             !> Get macros as flags.
-            call target%info(6)
             target%compile_flags = target%compile_flags // get_macros(model%compiler%id, &
                                                             target%macros, &
                                                             target%version)
