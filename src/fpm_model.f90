@@ -38,6 +38,7 @@ module fpm_model
 use iso_fortran_env, only: int64
 use fpm_compiler, only: compiler_t, archiver_t, debug
 use fpm_dependency, only: dependency_tree_t
+use fpm_versioning, only: version_t, new_version
 use fpm_strings, only: string_t, str, len_trim, upper, operator(==)
 use tomlf, only: toml_table, toml_stat
 use fpm_toml, only: serializable_t, set_value, set_list, get_value, &
@@ -161,7 +162,7 @@ type, extends(serializable_t) :: package_t
     type(preprocess_config_t) :: preprocess
 
     !> Package version number.
-    character(:), allocatable :: version
+    type(version_t), allocatable :: version
 
     !> Module naming conventions
     logical :: enforce_module_names = .false.
@@ -749,7 +750,9 @@ subroutine package_dump_to_toml(self, table, error)
     call set_string(table, "name", self%name, error, 'package_t')
     if (allocated(error)) return
 
-    call set_string(table, "version", self%version, error, 'package_t')
+    if (allocated(self%version)) then
+       call set_value(ptr, "version", self%version%s())
+    end if    
     if (allocated(error)) return
 
     call set_value(table, "module-naming", self%enforce_module_names, error, 'package_t')
@@ -808,9 +811,18 @@ subroutine package_load_from_toml(self, table, error)
     type(toml_key), allocatable :: keys(:),src_keys(:)
     type(toml_table), pointer :: ptr_sources,ptr,ptr_fortran,ptr_preprocess
     type(error_t), allocatable :: new_error
+    character(len=:), allocatable :: version
 
     call get_value(table, "name", self%name)
-    call get_value(table, "version", self%version)
+    call get_value(table, "version", version)
+    if (allocated(version)) then
+        allocate(self%version)
+        call new_version(self%version, version, error)
+        if (allocated(error)) then
+            error%message = 'package_t: version error from TOML table - '//error%message
+            return
+        endif
+    end if       
 
     call get_value(table, "module-naming", self%enforce_module_names, error, 'package_t')
     if (allocated(error)) return
