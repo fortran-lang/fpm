@@ -653,6 +653,7 @@ contains
 
         !> Create a dummy package
         pkg%name = "orderpack"
+        if (.not.allocated(pkg%version)) allocate(pkg%version)
         call new_version(pkg%version, "0.1.0", error)
         if (allocated(error)) return
         pkg%enforce_module_names = .false.

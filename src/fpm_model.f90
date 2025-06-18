@@ -751,7 +751,7 @@ subroutine package_dump_to_toml(self, table, error)
     if (allocated(error)) return
 
     if (allocated(self%version)) then
-       call set_value(ptr, "version", self%version%s())
+       call set_value(table, "version", self%version%s())
     end if    
     if (allocated(error)) return
 
@@ -816,7 +816,7 @@ subroutine package_load_from_toml(self, table, error)
     call get_value(table, "name", self%name)
     call get_value(table, "version", version)
     if (allocated(version)) then
-        allocate(self%version)
+        if (.not.allocated(self%version)) allocate(self%version)
         call new_version(self%version, version, error)
         if (allocated(error)) then
             error%message = 'package_t: version error from TOML table - '//error%message
