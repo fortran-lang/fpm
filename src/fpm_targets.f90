@@ -1072,6 +1072,7 @@ subroutine resolve_target_linking(targets, model, library, error)
             end select
 
             !> Get macros as flags.
+            call target%info(6)
             target%compile_flags = target%compile_flags // get_macros(model%compiler%id, &
                                                             target%macros, &
                                                             target%version)
