@@ -12,6 +12,7 @@ module fpm_meta_mpi
         remove_newline_characters
     use fpm_environment, only: get_env, get_os_type, os_is_unix, OS_MACOS, OS_WINDOWS
     use fpm_meta_base, only: metapackage_t, destroy
+    use fpm_meta_util, only: add_strings
     use fpm_manifest_metapackages, only: metapackage_request_t
     use fpm_pkg_config, only: run_wrapper
     use shlex_module, only: shlex_split => split
@@ -851,34 +852,6 @@ contains
         call assert_mpi_wrappers('C++',cpp_wrappers,compiler)
 
     end subroutine mpi_wrappers
-
-    !> Add elements to a string array with a loop (gcc-15 bug on array initializer)
-    pure subroutine add_strings(list,new)
-        type(string_t), allocatable, intent(inout) :: list(:)
-        type(string_t), intent(in) :: new(:)
-
-        integer :: i,n,add
-        type(string_t), allocatable :: tmp(:)
-
-        if (allocated(list)) then 
-           n = size(list)
-        else
-           n = 0
-        endif     
-
-        add = size(new)
-        if (add<=0) return
-
-        allocate(tmp(n+add))
-        do i=1,n
-           tmp(i) = list(i)
-        end do   
-        do i=1,add
-           tmp(n+i) = new(i)
-        end do   
-        call move_alloc(from=tmp,to=list)
-
-    end subroutine add_strings    
 
     !> Filter out invalid/unavailable mpi wrappers
     subroutine assert_mpi_wrappers(language,wrappers,compiler,verbose)
