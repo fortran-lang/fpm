@@ -846,14 +846,15 @@ contains
 
         end select compiler_specific
 
-        call assert_mpi_wrappers(fort_wrappers,compiler)
-        call assert_mpi_wrappers(c_wrappers,compiler)
-        call assert_mpi_wrappers(cpp_wrappers,compiler)
+        call assert_mpi_wrappers('Fortran',fort_wrappers,compiler)
+        call assert_mpi_wrappers('C',c_wrappers,compiler)
+        call assert_mpi_wrappers('C++',cpp_wrappers,compiler)
 
     end subroutine mpi_wrappers
 
     !> Filter out invalid/unavailable mpi wrappers
-    subroutine assert_mpi_wrappers(wrappers,compiler,verbose)
+    subroutine assert_mpi_wrappers(language,wrappers,compiler,verbose)
+        character(*), intent(in) :: language
         type(string_t), allocatable, intent(inout) :: wrappers(:)
         type(compiler_t), intent(in) :: compiler
         logical, optional, intent(in) :: verbose
@@ -865,7 +866,7 @@ contains
 
         do i=1,size(wrappers)
             if (present(verbose)) then
-                if (verbose) print *, '+ MPI test wrapper <',wrappers(i)%s,'>'
+                if (verbose .or. .true.) print *, '+ MPI <',language,'> test wrapper <',wrappers(i)%s,'>'
             endif
             works(i) = which_mpi_library(wrappers(i),compiler,verbose)
         end do
