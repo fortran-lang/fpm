@@ -766,19 +766,19 @@ contains
                          string_t(get_env('MPIf77','mpif77'))]
 
         if (get_os_type()==OS_WINDOWS) then
-            c_wrappers    = [c_wrappers,string_t('mpicc.bat')]
-            cpp_wrappers  = [cpp_wrappers,string_t('mpicxx.bat')]
-            fort_wrappers = [fort_wrappers,string_t('mpifc.bat')]
+            call add_strings(c_wrappers,[string_t('mpicc.bat')])
+            call add_strings(cpp_wrappers,[string_t('mpicxx.bat')])
+            call add_strings(fort_wrappers,[string_t('mpifc.bat')])
         endif
 
         ! Add compiler-specific wrappers
         compiler_specific: select case (compiler%id)
            case (id_gcc,id_f95)
 
-                c_wrappers = [c_wrappers,string_t('mpigcc'),string_t('mpgcc')]
-              cpp_wrappers = [cpp_wrappers,string_t('mpig++'),string_t('mpg++')]
-             fort_wrappers = [fort_wrappers,string_t('mpigfortran'),string_t('mpgfortran'),&
-                              string_t('mpig77'),string_t('mpg77')]
+             call add_strings(c_wrappers,[string_t('mpigcc'),string_t('mpgcc')])
+             call add_strings(cpp_wrappers,[string_t('mpig++'),string_t('mpg++')])
+             call add_strings(fort_wrappers,[string_t('mpigfortran'),string_t('mpgfortran'),&
+                                             string_t('mpig77'),string_t('mpg77')])
 
            case (id_intel_classic_windows,id_intel_classic_nix,id_intel_classic_mac)
                  
@@ -794,15 +794,15 @@ contains
 
                  intel_wrap = join_path(mpi_root,'mpiifort')
                  if (get_os_type()==OS_WINDOWS) intel_wrap = get_dos_path(intel_wrap,error)
-                 if (intel_wrap/="") fort_wrappers = [fort_wrappers,string_t(intel_wrap)]
+                 if (intel_wrap/="") call add_strings(fort_wrappers,[string_t(intel_wrap)])
 
                  intel_wrap = join_path(mpi_root,'mpiicc')
                  if (get_os_type()==OS_WINDOWS) intel_wrap = get_dos_path(intel_wrap,error)
-                 if (intel_wrap/="") c_wrappers = [c_wrappers,string_t(intel_wrap)]
+                 if (intel_wrap/="") call add_strings(c_wrappers,[string_t(intel_wrap)])
 
                  intel_wrap = join_path(mpi_root,'mpiicpc')
                  if (get_os_type()==OS_WINDOWS) intel_wrap = get_dos_path(intel_wrap,error)
-                 if (intel_wrap/="") cpp_wrappers = [cpp_wrappers,string_t(intel_wrap)]
+                 if (intel_wrap/="") call add_strings(cpp_wrappers,[string_t(intel_wrap)])
 
              end if
 
@@ -820,29 +820,29 @@ contains
 
                  intel_wrap = join_path(mpi_root,'mpiifx')
                  if (get_os_type()==OS_WINDOWS) intel_wrap = get_dos_path(intel_wrap,error)
-                 if (intel_wrap/="") fort_wrappers = [fort_wrappers,string_t(intel_wrap)]
+                 if (intel_wrap/="") call add_strings(fort_wrappers,[string_t(intel_wrap)])
 
                  intel_wrap = join_path(mpi_root,'mpiicx')
                  if (get_os_type()==OS_WINDOWS) intel_wrap = get_dos_path(intel_wrap,error)
-                 if (intel_wrap/="") c_wrappers = [c_wrappers,string_t(intel_wrap)]
+                 if (intel_wrap/="") call add_strings(c_wrappers,[string_t(intel_wrap)])
 
                  intel_wrap = join_path(mpi_root,'mpiicpx')
                  if (get_os_type()==OS_WINDOWS) intel_wrap = get_dos_path(intel_wrap,error)
-                 if (intel_wrap/="") cpp_wrappers = [cpp_wrappers,string_t(intel_wrap)]
+                 if (intel_wrap/="") call add_strings(cpp_wrappers,[string_t(intel_wrap)])
 
              end if
 
            case (id_pgi,id_nvhpc)
 
-                c_wrappers = [c_wrappers,string_t('mpipgicc'),string_t('mpgcc')]
-              cpp_wrappers = [cpp_wrappers,string_t('mpipgic++')]
-             fort_wrappers = [fort_wrappers,string_t('mpipgifort'),string_t('mpipgf90')]
+             call add_strings(c_wrappers,[string_t('mpipgicc'),string_t('mpgcc')])
+             call add_strings(cpp_wrappers,[string_t('mpipgic++')])
+             call add_strings(fort_wrappers,[string_t('mpipgifort'),string_t('mpipgf90')])
 
            case (id_cray)
 
-                c_wrappers = [c_wrappers,string_t('cc')]
-              cpp_wrappers = [cpp_wrappers,string_t('CC')]
-             fort_wrappers = [fort_wrappers,string_t('ftn')]
+             call add_strings(c_wrappers,[string_t('cc')])
+             call add_strings(cpp_wrappers,[string_t('CC')])
+             call add_strings(fort_wrappers,[string_t('ftn')])
 
         end select compiler_specific
 
@@ -851,6 +851,34 @@ contains
         call assert_mpi_wrappers('C++',cpp_wrappers,compiler)
 
     end subroutine mpi_wrappers
+
+    !> Add elements to a string array with a loop (gcc-15 bug on array initializer)
+    pure subroutine add_strings(list,new)
+        type(string_t), allocatable, intent(inout) :: list(:)
+        type(string_t), intent(in) :: new(:)
+
+        integer :: i,n,add
+        type(string_t), allocatable :: tmp(:)
+
+        if (allocated(list)) then 
+           n = size(list)
+        else
+           n = 0
+        endif     
+
+        add = size(new)
+        if (add<=0) return
+
+        allocate(tmp(n+add))
+        do i=1,n
+           tmp(i) = list(i)
+        end do   
+        do i=1,add
+           tmp(n+i) = new(i)
+        end do   
+        call move_alloc(from=tmp,to=list)
+
+    end subroutine add_strings    
 
     !> Filter out invalid/unavailable mpi wrappers
     subroutine assert_mpi_wrappers(language,wrappers,compiler,verbose)
