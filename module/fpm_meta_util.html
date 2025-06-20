@@ -92,7 +92,7 @@
 
             <li class="list-inline-item" id="statements"><i class="fa fa-list-ol"></i>
               <a data-bs-toggle="tooltip" data-bs-placement="bottom" data-bs-html="true"
-                 title=" 0.6% of total for modules and submodules.">95 statements</a>
+                 title=" 0.9% of total for modules and submodules.">137 statements</a>
             </li>
 
             <li class="list-inline-item" id="source-file">
@@ -133,7 +133,18 @@
   
   
   
-  
+      <div class="card mb-4">
+      <a data-bs-toggle="collapse" href="#inters-0"
+         aria-expanded="false" aria-controls="inters-0">
+         <h4 class="card-header bg-primary text-white">Interfaces</h4>
+      </a>
+      <div id="inters-0" class="collapse">
+        <div class="list-group list-group-flush">
+            <a class="list-group-item" href="../module/fpm_meta_util.html#interface-add_strings">add_strings</a>
+        </div>
+      </div>
+    </div>
+
   
   
   
@@ -171,11 +182,11 @@
         <ul class="list-group list-group-flush">
             <li class="list-group-item">
               <ul class="list-inline">
+                  <li class="list-inline-item"><a href='fpm_strings.html'>fpm_strings</a></li>
+                  <li class="list-inline-item"><a href='fpm_error.html'>fpm_error</a></li>
+                  <li class="list-inline-item"><a href='fpm_meta_base.html'>fpm_meta_base</a></li>
                   <li class="list-inline-item"><a href='fpm_versioning.html'>fpm_versioning</a></li>
                   <li class="list-inline-item"><a href='fpm_pkg_config.html'>fpm_pkg_config</a></li>
-                  <li class="list-inline-item"><a href='fpm_error.html'>fpm_error</a></li>
-                  <li class="list-inline-item"><a href='fpm_strings.html'>fpm_strings</a></li>
-                  <li class="list-inline-item"><a href='fpm_meta_base.html'>fpm_meta_base</a></li>
                   <li class="list-inline-item"><a href='fpm_filesystem.html'>fpm_filesystem</a></li>
               </ul>
             </li>
@@ -189,6 +200,126 @@
 
 
 
+        <section>
+          <h2>Interfaces</h2>
+              <div class="card">
+    <div class="card-header bg-light codesum">
+      <span class="anchor" id="interface-add_strings"></span>
+      <h3>public        interface <a href='../interface/add_strings.html'>add_strings</a> 
+      </h3>
+    </div>
+    <ul class="list-group">
+          <li class="list-group-item">
+                <h3>
+    private pure subroutine add_strings_one(list, new)  
+
+    </h3>
+  <p>Add one element to a string array with a loop (gcc-15 bug on array initializer)</p>
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-list~19"></span>
+              type(<a href='../type/string_t.html'>string_t</a>),
+            </td>
+<td>intent(inout),</td>
+              <td></td>            <td>
+              allocatable
+            </td>
+            <td>::</td>
+            <td><strong>list</strong>(:)</td>
+            <td>
+                
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-new~2"></span>
+              type(<a href='../type/string_t.html'>string_t</a>),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>new</strong></td>
+            <td>
+                
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+
+          </li>
+          <li class="list-group-item">
+                <h3>
+    private pure subroutine add_strings_many(list, new)  
+
+    </h3>
+  <p>Add elements to a string array with a loop (gcc-15 bug on array initializer)</p>
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-list~20"></span>
+              type(<a href='../type/string_t.html'>string_t</a>),
+            </td>
+<td>intent(inout),</td>
+              <td></td>            <td>
+              allocatable
+            </td>
+            <td>::</td>
+            <td><strong>list</strong>(:)</td>
+            <td>
+                
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-new~3"></span>
+              type(<a href='../type/string_t.html'>string_t</a>),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>new</strong>(:)</td>
+            <td>
+                
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+
+          </li>
+    </ul>
+  </div>
+
+        </section>
+        <br>
 
 
 
@@ -218,7 +349,7 @@ Get compiler flags</p>
     <tbody>
         <tr>
             <td>
-              <span class="anchor" id="variable-this~27"></span>
+              <span class="anchor" id="variable-this~34"></span>
               class(<a href='../type/metapackage_t.html'>metapackage_t</a>),
             </td>
 <td>intent(inout)</td>
@@ -233,7 +364,7 @@ Get compiler flags</p>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-name~29"></span>
+              <span class="anchor" id="variable-name~34"></span>
               character(len=*),
             </td>
 <td>intent(in)</td>
@@ -278,7 +409,7 @@ Get compiler flags</p>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-error~166"></span>
+              <span class="anchor" id="variable-error~196"></span>
               type(<a href='../type/error_t.html'>error_t</a>),
             </td>
 <td>intent(out),</td>
@@ -318,7 +449,7 @@ Get compiler flags</p>
     <tbody>
         <tr>
             <td>
-              <span class="anchor" id="variable-lib_name"></span>
+              <span class="anchor" id="variable-lib_name~2"></span>
               character(len=*),
             </td>
 <td>intent(in)</td>
@@ -348,7 +479,7 @@ Get compiler flags</p>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-prefix~5"></span>
+              <span class="anchor" id="variable-prefix~7"></span>
               character(len=:),
             </td>
 <td>intent(out),</td>
@@ -363,7 +494,7 @@ Get compiler flags</p>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-suffix"></span>
+              <span class="anchor" id="variable-suffix~2"></span>
               character(len=:),
             </td>
 <td>intent(out),</td>
@@ -378,7 +509,7 @@ Get compiler flags</p>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-found~4"></span>
+              <span class="anchor" id="variable-found~7"></span>
               logical,
             </td>
 <td>intent(out)</td>
@@ -421,7 +552,7 @@ Get compiler flags</p>
             <p class="text-end">
               Documentation generated by
               <a href="https://github.com/Fortran-FOSS-Programmers/ford">FORD</a>
- on 2025-06-07 07:02 +0000             </p>
+ on 2025-06-20 18:47 +0000             </p>
           </div>
         </div>
         <br>

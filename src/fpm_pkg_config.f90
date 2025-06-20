@@ -338,7 +338,7 @@ subroutine run_wrapper(wrapper,args,verbose,exitcode,cmd_success,screen_output)
            close(iunit,status='delete')
 
         else
-           call fpm_stop(1,'cannot read temporary file from successful MPI wrapper')
+           call fpm_stop(1,'cannot read temporary file from successful command: '//command)
         endif
 
     end if

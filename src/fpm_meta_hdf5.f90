@@ -4,7 +4,7 @@ module fpm_meta_hdf5
     use fpm_filesystem, only: join_path
     use fpm_pkg_config, only: assert_pkg_config, pkgcfg_has_package, pkgcfg_list_all
     use fpm_meta_base, only: metapackage_t, destroy
-    use fpm_meta_util, only: add_pkg_config_compile_options, lib_get_trailing
+    use fpm_meta_util, only: add_pkg_config_compile_options, lib_get_trailing, add_strings
     use fpm_manifest_metapackages, only: metapackage_request_t
     use fpm_error, only: error_t, fatal_error
 
@@ -112,8 +112,8 @@ module fpm_meta_hdf5
                       inquire(file=this_lib%s,exist=found)
 
                       ! File exists, but it is not linked against
-                      if (found) this%link_libs = [this%link_libs, &
-                                                   string_t(this%link_libs(i)%s//trim(find_hl(k)))]
+                      if (found) call add_strings(this%link_libs, &
+                                                   string_t(this%link_libs(i)%s//trim(find_hl(k))))
 
                    end do add_missing
 
