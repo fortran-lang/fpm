@@ -653,7 +653,9 @@ contains
 
         !> Create a dummy package
         pkg%name = "orderpack"
-        pkg%version = "0.1.0"
+        if (.not.allocated(pkg%version)) allocate(pkg%version)
+        call new_version(pkg%version, "0.1.0", error)
+        if (allocated(error)) return
         pkg%enforce_module_names = .false.
         pkg%module_prefix = string_t("")
         pkg%features%source_form = "free"

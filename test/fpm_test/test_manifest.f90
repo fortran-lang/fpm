@@ -1420,7 +1420,7 @@ contains
         type(error_t), allocatable, intent(out) :: error
 
         type(package_config_t) :: package
-        character(:), allocatable :: temp_file,pkg_ver
+        character(:), allocatable :: temp_file
         integer :: unit
         integer(compiler_enum)  :: id
 
@@ -1439,9 +1439,7 @@ contains
 
         if (allocated(error)) return
 
-        pkg_ver = package%version%s()
-
-        if (get_macros(id, package%preprocess(1)%macros, pkg_ver) /= " -DFOO -DBAR=2 -DVERSION=0.1.0") then
+        if (get_macros(id, package%preprocess(1)%macros, package%version) /= " -DFOO -DBAR=2 -DVERSION=0.1.0") then
             call test_failed(error, "Macros were not parsed correctly")
         end if
 
@@ -1460,7 +1458,6 @@ contains
 
         character(:), allocatable :: toml_file_package
         character(:), allocatable :: toml_file_dependency
-        character(:), allocatable :: pkg_ver,dep_ver
 
         integer :: unit
         integer(compiler_enum)  :: id
@@ -1497,11 +1494,8 @@ contains
 
         if (allocated(error)) return
 
-        pkg_ver = package%version%s()
-        dep_ver = dependency%version%s()
-
-        macros_package = get_macros(id, package%preprocess(1)%macros, pkg_ver)
-        macros_dependency = get_macros(id, dependency%preprocess(1)%macros, dep_ver)
+        macros_package = get_macros(id, package%preprocess(1)%macros, package%version)
+        macros_dependency = get_macros(id, dependency%preprocess(1)%macros, dependency%version)
         if (macros_package == macros_dependency) then
             call test_failed(error, "Macros of package and dependency should not be equal")
         end if

@@ -43,10 +43,11 @@ use fpm_filesystem, only: join_path, basename, get_temp_filename, delete_file, u
 use fpm_strings, only: split, string_cat, string_t, str_ends_with, str_begins_with_str, &
     & string_array_contains
 use fpm_manifest, only : package_config_t
-use fpm_error, only: error_t, fatal_error
+use fpm_error, only: error_t, fatal_error, fpm_stop
 use tomlf, only: toml_table
 use fpm_toml, only: serializable_t, set_string, set_value, toml_stat, get_value
 use fpm_compile_commands, only: compile_command_t, compile_command_table_t
+use fpm_versioning, only: version_t
 use shlex_module, only: sh_split => split, ms_split, quote => ms_quote
 implicit none
 public :: compiler_t, new_compiler, archiver_t, new_archiver, get_macros
@@ -523,7 +524,7 @@ end subroutine set_cpp_preprocessor_flags
 !> return them as defined flags.
 function get_macros(id, macros_list, version) result(macros)
     integer(compiler_enum), intent(in) :: id
-    character(len=:), allocatable, intent(in) :: version
+    type(version_t), optional, intent(in) :: version
     type(string_t), allocatable, intent(in) :: macros_list(:)
 
     character(len=:), allocatable :: macros
@@ -556,6 +557,7 @@ function get_macros(id, macros_list, version) result(macros)
         !> Split the macro name and value.
         call split(macros_list(i)%s, valued_macros, delimiters="=")
 
+        !> Replace {version} placeholder with the actual version string
         if (size(valued_macros) > 1) then
             !> Check if the value of macro starts with '{' character.
             if (str_begins_with_str(trim(valued_macros(size(valued_macros))), "{")) then
@@ -567,8 +569,17 @@ function get_macros(id, macros_list, version) result(macros)
                     if (index(valued_macros(size(valued_macros)), "version") /= 0) then
 
                         !> These conditions are placed in order to ensure proper spacing between the macros.
-                        macros = macros//macro_definition_symbol//trim(valued_macros(1))//'='//version
-                        cycle
+                        if (present(version)) then 
+                           
+                           macros = macros//macro_definition_symbol//trim(valued_macros(1))//'='//version%s()
+                           cycle
+                        
+                        else
+                            
+                           call fpm_stop(1,'Internal error: cannot expand {version} macro in '//macros_list(i)%s)
+                        
+                        endif
+                        
                     end if
                 end if
             end if
