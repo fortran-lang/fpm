@@ -867,7 +867,7 @@ contains
 
         do i=1,size(wrappers)
             if (present(verbose)) then
-                if (verbose .or. .true.) print *, '+ MPI <',language,'> test wrapper <',wrappers(i)%s,'>'
+                if (verbose) print *, '+ MPI <',language,'> test wrapper <',wrappers(i)%s,'>'
             endif
             works(i) = which_mpi_library(wrappers(i),compiler,verbose)
         end do

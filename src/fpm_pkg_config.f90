@@ -312,9 +312,6 @@ subroutine run_wrapper(wrapper,args,verbose,exitcode,cmd_success,screen_output)
     ! Test command
     call execute_command_line(command//redirect_str,exitstat=stat,cmdstat=cmdstat)
 
-    print *, '+ '//command//redirect_str
-    print *, '+ exited with ',stat,' and cmdstat=',cmdstat
-
     ! Command successful?
     if (present(cmd_success)) cmd_success = cmdstat==0
 
