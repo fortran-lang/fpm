@@ -96,8 +96,8 @@ subroutine build_model(model, settings, package, error)
     end if
 
     allocate(model%packages(model%deps%ndep))
-
     has_cpp = .false.
+
     do i = 1, model%deps%ndep
         associate(dep => model%deps%dep(i))
             file_name = join_path(dep%proj_dir, "fpm.toml")
@@ -116,11 +116,11 @@ subroutine build_model(model, settings, package, error)
             
             model%packages(i)%name = manifest%name
             associate(features => model%packages(i)%features)
-                features%implicit_typing = manifest%fortran%implicit_typing
+                features%implicit_typing   = manifest%fortran%implicit_typing
                 features%implicit_external = manifest%fortran%implicit_external
-                features%source_form = manifest%fortran%source_form
+                features%source_form       = manifest%fortran%source_form
             end associate
-            model%packages(i)%version = package%version%s()
+            model%packages(i)%version = manifest%version
 
             !> Add this dependency's manifest macros
             if (allocated(manifest%preprocess)) then
