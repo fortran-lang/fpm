@@ -137,8 +137,8 @@
             <a class="list-group-item" href="../type/dependency_config_t.html#variable-git">git</a>
             <a class="list-group-item" href="../type/dependency_config_t.html#variable-name~36">name</a>
             <a class="list-group-item" href="../type/dependency_config_t.html#variable-namespace~2">namespace</a>
-            <a class="list-group-item" href="../type/dependency_config_t.html#variable-path~31">path</a>
-            <a class="list-group-item" href="../type/dependency_config_t.html#variable-preprocess~6">preprocess</a>
+            <a class="list-group-item" href="../type/dependency_config_t.html#variable-path~32">path</a>
+            <a class="list-group-item" href="../type/dependency_config_t.html#variable-preprocess~4">preprocess</a>
             <a class="list-group-item" href="../type/dependency_config_t.html#variable-requested_version">requested_version</a>
         </div>
       </div>
@@ -167,13 +167,13 @@
       <div id="boundprocs-0" class="collapse">
         <div class="list-group list-group-flush">
             <a class="list-group-item" href="../type/dependency_config_t.html#boundprocedure-add_preprocess">add_preprocess</a>
-            <a class="list-group-item" href="../type/dependency_config_t.html#boundprocedure-dump~21">dump</a>
-            <a class="list-group-item" href="../type/dependency_config_t.html#boundprocedure-dump_to_toml~17">dump_to_toml</a>
+            <a class="list-group-item" href="../type/dependency_config_t.html#boundprocedure-dump~23">dump</a>
+            <a class="list-group-item" href="../type/dependency_config_t.html#boundprocedure-dump_to_toml~19">dump_to_toml</a>
             <a class="list-group-item" href="../type/dependency_config_t.html#boundprocedure-info~10">info</a>
-            <a class="list-group-item" href="../type/dependency_config_t.html#boundprocedure-load~19">load</a>
-            <a class="list-group-item" href="../type/dependency_config_t.html#boundprocedure-load_from_toml~17">load_from_toml</a>
-            <a class="list-group-item" href="../type/dependency_config_t.html#boundprocedure-operator%28%3D%3D%29~20">operator(==)</a>
-            <a class="list-group-item" href="../type/dependency_config_t.html#boundprocedure-serializable_is_same~17">serializable_is_same</a>
+            <a class="list-group-item" href="../type/dependency_config_t.html#boundprocedure-load~21">load</a>
+            <a class="list-group-item" href="../type/dependency_config_t.html#boundprocedure-load_from_toml~19">load_from_toml</a>
+            <a class="list-group-item" href="../type/dependency_config_t.html#boundprocedure-operator%28%3D%3D%29~22">operator(==)</a>
+            <a class="list-group-item" href="../type/dependency_config_t.html#boundprocedure-serializable_is_same~19">serializable_is_same</a>
             <a class="list-group-item" href="../type/dependency_config_t.html#boundprocedure-test_serialization">test_serialization</a>
         </div>
       </div>
@@ -266,7 +266,7 @@ Required for dependencies that are obtained via the official registry.</p>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-path~31"></span>
+              <span class="anchor" id="variable-path~32"></span>
               character(len=:),
             </td>
               <td>public,</td>
@@ -283,7 +283,7 @@ Required for dependencies that are obtained via the official registry.</p>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-preprocess~6"></span>
+              <span class="anchor" id="variable-preprocess~4"></span>
               type(<a href='preprocess_config_t.html'>preprocess_config_t</a>),
             </td>
               <td>public,</td>
@@ -401,10 +401,10 @@ The latest version is used if not specified.</p>
           <div class="row">
               <div class="card mt-3">
     <div class="card-header codesum">
-      <span class="anchor" id="boundprocedure-dump~21"></span>
+      <span class="anchor" id="boundprocedure-dump~23"></span>
       <h3>
           generic, public ::
-  <strong>dump</strong> => <a href='/home/runner/work/fpm/fpm/fpm-doc/type/srcfile_t.html#boundprocedure-dump_to_toml~5'>dump_to_toml</a>, dump_to_file, dump_to_unit
+  <strong>dump</strong> => <a href='/home/runner/work/fpm/fpm/fpm-doc/type/srcfile_t.html#boundprocedure-dump_to_toml~10'>dump_to_toml</a>, dump_to_file, dump_to_unit
         
       </h3>
     </div>
@@ -650,7 +650,7 @@ The latest version is used if not specified.</p>
           <div class="row">
               <div class="card mt-3">
     <div class="card-header codesum">
-      <span class="anchor" id="boundprocedure-dump_to_toml~17"></span>
+      <span class="anchor" id="boundprocedure-dump_to_toml~19"></span>
       <h3>
           procedure, public ::
   <strong>dump_to_toml</strong>
@@ -820,10 +820,10 @@ The latest version is used if not specified.</p>
           <div class="row">
               <div class="card mt-3">
     <div class="card-header codesum">
-      <span class="anchor" id="boundprocedure-load~19"></span>
+      <span class="anchor" id="boundprocedure-load~21"></span>
       <h3>
           generic, public ::
-  <strong>load</strong> => <a href='/home/runner/work/fpm/fpm/fpm-doc/type/srcfile_t.html#boundprocedure-load_from_toml~5'>load_from_toml</a>, load_from_file, load_from_unit
+  <strong>load</strong> => <a href='/home/runner/work/fpm/fpm/fpm-doc/type/srcfile_t.html#boundprocedure-load_from_toml~10'>load_from_toml</a>, load_from_file, load_from_unit
         
       </h3>
     </div>
@@ -1073,7 +1073,7 @@ Read object from TOML table</p>
           <div class="row">
               <div class="card mt-3">
     <div class="card-header codesum">
-      <span class="anchor" id="boundprocedure-load_from_toml~17"></span>
+      <span class="anchor" id="boundprocedure-load_from_toml~19"></span>
       <h3>
           procedure, public ::
   <strong>load_from_toml</strong>
@@ -1156,10 +1156,10 @@ Read object from TOML table</p>
           <div class="row">
               <div class="card mt-3">
     <div class="card-header codesum">
-      <span class="anchor" id="boundprocedure-operator%28%3D%3D%29~20"></span>
+      <span class="anchor" id="boundprocedure-operator%28%3D%3D%29~22"></span>
       <h3>
           generic, public ::
-  <strong>operator(==)</strong> => <a href='/home/runner/work/fpm/fpm/fpm-doc/type/srcfile_t.html#boundprocedure-serializable_is_same~5'>serializable_is_same</a>
+  <strong>operator(==)</strong> => <a href='/home/runner/work/fpm/fpm/fpm-doc/type/srcfile_t.html#boundprocedure-serializable_is_same~10'>serializable_is_same</a>
         
       </h3>
     </div>
@@ -1230,7 +1230,7 @@ All checks passed!</p>
           <div class="row">
               <div class="card mt-3">
     <div class="card-header codesum">
-      <span class="anchor" id="boundprocedure-serializable_is_same~17"></span>
+      <span class="anchor" id="boundprocedure-serializable_is_same~19"></span>
       <h3>
           procedure, public ::
   <strong>serializable_is_same</strong> => dependency_is_same
@@ -1458,7 +1458,7 @@ Check same</p>
             <p class="text-end">
               Documentation generated by
               <a href="https://github.com/Fortran-FOSS-Programmers/ford">FORD</a>
- on 2025-06-20 18:47 +0000             </p>
+ on 2025-06-28 13:05 +0000             </p>
           </div>
         </div>
         <br>

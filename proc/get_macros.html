@@ -92,7 +92,7 @@
 
             <li class="list-inline-item" id="statements"><i class="fa fa-list-ol"></i>
               <a data-bs-toggle="tooltip" data-bs-placement="bottom" data-bs-html="true"
-                 title=" 0.5% of total for procedures.">36 statements</a>
+                 title=" 0.5% of total for procedures.">40 statements</a>
             </li>
 
             <li class="list-inline-item" id="source-file">
@@ -134,7 +134,7 @@
       </a>
       <div id="vars-0" class="collapse">
         <div class="list-group list-group-flush">
-            <a class="list-group-item" href="../proc/get_macros.html#variable-i~106">i</a>
+            <a class="list-group-item" href="../proc/get_macros.html#variable-i~94">i</a>
             <a class="list-group-item" href="../proc/get_macros.html#variable-macro_definition_symbol">macro_definition_symbol</a>
             <a class="list-group-item" href="../proc/get_macros.html#variable-valued_macros">valued_macros</a>
         </div>
@@ -181,7 +181,8 @@ return them as defined flags.
 Set macro defintion symbol on the basis of compiler used
 Check if macros are not allocated.
 Split the macro name and value.</p>
-<p>Check if the value of macro starts with &lsquo;{&rsquo; character.</p>
+<p>Replace {version} placeholder with the actual version string
+Check if the value of macro starts with &lsquo;{&rsquo; character.</p>
 <p>Check if the value of macro ends with &lsquo;}&rsquo; character.</p>
 <p>Check if the string contains &ldquo;version&rdquo; as substring.</p>
 <p>These conditions are placed in order to ensure proper spacing between the macros.</p>
@@ -230,12 +231,12 @@ Split the macro name and value.</p>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-version~21"></span>
-              character(len=:),
+              <span class="anchor" id="variable-version~18"></span>
+              type(<a href='../type/version_t.html'>version_t</a>),
             </td>
 <td>intent(in),</td>
-              <td></td>            <td>
-              allocatable
+              <td>optional</td>            <td>
+              
             </td>
             <td>::</td>
             <td><strong>version</strong></td>
@@ -270,7 +271,7 @@ Split the macro name and value.</p>
     <tbody>
         <tr>
             <td>
-              <span class="anchor" id="variable-i~106"></span>
+              <span class="anchor" id="variable-i~94"></span>
               integer,
             </td>
               <td>public</td>
@@ -337,7 +338,7 @@ Split the macro name and value.</p>
     <h2><span class="anchor" id="src"></span>Source Code</h2>
     <div class="hl codehilite"><pre><span></span><span class="k">function </span><span class="n">get_macros</span><span class="p">(</span><span class="n">id</span><span class="p">,</span><span class="w"> </span><span class="n">macros_list</span><span class="p">,</span><span class="w"> </span><span class="n">version</span><span class="p">)</span><span class="w"> </span><span class="k">result</span><span class="p">(</span><span class="n">macros</span><span class="p">)</span>
 <span class="w">    </span><span class="kt">integer</span><span class="p">(</span><span class="n">compiler_enum</span><span class="p">),</span><span class="w"> </span><span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">)</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">id</span>
-<span class="w">    </span><span class="kt">character</span><span class="p">(</span><span class="nb">len</span><span class="o">=</span><span class="p">:),</span><span class="w"> </span><span class="k">allocatable</span><span class="p">,</span><span class="w"> </span><span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">)</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">version</span>
+<span class="w">    </span><span class="k">type</span><span class="p">(</span><span class="n">version_t</span><span class="p">),</span><span class="w"> </span><span class="k">optional</span><span class="p">,</span><span class="w"> </span><span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">)</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">version</span>
 <span class="w">    </span><span class="k">type</span><span class="p">(</span><span class="n">string_t</span><span class="p">),</span><span class="w"> </span><span class="k">allocatable</span><span class="p">,</span><span class="w"> </span><span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">)</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">macros_list</span><span class="p">(:)</span>
 
 <span class="w">    </span><span class="kt">character</span><span class="p">(</span><span class="nb">len</span><span class="o">=</span><span class="p">:),</span><span class="w"> </span><span class="k">allocatable</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">macros</span>
@@ -370,6 +371,7 @@ Split the macro name and value.</p>
 <span class="w">        </span><span class="c">!&gt; Split the macro name and value.</span>
 <span class="w">        </span><span class="k">call </span><span class="n">split</span><span class="p">(</span><span class="n">macros_list</span><span class="p">(</span><span class="n">i</span><span class="p">)%</span><span class="n">s</span><span class="p">,</span><span class="w"> </span><span class="n">valued_macros</span><span class="p">,</span><span class="w"> </span><span class="n">delimiters</span><span class="o">=</span><span class="s2">&quot;=&quot;</span><span class="p">)</span>
 
+<span class="w">        </span><span class="c">!&gt; Replace {version} placeholder with the actual version string</span>
 <span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">size</span><span class="p">(</span><span class="n">valued_macros</span><span class="p">)</span><span class="w"> </span><span class="o">&gt;</span><span class="w"> </span><span class="mi">1</span><span class="p">)</span><span class="w"> </span><span class="k">then</span>
 <span class="w">            </span><span class="c">!&gt; Check if the value of macro starts with &#39;{&#39; character.</span>
 <span class="w">            </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">str_begins_with_str</span><span class="p">(</span><span class="nb">trim</span><span class="p">(</span><span class="n">valued_macros</span><span class="p">(</span><span class="n">size</span><span class="p">(</span><span class="n">valued_macros</span><span class="p">))),</span><span class="w"> </span><span class="s2">&quot;{&quot;</span><span class="p">))</span><span class="w"> </span><span class="k">then</span>
@@ -381,8 +383,17 @@ Split the macro name and value.</p>
 <span class="w">                    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="nb">index</span><span class="p">(</span><span class="n">valued_macros</span><span class="p">(</span><span class="n">size</span><span class="p">(</span><span class="n">valued_macros</span><span class="p">)),</span><span class="w"> </span><span class="s2">&quot;version&quot;</span><span class="p">)</span><span class="w"> </span><span class="o">/=</span><span class="w"> </span><span class="mi">0</span><span class="p">)</span><span class="w"> </span><span class="k">then</span>
 
 <span class="w">                        </span><span class="c">!&gt; These conditions are placed in order to ensure proper spacing between the macros.</span>
-<span class="w">                        </span><span class="n">macros</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">macros</span><span class="o">//</span><span class="n">macro_definition_symbol</span><span class="o">//</span><span class="nb">trim</span><span class="p">(</span><span class="n">valued_macros</span><span class="p">(</span><span class="mi">1</span><span class="p">))</span><span class="o">//</span><span class="s1">&#39;=&#39;</span><span class="o">//</span><span class="n">version</span>
-<span class="w">                        </span><span class="k">cycle</span>
+<span class="w">                        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="nb">present</span><span class="p">(</span><span class="n">version</span><span class="p">))</span><span class="w"> </span><span class="k">then </span>
+<span class="k">                           </span>
+<span class="k">                           </span><span class="n">macros</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">macros</span><span class="o">//</span><span class="n">macro_definition_symbol</span><span class="o">//</span><span class="nb">trim</span><span class="p">(</span><span class="n">valued_macros</span><span class="p">(</span><span class="mi">1</span><span class="p">))</span><span class="o">//</span><span class="s1">&#39;=&#39;</span><span class="o">//</span><span class="n">version</span><span class="p">%</span><span class="n">s</span><span class="p">()</span>
+<span class="w">                           </span><span class="k">cycle</span>
+<span class="k">                        </span>
+<span class="k">                        else</span>
+<span class="k">                            </span>
+<span class="k">                           call </span><span class="n">fpm_stop</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="s1">&#39;Internal error: cannot expand {version} macro in &#39;</span><span class="o">//</span><span class="n">macros_list</span><span class="p">(</span><span class="n">i</span><span class="p">)%</span><span class="n">s</span><span class="p">)</span>
+<span class="w">                        </span>
+<span class="w">                        </span><span class="k">endif</span>
+<span class="k">                        </span>
 <span class="k">                    end if</span>
 <span class="k">                end if</span>
 <span class="k">            end if</span>
@@ -416,7 +427,7 @@ Split the macro name and value.</p>
             <p class="text-end">
               Documentation generated by
               <a href="https://github.com/Fortran-FOSS-Programmers/ford">FORD</a>
- on 2025-06-20 18:47 +0000             </p>
+ on 2025-06-28 13:05 +0000             </p>
           </div>
         </div>
         <br>

@@ -181,7 +181,7 @@ Add this dependency&rsquo;s package-level macros</p>
     <tbody>
         <tr>
             <td>
-              <span class="anchor" id="variable-model~15"></span>
+              <span class="anchor" id="variable-model~3"></span>
               type(<a href='../type/fpm_model_t.html'>fpm_model_t</a>),
             </td>
 <td>intent(out)</td>
@@ -196,7 +196,7 @@ Add this dependency&rsquo;s package-level macros</p>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-settings~7"></span>
+              <span class="anchor" id="variable-settings~4"></span>
               class(<a href='../type/fpm_build_settings.html'>fpm_build_settings</a>),
             </td>
 <td>intent(inout)</td>
@@ -211,7 +211,7 @@ Add this dependency&rsquo;s package-level macros</p>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-package~17"></span>
+              <span class="anchor" id="variable-package~4"></span>
               type(<a href='../type/package_config_t.html'>package_config_t</a>),
             </td>
 <td>intent(inout),</td>
@@ -226,7 +226,7 @@ Add this dependency&rsquo;s package-level macros</p>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-error~168"></span>
+              <span class="anchor" id="variable-error~31"></span>
               type(<a href='../type/error_t.html'>error_t</a>),
             </td>
 <td>intent(out),</td>
@@ -315,8 +315,8 @@ Add this dependency&rsquo;s package-level macros</p>
 <span class="w">    </span><span class="k">end if</span>
 
 <span class="k">    allocate</span><span class="p">(</span><span class="n">model</span><span class="p">%</span><span class="n">packages</span><span class="p">(</span><span class="n">model</span><span class="p">%</span><span class="n">deps</span><span class="p">%</span><span class="n">ndep</span><span class="p">))</span>
-
 <span class="w">    </span><span class="n">has_cpp</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">.</span><span class="n">false</span><span class="p">.</span>
+
 <span class="w">    </span><span class="k">do </span><span class="n">i</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="n">model</span><span class="p">%</span><span class="n">deps</span><span class="p">%</span><span class="n">ndep</span>
 <span class="w">        </span><span class="k">associate</span><span class="p">(</span><span class="n">dep</span><span class="w"> </span><span class="o">=&gt;</span><span class="w"> </span><span class="n">model</span><span class="p">%</span><span class="n">deps</span><span class="p">%</span><span class="n">dep</span><span class="p">(</span><span class="n">i</span><span class="p">))</span>
 <span class="w">            </span><span class="n">file_name</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">join_path</span><span class="p">(</span><span class="n">dep</span><span class="p">%</span><span class="n">proj_dir</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;fpm.toml&quot;</span><span class="p">)</span>
@@ -335,11 +335,11 @@ Add this dependency&rsquo;s package-level macros</p>
 <span class="k">            </span>
 <span class="k">            </span><span class="n">model</span><span class="p">%</span><span class="n">packages</span><span class="p">(</span><span class="n">i</span><span class="p">)%</span><span class="n">name</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">manifest</span><span class="p">%</span><span class="n">name</span>
 <span class="w">            </span><span class="k">associate</span><span class="p">(</span><span class="n">features</span><span class="w"> </span><span class="o">=&gt;</span><span class="w"> </span><span class="n">model</span><span class="p">%</span><span class="n">packages</span><span class="p">(</span><span class="n">i</span><span class="p">)%</span><span class="n">features</span><span class="p">)</span>
-<span class="w">                </span><span class="n">features</span><span class="p">%</span><span class="n">implicit_typing</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">manifest</span><span class="p">%</span><span class="n">fortran</span><span class="p">%</span><span class="n">implicit_typing</span>
+<span class="w">                </span><span class="n">features</span><span class="p">%</span><span class="n">implicit_typing</span><span class="w">   </span><span class="o">=</span><span class="w"> </span><span class="n">manifest</span><span class="p">%</span><span class="n">fortran</span><span class="p">%</span><span class="n">implicit_typing</span>
 <span class="w">                </span><span class="n">features</span><span class="p">%</span><span class="n">implicit_external</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">manifest</span><span class="p">%</span><span class="n">fortran</span><span class="p">%</span><span class="n">implicit_external</span>
-<span class="w">                </span><span class="n">features</span><span class="p">%</span><span class="n">source_form</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">manifest</span><span class="p">%</span><span class="n">fortran</span><span class="p">%</span><span class="n">source_form</span>
+<span class="w">                </span><span class="n">features</span><span class="p">%</span><span class="n">source_form</span><span class="w">       </span><span class="o">=</span><span class="w"> </span><span class="n">manifest</span><span class="p">%</span><span class="n">fortran</span><span class="p">%</span><span class="n">source_form</span>
 <span class="w">            </span><span class="k">end associate</span>
-<span class="k">            </span><span class="n">model</span><span class="p">%</span><span class="n">packages</span><span class="p">(</span><span class="n">i</span><span class="p">)%</span><span class="n">version</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">package</span><span class="p">%</span><span class="n">version</span><span class="p">%</span><span class="n">s</span><span class="p">()</span>
+<span class="k">            </span><span class="n">model</span><span class="p">%</span><span class="n">packages</span><span class="p">(</span><span class="n">i</span><span class="p">)%</span><span class="n">version</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">manifest</span><span class="p">%</span><span class="n">version</span>
 
 <span class="w">            </span><span class="c">!&gt; Add this dependency&#39;s manifest macros</span>
 <span class="w">            </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="nb">allocated</span><span class="p">(</span><span class="n">manifest</span><span class="p">%</span><span class="n">preprocess</span><span class="p">))</span><span class="w"> </span><span class="k">then</span>
@@ -511,7 +511,7 @@ Add this dependency&rsquo;s package-level macros</p>
             <p class="text-end">
               Documentation generated by
               <a href="https://github.com/Fortran-FOSS-Programmers/ford">FORD</a>
- on 2025-06-20 18:47 +0000             </p>
+ on 2025-06-28 13:05 +0000             </p>
           </div>
         </div>
         <br>
