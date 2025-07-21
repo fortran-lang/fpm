@@ -1867,6 +1867,16 @@ logical function check_c_source_runs(self, input, compile_flags, link_flags) res
     call run(exe//" > "//logf//" 2>&1",echo=.false.,exitstat=stat)
     success = (stat == 0)
     
+    !> Delete temporary files
+    open(newunit=unit, file=source, action='readwrite', iostat=stat)
+    close(unit,status='delete')
+    open(newunit=unit, file=object, action='readwrite', iostat=stat)
+    close(unit,status='delete')
+    open(newunit=unit, file=logf, action='readwrite', iostat=stat)
+    close(unit,status='delete')
+    open(newunit=unit, file=exe, action='readwrite', iostat=stat)
+    close(unit,status='delete')
+    
 end function check_c_source_runs
 
 !> Check if the given C++ source code compiles, links, and runs successfully
@@ -1912,6 +1922,16 @@ logical function check_cxx_source_runs(self, input, compile_flags, link_flags) r
     !> Run
     call run(exe//" > "//logf//" 2>&1",echo=.false.,exitstat=stat)
     success = (stat == 0)
+    
+    !> Delete temporary files
+    open(newunit=unit, file=source, action='readwrite', iostat=stat)
+    close(unit,status='delete')
+    open(newunit=unit, file=object, action='readwrite', iostat=stat)
+    close(unit,status='delete')
+    open(newunit=unit, file=logf, action='readwrite', iostat=stat)
+    close(unit,status='delete')
+    open(newunit=unit, file=exe, action='readwrite', iostat=stat)
+    close(unit,status='delete')
     
 end function check_cxx_source_runs
 
