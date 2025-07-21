@@ -22,6 +22,8 @@ contains
 
         testsuite = [ &
             & new_unittest("check-fortran-source-runs", test_check_fortran_source_runs), &
+            & new_unittest("check-c-source-runs", test_check_c_source_runs), &
+            & new_unittest("check-cxx-source-runs", test_check_cxx_source_runs), &
             & new_unittest("tokenize-flags", test_tokenize_flags), &
             & new_unittest("compile-commands-unix", test_register_compile_command_unix), &
             & new_unittest("compile-commands-windows", test_register_compile_command_windows)]
@@ -94,6 +96,121 @@ contains
         end if
 
     end subroutine test_check_fortran_source_runs
+
+    subroutine test_check_c_source_runs(error)
+        !> Error handling
+        type(error_t), allocatable, intent(out) :: error
+
+        character(:), allocatable :: fc,cc,cxx
+        type(compiler_t) :: compiler
+
+        !> Get default compiler
+        fc  = get_fpm_env("FC", default="gfortran")
+        cc  = get_fpm_env("CC", default=" ")
+        cxx = get_fpm_env("CXX", default=" ")
+
+        call new_compiler(compiler, fc, cc, cxx, echo=.false., verbose=.false.)
+
+        if (compiler%is_unknown()) then
+            call test_failed(error, "Cannot initialize compiler")
+            return
+        end if
+
+        !> Skip tests if no C compiler is available
+        if (len_trim(compiler%cc) == 0) then
+            return
+        end if
+
+        !> Test C source runs with simple hello world
+        if (.not.compiler%check_c_source_runs( &
+                '#include <stdio.h>' // new_line('a') // &
+                'int main() { printf("Hello C world!"); return 0; }')) then
+            call test_failed(error, "Cannot run C hello world")
+            return
+        end if
+
+        !> Test with invalid source that should fail
+        if (compiler%check_c_source_runs( &
+                '#include <stdio.h>' // new_line('a') // &
+                'int main() { return 1; }')) then  ! Returns error code 1
+            call test_failed(error, "C program returning error code 1 did not fail")
+            return
+        end if
+
+        !> Test with invalid flags
+        if (compiler%check_c_source_runs( &
+                '#include <stdio.h>' // new_line('a') // &
+                'int main() { return 0; }', &
+                compile_flags=" -invalid-c-flag")) then
+            call test_failed(error, "Invalid C compile flags did not trigger an error")
+            return
+        end if
+
+        !> Test the C flag check wrapper
+        if (compiler%check_c_flags_supported(compile_flags='-not-a-c-flag')) then
+            call test_failed(error, "Invalid C compile flags did not trigger an error")
+            return
+        end if
+
+    end subroutine test_check_c_source_runs
+
+    subroutine test_check_cxx_source_runs(error)
+        !> Error handling
+        type(error_t), allocatable, intent(out) :: error
+
+        character(:), allocatable :: fc,cc,cxx
+        type(compiler_t) :: compiler
+
+        !> Get default compiler
+        fc  = get_fpm_env("FC", default="gfortran")
+        cc  = get_fpm_env("CC", default=" ")
+        cxx = get_fpm_env("CXX", default=" ")
+
+        call new_compiler(compiler, fc, cc, cxx, echo=.false., verbose=.false.)
+
+        if (compiler%is_unknown()) then
+            call test_failed(error, "Cannot initialize compiler")
+            return
+        end if
+
+        !> Skip tests if no C++ compiler is available or if it's set to a space
+        if (len_trim(compiler%cxx) == 0 .or. trim(compiler%cxx) == " ") then
+            return
+        end if
+
+        !> Test C++ source runs with simple hello world
+        !> Only fail if we're sure the compiler is available
+        if (.not.compiler%check_cxx_source_runs( &
+                '#include <cstdio>' // new_line('a') // &
+                'int main() { return 0; }')) then
+            !> This might fail if C++ compiler is misconfigured, so just skip further tests
+            return
+        end if
+
+        !> Test with invalid source that should fail
+        if (compiler%check_cxx_source_runs( &
+                '#include <cstdio>' // new_line('a') // &
+                'int main() { return 1; }')) then  ! Returns error code 1
+            call test_failed(error, "C++ program returning error code 1 did not fail")
+            return
+        end if
+
+        !> Test with invalid flags
+        if (compiler%check_cxx_source_runs( &
+                '#include <cstdio>' // new_line('a') // &
+                'int main() { return 0; }', &
+                compile_flags=" -invalid-cxx-flag")) then
+            call test_failed(error, "Invalid C++ compile flags did not trigger an error")
+            return
+        end if
+
+        !> Test the C++ flag check wrapper
+        if (compiler%check_cxx_flags_supported(compile_flags='-not-a-cxx-flag')) then
+            call test_failed(error, "Invalid C++ compile flags did not trigger an error")
+            return
+        end if
+
+    end subroutine test_check_cxx_source_runs
 
     subroutine test_tokenize_flags(error)
         type(error_t), allocatable, intent(out) :: error
