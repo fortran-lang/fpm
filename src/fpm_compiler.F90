@@ -1955,8 +1955,8 @@ logical function check_cxx_flags_supported(self, compile_flags, link_flags)
     
     ! Minimal C++ program that always compiles
     character(len=*), parameter :: hello_world_cxx = &
-        "#include <iostream>" // new_line('a') // &
-        "int main() { std::cout << ""Hello, World!""; return 0; }"
+        "#include <cstdio>" // new_line('a') // &
+        "int main() { printf(""Hello, World!""); return 0; }"
     
     check_cxx_flags_supported = self%check_cxx_source_runs(hello_world_cxx, compile_flags, link_flags)
 end function check_cxx_flags_supported
