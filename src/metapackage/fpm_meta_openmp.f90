@@ -101,11 +101,10 @@ module fpm_meta_openmp
             this%cxxflags = string_t(openmp_flag)
         endif
 
-        !> Set link flags if any language supports OpenMP
-        if (this%has_fortran_flags .or. this%has_c_flags .or. this%has_cxx_flags) then
-            this%has_link_flags = .true.
-            this%link_flags = string_t(link_flag)
-        endif
+        !> Always set link flags when OpenMP is requested
+        !> The linker needs OpenMP flags regardless of individual compiler support
+        this%has_link_flags = .true.
+        this%link_flags = string_t(link_flag)
 
     end subroutine init_openmp
 end module fpm_meta_openmp
