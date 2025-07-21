@@ -1113,6 +1113,11 @@ subroutine resolve_target_linking(targets, model, library, error)
                     ! Build link flags
                     target%link_flags = string_cat(target%link_objects, " ")
                     
+                    ! Add global link flags (including metapackage flags like OpenMP)
+                    if (allocated(model%link_flags)) then
+                        target%link_flags = model%link_flags//" "//target%link_flags
+                    endif
+                    
                     target%link_flags = target%link_flags // shared_lib_paths
 
                     ! Add dependencies' shared libraries (excluding self)
