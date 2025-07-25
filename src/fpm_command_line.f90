@@ -1397,7 +1397,7 @@ contains
     ' --runner CMD  A command to prefix the program execution paths with.   ', &
     '               see "fpm help runner" for further details.              ', &
     ' --list     list candidate basenames instead of running them. Note they', &
-    ' --list     will still be built if not currently up to date.           ', &
+    '            will still be built if not currently up to date.           ', &
     ' --config-file PATH  Custom location of the global config file.        ', &
     ' -- ARGS    optional arguments to pass to the test program(s).         ', &
     '            The same arguments are passed to all test names            ', &
