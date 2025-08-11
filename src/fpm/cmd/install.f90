@@ -5,6 +5,7 @@ module fpm_cmd_install
   use fpm_command_line, only : fpm_install_settings
   use fpm_error, only : error_t, fatal_error, fpm_stop
   use fpm_filesystem, only : join_path, list_files
+  use fpm_lock, only : fpm_lock_acquire, fpm_lock_release
   use fpm_installer, only : installer_t, new_installer
   use fpm_manifest, only : package_config_t, get_package_data
   use fpm_model, only : fpm_model_t, FPM_SCOPE_APP, FPM_SCOPE_TEST
@@ -31,6 +32,9 @@ contains
     type(string_t), allocatable :: list(:)
     logical :: installable
     integer :: ntargets,i
+
+    call fpm_lock_acquire(error)
+    call handle_error(error)
 
     call get_package_data(package, "fpm.toml", error, apply_defaults=.true.)
     call handle_error(error)
@@ -91,6 +95,9 @@ contains
         call handle_error(error)
         
     end if
+
+  call fpm_lock_release(error)
+  call handle_error(error)
 
   end subroutine cmd_install
 
