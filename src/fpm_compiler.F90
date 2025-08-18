@@ -1859,8 +1859,9 @@ logical function check_c_source_runs(self, input, compile_flags, link_flags) res
     call self%compile_c(source,object,flags,logf,stat,dry_run=.false.)
     if (stat/=0) return
     
-    !> Link  
-    call self%link(exe,ldflags//" "//object,logf,stat)
+    !> Link using C compiler for pure C programs
+    call run(self%cc//" "//ldflags//" "//object//" -o "//exe, &
+              echo=self%echo, verbose=self%verbose, redirect=logf, exitstat=stat)
     if (stat/=0) return
     
     !> Run
@@ -1915,8 +1916,9 @@ logical function check_cxx_source_runs(self, input, compile_flags, link_flags) r
     call self%compile_cpp(source,object,flags,logf,stat,dry_run=.false.)
     if (stat/=0) return
     
-    !> Link  
-    call self%link(exe,ldflags//" "//object,logf,stat)
+    !> Link using C++ compiler for pure C++ programs
+    call run(self%cxx//" "//ldflags//" "//object//" -o "//exe, &
+              echo=self%echo, verbose=self%verbose, redirect=logf, exitstat=stat)
     if (stat/=0) return
     
     !> Run
