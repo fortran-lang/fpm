@@ -355,12 +355,22 @@ subroutine build_target_list(targets,model,library)
         ! Individual package libraries are built. 
         ! Create as many targets as the packages in the dependency tree
         do j=1,size(model%packages)
-                        
-            lib_name = library_filename(model%packages(j)%name,shared_lib,.false.,get_os_type())
             
-            call add_target(targets,package=model%packages(j)%name, &
-                            type=merge(FPM_TARGET_SHARED,FPM_TARGET_ARCHIVE,shared_lib), &
-                            output_name=lib_name)
+            ! Create static library target if requested
+            if (static_lib) then
+                lib_name = library_filename(model%packages(j)%name,.false.,.false.,get_os_type())
+                call add_target(targets,package=model%packages(j)%name, &
+                                type=FPM_TARGET_ARCHIVE, &
+                                output_name=lib_name)
+            end if
+            
+            ! Create shared library target if requested  
+            if (shared_lib) then
+                lib_name = library_filename(model%packages(j)%name,.true.,.false.,get_os_type())
+                call add_target(targets,package=model%packages(j)%name, &
+                                type=FPM_TARGET_SHARED, &
+                                output_name=lib_name)
+            end if
         end do
         
     endif
@@ -388,8 +398,17 @@ subroutine build_target_list(targets,model,library)
 
 
                     if (with_lib .and. sources(i)%unit_scope == FPM_SCOPE_LIB) then
-                        ! Archive depends on object
-                        call add_dependency(targets(merge(1,j,monolithic))%ptr, targets(size(targets))%ptr)
+                        ! Library targets depend on object
+                        if (monolithic) then
+                            call add_dependency(targets(1)%ptr, targets(size(targets))%ptr)
+                        elseif (static_lib .and. shared_lib) then
+                            ! Both types: static at (2*j-1), shared at (2*j)
+                            call add_dependency(targets(2*j-1)%ptr, targets(size(targets))%ptr)
+                            call add_dependency(targets(2*j)%ptr, targets(size(targets))%ptr)
+                        else
+                            ! Single type: package j at index j
+                            call add_dependency(targets(j)%ptr, targets(size(targets))%ptr)
+                        end if
                     end if
 
                 case (FPM_UNIT_CPPSOURCE)
@@ -401,8 +420,17 @@ subroutine build_target_list(targets,model,library)
                                 version = model%packages(j)%version)
 
                     if (with_lib .and. sources(i)%unit_scope == FPM_SCOPE_LIB) then
-                        ! Archive depends on object
-                        call add_dependency(targets(merge(1,j,monolithic))%ptr, targets(size(targets))%ptr)
+                        ! Library targets depend on object
+                        if (monolithic) then
+                            call add_dependency(targets(1)%ptr, targets(size(targets))%ptr)
+                        elseif (static_lib .and. shared_lib) then
+                            ! Both types: static at (2*j-1), shared at (2*j)
+                            call add_dependency(targets(2*j-1)%ptr, targets(size(targets))%ptr)
+                            call add_dependency(targets(2*j)%ptr, targets(size(targets))%ptr)
+                        else
+                            ! Single type: package j at index j
+                            call add_dependency(targets(j)%ptr, targets(size(targets))%ptr)
+                        end if
                     end if
 
                     !> Add stdc++ as a linker flag. If not already there.
@@ -469,9 +497,19 @@ subroutine build_target_list(targets,model,library)
 
                     if (with_lib) then
                         ! Executable depends on library file(s)
-                        do k=1,merge(1,size(model%packages),monolithic)
-                           call add_dependency(target, targets(k)%ptr)
-                        end do
+                        if (monolithic) then
+                            call add_dependency(target, targets(1)%ptr)
+                        elseif (static_lib .and. shared_lib) then
+                            ! Both types: depend on static libraries (2*k-1) for all packages
+                            do k=1,size(model%packages)
+                               call add_dependency(target, targets(2*k-1)%ptr)
+                            end do
+                        else
+                            ! Single type: depend on library for each package
+                            do k=1,size(model%packages)
+                               call add_dependency(target, targets(k)%ptr)
+                            end do
+                        end if
                     end if
 
                     endassociate
