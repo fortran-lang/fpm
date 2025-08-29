@@ -712,7 +712,8 @@ subroutine add_dependency(target, dependency)
     do i=1,size(target%dependencies)
         if (target%dependencies(i)%ptr%output_name == dependency%output_name) return
     end do
-
+    if (dependency%output_name==target%output_name) return
+    
     target%dependencies = [target%dependencies, build_target_ptr(dependency)]
     
 end subroutine add_dependency
