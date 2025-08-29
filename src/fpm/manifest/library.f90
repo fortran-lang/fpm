@@ -105,15 +105,18 @@ contains
         class(library_config_t), intent(in) :: self
         
         integer :: i
-        
-        monolithic = .false.
+                
         if (allocated(self%lib_type)) then 
+           monolithic = .false. 
            do i = 1, size(self%lib_type)
                if (self%lib_type(i)%s == "monolithic") then
                    monolithic = .true.
                    return
                end if
            end do
+        else
+            ! Default: monolithic
+            monolithic = .true.
         endif
     end function monolithic
 
