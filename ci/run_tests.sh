@@ -344,5 +344,13 @@ pushd static_app_only
 test $EXIT_CODE -eq 0
 popd
 
+# Test both shared and static library types
+pushd both_lib_types
+"$fpm" build
+"$fpm" install --prefix=.
+# Check that exactly 2 libboth_lib_types library files were installed
+test $(ls lib/libboth_lib_types* | wc -l) -eq 2
+popd
+
 # Cleanup
 rm -rf ./*/build
