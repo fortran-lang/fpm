@@ -673,7 +673,7 @@ subroutine add_old_targets(targets, add_targets)
     ! Check for duplicate outputs
     do j=1,size(add_targets)
         associate(added=>add_targets(j)%ptr)
-
+            
         do i=1,size(targets)
 
             if (targets(i)%ptr%output_name == added%output_name) then
@@ -704,9 +704,17 @@ end subroutine add_old_target
 subroutine add_dependency(target, dependency)
     type(build_target_t), intent(inout) :: target
     type(build_target_t) , intent(in), target :: dependency
+    
+    integer :: i
+    
+    ! Ensure no duplicate dependencies: it may happen if we loop two library targets that 
+    ! contain the same objects
+    do i=1,size(target%dependencies)
+        if (target%dependencies(i)%ptr%output_name == dependency%output_name) return
+    end do
 
     target%dependencies = [target%dependencies, build_target_ptr(dependency)]
-
+    
 end subroutine add_dependency
 
 
