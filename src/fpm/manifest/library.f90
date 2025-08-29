@@ -104,7 +104,17 @@ contains
         !> Instance of the library configuration
         class(library_config_t), intent(in) :: self
         
-        monolithic = .not.(static(self) .or. shared(self))
+        integer :: i
+        
+        monolithic = .false.
+        if (allocated(self%lib_type)) then 
+           do i = 1, size(self%lib_type)
+               if (self%lib_type(i)%s == "monolithic") then
+                   monolithic = .true.
+                   return
+               end if
+           end do
+        endif
     end function monolithic
 
 
@@ -150,6 +160,10 @@ contains
             self%lib_type = [string_t(single_type)]
         end if
         
+        if (.not.allocated(self%lib_type)) then 
+            self%lib_type = [string_t("monolithic")]
+        end if        
+        
         ! Validate all types in the array
         do i = 1, size(self%lib_type)
             select case(self%lib_type(i)%s)
@@ -162,14 +176,17 @@ contains
             end select
         end do
         
+        ! Check that monolithic is not specified together with static or shared
+        if (monolithic(self) .and. (static(self) .or. shared(self))) then
+            call fatal_error(error,"library.type 'monolithic' cannot be specified together with 'static' or 'shared'")
+            return
+        end if
+        
         ! Set default value of include-dir if not found in manifest
         if (.not.allocated(self%include_dir)) then
             self%include_dir = [string_t("include")]
         end if
         
-        if (.not.allocated(self%lib_type)) then 
-            self%lib_type = [string_t("monolithic")]
-        end if
 
     end subroutine new_library
 
