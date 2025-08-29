@@ -1218,7 +1218,8 @@ subroutine resolve_target_linking(targets, model, library, error)
                         has_self_lib = .false.
                         find_self: do j=1,size(targets)
                             associate(target_loop=>targets(j)%ptr)
-                                if (any(target_loop%target_type==[FPM_TARGET_SHARED,FPM_TARGET_ARCHIVE]) &
+                                if ((target_loop%target_type==FPM_TARGET_ARCHIVE .or. &
+                                    (target_loop%target_type==FPM_TARGET_SHARED .and. .not.static)) &
                                     .and. target_loop%package_name==target%package_name) then 
                                     has_self_lib = .true.
                                     exit find_self
