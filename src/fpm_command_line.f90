@@ -1645,5 +1645,58 @@ contains
     
     end function name_ID
 
+    ! Populate build settings from the current CLI/environment 
+    ! (after set_args has been called).
+    subroutine build_settings(self, list, show_model, build_tests, config_file)
+        class(fpm_build_settings), intent(inout) :: self
+        logical,           intent(in), optional  :: list, show_model, build_tests
+        character(len=*),  intent(in), optional  :: config_file
+
+        character(len=:), allocatable :: comp, ccomp, cxcomp, arch
+        character(len=:), allocatable :: fflags, cflags, cxxflags, ldflags
+        character(len=:), allocatable :: prof, cfg
+
+        ! Read CLI/env values (sget returns what set_args registered, including defaults)
+        comp     = sget('compiler');          if (comp == '') comp = 'gfortran'
+        fflags   = ' ' // sget('flag')
+        cflags   = ' ' // sget('c-flag')
+        cxxflags = ' ' // sget('cxx-flag')
+        ldflags  = ' ' // sget('link-flag')
+        prof     = sget('profile')
+
+        ccomp    = sget('c-compiler')
+        cxcomp   = sget('cxx-compiler')
+        arch     = sget('archiver')
+
+        if (present(config_file)) then
+            if (len_trim(config_file) > 0) then
+                cfg = config_file
+            else
+                cfg = sget('config-file')
+            end if
+        else
+            cfg = sget('config-file')
+        end if
+
+        ! Assign into this (polymorphic) object; allocatable chars auto-allocate
+        self%profile       = prof
+        self%prune         = .not. lget('no-prune')
+        self%compiler      = comp
+        self%c_compiler    = ccomp
+        self%cxx_compiler  = cxcomp
+        self%archiver      = arch
+        self%path_to_config= cfg
+        self%flag          = fflags
+        self%cflag         = cflags
+        self%cxxflag       = cxxflags
+        self%ldflag        = ldflags
+        self%verbose       = lget('verbose')
+
+        ! Optional overrides from caller
+        if (present(list))        self%list        = list
+        if (present(show_model))  self%show_model  = show_model
+        if (present(build_tests)) self%build_tests = build_tests
+    end subroutine build_settings
+
 
 end module fpm_command_line
