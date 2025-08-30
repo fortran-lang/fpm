@@ -160,9 +160,7 @@ character(len=20),parameter :: manual(*)=[ character(len=20) ::&
 &  ' ',     'fpm',    'new',     'build',  'run',    'clean',  &
 &  'test',  'runner', 'install', 'update', 'list',   'help',   'version', 'publish' ]
 
-character(len=:), allocatable :: val_runner, val_compiler, val_flag, val_cflag, val_cxxflag, val_ldflag, &
-    val_profile, val_runner_args, val_dump
-
+character(len=:), allocatable :: val_runner,val_runner_args,val_dump
 
 !   '12345678901234567890123456789012345678901234567890123456789012345678901234567890',&
 character(len=80), parameter :: help_text_build_common(*) = [character(len=80) ::      &
@@ -526,8 +524,6 @@ contains
                 & --config-file " " &
                 &', help_install, version_text)
 
-            call check_build_vals()
-
             config_file = sget('config-file')
             allocate(install_settings)
 
@@ -557,8 +553,6 @@ contains
             call set_args(common_args // compiler_args // run_args // '&
             & --config-file " " &
             & -- ', help_test,version_text)
-
-            call check_build_vals()
 
             if( size(unnamed) > 1 )then
                 names=unnamed(2:)
@@ -636,8 +630,6 @@ contains
                 & --dependencies "filename" ', &
                 help_build, version_text)
 
-            call check_build_vals()
-
             allocate(export_settings)
             call build_settings(export_settings, show_model=.true.)
             call get_char_arg(export_settings%dump_model, 'model')
@@ -705,8 +697,6 @@ contains
             & --config-file " " &
             & --', help_publish, version_text)
 
-            call check_build_vals()
-
             config_file = sget('config-file')
             token_s = sget('token')
 
@@ -757,18 +747,6 @@ contains
         end if
 
     contains
-
-    subroutine check_build_vals()
-        val_compiler=sget('compiler')
-        if(val_compiler=='') val_compiler='gfortran'
-
-        val_flag = " " // sget('flag')
-        val_cflag = " " // sget('c-flag')
-        val_cxxflag = " " // sget('cxx-flag')
-        val_ldflag = " " // sget('link-flag')
-        val_profile = sget('profile')
-
-    end subroutine check_build_vals
 
     !> Print help text and stop
     subroutine printhelp(lines)
