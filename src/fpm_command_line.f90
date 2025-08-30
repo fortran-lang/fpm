@@ -129,7 +129,7 @@ type, extends(fpm_build_settings) :: fpm_export_settings
     character(len=:),allocatable  :: dump_model
 end type
 
-type, extends(fpm_cmd_settings)   :: fpm_clean_settings
+type, extends(fpm_build_settings) :: fpm_clean_settings
     logical                       :: clean_skip = .false.
     logical                       :: clean_all = .false.
     logical                       :: clean_test = .false.
@@ -240,7 +240,6 @@ contains
         integer                       :: i
         integer                       :: os
         type(fpm_install_settings), allocatable :: install_settings
-        type(fpm_publish_settings), allocatable :: publish_settings
         type(fpm_export_settings) , allocatable :: export_settings
         type(version_t) :: version
         character(len=:), allocatable :: common_args, compiler_args, run_args, working_dir, &
@@ -316,8 +315,7 @@ contains
             & --config-file " " &
             & --',help_run,version_text)
 
-            call check_build_vals()
-
+            ! Collect target names
             if( size(unnamed) > 1 )then
                 names=unnamed(2:)
             else
@@ -345,34 +343,28 @@ contains
             val_runner_args=sget('runner-args')
             call remove_characters_in_set(val_runner_args,set='"')
 
-            c_compiler = sget('c-compiler')
-            cxx_compiler = sget('cxx-compiler')
-            archiver = sget('archiver')
-            config_file = sget('config-file')
+            ! Allocate and populate (parent build settings via helper)
             allocate(fpm_run_settings :: cmd_settings)
-            val_runner=sget('runner')
-            if(specified('runner') .and. val_runner=='')val_runner='echo'
+            
+            select type (cmd => cmd_settings)
+                
+                type is (fpm_run_settings)
+            
+                    call build_settings(cmd, list=lget('list'), build_tests=.false., &
+                                        config_file=sget('config-file'))
 
-            cmd_settings=fpm_run_settings(&
-            & args=remaining,&
-            & profile=val_profile,&
-            & prune=.not.lget('no-prune'), &
-            & compiler=val_compiler, &
-            & c_compiler=c_compiler, &
-            & cxx_compiler=cxx_compiler, &
-            & archiver=archiver, &
-            & path_to_config=config_file, &
-            & flag=val_flag, &
-            & cflag=val_cflag, &
-            & cxxflag=val_cxxflag, &
-            & ldflag=val_ldflag, &
-            & example=lget('example'), &
-            & list=lget('list'),&
-            & build_tests=.false.,&
-            & name=names,&
-            & runner=val_runner,&
-            & runner_args=val_runner_args, &
-            & verbose=lget('verbose') )
+                    ! Runner defaults/overrides
+                    val_runner = sget('runner')
+                    if (specified('runner') .and. val_runner == '') val_runner = 'echo'
+
+                    ! Run-specific fields
+                    cmd%args        = remaining
+                    cmd%example     = lget('example')
+                    cmd%name        = names
+                    cmd%runner      = val_runner
+                    cmd%runner_args = val_runner_args
+                    
+            end select
 
         case('build')
             call set_args(common_args // compiler_args //'&
@@ -383,33 +375,16 @@ contains
             & --config-file " " &
             & --',help_build,version_text)
 
-            call check_build_vals()
-
-            c_compiler = sget('c-compiler')
-            cxx_compiler = sget('cxx-compiler')
-            archiver = sget('archiver')
-            config_file = sget('config-file')
-            val_dump = sget('dump')
-            if (specified('dump') .and. val_dump=='')val_dump='fpm_model.toml'
-
+            ! Create and populate a base fpm_build_settings from CLI/env
             allocate( fpm_build_settings :: cmd_settings )
-            cmd_settings=fpm_build_settings(  &
-            & profile=val_profile,&
-            & dump=val_dump,&
-            & prune=.not.lget('no-prune'), &
-            & compiler=val_compiler, &
-            & c_compiler=c_compiler, &
-            & cxx_compiler=cxx_compiler, &
-            & archiver=archiver, &
-            & path_to_config=config_file, &
-            & flag=val_flag, &
-            & cflag=val_cflag, &
-            & cxxflag=val_cxxflag, &
-            & ldflag=val_ldflag, &
-            & list=lget('list'),&
-            & show_model=lget('show-model'),&
-            & build_tests=lget('tests'),&
-            & verbose=lget('verbose') )
+            
+            select type (cmd => cmd_settings)
+               class is (fpm_build_settings)
+                   call build_settings(cmd, list=lget('list'),                 &
+                                            show_model=lget('show-model'),     &
+                                            build_tests=lget('tests'),         &
+                                            config_file=sget('config-file') )
+            end select
 
         case('new')
             call set_args(common_args // '&
@@ -553,26 +528,13 @@ contains
 
             call check_build_vals()
 
-            c_compiler = sget('c-compiler')
-            cxx_compiler = sget('cxx-compiler')
-            archiver = sget('archiver')
             config_file = sget('config-file')
-            allocate(install_settings, source=fpm_install_settings(&
-                list=lget('list'), &
-                build_tests=lget('test'), &
-                profile=val_profile,&
-                prune=.not.lget('no-prune'), &
-                compiler=val_compiler, &
-                c_compiler=c_compiler, &
-                cxx_compiler=cxx_compiler, &
-                archiver=archiver, &
-                path_to_config=config_file, &
-                flag=val_flag, &
-                cflag=val_cflag, &
-                cxxflag=val_cxxflag, &
-                ldflag=val_ldflag, &
-                no_rebuild=lget('no-rebuild'), &
-                verbose=lget('verbose')))
+            allocate(install_settings)
+
+            call build_settings(install_settings, list=lget('list'),  &
+                                build_tests=lget('test'), config_file=config_file)
+            
+            install_settings%no_rebuild = lget('no-rebuild')
             call get_char_arg(install_settings%prefix, 'prefix')
             call get_char_arg(install_settings%libdir, 'libdir')
             call get_char_arg(install_settings%testdir, 'testdir')
@@ -620,35 +582,23 @@ contains
             val_runner_args=sget('runner-args')
             call remove_characters_in_set(val_runner_args,set='"')
 
-            c_compiler = sget('c-compiler')
-            cxx_compiler = sget('cxx-compiler')
-            archiver = sget('archiver')
-            config_file = sget('config-file')
-
             allocate(fpm_test_settings :: cmd_settings)
             val_runner=sget('runner')
             if(specified('runner') .and. val_runner=='')val_runner='echo'
 
-            cmd_settings=fpm_test_settings(&
-            & args=remaining, &
-            & profile=val_profile, &
-            & prune=.not.lget('no-prune'), &
-            & compiler=val_compiler, &
-            & c_compiler=c_compiler, &
-            & cxx_compiler=cxx_compiler, &
-            & archiver=archiver, &
-            & path_to_config=config_file, &
-            & flag=val_flag, &
-            & cflag=val_cflag, &
-            & cxxflag=val_cxxflag, &
-            & ldflag=val_ldflag, &
-            & example=.false., &
-            & list=lget('list'), &
-            & build_tests=.true., &
-            & name=names, &
-            & runner=val_runner, &
-            & runner_args=val_runner_args, &
-            & verbose=lget('verbose'))
+            select type (cmd => cmd_settings)
+            type is (fpm_test_settings)
+
+                call build_settings(cmd, list=lget('list'), build_tests=.true., &
+                                    config_file=sget('config-file'))
+
+                cmd%args        = remaining
+                cmd%example     = .false.
+                cmd%name        = names
+                cmd%runner      = val_runner
+                cmd%runner_args = val_runner_args
+
+            end select
 
         case('update')
             call set_args(common_args // '&
@@ -688,30 +638,15 @@ contains
 
             call check_build_vals()
 
-            c_compiler = sget('c-compiler')
-            cxx_compiler = sget('cxx-compiler')
-            archiver = sget('archiver')
-            allocate(export_settings, source=fpm_export_settings(&
-                profile=val_profile,&
-                prune=.not.lget('no-prune'), &
-                compiler=val_compiler, &
-                c_compiler=c_compiler, &
-                cxx_compiler=cxx_compiler, &
-                archiver=archiver, &
-                flag=val_flag, &
-                cflag=val_cflag, &
-                show_model=.true., &
-                cxxflag=val_cxxflag, &
-                ldflag=val_ldflag, &
-                verbose=lget('verbose')))
+            allocate(export_settings)
+            call build_settings(export_settings, show_model=.true.)
             call get_char_arg(export_settings%dump_model, 'model')
             call get_char_arg(export_settings%dump_manifest, 'manifest')
             call get_char_arg(export_settings%dump_dependencies, 'dependencies')
             call move_alloc(export_settings, cmd_settings)
 
-
         case('clean')
-            call set_args(common_args // &
+            call set_args(common_args // compiler_args // &
             &   ' --registry-cache'   // &
             &   ' --skip'             // &
             &   ' --all'              // &
@@ -742,16 +677,20 @@ contains
                 end if
 
                 allocate(fpm_clean_settings :: cmd_settings)
-                call get_current_directory(working_dir, error)
-                cmd_settings = fpm_clean_settings( &
-                &   working_dir=working_dir, &
-                &   clean_skip=skip, &
-                &   registry_cache=lget('registry-cache'), &
-                &   clean_all=clean_all, &
-                &   clean_test=clean_test, &
-                &   clean_apps=clean_apps, &
-                &   clean_examples=clean_examples, &
-                &   path_to_config=config_file)
+
+                select type (cln => cmd_settings)
+                type is (fpm_clean_settings)
+
+                    call build_settings(cln, config_file=config_file)
+
+                    cln%clean_skip     = skip
+                    cln%registry_cache = lget('registry-cache')
+                    cln%clean_all      = clean_all
+                    cln%clean_test     = clean_test
+                    cln%clean_apps     = clean_apps
+                    cln%clean_examples = clean_examples
+
+                end select
             end block
 
         case('publish')
@@ -768,33 +707,22 @@ contains
 
             call check_build_vals()
 
-            c_compiler = sget('c-compiler')
-            cxx_compiler = sget('cxx-compiler')
-            archiver = sget('archiver')
             config_file = sget('config-file')
             token_s = sget('token')
 
             allocate(fpm_publish_settings :: cmd_settings)
-            cmd_settings = fpm_publish_settings( &
-            & show_package_version = lget('show-package-version'), &
-            & show_upload_data = lget('show-upload-data'), &
-            & is_dry_run = lget('dry-run'), &
-            & profile=val_profile,&
-            & prune=.not.lget('no-prune'), &
-            & compiler=val_compiler, &
-            & c_compiler=c_compiler, &
-            & cxx_compiler=cxx_compiler, &
-            & archiver=archiver, &
-            & flag=val_flag, &
-            & cflag=val_cflag, &
-            & cxxflag=val_cxxflag, &
-            & ldflag=val_ldflag, &
-            & list=lget('list'),&
-            & show_model=lget('show-model'),&
-            & build_tests=lget('tests'),&
-            & path_to_config=config_file, &
-            & verbose=lget('verbose'),&
-            & token=token_s)
+            select type (pub => cmd_settings)
+            type is (fpm_publish_settings)
+
+                call build_settings(pub, list=lget('list'), show_model=lget('show-model'), &
+                                    build_tests=lget('tests'), config_file=config_file)
+
+                pub%show_package_version = lget('show-package-version')
+                pub%show_upload_data     = lget('show-upload-data')
+                pub%is_dry_run           = lget('dry-run')
+                pub%token                = token_s
+
+            end select
 
         case default
 
@@ -1654,9 +1582,10 @@ contains
 
         character(len=:), allocatable :: comp, ccomp, cxcomp, arch
         character(len=:), allocatable :: fflags, cflags, cxxflags, ldflags
-        character(len=:), allocatable :: prof, cfg
+        character(len=:), allocatable :: prof, cfg, dump
 
         ! Read CLI/env values (sget returns what set_args registered, including defaults)
+        ! This is equivalent to check_build_vals
         comp     = sget('compiler');          if (comp == '') comp = 'gfortran'
         fflags   = ' ' // sget('flag')
         cflags   = ' ' // sget('c-flag')
@@ -1667,6 +1596,10 @@ contains
         ccomp    = sget('c-compiler')
         cxcomp   = sget('cxx-compiler')
         arch     = sget('archiver')
+
+        ! Handle --dump default (empty value means use 'fpm_model.toml')
+        dump     = sget('dump')
+        if (specified('dump') .and. dump=='') dump = 'fpm_model.toml'
 
         if (present(config_file)) then
             if (len_trim(config_file) > 0) then
@@ -1691,6 +1624,7 @@ contains
         self%cxxflag       = cxxflags
         self%ldflag        = ldflags
         self%verbose       = lget('verbose')
+        self%dump          = dump
 
         ! Optional overrides from caller
         if (present(list))        self%list        = list
