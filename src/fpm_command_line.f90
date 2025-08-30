@@ -279,7 +279,7 @@ contains
         ! not starting with dash
         CLI_RESPONSE_FILE=.true.
         cmdarg = get_subcommand()
-
+        
         common_args = &
           ' --directory:C " "' // &
           ' --verbose F'
@@ -579,10 +579,10 @@ contains
             allocate(fpm_test_settings :: cmd_settings)
             val_runner=sget('runner')
             if(specified('runner') .and. val_runner=='')val_runner='echo'
-
+            
             select type (cmd => cmd_settings)
             type is (fpm_test_settings)
-
+                
                 call build_settings(cmd, list=lget('list'), build_tests=.true., &
                                     config_file=sget('config-file'))
 
@@ -591,9 +591,9 @@ contains
                 cmd%name        = names
                 cmd%runner      = val_runner
                 cmd%runner_args = val_runner_args
-
+                
             end select
-
+            
         case('update')
             call set_args(common_args // '&
             & --fetch-only F &
@@ -1576,8 +1576,12 @@ contains
         arch     = sget('archiver')
 
         ! Handle --dump default (empty value means use 'fpm_model.toml')
-        dump     = sget('dump')
-        if (specified('dump') .and. dump=='') dump = 'fpm_model.toml'
+        if (specified('dump')) then 
+           dump = sget('dump')
+           if (dump=='') dump='fpm_model.toml'
+        else
+           dump = ''
+        endif
 
         if (present(config_file)) then
             if (len_trim(config_file) > 0) then
@@ -1588,7 +1592,7 @@ contains
         else
             cfg = sget('config-file')
         end if
-
+        
         ! Assign into this (polymorphic) object; allocatable chars auto-allocate
         self%profile       = prof
         self%prune         = .not. lget('no-prune')
