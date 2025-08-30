@@ -383,33 +383,16 @@ contains
             & --config-file " " &
             & --',help_build,version_text)
 
-            call check_build_vals()
-
-            c_compiler = sget('c-compiler')
-            cxx_compiler = sget('cxx-compiler')
-            archiver = sget('archiver')
-            config_file = sget('config-file')
-            val_dump = sget('dump')
-            if (specified('dump') .and. val_dump=='')val_dump='fpm_model.toml'
-
+            ! Create and populate a base fpm_build_settings from CLI/env
             allocate( fpm_build_settings :: cmd_settings )
-            cmd_settings=fpm_build_settings(  &
-            & profile=val_profile,&
-            & dump=val_dump,&
-            & prune=.not.lget('no-prune'), &
-            & compiler=val_compiler, &
-            & c_compiler=c_compiler, &
-            & cxx_compiler=cxx_compiler, &
-            & archiver=archiver, &
-            & path_to_config=config_file, &
-            & flag=val_flag, &
-            & cflag=val_cflag, &
-            & cxxflag=val_cxxflag, &
-            & ldflag=val_ldflag, &
-            & list=lget('list'),&
-            & show_model=lget('show-model'),&
-            & build_tests=lget('tests'),&
-            & verbose=lget('verbose') )
+            
+            select type (cmd => cmd_settings)
+               class is (fpm_build_settings)
+                   call build_settings(cmd, list=lget('list'),                 &
+                                            show_model=lget('show-model'),     &
+                                            build_tests=lget('tests'),         &
+                                            config_file=sget('config-file') )
+            end select
 
         case('new')
             call set_args(common_args // '&
@@ -1654,9 +1637,10 @@ contains
 
         character(len=:), allocatable :: comp, ccomp, cxcomp, arch
         character(len=:), allocatable :: fflags, cflags, cxxflags, ldflags
-        character(len=:), allocatable :: prof, cfg
+        character(len=:), allocatable :: prof, cfg, dump
 
         ! Read CLI/env values (sget returns what set_args registered, including defaults)
+        ! This is equivalent to check_build_vals
         comp     = sget('compiler');          if (comp == '') comp = 'gfortran'
         fflags   = ' ' // sget('flag')
         cflags   = ' ' // sget('c-flag')
@@ -1667,6 +1651,10 @@ contains
         ccomp    = sget('c-compiler')
         cxcomp   = sget('cxx-compiler')
         arch     = sget('archiver')
+
+        ! Handle --dump default (empty value means use 'fpm_model.toml')
+        dump     = sget('dump')
+        if (specified('dump') .and. dump=='') dump = 'fpm_model.toml'
 
         if (present(config_file)) then
             if (len_trim(config_file) > 0) then
@@ -1691,6 +1679,7 @@ contains
         self%cxxflag       = cxxflags
         self%ldflag        = ldflags
         self%verbose       = lget('verbose')
+        self%dump          = dump
 
         ! Optional overrides from caller
         if (present(list))        self%list        = list
