@@ -350,8 +350,8 @@ pushd custom_module_dir
 rm -rf ./test_custom_install
 "$fpm" install --prefix ./test_custom_install
 # Verify modules are installed in custom directory
-test -f ./test_custom_install/custom/modules/greeting.mod
-test -f ./test_custom_install/custom/modules/math_utils.mod
+test -f ./test_custom_install/custom_modules/greeting.mod
+test -f ./test_custom_install/custom_modules/math_utils.mod
 # Verify library is still installed normally
 test -f ./test_custom_install/lib/libcustom-module-dir.a
 # Clean up

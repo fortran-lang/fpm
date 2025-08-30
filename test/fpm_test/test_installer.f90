@@ -192,10 +192,10 @@ contains
         type(mock_installer_t) :: mock
         type(installer_t) :: installer
 
-        call new_installer(installer, prefix="PREFIX", moduledir="custom/modules", verbosity=0, copy="mock")
+        call new_installer(installer, prefix="PREFIX", moduledir="custom_modules", verbosity=0, copy="mock")
         mock%installer_t = installer
-        mock%expected_dir = join_path("PREFIX", "custom/modules")
-        mock%expected_run = 'mock "test_module.mod" "'//join_path("PREFIX", "custom/modules")//'"'
+        mock%expected_dir = join_path("PREFIX", "custom_modules")
+        mock%expected_run = 'mock "test_module.mod" "'//join_path("PREFIX", "custom_modules")//'"'
 
         call mock%install_module("test_module.mod", error)
 
