@@ -27,6 +27,8 @@ module fpm_installer
     character(len=:), allocatable :: testdir
     !> Include directory relative to the installation prefix
     character(len=:), allocatable :: includedir
+    !> Module directory relative to the installation prefix
+    character(len=:), allocatable :: moduledir
     !> Output unit for informative printout
     integer :: unit = output_unit
     !> Verbosity of the installer
@@ -46,6 +48,8 @@ module fpm_installer
     procedure :: install_library
     !> Install a header/module in its correct subdirectory
     procedure :: install_header
+    !> Install a module in its correct subdirectory
+    procedure :: install_module
     !> Install a test program in its correct subdirectory
     procedure :: install_test
     !> Install a generic file into a subdirectory in the installation prefix
@@ -69,6 +73,9 @@ module fpm_installer
   !> Default name of the include subdirectory
   character(len=*), parameter :: default_includedir = "include"
 
+  !> Default name of the module subdirectory
+  character(len=*), parameter :: default_moduledir = "include"
+
   !> Copy command on Unix platforms
   character(len=*), parameter :: default_copy_unix = "cp"
 
@@ -90,7 +97,7 @@ module fpm_installer
 contains
 
   !> Create a new instance of an installer
-  subroutine new_installer(self, prefix, bindir, libdir, includedir, testdir, verbosity, &
+  subroutine new_installer(self, prefix, bindir, libdir, includedir, moduledir, testdir, verbosity, &
           copy, move)
     !> Instance of the installer
     type(installer_t), intent(out) :: self
@@ -102,6 +109,8 @@ contains
     character(len=*), intent(in), optional :: libdir
     !> Include directory relative to the installation prefix
     character(len=*), intent(in), optional :: includedir
+    !> Module directory relative to the installation prefix
+    character(len=*), intent(in), optional :: moduledir
     !> Test directory relative to the installation prefix
     character(len=*), intent(in), optional :: testdir    
     !> Verbosity of the installer
@@ -138,6 +147,12 @@ contains
       self%includedir = includedir
     else
       self%includedir = default_includedir
+    end if
+
+    if (present(moduledir)) then
+      self%moduledir = moduledir
+    else
+      self%moduledir = default_moduledir
     end if
     
     if (present(testdir)) then 
@@ -287,6 +302,18 @@ contains
 
     call self%install(header, self%includedir, error)
   end subroutine install_header
+
+  !> Install a module in its correct subdirectory
+  subroutine install_module(self, module, error)
+    !> Instance of the installer
+    class(installer_t), intent(inout) :: self
+    !> Path to the module
+    character(len=*), intent(in) :: module
+    !> Error handling
+    type(error_t), allocatable, intent(out) :: error
+
+    call self%install(module, self%moduledir, error)
+  end subroutine install_module
 
   !> Install a generic file into a subdirectory in the installation prefix
   subroutine install(self, source, destination, error)
