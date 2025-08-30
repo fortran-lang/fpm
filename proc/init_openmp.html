@@ -92,7 +92,7 @@
 
             <li class="list-inline-item" id="statements"><i class="fa fa-list-ol"></i>
               <a data-bs-toggle="tooltip" data-bs-placement="bottom" data-bs-html="true"
-                 title=" 0.5% of total for procedures.">38 statements</a>
+                 title=" 0.7% of total for procedures.">55 statements</a>
             </li>
 
             <li class="list-inline-item" id="source-file">
@@ -166,8 +166,12 @@
     <p>Initialize OpenMP metapackage for the current system
 Cleanup</p>
 <p>Set name</p>
-<p>OpenMP has compiler flags
-OpenMP flags should be added to</p>
+<p>Get OpenMP flags based on compiler
+Test Fortran OpenMP support
+Test C OpenMP support
+Test C++ OpenMP support<br>
+Always set link flags when OpenMP is requested
+The linker needs OpenMP flags regardless of individual compiler support</p>
 
 
     <h3>Arguments</h3>
@@ -183,7 +187,7 @@ OpenMP flags should be added to</p>
     <tbody>
         <tr>
             <td>
-              <span class="anchor" id="variable-this~2"></span>
+              <span class="anchor" id="variable-this~10"></span>
               class(<a href='../type/metapackage_t.html'>metapackage_t</a>),
             </td>
 <td>intent(inout)</td>
@@ -198,7 +202,7 @@ OpenMP flags should be added to</p>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-compiler"></span>
+              <span class="anchor" id="variable-compiler~19"></span>
               type(<a href='../type/compiler_t.html'>compiler_t</a>),
             </td>
 <td>intent(in)</td>
@@ -213,7 +217,7 @@ OpenMP flags should be added to</p>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-all_meta"></span>
+              <span class="anchor" id="variable-all_meta~5"></span>
               type(<a href='../type/metapackage_request_t.html'>metapackage_request_t</a>),
             </td>
 <td>intent(in)</td>
@@ -228,7 +232,7 @@ OpenMP flags should be added to</p>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-error~5"></span>
+              <span class="anchor" id="variable-error~49"></span>
               type(<a href='../type/error_t.html'>error_t</a>),
             </td>
 <td>intent(out),</td>
@@ -264,57 +268,86 @@ OpenMP flags should be added to</p>
 <span class="w">        </span><span class="k">type</span><span class="p">(</span><span class="n">metapackage_request_t</span><span class="p">),</span><span class="w"> </span><span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">)</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">all_meta</span><span class="p">(:)</span>
 <span class="w">        </span><span class="k">type</span><span class="p">(</span><span class="n">error_t</span><span class="p">),</span><span class="w"> </span><span class="k">allocatable</span><span class="p">,</span><span class="w"> </span><span class="k">intent</span><span class="p">(</span><span class="n">out</span><span class="p">)</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">error</span>
 
+<span class="w">        </span><span class="c">!&gt; Local variables for OpenMP testing</span>
+<span class="w">        </span><span class="kt">character</span><span class="p">(:),</span><span class="w"> </span><span class="k">allocatable</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">openmp_flag</span><span class="p">,</span><span class="w"> </span><span class="n">link_flag</span>
+<span class="w">        </span><span class="kt">character</span><span class="p">(</span><span class="nb">len</span><span class="o">=*</span><span class="p">),</span><span class="w"> </span><span class="k">parameter</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">openmp_test_fortran</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">&amp;</span>
+<span class="w">            </span><span class="s2">&quot;use omp_lib; if (omp_get_max_threads() &lt;= 0) stop 1; end&quot;</span>
+<span class="w">        </span><span class="kt">character</span><span class="p">(</span><span class="nb">len</span><span class="o">=*</span><span class="p">),</span><span class="w"> </span><span class="k">parameter</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">openmp_test_c</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">&amp;</span>
+<span class="w">            </span><span class="s2">&quot;#include &lt;omp.h&gt;&quot;</span><span class="w"> </span><span class="o">//</span><span class="w"> </span><span class="nb">new_line</span><span class="p">(</span><span class="s1">&#39;a&#39;</span><span class="p">)</span><span class="w"> </span><span class="o">//</span><span class="w"> </span><span class="p">&amp;</span>
+<span class="w">            </span><span class="s2">&quot;int main() { return omp_get_max_threads() &gt; 0 ? 0 : 1; }&quot;</span>
+<span class="w">        </span><span class="kt">character</span><span class="p">(</span><span class="nb">len</span><span class="o">=*</span><span class="p">),</span><span class="w"> </span><span class="k">parameter</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">openmp_test_cxx</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">&amp;</span>
+<span class="w">            </span><span class="s2">&quot;#include &lt;omp.h&gt;&quot;</span><span class="w"> </span><span class="o">//</span><span class="w"> </span><span class="nb">new_line</span><span class="p">(</span><span class="s1">&#39;a&#39;</span><span class="p">)</span><span class="w"> </span><span class="o">//</span><span class="w"> </span><span class="p">&amp;</span>
+<span class="w">            </span><span class="s2">&quot;int main() { return omp_get_max_threads() &gt; 0 ? 0 : 1; }&quot;</span>
+
 <span class="w">        </span><span class="c">!&gt; Cleanup</span>
 <span class="w">        </span><span class="k">call </span><span class="n">destroy</span><span class="p">(</span><span class="n">this</span><span class="p">)</span>
 <span class="w">        </span>
 <span class="w">        </span><span class="c">!&gt; Set name</span>
 <span class="w">        </span><span class="n">this</span><span class="p">%</span><span class="n">name</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;openmp&quot;</span>
 
-<span class="w">        </span><span class="c">!&gt; OpenMP has compiler flags</span>
-<span class="w">        </span><span class="n">this</span><span class="p">%</span><span class="n">has_build_flags</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">.</span><span class="n">true</span><span class="p">.</span>
-<span class="w">        </span><span class="n">this</span><span class="p">%</span><span class="n">has_link_flags</span><span class="w">  </span><span class="o">=</span><span class="w"> </span><span class="p">.</span><span class="n">true</span><span class="p">.</span>
-
-<span class="w">        </span><span class="c">!&gt; OpenMP flags should be added to</span>
+<span class="w">        </span><span class="c">!&gt; Get OpenMP flags based on compiler</span>
 <span class="w">        </span><span class="n">which_compiler</span><span class="p">:</span><span class="w"> </span><span class="k">select case</span><span class="w"> </span><span class="p">(</span><span class="n">compiler</span><span class="p">%</span><span class="n">id</span><span class="p">)</span>
 <span class="w">           </span><span class="k">case</span><span class="w"> </span><span class="p">(</span><span class="n">id_gcc</span><span class="p">,</span><span class="n">id_f95</span><span class="p">)</span>
-<span class="w">                </span><span class="n">this</span><span class="p">%</span><span class="n">flags</span><span class="w">      </span><span class="o">=</span><span class="w"> </span><span class="n">string_t</span><span class="p">(</span><span class="n">flag_gnu_openmp</span><span class="p">)</span>
-<span class="w">                </span><span class="n">this</span><span class="p">%</span><span class="n">link_flags</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">string_t</span><span class="p">(</span><span class="n">flag_gnu_openmp</span><span class="p">)</span>
+<span class="w">                </span><span class="n">openmp_flag</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">flag_gnu_openmp</span>
+<span class="w">                </span><span class="n">link_flag</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">flag_gnu_openmp</span>
 
 <span class="w">           </span><span class="k">case</span><span class="w"> </span><span class="p">(</span><span class="n">id_intel_classic_windows</span><span class="p">,</span><span class="n">id_intel_llvm_windows</span><span class="p">)</span>
-<span class="w">                </span><span class="n">this</span><span class="p">%</span><span class="n">flags</span><span class="w">      </span><span class="o">=</span><span class="w"> </span><span class="n">string_t</span><span class="p">(</span><span class="n">flag_intel_openmp_win</span><span class="p">)</span>
-<span class="w">                </span><span class="n">this</span><span class="p">%</span><span class="n">link_flags</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">string_t</span><span class="p">(</span><span class="n">flag_intel_openmp_win</span><span class="p">)</span>
+<span class="w">                </span><span class="n">openmp_flag</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">flag_intel_openmp_win</span>
+<span class="w">                </span><span class="n">link_flag</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">flag_intel_openmp_win</span>
 
 <span class="w">           </span><span class="k">case</span><span class="w"> </span><span class="p">(</span><span class="n">id_intel_classic_nix</span><span class="p">,</span><span class="n">id_intel_classic_mac</span><span class="p">,&amp;</span>
 <span class="w">                 </span><span class="n">id_intel_llvm_nix</span><span class="p">)</span>
-<span class="w">                </span><span class="n">this</span><span class="p">%</span><span class="n">flags</span><span class="w">      </span><span class="o">=</span><span class="w"> </span><span class="n">string_t</span><span class="p">(</span><span class="n">flag_intel_openmp</span><span class="p">)</span>
-<span class="w">                </span><span class="n">this</span><span class="p">%</span><span class="n">link_flags</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">string_t</span><span class="p">(</span><span class="n">flag_intel_openmp</span><span class="p">)</span>
+<span class="w">                </span><span class="n">openmp_flag</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">flag_intel_openmp</span>
+<span class="w">                </span><span class="n">link_flag</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">flag_intel_openmp</span>
 
 <span class="w">           </span><span class="k">case</span><span class="w"> </span><span class="p">(</span><span class="n">id_pgi</span><span class="p">,</span><span class="n">id_nvhpc</span><span class="p">)</span>
-<span class="w">                </span><span class="n">this</span><span class="p">%</span><span class="n">flags</span><span class="w">      </span><span class="o">=</span><span class="w"> </span><span class="n">string_t</span><span class="p">(</span><span class="n">flag_pgi_openmp</span><span class="p">)</span>
-<span class="w">                </span><span class="n">this</span><span class="p">%</span><span class="n">link_flags</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">string_t</span><span class="p">(</span><span class="n">flag_pgi_openmp</span><span class="p">)</span>
+<span class="w">                </span><span class="n">openmp_flag</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">flag_pgi_openmp</span>
+<span class="w">                </span><span class="n">link_flag</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">flag_pgi_openmp</span>
 
 <span class="w">           </span><span class="k">case</span><span class="w"> </span><span class="p">(</span><span class="n">id_ibmxl</span><span class="p">)</span>
-<span class="w">                </span><span class="n">this</span><span class="p">%</span><span class="n">flags</span><span class="w">      </span><span class="o">=</span><span class="w"> </span><span class="n">string_t</span><span class="p">(</span><span class="s2">&quot; -qsmp=omp&quot;</span><span class="p">)</span>
-<span class="w">                </span><span class="n">this</span><span class="p">%</span><span class="n">link_flags</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">string_t</span><span class="p">(</span><span class="s2">&quot; -qsmp=omp&quot;</span><span class="p">)</span>
+<span class="w">                </span><span class="n">openmp_flag</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot; -qsmp=omp&quot;</span>
+<span class="w">                </span><span class="n">link_flag</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot; -qsmp=omp&quot;</span>
 
 <span class="w">           </span><span class="k">case</span><span class="w"> </span><span class="p">(</span><span class="n">id_nag</span><span class="p">)</span>
-<span class="w">                </span><span class="n">this</span><span class="p">%</span><span class="n">flags</span><span class="w">      </span><span class="o">=</span><span class="w"> </span><span class="n">string_t</span><span class="p">(</span><span class="n">flag_nag_openmp</span><span class="p">)</span>
-<span class="w">                </span><span class="n">this</span><span class="p">%</span><span class="n">link_flags</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">string_t</span><span class="p">(</span><span class="n">flag_nag_openmp</span><span class="p">)</span>
+<span class="w">                </span><span class="n">openmp_flag</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">flag_nag_openmp</span>
+<span class="w">                </span><span class="n">link_flag</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">flag_nag_openmp</span>
 
 <span class="w">           </span><span class="k">case</span><span class="w"> </span><span class="p">(</span><span class="n">id_lfortran</span><span class="p">)</span>
-<span class="w">                </span><span class="n">this</span><span class="p">%</span><span class="n">flags</span><span class="w">      </span><span class="o">=</span><span class="w"> </span><span class="n">string_t</span><span class="p">(</span><span class="n">flag_lfortran_openmp</span><span class="p">)</span>
-<span class="w">                </span><span class="n">this</span><span class="p">%</span><span class="n">link_flags</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">string_t</span><span class="p">(</span><span class="n">flag_lfortran_openmp</span><span class="p">)</span>
+<span class="w">                </span><span class="n">openmp_flag</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">flag_lfortran_openmp</span>
+<span class="w">                </span><span class="n">link_flag</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">flag_lfortran_openmp</span>
 
 <span class="w">           </span><span class="k">case</span><span class="w"> </span><span class="p">(</span><span class="n">id_flang</span><span class="p">,</span><span class="w"> </span><span class="n">id_flang_new</span><span class="p">)</span>
-<span class="w">                </span><span class="n">this</span><span class="p">%</span><span class="n">flags</span><span class="w">      </span><span class="o">=</span><span class="w"> </span><span class="n">string_t</span><span class="p">(</span><span class="n">flag_flang_new_openmp</span><span class="p">)</span>
-<span class="w">                </span><span class="n">this</span><span class="p">%</span><span class="n">link_flags</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">string_t</span><span class="p">(</span><span class="n">flag_flang_new_openmp</span><span class="p">)</span>
+<span class="w">                </span><span class="n">openmp_flag</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">flag_flang_new_openmp</span>
+<span class="w">                </span><span class="n">link_flag</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">flag_flang_new_openmp</span>
 
 <span class="w">           </span><span class="k">case </span><span class="n">default</span>
-
 <span class="w">              </span><span class="k">call </span><span class="n">fatal_error</span><span class="p">(</span><span class="n">error</span><span class="p">,</span><span class="s1">&#39;openmp not supported on compiler &#39;</span><span class="o">//</span><span class="n">compiler</span><span class="p">%</span><span class="n">name</span><span class="p">()</span><span class="o">//</span><span class="s1">&#39; yet&#39;</span><span class="p">)</span>
+<span class="w">              </span><span class="k">return</span>
 
-<span class="w">        </span><span class="k">end select </span><span class="n">which_compiler</span>
+<span class="k">        end select </span><span class="n">which_compiler</span>
 
+<span class="w">        </span><span class="c">!&gt; Test Fortran OpenMP support</span>
+<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">compiler</span><span class="p">%</span><span class="n">check_fortran_source_runs</span><span class="p">(</span><span class="n">openmp_test_fortran</span><span class="p">,</span><span class="w"> </span><span class="n">openmp_flag</span><span class="p">,</span><span class="w"> </span><span class="n">link_flag</span><span class="p">))</span><span class="w"> </span><span class="k">then</span>
+<span class="k">            </span><span class="n">this</span><span class="p">%</span><span class="n">has_fortran_flags</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">.</span><span class="n">true</span><span class="p">.</span>
+<span class="w">            </span><span class="n">this</span><span class="p">%</span><span class="n">fflags</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">string_t</span><span class="p">(</span><span class="n">openmp_flag</span><span class="p">)</span>
+<span class="w">        </span><span class="k">endif</span>
+
+<span class="w">        </span><span class="c">!&gt; Test C OpenMP support</span>
+<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">compiler</span><span class="p">%</span><span class="n">check_c_source_runs</span><span class="p">(</span><span class="n">openmp_test_c</span><span class="p">,</span><span class="w"> </span><span class="n">openmp_flag</span><span class="p">,</span><span class="w"> </span><span class="n">link_flag</span><span class="p">))</span><span class="w"> </span><span class="k">then</span>
+<span class="k">            </span><span class="n">this</span><span class="p">%</span><span class="n">has_c_flags</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">.</span><span class="n">true</span><span class="p">.</span>
+<span class="w">            </span><span class="n">this</span><span class="p">%</span><span class="n">cflags</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">string_t</span><span class="p">(</span><span class="n">openmp_flag</span><span class="p">)</span>
+<span class="w">        </span><span class="k">endif</span>
+
+<span class="w">        </span><span class="c">!&gt; Test C++ OpenMP support  </span>
+<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">compiler</span><span class="p">%</span><span class="n">check_cxx_source_runs</span><span class="p">(</span><span class="n">openmp_test_cxx</span><span class="p">,</span><span class="w"> </span><span class="n">openmp_flag</span><span class="p">,</span><span class="w"> </span><span class="n">link_flag</span><span class="p">))</span><span class="w"> </span><span class="k">then</span>
+<span class="k">            </span><span class="n">this</span><span class="p">%</span><span class="n">has_cxx_flags</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">.</span><span class="n">true</span><span class="p">.</span>
+<span class="w">            </span><span class="n">this</span><span class="p">%</span><span class="n">cxxflags</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">string_t</span><span class="p">(</span><span class="n">openmp_flag</span><span class="p">)</span>
+<span class="w">        </span><span class="k">endif</span>
+
+<span class="w">        </span><span class="c">!&gt; Always set link flags when OpenMP is requested</span>
+<span class="w">        </span><span class="c">!&gt; The linker needs OpenMP flags regardless of individual compiler support</span>
+<span class="w">        </span><span class="n">this</span><span class="p">%</span><span class="n">has_link_flags</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">.</span><span class="n">true</span><span class="p">.</span>
+<span class="w">        </span><span class="n">this</span><span class="p">%</span><span class="n">link_flags</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">string_t</span><span class="p">(</span><span class="n">link_flag</span><span class="p">)</span>
 
 <span class="w">    </span><span class="k">end subroutine </span><span class="n">init_openmp</span>
 </pre></div>
@@ -340,7 +373,7 @@ OpenMP flags should be added to</p>
             <p class="text-end">
               Documentation generated by
               <a href="https://github.com/Fortran-FOSS-Programmers/ford">FORD</a>
- on 2025-07-25 16:05 +0000             </p>
+ on 2025-08-30 13:24 +0000             </p>
           </div>
         </div>
         <br>
