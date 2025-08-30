@@ -132,6 +132,9 @@ end type
 type, extends(fpm_cmd_settings)   :: fpm_clean_settings
     logical                       :: clean_skip = .false.
     logical                       :: clean_all = .false.
+    logical                       :: clean_test = .false.
+    logical                       :: clean_apps = .false.
+    logical                       :: clean_examples = .false.
     logical                       :: registry_cache = .false.
 end type
 
@@ -712,17 +715,30 @@ contains
             &   ' --registry-cache'   // &
             &   ' --skip'             // &
             &   ' --all'              // &
+            &   ' --test'             // &
+            &   ' --apps'             // &
+            &   ' --examples'         // &
             &   ' --config-file ""', help_clean, version_text)
 
             block
-                logical :: skip, clean_all
+                logical :: skip, clean_all, clean_test, clean_apps, clean_examples
+                logical :: target_specific
 
                 skip = lget('skip')
                 clean_all = lget('all')
+                clean_test = lget('test')
+                clean_apps = lget('apps')
+                clean_examples = lget('examples')
                 config_file = sget('config-file')
+
+                target_specific = any([clean_test, clean_apps, clean_examples])
 
                 if (all([skip, clean_all])) then
                     call fpm_stop(6, 'Do not specify both --skip and --all options on the clean subcommand.')
+                end if
+
+                if (target_specific .and. any([skip, clean_all])) then
+                    call fpm_stop(6, 'Cannot combine target-specific flags (--test, --apps, --examples) with --skip or --all.')
                 end if
 
                 allocate(fpm_clean_settings :: cmd_settings)
@@ -732,6 +748,9 @@ contains
                 &   clean_skip=skip, &
                 &   registry_cache=lget('registry-cache'), &
                 &   clean_all=clean_all, &
+                &   clean_test=clean_test, &
+                &   clean_apps=clean_apps, &
+                &   clean_examples=clean_examples, &
                 &   path_to_config=config_file)
             end block
 
@@ -1501,16 +1520,21 @@ contains
     ' clean(1) - delete the build', &
     '', &
     'SYNOPSIS', &
-    ' fpm clean', &
+    ' fpm clean [--skip|--all]', &
+    ' fpm clean [--test] [--apps] [--examples]', &
     '', &
     'DESCRIPTION', &
     ' Prompts the user to confirm deletion of the build. If affirmative,', &
     ' directories in the build/ directory are deleted, except dependencies.', &
     ' Use the --registry-cache option to delete the registry cache.', &
+    ' Use target-specific flags to delete only certain build artifacts.', &
     '', &
     'OPTIONS', &
     ' --skip              Delete the build without prompting but skip dependencies.', &
     ' --all               Delete the build without prompting including dependencies.', &
+    ' --test              Delete only test executables.', &
+    ' --apps              Delete only application executables.', &
+    ' --examples          Delete only example executables.', &
     ' --config-file PATH  Custom location of the global config file.', &
     ' --registry-cache    Delete registry cache.', &
     '' ]
