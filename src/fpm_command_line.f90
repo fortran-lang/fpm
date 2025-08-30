@@ -356,7 +356,7 @@ contains
                     if (specified('runner') .and. val_runner == '') val_runner = 'echo'
 
                     ! Run-specific fields
-                    cmd%args        = remaining
+                    if (allocated(remaining)) cmd%args = remaining
                     cmd%example     = lget('example')
                     cmd%name        = names
                     cmd%runner      = val_runner
@@ -586,7 +586,7 @@ contains
                 call build_settings(cmd, list=lget('list'), build_tests=.true., &
                                     config_file=sget('config-file'))
 
-                cmd%args        = remaining
+                if (allocated(remaining)) cmd%args = remaining
                 cmd%example     = .false.
                 cmd%name        = names
                 cmd%runner      = val_runner
