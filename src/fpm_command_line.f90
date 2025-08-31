@@ -858,13 +858,16 @@ contains
         do i = 1, size(reserved_names)
             normalized_reserved = canon_path(trim(reserved_names(i)))
             if (normalized_build_dir == normalized_reserved) then
-                call fpm_stop(1, 'Error: Build directory "'//trim(build_dir)//'" conflicts with source directory "'//trim(reserved_names(i))//'".')
+                call fpm_stop(1, 'Error: Build directory "'//trim(build_dir) &
+                                  //'" conflicts with source directory "' &
+                                  //trim(reserved_names(i))//'".')
             end if
         end do
         
         ! Additional checks for problematic cases
         if (trim(build_dir) == "." .or. trim(build_dir) == "..") then
-            call fpm_stop(1, 'Error: Build directory cannot be "'//trim(build_dir)//'" as it would overwrite the current or parent directory.')
+            call fpm_stop(1, 'Error: Build directory cannot be "'//trim(build_dir)// &
+                             '" as it would overwrite the current or parent directory.')
         end if
         
     end subroutine validate_build_dir
