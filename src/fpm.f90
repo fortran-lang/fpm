@@ -69,7 +69,8 @@ subroutine build_model(model, settings, package, error)
     end if
 
     call new_compiler_flags(model,settings)
-    model%build_prefix         = join_path("build", basename(model%compiler%fc))
+    model%build_dir            = settings%build_dir
+    model%build_prefix         = join_path(settings%build_dir, basename(model%compiler%fc))
     model%include_tests        = settings%build_tests
     model%enforce_module_names = package%build%module_naming
     model%module_prefix        = package%build%module_prefix
@@ -79,8 +80,8 @@ subroutine build_model(model, settings, package, error)
     if (allocated(error)) return
     
     ! Create dependencies
-    call new_dependency_tree(model%deps, cache=join_path("build", "cache.toml"), &
-    & path_to_config=settings%path_to_config)
+    call new_dependency_tree(model%deps, cache=join_path(settings%build_dir, "cache.toml"), &
+    & path_to_config=settings%path_to_config, build_dir=settings%build_dir)
 
     ! Build and resolve model dependencies
     call model%deps%add(package, error)
@@ -90,9 +91,9 @@ subroutine build_model(model, settings, package, error)
     call model%deps%update(error)
     if (allocated(error)) return
 
-    ! build/ directory should now exist
-    if (.not.exists("build/.gitignore")) then
-      call filewrite(join_path("build", ".gitignore"),["*"])
+    ! build directory should now exist
+    if (.not.exists(join_path(settings%build_dir, ".gitignore"))) then
+      call filewrite(join_path(settings%build_dir, ".gitignore"),["*"])
     end if
 
     allocate(model%packages(model%deps%ndep))
