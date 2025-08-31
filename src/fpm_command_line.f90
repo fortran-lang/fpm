@@ -833,7 +833,41 @@ contains
         val_profile = sget('profile')
         val_build_dir = sget('build-dir')
 
+        call validate_build_dir(val_build_dir)
+
     end subroutine check_build_vals
+
+    !> Validate that build directory is not a reserved source directory name
+    subroutine validate_build_dir(build_dir)
+        use fpm_error, only: fpm_stop
+        use fpm_filesystem, only: canon_path
+        character(len=*), intent(in) :: build_dir
+        character(len=*), parameter :: reserved_names(*) = [ &
+            "src     ", "app     ", "test    ", "tests   ", &
+            "example ", "examples", "include "]
+        character(len=:), allocatable :: normalized_build_dir, normalized_reserved
+        integer :: i
+        
+        ! Skip validation if build_dir is empty (will use default)
+        if (len_trim(build_dir) == 0) return
+        
+        ! Normalize the build directory path
+        normalized_build_dir = canon_path(build_dir)
+        
+        ! Check against reserved directory names
+        do i = 1, size(reserved_names)
+            normalized_reserved = canon_path(trim(reserved_names(i)))
+            if (normalized_build_dir == normalized_reserved) then
+                call fpm_stop(1, 'Error: Build directory "'//trim(build_dir)//'" conflicts with source directory "'//trim(reserved_names(i))//'".')
+            end if
+        end do
+        
+        ! Additional checks for problematic cases
+        if (trim(build_dir) == "." .or. trim(build_dir) == "..") then
+            call fpm_stop(1, 'Error: Build directory cannot be "'//trim(build_dir)//'" as it would overwrite the current or parent directory.')
+        end if
+        
+    end subroutine validate_build_dir
 
     !> Print help text and stop
     subroutine printhelp(lines)
