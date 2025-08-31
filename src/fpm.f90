@@ -8,7 +8,7 @@ use fpm_command_line, only: fpm_build_settings, fpm_new_settings, &
                       fpm_clean_settings
 use fpm_dependency, only : new_dependency_tree
 use fpm_filesystem, only: is_dir, join_path, list_files, exists, &
-                   basename, filewrite, mkdir, run, os_delete_dir
+                   basename, filewrite, mkdir, run, os_delete_dir, delete_file
 use fpm_model, only: fpm_model_t, srcfile_t, show_model, fortran_features_t, &
                     FPM_SCOPE_UNKNOWN, FPM_SCOPE_LIB, FPM_SCOPE_DEP, &
                     FPM_SCOPE_APP, FPM_SCOPE_EXAMPLE, FPM_SCOPE_TEST
@@ -704,10 +704,10 @@ subroutine delete_targets_by_scope(targets, scope, scope_name, deleted_any)
 
     call filter_executable_targets(targets, scope, scope_targets)
     if (size(scope_targets) > 0) then
-        write(stdout, '(A,I0,A,A,A)') "Deleting ", size(scope_targets), " ", scope_name, " targets"
         do i = 1, size(scope_targets)
             if (exists(scope_targets(i)%s)) then
-                call run('rm -f "'//scope_targets(i)%s//'"')
+                write(stdout, '(A,A,A,A)') "<INFO> Deleted ", scope_name, " target: ", basename(scope_targets(i)%s)
+                call delete_file(scope_targets(i)%s)
                 deleted_any = .true.
             end if
         end do
@@ -716,39 +716,32 @@ end subroutine delete_targets_by_scope
 
 !> Delete build artifacts for specific target types (test, apps, examples)
 subroutine delete_targets(settings, error)
-    class(fpm_clean_settings), intent(in) :: settings
+    class(fpm_clean_settings), intent(inout) :: settings
     type(error_t), allocatable, intent(out) :: error
 
     type(package_config_t) :: package
     type(fpm_model_t) :: model
     type(build_target_ptr), allocatable :: targets(:)
-    type(fpm_build_settings) :: build_settings
     logical :: deleted_any
 
     ! Get package configuration
-    call get_package_data(package, settings%working_dir, error)
+    call get_package_data(package, "fpm.toml", error, apply_defaults=.true.)
     if (allocated(error)) return
-
-    ! Create minimal build settings to build the model
-    build_settings%working_dir = settings%working_dir
-    build_settings%path_to_config = settings%path_to_config
-    build_settings%build_tests = .true.
-    build_settings%prune = .true.
-    if (allocated(build_settings%profile)) deallocate(build_settings%profile)
-    allocate(character(len=5) :: build_settings%profile)
-    build_settings%profile = "debug"
+    
+    ! Ensure tests will be modeled
+    if (settings%clean_test) settings%build_tests = .true.  
 
     ! Build the model to understand targets
-    call build_model(model, build_settings, package, error)
+    call build_model(model, settings, package, error)
     if (allocated(error)) return
 
-    ! Get build targets
-    call targets_from_sources(targets, model, build_settings%prune, error=error)
+    ! Get the exact targets
+    call targets_from_sources(targets, model, settings%prune, package%library, error)
     if (allocated(error)) return
 
     deleted_any = .false.
 
-    ! Delete targets by scope
+    ! Delete targets by scope using the original approach
     if (settings%clean_test) then
         call delete_targets_by_scope(targets, FPM_SCOPE_TEST, "test", deleted_any)
     end if
@@ -771,7 +764,7 @@ end subroutine delete_targets
 !> to clear the registry cache.
 subroutine cmd_clean(settings)
     !> Settings for the clean command.
-    class(fpm_clean_settings), intent(in) :: settings
+    class(fpm_clean_settings), intent(inout) :: settings
 
     character :: user_response
     type(fpm_global_settings) :: global_settings
