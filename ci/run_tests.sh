@@ -345,8 +345,7 @@ test $EXIT_CODE -eq 0
 popd
 
 # Test custom build directory functionality 
-script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-bash "$script_dir/test_custom_build_dir.sh" "$fpm" hello_world
+bash "../ci/test_custom_build_dir.sh" "$fpm" hello_world
 
 # Cleanup
 rm -rf ./*/build

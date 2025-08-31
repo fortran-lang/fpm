@@ -4,10 +4,6 @@ set -ex
 # Test script for custom build directory functionality
 # Usage: ./test_custom_build_dir.sh [fpm_executable] [example_package_dir]
 
-# Move to repo root (works from <root> or <root>/ci)
-this_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-cd "$this_dir/.."
-
 if [ "$1" ]; then
    fpm="$1"
 else
@@ -21,9 +17,6 @@ else
 fi
 
 echo "Testing custom build directory functionality with package: $test_package"
-
-# Go to example packages directory
-pushd example_packages/
 
 # Test 1: Custom build directory with CLI option
 pushd "$test_package"
@@ -100,8 +93,6 @@ echo "✓ All commands work with custom build directory"
 
 # Cleanup test directories
 rm -rf custom_build_test env_build_test cli_override_test test_build_all
-popd
-
 popd
 
 echo "All custom build directory tests passed!"
