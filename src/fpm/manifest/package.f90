@@ -45,11 +45,13 @@ module fpm_manifest_package
     use fpm_manifest_test, only : test_config_t, new_test
     use fpm_manifest_preprocess, only : preprocess_config_t, new_preprocessors
     use fpm_manifest_metapackages, only: metapackage_config_t, new_meta_config
+    use fpm_manifest_feature, only: feature_config_t
     use fpm_filesystem, only : exists, getline, join_path
     use fpm_error, only : error_t, fatal_error, syntax_error, bad_name_error
     use tomlf, only : toml_table, toml_array, toml_key, toml_stat
     use fpm_toml, only : get_value, len, serializable_t, set_value, set_string, set_list, add_table
     use fpm_versioning, only : version_t, new_version
+    
     implicit none
     private
 

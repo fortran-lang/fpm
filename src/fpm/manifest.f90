@@ -43,7 +43,6 @@ contains
 
     end subroutine default_library
 
-
     !> Populate executable in case we find the default app directory
     subroutine default_executable(self, name)
 

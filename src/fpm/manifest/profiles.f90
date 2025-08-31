@@ -48,15 +48,14 @@ module fpm_manifest_profile
                          set_string, add_table
     use fpm_strings, only: lower
     use fpm_environment, only: get_os_type, OS_UNKNOWN, OS_LINUX, OS_MACOS, OS_WINDOWS, &
-                             OS_CYGWIN, OS_SOLARIS, OS_FREEBSD, OS_OPENBSD, OS_NAME
+                             OS_CYGWIN, OS_SOLARIS, OS_FREEBSD, OS_OPENBSD, OS_NAME, OS_ALL
     use fpm_filesystem, only: join_path
     implicit none
     public :: profile_config_t, new_profile, new_profiles, get_default_profiles, &
             & info_profile, find_profile, DEFAULT_COMPILER
 
     !> Name of the default compiler
-    character(len=*), parameter :: DEFAULT_COMPILER = 'gfortran'
-    integer, parameter :: OS_ALL = -1
+    character(len=*), parameter :: DEFAULT_COMPILER = 'gfortran'    
     character(len=:), allocatable :: path
 
     !> Type storing file name - file scope compiler flags pairs
