@@ -169,7 +169,9 @@ character(len=80), parameter :: help_text_build_common(*) = [character(len=80) :
     '                   high optimization and "debug" for full debug options.        ',&
     '                   If --flag is not specified the "debug" flags are the         ',&
     '                   default.                                                     ',&
-    ' --no-prune        Disable tree-shaking/pruning of unused module dependencies   '&
+    ' --no-prune        Disable tree-shaking/pruning of unused module dependencies   ',&
+    ' --build-dir DIR   Specify the build directory. Default is "build" unless set   ',&
+    '                   by the environment variable FPM_BUILD_DIR.                   '&
     ]
 !   '12345678901234567890123456789012345678901234567890123456789012345678901234567890',&
 character(len=80), parameter :: help_text_compiler(*) = [character(len=80) :: &
@@ -226,7 +228,10 @@ character(len=80), parameter :: help_text_environment(*) = [character(len=80) ::
     '                   will be overwritten by --archiver command line option', &
     '', &
     ' FPM_LDFLAGS       sets additional link arguments for creating executables', &
-    '                   will be overwritten by --link-flag command line option' &
+    '                   will be overwritten by --link-flag command line option', &
+    '', &
+    ' FPM_BUILD_DIR     sets the build directory for compilation output', &
+    '                   will be overwritten by --build-dir command line option' &
     ]
 
 contains
@@ -1194,7 +1199,8 @@ contains
     '                                                                       ', &
     'SYNOPSIS                                                               ', &
     ' fpm build [--profile PROF] [--flag FFLAGS] [--compiler COMPILER_NAME] ', &
-    '           [--list] [--tests] [--config-file PATH] [--dump [FILENAME]] ', &
+    '           [--build-dir DIR] [--list] [--tests] [--config-file PATH]    ', &
+    '           [--dump [FILENAME]]                                          ', &
     '                                                                       ', &
     ' fpm build --help|--version                                            ', &
     '                                                                       ', &
@@ -1210,7 +1216,7 @@ contains
     '    o test/    main program(s) and support files for project tests     ', &
     '    o example/ main program(s) for example programs                    ', &
     ' Changed or new files found are rebuilt. The results are placed in     ', &
-    ' the build/ directory.                                                 ', &
+    ' the build directory (default: build/).                               ', &
     '                                                                       ', &
     ' Non-default pathnames and remote dependencies are used if             ', &
     ' specified in the "fpm.toml" file.                                     ', &
@@ -1221,7 +1227,7 @@ contains
     help_text_flag, &
     ' --list        list candidates instead of building or running them.    ', &
     '               all dependencies are downloaded, and the build sequence ', &
-    '               is saved to `build/compile_commands.json`.              ', &
+    '               is saved to `<build-dir>/compile_commands.json`.         ', &
     ' --tests       build all tests (otherwise only if needed)              ', &
     ' --show-model  show the model and exit (do not build)                  ', &
     ' --dump [FILENAME] save model representation to file. use JSON format  ', &
@@ -1238,6 +1244,7 @@ contains
     '                                                                       ', &
     '  fpm build                   # build with debug options               ', &
     '  fpm build --profile release # build with high optimization           ', &
+    '  fpm build --build-dir /tmp/my_build # build to custom directory      ', &
     '' ]
 
     help_help=[character(len=80) :: &
