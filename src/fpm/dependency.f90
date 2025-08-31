@@ -205,7 +205,7 @@ module fpm_dependency
 contains
 
   !> Create a new dependency tree
-  subroutine new_dependency_tree(self, verbosity, cache, path_to_config)
+  subroutine new_dependency_tree(self, verbosity, cache, path_to_config, build_dir)
     !> Instance of the dependency tree
     type(dependency_tree_t), intent(out) :: self
     !> Verbosity of printout
@@ -214,9 +214,15 @@ contains
     character(len=*), intent(in), optional :: cache
     !> Path to the global config file.
     character(len=*), intent(in), optional :: path_to_config
+    !> Custom build directory
+    character(len=*), intent(in), optional :: build_dir
 
     call resize(self%dep)
-    self%dep_dir = join_path("build", "dependencies")
+    if (present(build_dir)) then
+        self%dep_dir = join_path(build_dir, "dependencies")
+    else
+        self%dep_dir = join_path("build", "dependencies")
+    end if
 
     if (present(verbosity)) self%verbosity = verbosity
 
