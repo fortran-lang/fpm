@@ -92,7 +92,7 @@
 
             <li class="list-inline-item" id="statements"><i class="fa fa-list-ol"></i>
               <a data-bs-toggle="tooltip" data-bs-placement="bottom" data-bs-html="true"
-                 title=" 0.3% of total for procedures.">20 statements</a>
+                 title=" 0.3% of total for procedures.">26 statements</a>
             </li>
 
             <li class="list-inline-item" id="source-file">
@@ -191,7 +191,7 @@
     <tbody>
         <tr>
             <td>
-              <span class="anchor" id="variable-self~133"></span>
+              <span class="anchor" id="variable-self~124"></span>
               class(<a href='../type/compiler_t.html'>compiler_t</a>),
             </td>
 <td>intent(in)</td>
@@ -224,7 +224,7 @@
 
       <h3>Return Value
         <small>
-          <span class="anchor" id="variable-flags~13"></span>
+          <span class="anchor" id="variable-flags~14"></span>
           character(len=:), allocatable
         </small>
       </h3>
@@ -293,11 +293,18 @@
 <span class="w">    </span><span class="c">! Append position-independent code (PIC) flag, that is necessary </span>
 <span class="w">    </span><span class="c">! building shared libraries</span>
 <span class="w">    </span><span class="k">select case</span><span class="w"> </span><span class="p">(</span><span class="n">self</span><span class="p">%</span><span class="n">id</span><span class="p">)</span>
-<span class="w">    </span><span class="k">case</span><span class="w"> </span><span class="p">(</span><span class="n">id_gcc</span><span class="p">,</span><span class="w"> </span><span class="n">id_f95</span><span class="p">,</span><span class="w"> </span><span class="n">id_caf</span><span class="p">,</span><span class="w"> </span><span class="n">id_flang</span><span class="p">,</span><span class="w"> </span><span class="n">id_flang_new</span><span class="p">,</span><span class="w"> </span><span class="n">id_f18</span><span class="p">,</span><span class="w"> </span><span class="n">id_lfortran</span><span class="p">,</span><span class="w"> </span><span class="p">&amp;</span>
+<span class="w">    </span><span class="k">case</span><span class="w"> </span><span class="p">(</span><span class="n">id_gcc</span><span class="p">,</span><span class="w"> </span><span class="n">id_f95</span><span class="p">,</span><span class="w"> </span><span class="n">id_caf</span><span class="p">,</span><span class="w"> </span><span class="n">id_flang</span><span class="p">,</span><span class="w"> </span><span class="n">id_f18</span><span class="p">,</span><span class="w"> </span><span class="n">id_lfortran</span><span class="p">,</span><span class="w"> </span><span class="p">&amp;</span>
 <span class="w">          </span><span class="n">id_intel_classic_nix</span><span class="p">,</span><span class="w"> </span><span class="n">id_intel_classic_mac</span><span class="p">,</span><span class="w"> </span><span class="n">id_intel_llvm_nix</span><span class="p">,</span><span class="w"> </span><span class="p">&amp;</span>
 <span class="w">          </span><span class="n">id_pgi</span><span class="p">,</span><span class="w"> </span><span class="n">id_nvhpc</span><span class="p">,</span><span class="w"> </span><span class="n">id_nag</span><span class="p">,</span><span class="w"> </span><span class="n">id_cray</span><span class="p">,</span><span class="w"> </span><span class="n">id_ibmxl</span><span class="p">)</span>
 <span class="w">        </span><span class="n">pic_flag</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot; -fPIC&quot;</span>
-<span class="w">    </span><span class="k">case</span><span class="w"> </span><span class="p">(</span><span class="n">id_intel_classic_windows</span><span class="p">,</span><span class="w"> </span><span class="n">id_intel_llvm_windows</span><span class="p">)</span>
+<span class="w">    </span><span class="k">case</span><span class="w"> </span><span class="p">(</span><span class="n">id_flang_new</span><span class="p">)</span>
+<span class="w">        </span><span class="c">! flang-new doesn&#39;t support -fPIC on Windows MSVC target</span>
+<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">get_os_type</span><span class="p">()</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="n">OS_WINDOWS</span><span class="p">)</span><span class="w"> </span><span class="k">then</span>
+<span class="k">            </span><span class="n">pic_flag</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;&quot;</span>
+<span class="w">        </span><span class="k">else</span>
+<span class="k">            </span><span class="n">pic_flag</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot; -fPIC&quot;</span>
+<span class="w">        </span><span class="k">end if</span>
+<span class="k">    case</span><span class="w"> </span><span class="p">(</span><span class="n">id_intel_classic_windows</span><span class="p">,</span><span class="w"> </span><span class="n">id_intel_llvm_windows</span><span class="p">)</span>
 <span class="w">        </span><span class="n">pic_flag</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;&quot;</span><span class="w">  </span><span class="c">! Windows does not use -fPIC</span>
 <span class="w">    </span><span class="k">case </span><span class="n">default</span>
 <span class="w">        </span><span class="n">pic_flag</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot; -fPIC&quot;</span><span class="w">  </span><span class="c">! Conservative fallback</span>
@@ -329,7 +336,7 @@
             <p class="text-end">
               Documentation generated by
               <a href="https://github.com/Fortran-FOSS-Programmers/ford">FORD</a>
- on 2025-08-31 09:29 +0000             </p>
+ on 2025-08-31 11:35 +0000             </p>
           </div>
         </div>
         <br>

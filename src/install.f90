@@ -1,181 +1,190 @@
-!> Implementation of the installation configuration.
-!>
-!> An install table can currently have the following fields
-!>
-!>```toml
-!>library = bool
-!>```
-module fpm_manifest_install
-  use fpm_error, only : error_t, fatal_error, syntax_error
-  use tomlf, only : toml_table, toml_key, toml_stat
-  use fpm_toml, only : get_value, set_value, serializable_t
+module fpm_cmd_install
+  use, intrinsic :: iso_fortran_env, only : output_unit
+  use fpm, only : build_model
+  use fpm_backend, only : build_package
+  use fpm_command_line, only : fpm_install_settings
+  use fpm_error, only : error_t, fatal_error, fpm_stop
+  use fpm_filesystem, only : join_path, list_files
+  use fpm_installer, only : installer_t, new_installer
+  use fpm_manifest, only : package_config_t, get_package_data
+  use fpm_model, only : fpm_model_t, FPM_SCOPE_APP, FPM_SCOPE_TEST
+  use fpm_targets, only: targets_from_sources, build_target_t, &
+                         build_target_ptr, FPM_TARGET_EXECUTABLE, &
+                         filter_library_targets, filter_executable_targets, filter_modules
+  use fpm_strings, only : string_t, resize
   implicit none
   private
 
-  public :: install_config_t, new_install_config
-
-  !> Configuration data for installation
-  type, extends(serializable_t) :: install_config_t
-
-    !> Install library with this project
-    logical :: library = .false.
-
-    !> Install tests with this project
-    logical :: test = .false.
-
-  contains
-
-    !> Print information on this instance
-    procedure :: info
-
-    !> Serialization interface
-    procedure :: serializable_is_same => install_conf_same
-    procedure :: dump_to_toml
-    procedure :: load_from_toml
-
-  end type install_config_t
-
-  character(*), parameter, private :: class_name = 'install_config_t'
+  public :: cmd_install
 
 contains
 
-  !> Create a new installation configuration from a TOML data structure
-  subroutine new_install_config(self, table, error)
+  !> Entry point for the fpm-install subcommand
+  subroutine cmd_install(settings)
+    !> Representation of the command line settings
+    type(fpm_install_settings), intent(inout) :: settings
+    type(package_config_t) :: package
+    type(error_t), allocatable :: error
+    type(fpm_model_t) :: model
+    type(build_target_ptr), allocatable :: targets(:), libraries(:)
+    type(installer_t) :: installer
+    type(string_t), allocatable :: list(:)
+    logical :: installable
+    integer :: ntargets,i
 
-    !> Instance of the install configuration
-    type(install_config_t), intent(out) :: self
+    call get_package_data(package, "fpm.toml", error, apply_defaults=.true.)
+    call handle_error(error)
+    
+    call build_model(model, settings, package, error)
+    call handle_error(error)
 
-    !> Instance of the TOML data structure
-    type(toml_table), intent(inout) :: table
+    ! ifx bug: does not resolve allocatable -> optional
+    if (allocated(package%library)) then 
+       call targets_from_sources(targets, model, settings%prune, package%library, error)
+    else
+       call targets_from_sources(targets, model, settings%prune, error=error) 
+    endif
+    call handle_error(error)
 
-    !> Error handling
+    call install_info(output_unit, settings%list, targets, ntargets)
+    if (settings%list) return
+
+    installable = (allocated(package%library) .and. package%install%library) &
+                   .or. allocated(package%executable) .or. ntargets>0
+    
+    if (.not.installable) then
+      call fatal_error(error, "Project does not contain any installable targets")
+      call handle_error(error)
+    end if
+
+    if (.not.settings%no_rebuild) then
+      call build_package(targets,model,verbose=settings%verbose,dry_run=settings%list)
+    end if
+
+    call new_installer(installer, prefix=settings%prefix, &
+      bindir=settings%bindir, libdir=settings%libdir, testdir=settings%testdir, &
+      includedir=settings%includedir, &
+      verbosity=merge(2, 1, settings%verbose))
+
+    if (allocated(package%library) .and. package%install%library) then
+      call filter_library_targets(targets, libraries)
+
+      if (size(libraries) > 0) then
+        do i=1,size(libraries)
+           call installer%install_library(libraries(i)%ptr, error)
+           call handle_error(error)
+        end do
+
+        call install_module_files(installer, targets, error)
+        call handle_error(error)
+      end if
+    end if
+    
+    if (allocated(package%executable) .or. ntargets>0) then
+      call install_executables(installer, targets, error)
+      call handle_error(error)
+    end if
+
+    if (allocated(package%test) .and. (package%install%test .or. model%include_tests)) then 
+        
+        call install_tests(installer, targets, error)
+        call handle_error(error)
+        
+    end if
+
+  end subroutine cmd_install
+
+  subroutine install_info(unit, verbose, targets, ntargets)
+    integer, intent(in) :: unit
+    logical, intent(in) :: verbose
+    type(build_target_ptr), intent(in) :: targets(:)
+    integer, intent(out) :: ntargets
+
+    integer :: ii
+    type(string_t), allocatable :: install_target(:), apps(:), tests(:)
+    type(build_target_ptr), allocatable :: libs(:)
+
+    call filter_library_targets(targets, libs)
+    call filter_executable_targets(targets, FPM_SCOPE_APP, apps)
+    call filter_executable_targets(targets, FPM_SCOPE_TEST, tests)
+
+    ntargets = size(libs) + size(apps) + size(tests)
+    allocate(install_target(ntargets))
+    
+    do ii = 1, size(libs)
+        install_target(ii) = string_t(libs(ii)%ptr%output_file)
+    end do
+    do ii = 1, size(apps)
+        install_target(size(libs) + ii) = string_t(apps(ii)%s)
+    end do
+    do ii = 1, size(tests)
+        install_target(size(libs) + size(apps) + ii) = string_t(tests(ii)%s)
+    end do
+    
+    if (verbose) then 
+        write(unit, '("#", *(1x, g0))') &
+          "total number of installable targets:", ntargets
+        do ii = 1, ntargets
+          write(unit, '("-", *(1x, g0))') install_target(ii)%s
+        end do
+    endif
+
+  end subroutine install_info
+
+  subroutine install_module_files(installer, targets, error)
+    type(installer_t), intent(inout) :: installer
+    type(build_target_ptr), intent(in) :: targets(:)
     type(error_t), allocatable, intent(out) :: error
+    type(string_t), allocatable :: modules(:)
+    integer :: ii
 
-    call check(table, error)
-    if (allocated(error)) return
+    call filter_modules(targets, modules)
 
-    call get_value(table, "library", self%library, .false.)
-    call get_value(table, "test", self%test, .false.)
-
-  end subroutine new_install_config
-
-
-  !> Check local schema for allowed entries
-  subroutine check(table, error)
-
-    !> Instance of the TOML data structure
-    type(toml_table), intent(inout) :: table
-
-    !> Error handling
-    type(error_t), allocatable, intent(out) :: error
-
-    type(toml_key), allocatable :: list(:)
-    integer :: ikey
-
-    call table%get_keys(list)
-    if (size(list) < 1) return
-
-    do ikey = 1, size(list)
-      select case(list(ikey)%key)
-      case default
-        call syntax_error(error, "Key "//list(ikey)%key//" is not allowed in install table")
-        exit
-      case("library","test")
-        continue
-      end select
+    do ii = 1, size(modules)
+      call installer%install_header(modules(ii)%s//".mod", error)
+      if (allocated(error)) exit
     end do
     if (allocated(error)) return
 
-  end subroutine check
+  end subroutine install_module_files
 
-  !> Write information on install configuration instance
-  subroutine info(self, unit, verbosity)
+  subroutine install_executables(installer, targets, error)
+    type(installer_t), intent(inout) :: installer
+    type(build_target_ptr), intent(in) :: targets(:)
+    type(error_t), allocatable, intent(out) :: error
+    integer :: ii
 
-    !> Instance of the build configuration
-    class(install_config_t), intent(in) :: self
+    do ii = 1, size(targets)
+      if (targets(ii)%ptr%is_executable_target(FPM_SCOPE_APP)) then
+        call installer%install_executable(targets(ii)%ptr%output_file, error)
+        if (allocated(error)) exit
+      end if
+    end do
+    if (allocated(error)) return
 
-    !> Unit for IO
-    integer, intent(in) :: unit
+  end subroutine install_executables
 
-    !> Verbosity of the printout
-    integer, intent(in), optional :: verbosity
+  subroutine install_tests(installer, targets, error)
+    type(installer_t), intent(inout) :: installer
+    type(build_target_ptr), intent(in) :: targets(:)
+    type(error_t), allocatable, intent(out) :: error
+    integer :: ii
+    
+    do ii = 1, size(targets)
+      if (targets(ii)%ptr%is_executable_target(FPM_SCOPE_TEST)) then
+        call installer%install_test(targets(ii)%ptr%output_file, error)
+        if (allocated(error)) exit
+      end if
+    end do
+    if (allocated(error)) return
 
-    integer :: pr
-    character(len=*), parameter :: fmt = '("#", 1x, a, t30, a)'
+  end subroutine install_tests
 
-    if (present(verbosity)) then
-      pr = verbosity
-    else
-      pr = 1
+  subroutine handle_error(error)
+    type(error_t), intent(in), optional :: error
+    if (present(error)) then
+      call fpm_stop(1,'*cmd_install* error: '//error%message)
     end if
+  end subroutine handle_error
 
-    if (pr < 1) return
-
-    write(unit, fmt) "Install configuration"
-    write(unit, fmt) " - library install", trim(merge("enabled ", "disabled", self%library))
-    write(unit, fmt) " - test    install", trim(merge("enabled ", "disabled", self%test))
-
-  end subroutine info
-
-  logical function install_conf_same(this,that)
-    class(install_config_t), intent(in) :: this
-    class(serializable_t), intent(in) :: that
-
-    install_conf_same = .false.
-
-    select type (other=>that)
-       type is (install_config_t)
-          if (this%library.neqv.other%library) return
-          if (this%test.neqv.other%test) return
-       class default
-          ! Not the same type
-          return
-    end select
-
-    !> All checks passed!
-    install_conf_same = .true.
-
-  end function install_conf_same
-
-  !> Dump install config to toml table
-  subroutine dump_to_toml(self, table, error)
-
-    !> Instance of the serializable object
-    class(install_config_t), intent(inout) :: self
-
-    !> Data structure
-    type(toml_table), intent(inout) :: table
-
-    !> Error handling
-    type(error_t), allocatable, intent(out) :: error
-
-    call set_value(table, "library", self%library, error, class_name)
-    if (allocated(error)) return
-
-    call set_value(table, "test", self%test, error, class_name)
-    if (allocated(error)) return
-
-  end subroutine dump_to_toml
-
-  !> Read install config from toml table (no checks made at this stage)
-  subroutine load_from_toml(self, table, error)
-
-    !> Instance of the serializable object
-    class(install_config_t), intent(inout) :: self
-
-    !> Data structure
-    type(toml_table), intent(inout) :: table
-
-    !> Error handling
-    type(error_t), allocatable, intent(out) :: error
-
-    integer :: stat
-
-    call get_value(table, "library", self%library, error, class_name)
-    if (allocated(error)) return
-    call get_value(table, "test", self%test, error, class_name)
-    if (allocated(error)) return
-
-  end subroutine load_from_toml
-
-end module fpm_manifest_install
+end module fpm_cmd_install
