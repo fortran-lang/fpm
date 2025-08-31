@@ -1414,7 +1414,7 @@ contains
 
     !> Test macro parsing function get_macros_from_manifest
     subroutine test_macro_parsing(error)
-        use fpm_compiler, only: get_macros, compiler_enum
+        use fpm_compiler, only: get_macros, compiler_enum, id_gcc
 
         !> Error handling
         type(error_t), allocatable, intent(out) :: error
@@ -1423,6 +1423,8 @@ contains
         character(:), allocatable :: temp_file
         integer :: unit
         integer(compiler_enum)  :: id
+        
+        id = id_gcc
 
         allocate(temp_file, source=get_temp_filename())
 
