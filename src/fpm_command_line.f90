@@ -89,6 +89,7 @@ type, extends(fpm_cmd_settings)  :: fpm_build_settings
     character(len=:),allocatable :: cflag
     character(len=:),allocatable :: cxxflag
     character(len=:),allocatable :: ldflag
+    character(len=:),allocatable :: build_dir
 end type
 
 type, extends(fpm_build_settings)  :: fpm_run_settings
@@ -158,7 +159,7 @@ character(len=20),parameter :: manual(*)=[ character(len=20) ::&
 &  'test',  'runner', 'install', 'update', 'list',   'help',   'version', 'publish' ]
 
 character(len=:), allocatable :: val_runner, val_compiler, val_flag, val_cflag, val_cxxflag, val_ldflag, &
-    val_profile, val_runner_args, val_dump
+    val_profile, val_runner_args, val_dump, val_build_dir
 
 
 !   '12345678901234567890123456789012345678901234567890123456789012345678901234567890',&
@@ -246,7 +247,7 @@ contains
         character(len=*), parameter :: fc_env = "FC", cc_env = "CC", ar_env = "AR", &
             & fflags_env = "FFLAGS", cflags_env = "CFLAGS", cxxflags_env = "CXXFLAGS", ldflags_env = "LDFLAGS", &
             & fc_default = "gfortran", cc_default = " ", ar_default = " ", flags_default = " ", &
-            & cxx_env = "CXX", cxx_default = " "
+            & cxx_env = "CXX", cxx_default = " ", build_dir_env = "BUILD_DIR", build_dir_default = "build"
         type(error_t), allocatable :: error
 
         call set_help()
@@ -300,7 +301,8 @@ contains
           ' --flag:: "'//get_fpm_env(fflags_env, flags_default)//'"' // &
           ' --c-flag:: "'//get_fpm_env(cflags_env, flags_default)//'"' // &
           ' --cxx-flag:: "'//get_fpm_env(cxxflags_env, flags_default)//'"' // &
-          ' --link-flag:: "'//get_fpm_env(ldflags_env, flags_default)//'"'
+          ' --link-flag:: "'//get_fpm_env(ldflags_env, flags_default)//'"' // &
+          ' --build-dir "'//get_fpm_env(build_dir_env, build_dir_default)//'"'
 
         ! now set subcommand-specific help text and process commandline
         ! arguments. Then call subcommand routine
@@ -363,6 +365,7 @@ contains
             & cflag=val_cflag, &
             & cxxflag=val_cxxflag, &
             & ldflag=val_ldflag, &
+            & build_dir=val_build_dir, &
             & example=lget('example'), &
             & list=lget('list'),&
             & build_tests=.false.,&
@@ -403,6 +406,7 @@ contains
             & cflag=val_cflag, &
             & cxxflag=val_cxxflag, &
             & ldflag=val_ldflag, &
+            & build_dir=val_build_dir, &
             & list=lget('list'),&
             & show_model=lget('show-model'),&
             & build_tests=lget('tests'),&
@@ -568,6 +572,7 @@ contains
                 cflag=val_cflag, &
                 cxxflag=val_cxxflag, &
                 ldflag=val_ldflag, &
+                build_dir=val_build_dir, &
                 no_rebuild=lget('no-rebuild'), &
                 verbose=lget('verbose')))
             call get_char_arg(install_settings%prefix, 'prefix')
@@ -639,6 +644,7 @@ contains
             & cflag=val_cflag, &
             & cxxflag=val_cxxflag, &
             & ldflag=val_ldflag, &
+            & build_dir=val_build_dir, &
             & example=.false., &
             & list=lget('list'), &
             & build_tests=.true., &
@@ -820,6 +826,7 @@ contains
         val_cxxflag = " " // sget('cxx-flag')
         val_ldflag = " " // sget('link-flag')
         val_profile = sget('profile')
+        val_build_dir = sget('build-dir')
 
     end subroutine check_build_vals
 
