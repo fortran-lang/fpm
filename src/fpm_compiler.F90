@@ -52,7 +52,7 @@ use shlex_module, only: sh_split => split, ms_split, quote => ms_quote
 implicit none
 public :: compiler_t, new_compiler, archiver_t, new_archiver, get_macros
 public :: append_clean_flags, append_clean_flags_array
-public :: debug
+public :: debug, id_gcc
 
 enum, bind(C)
     enumerator :: &
