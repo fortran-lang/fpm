@@ -10,7 +10,7 @@
 ! Intel oneAPI      ifx        icx     -module         -I            -qopenmp   X
 ! PGI               pgfortran  pgcc    -module         -I            -mp        X
 ! NVIDIA            nvfortran  nvc     -module         -I            -mp        X
-! LLVM flang        flang      clang   -module         -I            -mp        X
+! LLVM flang        flang      clang   -module-dir     -I            -fopenmp   X
 ! LFortran          lfortran   ---     -J              -I            --openmp   X
 ! Lahey/Futjitsu    lfc        ?       -M              -I            -openmp    ?
 ! NAG               nagfor     ?       -mdir           -I            -openmp    x
@@ -1000,8 +1000,13 @@ function get_id(compiler) result(id)
         return
     end if
 
-    if (check_compiler(compiler, "flang")) then
+    if (check_compiler(compiler, "flang-classic")) then
         id = id_flang
+        return
+    end if
+
+    if (check_compiler(compiler, "flang")) then
+        id = id_flang_new
         return
     end if
 
@@ -1745,7 +1750,7 @@ pure function compiler_name(self) result(name)
        case(id_pgi);       name = "pgfortran"
        case(id_nvhpc);     name = "nvfortran"
        case(id_nag);       name = "nagfor"
-       case(id_flang);     name = "flang"
+       case(id_flang);     name = "flang-classic"
        case(id_flang_new); name = "flang-new"
        case(id_f18);       name = "f18"
        case(id_ibmxl);     name = "xlf90"
