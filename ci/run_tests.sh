@@ -345,7 +345,7 @@ test $EXIT_CODE -eq 0
 popd
 
 # Test custom build directory functionality
-./test_custom_build_dir.sh "$fpm" hello_world
+"$(dirname "$0")/test_custom_build_dir.sh" "$fpm" hello_world
 
 # Cleanup
 rm -rf ./*/build
