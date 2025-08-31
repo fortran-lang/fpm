@@ -273,7 +273,13 @@ character(*), parameter :: &
     flag_cray_free_form = " -ffree"
 
 character(*), parameter :: &
-    flag_flang_new_openmp = " -fopenmp"
+    flag_flang_new_openmp = " -fopenmp", &
+    flag_flang_new_debug = " -g", &
+    flag_flang_new_opt = " -O3", &
+    flag_flang_new_pic = " -fPIC", &
+    flag_flang_new_free_form = " -ffree-form", &
+    flag_flang_new_fixed_form = " -ffixed-form", &
+    flag_flang_new_no_implicit_typing = " -fimplicit-none"
 
 contains
 
@@ -405,6 +411,11 @@ subroutine get_release_compile_flags(id, flags)
         flags = &
             flag_lfortran_opt
 
+    case(id_flang_new)
+        flags = &
+            flag_flang_new_opt//&
+            flag_flang_new_pic
+
     end select
 end subroutine get_release_compile_flags
 
@@ -500,6 +511,12 @@ subroutine get_debug_compile_flags(id, flags)
 
     case(id_lfortran)
         flags = ""
+
+    case(id_flang_new)
+        flags = &
+            flag_flang_new_debug//&
+            flag_flang_new_pic
+
     end select
 end subroutine get_debug_compile_flags
 
@@ -512,7 +529,7 @@ pure subroutine set_cpp_preprocessor_flags(id, flags)
     select case(id)
     case default
         flag_cpp_preprocessor = ""
-    case(id_caf, id_gcc, id_f95, id_nvhpc)
+    case(id_caf, id_gcc, id_f95, id_nvhpc, id_flang_new)
         flag_cpp_preprocessor = "-cpp"
     case(id_intel_classic_windows, id_intel_llvm_windows)
         flag_cpp_preprocessor = "/fpp"
@@ -700,6 +717,9 @@ function get_feature_flag(self, feature) result(flags)
        case(id_cray)
            flags = flag_cray_no_implicit_typing
 
+       case(id_flang_new)
+           flags = flag_flang_new_no_implicit_typing
+
        end select
 
     case("implicit-typing")
@@ -747,6 +767,9 @@ function get_feature_flag(self, feature) result(flags)
        case(id_cray)
            flags = flag_cray_free_form
 
+       case(id_flang_new)
+           flags = flag_flang_new_free_form
+
        end select
 
     case("fixed-form")
@@ -772,6 +795,9 @@ function get_feature_flag(self, feature) result(flags)
 
        case(id_lfortran)
            flags = flag_lfortran_fixed_form
+
+       case(id_flang_new)
+           flags = flag_flang_new_fixed_form
 
        end select
 
