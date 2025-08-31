@@ -20,6 +20,7 @@ module fpm_environment
     public :: library_filename
     
                         public :: OS_NAME
+    integer, parameter, public :: OS_ALL     = -1   ! "all" flag for profile support
     integer, parameter, public :: OS_UNKNOWN = 0
     integer, parameter, public :: OS_LINUX   = 1
     integer, parameter, public :: OS_MACOS   = 2
@@ -78,6 +79,7 @@ contains
             case (OS_FREEBSD); OS_NAME =  "FreeBSD"
             case (OS_OPENBSD); OS_NAME =  "OpenBSD"
             case (OS_UNKNOWN); OS_NAME =  "Unknown"
+            case (OS_ALL)    ; OS_NAME =  "All"
             case default     ; OS_NAME =  "UNKNOWN"
         end select
     end function OS_NAME

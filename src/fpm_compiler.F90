@@ -42,7 +42,6 @@ use fpm_filesystem, only: join_path, basename, get_temp_filename, delete_file, u
     & getline, run
 use fpm_strings, only: split, string_cat, string_t, str_ends_with, str_begins_with_str, &
     & string_array_contains
-use fpm_manifest, only : package_config_t
 use fpm_error, only: error_t, fatal_error, fpm_stop
 use tomlf, only: toml_table
 use fpm_toml, only: serializable_t, set_string, set_value, toml_stat, get_value
@@ -52,10 +51,13 @@ use shlex_module, only: sh_split => split, ms_split, quote => ms_quote
 implicit none
 public :: compiler_t, new_compiler, archiver_t, new_archiver, get_macros
 public :: append_clean_flags, append_clean_flags_array
-public :: debug, id_gcc
+public :: debug
+public :: id_gcc,id_all
+public :: match_compiler_type, compiler_id_name
 
 enum, bind(C)
     enumerator :: &
+        id_all = -1, &
         id_unknown, &
         id_gcc, &
         id_f95, &
@@ -929,17 +931,17 @@ function get_compiler_id(compiler) result(id)
                command = trim(full_command_parts(1))
             endif
             if (allocated(command)) then
-                id = get_id(command)
+                id = match_compiler_type(command)
                 if (id /= id_unknown) return
             end if
         end if
     end if
 
-    id = get_id(compiler)
+    id = match_compiler_type(compiler)
 
 end function get_compiler_id
 
-function get_id(compiler) result(id)
+function match_compiler_type(compiler) result(id)
     character(len=*), intent(in) :: compiler
     integer(kind=compiler_enum) :: id
 
@@ -1032,9 +1034,15 @@ function get_id(compiler) result(id)
         return
     end if
 
+
+    if (check_compiler(compiler, "all")) then
+        id = id_all
+        return
+    end if
+
     id = id_unknown
 
-end function get_id
+end function match_compiler_type
 
 function check_compiler(compiler, expected) result(match)
     character(len=*), intent(in) :: compiler
@@ -1738,30 +1746,38 @@ pure function compiler_name(self) result(name)
    class(compiler_t), intent(in) :: self
    !> Representation as string
    character(len=:), allocatable :: name
+   name = compiler_id_name(self%id)
+end function compiler_name
 
-   select case (self%id)
-       case(id_gcc); name = "gfortran"
-       case(id_f95); name = "f95"
-       case(id_caf); name = "caf"
+!> Convert compiler enum to name (reverse of match_compiler_type)
+pure function compiler_id_name(id) result(name)
+   integer(compiler_enum), intent(in) :: id
+   character(len=:), allocatable :: name
+
+   select case (id)
+       case(id_gcc);                   name = "gfortran"
+       case(id_f95);                   name = "f95"
+       case(id_caf);                   name = "caf"
        case(id_intel_classic_nix);     name = "ifort"
        case(id_intel_classic_mac);     name = "ifort"
        case(id_intel_classic_windows); name = "ifort"
-       case(id_intel_llvm_nix);     name = "ifx"
-       case(id_intel_llvm_windows); name = "ifx"
-       case(id_intel_llvm_unknown); name = "ifx"
-       case(id_pgi);       name = "pgfortran"
-       case(id_nvhpc);     name = "nvfortran"
-       case(id_nag);       name = "nagfor"
-       case(id_flang);     name = "flang"
-       case(id_flang_new); name = "flang-new"
-       case(id_f18);       name = "f18"
-       case(id_ibmxl);     name = "xlf90"
-       case(id_cray);      name = "crayftn"
-       case(id_lahey);     name = "lfc"
-       case(id_lfortran);  name = "lFortran"
-       case default;       name = "invalid/unknown"
+       case(id_intel_llvm_nix);        name = "ifx"
+       case(id_intel_llvm_windows);    name = "ifx"
+       case(id_intel_llvm_unknown);    name = "ifx"
+       case(id_pgi);                   name = "pgfortran"
+       case(id_nvhpc);                 name = "nvfortran"
+       case(id_nag);                   name = "nagfor"
+       case(id_flang);                 name = "flang"
+       case(id_flang_new);             name = "flang-new"
+       case(id_f18);                   name = "f18"
+       case(id_ibmxl);                 name = "xlf90"
+       case(id_cray);                  name = "crayftn"
+       case(id_lahey);                 name = "lfc"
+       case(id_lfortran);              name = "lfortran"
+       case (id_all);                  name = "all"
+       case default;                   name = "invalid/unknown"
    end select
-end function compiler_name
+end function compiler_id_name
 
 !> Run a single-source Fortran program using the current compiler
 !> Compile a Fortran object
