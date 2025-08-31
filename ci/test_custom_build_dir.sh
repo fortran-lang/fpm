@@ -4,7 +4,9 @@ set -ex
 # Test script for custom build directory functionality
 # Usage: ./test_custom_build_dir.sh [fpm_executable] [example_package_dir]
 
-cd "$(dirname $0)/.."
+# Move to repo root (works from <root> or <root>/ci)
+this_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+cd "$this_dir/.."
 
 if [ "$1" ]; then
    fpm="$1"
