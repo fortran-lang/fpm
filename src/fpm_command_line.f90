@@ -802,7 +802,8 @@ contains
    '      [--list] [--compiler COMPILER_NAME] [--config-file PATH] [-- ARGS]        ', &
    ' install [--profile PROF] [--flag FFLAGS] [--no-rebuild] [--prefix PATH]        ', &
    '         [--config-file PATH] [--registry-cache] [options]                      ', &
-   ' clean [--skip] [--all] [--config-file PATH] [--registry-cache]                 ', &
+   ' clean [--skip|--all] [--test] [--apps] [--examples] [--config-file PATH]       ', &
+   '       [--registry-cache]                                                      ', &
    ' publish [--token TOKEN] [--show-package-version] [--show-upload-data]          ', &
    '         [--dry-run] [--verbose] [--config-file PATH]                           ', &
    ' ']
@@ -912,7 +913,7 @@ contains
     '  + list     Display brief descriptions of all subcommands.            ', &
     '  + install  Install project.                                          ', &
     '  + clean    Delete directories in the "build/" directory, except      ', &
-    '             dependencies. Prompts for confirmation to delete.         ', &
+    '             dependencies. Use --test/--apps/--examples for selective. ', &
     '  + publish  Publish package to the registry.                          ', &
     '                                                                       ', &
     '  Their syntax is                                                      ', &
@@ -933,7 +934,8 @@ contains
     '    list [--list]                                                               ', &
     '    install [--profile PROF] [--flag FFLAGS] [--no-rebuild] [--prefix PATH]     ', &
     '            [options] [--config-file PATH] [--registry-cache]                    ', &
-    '    clean [--skip] [--all] [--config-file PATH] [--registry-cache]               ', &
+    '    clean [--skip|--all] [--test] [--apps] [--examples] [--config-file PATH]     ', &
+    '          [--registry-cache]                                                    ', &
     '    publish [--token TOKEN] [--show-package-version] [--show-upload-data]       ', &
     '            [--dry-run] [--verbose] [--config-file PATH]                        ', &
     '                                                                                ', &
