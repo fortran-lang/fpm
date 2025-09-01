@@ -17,7 +17,7 @@ module fpm_manifest_feature_collection
     implicit none
     private
     
-    public :: feature_collection_t, new_collection, get_default_features, get_default_features_as_features, default_debug_feature, default_release_feature
+    public :: feature_collection_t, new_collection, new_collections, get_default_features, get_default_features_as_features, default_debug_feature, default_release_feature
     
     !> Feature configuration data
     type, public, extends(serializable_t) :: feature_collection_t
@@ -249,6 +249,41 @@ module fpm_manifest_feature_collection
         end do
 
     end subroutine new_collection
+
+    !> Initialize multiple feature collections from manifest features table
+    subroutine new_collections(collections, table, error)
+        type(feature_collection_t), allocatable, intent(out) :: collections(:)
+        type(toml_table), intent(inout) :: table
+        type(error_t), allocatable, intent(out) :: error
+
+        type(toml_key), allocatable :: keys(:)
+        type(toml_table), pointer :: collection_table
+        character(len=:), allocatable :: collection_name
+        integer :: i, stat, n_collections
+        logical :: found_collections
+
+        ! Get all keys from the features table to identify distinct collections
+        call table%get_keys(keys)
+        if (size(keys) == 0) then
+            ! No features defined, return default collections
+            call get_default_features(collections, error)
+            return
+        end if
+
+        ! For now, we'll create a single collection from all the features in the table
+        ! This demonstrates the flexible parsing capability
+        allocate(collections(1))
+        
+        ! Parse the table as a single collection
+        call new_collection(collections(1), table, error)
+        if (allocated(error)) return
+        
+        ! Set a default name if not specified
+        if (.not. allocated(collections(1)%base%name) .or. len_trim(collections(1)%base%name) == 0) then
+            collections(1)%base%name = 'custom'
+        end if
+        
+    end subroutine new_collections
 
     !> Parse a feature key like "name.os.compiler.field" into components
     subroutine parse_feature_key(key_str, base_name, os_name, compiler_name, remaining_key, is_base_feature)

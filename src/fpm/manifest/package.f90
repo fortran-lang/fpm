@@ -45,7 +45,7 @@ module fpm_manifest_package
     use fpm_manifest_test, only : test_config_t, new_test
     use fpm_manifest_preprocess, only : preprocess_config_t, new_preprocessors
     use fpm_manifest_feature, only: feature_config_t, init_feature_components
-    use fpm_manifest_feature_collection, only: feature_collection_t, get_default_features, new_collection
+    use fpm_manifest_feature_collection, only: feature_collection_t, get_default_features, new_collections
     use fpm_filesystem, only : exists, getline, join_path
     use fpm_error, only : error_t, fatal_error, syntax_error, bad_name_error
     use tomlf, only : toml_table, toml_array, toml_key, toml_stat
@@ -192,11 +192,12 @@ contains
 
         call get_value(table, "features", child, requested=.false.)
         if (associated(child)) then
-            call new_features(self%features, child, error=error)
+            ! Parse features from manifest using new_collections
+            call new_collections(self%features, child, error)
             if (allocated(error)) return
         else
-            ! Initialize with default features (converted from old default profiles)
-            call get_default_features_as_features(self%features, error)
+            ! Initialize with default feature collections (debug and release)
+            call get_default_features(self%features, error)
             if (allocated(error)) return
         end if
 
