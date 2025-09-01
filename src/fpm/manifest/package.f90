@@ -44,8 +44,8 @@ module fpm_manifest_package
     use fpm_manifest_install, only: install_config_t, new_install_config
     use fpm_manifest_test, only : test_config_t, new_test
     use fpm_manifest_preprocess, only : preprocess_config_t, new_preprocessors
-    use fpm_manifest_feature, only: feature_config_t, new_features, get_default_features, init_feature_components
-    use fpm_manifest_feature_collection, only: feature_collection_t
+    use fpm_manifest_feature, only: feature_config_t, init_feature_components
+    use fpm_manifest_feature_collection, only: feature_collection_t, get_default_features, new_collection
     use fpm_filesystem, only : exists, getline, join_path
     use fpm_error, only : error_t, fatal_error, syntax_error, bad_name_error
     use tomlf, only : toml_table, toml_array, toml_key, toml_stat
@@ -78,8 +78,8 @@ module fpm_manifest_package
         character(len=:), allocatable :: maintainer
         character(len=:), allocatable :: copyright
 
-        !> Additional features beyond the default package feature
-        type(feature_config_t), allocatable :: features(:)
+        !> Additional feature collections beyond the default package feature
+        type(feature_collection_t), allocatable :: features(:)
 
         !> Profiles (collections of features)
         type(profile_config_t), allocatable :: profiles(:)
@@ -196,7 +196,7 @@ contains
             if (allocated(error)) return
         else
             ! Initialize with default features (converted from old default profiles)
-            call get_default_features(self%features, error)
+            call get_default_features_as_features(self%features, error)
             if (allocated(error)) return
         end if
 

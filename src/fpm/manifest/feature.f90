@@ -53,7 +53,7 @@ module fpm_manifest_feature
     implicit none
     private
 
-    public :: feature_config_t, new_feature, new_features, find_feature, get_default_features, init_feature_components, unique_programs
+    public :: feature_config_t, new_feature, new_features, find_feature, init_feature_components, unique_programs
 
     !> Feature configuration data
     type, extends(serializable_t) :: feature_config_t
@@ -918,129 +918,6 @@ contains
 
     end subroutine load_from_toml
 
-      !> Get default features (converted from old default profiles)
-      subroutine get_default_features(features, error)
-
-        !> Features array to populate
-        type(feature_config_t), allocatable, intent(out) :: features(:)
-
-        !> Error handling
-        type(error_t), allocatable, intent(out) :: error
-
-        integer :: nfeatures, ifeature
-
-        ! Convert old default profiles to features
-        nfeatures = 20  ! Approximate count from get_default_profiles
-        allocate(features(nfeatures))
-        ifeature = 1
-
-        ! Release features
-        call create_feature(features(ifeature), 'release-caf', id_caf, OS_ALL, &
-            ' -O3 -Wimplicit-interface -fPIC -fmax-errors=1 -funroll-loops')
-        ifeature = ifeature + 1
-        
-        call create_feature(features(ifeature), 'release-gfortran', id_gcc, OS_ALL, &
-            ' -O3 -Wimplicit-interface -fPIC -fmax-errors=1 -funroll-loops -fcoarray=single')
-        ifeature = ifeature + 1
-        
-        call create_feature(features(ifeature), 'release-f95', id_f95, OS_ALL, &
-            ' -O3 -Wimplicit-interface -fPIC -fmax-errors=1 -ffast-math -funroll-loops')
-        ifeature = ifeature + 1
-        
-        call create_feature(features(ifeature), 'release-nvfortran', id_nvhpc, OS_ALL, &
-            ' -Mbackslash')
-        ifeature = ifeature + 1
-        
-        call create_feature(features(ifeature), 'release-ifort', id_intel_classic_nix, OS_ALL, &
-            ' -fp-model precise -pc64 -align all -error-limit 1 -reentrancy&
-            & threaded -nogen-interfaces -assume byterecl')
-        ifeature = ifeature + 1
-        
-        call create_feature(features(ifeature), 'release-ifort-windows', id_intel_classic_nix, OS_WINDOWS, &
-            ' /fp:precise /align:all /error-limit:1 /reentrancy:threaded&
-            & /nogen-interfaces /assume:byterecl')
-        ifeature = ifeature + 1
-        
-        call create_feature(features(ifeature), 'release-ifx', id_intel_llvm_nix, OS_ALL, &
-            ' -fp-model=precise -pc64 -align all -error-limit 1 -reentrancy&
-            & threaded -nogen-interfaces -assume byterecl')
-        ifeature = ifeature + 1
-        
-        call create_feature(features(ifeature), 'release-ifx-windows', id_intel_llvm_nix, OS_WINDOWS, &
-            ' /fp:precise /align:all /error-limit:1 /reentrancy:threaded&
-            & /nogen-interfaces /assume:byterecl')
-        ifeature = ifeature + 1
-        
-        call create_feature(features(ifeature), 'release-nagfor', id_nag, OS_ALL, &
-            ' -O4 -coarray=single -PIC')
-        ifeature = ifeature + 1
-        
-        call create_feature(features(ifeature), 'release-lfortran', id_lfortran, OS_ALL, &
-            ' flag_lfortran_opt')
-        ifeature = ifeature + 1
-
-        ! Debug features  
-        call create_feature(features(ifeature), 'debug-caf', id_caf, OS_ALL, &
-            ' -Wall -Wextra -Wimplicit-interface -Wno-external-argument-mismatch&
-            & -fPIC -fmax-errors=1 -g -fcheck=bounds&
-            & -fcheck=array-temps -fbacktrace')
-        ifeature = ifeature + 1
-        
-        call create_feature(features(ifeature), 'debug-gfortran', id_gcc, OS_ALL, &
-            ' -Wall -Wextra -Wimplicit-interface -Wno-external-argument-mismatch&
-            & -fPIC -fmax-errors=1 -g -fcheck=bounds&
-            & -fcheck=array-temps -fbacktrace -fcoarray=single')
-        ifeature = ifeature + 1
-        
-        call create_feature(features(ifeature), 'debug-f95', id_f95, OS_ALL, &
-            ' -Wall -Wextra -Wimplicit-interface -Wno-external-argument-mismatch&
-            & -fPIC -fmax-errors=1 -g -fcheck=bounds&
-            & -fcheck=array-temps -Wno-maybe-uninitialized -Wno-uninitialized -fbacktrace')
-        ifeature = ifeature + 1
-        
-        call create_feature(features(ifeature), 'debug-nvfortran', id_nvhpc, OS_ALL, &
-            ' -Minform=inform -Mbackslash -g -Mbounds -Mchkptr -Mchkstk -traceback')
-        ifeature = ifeature + 1
-        
-        call create_feature(features(ifeature), 'debug-ifort', id_intel_classic_nix, OS_ALL, &
-            ' -warn all -check all -error-limit 1 -O0 -g -assume byterecl -traceback')
-        ifeature = ifeature + 1
-        
-        call create_feature(features(ifeature), 'debug-ifort-windows', id_intel_classic_nix, OS_WINDOWS, &
-            ' /warn:all /check:all /error-limit:1&
-            & /Od /Z7 /assume:byterecl /traceback')
-        ifeature = ifeature + 1
-        
-        call create_feature(features(ifeature), 'debug-ifx', id_intel_llvm_nix, OS_ALL, &
-            ' -warn all -check all -error-limit 1 -O0 -g -assume byterecl -traceback')
-        ifeature = ifeature + 1
-        
-        call create_feature(features(ifeature), 'debug-ifx-windows', id_intel_llvm_nix, OS_WINDOWS, &
-            ' /warn:all /check:all /error-limit:1 /Od /Z7 /assume:byterecl')
-        ifeature = ifeature + 1
-        
-        call create_feature(features(ifeature), 'debug-lfortran', id_lfortran, OS_ALL, '')
-        ifeature = ifeature + 1
-
-        ! Resize array to actual size used
-        features = features(1:ifeature-1)
-
-      end subroutine get_default_features
-
-      !> Helper to create a feature
-      subroutine create_feature(feature, name, compiler_id, os_type, flags)
-        type(feature_config_t), intent(out) :: feature
-        character(len=*), intent(in) :: name
-        integer(compiler_enum), intent(in) :: compiler_id
-        integer, intent(in) :: os_type
-        character(len=*), intent(in) :: flags
-
-        feature%name = name
-        feature%platform%compiler = compiler_id
-        feature%platform%os_type = os_type
-        feature%flags = flags
-        feature%default = .true.  ! These are built-in features
-      end subroutine create_feature
 
       !> Initialize the feature components (shared between new_feature and new_package)
       subroutine init_feature_components(self, table, root, error)
