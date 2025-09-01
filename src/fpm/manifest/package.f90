@@ -65,64 +65,31 @@ module fpm_manifest_package
 
 
     !> Package meta data
-    type, extends(serializable_t) :: package_config_t
+    !> Package configuration data - extends a `feature_config_t` to represent the "default" 
+    !> package feature. The following are now inherited from feature_config_t: name (but for package 
+    !> it's the package name), description, compiler, os_type (defaults to id_all, OS_ALL for packages)
+    !> library, executable(:), dependency(:), dev_dependency(:), example(:), test(:), preprocess(:)
+    !> flags, c_flags, cxx_flags, link_time_flags, requires_features(:)
 
-        !> Name of the package
-        character(len=:), allocatable :: name
+    type, extends(feature_config_t) :: package_config_t
 
-        !> Package version
+        !> Package version (name is inherited from feature_config_t%name)
         type(version_t) :: version
 
-        !> Build configuration data
-        type(build_config_t) :: build
-
-        !> Metapackage data
+        !> Metapackage data (package-specific)
         type(metapackage_config_t) :: meta
 
-        !> Installation configuration data
-        type(install_config_t) :: install
-
-        !> Fortran meta data
-        type(fortran_config_t) :: fortran
-
-        !> License meta data
+        !> Package metadata (package-specific)  
         character(len=:), allocatable :: license
-
-        !> Author meta data
         character(len=:), allocatable :: author
-
-        !> Maintainer meta data
         character(len=:), allocatable :: maintainer
-
-        !> Copyright meta data
         character(len=:), allocatable :: copyright
 
-        !> Library meta data
-        type(library_config_t), allocatable :: library
-
-        !> Executable meta data
-        type(executable_config_t), allocatable :: executable(:)
-
-        !> Dependency meta data
-        type(dependency_config_t), allocatable :: dependency(:)
-
-        !> Development dependency meta data
-        type(dependency_config_t), allocatable :: dev_dependency(:)
-
-        !> Profiles meta data
-        type(profile_config_t), allocatable :: profiles(:)
-
-        !> Features meta data  
+        !> Additional features beyond the default package feature
         type(feature_config_t), allocatable :: features(:)
 
-        !> Example meta data
-        type(example_config_t), allocatable :: example(:)
-
-        !> Test meta data
-        type(test_config_t), allocatable :: test(:)
-
-        !> Preprocess meta data
-        type(preprocess_config_t), allocatable :: preprocess(:)
+        !> Profiles (collections of features)
+        type(profile_config_t), allocatable :: profiles(:)
 
     contains
 
