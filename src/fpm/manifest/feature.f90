@@ -53,7 +53,8 @@ module fpm_manifest_feature
     implicit none
     private
 
-    public :: feature_config_t, new_feature, new_features, find_feature, init_feature_components, unique_programs
+    public :: feature_config_t, new_feature, new_features, find_feature, init_feature_components, &
+              unique_programs
 
     !> Feature configuration data
     type, extends(serializable_t) :: feature_config_t
