@@ -597,7 +597,7 @@ contains
                 end do
             end if
             
-            !if (.not.this%meta==other%meta) return
+            if (.not.this%meta==other%meta) return
             
             class default
                 return
@@ -805,7 +805,12 @@ contains
            end do
        end if
 
-        1 format('UNNAMED_',a,'_',i0)
+       call add_table(table, "metapackages", ptr, error, class_name)
+       if (allocated(error)) return
+       call self%meta%dump_to_toml(ptr, error)
+       if (allocated(error)) return
+
+       1 format('UNNAMED_',a,'_',i0)
 
     end subroutine dump_to_toml
 
@@ -1006,7 +1011,16 @@ contains
                       call self%preprocess(jj)%load_from_toml(ptr_pkg, error)
                       if (allocated(error)) return
                    end do
-
+                   
+                case ("metapackages")
+                    
+                    call get_value(table, keys(ii), ptr)
+                    if (.not.associated(ptr)) then
+                        call fatal_error(error,class_name//': error retrieving '//keys(ii)%key//' table')
+                        return
+                    end if
+                    call self%meta%load_from_toml(ptr, error)                    
+                       
                 case default
                     cycle
             end select

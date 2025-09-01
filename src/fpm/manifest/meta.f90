@@ -67,6 +67,7 @@ module fpm_manifest_metapackages
         contains
         
            procedure :: get_requests
+           final     :: meta_config_final
 
            procedure :: serializable_is_same => meta_config_same
            procedure :: dump_to_toml        => meta_config_dump
@@ -336,103 +337,98 @@ contains
         type(toml_table),            intent(inout) :: table
         type(error_t), allocatable,  intent(out)   :: error
 
-        type(toml_table), pointer :: ptr_meta, ptr
-
-        ! Group everything under a single "metapackages" table
-        call add_table(table, "metapackages", ptr_meta)
-        if (.not. associated(ptr_meta)) then
-            call fatal_error(error, "metapackage_config_t: cannot create 'metapackages' table")
-            return
-        end if
+        type(toml_table), pointer :: ptr
 
         ! openmp
-        call add_table(ptr_meta, "openmp", ptr); if (.not.associated(ptr)) then
+        call add_table(table, "openmp", ptr); if (.not.associated(ptr)) then
             call fatal_error(error, "metapackage_config_t: cannot create 'openmp' table"); return
         end if
         call self%openmp%dump_to_toml(ptr, error); if (allocated(error)) return
 
         ! stdlib
-        call add_table(ptr_meta, "stdlib", ptr); if (.not.associated(ptr)) then
+        call add_table(table, "stdlib", ptr); if (.not.associated(ptr)) then
             call fatal_error(error, "metapackage_config_t: cannot create 'stdlib' table"); return
         end if
         call self%stdlib%dump_to_toml(ptr, error); if (allocated(error)) return
 
         ! minpack
-        call add_table(ptr_meta, "minpack", ptr); if (.not.associated(ptr)) then
+        call add_table(table, "minpack", ptr); if (.not.associated(ptr)) then
             call fatal_error(error, "metapackage_config_t: cannot create 'minpack' table"); return
         end if
         call self%minpack%dump_to_toml(ptr, error); if (allocated(error)) return
 
         ! mpi
-        call add_table(ptr_meta, "mpi", ptr); if (.not.associated(ptr)) then
+        call add_table(table, "mpi", ptr); if (.not.associated(ptr)) then
             call fatal_error(error, "metapackage_config_t: cannot create 'mpi' table"); return
         end if
         call self%mpi%dump_to_toml(ptr, error); if (allocated(error)) return
 
         ! hdf5
-        call add_table(ptr_meta, "hdf5", ptr); if (.not.associated(ptr)) then
+        call add_table(table, "hdf5", ptr); if (.not.associated(ptr)) then
             call fatal_error(error, "metapackage_config_t: cannot create 'hdf5' table"); return
         end if
         call self%hdf5%dump_to_toml(ptr, error); if (allocated(error)) return
 
         ! netcdf
-        call add_table(ptr_meta, "netcdf", ptr); if (.not.associated(ptr)) then
+        call add_table(table, "netcdf", ptr); if (.not.associated(ptr)) then
             call fatal_error(error, "metapackage_config_t: cannot create 'netcdf' table"); return
         end if
         call self%netcdf%dump_to_toml(ptr, error); if (allocated(error)) return
 
         ! blas
-        call add_table(ptr_meta, "blas", ptr); if (.not.associated(ptr)) then
+        call add_table(table, "blas", ptr); if (.not.associated(ptr)) then
             call fatal_error(error, "metapackage_config_t: cannot create 'blas' table"); return
         end if
         call self%blas%dump_to_toml(ptr, error); if (allocated(error)) return
     end subroutine meta_config_dump
-
-    subroutine meta_config_load(self, table, error)
-        class(metapackage_config_t), intent(inout) :: self
-        type(toml_table),            intent(inout) :: table
-        type(error_t), allocatable,  intent(out)   :: error
-
-        type(toml_table), pointer :: ptr_meta, ptr
-
-        ! Default everything to "not requested"
+    
+    ! Ensure the names of all packages are always defined
+    subroutine meta_config_final(self)
+        type(metapackage_config_t), intent(inout) :: self
+        
         call request_destroy(self%openmp); self%openmp%name = "openmp"
         call request_destroy(self%stdlib); self%stdlib%name = "stdlib"
         call request_destroy(self%minpack);self%minpack%name= "minpack"
         call request_destroy(self%mpi);    self%mpi%name    = "mpi"
         call request_destroy(self%hdf5);   self%hdf5%name   = "hdf5"
         call request_destroy(self%netcdf); self%netcdf%name = "netcdf"
-        call request_destroy(self%blas);   self%blas%name   = "blas"
+        call request_destroy(self%blas);   self%blas%name   = "blas"        
+        
+    end subroutine meta_config_final
 
-        call get_value(table, "metapackages", ptr_meta)
-        if (.not.associated(ptr_meta)) return  ! Nothing serialized; keep defaults
+    subroutine meta_config_load(self, table, error)
+        class(metapackage_config_t), intent(inout) :: self
+        type(toml_table),            intent(inout) :: table
+        type(error_t), allocatable,  intent(out)   :: error
+
+        type(toml_table), pointer :: ptr
 
         ! openmp
-        call get_value(ptr_meta, "openmp", ptr)
+        call get_value(table, "openmp", ptr)
         if (associated(ptr)) call self%openmp%load_from_toml(ptr, error); if (allocated(error)) return
 
         ! stdlib
-        call get_value(ptr_meta, "stdlib", ptr)
+        call get_value(table, "stdlib", ptr)
         if (associated(ptr)) call self%stdlib%load_from_toml(ptr, error); if (allocated(error)) return
 
         ! minpack
-        call get_value(ptr_meta, "minpack", ptr)
+        call get_value(table, "minpack", ptr)
         if (associated(ptr)) call self%minpack%load_from_toml(ptr, error); if (allocated(error)) return
 
         ! mpi
-        call get_value(ptr_meta, "mpi", ptr)
+        call get_value(table, "mpi", ptr)
         if (associated(ptr)) call self%mpi%load_from_toml(ptr, error); if (allocated(error)) return
 
         ! hdf5
-        call get_value(ptr_meta, "hdf5", ptr)
+        call get_value(table, "hdf5", ptr)
         if (associated(ptr)) call self%hdf5%load_from_toml(ptr, error); if (allocated(error)) return
 
         ! netcdf
-        call get_value(ptr_meta, "netcdf", ptr)
+        call get_value(table, "netcdf", ptr)
         if (associated(ptr)) call self%netcdf%load_from_toml(ptr, error); if (allocated(error)) return
 
         ! blas
-        call get_value(ptr_meta, "blas", ptr)
+        call get_value(table, "blas", ptr)
         if (associated(ptr)) call self%blas%load_from_toml(ptr, error); if (allocated(error)) return
     end subroutine meta_config_load
 
