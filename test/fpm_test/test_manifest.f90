@@ -5,6 +5,7 @@ module test_manifest
     use fpm_manifest
     use fpm_manifest_profile, only: profile_config_t, find_profile
     use fpm_manifest_platform, only: platform_config_t
+    use fpm_manifest_feature_collection, only: feature_collection_t
     use fpm_strings, only: operator(.in.), string_t
     use fpm_error, only: fatal_error, error_t
     use tomlf, only : new_table, toml_table, toml_array
@@ -75,7 +76,10 @@ contains
             & new_unittest("preprocess-wrongkey", test_preprocess_wrongkey, should_fail=.true.), &
             & new_unittest("preprocessors-empty", test_preprocessors_empty, should_fail=.true.), &
             & new_unittest("macro-parsing", test_macro_parsing, should_fail=.false.), &
-            & new_unittest("macro-parsing-dependency", test_macro_parsing_dependency, should_fail=.false.) &
+            & new_unittest("macro-parsing-dependency", test_macro_parsing_dependency, should_fail=.false.), &
+            & new_unittest("feature-collection-basic", test_feature_collection_basic), &
+            & new_unittest("feature-collection-flexible", test_feature_collection_flexible), &
+            & new_unittest("feature-collection-invalid", test_feature_collection_invalid, should_fail=.true.) &
             & ]
 
     end subroutine collect_manifest
@@ -1513,5 +1517,138 @@ contains
         end if
 
     end subroutine test_macro_parsing_dependency
+
+    !> Test basic feature collection parsing from manifest
+    subroutine test_feature_collection_basic(error)
+
+        !> Error handling
+        type(error_t), allocatable, intent(out) :: error
+
+        type(package_config_t) :: package
+        character(:), allocatable :: temp_file
+        integer :: unit
+
+        allocate(temp_file, source=get_temp_filename())
+
+        open(file=temp_file, newunit=unit)
+        write(unit, '(a)') &
+            & 'name = "feature-test"', &
+            & 'version = "0.1.0"', &
+            & '[features]', &
+            & 'debug.gfortran.flags = "-Wall -g -fcheck=bounds"', &
+            & 'debug.ifort.flags = "/warn:all /check:all /traceback"', &
+            & 'release.flags = "-O3"'
+        close(unit)
+
+        call get_package_data(package, temp_file, error)
+
+        if (allocated(error)) return
+
+        ! Check that feature collections were created
+        if (.not. allocated(package%features)) then
+            call test_failed(error, "Feature collections were not created")
+            return
+        end if
+
+        ! Verify we have at least one collection
+        if (size(package%features) < 1) then
+            call test_failed(error, "No feature collections found")
+            return
+        end if
+
+        ! Check that the first collection has variants
+        if (.not. allocated(package%features(1)%variants)) then
+            call test_failed(error, "Feature collection variants were not created")
+            return
+        end if
+
+        ! Verify we have the expected variants
+        if (size(package%features(1)%variants) < 1) then
+            call test_failed(error, "Feature collection has no variants")
+            return
+        end if
+
+    end subroutine test_feature_collection_basic
+
+    !> Test flexible feature collection parsing with OS and compiler constraints
+    subroutine test_feature_collection_flexible(error)
+
+        !> Error handling
+        type(error_t), allocatable, intent(out) :: error
+
+        type(package_config_t) :: package
+        character(:), allocatable :: temp_file
+        integer :: unit
+
+        allocate(temp_file, source=get_temp_filename())
+
+        open(file=temp_file, newunit=unit)
+        write(unit, '(a)') &
+            & 'name = "flexible-test"', &
+            & 'version = "0.1.0"', &
+            & '[features]', &
+            & 'myfeature.linux.gfortran.flags = "-fPIC -Wall"', &
+            & 'myfeature.windows.ifort.flags = "/fPIC /warn:all"', &
+            & 'myfeature.macos.flags = "-framework CoreFoundation"', &
+            & 'myfeature.preprocess.cpp.macros = ["-DMYFEATURE"]'
+        close(unit)
+
+        call get_package_data(package, temp_file, error)
+
+        if (allocated(error)) return
+
+        ! Check that feature collections were created
+        if (.not. allocated(package%features)) then
+            call test_failed(error, "Feature collections were not created for flexible test")
+            return
+        end if
+
+        ! Verify we have at least one collection
+        if (size(package%features) < 1) then
+            call test_failed(error, "No feature collections found in flexible test")
+            return
+        end if
+
+        ! Check that base feature has been set
+        if (.not. allocated(package%features(1)%base%name)) then
+            call test_failed(error, "Base feature name not set in flexible test")
+            return
+        end if
+
+    end subroutine test_feature_collection_flexible
+
+    !> Test invalid feature collection configuration (should fail)
+    subroutine test_feature_collection_invalid(error)
+
+        !> Error handling
+        type(error_t), allocatable, intent(out) :: error
+
+        type(package_config_t) :: package
+        character(:), allocatable :: temp_file
+        integer :: unit
+
+        allocate(temp_file, source=get_temp_filename())
+
+        open(file=temp_file, newunit=unit)
+        write(unit, '(a)') &
+            & 'name = "invalid-test"', &
+            & 'version = "0.1.0"', &
+            & '[features]', &
+            & 'badfeature.unknownos.badcompiler.flags = "-invalid"', &
+            & 'badfeature.invalid-key-format = "should fail"'
+        close(unit)
+
+        call get_package_data(package, temp_file, error)
+
+        ! This test should fail, so if we don't get an error, that's the problem
+        if (.not. allocated(error)) then
+            call test_failed(error, "Invalid feature collection should have caused an error")
+            return
+        end if
+
+        ! If we got here with an error, that's expected behavior, so clear it
+        deallocate(error)
+
+    end subroutine test_feature_collection_invalid
 
 end module test_manifest
