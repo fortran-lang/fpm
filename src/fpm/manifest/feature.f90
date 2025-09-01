@@ -334,7 +334,7 @@ contains
             write(unit, fmt) "- description", self%description
         end if
 
-        call self%info(unit, verbosity)
+        call self%platform%info(unit, verbosity)
 
         if (allocated(self%flags)) then
             write(unit, fmt) "- flags", self%flags
