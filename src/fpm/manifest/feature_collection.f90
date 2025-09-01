@@ -265,6 +265,7 @@ module fpm_manifest_feature_collection
 
         ! Get all keys from the features table to identify distinct collections
         call table%get_keys(keys)
+        print *, 'size keys=',size(keys)
         if (size(keys) == 0) then
             ! No features defined, return default collections
             call get_default_features(collections, error)
@@ -273,16 +274,20 @@ module fpm_manifest_feature_collection
 
         ! For now, we'll create a single collection from all the features in the table
         ! This demonstrates the flexible parsing capability
-        allocate(collections(1))
+        allocate(collections(size(keys)))
         
-        ! Parse the table as a single collection
-        call new_collection(collections(1), table, error)
-        if (allocated(error)) return
+        do i = 1, size(keys)
+            
+            ! Parse the table as a single collection
+            call new_collection(collections(i), table, error)
+            if (allocated(error)) return
+            
+            ! Set a default name if not specified
+            if (.not. allocated(collections(i)%base%name) .or. len_trim(collections(i)%base%name) == 0) then
+                collections(i)%base%name = 'custom'
+            end if
         
-        ! Set a default name if not specified
-        if (.not. allocated(collections(1)%base%name) .or. len_trim(collections(1)%base%name) == 0) then
-            collections(1)%base%name = 'custom'
-        end if
+        end do
         
     end subroutine new_collections
 
@@ -597,5 +602,6 @@ module fpm_manifest_feature_collection
         feature%flags = flags
         feature%default = .true.  ! These are built-in features
     end function default_variant
+
 
 end module fpm_manifest_feature_collection

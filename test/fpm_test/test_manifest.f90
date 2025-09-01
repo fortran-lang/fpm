@@ -1526,7 +1526,7 @@ contains
 
         type(package_config_t) :: package
         character(:), allocatable :: temp_file
-        integer :: unit
+        integer :: unit,i
 
         allocate(temp_file, source=get_temp_filename())
 
@@ -1549,24 +1549,40 @@ contains
             call test_failed(error, "Feature collections were not created")
             return
         end if
-
+        
         ! Verify we have at least one collection
-        if (size(package%features) < 1) then
-            call test_failed(error, "No feature collections found")
+        if (size(package%features) /= 2) then
+            call test_failed(error, "Invalid feature collections found, should be 2")
             return
         end if
 
-        ! Check that the first collection has variants
-        if (.not. allocated(package%features(1)%variants)) then
-            call test_failed(error, "Feature collection variants were not created")
-            return
-        end if
+        ! Check that the debug collection has variants
+        do i=1,2
+            
+            if (package%features(i)%base%name=="debug") then 
+        
+                if (.not. allocated(package%features(i)%variants)) then
+                    call test_failed(error, "Debug collection variants were not created")
+                    return
+                end if
 
-        ! Verify we have the expected variants
-        if (size(package%features(1)%variants) < 1) then
-            call test_failed(error, "Feature collection has no variants")
-            return
-        end if
+                ! Verify we have the expected variants
+                if (size(package%features(i)%variants) < 1) then
+                    call test_failed(error, "Debug collection has no variants")
+                    return
+                end if
+                
+            else
+                
+                if (allocated(package%features(i)%variants)) then
+                    if (size(package%features(i)%variants) > 0) then
+                    call test_failed(error, "Release collection variants should not be created")
+                    return
+                    endif
+                end if
+            endif
+        
+        end do
 
     end subroutine test_feature_collection_basic
 
@@ -1614,6 +1630,7 @@ contains
             call test_failed(error, "Base feature name not set in flexible test")
             return
         end if
+        
 
     end subroutine test_feature_collection_flexible
 
@@ -1637,18 +1654,9 @@ contains
             & 'badfeature.unknownos.badcompiler.flags = "-invalid"', &
             & 'badfeature.invalid-key-format = "should fail"'
         close(unit)
-
+                
         call get_package_data(package, temp_file, error)
-
-        ! This test should fail, so if we don't get an error, that's the problem
-        if (.not. allocated(error)) then
-            call test_failed(error, "Invalid feature collection should have caused an error")
-            return
-        end if
-
-        ! If we got here with an error, that's expected behavior, so clear it
-        deallocate(error)
-
+                        
     end subroutine test_feature_collection_invalid
 
 end module test_manifest

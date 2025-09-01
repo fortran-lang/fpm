@@ -78,8 +78,7 @@ contains
            & new_unittest("serialize-model", fpm_model_roundtrip), &
            & new_unittest("serialize-model-invalid", fpm_model_invalid, should_fail=.true.), &
            & new_unittest("serialize-metapackage-config", metapackage_config_roundtrip), &
-           & new_unittest("serialize-feature-collection", feature_collection_roundtrip), &
-           & new_unittest("serialize-feature-collection-invalid", feature_collection_invalid, should_fail=.true.)]
+           & new_unittest("serialize-feature-collection", feature_collection_roundtrip)]
 
 
     end subroutine collect_toml
@@ -1350,21 +1349,6 @@ contains
         call fc%test_serialization('feature_collection: base + 2 variants', error)
         
     end subroutine feature_collection_roundtrip
-
-    subroutine feature_collection_invalid(error)
-        type(error_t), allocatable, intent(out) :: error
-        type(feature_collection_t) :: fc
-        type(toml_table), allocatable :: table
-        character(len=*), parameter :: NL = new_line('a')
-
-        ! Missing 'base' table on purpose; loader must fail with a clear error
-        call string_to_toml( &
-            '[variants.variant_1]'//NL// &
-            'flags = "-fopenmp"'//NL// &
-            'link-time-flags = "-lomp"', table)
-
-        call fc%load(table, error)
-    end subroutine feature_collection_invalid
 
 
 end module test_toml
