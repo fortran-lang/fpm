@@ -36,7 +36,7 @@
 module fpm_manifest_package
     use fpm_manifest_build, only: build_config_t, new_build_config
     use fpm_manifest_dependency, only : dependency_config_t, new_dependencies
-    use fpm_manifest_profile, only : profile_config_t, new_profiles, get_default_profiles
+    use fpm_manifest_profile, only : profile_config_t, new_profiles
     use fpm_manifest_example, only : example_config_t, new_example
     use fpm_manifest_executable, only : executable_config_t, new_executable
     use fpm_manifest_fortran, only : fortran_config_t, new_fortran_config
@@ -45,7 +45,7 @@ module fpm_manifest_package
     use fpm_manifest_test, only : test_config_t, new_test
     use fpm_manifest_preprocess, only : preprocess_config_t, new_preprocessors
     use fpm_manifest_metapackages, only: metapackage_config_t, new_meta_config
-    use fpm_manifest_feature, only: feature_config_t
+    use fpm_manifest_feature, only: feature_config_t, new_features, get_default_features
     use fpm_filesystem, only : exists, getline, join_path
     use fpm_error, only : error_t, fatal_error, syntax_error, bad_name_error
     use tomlf, only : toml_table, toml_array, toml_key, toml_stat
@@ -111,6 +111,9 @@ module fpm_manifest_package
 
         !> Profiles meta data
         type(profile_config_t), allocatable :: profiles(:)
+
+        !> Features meta data  
+        type(feature_config_t), allocatable :: features(:)
 
         !> Example meta data
         type(example_config_t), allocatable :: example(:)
@@ -262,7 +265,17 @@ contains
             call new_profiles(self%profiles, child, error)
             if (allocated(error)) return
         else
-            self%profiles = get_default_profiles(error)
+            ! Leave profiles unallocated for now
+            allocate(self%profiles(0))
+        end if
+
+        call get_value(table, "features", child, requested=.false.)
+        if (associated(child)) then
+            call new_features(self%features, child, error=error)
+            if (allocated(error)) return
+        else
+            ! Initialize with default features (converted from old default profiles)
+            call get_default_features(self%features, error)
             if (allocated(error)) return
         end if
 
@@ -369,7 +382,7 @@ contains
 
             case("version", "license", "author", "maintainer", "copyright", &
                     & "description", "keywords", "categories", "homepage", "build", &
-                    & "dependencies", "dev-dependencies", "profiles", "test", "executable", &
+                    & "dependencies", "dev-dependencies", "profiles", "features", "test", "executable", &
                     & "example", "library", "install", "extra", "preprocess", "fortran")
                 continue
 
@@ -1097,5 +1110,6 @@ contains
         end do sub_deps
 
      end subroutine load_from_toml
+
 
 end module fpm_manifest_package

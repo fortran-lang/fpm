@@ -58,7 +58,7 @@ module fpm_manifest_profile
                           id_ibmxl, id_cray, id_lahey, id_lfortran, id_all
     use fpm_filesystem, only: join_path
     implicit none
-    public :: profile_config_t, new_profile, new_profiles, get_default_profiles, &
+    public :: profile_config_t, new_profile, new_profiles, &
             & info_profile, find_profile, DEFAULT_COMPILER
 
     !> Name of the default compiler
@@ -629,8 +629,8 @@ module fpm_manifest_profile
 
         path = ''
 
-        default_profiles = get_default_profiles(error)
-        if (allocated(error)) return
+        ! Default profiles are now features - no longer used
+        allocate(default_profiles(0))
         call table%get_keys(prof_list)
 
         if (size(prof_list) < 1) return
@@ -722,128 +722,6 @@ module fpm_manifest_profile
         end do
       end subroutine new_profiles
 
-      !> Construct an array of built-in profiles
-      function get_default_profiles(error) result(default_profiles)
-
-        !> Error handling
-        type(error_t), allocatable, intent(out) :: error
-
-        type(profile_config_t), allocatable :: default_profiles(:)
-
-        default_profiles = [ &
-              & new_profile('release', &
-                & 'caf', &
-                & OS_ALL, &
-                & flags=' -O3 -Wimplicit-interface -fPIC -fmax-errors=1 -funroll-loops', &
-                & is_built_in=.true.), &
-              & new_profile('release', &
-                & 'gfortran', &
-                & OS_ALL, &
-                & flags=' -O3 -Wimplicit-interface -fPIC -fmax-errors=1 -funroll-loops -fcoarray=single', &
-                & is_built_in=.true.), &
-              & new_profile('release', &
-                & 'f95', &
-                & OS_ALL, &
-                & flags=' -O3 -Wimplicit-interface -fPIC -fmax-errors=1 -ffast-math -funroll-loops', &
-                & is_built_in=.true.), &
-              & new_profile('release', &
-                & 'nvfortran', &
-                & OS_ALL, &
-                & flags = ' -Mbackslash', &
-                & is_built_in=.true.), &
-              & new_profile('release', &
-                & 'ifort', &
-                & OS_ALL, &
-                & flags = ' -fp-model precise -pc64 -align all -error-limit 1 -reentrancy&
-                          & threaded -nogen-interfaces -assume byterecl', &
-                & is_built_in=.true.), &
-              & new_profile('release', &
-                & 'ifort', &
-                & OS_WINDOWS, &
-                & flags = ' /fp:precise /align:all /error-limit:1 /reentrancy:threaded&
-                          & /nogen-interfaces /assume:byterecl', &
-                & is_built_in=.true.), &
-              & new_profile('release', &
-                & 'ifx', &
-                & OS_ALL, &
-                & flags = ' -fp-model=precise -pc64 -align all -error-limit 1 -reentrancy&
-                          & threaded -nogen-interfaces -assume byterecl', &
-                & is_built_in=.true.), &
-              & new_profile('release', &
-                & 'ifx', &
-                & OS_WINDOWS, &
-                & flags = ' /fp:precise /align:all /error-limit:1 /reentrancy:threaded&
-                          & /nogen-interfaces /assume:byterecl', &
-                & is_built_in=.true.), &
-              & new_profile('release', &
-                &'nagfor', &
-                & OS_ALL, &
-                & flags = ' -O4 -coarray=single -PIC', &
-                & is_built_in=.true.), &
-              & new_profile('release', &
-                &'lfortran', &
-                & OS_ALL, &
-                & flags = ' flag_lfortran_opt', &
-                & is_built_in=.true.), &
-              & new_profile('debug', &
-                & 'caf', &
-                & OS_ALL, &
-                & flags = ' -Wall -Wextra -Wimplicit-interface -Wno-external-argument-mismatch&
-                          & -fPIC -fmax-errors=1 -g -fcheck=bounds&
-                          & -fcheck=array-temps -fbacktrace', &
-                & is_built_in=.true.), &
-              & new_profile('debug', &
-                & 'gfortran', &
-                & OS_ALL, &
-                & flags = ' -Wall -Wextra -Wimplicit-interface -Wno-external-argument-mismatch&
-                          & -fPIC -fmax-errors=1 -g -fcheck=bounds&
-                          & -fcheck=array-temps -fbacktrace -fcoarray=single', &
-                & is_built_in=.true.), &
-              & new_profile('debug', &
-                & 'f95', &
-                & OS_ALL, &
-                & flags = ' -Wall -Wextra -Wimplicit-interface -Wno-external-argument-mismatch&
-                          & -fPIC -fmax-errors=1 -g -fcheck=bounds&
-                          & -fcheck=array-temps -Wno-maybe-uninitialized -Wno-uninitialized -fbacktrace', &
-                & is_built_in=.true.), &
-              & new_profile('debug', &
-                & 'nvfortran', &
-                & OS_ALL, &
-                & flags = ' -Minform=inform -Mbackslash -g -Mbounds -Mchkptr -Mchkstk -traceback', &
-                & is_built_in=.true.), &
-              & new_profile('debug', &
-                & 'ifort', &
-                & OS_ALL, &
-                & flags = ' -warn all -check all -error-limit 1 -O0 -g -assume byterecl -traceback', &
-                & is_built_in=.true.), &
-              & new_profile('debug', &
-                & 'ifort', &
-                & OS_WINDOWS, &
-                & flags = ' /warn:all /check:all /error-limit:1&
-                          & /Od /Z7 /assume:byterecl /traceback', &
-                & is_built_in=.true.), &
-              & new_profile('debug', &
-                & 'ifx', &
-                & OS_ALL, &
-                & flags = ' -warn all -check all -error-limit 1 -O0 -g -assume byterecl -traceback', &
-                & is_built_in=.true.), &
-              & new_profile('debug', &
-                & 'ifx', &
-                & OS_WINDOWS, &
-                & flags = ' /warn:all /check:all /error-limit:1 /Od /Z7 /assume:byterecl', &
-                & is_built_in=.true.), &
-              & new_profile('debug', &
-                & 'ifx', &
-                & OS_WINDOWS, &
-                & flags = ' /warn:all /check:all /error-limit:1 /Od /Z7 /assume:byterecl', &
-                & is_built_in=.true.), &
-              & new_profile('debug', &
-                & 'lfortran', &
-                & OS_ALL, &
-                & flags = '', &
-                & is_built_in=.true.) &
-              &]
-      end function get_default_profiles
 
       !> Write information on instance
       subroutine info(self, unit, verbosity)
