@@ -253,13 +253,15 @@ contains
         call check_string(error, package%executable(1)%name, name, &
             & "Default executable name")
         if (allocated(error)) return
+        
+        call package%feature_config_t%test_serialization('test_default_executable (feature only)',error)
+        if (allocated(error)) return
 
         call package%test_serialization('test_default_executable',error)
         if (allocated(error)) return
 
     end subroutine test_default_executable
-
-
+    
     !> Dependencies cannot be created from empty tables
     subroutine test_dependency_empty(error)
         use fpm_manifest_dependency

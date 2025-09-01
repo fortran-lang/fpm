@@ -575,9 +575,12 @@ contains
        type(toml_table), pointer :: ptr,ptr_pkg
        character(30) :: unnamed
        character(128) :: profile_name
-
-       call set_string(table, "name", self%name, error, class_name)
+       
+       ! Dump feature first
+       call self%feature_config_t%dump_to_toml(table, error)       
        if (allocated(error)) return
+
+       ! Package-specific fields
        call set_string(table, "version", self%version%s(), error, class_name)
        if (allocated(error)) return
        call set_string(table, "license", self%license, error, class_name)
@@ -588,115 +591,6 @@ contains
        if (allocated(error)) return
        call set_string(table, "copyright", self%copyright, error, class_name)
        if (allocated(error)) return
-
-       call add_table(table, "build", ptr, error, class_name)
-       if (allocated(error)) return
-       call self%build%dump_to_toml(ptr, error)
-       if (allocated(error)) return
-
-       call add_table(table, "fortran", ptr, error, class_name)
-       if (allocated(error)) return
-       call self%fortran%dump_to_toml(ptr, error)
-       if (allocated(error)) return
-
-       call add_table(table, "install", ptr, error, class_name)
-       if (allocated(error)) return
-       call self%install%dump_to_toml(ptr, error)
-       if (allocated(error)) return
-
-       if (allocated(self%library)) then
-           call add_table(table, "library", ptr, error, class_name)
-           if (allocated(error)) return
-           call self%library%dump_to_toml(ptr, error)
-           if (allocated(error)) return
-       end if
-
-       if (allocated(self%executable)) then
-
-           call add_table(table, "executable", ptr_pkg)
-           if (.not. associated(ptr_pkg)) then
-              call fatal_error(error, class_name//" cannot create 'executable' table ")
-              return
-           end if
-
-           do ii = 1, size(self%executable)
-
-              associate (pkg => self%executable(ii))
-
-                 !> Because dependencies are named, fallback if this has no name
-                 !> So, serialization will work regardless of size(self%dep) == self%ndep
-                 if (len_trim(pkg%name)==0) then
-                    write(unnamed,1) 'EXECUTABLE',ii
-                    call add_table(ptr_pkg, trim(unnamed), ptr, error, class_name//'(executable)')
-                 else
-                    call add_table(ptr_pkg, pkg%name, ptr, error, class_name//'(executable)')
-                 end if
-                 if (allocated(error)) return
-                 call pkg%dump_to_toml(ptr, error)
-                 if (allocated(error)) return
-
-              end associate
-
-           end do
-       end if
-
-       if (allocated(self%dependency)) then
-
-           call add_table(table, "dependencies", ptr_pkg)
-           if (.not. associated(ptr_pkg)) then
-              call fatal_error(error, class_name//" cannot create 'dependencies' table ")
-              return
-           end if
-
-           do ii = 1, size(self%dependency)
-
-              associate (pkg => self%dependency(ii))
-
-                 !> Because dependencies are named, fallback if this has no name
-                 !> So, serialization will work regardless of size(self%dep) == self%ndep
-                 if (len_trim(pkg%name)==0) then
-                    write(unnamed,1) 'DEPENDENCY',ii
-                    call add_table(ptr_pkg, trim(unnamed), ptr, error, class_name//'(dependencies)')
-                 else
-                    call add_table(ptr_pkg, pkg%name, ptr, error, class_name//'(dependencies)')
-                 end if
-                 if (allocated(error)) return
-                 call pkg%dump_to_toml(ptr, error)
-                 if (allocated(error)) return
-
-              end associate
-
-           end do
-       end if
-
-       if (allocated(self%dev_dependency)) then
-
-           call add_table(table, "dev-dependencies", ptr_pkg)
-           if (.not. associated(ptr_pkg)) then
-              call fatal_error(error, class_name//" cannot create 'dev-dependencies' table ")
-              return
-           end if
-
-           do ii = 1, size(self%dev_dependency)
-
-              associate (pkg => self%dev_dependency(ii))
-
-                 !> Because dependencies are named, fallback if this has no name
-                 !> So, serialization will work regardless of size(self%dep) == self%ndep
-                 if (len_trim(pkg%name)==0) then
-                    write(unnamed,1) 'DEV-DEPENDENCY',ii
-                    call add_table(ptr_pkg, trim(unnamed), ptr, error, class_name//'(dev-dependencies)')
-                 else
-                    call add_table(ptr_pkg, pkg%name, ptr, error, class_name//'(dev-dependencies)')
-                 end if
-                 if (allocated(error)) return
-                 call pkg%dump_to_toml(ptr, error)
-                 if (allocated(error)) return
-
-              end associate
-
-           end do
-       end if
 
        if (allocated(self%profiles)) then
 
@@ -714,93 +608,6 @@ contains
                  !> same name, same compiler, etc. So, use a unique name here
                  write(profile_name,2) ii
                  call add_table(ptr_pkg, trim(profile_name), ptr, error, class_name//'(profiles)')
-                 if (allocated(error)) return
-                 call pkg%dump_to_toml(ptr, error)
-                 if (allocated(error)) return
-
-              end associate
-
-           end do
-       end if
-
-       if (allocated(self%example)) then
-
-           call add_table(table, "example", ptr_pkg)
-           if (.not. associated(ptr_pkg)) then
-              call fatal_error(error, class_name//" cannot create 'example' table ")
-              return
-           end if
-
-           do ii = 1, size(self%example)
-
-              associate (pkg => self%example(ii))
-
-                 !> Because dependencies are named, fallback if this has no name
-                 !> So, serialization will work regardless of size(self%dep) == self%ndep
-                 if (len_trim(pkg%name)==0) then
-                    write(unnamed,1) 'EXAMPLE',ii
-                    call add_table(ptr_pkg, trim(unnamed), ptr, error, class_name//'(example)')
-                 else
-                    call add_table(ptr_pkg, pkg%name, ptr, error, class_name//'(example)')
-                 end if
-                 if (allocated(error)) return
-                 call pkg%dump_to_toml(ptr, error)
-                 if (allocated(error)) return
-
-              end associate
-
-           end do
-       end if
-
-       if (allocated(self%test)) then
-
-           call add_table(table, "test", ptr_pkg)
-           if (.not. associated(ptr_pkg)) then
-              call fatal_error(error, class_name//" cannot create 'test' table ")
-              return
-           end if
-
-           do ii = 1, size(self%test)
-
-              associate (pkg => self%test(ii))
-
-                 !> Because dependencies are named, fallback if this has no name
-                 !> So, serialization will work regardless of size(self%dep) == self%ndep
-                 if (len_trim(pkg%name)==0) then
-                    write(unnamed,1) 'TEST',ii
-                    call add_table(ptr_pkg, trim(unnamed), ptr, error, class_name//'(test)')
-                 else
-                    call add_table(ptr_pkg, pkg%name, ptr, error, class_name//'(test)')
-                 end if
-                 if (allocated(error)) return
-                 call pkg%dump_to_toml(ptr, error)
-                 if (allocated(error)) return
-
-              end associate
-
-           end do
-       end if
-
-       if (allocated(self%preprocess)) then
-
-           call add_table(table, "preprocess", ptr_pkg)
-           if (.not. associated(ptr_pkg)) then
-              call fatal_error(error, class_name//" cannot create 'preprocess' table ")
-              return
-           end if
-
-           do ii = 1, size(self%preprocess)
-
-              associate (pkg => self%preprocess(ii))
-
-                 !> Because dependencies are named, fallback if this has no name
-                 !> So, serialization will work regardless of size(self%dep) == self%ndep
-                 if (len_trim(pkg%name)==0) then
-                    write(unnamed,1) 'PREPROCESS',ii
-                    call add_table(ptr_pkg, trim(unnamed), ptr, error, class_name//'(preprocess)')
-                 else
-                    call add_table(ptr_pkg, pkg%name, ptr, error, class_name//'(preprocess)')
-                 end if
                  if (allocated(error)) return
                  call pkg%dump_to_toml(ptr, error)
                  if (allocated(error)) return

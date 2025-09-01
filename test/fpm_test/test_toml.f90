@@ -18,6 +18,7 @@ module test_toml
     use fpm_manifest_executable, only: executable_config_t
     use fpm_manifest_preprocess, only: preprocess_config_t
     use fpm_manifest_profile, only: file_scope_flag
+    use fpm_manifest_metapackages, only: metapackage_config_t
     use fpm_versioning, only: new_version
     use fpm_strings, only: string_t, operator(==), split
     use fpm_model, only: fortran_features_t, package_t, FPM_SCOPE_LIB, FPM_UNIT_MODULE, fpm_model_t, &
@@ -72,7 +73,8 @@ contains
            & new_unittest("serialize-compiler", compiler_roundtrip), &
            & new_unittest("serialize-compiler-invalid", compiler_invalid, should_fail=.true.), &
            & new_unittest("serialize-model", fpm_model_roundtrip), &
-           & new_unittest("serialize-model-invalid", fpm_model_invalid, should_fail=.true.)]
+           & new_unittest("serialize-model-invalid", fpm_model_invalid, should_fail=.true.), &
+           & new_unittest("serialize-metapackage-config", metapackage_config_roundtrip) ]
 
     end subroutine collect_toml
 
@@ -1297,5 +1299,23 @@ contains
         call ff%test_serialization('file_scope_flag: non-empty', error)
 
     end subroutine file_scope_flag_roundtrip
+
+    !> Test a metapackage configuration
+    subroutine metapackage_config_roundtrip(error)
+
+        !> Error handling
+        type(error_t), allocatable, intent(out) :: error
+
+        type(metapackage_config_t) :: meta
+        
+        meta%mpi%on = .true.
+        meta%mpi%version = "MPICH"
+        meta%minpack%on = .true.
+        meta%blas%on = .false.
+        
+        call meta%test_serialization('metapackage_config_t', error)        
+        
+    end subroutine metapackage_config_roundtrip
+
 
 end module test_toml
