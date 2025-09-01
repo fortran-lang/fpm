@@ -114,6 +114,8 @@ subroutine build_model(model, settings, package, error)
                 manifest => dependency
             end if            
             
+            print *, 'package = ',manifest%name,' fortran = ',manifest%fortran%source_form
+            
             model%packages(i)%name = manifest%name
             associate(features => model%packages(i)%features)
                 features%implicit_typing   = manifest%fortran%implicit_typing

@@ -5,7 +5,7 @@ module fpm_manifest_fortran
     implicit none
     private
 
-    public :: fortran_config_t, new_fortran_config
+    public :: fortran_config_t, new_fortran_config, default_fortran_config
 
     !> Configuration data for Fortran
     type, extends(serializable_t) :: fortran_config_t
