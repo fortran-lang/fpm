@@ -1,7 +1,7 @@
 module fpm_meta_base
     use fpm_error, only: error_t, fatal_error
     use fpm_versioning, only: version_t
-    use fpm_model, only: fpm_model_t, fortran_features_t
+    use fpm_model, only: fpm_model_t, fortran_config_t
     use fpm_command_line, only: fpm_cmd_settings, fpm_run_settings
     use fpm_manifest_dependency, only: dependency_config_t
     use fpm_manifest_preprocess, only: preprocess_config_t
@@ -47,7 +47,7 @@ module fpm_meta_base
         type(string_t), allocatable :: external_modules(:)
 
         !> Special fortran features
-        type(fortran_features_t), allocatable :: fortran
+        type(fortran_config_t), allocatable :: fortran
         
         !> Preprocessor configuration
         type(preprocess_config_t), allocatable :: preprocess
