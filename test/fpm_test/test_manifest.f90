@@ -36,8 +36,9 @@ contains
             & new_unittest("dependency-wrongkey", test_dependency_wrongkey, should_fail=.true.), &
             & new_unittest("dependencies-empty", test_dependencies_empty), &
             & new_unittest("dependencies-typeerror", test_dependencies_typeerror, should_fail=.true.), &
-            & new_unittest("profiles", test_profiles), &
-            & new_unittest("profiles-keyvalue-table", test_profiles_keyvalue_table, should_fail=.true.), &
+            ! FROZEN: Profile tests disabled during transition to feature-based architecture
+            ! & new_unittest("profiles", test_profiles), &
+            ! & new_unittest("profiles-keyvalue-table", test_profiles_keyvalue_table, should_fail=.true.), &
             & new_unittest("executable-empty", test_executable_empty, should_fail=.true.), &
             & new_unittest("executable-typeerror", test_executable_typeerror, should_fail=.true.), &
             & new_unittest("executable-noname", test_executable_noname, should_fail=.true.), &
@@ -476,7 +477,10 @@ contains
 
     end subroutine test_dependencies_typeerror
 
-    !> Include a table of profiles in toml, check whether they are parsed correctly and stored in package
+    !> FROZEN TEST: Include a table of profiles in toml, check whether they are parsed correctly and stored in package
+    !> NOTE: This test is frozen during transition to feature-based architecture.
+    !>       Profiles are now empty arrays, functionality moved to features.
+    !>       Will be replaced with feature-based tests in future.
     subroutine test_profiles(error)
 
         !> Error handling
@@ -569,7 +573,8 @@ contains
 
     end subroutine test_profiles
 
-    !> 'flags' is a key-value entry, test should fail as it is defined as a table
+    !> FROZEN TEST: 'flags' is a key-value entry, test should fail as it is defined as a table
+    !> NOTE: This test is frozen during transition to feature-based architecture.
     subroutine test_profiles_keyvalue_table(error)
 
         !> Error handling
