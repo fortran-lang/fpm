@@ -35,7 +35,7 @@ module fpm_manifest_fortran
 contains
 
     !> Initialize fortran config
-    subroutine default_fortran_config(self)
+    pure subroutine default_fortran_config(self)
         type(fortran_config_t), intent(inout) :: self
         
         self%implicit_external = .false.
