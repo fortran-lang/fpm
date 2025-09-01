@@ -26,8 +26,6 @@ module fpm_manifest_fortran
             procedure :: dump_to_toml
             procedure :: load_from_toml
             
-            final :: default_fortran_config
-
     end type fortran_config_t
 
     character(len=*), parameter, private :: class_name = 'fortran_config_t'
