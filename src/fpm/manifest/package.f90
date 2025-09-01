@@ -44,7 +44,7 @@ module fpm_manifest_package
     use fpm_manifest_install, only: install_config_t, new_install_config
     use fpm_manifest_test, only : test_config_t, new_test
     use fpm_manifest_preprocess, only : preprocess_config_t, new_preprocessors
-    use fpm_manifest_feature, only: feature_config_t, new_features, get_default_features
+    use fpm_manifest_feature, only: feature_config_t, new_features, get_default_features, init_feature_components
     use fpm_manifest_feature_collection, only: feature_collection_t
     use fpm_filesystem, only : exists, getline, join_path
     use fpm_error, only : error_t, fatal_error, syntax_error, bad_name_error
@@ -133,6 +133,7 @@ contains
         call check(table, error)
         if (allocated(error)) return
 
+        ! Get package name and perform validation
         call get_value(table, "name", self%name)
         if (.not.allocated(self%name)) then
            call syntax_error(error, "Could not retrieve package name")
@@ -141,11 +142,6 @@ contains
         if (bad_name_error(error,'package',self%name))then
            return
         endif
-
-        call get_value(table, "license", self%license)
-        call get_value(table, "author", self%author)
-        call get_value(table, "maintainer", self%maintainer)
-        call get_value(table, "copyright", self%copyright)
 
         if (len(self%name) <= 0) then
             call syntax_error(error, "Package name must be a non-empty string")
@@ -158,28 +154,14 @@ contains
             return
         end if
 
-        call get_value(table, "build", child, requested=.true., stat=stat)
-        if (stat /= toml_stat%success) then
-            call fatal_error(error, "Type mismatch for build entry, must be a table")
-            return
-        end if
-        call new_build_config(self%build, child, self%name, error)
-        if (allocated(error)) return
+        ! Get package-specific metadata
+        call get_value(table, "license", self%license)
+        call get_value(table, "author", self%author)
+        call get_value(table, "maintainer", self%maintainer)
+        call get_value(table, "copyright", self%copyright)
 
-        call get_value(table, "install", child, requested=.true., stat=stat)
-        if (stat /= toml_stat%success) then
-            call fatal_error(error, "Type mismatch for install entry, must be a table")
-            return
-        end if
-        call new_install_config(self%install, child, error)
-        if (allocated(error)) return
-
-        call get_value(table, "fortran", child, requested=.true., stat=stat)
-        if (stat /= toml_stat%success) then
-            call fatal_error(error, "Type mismatch for fortran entry, must be a table")
-            return
-        end if
-        call new_fortran_config(self%fortran, child, error)
+        ! Initialize shared feature components
+        call init_feature_components(self%feature_config_t, table, root, error)
         if (allocated(error)) return
 
         call get_value(table, "version", version, "0")
@@ -205,24 +187,6 @@ contains
         end if
         if (allocated(error)) return
 
-        call get_value(table, "dependencies", child, requested=.false.)
-        if (associated(child)) then
-            call new_dependencies(self%dependency, child, root, self%meta, error)
-            if (allocated(error)) return
-        end if
-
-        call get_value(table, "dev-dependencies", child, requested=.false.)
-        if (associated(child)) then
-            call new_dependencies(self%dev_dependency, child, root, error=error)
-            if (allocated(error)) return
-        end if
-
-        call get_value(table, "library", child, requested=.false.)
-        if (associated(child)) then
-            allocate(self%library)
-            call new_library(self%library, child, error)
-            if (allocated(error)) return
-        end if
 
         call get_value(table, "profiles", child, requested=.false.)
         if (associated(child)) then
@@ -243,40 +207,13 @@ contains
             if (allocated(error)) return
         end if
 
-        call get_value(table, "executable", children, requested=.false.)
-        if (associated(children)) then
-            nn = len(children)
-            allocate(self%executable(nn))
-            do ii = 1, nn
-                call get_value(children, ii, node, stat=stat)
-                if (stat /= toml_stat%success) then
-                    call fatal_error(error, "Could not retrieve executable from array entry")
-                    exit
-                end if
-                call new_executable(self%executable(ii), node, error)
-                if (allocated(error)) exit
-            end do
-            if (allocated(error)) return
-
+        ! Package-specific validation: ensure unique program names
+        if (allocated(self%executable)) then
             call unique_programs(self%executable, error)
             if (allocated(error)) return
         end if
 
-        call get_value(table, "example", children, requested=.false.)
-        if (associated(children)) then
-            nn = len(children)
-            allocate(self%example(nn))
-            do ii = 1, nn
-                call get_value(children, ii, node, stat=stat)
-                if (stat /= toml_stat%success) then
-                    call fatal_error(error, "Could not retrieve example from array entry")
-                    exit
-                end if
-                call new_example(self%example(ii), node, error)
-                if (allocated(error)) exit
-            end do
-            if (allocated(error)) return
-
+        if (allocated(self%example)) then
             call unique_programs(self%example, error)
             if (allocated(error)) return
 
@@ -286,28 +223,8 @@ contains
             end if
         end if
 
-        call get_value(table, "test", children, requested=.false.)
-        if (associated(children)) then
-            nn = len(children)
-            allocate(self%test(nn))
-            do ii = 1, nn
-                call get_value(children, ii, node, stat=stat)
-                if (stat /= toml_stat%success) then
-                    call fatal_error(error, "Could not retrieve test from array entry")
-                    exit
-                end if
-                call new_test(self%test(ii), node, error)
-                if (allocated(error)) exit
-            end do
-            if (allocated(error)) return
-
+        if (allocated(self%test)) then
             call unique_programs(self%test, error)
-            if (allocated(error)) return
-        end if
-
-        call get_value(table, "preprocess", child, requested=.false.)
-        if (associated(child)) then
-            call new_preprocessors(self%preprocess, child, error)
             if (allocated(error)) return
         end if
     end subroutine new_package

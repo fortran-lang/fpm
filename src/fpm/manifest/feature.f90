@@ -53,7 +53,7 @@ module fpm_manifest_feature
     implicit none
     private
 
-    public :: feature_config_t, new_feature, new_features, find_feature, get_default_features
+    public :: feature_config_t, new_feature, new_features, find_feature, get_default_features, init_feature_components
 
     !> Feature configuration data
     type, extends(serializable_t) :: feature_config_t
@@ -127,7 +127,7 @@ module fpm_manifest_feature
 contains
 
     !> Construct a new feature configuration from a TOML data structure
-    subroutine new_feature(self, table, root, error)
+    subroutine new_feature(self, table, root, error, name)
 
         !> Instance of the feature configuration
         type(feature_config_t), intent(out) :: self
@@ -141,144 +141,38 @@ contains
         !> Error handling
         type(error_t), allocatable, intent(out) :: error
 
+        !> Optional name override (if not provided, gets from table key)
+        character(len=*), intent(in), optional :: name
+
         type(toml_table), pointer :: child, node
         type(toml_array), pointer :: children
         character(len=:), allocatable :: compiler_name, os_name
         integer :: ii, nn, stat
 
-        call check(table, error)
+        ! Only check schema for pure features (not when called from package)
+        if (.not. present(name)) then
+            call check(table, error)
+            if (allocated(error)) return
+        end if
+
+        ! Get feature name from parameter or table key
+        if (present(name)) then
+            self%name = name
+        else
+            call table%get_key(self%name)
+        end if
+
+        ! Initialize common components
+        call init_feature_components(self, table, root, error)
         if (allocated(error)) return
 
-        ! Get feature name from table key
-        call table%get_key(self%name)
-
-        call get_value(table, "description", self%description)
-        call get_value(table, "default", self%default, .false.)
-
-        ! Get install configuration
-        call get_value(table, "platform", child, requested=.true., stat=stat)
-        if (stat /= toml_stat%success) then
-            call fatal_error(error, "Type mismatch for platform entry, must be a table")
-            return
-        end if
-        call self%platform%load(child, error)
-        if (allocated(error)) return
-
-        ! Get compiler flags
-        call get_value(table, "flags", self%flags)
-        call get_value(table, "c-flags", self%c_flags)
-        call get_value(table, "cxx-flags", self%cxx_flags)
-        call get_value(table, "link-time-flags", self%link_time_flags)
-
-        ! Get feature dependencies
-        call get_list(table, "requires", self%requires_features, error)
-        if (allocated(error)) return
-
-        ! Get build configuration
-        call get_value(table, "build", child, requested=.true., stat=stat)
-        if (stat /= toml_stat%success) then
-            call fatal_error(error, "Type mismatch for build entry, must be a table")
-            return
-        end if
-        call new_build_config(self%build, child, self%name, error)
-        if (allocated(error)) return
-
-        ! Get install configuration
-        call get_value(table, "install", child, requested=.true., stat=stat)
-        if (stat /= toml_stat%success) then
-            call fatal_error(error, "Type mismatch for install entry, must be a table")
-            return
-        end if
-        call new_install_config(self%install, child, error)
-        if (allocated(error)) return
-
-        ! Get Fortran configuration
-        call get_value(table, "fortran", child, requested=.true., stat=stat)
-        if (stat /= toml_stat%success) then
-            call fatal_error(error, "Type mismatch for fortran entry, must be a table")
-            return
-        end if
-        call new_fortran_config(self%fortran, child, error)
-        if (allocated(error)) return
-
-        ! Get library configuration
-        call get_value(table, "library", child, requested=.false.)
-        if (associated(child)) then
-            allocate(self%library)
-            call new_library(self%library, child, error)
-            if (allocated(error)) return
-        end if
-
-        ! Get dependencies and metapackage dependencies
-        call get_value(table, "dependencies", child, requested=.false.)
-        if (associated(child)) then
-            call new_dependencies(self%dependency, child, root, self%meta, error=error)
-            if (allocated(error)) return
-        end if
-
-        ! Get development dependencies
-        call get_value(table, "dev-dependencies", child, requested=.false.)
-        if (associated(child)) then
-            call new_dependencies(self%dev_dependency, child, root, error=error)
-            if (allocated(error)) return
-        end if
-
-        ! Get executables
-        call get_value(table, "executable", children, requested=.false.)
-        if (associated(children)) then
-            nn = len(children)
-            allocate(self%executable(nn))
-            do ii = 1, nn
-                call get_value(children, ii, node, stat=stat)
-                if (stat /= toml_stat%success) then
-                    call fatal_error(error, "Could not retrieve executable from array entry")
-                    exit
-                end if
-                call new_executable(self%executable(ii), node, error)
-                if (allocated(error)) exit
-            end do
-            if (allocated(error)) return
-        end if
-
-        ! Get examples
-        call get_value(table, "example", children, requested=.false.)
-        if (associated(children)) then
-            nn = len(children)
-            allocate(self%example(nn))
-            do ii = 1, nn
-                call get_value(children, ii, node, stat=stat)
-                if (stat /= toml_stat%success) then
-                    call fatal_error(error, "Could not retrieve example from array entry")
-                    exit
-                end if
-                call new_example(self%example(ii), node, error)
-                if (allocated(error)) exit
-            end do
-            if (allocated(error)) return
-        end if
-
-        ! Get tests
-        call get_value(table, "test", children, requested=.false.)
-        if (associated(children)) then
-            nn = len(children)
-            allocate(self%test(nn))
-            do ii = 1, nn
-                call get_value(children, ii, node, stat=stat)
-                if (stat /= toml_stat%success) then
-                    call fatal_error(error, "Could not retrieve test from array entry")
-                    exit
-                end if
-                call new_test(self%test(ii), node, error)
-                if (allocated(error)) exit
-            end do
-            if (allocated(error)) return
-        end if
-
-        ! Get preprocessors
-        call get_value(table, "preprocess", child, requested=.false.)
-        if (associated(child)) then
-            call new_preprocessors(self%preprocess, child, error)
-            if (allocated(error)) return
+        ! For features, get platform configuration (optional for packages)
+        if (.not. present(name)) then
+            call get_value(table, "platform", child, requested=.false., stat=stat)
+            if (stat == toml_stat%success .and. associated(child)) then
+                call self%platform%load_from_toml(child, error)
+                if (allocated(error)) return
+            end if
         end if
 
     end subroutine new_feature
@@ -308,7 +202,7 @@ contains
                 call syntax_error(error, "Key "//list(ikey)%key//" is not allowed in feature table")
                 exit
 
-            case("description", "default", "compiler", "os", "flags", "c-flags", &
+            case("description", "default", "platform", "flags", "c-flags", &
                  "cxx-flags", "link-time-flags", "preprocessor", "requires", &
                  "build", "install", "fortran", "library", "dependencies", &
                  "dev-dependencies", "executable", "example", "test", "preprocess", "metapackages")
@@ -1142,5 +1036,137 @@ contains
         feature%flags = flags
         feature%default = .true.  ! These are built-in features
       end subroutine create_feature
+
+      !> Initialize the feature components (shared between new_feature and new_package)
+      subroutine init_feature_components(self, table, root, error)
+          type(feature_config_t), intent(inout) :: self
+          type(toml_table), intent(inout) :: table
+          character(len=*), intent(in), optional :: root
+          type(error_t), allocatable, intent(out) :: error
+
+          type(toml_table), pointer :: child, node
+          type(toml_array), pointer :: children
+          integer :: ii, nn, stat
+
+          ! Initialize platform with defaults (packages don't have platform constraints)
+          self%platform%compiler = id_all
+          self%platform%os_type = OS_ALL
+
+          ! Get description and default flag
+          call get_value(table, "description", self%description)
+          call get_value(table, "default", self%default, .false.)
+
+          ! Get compiler flags
+          call get_value(table, "flags", self%flags)
+          call get_value(table, "c-flags", self%c_flags)
+          call get_value(table, "cxx-flags", self%cxx_flags)
+          call get_value(table, "link-time-flags", self%link_time_flags)
+
+          ! Get feature dependencies
+          call get_list(table, "requires", self%requires_features, error)
+          if (allocated(error)) return
+
+          ! Get build configuration
+          call get_value(table, "build", child, requested=.false., stat=stat)
+          if (stat == toml_stat%success .and. associated(child)) then
+              call new_build_config(self%build, child, self%name, error)
+              if (allocated(error)) return
+          end if
+
+          ! Get install configuration
+          call get_value(table, "install", child, requested=.false., stat=stat)
+          if (stat == toml_stat%success .and. associated(child)) then
+              call new_install_config(self%install, child, error)
+              if (allocated(error)) return
+          end if
+
+          ! Get Fortran configuration
+          call get_value(table, "fortran", child, requested=.false., stat=stat)
+          if (stat == toml_stat%success .and. associated(child)) then
+              call new_fortran_config(self%fortran, child, error)
+              if (allocated(error)) return
+          end if
+
+          ! Get library configuration
+          call get_value(table, "library", child, requested=.false.)
+          if (associated(child)) then
+              allocate(self%library)
+              call new_library(self%library, child, error)
+              if (allocated(error)) return
+          end if
+
+          ! Get dependencies and metapackage dependencies
+          call get_value(table, "dependencies", child, requested=.false.)
+          if (associated(child)) then
+              call new_dependencies(self%dependency, child, root, self%meta, error=error)
+              if (allocated(error)) return
+          end if
+
+          ! Get development dependencies
+          call get_value(table, "dev-dependencies", child, requested=.false.)
+          if (associated(child)) then
+              call new_dependencies(self%dev_dependency, child, root, error=error)
+              if (allocated(error)) return
+          end if
+
+          ! Get executables
+          call get_value(table, "executable", children, requested=.false.)
+          if (associated(children)) then
+              nn = len(children)
+              allocate(self%executable(nn))
+              do ii = 1, nn
+                  call get_value(children, ii, node, stat=stat)
+                  if (stat /= toml_stat%success) then
+                      call fatal_error(error, "Could not retrieve executable from array entry")
+                      exit
+                  end if
+                  call new_executable(self%executable(ii), node, error)
+                  if (allocated(error)) exit
+              end do
+              if (allocated(error)) return
+          end if
+
+          ! Get examples
+          call get_value(table, "example", children, requested=.false.)
+          if (associated(children)) then
+              nn = len(children)
+              allocate(self%example(nn))
+              do ii = 1, nn
+                  call get_value(children, ii, node, stat=stat)
+                  if (stat /= toml_stat%success) then
+                      call fatal_error(error, "Could not retrieve example from array entry")
+                      exit
+                  end if
+                  call new_example(self%example(ii), node, error)
+                  if (allocated(error)) exit
+              end do
+              if (allocated(error)) return
+          end if
+
+          ! Get tests
+          call get_value(table, "test", children, requested=.false.)
+          if (associated(children)) then
+              nn = len(children)
+              allocate(self%test(nn))
+              do ii = 1, nn
+                  call get_value(children, ii, node, stat=stat)
+                  if (stat /= toml_stat%success) then
+                      call fatal_error(error, "Could not retrieve test from array entry")
+                      exit
+                  end if
+                  call new_test(self%test(ii), node, error)
+                  if (allocated(error)) exit
+              end do
+              if (allocated(error)) return
+          end if
+
+          ! Get preprocessors
+          call get_value(table, "preprocess", child, requested=.false.)
+          if (associated(child)) then
+              call new_preprocessors(self%preprocess, child, error)
+              if (allocated(error)) return
+          end if
+
+      end subroutine init_feature_components
 
 end module fpm_manifest_feature
