@@ -20,7 +20,7 @@ module test_toml
     use fpm_manifest_profile, only: file_scope_flag
     use fpm_versioning, only: new_version
     use fpm_strings, only: string_t, operator(==), split
-    use fpm_model, only: fortran_features_t, package_t, FPM_SCOPE_LIB, FPM_UNIT_MODULE, fpm_model_t, &
+    use fpm_model, only: fortran_config_t, package_t, FPM_SCOPE_LIB, FPM_UNIT_MODULE, fpm_model_t, &
          & srcfile_t
     use fpm_compiler, only: archiver_t, compiler_t, id_gcc
     use fpm_error, only: fatal_error
@@ -605,15 +605,15 @@ contains
         !> Error handling
         type(error_t), allocatable, intent(out) :: error
 
-        type(fortran_features_t) :: fortran
+        type(fortran_config_t) :: fortran
 
         !> Default object
-        call fortran%test_serialization('fortran_features_t: default object',error)
+        call fortran%test_serialization('fortran_config_t: default object',error)
         if (allocated(error)) return
 
         !> Set form
         fortran%source_form = "free"
-        call fortran%test_serialization('fortran_features_t: with form',error)
+        call fortran%test_serialization('fortran_config_t: with form',error)
         if (allocated(error)) return
 
     end subroutine fft_roundtrip
@@ -624,7 +624,7 @@ contains
         !> Error handling
         type(error_t), allocatable, intent(out) :: error
 
-        type(fortran_features_t) :: fortran
+        type(fortran_config_t) :: fortran
         type(toml_table), allocatable :: table
 
         character(len=*), parameter :: toml = 'implicit-typing = false '//NL//&

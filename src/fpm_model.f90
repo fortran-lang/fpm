@@ -46,10 +46,11 @@ use fpm_toml, only: serializable_t, set_value, set_list, get_value, &
 use fpm_error, only: error_t, fatal_error
 use fpm_environment, only: OS_WINDOWS,OS_MACOS
 use fpm_manifest_preprocess, only: preprocess_config_t
+use fpm_manifest_fortran, only: fortran_config_t
 implicit none
 
 private
-public :: fpm_model_t, srcfile_t, show_model, fortran_features_t, package_t
+public :: fpm_model_t, srcfile_t, show_model, fortran_config_t, package_t
 
 public :: FPM_UNIT_UNKNOWN, FPM_UNIT_PROGRAM, FPM_UNIT_MODULE, &
           FPM_UNIT_SUBMODULE, FPM_UNIT_SUBPROGRAM, FPM_UNIT_CSOURCE, &
@@ -85,27 +86,6 @@ integer, parameter :: FPM_SCOPE_APP = 3
 !> Module-use scope is library/dependency and test modules
 integer, parameter :: FPM_SCOPE_TEST = 4
 integer, parameter :: FPM_SCOPE_EXAMPLE = 5
-
-!> Enabled Fortran language features
-type, extends(serializable_t) :: fortran_features_t
-
-    !> Use default implicit typing
-    logical :: implicit_typing = .false.
-
-    !> Use implicit external interface
-    logical :: implicit_external = .false.
-
-    !> Form to use for all Fortran sources
-    character(:), allocatable :: source_form
-
-    contains
-
-        !> Serialization interface
-        procedure :: serializable_is_same => fft_is_same
-        procedure :: dump_to_toml   => fft_dump_to_toml
-        procedure :: load_from_toml => fft_load_from_toml
-
-end type fortran_features_t
 
 !> Type for describing a source file
 type, extends(serializable_t) :: srcfile_t
@@ -171,7 +151,7 @@ type, extends(serializable_t) :: package_t
     type(string_t) :: module_prefix
 
     !> Language features
-    type(fortran_features_t) :: features
+    type(fortran_config_t) :: features
 
     contains
     
@@ -613,77 +593,6 @@ subroutine srcfile_load_from_toml(self, table, error)
     if (allocated(error)) return
 
 end subroutine srcfile_load_from_toml
-
-!> Check that two fortran feature objects are equal
-logical function fft_is_same(this,that)
-    class(fortran_features_t), intent(in) :: this
-    class(serializable_t), intent(in) :: that
-
-    fft_is_same = .false.
-
-    select type (other=>that)
-       type is (fortran_features_t)
-
-           if (.not.(this%implicit_typing.eqv.other%implicit_typing)) return
-           if (.not.(this%implicit_external.eqv.other%implicit_external)) return
-           if (allocated(this%source_form).neqv.allocated(other%source_form)) return
-           if (allocated(this%source_form)) then
-             if (.not.(this%source_form==other%source_form)) return
-           end if
-
-       class default
-          ! Not the same type
-          return
-    end select
-
-    !> All checks passed!
-    fft_is_same = .true.
-
-end function fft_is_same
-
-!> Dump fortran features to toml table
-subroutine fft_dump_to_toml(self, table, error)
-
-    !> Instance of the serializable object
-    class(fortran_features_t), intent(inout) :: self
-
-    !> Data structure
-    type(toml_table), intent(inout) :: table
-
-    !> Error handling
-    type(error_t), allocatable, intent(out) :: error
-
-    call set_value(table, "implicit-typing", self%implicit_typing, error, 'fortran_features_t')
-    if (allocated(error)) return
-    call set_value(table, "implicit-external", self%implicit_external, error, 'fortran_features_t')
-    if (allocated(error)) return
-    call set_string(table, "source-form", self%source_form, error, 'fortran_features_t')
-    if (allocated(error)) return
-
-end subroutine fft_dump_to_toml
-
-!> Read dependency from toml table (no checks made at this stage)
-subroutine fft_load_from_toml(self, table, error)
-
-    !> Instance of the serializable object
-    class(fortran_features_t), intent(inout) :: self
-
-    !> Data structure
-    type(toml_table), intent(inout) :: table
-
-    !> Error handling
-    type(error_t), allocatable, intent(out) :: error
-
-    integer :: ierr
-
-    call get_value(table, "implicit-typing", self%implicit_typing, error, 'fortran_features_t')
-    if (allocated(error)) return
-    call get_value(table, "implicit-external", self%implicit_external, error, 'fortran_features_t')
-    if (allocated(error)) return
-    ! Return unallocated value if not present
-    call get_value(table, "source-form", self%source_form)
-
-end subroutine fft_load_from_toml
 
 !> Check that two package objects are equal
 logical function package_is_same(this,that)
