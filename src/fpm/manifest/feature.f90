@@ -36,8 +36,8 @@ module fpm_manifest_feature
     use fpm_manifest_test, only: test_config_t, new_test
     use fpm_manifest_preprocess, only: preprocess_config_t, new_preprocessors
     use fpm_error, only: error_t, fatal_error, syntax_error
-    use fpm_environment, only: OS_UNKNOWN, OS_LINUX, OS_MACOS, OS_WINDOWS, &
-                             OS_CYGWIN, OS_SOLARIS, OS_FREEBSD, OS_OPENBSD, OS_ALL, OS_NAME
+    use fpm_environment, only: OS_UNKNOWN, OS_LINUX, OS_MACOS, OS_WINDOWS, OS_CYGWIN, OS_SOLARIS, &
+                             OS_FREEBSD, OS_OPENBSD, OS_ALL, OS_NAME, match_os_type
     use fpm_compiler, only: compiler_enum, compiler_id_name, match_compiler_type, &
                           id_unknown, id_gcc, id_f95, id_caf, &
                           id_intel_classic_nix, id_intel_classic_mac, id_intel_classic_windows, &
@@ -161,7 +161,7 @@ contains
 
         ! Get OS specification  
         call get_value(table, "os", os_name, "all")
-        call match_os_type(os_name, self%os_type)
+        self%os_type = match_os_type(os_name)
 
         ! Get compiler flags
         call get_value(table, "flags", self%flags)
@@ -743,7 +743,7 @@ contains
         end if
 
         call get_value(table, "os", flag, "all")
-        call match_os_type(flag, self%os_type)
+        self%os_type = match_os_type(flag)
 
         call get_value(table, "flags", self%flags)
         call get_value(table, "c-flags", self%c_flags)
@@ -803,23 +803,7 @@ contains
 
     end subroutine load_from_toml
 
-    !> Match os_name to os_type enum (similar to profiles.f90)
-    subroutine match_os_type(os_name, os_type)
-        character(len=:), allocatable, intent(in) :: os_name
-        integer, intent(out) :: os_type
-        
-        select case (lower(os_name))
-            case ("linux");   os_type = OS_LINUX
-            case ("macos");   os_type = OS_MACOS
-            case ("windows"); os_type = OS_WINDOWS
-            case ("cygwin");  os_type = OS_CYGWIN
-            case ("solaris"); os_type = OS_SOLARIS
-            case ("freebsd"); os_type = OS_FREEBSD
-            case ("openbsd"); os_type = OS_OPENBSD
-            case ("all");     os_type = OS_ALL
-            case default;     os_type = OS_UNKNOWN
-        end select
-    end subroutine match_os_type
+
 
 
 

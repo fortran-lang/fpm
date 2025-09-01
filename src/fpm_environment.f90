@@ -8,9 +8,11 @@ module fpm_environment
                                            & stderr=>error_unit
     use,intrinsic :: iso_c_binding, only: c_char,c_int,c_null_char
     use fpm_error, only : fpm_stop
+    use fpm_strings, only : lower
     implicit none
     private
     public :: get_os_type
+    public :: match_os_type
     public :: os_is_unix
     public :: get_env
     public :: set_env
@@ -83,6 +85,23 @@ contains
             case default     ; OS_NAME =  "UNKNOWN"
         end select
     end function OS_NAME
+
+    !> Match os_name to os_type enum (similar to profiles.f90)
+    integer function match_os_type(os_name) result(os_type)
+        character(len=*), intent(in) :: os_name
+        
+        select case (lower(os_name))
+            case ("linux");   os_type = OS_LINUX
+            case ("macos");   os_type = OS_MACOS
+            case ("windows"); os_type = OS_WINDOWS
+            case ("cygwin");  os_type = OS_CYGWIN
+            case ("solaris"); os_type = OS_SOLARIS
+            case ("freebsd"); os_type = OS_FREEBSD
+            case ("openbsd"); os_type = OS_OPENBSD
+            case ("all");     os_type = OS_ALL
+            case default;     os_type = OS_UNKNOWN
+        end select
+    end function match_os_type
 
     !> Determine the OS type
     integer function get_os_type() result(r)
