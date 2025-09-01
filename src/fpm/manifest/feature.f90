@@ -596,6 +596,8 @@ contains
                     if (.not.(this%requires_features(ii)==other%requires_features(ii))) return
                 end do
             end if
+            
+            if (.not.this%meta==other%meta) return
 
             class default
                 return

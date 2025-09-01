@@ -520,14 +520,11 @@ contains
       select type (other=>that)
          type is (package_config_t)
             
-         if (allocated(this%name).neqv.allocated(other%name)) return
-            if (allocated(this%name) .and. allocated(other%name)) then
-                if (.not.this%name==other%name) return
-            end if
+            ! Compare base fields
+            if (.not.this%feature_config_t==other%feature_config_t) return            
+            
+            ! Manifest-specific fields
             if (.not.this%version==other%version) return
-            if (.not.this%build==other%build) return
-            if (.not.this%install==other%install) return
-            if (.not.this%fortran==other%fortran) return
             if (allocated(this%license).neqv.allocated(other%license)) return
             if (allocated(this%license)) then
                 if (.not.this%license==other%license) return
@@ -544,57 +541,11 @@ contains
             if (allocated(this%copyright)) then
                 if (.not.this%copyright==other%copyright) return
             end if
-            if (allocated(this%library).neqv.allocated(other%library)) return
-            if (allocated(this%library)) then
-                if (.not.this%library==other%library) return
-            endif
-            if (allocated(this%executable).neqv.allocated(other%executable)) return
-            if (allocated(this%executable)) then
-                if (.not.size(this%executable)==size(other%executable)) return
-                do ii=1,size(this%executable)
-                    if (.not.this%executable(ii)==other%executable(ii)) return
-                end do
-            end if
-            if (allocated(this%dependency).neqv.allocated(other%dependency)) return
-            if (allocated(this%dependency)) then
-                if (.not.size(this%dependency)==size(other%dependency)) return
-                do ii=1,size(this%dependency)
-                    if (.not.this%dependency(ii)==other%dependency(ii)) return
-                end do
-            end if
-            if (allocated(this%dev_dependency).neqv.allocated(other%dev_dependency)) return
-            if (allocated(this%dev_dependency)) then
-                if (.not.size(this%dev_dependency)==size(other%dev_dependency)) return
-                do ii=1,size(this%dev_dependency)
-                    if (.not.this%dev_dependency(ii)==other%dev_dependency(ii)) return
-                end do
-            end if
             if (allocated(this%profiles).neqv.allocated(other%profiles)) return
             if (allocated(this%profiles)) then
                 if (.not.size(this%profiles)==size(other%profiles)) return
                 do ii=1,size(this%profiles)
                     if (.not.this%profiles(ii)==other%profiles(ii)) return
-                end do
-            end if
-            if (allocated(this%example).neqv.allocated(other%example)) return
-            if (allocated(this%example)) then
-                if (.not.size(this%example)==size(other%example)) return
-                do ii=1,size(this%example)
-                    if (.not.this%example(ii)==other%example(ii)) return
-                end do
-            end if
-            if (allocated(this%preprocess).neqv.allocated(other%preprocess)) return
-            if (allocated(this%preprocess)) then
-                if (.not.size(this%preprocess)==size(other%preprocess)) return
-                do ii=1,size(this%preprocess)
-                    if (.not.this%preprocess(ii)==other%preprocess(ii)) return
-                end do
-            end if
-            if (allocated(this%test).neqv.allocated(other%test)) return
-            if (allocated(this%test)) then
-                if (.not.size(this%test)==size(other%test)) return
-                do ii=1,size(this%test)
-                    if (.not.this%test(ii)==other%test(ii)) return
                 end do
             end if
 
