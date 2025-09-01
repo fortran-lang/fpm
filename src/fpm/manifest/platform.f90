@@ -11,13 +11,15 @@ module fpm_manifest_platform
     use fpm_error,      only : error_t, fatal_error
     use tomlf,          only : toml_table
     use fpm_toml,       only : serializable_t, set_string, get_value
-    use fpm_environment,only : OS_ALL, OS_NAME, match_os_type, OS_UNKNOWN
+    use fpm_environment,only : OS_ALL, OS_NAME, match_os_type, OS_UNKNOWN, validate_os_name
     use fpm_compiler,   only : compiler_enum, compiler_id_name, match_compiler_type, id_all, &
-        id_unknown
+        id_unknown, validate_compiler_name
+    use fpm_strings,    only : lower
     implicit none
     private
 
     public :: platform_config_t
+    public :: is_platform_key
 
     !> Serializable platform configuration (compiler + OS only)
     type, extends(serializable_t) :: platform_config_t
@@ -47,6 +49,8 @@ module fpm_manifest_platform
     character(len=*), parameter, private :: class_name = 'platform_config_t'
 
 contains
+
+
 
     !> Initialize a new platform config
     type(platform_config_t) function new_platform(compiler, os_type)
@@ -162,5 +166,18 @@ contains
 
         ok = compiler_ok .and. os_ok
     end function platform_is_suitable
+
+    !> Check if a key (os or compiler) can be used for platform setting
+    logical function is_platform_key(key)
+        character(*), intent(in) :: key
+        
+        call validate_compiler_name(key, is_platform_key)
+        if (is_platform_key) return
+
+        call validate_os_name(key, is_platform_key)
+        if (is_platform_key) return        
+        
+    end function is_platform_key
+
 
 end module fpm_manifest_platform

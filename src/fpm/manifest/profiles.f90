@@ -50,9 +50,10 @@ module fpm_manifest_profile
     use fpm_strings, only: lower
     use fpm_manifest_platform, only: platform_config_t
     use fpm_environment, only: get_os_type, OS_UNKNOWN, OS_LINUX, OS_MACOS, OS_WINDOWS, &
-                             OS_CYGWIN, OS_SOLARIS, OS_FREEBSD, OS_OPENBSD, OS_NAME, OS_ALL
+                             OS_CYGWIN, OS_SOLARIS, OS_FREEBSD, OS_OPENBSD, OS_NAME, OS_ALL, &
+                             validate_os_name, match_os_type
     use fpm_compiler, only: compiler_enum, compiler_id_name, match_compiler_type, &
-                          id_unknown, id_gcc, id_f95, id_caf, &
+                          id_unknown, id_gcc, id_f95, id_caf, validate_compiler_name, &
                           id_intel_classic_nix, id_intel_classic_mac, id_intel_classic_windows, &
                           id_intel_llvm_nix, id_intel_llvm_windows, id_intel_llvm_unknown, &
                           id_pgi, id_nvhpc, id_nag, id_flang, id_flang_new, id_f18, &
@@ -188,65 +189,6 @@ module fpm_manifest_profile
         end if
 
       end function new_profile
-
-      !> Check if compiler name is a valid compiler name
-      subroutine validate_compiler_name(compiler_name, is_valid)
-
-        !> Name of a compiler
-        character(len=:), allocatable, intent(in) :: compiler_name
-
-        !> Boolean value of whether compiler_name is valid or not
-        logical, intent(out) :: is_valid
-        select case(compiler_name)
-          case("gfortran", "ifort", "ifx", "pgfortran", "nvfortran", "flang", "caf", &
-                        & "f95", "lfortran", "lfc", "nagfor", "crayftn", "xlf90", "ftn95")
-            is_valid = .true.
-          case default
-            is_valid = .false.
-        end select
-      end subroutine validate_compiler_name
-
-      !> Check if os_name is a valid name of a supported OS
-      subroutine validate_os_name(os_name, is_valid)
-
-        !> Name of an operating system
-        character(len=:), allocatable, intent(in) :: os_name
-
-        !> Boolean value of whether os_name is valid or not
-        logical, intent(out) :: is_valid
-
-        select case (os_name)
-          case ("linux", "macos", "windows", "cygwin", "solaris", "freebsd", &
-                          & "openbsd", "unknown")
-            is_valid = .true.
-          case default
-            is_valid = .false.
-        end select
-
-      end subroutine validate_os_name
-
-      !> Match os_type enum to a lowercase string with name of OS
-      subroutine match_os_type(os_name, os_type)
-
-        !> Name of operating system
-        character(len=:), allocatable, intent(in) :: os_name
-
-        !> Enum representing type of OS
-        integer, intent(out) :: os_type
-
-        select case (os_name)
-          case ("linux");   os_type = OS_LINUX
-          case ("macos");   os_type = OS_MACOS
-          case ("windows"); os_type = OS_WINDOWS
-          case ("cygwin");  os_type = OS_CYGWIN
-          case ("solaris"); os_type = OS_SOLARIS
-          case ("freebsd"); os_type = OS_FREEBSD
-          case ("openbsd"); os_type = OS_OPENBSD
-          case ("all");     os_type = OS_ALL
-          case default;     os_type = OS_UNKNOWN
-        end select
-
-      end subroutine match_os_type
 
       !> Match lowercase string with name of OS to os_type enum
       function os_type_name(os_type)
@@ -518,7 +460,7 @@ module fpm_manifest_profile
               return
             end if
             call os_node%get_keys(key_list)
-            call match_os_type(os_name, os_type)
+            os_type = match_os_type(os_name)
             call get_flags(profile_name, compiler_name, os_type, key_list, os_node, profiles, profindex, .true.)
           else
             ! Not lowercase OS name

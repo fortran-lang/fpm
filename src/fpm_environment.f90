@@ -13,6 +13,7 @@ module fpm_environment
     private
     public :: get_os_type
     public :: match_os_type
+    public :: validate_os_name
     public :: os_is_unix
     public :: get_env
     public :: set_env
@@ -102,6 +103,25 @@ contains
             case default;     os_type = OS_UNKNOWN
         end select
     end function match_os_type
+
+    !> Check if os_name is a valid name of a supported OS
+    subroutine validate_os_name(os_name, is_valid)
+
+       !> Name of an operating system
+       character(len=*), intent(in) :: os_name
+
+       !> Boolean value of whether os_name is valid or not
+       logical, intent(out) :: is_valid
+
+       select case (os_name)
+         case ("linux", "macos", "windows", "cygwin", "solaris", "freebsd", &
+                         & "openbsd", "unknown")
+           is_valid = .true.
+         case default
+           is_valid = .false.
+       end select
+
+    end subroutine validate_os_name
 
     !> Determine the OS type
     integer function get_os_type() result(r)

@@ -41,7 +41,7 @@ use fpm_environment, only: &
 use fpm_filesystem, only: join_path, basename, get_temp_filename, delete_file, unix_path, &
     & getline, run
 use fpm_strings, only: split, string_cat, string_t, str_ends_with, str_begins_with_str, &
-    & string_array_contains
+    & string_array_contains, lower
 use fpm_error, only: error_t, fatal_error, fpm_stop
 use tomlf, only: toml_table
 use fpm_toml, only: serializable_t, set_string, set_value, toml_stat, get_value
@@ -53,7 +53,7 @@ public :: compiler_t, new_compiler, archiver_t, new_archiver, get_macros
 public :: append_clean_flags, append_clean_flags_array
 public :: debug
 public :: id_gcc,id_all
-public :: match_compiler_type, compiler_id_name
+public :: match_compiler_type, compiler_id_name, validate_compiler_name
 
 enum, bind(C)
     enumerator :: &
@@ -1043,6 +1043,32 @@ function match_compiler_type(compiler) result(id)
     id = id_unknown
 
 end function match_compiler_type
+
+!> Check if compiler name is a valid compiler name
+subroutine validate_compiler_name(compiler_name, is_valid)
+
+    !> Name of a compiler
+    character(len=*), intent(in) :: compiler_name
+
+    !> Boolean value of whether compiler_name is valid or not
+    logical, intent(out) :: is_valid
+    
+    character(:), allocatable :: lname
+    
+    lname = lower(compiler_name)
+    
+    select case (lname)
+      case("gfortran", "ifort", "ifx", "pgfortran", &
+           "nvfortran", "flang", "caf", &
+           "f95", "lfortran", "lfc", "nagfor",&
+           "crayftn", "xlf90", "ftn95")
+        is_valid = .true.
+      case default
+        is_valid = .false.
+    end select
+    
+end subroutine validate_compiler_name
+
 
 function check_compiler(compiler, expected) result(match)
     character(len=*), intent(in) :: compiler

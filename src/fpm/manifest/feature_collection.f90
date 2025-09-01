@@ -300,6 +300,12 @@ module fpm_manifest_feature_collection
                 cycle
             end if
             
+            ! Check if this looks like it should be an OS or compiler but isn't valid
+            if (is_potential_platform_key(keys(i)%key)) then
+                call fatal_error(error, "Key '"//keys(i)%key//"' is not allowed in feature table")
+                return
+            end if
+            
             ! This is a feature specification (like "flags" or "preprocess")
             has_feature_data = .true.
         end do
@@ -324,6 +330,32 @@ module fpm_manifest_feature_collection
         end if
         
     end subroutine traverse_feature_table
+    
+    !> Check if a key looks like it should be a platform constraint but isn't valid
+    logical function is_potential_platform_key(key)
+        character(*), intent(in) :: key
+        
+        ! Simple heuristic: if it's not a known feature configuration key,
+        ! and it looks like it could be a platform identifier, flag it as invalid
+        
+        ! Known feature configuration keys
+        if (key == "flags" .or. key == "preprocess" .or. key == "link" .or. &
+            key == "include-dir" .or. key == "source-dir" .or. key == "dependencies") then
+            is_potential_platform_key = .false.
+            return
+        end if
+        
+        ! If it contains common OS or compiler-like patterns, it might be an invalid platform key
+        if (index(key, "os") > 0 .or. index(key, "compiler") > 0 .or. &
+            index(key, "win") > 0 .or. index(key, "linux") > 0 .or. &
+            index(key, "mac") > 0 .or. index(key, "fort") > 0 .or. &
+            index(key, "gcc") > 0 .or. index(key, "intel") > 0) then
+            is_potential_platform_key = .true.
+            return
+        end if
+        
+        is_potential_platform_key = .false.
+    end function is_potential_platform_key
 
     !> Parse a feature key like "name.os.compiler.field" into components
     subroutine parse_feature_key(key_str, base_name, os_name, compiler_name, remaining_key, is_base_feature)
