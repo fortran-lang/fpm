@@ -58,10 +58,6 @@ module fpm_manifest_package
     public :: package_config_t, new_package
 
 
-    interface unique_programs
-        module procedure :: unique_programs1
-        module procedure :: unique_programs2
-    end interface unique_programs
 
 
     !> Package meta data
@@ -139,9 +135,7 @@ contains
            call syntax_error(error, "Could not retrieve package name")
            return
         end if
-        if (bad_name_error(error,'package',self%name))then
-           return
-        endif
+        if (bad_name_error(error,'package',self%name)) return
 
         if (len(self%name) <= 0) then
             call syntax_error(error, "Package name must be a non-empty string")
@@ -187,7 +181,6 @@ contains
         end if
         if (allocated(error)) return
 
-
         call get_value(table, "profiles", child, requested=.false.)
         if (associated(child)) then
             call new_profiles(self%profiles, child, error)
@@ -207,26 +200,6 @@ contains
             if (allocated(error)) return
         end if
 
-        ! Package-specific validation: ensure unique program names
-        if (allocated(self%executable)) then
-            call unique_programs(self%executable, error)
-            if (allocated(error)) return
-        end if
-
-        if (allocated(self%example)) then
-            call unique_programs(self%example, error)
-            if (allocated(error)) return
-
-            if (allocated(self%executable)) then
-                call unique_programs(self%executable, self%example, error)
-                if (allocated(error)) return
-            end if
-        end if
-
-        if (allocated(self%test)) then
-            call unique_programs(self%test, error)
-            if (allocated(error)) return
-        end if
     end subroutine new_package
 
 
@@ -373,59 +346,6 @@ contains
     end subroutine info
 
 
-    !> Check whether or not the names in a set of executables are unique
-    subroutine unique_programs1(executable, error)
-
-        !> Array of executables
-        class(executable_config_t), intent(in) :: executable(:)
-
-        !> Error handling
-        type(error_t), allocatable, intent(out) :: error
-
-        integer :: i, j
-
-        do i = 1, size(executable)
-            do j = 1, i - 1
-                if (executable(i)%name == executable(j)%name) then
-                    call fatal_error(error, "The program named '"//&
-                        executable(j)%name//"' is duplicated. "//&
-                        "Unique program names are required.")
-                    exit
-                end if
-            end do
-        end do
-        if (allocated(error)) return
-
-    end subroutine unique_programs1
-
-
-    !> Check whether or not the names in a set of executables are unique
-    subroutine unique_programs2(executable_i, executable_j, error)
-
-        !> Array of executables
-        class(executable_config_t), intent(in) :: executable_i(:)
-
-        !> Array of executables
-        class(executable_config_t), intent(in) :: executable_j(:)
-
-        !> Error handling
-        type(error_t), allocatable, intent(out) :: error
-
-        integer :: i, j
-
-        do i = 1, size(executable_i)
-            do j = 1, size(executable_j)
-                if (executable_i(i)%name == executable_j(j)%name) then
-                    call fatal_error(error, "The program named '"//&
-                        executable_j(j)%name//"' is duplicated. "//&
-                        "Unique program names are required.")
-                    exit
-                end if
-            end do
-        end do
-        if (allocated(error)) return
-
-    end subroutine unique_programs2
 
    logical function manifest_is_same(this,that)
       class(package_config_t), intent(in) :: this

@@ -53,7 +53,7 @@ module fpm_manifest_feature
     implicit none
     private
 
-    public :: feature_config_t, new_feature, new_features, find_feature, get_default_features, init_feature_components
+    public :: feature_config_t, new_feature, new_features, find_feature, get_default_features, init_feature_components, unique_programs
 
     !> Feature configuration data
     type, extends(serializable_t) :: feature_config_t
@@ -123,6 +123,11 @@ module fpm_manifest_feature
     end type feature_config_t
 
     character(len=*), parameter, private :: class_name = 'feature_config_t'
+    
+    interface unique_programs
+        module procedure :: unique_programs1
+        module procedure :: unique_programs2
+    end interface unique_programs
 
 contains
 
@@ -1167,6 +1172,81 @@ contains
               if (allocated(error)) return
           end if
 
+          ! Validate unique program names
+          if (allocated(self%executable)) then
+              call unique_programs(self%executable, error)
+              if (allocated(error)) return
+          end if
+
+          if (allocated(self%example)) then
+              call unique_programs(self%example, error)
+              if (allocated(error)) return
+
+              if (allocated(self%executable)) then
+                  call unique_programs(self%executable, self%example, error)
+                  if (allocated(error)) return
+              end if
+          end if
+
+          if (allocated(self%test)) then
+              call unique_programs(self%test, error)
+              if (allocated(error)) return
+          end if
+
       end subroutine init_feature_components
+
+      !> Check whether or not the names in a set of executables are unique
+      subroutine unique_programs1(executable, error)
+
+          !> Array of executables
+          class(executable_config_t), intent(in) :: executable(:)
+
+          !> Error handling
+          type(error_t), allocatable, intent(out) :: error
+
+          integer :: i, j
+
+          do i = 1, size(executable)
+              do j = 1, i - 1
+                  if (executable(i)%name == executable(j)%name) then
+                      call fatal_error(error, "The program named '"//&
+                          executable(j)%name//"' is duplicated. "//&
+                          "Unique program names are required.")
+                      exit
+                  end if
+              end do
+          end do
+          if (allocated(error)) return
+
+      end subroutine unique_programs1
+
+
+      !> Check whether or not the names in a set of executables are unique
+      subroutine unique_programs2(executable_i, executable_j, error)
+
+          !> Array of executables
+          class(executable_config_t), intent(in) :: executable_i(:)
+
+          !> Array of executables
+          class(executable_config_t), intent(in) :: executable_j(:)
+
+          !> Error handling
+          type(error_t), allocatable, intent(out) :: error
+
+          integer :: i, j
+
+          do i = 1, size(executable_i)
+              do j = 1, size(executable_j)
+                  if (executable_i(i)%name == executable_j(j)%name) then
+                      call fatal_error(error, "The program named '"//&
+                          executable_j(j)%name//"' is duplicated. "//&
+                          "Unique program names are required.")
+                      exit
+                  end if
+              end do
+          end do
+          if (allocated(error)) return
+
+      end subroutine unique_programs2
 
 end module fpm_manifest_feature
