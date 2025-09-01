@@ -18,12 +18,15 @@ module test_toml
     use fpm_manifest_executable, only: executable_config_t
     use fpm_manifest_preprocess, only: preprocess_config_t
     use fpm_manifest_profile, only: file_scope_flag
+    use fpm_manifest_platform, only: platform_config_t
     use fpm_manifest_metapackages, only: metapackage_config_t
+    use fpm_manifest_feature_collection, only: feature_collection_t
+    use fpm_environment, only: OS_ALL, OS_LINUX, OS_MACOS
     use fpm_versioning, only: new_version
     use fpm_strings, only: string_t, operator(==), split
     use fpm_model, only: fortran_features_t, package_t, FPM_SCOPE_LIB, FPM_UNIT_MODULE, fpm_model_t, &
          & srcfile_t
-    use fpm_compiler, only: archiver_t, compiler_t, id_gcc
+    use fpm_compiler, only: archiver_t, compiler_t, id_all, id_gcc
     use fpm_error, only: fatal_error
 
 
@@ -74,7 +77,10 @@ contains
            & new_unittest("serialize-compiler-invalid", compiler_invalid, should_fail=.true.), &
            & new_unittest("serialize-model", fpm_model_roundtrip), &
            & new_unittest("serialize-model-invalid", fpm_model_invalid, should_fail=.true.), &
-           & new_unittest("serialize-metapackage-config", metapackage_config_roundtrip) ]
+           & new_unittest("serialize-metapackage-config", metapackage_config_roundtrip), &
+           & new_unittest("serialize-feature-collection", feature_collection_roundtrip), &
+           & new_unittest("serialize-feature-collection-invalid", feature_collection_invalid, should_fail=.true.)]
+
 
     end subroutine collect_toml
 
@@ -1316,6 +1322,49 @@ contains
         call meta%test_serialization('metapackage_config_t', error)        
         
     end subroutine metapackage_config_roundtrip
+
+    subroutine feature_collection_roundtrip(error)
+        type(error_t), allocatable, intent(out) :: error
+        type(feature_collection_t) :: fc
+
+        ! Base feature (applies everywhere)
+        fc%base%name      = "my_blas"
+        fc%base%flags     = "-O2"
+        fc%base%link_time_flags = "-lblas -llapack"
+
+        ! Two platform/compiler-specific variants
+        if (allocated(fc%variants)) deallocate(fc%variants)
+        allocate(fc%variants(2))
+
+        ! Variant 1: GCC on Linux → OpenBLAS
+        fc%variants(1)%name      = "my_blas"
+        fc%variants(1)%platform  = platform_config_t("gfortran",OS_LINUX)
+        fc%variants(1)%link_time_flags = "-lopenblas"
+
+        ! Variant 2: any compiler on macOS → Accelerate framework
+        fc%variants(2)%name      = "my_blas"
+        fc%variants(1)%platform  = platform_config_t("all",OS_MACOS)
+        fc%variants(2)%link_time_flags = "-framework Accelerate"
+
+        ! Round-trip via the generic serialization tester
+        call fc%test_serialization('feature_collection: base + 2 variants', error)
+        
+    end subroutine feature_collection_roundtrip
+
+    subroutine feature_collection_invalid(error)
+        type(error_t), allocatable, intent(out) :: error
+        type(feature_collection_t) :: fc
+        type(toml_table), allocatable :: table
+        character(len=*), parameter :: NL = new_line('a')
+
+        ! Missing 'base' table on purpose; loader must fail with a clear error
+        call string_to_toml( &
+            '[variants.variant_1]'//NL// &
+            'flags = "-fopenmp"'//NL// &
+            'link-time-flags = "-lomp"', table)
+
+        call fc%load(table, error)
+    end subroutine feature_collection_invalid
 
 
 end module test_toml
