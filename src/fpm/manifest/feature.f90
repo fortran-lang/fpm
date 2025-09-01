@@ -36,6 +36,7 @@ module fpm_manifest_feature
     use fpm_manifest_test, only: test_config_t, new_test
     use fpm_manifest_preprocess, only: preprocess_config_t, new_preprocessors
     use fpm_manifest_metapackages, only: metapackage_config_t, new_meta_config
+    use fpm_manifest_platform, only: platform_config_t
     use fpm_error, only: error_t, fatal_error, syntax_error
     use fpm_environment, only: OS_UNKNOWN, OS_LINUX, OS_MACOS, OS_WINDOWS, OS_CYGWIN, OS_SOLARIS, &
                              OS_FREEBSD, OS_OPENBSD, OS_ALL, OS_NAME, match_os_type
@@ -62,8 +63,7 @@ module fpm_manifest_feature
         character(len=:), allocatable :: description
         
         !> Compiler/OS targeting (consistent with profile_config_t pattern)
-        integer(compiler_enum) :: compiler = id_all
-        integer :: os_type = OS_ALL
+        type(platform_config_t) :: platform
         
         !> Build configuration
         type(build_config_t) :: build
@@ -155,17 +155,14 @@ contains
         call get_value(table, "description", self%description)
         call get_value(table, "default", self%default, .false.)
 
-        ! Get compiler specification
-        call get_value(table, "compiler", compiler_name, "all")
-        self%compiler = match_compiler_type(compiler_name)
-        if (self%compiler == id_unknown) then 
-            call fatal_error(error, 'feature compiler '//compiler_name//' is not supported.')
+        ! Get install configuration
+        call get_value(table, "platform", child, requested=.true., stat=stat)
+        if (stat /= toml_stat%success) then
+            call fatal_error(error, "Type mismatch for platform entry, must be a table")
             return
-        end if        
-
-        ! Get OS specification  
-        call get_value(table, "os", os_name, "all")
-        self%os_type = match_os_type(os_name)
+        end if
+        call self%platform%load(child, error)
+        if (allocated(error)) return
 
         ! Get compiler flags
         call get_value(table, "flags", self%flags)
@@ -363,11 +360,10 @@ contains
     end subroutine new_features
 
     !> Find matching feature configuration (similar to find_profile)
-    subroutine find_feature(features, feature_name, compiler_type, os_type, found, chosen_feature)
+    subroutine find_feature(features, feature_name, current_platform, found, chosen_feature)
         type(feature_config_t), allocatable, intent(in) :: features(:)
         character(*), intent(in) :: feature_name
-        integer(compiler_enum), intent(in) :: compiler_type
-        integer, intent(in) :: os_type
+        type(platform_config_t), intent(in) :: current_platform
         logical, intent(out) :: found
         type(feature_config_t), intent(out) :: chosen_feature
         
@@ -379,8 +375,7 @@ contains
         ! Try to find exact match (feature + compiler + OS)
         do i = 1, size(features)
             if (features(i)%name == feature_name .and. &
-                features(i)%compiler == compiler_type .and. &
-                features(i)%os_type == os_type) then
+                features(i)%platform%matches(current_platform)) then
                 chosen_feature = features(i)
                 found = .true.
                 return
@@ -390,8 +385,7 @@ contains
         ! Try to find compiler match with OS_ALL
         do i = 1, size(features) 
             if (features(i)%name == feature_name .and. &
-                features(i)%compiler == compiler_type .and. &
-                features(i)%os_type == OS_ALL) then
+                features(i)%platform%matches(current_platform)) then
                 chosen_feature = features(i)
                 found = .true.
                 return
@@ -401,8 +395,7 @@ contains
         ! Try to find COMPILER_ALL match
         do i = 1, size(features)
             if (features(i)%name == feature_name .and. &
-                features(i)%compiler == id_all .and. &
-                (features(i)%os_type == os_type .or. features(i)%os_type == OS_ALL)) then
+                features(i)%platform%matches(current_platform)) then
                 chosen_feature = features(i) 
                 found = .true.
                 return
@@ -442,8 +435,7 @@ contains
             write(unit, fmt) "- description", self%description
         end if
 
-        write(unit, fmt) "- compiler", compiler_id_name(self%compiler)
-        write(unit, fmt) "- os", OS_NAME(self%os_type)
+        call self%info(unit, verbosity)
 
         if (allocated(self%flags)) then
             write(unit, fmt) "- flags", self%flags
@@ -508,8 +500,7 @@ contains
                 if (.not.(this%description==other%description)) return
             end if
             
-            if (this%compiler /= other%compiler) return
-            if (this%os_type /= other%os_type) return
+            if (.not.this%platform == other%platform) return
             if (this%default .neqv. other%default) return
             
             if (.not.(this%build==other%build)) return
@@ -630,11 +621,11 @@ contains
         
         call set_value(table, "default", self%default, error, class_name)
         if (allocated(error)) return
-
-        call set_string(table, "compiler", compiler_id_name(self%compiler), error, class_name)
+        
+        call add_table(table, "platform", ptr, error, class_name)
         if (allocated(error)) return
-        call set_string(table, "os", OS_NAME(self%os_type), error, class_name)
-        if (allocated(error)) return
+        call self%platform%dump_to_toml(ptr, error)
+        if (allocated(error)) return        
 
         call set_string(table, "flags", self%flags, error, class_name)
         if (allocated(error)) return
@@ -843,16 +834,6 @@ contains
             return
         end if
 
-        call get_value(table, "compiler", flag, "all")
-        self%compiler = match_compiler_type(flag)
-        if (self%compiler == id_unknown) then 
-            call fatal_error(error, 'feature compiler '//flag//' is not supported.')
-            return
-        end if
-
-        call get_value(table, "os", flag, "all")
-        self%os_type = match_os_type(flag)
-
         call get_value(table, "flags", self%flags)
         call get_value(table, "c-flags", self%c_flags)
         call get_value(table, "cxx-flags", self%cxx_flags)
@@ -870,6 +851,16 @@ contains
 
         do ii = 1, size(keys)
             select case (keys(ii)%key)
+                case ("platform")
+                    
+                    call get_value(table, keys(ii), ptr)
+                    if (.not.associated(ptr)) then
+                        call fatal_error(error,class_name//': error retrieving '//keys(ii)%key//' table')
+                        return
+                    end if
+                    call self%platform%load_from_toml(ptr, error)
+                    if (allocated(error)) return                    
+                    
                 case ("build")
                     call get_value(table, keys(ii), ptr)
                     if (.not.associated(ptr)) then
@@ -1146,8 +1137,8 @@ contains
         character(len=*), intent(in) :: flags
 
         feature%name = name
-        feature%compiler = compiler_id
-        feature%os_type = os_type
+        feature%platform%compiler = compiler_id
+        feature%platform%os_type = os_type
         feature%flags = flags
         feature%default = .true.  ! These are built-in features
       end subroutine create_feature
