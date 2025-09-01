@@ -197,60 +197,9 @@ module fpm_manifest_feature_collection
         self%base%platform%compiler = id_all
         self%base%platform%os_type = OS_ALL
 
-        do i = 1, size(keys)
-            key_str = keys(i)%key
-            
-            ! Parse the key to extract base name, OS, compiler, and feature type
-            call parse_feature_key(key_str, base_name, os_name, compiler_name, remaining_key, is_base_feature)
-            
-            ! Get the feature configuration table
-            call get_value(table, key_str, node, stat=stat)
-            if (stat /= toml_stat%success) then
-                call fatal_error(error, "Could not retrieve feature '"//key_str//"' table")
-                return
-            end if
-
-            ! Create feature configuration
-            call new_feature(feature_variant, node, error=error)
-            if (allocated(error)) return
-
-            ! Set the name to base name (without OS/compiler suffixes)
-            feature_variant%name = base_name
-
-            ! Set platform constraints based on parsed key
-            if (is_base_feature) then
-                ! This is a base feature - merge with existing base
-                call merge_feature_configs(self%base, feature_variant, error)
-                if (allocated(error)) return
-            else
-                ! This is a variant - set platform constraints
-                if (len(os_name) > 0) then
-                    os_type = match_os_type(os_name)
-                    if (os_type == OS_UNKNOWN) then
-                        call fatal_error(error, "Unknown OS type: "//os_name)
-                        return
-                    end if
-                    feature_variant%platform%os_type = os_type
-                else
-                    feature_variant%platform%os_type = OS_ALL
-                end if
-
-                if (len(compiler_name) > 0) then
-                    compiler_type = match_compiler_type(compiler_name)
-                    if (compiler_type == id_unknown) then
-                        call fatal_error(error, "Unknown compiler type: "//compiler_name)
-                        return
-                    end if
-                    feature_variant%platform%compiler = compiler_type
-                else
-                    feature_variant%platform%compiler = id_all
-                end if
-
-                ! Add to variants
-                call self%push_variant(feature_variant)
-            end if
-        end do
-
+        ! This function is no longer used - replaced by new_collection_from_subtable
+        call fatal_error(error, "old new_collection function called - should use new_collection_from_subtable")
+        
     end subroutine new_collection
 
     !> Initialize multiple feature collections from manifest features table
@@ -260,12 +209,10 @@ module fpm_manifest_feature_collection
         type(error_t), allocatable, intent(out) :: error
 
         type(toml_key), allocatable :: keys(:)
-        type(toml_table), pointer :: collection_table
-        character(len=:), allocatable :: collection_name
-        integer :: i, stat, n_collections
-        logical :: found_collections
-
-        ! Get all keys from the features table to identify distinct collections
+        type(toml_table), pointer :: feature_table
+        integer :: i, stat
+        
+        ! Get all top-level feature names from the features table
         call table%get_keys(keys)
 
         if (size(keys) == 0) then
@@ -274,19 +221,109 @@ module fpm_manifest_feature_collection
             return
         end if
 
-        ! For now, we'll create a single collection from all the features in the table
-        ! This demonstrates the flexible parsing capability
+        ! Create one collection per top-level feature name
         allocate(collections(size(keys)))
         
         do i = 1, size(keys)
+            ! Get the subtable for this feature
+            call get_value(table, keys(i)%key, feature_table, stat=stat)
+            if (stat /= toml_stat%success) then
+                call fatal_error(error, "Could not retrieve feature table for '"//keys(i)%key//"'")
+                return
+            end if
             
-            ! Parse the table as a single collection
-            call new_collection(collections(i), table, keys(i)%key, error)
+            ! Create collection from this feature's subtable
+            call new_collection_from_subtable(collections(i), feature_table, keys(i)%key, error)
             if (allocated(error)) return
             
         end do
         
     end subroutine new_collections
+    
+    !> Create a feature collection from a TOML subtable by traversing the hierarchy
+    subroutine new_collection_from_subtable(self, table, name, error)
+        type(feature_collection_t), intent(out) :: self
+        type(toml_table), intent(inout) :: table
+        character(*), intent(in) :: name
+        type(error_t), allocatable, intent(out) :: error
+        
+        ! Initialize base feature
+        self%base%name = name
+        self%base%platform%compiler = id_all
+        self%base%platform%os_type = OS_ALL
+        
+        ! Traverse the table hierarchy to find variants
+        call traverse_feature_table(self, table, name, OS_ALL, id_all, error)
+        
+    end subroutine new_collection_from_subtable
+    
+    !> Recursively traverse a feature table to find variants
+    recursive subroutine traverse_feature_table(collection, table, feature_name, os_constraint, compiler_constraint, error)
+        type(feature_collection_t), intent(inout) :: collection
+        type(toml_table), intent(inout) :: table
+        character(*), intent(in) :: feature_name
+        integer, intent(in) :: os_constraint, compiler_constraint
+        type(error_t), allocatable, intent(out) :: error
+        
+        type(toml_key), allocatable :: keys(:)
+        type(toml_table), pointer :: subtable
+        character(len=:), allocatable :: value_str
+        integer :: i, stat, os_type, compiler_type
+        type(feature_config_t) :: feature_variant
+        logical :: has_feature_data
+        
+        call table%get_keys(keys)
+        has_feature_data = .false.
+        
+        do i = 1, size(keys)
+            ! Check if this key is an OS name
+            os_type = match_os_type(keys(i)%key)
+            if (os_type /= OS_UNKNOWN) then
+                ! This is an OS constraint - get subtable and recurse
+                call get_value(table, keys(i)%key, subtable, stat=stat)
+                if (stat == toml_stat%success) then
+                    call traverse_feature_table(collection, subtable, feature_name, os_type, compiler_constraint, error)
+                    if (allocated(error)) return
+                end if
+                cycle
+            end if
+            
+            ! Check if this key is a compiler name  
+            compiler_type = match_compiler_type(keys(i)%key)
+            if (compiler_type /= id_unknown) then
+                ! This is a compiler constraint - get subtable and recurse
+                call get_value(table, keys(i)%key, subtable, stat=stat)
+                if (stat == toml_stat%success) then
+                    call traverse_feature_table(collection, subtable, feature_name, os_constraint, compiler_type, error)
+                    if (allocated(error)) return
+                end if
+                cycle
+            end if
+            
+            ! This is a feature specification (like "flags" or "preprocess")
+            has_feature_data = .true.
+        end do
+        
+        ! If we found feature data at this level, create a feature config
+        if (has_feature_data) then
+            ! Create feature from the current table
+            call new_feature(feature_variant, table, error=error, name=feature_name)
+            if (allocated(error)) return
+            
+            feature_variant%platform%os_type = os_constraint
+            feature_variant%platform%compiler = compiler_constraint
+            
+            if (os_constraint == OS_ALL .and. compiler_constraint == id_all) then
+                ! This is a base feature specification
+                call merge_feature_configs(collection%base, feature_variant, error)
+                if (allocated(error)) return
+            else
+                ! This is a constrained variant
+                call collection%push_variant(feature_variant)
+            end if
+        end if
+        
+    end subroutine traverse_feature_table
 
     !> Parse a feature key like "name.os.compiler.field" into components
     subroutine parse_feature_key(key_str, base_name, os_name, compiler_name, remaining_key, is_base_feature)
