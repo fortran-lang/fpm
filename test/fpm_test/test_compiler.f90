@@ -125,7 +125,7 @@ contains
         if (.not.compiler%check_c_source_runs( &
                 '#include <stdio.h>' // new_line('a') // &
                 'int main() { printf("Hello C world!"); return 0; }')) then
-            call test_failed(error, "Cannot run C hello world")
+            call test_failed(error, "Cannot run C hello world with compiler "//compiler%cc)
             return
         end if
 
