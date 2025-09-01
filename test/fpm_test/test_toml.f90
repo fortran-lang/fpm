@@ -20,7 +20,7 @@ module test_toml
     use fpm_manifest_profile, only: file_scope_flag
     use fpm_versioning, only: new_version
     use fpm_strings, only: string_t, operator(==), split
-    use fpm_model, only: fortran_features_t, package_t, FPM_SCOPE_LIB, FPM_UNIT_MODULE, fpm_model_t, &
+    use fpm_model, only: fortran_config_t, package_t, FPM_SCOPE_LIB, FPM_UNIT_MODULE, fpm_model_t, &
          & srcfile_t
     use fpm_compiler, only: archiver_t, compiler_t, id_gcc
     use fpm_error, only: fatal_error
