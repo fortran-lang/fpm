@@ -45,6 +45,7 @@ module fpm_manifest_package
     use fpm_manifest_test, only : test_config_t, new_test
     use fpm_manifest_preprocess, only : preprocess_config_t, new_preprocessors
     use fpm_manifest_feature, only: feature_config_t, new_features, get_default_features
+    use fpm_manifest_feature_collection, only: feature_collection_t
     use fpm_filesystem, only : exists, getline, join_path
     use fpm_error, only : error_t, fatal_error, syntax_error, bad_name_error
     use tomlf, only : toml_table, toml_array, toml_key, toml_stat
