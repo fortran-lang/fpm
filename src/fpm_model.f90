@@ -123,8 +123,8 @@ type, extends(serializable_t) :: srcfile_t
 
         !> Serialization interface
         procedure :: serializable_is_same => srcfile_is_same
-        procedure :: dump_to_toml   => srcfile_dump_to_toml
-        procedure :: load_from_toml => srcfile_load_from_toml
+        procedure :: dump_to_toml         => srcfile_dump_to_toml
+        procedure :: load_from_toml       => srcfile_load_from_toml
 
 end type srcfile_t
 
