@@ -707,7 +707,7 @@ subroutine add_dependency(target, dependency)
     
     integer :: i
     
-    ! Ensure no duplicate dependencies: it may happen if we loop two library targets that 
+    ! Ensure no duplicate dependencies: it may happen if we loop over two library targets that 
     ! contain the same objects
     do i=1,size(target%dependencies)
         if (target%dependencies(i)%ptr%output_name == dependency%output_name) return
