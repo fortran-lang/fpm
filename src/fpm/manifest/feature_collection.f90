@@ -17,7 +17,8 @@ module fpm_manifest_feature_collection
     implicit none
     private
     
-    public :: feature_collection_t, new_collection, new_collections, get_default_features, get_default_features_as_features, default_debug_feature, default_release_feature
+    public :: feature_collection_t, new_collection, new_collections, get_default_features, &
+              get_default_features_as_features, default_debug_feature, default_release_feature
     
     !> Feature configuration data
     type, public, extends(serializable_t) :: feature_collection_t
