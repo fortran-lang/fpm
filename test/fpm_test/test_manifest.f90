@@ -17,12 +17,12 @@ module test_manifest
 contains
 
     !> Collect all exported unit tests
-    subroutine collect_manifest(tests)
+    subroutine collect_manifest(testsuite)
 
         !> Collection of tests
-        type(unittest_t), allocatable, intent(out) :: tests(:)
+        type(unittest_t), allocatable, intent(out) :: testsuite(:)
 
-        tests = [ &
+        testsuite = [ &
             & new_unittest("valid-manifest", test_valid_manifest), &
             & new_unittest("invalid-manifest", test_invalid_manifest, should_fail=.true.), &
             & new_unittest("default-library", test_default_library), &
