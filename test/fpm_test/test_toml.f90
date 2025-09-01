@@ -605,15 +605,15 @@ contains
         !> Error handling
         type(error_t), allocatable, intent(out) :: error
 
-        type(fortran_features_t) :: fortran
+        type(fortran_config_t) :: fortran
 
         !> Default object
-        call fortran%test_serialization('fortran_features_t: default object',error)
+        call fortran%test_serialization('fortran_config_t: default object',error)
         if (allocated(error)) return
 
         !> Set form
         fortran%source_form = "free"
-        call fortran%test_serialization('fortran_features_t: with form',error)
+        call fortran%test_serialization('fortran_config_t: with form',error)
         if (allocated(error)) return
 
     end subroutine fft_roundtrip
@@ -624,7 +624,7 @@ contains
         !> Error handling
         type(error_t), allocatable, intent(out) :: error
 
-        type(fortran_features_t) :: fortran
+        type(fortran_config_t) :: fortran
         type(toml_table), allocatable :: table
 
         character(len=*), parameter :: toml = 'implicit-typing = false '//NL//&
