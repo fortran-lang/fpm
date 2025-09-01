@@ -795,10 +795,14 @@ module fpm_manifest_profile
         case default
           s = s // "INVALID"
         end select
-        if (allocated(profile%profile_feature%flags)) s = s // ', flags="' // profile%profile_feature%flags // '"'
-        if (allocated(profile%profile_feature%c_flags)) s = s // ', c_flags="' // profile%profile_feature%c_flags // '"'
-        if (allocated(profile%profile_feature%cxx_flags)) s = s // ', cxx_flags="' // profile%profile_feature%cxx_flags // '"'
-        if (allocated(profile%profile_feature%link_time_flags)) s = s // ', link_time_flags="' // profile%profile_feature%link_time_flags // '"'
+        if (allocated(profile%profile_feature%flags)) &
+            s = s // ', flags="' // profile%profile_feature%flags // '"'
+        if (allocated(profile%profile_feature%c_flags)) &
+            s = s // ', c_flags="' // profile%profile_feature%c_flags // '"'
+        if (allocated(profile%profile_feature%cxx_flags)) &
+            s = s // ', cxx_flags="' // profile%profile_feature%cxx_flags // '"'
+        if (allocated(profile%profile_feature%link_time_flags)) &
+            s = s // ', link_time_flags="' // profile%profile_feature%link_time_flags // '"'
         if (allocated(profile%file_scope_flags)) then
           do i=1,size(profile%file_scope_flags)
             s = s // ', flags for '//profile%file_scope_flags(i)%file_name// &
