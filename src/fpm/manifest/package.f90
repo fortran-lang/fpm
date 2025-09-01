@@ -44,7 +44,6 @@ module fpm_manifest_package
     use fpm_manifest_install, only: install_config_t, new_install_config
     use fpm_manifest_test, only : test_config_t, new_test
     use fpm_manifest_preprocess, only : preprocess_config_t, new_preprocessors
-    use fpm_manifest_metapackages, only: metapackage_config_t, new_meta_config
     use fpm_manifest_feature, only: feature_config_t, new_features, get_default_features
     use fpm_filesystem, only : exists, getline, join_path
     use fpm_error, only : error_t, fatal_error, syntax_error, bad_name_error
@@ -75,9 +74,6 @@ module fpm_manifest_package
 
         !> Package version (name is inherited from feature_config_t%name)
         type(version_t) :: version
-
-        !> Metapackage data (package-specific)
-        type(metapackage_config_t) :: meta
 
         !> Package metadata (package-specific)  
         character(len=:), allocatable :: license
@@ -523,6 +519,7 @@ contains
 
       select type (other=>that)
          type is (package_config_t)
+            
          if (allocated(this%name).neqv.allocated(other%name)) return
             if (allocated(this%name) .and. allocated(other%name)) then
                 if (.not.this%name==other%name) return
@@ -883,10 +880,23 @@ contains
         integer :: ii, jj
         character(len=:), allocatable :: flag
         type(toml_table), pointer :: ptr,ptr_pkg
+        
+        ! Clean state
+        if (allocated(self%library)) deallocate(self%library)
+        if (allocated(self%executable)) deallocate(self%executable)
+        if (allocated(self%dependency)) deallocate(self%dependency)
+        if (allocated(self%dev_dependency)) deallocate(self%dev_dependency)
+        if (allocated(self%profiles)) deallocate(self%profiles)
+        if (allocated(self%example)) deallocate(self%example)
+        if (allocated(self%test)) deallocate(self%test)
+        if (allocated(self%preprocess)) deallocate(self%preprocess)        
+        
+        !> Load base fields
+        call self%feature_config_t%load_from_toml(table, error)
+        if (allocated(error)) return
 
         call table%get_keys(keys)
 
-        call get_value(table, "name", self%name)
         call get_value(table, "license", self%license)
         call get_value(table, "author", self%author)
         call get_value(table, "maintainer", self%maintainer)
@@ -898,105 +908,9 @@ contains
            return
         endif
 
-        if (allocated(self%library)) deallocate(self%library)
-        if (allocated(self%executable)) deallocate(self%executable)
-        if (allocated(self%dependency)) deallocate(self%dependency)
-        if (allocated(self%dev_dependency)) deallocate(self%dev_dependency)
-        if (allocated(self%profiles)) deallocate(self%profiles)
-        if (allocated(self%example)) deallocate(self%example)
-        if (allocated(self%test)) deallocate(self%test)
-        if (allocated(self%preprocess)) deallocate(self%preprocess)
         sub_deps: do ii = 1, size(keys)
 
            select case (keys(ii)%key)
-              case ("build")
-                   call get_value(table, keys(ii), ptr)
-                   if (.not.associated(ptr)) then
-                      call fatal_error(error,class_name//': error retrieving '//keys(ii)%key//' table')
-                      return
-                   end if
-                   call self%build%load_from_toml(ptr, error)
-                   if (allocated(error)) return
-
-              case ("install")
-                   call get_value(table, keys(ii), ptr)
-                   if (.not.associated(ptr)) then
-                      call fatal_error(error,class_name//': error retrieving '//keys(ii)%key//' table')
-                      return
-                   end if
-                   call self%install%load_from_toml(ptr, error)
-
-              case ("fortran")
-                   call get_value(table, keys(ii), ptr)
-                   if (.not.associated(ptr)) then
-                      call fatal_error(error,class_name//': error retrieving '//keys(ii)%key//' table')
-                      return
-                   end if
-                   call self%fortran%load_from_toml(ptr, error)
-
-              case ("library")
-
-                   allocate(self%library)
-                   call get_value(table, keys(ii), ptr)
-                   if (.not.associated(ptr)) then
-                      call fatal_error(error,class_name//': error retrieving '//keys(ii)%key//' table')
-                      return
-                   end if
-                   call self%library%load_from_toml(ptr, error)
-
-              case ("executable")
-
-                   call get_value(table, keys(ii), ptr)
-                   if (.not.associated(ptr)) then
-                      call fatal_error(error,class_name//': error retrieving executable table')
-                      return
-                   end if
-
-                   !> Read all packages
-                   call ptr%get_keys(pkg_keys)
-                   allocate(self%executable(size(pkg_keys)))
-
-                   do jj = 1, size(pkg_keys)
-                      call get_value(ptr, pkg_keys(jj), ptr_pkg)
-                      call self%executable(jj)%load_from_toml(ptr_pkg, error)
-                      if (allocated(error)) return
-                   end do
-
-              case ("dependencies")
-
-                   call get_value(table, keys(ii), ptr)
-                   if (.not.associated(ptr)) then
-                      call fatal_error(error,class_name//': error retrieving dependency table')
-                      return
-                   end if
-
-                   !> Read all packages
-                   call ptr%get_keys(pkg_keys)
-                   allocate(self%dependency(size(pkg_keys)))
-
-                   do jj = 1, size(pkg_keys)
-                      call get_value(ptr, pkg_keys(jj), ptr_pkg)
-                      call self%dependency(jj)%load_from_toml(ptr_pkg, error)
-                      if (allocated(error)) return
-                   end do
-
-              case ("dev-dependencies")
-
-                   call get_value(table, keys(ii), ptr)
-                   if (.not.associated(ptr)) then
-                      call fatal_error(error,class_name//': error retrieving dev-dependencies table')
-                      return
-                   end if
-
-                   !> Read all packages
-                   call ptr%get_keys(pkg_keys)
-                   allocate(self%dev_dependency(size(pkg_keys)))
-
-                   do jj = 1, size(pkg_keys)
-                      call get_value(ptr, pkg_keys(jj), ptr_pkg)
-                      call self%dev_dependency(jj)%load_from_toml(ptr_pkg, error)
-                      if (allocated(error)) return
-                   end do
 
               case ("profiles")
 
@@ -1013,60 +927,6 @@ contains
                    do jj = 1, size(pkg_keys)
                       call get_value(ptr, pkg_keys(jj), ptr_pkg)
                       call self%profiles(jj)%load_from_toml(ptr_pkg, error)
-                      if (allocated(error)) return
-                   end do
-
-              case ("example")
-
-                   call get_value(table, keys(ii), ptr)
-                   if (.not.associated(ptr)) then
-                      call fatal_error(error,class_name//': error retrieving example table')
-                      return
-                   end if
-
-                   !> Read all packages
-                   call ptr%get_keys(pkg_keys)
-                   allocate(self%example(size(pkg_keys)))
-
-                   do jj = 1, size(pkg_keys)
-                      call get_value(ptr, pkg_keys(jj), ptr_pkg)
-                      call self%example(jj)%load_from_toml(ptr_pkg, error)
-                      if (allocated(error)) return
-                   end do
-
-              case ("test")
-
-                   call get_value(table, keys(ii), ptr)
-                   if (.not.associated(ptr)) then
-                      call fatal_error(error,class_name//': error retrieving test table')
-                      return
-                   end if
-
-                   !> Read all packages
-                   call ptr%get_keys(pkg_keys)
-                   allocate(self%test(size(pkg_keys)))
-
-                   do jj = 1, size(pkg_keys)
-                      call get_value(ptr, pkg_keys(jj), ptr_pkg)
-                      call self%test(jj)%load_from_toml(ptr_pkg, error)
-                      if (allocated(error)) return
-                   end do
-
-              case ("preprocess")
-
-                   call get_value(table, keys(ii), ptr)
-                   if (.not.associated(ptr)) then
-                      call fatal_error(error,class_name//': error retrieving preprocess table')
-                      return
-                   end if
-
-                   !> Read all packages
-                   call ptr%get_keys(pkg_keys)
-                   allocate(self%preprocess(size(pkg_keys)))
-
-                   do jj = 1, size(pkg_keys)
-                      call get_value(ptr, pkg_keys(jj), ptr_pkg)
-                      call self%preprocess(jj)%load_from_toml(ptr_pkg, error)
                       if (allocated(error)) return
                    end do
 
