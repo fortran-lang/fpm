@@ -514,7 +514,7 @@ contains
         profile_name = 'release'
         compiler = 'gfortran'
         call find_profile(package%profiles, profile_name, compiler, 1, profile_found, chosen_profile)
-        if (.not.(chosen_profile%flags.eq.'1 3')) then
+        if (.not.(chosen_profile%flags().eq.'1 3')) then
             call test_failed(error, "Failed to append flags from profiles named 'all'")
             return
         end if
@@ -525,7 +525,7 @@ contains
         profile_name = 'release'
         compiler = 'gfortran'
         call find_profile(package%profiles, profile_name, compiler, 3, profile_found, chosen_profile)
-        if (.not.(chosen_profile%flags.eq.'2 4')) then
+        if (.not.(chosen_profile%flags().eq.'2 4')) then
             call test_failed(error, "Failed to choose profile with OS 'all'")
             return
         end if
@@ -536,7 +536,7 @@ contains
         profile_name = 'publish'
         compiler = 'gfortran'
         call find_profile(package%profiles, profile_name, compiler, 1, profile_found, chosen_profile)
-        if (allocated(chosen_profile%flags)) then
+        if (profile_found) then
             call test_failed(error, "Profile named "//profile_name//" should not exist")
             return
         end if
@@ -547,7 +547,7 @@ contains
         profile_name = 'debug'
         compiler = 'ifort'
         call find_profile(package%profiles, profile_name, compiler, 3, profile_found, chosen_profile)
-        if (.not.(chosen_profile%flags.eq.&
+        if (.not.(chosen_profile%flags().eq.&
             ' /warn:all /check:all /error-limit:1 /Od /Z7 /assume:byterecl /traceback')) then
             call test_failed(error, "Failed to load built-in profile "//profile_name)
             return
@@ -559,7 +559,7 @@ contains
         profile_name = 'release'
         compiler = 'ifort'
         call find_profile(package%profiles, profile_name, compiler, 1, profile_found, chosen_profile)
-        if (.not.(chosen_profile%flags.eq.'5')) then
+        if (.not.(chosen_profile%flags().eq.'5')) then
             call test_failed(error, "Failed to overwrite built-in profile")
             return
         end if
