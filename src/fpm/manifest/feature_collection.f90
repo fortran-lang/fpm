@@ -1,6 +1,7 @@
 
 module fpm_manifest_feature_collection
     use fpm_manifest_feature, only: feature_config_t, new_feature
+    use fpm_manifest_platform, only: platform_config_t
     use fpm_error, only: error_t, fatal_error, syntax_error
     use fpm_environment, only: OS_UNKNOWN, OS_LINUX, OS_MACOS, OS_WINDOWS, OS_CYGWIN, OS_SOLARIS, &
                              OS_FREEBSD, OS_OPENBSD, OS_ALL, OS_NAME, match_os_type
@@ -10,14 +11,14 @@ module fpm_manifest_feature_collection
                           id_intel_llvm_nix, id_intel_llvm_windows, id_intel_llvm_unknown, &
                           id_pgi, id_nvhpc, id_nag, id_flang, id_flang_new, id_f18, &
                           id_ibmxl, id_cray, id_lahey, id_lfortran, id_all
-    use fpm_strings, only: string_t, lower, operator(==), split
+    use fpm_strings, only: string_t, lower, operator(==), split, str
     use tomlf, only: toml_table, toml_array, toml_key, toml_stat
     use fpm_toml, only: get_value, len, serializable_t, set_value, set_string, set_list, add_table, &
                         get_list
     implicit none
     private
     
-    public :: new_collection, new_collections, get_default_features, &
+    public :: new_collections, get_default_features, &
               get_default_features_as_features, default_debug_feature, default_release_feature
     
     !> Feature configuration data
@@ -36,6 +37,8 @@ module fpm_manifest_feature_collection
             procedure :: load_from_toml      => feature_collection_load
                         
             procedure :: push_variant
+            procedure :: extract_for_target
+            procedure :: check => check_collection
 
     end type feature_collection_t
 
@@ -166,42 +169,6 @@ module fpm_manifest_feature_collection
        is_os_key = match_os_type(s) /= OS_UNKNOWN
     end function is_os_key
 
-    !> Initialize feature collection from manifest features table
-    !> Supports flexible configurations like:
-    !> [features]
-    !> name.os.compiler.* = ...  # specific compiler + OS
-    !> name.compiler.* = ...     # all OS, specific compiler  
-    !> name.os.* = ...           # specific OS, all compilers
-    !> name.* = ...              # base feature (all OS, all compilers)
-    subroutine new_collection(self, table, name, error)
-        type(feature_collection_t), intent(out) :: self
-        type(toml_table), intent(inout) :: table
-        character(*), intent(in) :: name
-        type(error_t), allocatable, intent(out) :: error
-
-        type(toml_key), allocatable :: keys(:)
-        type(toml_table), pointer :: node
-        character(len=:), allocatable :: key_str, base_name, os_name, compiler_name
-        character(len=:), allocatable :: remaining_key
-        integer :: i, stat
-        integer :: os_type, compiler_type
-        type(feature_config_t) :: feature_variant
-        logical :: is_base_feature
-
-        ! Get all keys from the features table
-        call table%get_keys(keys)
-        if (size(keys) == 0) return
-
-        ! Initialize base feature with defaults
-        self%base%name = name
-        self%base%platform%compiler = id_all
-        self%base%platform%os_type = OS_ALL
-
-        ! This function is no longer used - replaced by new_collection_from_subtable
-        call fatal_error(error, "old new_collection function called - should use new_collection_from_subtable")
-        
-    end subroutine new_collection
-
     !> Initialize multiple feature collections from manifest features table
     subroutine new_collections(collections, table, error)
         type(feature_collection_t), allocatable, intent(out) :: collections(:)
@@ -237,10 +204,18 @@ module fpm_manifest_feature_collection
             if (allocated(error)) return
             
         end do
+                
+
         
     end subroutine new_collections
     
     !> Create a feature collection from a TOML subtable by traversing the hierarchy
+    !> Supports flexible configurations like:
+    !> [features]
+    !> name.os.compiler.* = ...  # specific compiler + OS
+    !> name.compiler.* = ...     # all OS, specific compiler  
+    !> name.os.* = ...           # specific OS, all compilers
+    !> name.* = ...              # base feature (all OS, all compilers)
     subroutine new_collection_from_subtable(self, table, name, error)
         type(feature_collection_t), intent(out) :: self
         type(toml_table), intent(inout) :: table
@@ -254,6 +229,9 @@ module fpm_manifest_feature_collection
         
         ! Traverse the table hierarchy to find variants
         call traverse_feature_table(self, table, name, OS_ALL, id_all, error)
+        
+        ! Check collection
+        call self%check(error)        
         
     end subroutine new_collection_from_subtable
     
@@ -357,65 +335,6 @@ module fpm_manifest_feature_collection
         is_potential_platform_key = .false.
     end function is_potential_platform_key
 
-    !> Parse a feature key like "name.os.compiler.field" into components
-    subroutine parse_feature_key(key_str, base_name, os_name, compiler_name, remaining_key, is_base_feature)
-        character(len=*), intent(in) :: key_str
-        character(len=:), allocatable, intent(out) :: base_name, os_name, compiler_name, remaining_key
-        logical, intent(out) :: is_base_feature
-
-        character(len=:), allocatable :: parts(:)
-        integer :: n_parts, i
-        logical :: found_os, found_compiler
-
-        ! Split key by dots
-        call split(key_str, parts, '.')
-        n_parts = size(parts)
-        
-        if (n_parts == 1) then
-            ! Simple case: just "name"
-            base_name = parts(1)
-            os_name = ""
-            compiler_name = ""
-            remaining_key = ""
-            is_base_feature = .true.
-            return
-        end if
-
-        ! First part is always the base name
-        base_name = parts(1)
-        os_name = ""
-        compiler_name = ""
-        remaining_key = ""
-        found_os = .false.
-        found_compiler = .false.
-        is_base_feature = .false.
-
-        ! Check remaining parts for OS and compiler
-        do i = 2, n_parts
-            if (.not. found_os .and. is_os_key(parts(i))) then
-                os_name = parts(i)
-                found_os = .true.
-            else if (.not. found_compiler .and. is_compiler_key(parts(i))) then
-                compiler_name = parts(i) 
-                found_compiler = .true.
-            else
-                ! This is part of the feature specification
-                if (len(remaining_key) == 0) then
-                    remaining_key = parts(i)
-                else
-                    remaining_key = remaining_key // "." // parts(i)
-                end if
-            end if
-        end do
-
-        ! If no OS or compiler constraints found, treat as base feature
-        if (.not. found_os .and. .not. found_compiler) then
-            is_base_feature = .true.
-        end if
-
-    end subroutine parse_feature_key
-
-
     !> Merge two feature configurations (for base feature merging)
     subroutine merge_feature_configs(target, source, error)
         type(feature_config_t), intent(inout) :: target
@@ -425,35 +344,61 @@ module fpm_manifest_feature_collection
         ! Currently no errors are generated in this routine
         ! The error parameter is for future extensibility
 
-        ! Merge simple fields
+        ! Merge simple fields - description is taken from source if target doesn't have one
         if (allocated(source%description) .and. .not. allocated(target%description)) then
             target%description = source%description
         end if
         
-        if (allocated(source%flags) .and. .not. allocated(target%flags)) then
-            target%flags = source%flags
+        ! For flags, we APPEND/ADD them together
+        if (allocated(source%flags)) then
+            if (allocated(target%flags)) then
+                target%flags = trim(target%flags) // " " // trim(source%flags)
+            else
+                target%flags = source%flags
+            end if
         end if
         
-        if (allocated(source%c_flags) .and. .not. allocated(target%c_flags)) then
-            target%c_flags = source%c_flags
+        if (allocated(source%c_flags)) then
+            if (allocated(target%c_flags)) then
+                target%c_flags = trim(target%c_flags) // " " // trim(source%c_flags)
+            else
+                target%c_flags = source%c_flags
+            end if
         end if
         
-        if (allocated(source%cxx_flags) .and. .not. allocated(target%cxx_flags)) then
-            target%cxx_flags = source%cxx_flags
+        if (allocated(source%cxx_flags)) then
+            if (allocated(target%cxx_flags)) then
+                target%cxx_flags = trim(target%cxx_flags) // " " // trim(source%cxx_flags)
+            else
+                target%cxx_flags = source%cxx_flags
+            end if
         end if
         
-        if (allocated(source%link_time_flags) .and. .not. allocated(target%link_time_flags)) then
-            target%link_time_flags = source%link_time_flags
+        if (allocated(source%link_time_flags)) then
+            if (allocated(target%link_time_flags)) then
+                target%link_time_flags = trim(target%link_time_flags) // " " // trim(source%link_time_flags)
+            else
+                target%link_time_flags = source%link_time_flags
+            end if
         end if
 
         ! Merge build config
-        target%build = source%build
+        if (allocated(source%build) .and. .not. allocated(target%build)) then
+            allocate(target%build)
+            target%build = source%build
+        end if
         
         ! Merge install config  
-        target%install = source%install
+        if (allocated(source%install) .and. .not. allocated(target%install)) then
+            allocate(target%install)
+            target%install = source%install
+        end if
         
         ! Merge fortran config
-        target%fortran = source%fortran
+        if (allocated(source%fortran) .and. .not. allocated(target%fortran)) then
+            allocate(target%fortran)
+            target%fortran = source%fortran
+        end if
 
         ! Merge library config
         if (allocated(source%library) .and. .not. allocated(target%library)) then
@@ -461,21 +406,10 @@ module fpm_manifest_feature_collection
             target%library = source%library
         end if
 
-        ! TODO: Merge arrays (executable, dependency, etc.) - for now just take from source
-        if (allocated(source%executable) .and. .not. allocated(target%executable)) then
-            allocate(target%executable(size(source%executable)))
-            target%executable = source%executable
-        end if
-
-        if (allocated(source%dependency) .and. .not. allocated(target%dependency)) then
-            allocate(target%dependency(size(source%dependency)))  
-            target%dependency = source%dependency
-        end if
-
-        if (allocated(source%dev_dependency) .and. .not. allocated(target%dev_dependency)) then
-            allocate(target%dev_dependency(size(source%dev_dependency)))
-            target%dev_dependency = source%dev_dependency
-        end if
+        ! Merge arrays by appending source to target
+        call merge_executable_arrays(target%executable, source%executable)
+        call merge_dependency_arrays(target%dependency, source%dependency)
+        call merge_dependency_arrays(target%dev_dependency, source%dev_dependency)
 
         if (allocated(source%example) .and. .not. allocated(target%example)) then
             allocate(target%example(size(source%example)))
@@ -496,6 +430,60 @@ module fpm_manifest_feature_collection
         target%meta = source%meta
 
     end subroutine merge_feature_configs
+
+    !> Merge executable arrays by appending source to target
+    subroutine merge_executable_arrays(target, source)
+        use fpm_manifest_executable, only: executable_config_t
+        type(executable_config_t), allocatable, intent(inout) :: target(:)
+        type(executable_config_t), allocatable, intent(in) :: source(:)
+        
+        type(executable_config_t), allocatable :: temp(:)
+        integer :: target_size, source_size
+        
+        if (.not. allocated(source)) return
+        
+        source_size = size(source)
+        if (source_size == 0) return
+        
+        if (.not. allocated(target)) then
+            allocate(target(source_size))
+            target = source
+        else
+            target_size = size(target)
+            allocate(temp(target_size + source_size))
+            temp(1:target_size) = target
+            temp(target_size+1:target_size+source_size) = source
+            call move_alloc(temp, target)
+        end if
+        
+    end subroutine merge_executable_arrays
+
+    !> Merge dependency arrays by appending source to target  
+    subroutine merge_dependency_arrays(target, source)
+        use fpm_manifest_dependency, only: dependency_config_t
+        type(dependency_config_t), allocatable, intent(inout) :: target(:)
+        type(dependency_config_t), allocatable, intent(in) :: source(:)
+        
+        type(dependency_config_t), allocatable :: temp(:)
+        integer :: target_size, source_size
+        
+        if (.not. allocated(source)) return
+        
+        source_size = size(source)
+        if (source_size == 0) return
+        
+        if (.not. allocated(target)) then
+            allocate(target(source_size))
+            target = source
+        else
+            target_size = size(target)
+            allocate(temp(target_size + source_size))
+            temp(1:target_size) = target
+            temp(target_size+1:target_size+source_size) = source
+            call move_alloc(temp, target)
+        end if
+        
+    end subroutine merge_dependency_arrays
 
     !> Create default debug feature collection  
     function default_debug_feature() result(collection)
@@ -670,4 +658,93 @@ module fpm_manifest_feature_collection
     end function default_variant
 
 
+    !> Check that the collection has valid OS/compiler logic and no duplicate variants
+    subroutine check_collection(self, error)
+        class(feature_collection_t), intent(in) :: self
+        type(error_t), allocatable, intent(out) :: error
+        
+        integer :: i, j
+        
+        ! Check base feature has valid platform settings
+        if (self%base%platform%os_type == OS_UNKNOWN) then
+            call fatal_error(error, "Base feature '"//self%base%name//"' has invalid OS type")
+            return
+        end if
+        
+        if (self%base%platform%compiler == id_unknown) then
+            call fatal_error(error, "Base feature '"//self%base%name//"' has invalid compiler type")
+            return
+        end if
+        
+        ! Check all variants have valid platform settings and no duplicates
+        if (allocated(self%variants)) then
+            do i = 1, size(self%variants)
+                ! Validate OS and compiler settings
+                if (self%variants(i)%platform%os_type == OS_UNKNOWN) then
+                    call fatal_error(error, "Variant "//trim(str(i))//" of feature '"//self%base%name//"' has invalid OS type")
+                    return
+                end if
+                
+                if (self%variants(i)%platform%compiler == id_unknown) then
+                    call fatal_error(error, "Variant "//trim(str(i))//" of feature '"//self%base%name//"' has invalid compiler type")
+                    return
+                end if
+                
+                ! Check that variant name matches base name
+                if (allocated(self%variants(i)%name) .and. allocated(self%base%name)) then
+                    if (self%variants(i)%name /= self%base%name) then
+                        call fatal_error(error, "Variant "//trim(str(i))//" name '"//self%variants(i)%name// &
+                                              "' does not match base name '"//self%base%name//"'")
+                        return
+                    end if
+                end if
+                
+                ! Check for duplicate platforms with other variants (exact match, not compatible match)
+                do j = i + 1, size(self%variants)
+                    if (self%variants(i)%platform == self%variants(j)%platform) then
+                        call fatal_error(error, "Duplicate platform configuration found between variants "// &
+                                              trim(str(i))//" and "//trim(str(j))//" of feature '"//self%base%name//"'")
+                        return
+                    end if
+                end do
+                
+                ! Check that variant doesn't have identical platform to base (which would be redundant)
+                if (self%variants(i)%platform == self%base%platform) then
+                    call fatal_error(error, "Variant "//trim(str(i))//" of feature '"//self%base%name// &
+                                          "' has identical platform as the base feature (redundant)")
+                    return
+                end if
+            end do
+        end if
+        
+    end subroutine check_collection
+
+    !> Extract a merged feature configuration for the given target platform
+    function extract_for_target(self, target) result(feature)
+        class(feature_collection_t), intent(in) :: self
+        type(platform_config_t), intent(in) :: target
+        type(feature_config_t) :: feature
+        
+        integer :: i
+        type(error_t), allocatable :: error
+        
+        ! Start with base feature as foundation
+        feature = self%base
+        
+        ! Apply matching variants on top of base
+        if (allocated(self%variants)) then
+            do i = 1, size(self%variants)
+                if (self%variants(i)%platform%matches(target)) then
+                    ! Merge this variant into the feature
+                    call merge_feature_configs(feature, self%variants(i), error)
+                    if (allocated(error)) then
+                        ! If merge fails, just continue with what we have
+                        deallocate(error)
+                    end if
+                end if
+            end do
+        end if
+        
+    end function extract_for_target
+    
 end module fpm_manifest_feature_collection

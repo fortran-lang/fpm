@@ -67,13 +67,13 @@ module fpm_manifest_feature
         type(platform_config_t) :: platform
         
         !> Build configuration
-        type(build_config_t) :: build
+        type(build_config_t), allocatable :: build
         
         !> Installation configuration
-        type(install_config_t) :: install
+        type(install_config_t), allocatable :: install
         
         !> Fortran configuration
-        type(fortran_config_t) :: fortran
+        type(fortran_config_t), allocatable :: fortran
         
         !> Library configuration
         type(library_config_t), allocatable :: library
@@ -368,8 +368,12 @@ contains
             write(unit, fmt) "- link-time-flags", self%link_time_flags
         end if
 
-        call self%build%info(unit, pr - 1)
-        call self%install%info(unit, pr - 1)
+        if (allocated(self%build)) then
+            call self%build%info(unit, pr - 1)
+        end if
+        if (allocated(self%install)) then
+            call self%install%info(unit, pr - 1)
+        end if
 
         if (allocated(self%library)) then
             write(unit, fmt) "- target", "archive"
@@ -421,9 +425,20 @@ contains
             if (.not.this%platform == other%platform) return
             if (this%default .neqv. other%default) return
             
-            if (.not.(this%build==other%build)) return
-            if (.not.(this%install==other%install)) return  
-            if (.not.(this%fortran==other%fortran)) return
+            if (allocated(this%build).neqv.allocated(other%build)) return
+            if (allocated(this%build)) then
+                if (.not.(this%build==other%build)) return
+            end if
+            
+            if (allocated(this%install).neqv.allocated(other%install)) return
+            if (allocated(this%install)) then
+                if (.not.(this%install==other%install)) return
+            end if
+            
+            if (allocated(this%fortran).neqv.allocated(other%fortran)) return
+            if (allocated(this%fortran)) then
+                if (.not.(this%fortran==other%fortran)) return
+            end if
             
             if (allocated(this%library).neqv.allocated(other%library)) return
             if (allocated(this%library)) then
@@ -557,20 +572,26 @@ contains
         call set_list(table, "requires", self%requires_features, error)
         if (allocated(error)) return
 
-        call add_table(table, "build", ptr, error, class_name)
-        if (allocated(error)) return
-        call self%build%dump_to_toml(ptr, error)
-        if (allocated(error)) return
+        if (allocated(self%build)) then
+            call add_table(table, "build", ptr, error, class_name)
+            if (allocated(error)) return
+            call self%build%dump_to_toml(ptr, error)
+            if (allocated(error)) return
+        end if
 
-        call add_table(table, "install", ptr, error, class_name)
-        if (allocated(error)) return
-        call self%install%dump_to_toml(ptr, error)
-        if (allocated(error)) return
+        if (allocated(self%install)) then
+            call add_table(table, "install", ptr, error, class_name)
+            if (allocated(error)) return
+            call self%install%dump_to_toml(ptr, error)
+            if (allocated(error)) return
+        end if
 
-        call add_table(table, "fortran", ptr, error, class_name)
-        if (allocated(error)) return
-        call self%fortran%dump_to_toml(ptr, error)
-        if (allocated(error)) return
+        if (allocated(self%fortran)) then
+            call add_table(table, "fortran", ptr, error, class_name)
+            if (allocated(error)) return
+            call self%fortran%dump_to_toml(ptr, error)
+            if (allocated(error)) return
+        end if
 
         if (allocated(self%library)) then
             call add_table(table, "library", ptr, error, class_name)
@@ -780,6 +801,7 @@ contains
                     if (allocated(error)) return                    
                     
                 case ("build")
+                    allocate(self%build)
                     call get_value(table, keys(ii), ptr)
                     if (.not.associated(ptr)) then
                         call fatal_error(error,class_name//': error retrieving '//keys(ii)%key//' table')
@@ -789,6 +811,7 @@ contains
                     if (allocated(error)) return
 
                 case ("install")
+                    allocate(self%install)
                     call get_value(table, keys(ii), ptr)
                     if (.not.associated(ptr)) then
                         call fatal_error(error,class_name//': error retrieving '//keys(ii)%key//' table')
@@ -797,6 +820,7 @@ contains
                     call self%install%load_from_toml(ptr, error)
 
                 case ("fortran")
+                    allocate(self%fortran)
                     call get_value(table, keys(ii), ptr)
                     if (.not.associated(ptr)) then
                         call fatal_error(error,class_name//': error retrieving '//keys(ii)%key//' table')
@@ -970,6 +994,7 @@ contains
           ! Get build configuration
           call get_value(table, "build", child, requested=.false., stat=stat)
           if (stat == toml_stat%success .and. associated(child)) then
+              allocate(self%build)
               call new_build_config(self%build, child, self%name, error)
               if (allocated(error)) return
           end if
@@ -977,6 +1002,7 @@ contains
           ! Get install configuration
           call get_value(table, "install", child, requested=.false., stat=stat)
           if (stat == toml_stat%success .and. associated(child)) then
+              allocate(self%install)
               call new_install_config(self%install, child, error)
               if (allocated(error)) return
           end if
@@ -987,6 +1013,7 @@ contains
               call fatal_error(error, "Type mismatch for fortran entry, must be a table")
               return
           end if
+          allocate(self%fortran)
           call new_fortran_config(self%fortran, child, error)          
      
           ! Get library configuration
