@@ -627,6 +627,7 @@ contains
         if (allocated(error)) return
         call set_string(table, "description", self%description, error, class_name)
         if (allocated(error)) return
+        
         call set_value(table, "default", self%default, error, class_name)
         if (allocated(error)) return
 
@@ -730,7 +731,7 @@ contains
         type(error_t), allocatable, intent(out) :: error
 
         type(toml_key), allocatable :: keys(:), pkg_keys(:)
-        integer :: ii, jj
+        integer :: ii, jj, stat
         character(len=:), allocatable :: flag
         type(toml_table), pointer :: ptr, ptr_pkg
 
@@ -738,8 +739,13 @@ contains
 
         call get_value(table, "name", self%name)
         call get_value(table, "description", self%description)
-        call get_value(table, "default", self%default, error, class_name)
-        if (allocated(error)) return
+        
+        
+        call get_value(table, "default", self%default, default=.true., stat=stat)
+        if (stat/=toml_stat%success) then 
+            call fatal_error(error, class_name//': error retrieving <default> key')
+            return
+        end if
 
         call get_value(table, "compiler", flag, "all")
         self%compiler = match_compiler_type(flag)
