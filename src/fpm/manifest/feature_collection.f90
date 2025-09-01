@@ -173,9 +173,10 @@ module fpm_manifest_feature_collection
     !> name.compiler.* = ...     # all OS, specific compiler  
     !> name.os.* = ...           # specific OS, all compilers
     !> name.* = ...              # base feature (all OS, all compilers)
-    subroutine new_collection(self, table, error)
+    subroutine new_collection(self, table, name, error)
         type(feature_collection_t), intent(out) :: self
         type(toml_table), intent(inout) :: table
+        character(*), intent(in) :: name
         type(error_t), allocatable, intent(out) :: error
 
         type(toml_key), allocatable :: keys(:)
@@ -192,6 +193,7 @@ module fpm_manifest_feature_collection
         if (size(keys) == 0) return
 
         ! Initialize base feature with defaults
+        self%base%name = name
         self%base%platform%compiler = id_all
         self%base%platform%os_type = OS_ALL
 
@@ -265,7 +267,7 @@ module fpm_manifest_feature_collection
 
         ! Get all keys from the features table to identify distinct collections
         call table%get_keys(keys)
-        print *, 'size keys=',size(keys)
+
         if (size(keys) == 0) then
             ! No features defined, return default collections
             call get_default_features(collections, error)
@@ -279,14 +281,9 @@ module fpm_manifest_feature_collection
         do i = 1, size(keys)
             
             ! Parse the table as a single collection
-            call new_collection(collections(i), table, error)
+            call new_collection(collections(i), table, keys(i)%key, error)
             if (allocated(error)) return
             
-            ! Set a default name if not specified
-            if (.not. allocated(collections(i)%base%name) .or. len_trim(collections(i)%base%name) == 0) then
-                collections(i)%base%name = 'custom'
-            end if
-        
         end do
         
     end subroutine new_collections
