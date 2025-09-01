@@ -208,12 +208,30 @@ contains
                 call syntax_error(error, "Key "//list(ikey)%key//" is not allowed in feature table")
                 exit
 
+            ! Keys
             case("description", "default", "platform", "flags", "c-flags", &
                  "cxx-flags", "link-time-flags", "preprocessor", "requires", &
                  "build", "install", "fortran", "library", "dependencies", &
                  "dev-dependencies", "executable", "example", "test", "preprocess", "metapackages")
-                continue
-
+                 
+                 continue
+                 
+             ! OS names (lowercase)
+             case("linux", "macos", "windows", "cygwin", "solaris", "freebsd", "openbsd")
+                
+                 continue 
+                 
+             ! Compiler names  
+             case ("gfortran", "f95", "caf", "ifort", "ifx", "pgfortran", "nvfortran", "nagfor", &
+                   "flang", "flang-new", "f18", "xlf90", "lfortran")
+                 
+                 continue
+                 
+             ! Standard feature configuration names
+             case("debug", "release")  
+                 
+                 continue
+                 
             end select
         end do
 
