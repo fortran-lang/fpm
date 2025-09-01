@@ -982,12 +982,13 @@ contains
           end if
 
           ! Get Fortran configuration
-          call get_value(table, "fortran", child, requested=.false., stat=stat)
-          if (stat == toml_stat%success .and. associated(child)) then
-              call new_fortran_config(self%fortran, child, error)
-              if (allocated(error)) return
+          call get_value(table, "fortran", child, requested=.true., stat=stat)
+          if (stat /= toml_stat%success) then
+              call fatal_error(error, "Type mismatch for fortran entry, must be a table")
+              return
           end if
-
+          call new_fortran_config(self%fortran, child, error)          
+     
           ! Get library configuration
           call get_value(table, "library", child, requested=.false.)
           if (associated(child)) then

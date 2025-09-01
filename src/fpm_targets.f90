@@ -1061,8 +1061,6 @@ subroutine resolve_target_linking(targets, model, library, error)
 
             target%compile_flags = target%compile_flags//' '
             
-            print *, 'target ',target%output_file,' form = ',target%features%source_form
-
             select case (target%target_type)
                case (FPM_TARGET_C_OBJECT)
                    target%compile_flags = target%compile_flags//model%c_compile_flags

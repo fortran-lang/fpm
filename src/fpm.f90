@@ -57,11 +57,8 @@ subroutine build_model(model, settings, package, error)
     allocate(model%link_libraries(0))
     allocate(model%external_modules(0))
     
-    print *, 'new compiler'
-
     call new_compiler(model%compiler, settings%compiler, settings%c_compiler, &
         & settings%cxx_compiler, echo=settings%verbose, verbose=settings%verbose)
-        print *, 'new archiver'
     call new_archiver(model%archiver, settings%archiver, &
         & echo=settings%verbose, verbose=settings%verbose)
 
@@ -71,32 +68,25 @@ subroutine build_model(model, settings, package, error)
             "Defaults for this compiler might be incorrect"
     end if
     
-    print *, 'new flags'
-
     call new_compiler_flags(model,settings)
-    print *, 'more stuff'
     model%build_prefix         = join_path("build", basename(model%compiler%fc))
     model%include_tests        = settings%build_tests
     model%enforce_module_names = package%build%module_naming
     model%module_prefix        = package%build%module_prefix
 
     ! Resolve meta-dependencies into the package and the model
-    print *, 'meta'
     call resolve_metapackages(model,package,settings,error)
     if (allocated(error)) return
     
     ! Create dependencies
-    print *, 'dep tree'
     call new_dependency_tree(model%deps, cache=join_path("build", "cache.toml"), &
     & path_to_config=settings%path_to_config)
 
     ! Build and resolve model dependencies
-    print *, 'dep add'
     call model%deps%add(package, error)
     if (allocated(error)) return
 
     ! Update dependencies where needed
-    print *, 'dep update'
     call model%deps%update(error)
     if (allocated(error)) return
 
@@ -118,25 +108,16 @@ subroutine build_model(model, settings, package, error)
                 manifest => package
             else
                 
-                print *, 'get dependency manifest ',file_name
                 call get_package_data(dependency, file_name, error, apply_defaults=.true.)
                 if (allocated(error)) exit                
                 
                 manifest => dependency
             end if            
             
-            if (.not.allocated(manifest%fortran%source_form)) then 
-                call fatal_error(error, 'source form not allocated in package '//manifest%name)
-                return
-            end if
-            
-            model%packages(i)%name = manifest%name
-            associate(features => model%packages(i)%features)
-                features%implicit_typing   = manifest%fortran%implicit_typing
-                features%implicit_external = manifest%fortran%implicit_external
-                features%source_form       = manifest%fortran%source_form
-            end associate
-            model%packages(i)%version = manifest%version
+
+            model%packages(i)%name     = manifest%name
+            model%packages(i)%features = manifest%fortran
+            model%packages(i)%version  = manifest%version
 
             !> Add this dependency's manifest macros
             if (allocated(manifest%preprocess)) then
