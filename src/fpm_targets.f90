@@ -123,7 +123,7 @@ type build_target_t
     logical :: skip = .false.
 
     !> Language features
-    type(fortran_features_t) :: features
+    type(fortran_config_t) :: features
 
     !> Targets in the same schedule group are guaranteed to be independent
     integer :: schedule = -1
@@ -570,7 +570,7 @@ type(build_target_ptr) function new_target(package, type, output_name, source, l
     character(*), intent(in) :: output_name
     type(srcfile_t), intent(in), optional :: source
     type(string_t), intent(in), optional :: link_libraries(:)
-    type(fortran_features_t), intent(in), optional :: features
+    type(fortran_config_t), intent(in), optional :: features
     type(preprocess_config_t), intent(in), optional :: preprocess
     type(version_t), intent(in), optional :: version
     character(*), intent(in), optional :: output_dir
@@ -607,7 +607,7 @@ subroutine add_new_target(targets, package, type, output_name, source, link_libr
     character(*), intent(in) :: output_name
     type(srcfile_t), intent(in), optional :: source
     type(string_t), intent(in), optional :: link_libraries(:)
-    type(fortran_features_t), intent(in), optional :: features
+    type(fortran_config_t), intent(in), optional :: features
     type(preprocess_config_t), intent(in), optional :: preprocess
     type(version_t), intent(in), optional :: version
     character(*), intent(in), optional :: output_dir
@@ -1421,7 +1421,7 @@ end subroutine filter_modules
 
 function get_feature_flags(compiler, features) result(flags)
     type(compiler_t), intent(in) :: compiler
-    type(fortran_features_t), intent(in) :: features
+    type(fortran_config_t), intent(in) :: features
     character(:), allocatable :: flags
 
     flags = ""
