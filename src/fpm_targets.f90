@@ -123,7 +123,7 @@ type build_target_t
     logical :: skip = .false.
 
     !> Language features
-    type(fortran_features_t) :: features
+    type(fortran_config_t) :: features
 
     !> Targets in the same schedule group are guaranteed to be independent
     integer :: schedule = -1
@@ -355,12 +355,22 @@ subroutine build_target_list(targets,model,library)
         ! Individual package libraries are built. 
         ! Create as many targets as the packages in the dependency tree
         do j=1,size(model%packages)
-                        
-            lib_name = library_filename(model%packages(j)%name,shared_lib,.false.,get_os_type())
             
-            call add_target(targets,package=model%packages(j)%name, &
-                            type=merge(FPM_TARGET_SHARED,FPM_TARGET_ARCHIVE,shared_lib), &
-                            output_name=lib_name)
+            ! Create static library target if requested
+            if (static_lib) then
+                lib_name = library_filename(model%packages(j)%name,.false.,.false.,get_os_type())
+                call add_target(targets,package=model%packages(j)%name, &
+                                type=FPM_TARGET_ARCHIVE, &
+                                output_name=lib_name)
+            end if
+            
+            ! Create shared library target if requested  
+            if (shared_lib) then
+                lib_name = library_filename(model%packages(j)%name,.true.,.false.,get_os_type())
+                call add_target(targets,package=model%packages(j)%name, &
+                                type=FPM_TARGET_SHARED, &
+                                output_name=lib_name)
+            end if
         end do
         
     endif
@@ -388,8 +398,17 @@ subroutine build_target_list(targets,model,library)
 
 
                     if (with_lib .and. sources(i)%unit_scope == FPM_SCOPE_LIB) then
-                        ! Archive depends on object
-                        call add_dependency(targets(merge(1,j,monolithic))%ptr, targets(size(targets))%ptr)
+                        ! Library targets depend on object
+                        if (monolithic) then
+                            call add_dependency(targets(1)%ptr, targets(size(targets))%ptr)
+                        elseif (static_lib .and. shared_lib) then
+                            ! Both types: static at (2*j-1), shared at (2*j)
+                            call add_dependency(targets(2*j-1)%ptr, targets(size(targets))%ptr)
+                            call add_dependency(targets(2*j)%ptr, targets(size(targets))%ptr)
+                        else
+                            ! Single type: package j at index j
+                            call add_dependency(targets(j)%ptr, targets(size(targets))%ptr)
+                        end if
                     end if
 
                 case (FPM_UNIT_CPPSOURCE)
@@ -401,8 +420,17 @@ subroutine build_target_list(targets,model,library)
                                 version = model%packages(j)%version)
 
                     if (with_lib .and. sources(i)%unit_scope == FPM_SCOPE_LIB) then
-                        ! Archive depends on object
-                        call add_dependency(targets(merge(1,j,monolithic))%ptr, targets(size(targets))%ptr)
+                        ! Library targets depend on object
+                        if (monolithic) then
+                            call add_dependency(targets(1)%ptr, targets(size(targets))%ptr)
+                        elseif (static_lib .and. shared_lib) then
+                            ! Both types: static at (2*j-1), shared at (2*j)
+                            call add_dependency(targets(2*j-1)%ptr, targets(size(targets))%ptr)
+                            call add_dependency(targets(2*j)%ptr, targets(size(targets))%ptr)
+                        else
+                            ! Single type: package j at index j
+                            call add_dependency(targets(j)%ptr, targets(size(targets))%ptr)
+                        end if
                     end if
 
                     !> Add stdc++ as a linker flag. If not already there.
@@ -469,9 +497,19 @@ subroutine build_target_list(targets,model,library)
 
                     if (with_lib) then
                         ! Executable depends on library file(s)
-                        do k=1,merge(1,size(model%packages),monolithic)
-                           call add_dependency(target, targets(k)%ptr)
-                        end do
+                        if (monolithic) then
+                            call add_dependency(target, targets(1)%ptr)
+                        elseif (static_lib .and. shared_lib) then
+                            ! Both types: depend on static libraries (2*k-1) for all packages
+                            do k=1,size(model%packages)
+                               call add_dependency(target, targets(2*k-1)%ptr)
+                            end do
+                        else
+                            ! Single type: depend on library for each package
+                            do k=1,size(model%packages)
+                               call add_dependency(target, targets(k)%ptr)
+                            end do
+                        end if
                     end if
 
                     endassociate
@@ -570,7 +608,7 @@ type(build_target_ptr) function new_target(package, type, output_name, source, l
     character(*), intent(in) :: output_name
     type(srcfile_t), intent(in), optional :: source
     type(string_t), intent(in), optional :: link_libraries(:)
-    type(fortran_features_t), intent(in), optional :: features
+    type(fortran_config_t), intent(in), optional :: features
     type(preprocess_config_t), intent(in), optional :: preprocess
     type(version_t), intent(in), optional :: version
     character(*), intent(in), optional :: output_dir
@@ -607,7 +645,7 @@ subroutine add_new_target(targets, package, type, output_name, source, link_libr
     character(*), intent(in) :: output_name
     type(srcfile_t), intent(in), optional :: source
     type(string_t), intent(in), optional :: link_libraries(:)
-    type(fortran_features_t), intent(in), optional :: features
+    type(fortran_config_t), intent(in), optional :: features
     type(preprocess_config_t), intent(in), optional :: preprocess
     type(version_t), intent(in), optional :: version
     character(*), intent(in), optional :: output_dir
@@ -635,7 +673,7 @@ subroutine add_old_targets(targets, add_targets)
     ! Check for duplicate outputs
     do j=1,size(add_targets)
         associate(added=>add_targets(j)%ptr)
-
+            
         do i=1,size(targets)
 
             if (targets(i)%ptr%output_name == added%output_name) then
@@ -666,9 +704,18 @@ end subroutine add_old_target
 subroutine add_dependency(target, dependency)
     type(build_target_t), intent(inout) :: target
     type(build_target_t) , intent(in), target :: dependency
-
+    
+    integer :: i
+    
+    ! Ensure no duplicate dependencies: it may happen if we loop over two library targets that 
+    ! contain the same objects
+    do i=1,size(target%dependencies)
+        if (target%dependencies(i)%ptr%output_name == dependency%output_name) return
+    end do
+    if (dependency%output_name==target%output_name) return
+    
     target%dependencies = [target%dependencies, build_target_ptr(dependency)]
-
+    
 end subroutine add_dependency
 
 
@@ -1113,6 +1160,11 @@ subroutine resolve_target_linking(targets, model, library, error)
                     ! Build link flags
                     target%link_flags = string_cat(target%link_objects, " ")
                     
+                    ! Add global link flags (including metapackage flags like OpenMP)
+                    if (allocated(model%link_flags)) then
+                        target%link_flags = model%link_flags//" "//target%link_flags
+                    endif
+                    
                     target%link_flags = target%link_flags // shared_lib_paths
 
                     ! Add dependencies' shared libraries (excluding self)
@@ -1171,7 +1223,8 @@ subroutine resolve_target_linking(targets, model, library, error)
                         has_self_lib = .false.
                         find_self: do j=1,size(targets)
                             associate(target_loop=>targets(j)%ptr)
-                                if (any(target_loop%target_type==[FPM_TARGET_SHARED,FPM_TARGET_ARCHIVE]) &
+                                if ((target_loop%target_type==FPM_TARGET_ARCHIVE .or. &
+                                    (target_loop%target_type==FPM_TARGET_SHARED .and. .not.static)) &
                                     .and. target_loop%package_name==target%package_name) then 
                                     has_self_lib = .true.
                                     exit find_self
@@ -1414,7 +1467,7 @@ end subroutine filter_modules
 
 function get_feature_flags(compiler, features) result(flags)
     type(compiler_t), intent(in) :: compiler
-    type(fortran_features_t), intent(in) :: features
+    type(fortran_config_t), intent(in) :: features
     character(:), allocatable :: flags
 
     flags = ""

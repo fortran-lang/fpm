@@ -358,5 +358,13 @@ test -f ./test_custom_install/lib/libcustom-module-dir.a
 rm -rf ./test_custom_install
 popd
 
+# Test both shared and static library types
+pushd both_lib_types
+"$fpm" build
+"$fpm" install --prefix=.
+# Check that exactly 2 libboth_lib_types library files were installed
+test $(ls lib/libboth_lib_types* | wc -l) -eq 2
+popd
+
 # Cleanup
 rm -rf ./*/build

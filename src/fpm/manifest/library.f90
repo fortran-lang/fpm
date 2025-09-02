@@ -32,8 +32,8 @@ module fpm_manifest_library
         !> Alternative build script to be invoked
         character(len=:), allocatable :: build_script
         
-        !> Shared / Static / Monolithic library 
-        character(:), allocatable :: lib_type
+        !> Shared / Static / Monolithic library types (can be multiple)
+        type(string_t), allocatable :: lib_type(:)
 
     contains
 
@@ -63,10 +63,16 @@ contains
         !> Instance of the library configuration
         class(library_config_t), intent(in) :: self
         
+        integer :: i
+        
+        shared = .false.
         if (allocated(self%lib_type)) then 
-           shared = self%lib_type == "shared"
-        else
-           shared = .false.
+           do i = 1, size(self%lib_type)
+               if (self%lib_type(i)%s == "shared") then
+                   shared = .true.
+                   return
+               end if
+           end do
         endif
         
     end function shared
@@ -78,10 +84,16 @@ contains
         !> Instance of the library configuration
         class(library_config_t), intent(in) :: self
         
+        integer :: i
+        
+        static = .false.
         if (allocated(self%lib_type)) then 
-           static = self%lib_type == "static"
-        else
-           static = .false.
+           do i = 1, size(self%lib_type)
+               if (self%lib_type(i)%s == "static") then
+                   static = .true.
+                   return
+               end if
+           end do
         endif
     end function static
 
@@ -92,7 +104,20 @@ contains
         !> Instance of the library configuration
         class(library_config_t), intent(in) :: self
         
-        monolithic = .not.(static(self) .or. shared(self))
+        integer :: i
+                
+        if (allocated(self%lib_type)) then 
+           monolithic = .false. 
+           do i = 1, size(self%lib_type)
+               if (self%lib_type(i)%s == "monolithic") then
+                   monolithic = .true.
+                   return
+               end if
+           end do
+        else
+            ! Default: monolithic
+            monolithic = .true.
+        endif
     end function monolithic
 
 
@@ -108,7 +133,8 @@ contains
         !> Error handling
         type(error_t), allocatable, intent(out) :: error
         
-        integer :: stat
+        integer :: stat, i
+        character(len=:), allocatable :: single_type
 
         call check(table, error)
         if (allocated(error)) return
@@ -118,10 +144,7 @@ contains
             return
         end if
 
-        if (has_list(table, "type")) then
-            call syntax_error(error, "Manifest key [library.type] does not allow list input")
-            return
-        end if
+        ! library.type can now be either a single value or a list
 
         call get_value(table, "source-dir", self%source_dir, "src")
         call get_value(table, "build-script", self%build_script)
@@ -129,25 +152,44 @@ contains
         call get_list(table, "include-dir", self%include_dir, error)
         if (allocated(error)) return
         
-        call get_value(table, "type", self%lib_type, "monolithic")
+        ! Parse library type - can be single value or array
+        if (has_list(table, "type")) then
+            ! Array of types
+            call get_list(table, "type", self%lib_type, error)
+            if (allocated(error)) return
+        else
+            ! Single type - convert to array for consistency
+            call get_value(table, "type", single_type, "monolithic")
+            self%lib_type = [string_t(single_type)]
+        end if
         
-        select case(self%lib_type)
-        case("shared","static","monolithic")
-            ! OK
-        case default
-            call fatal_error(error,"Value of library.type cannot be '"//self%lib_type &
-                                 //"', choose shared/static/monolithic (default)")
+        if (.not.allocated(self%lib_type)) then 
+            self%lib_type = [string_t("monolithic")]
+        end if        
+        
+        ! Validate all types in the array
+        do i = 1, size(self%lib_type)
+            select case(self%lib_type(i)%s)
+            case("shared","static","monolithic")
+                ! OK
+            case default
+                call fatal_error(error,"Value of library.type cannot be '"//self%lib_type(i)%s &
+                                     //"', choose shared/static/monolithic (default)")
+                return
+            end select
+        end do
+        
+        ! Check that monolithic is not specified together with static or shared
+        if (monolithic(self) .and. (static(self) .or. shared(self))) then
+            call fatal_error(error,"library.type 'monolithic' cannot be specified together with 'static' or 'shared'")
             return
-        end select        
+        end if
         
         ! Set default value of include-dir if not found in manifest
         if (.not.allocated(self%include_dir)) then
             self%include_dir = [string_t("include")]
         end if
         
-        if (.not.allocated(self%lib_type)) then 
-            self%lib_type = "monolithic"
-        end if
 
     end subroutine new_library
 
@@ -215,7 +257,7 @@ contains
             write(unit, fmt) "- include directory", string_cat(self%include_dir,",")
         end if
         
-        write(unit, fmt) "- library type", self%lib_type
+        write(unit, fmt) "- library type", string_cat(self%lib_type,",")
         
         if (allocated(self%build_script)) then
             write(unit, fmt) "- custom build", self%build_script
@@ -272,7 +314,7 @@ contains
         if (allocated(error)) return
         call set_list(table, "include-dir", self%include_dir, error)
         if (allocated(error)) return
-        call set_string(table, "type", self%lib_type, error, class_name)
+        call set_list(table, "type", self%lib_type, error)
         if (allocated(error)) return
 
     end subroutine dump_to_toml
@@ -295,7 +337,7 @@ contains
         if (allocated(error)) return
         call get_list(table, "include-dir", self%include_dir, error)
         if (allocated(error)) return
-        call get_value(table, "type", self%lib_type)
+        call get_list(table, "type", self%lib_type, error)
         if (allocated(error)) return
 
     end subroutine load_from_toml

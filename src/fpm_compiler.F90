@@ -52,7 +52,7 @@ use shlex_module, only: sh_split => split, ms_split, quote => ms_quote
 implicit none
 public :: compiler_t, new_compiler, archiver_t, new_archiver, get_macros
 public :: append_clean_flags, append_clean_flags_array
-public :: debug
+public :: debug, id_gcc
 
 enum, bind(C)
     enumerator :: &
@@ -139,6 +139,12 @@ contains
     procedure :: check_flags_supported
     procedure :: with_xdp
     procedure :: with_qp
+    !> C feature support
+    procedure :: check_c_source_runs
+    procedure :: check_c_flags_supported
+    !> C++ feature support
+    procedure :: check_cxx_source_runs
+    procedure :: check_cxx_flags_supported
     !> Return compiler name
     procedure :: name => compiler_name
 
@@ -288,10 +294,17 @@ function get_default_flags(self, release) result(flags)
     ! Append position-independent code (PIC) flag, that is necessary 
     ! building shared libraries
     select case (self%id)
-    case (id_gcc, id_f95, id_caf, id_flang, id_flang_new, id_f18, id_lfortran, &
+    case (id_gcc, id_f95, id_caf, id_flang, id_f18, id_lfortran, &
           id_intel_classic_nix, id_intel_classic_mac, id_intel_llvm_nix, &
           id_pgi, id_nvhpc, id_nag, id_cray, id_ibmxl)
         pic_flag = " -fPIC"
+    case (id_flang_new)
+        ! flang-new doesn't support -fPIC on Windows MSVC target
+        if (get_os_type() == OS_WINDOWS) then
+            pic_flag = ""
+        else
+            pic_flag = " -fPIC"
+        end if
     case (id_intel_classic_windows, id_intel_llvm_windows)
         pic_flag = ""  ! Windows does not use -fPIC
     case default
@@ -506,7 +519,7 @@ pure subroutine set_cpp_preprocessor_flags(id, flags)
     select case(id)
     case default
         flag_cpp_preprocessor = ""
-    case(id_caf, id_gcc, id_f95, id_nvhpc)
+    case(id_caf, id_gcc, id_f95, id_nvhpc, id_flang_new)
         flag_cpp_preprocessor = "-cpp"
     case(id_intel_classic_windows, id_intel_llvm_windows)
         flag_cpp_preprocessor = "/fpp"
@@ -1816,6 +1829,146 @@ logical function check_fortran_source_runs(self, input, compile_flags, link_flag
     close(unit,status='delete')
 
 end function check_fortran_source_runs
+
+!> Check if the given C source code compiles, links, and runs successfully
+logical function check_c_source_runs(self, input, compile_flags, link_flags) result(success)
+    !> Instance of the compiler object
+    class(compiler_t), intent(in) :: self
+    !> C program source
+    character(len=*), intent(in) :: input
+    !> Optional build and link flags
+    character(len=*), optional, intent(in) :: compile_flags, link_flags
+    integer :: stat,unit
+    character(:), allocatable :: source,object,logf,exe,flags,ldflags
+    
+    success = .false.
+    
+    !> Create temporary source file
+    exe    = get_temp_filename()
+    source = exe//'.c'
+    object = exe//'.o'
+    logf   = exe//'.log'
+    
+    open(newunit=unit, file=source, action='readwrite', iostat=stat)
+    if (stat/=0) return
+    
+    !> Write contents
+    write(unit,'(a)') input
+    close(unit)
+    
+    !> Get flags
+    flags    = ""
+    ldflags  = ""
+    if (present(compile_flags)) flags = flags//" "//compile_flags
+    if (present(link_flags)) ldflags = ldflags//" "//link_flags
+    
+    !> Compile
+    call self%compile_c(source,object,flags,logf,stat,dry_run=.false.)
+    if (stat/=0) return
+    
+    !> Link using C compiler for pure C programs
+    call run(self%cc//" "//ldflags//" "//object//" -o "//exe, &
+              echo=self%echo, verbose=self%verbose, redirect=logf, exitstat=stat)
+    if (stat/=0) return
+    
+    !> Run
+    call run(exe//" > "//logf//" 2>&1",echo=.false.,exitstat=stat)
+    success = (stat == 0)
+    
+    !> Delete temporary files
+    open(newunit=unit, file=source, action='readwrite', iostat=stat)
+    close(unit,status='delete')
+    open(newunit=unit, file=object, action='readwrite', iostat=stat)
+    close(unit,status='delete')
+    open(newunit=unit, file=logf, action='readwrite', iostat=stat)
+    close(unit,status='delete')
+    open(newunit=unit, file=exe, action='readwrite', iostat=stat)
+    close(unit,status='delete')
+    
+end function check_c_source_runs
+
+!> Check if the given C++ source code compiles, links, and runs successfully
+logical function check_cxx_source_runs(self, input, compile_flags, link_flags) result(success)
+    !> Instance of the compiler object
+    class(compiler_t), intent(in) :: self
+    !> C++ program source
+    character(len=*), intent(in) :: input
+    !> Optional build and link flags
+    character(len=*), optional, intent(in) :: compile_flags, link_flags
+    integer :: stat,unit
+    character(:), allocatable :: source,object,logf,exe,flags,ldflags
+    
+    success = .false.
+    
+    !> Create temporary source file
+    exe    = get_temp_filename()
+    source = exe//'.cpp'
+    object = exe//'.o'
+    logf   = exe//'.log'
+    
+    open(newunit=unit, file=source, action='readwrite', iostat=stat)
+    if (stat/=0) return
+    
+    !> Write contents
+    write(unit,'(a)') input
+    close(unit)
+    
+    !> Get flags
+    flags    = ""
+    ldflags  = ""
+    if (present(compile_flags)) flags = flags//" "//compile_flags
+    if (present(link_flags)) ldflags = ldflags//" "//link_flags
+    
+    !> Compile
+    call self%compile_cpp(source,object,flags,logf,stat,dry_run=.false.)
+    if (stat/=0) return
+    
+    !> Link using C++ compiler for pure C++ programs
+    call run(self%cxx//" "//ldflags//" "//object//" -o "//exe, &
+              echo=self%echo, verbose=self%verbose, redirect=logf, exitstat=stat)
+    if (stat/=0) return
+    
+    !> Run
+    call run(exe//" > "//logf//" 2>&1",echo=.false.,exitstat=stat)
+    success = (stat == 0)
+    
+    !> Delete temporary files
+    open(newunit=unit, file=source, action='readwrite', iostat=stat)
+    close(unit,status='delete')
+    open(newunit=unit, file=object, action='readwrite', iostat=stat)
+    close(unit,status='delete')
+    open(newunit=unit, file=logf, action='readwrite', iostat=stat)
+    close(unit,status='delete')
+    open(newunit=unit, file=exe, action='readwrite', iostat=stat)
+    close(unit,status='delete')
+    
+end function check_cxx_source_runs
+
+!> Check if the given C compile and/or link flags are accepted by the C compiler
+logical function check_c_flags_supported(self, compile_flags, link_flags)
+    class(compiler_t), intent(in) :: self
+    character(len=*), optional, intent(in) :: compile_flags, link_flags
+    
+    ! Minimal C program that always compiles
+    character(len=*), parameter :: hello_world_c = &
+        "#include <stdio.h>" // new_line('a') // &
+        "int main() { printf(""Hello, World!""); return 0; }"
+    
+    check_c_flags_supported = self%check_c_source_runs(hello_world_c, compile_flags, link_flags)
+end function check_c_flags_supported
+
+!> Check if the given C++ compile and/or link flags are accepted by the C++ compiler
+logical function check_cxx_flags_supported(self, compile_flags, link_flags)
+    class(compiler_t), intent(in) :: self
+    character(len=*), optional, intent(in) :: compile_flags, link_flags
+    
+    ! Minimal C++ program that always compiles
+    character(len=*), parameter :: hello_world_cxx = &
+        "#include <cstdio>" // new_line('a') // &
+        "int main() { printf(""Hello, World!""); return 0; }"
+    
+    check_cxx_flags_supported = self%check_cxx_source_runs(hello_world_cxx, compile_flags, link_flags)
+end function check_cxx_flags_supported
 
 !> Check if the given compile and/or link flags are accepted by the compiler
 logical function check_flags_supported(self, compile_flags, link_flags)
