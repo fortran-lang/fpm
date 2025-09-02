@@ -1117,7 +1117,10 @@ function get_package_libraries_link(model, package_name, prefix, exclude_self, d
         ndep = size(sorted_package_IDs)
     end if
     
-    package_deps = [(string_t(model%deps%dep(sorted_package_IDs(i))%name),i=1,ndep)]
+    allocate(package_deps(ndep))
+    do i=1,ndep
+        package_deps(i) = string_t(model%deps%dep(sorted_package_IDs(i))%name)
+    end do
     
     r = model%compiler%enumerate_libraries(prefix, package_deps)
     

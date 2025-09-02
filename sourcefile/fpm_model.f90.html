@@ -92,7 +92,7 @@
 
             <li class="list-inline-item" id="statements"><i class="fa fa-list-ol"></i>
               <a data-bs-toggle="tooltip" data-bs-placement="bottom" data-bs-html="true"
-                 title=" 4.8% of total for source files.">747 statements</a>
+                 title=" 4.8% of total for source files.">750 statements</a>
             </li>
 
             <li class="list-inline-item" id="source-file">
@@ -1290,29 +1290,32 @@
 <a id="ln-1117" name="ln-1117" href="#ln-1117"></a><span class="w">        </span><span class="n">ndep</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">size</span><span class="p">(</span><span class="n">sorted_package_IDs</span><span class="p">)</span>
 <a id="ln-1118" name="ln-1118" href="#ln-1118"></a><span class="w">    </span><span class="k">end if</span>
 <a id="ln-1119" name="ln-1119" href="#ln-1119"></a><span class="k">    </span>
-<a id="ln-1120" name="ln-1120" href="#ln-1120"></a><span class="k">    </span><span class="n">package_deps</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">[(</span><span class="n">string_t</span><span class="p">(</span><span class="n">model</span><span class="p">%</span><span class="n">deps</span><span class="p">%</span><span class="n">dep</span><span class="p">(</span><span class="n">sorted_package_IDs</span><span class="p">(</span><span class="n">i</span><span class="p">))%</span><span class="n">name</span><span class="p">),</span><span class="n">i</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span><span class="n">ndep</span><span class="p">)]</span>
-<a id="ln-1121" name="ln-1121" href="#ln-1121"></a><span class="w">    </span>
-<a id="ln-1122" name="ln-1122" href="#ln-1122"></a><span class="w">    </span><span class="n">r</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">model</span><span class="p">%</span><span class="n">compiler</span><span class="p">%</span><span class="n">enumerate_libraries</span><span class="p">(</span><span class="n">prefix</span><span class="p">,</span><span class="w"> </span><span class="n">package_deps</span><span class="p">)</span>
-<a id="ln-1123" name="ln-1123" href="#ln-1123"></a><span class="w">    </span>
-<a id="ln-1124" name="ln-1124" href="#ln-1124"></a><span class="w">    </span><span class="c">! If requested, export the list of dependency IDs</span>
-<a id="ln-1125" name="ln-1125" href="#ln-1125"></a><span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="nb">present</span><span class="p">(</span><span class="n">dep_IDs</span><span class="p">))</span><span class="w"> </span><span class="k">call </span><span class="nb">move_alloc</span><span class="p">(</span><span class="n">from</span><span class="o">=</span><span class="n">sorted_package_IDs</span><span class="p">,</span><span class="n">to</span><span class="o">=</span><span class="n">dep_IDs</span><span class="p">)</span>
+<a id="ln-1120" name="ln-1120" href="#ln-1120"></a><span class="k">    allocate</span><span class="p">(</span><span class="n">package_deps</span><span class="p">(</span><span class="n">ndep</span><span class="p">))</span>
+<a id="ln-1121" name="ln-1121" href="#ln-1121"></a><span class="w">    </span><span class="k">do </span><span class="n">i</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span><span class="n">ndep</span>
+<a id="ln-1122" name="ln-1122" href="#ln-1122"></a><span class="w">        </span><span class="n">package_deps</span><span class="p">(</span><span class="n">i</span><span class="p">)</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">string_t</span><span class="p">(</span><span class="n">model</span><span class="p">%</span><span class="n">deps</span><span class="p">%</span><span class="n">dep</span><span class="p">(</span><span class="n">sorted_package_IDs</span><span class="p">(</span><span class="n">i</span><span class="p">))%</span><span class="n">name</span><span class="p">)</span>
+<a id="ln-1123" name="ln-1123" href="#ln-1123"></a><span class="w">    </span><span class="k">end do</span>
+<a id="ln-1124" name="ln-1124" href="#ln-1124"></a><span class="k">    </span>
+<a id="ln-1125" name="ln-1125" href="#ln-1125"></a><span class="k">    </span><span class="n">r</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">model</span><span class="p">%</span><span class="n">compiler</span><span class="p">%</span><span class="n">enumerate_libraries</span><span class="p">(</span><span class="n">prefix</span><span class="p">,</span><span class="w"> </span><span class="n">package_deps</span><span class="p">)</span>
 <a id="ln-1126" name="ln-1126" href="#ln-1126"></a><span class="w">    </span>
-<a id="ln-1127" name="ln-1127" href="#ln-1127"></a><span class="k">end function </span><span class="n">get_package_libraries_link</span>
-<a id="ln-1128" name="ln-1128" href="#ln-1128"></a>
-<a id="ln-1129" name="ln-1129" href="#ln-1129"></a><span class="c">!&gt; Check whether a package has an object library</span>
-<a id="ln-1130" name="ln-1130" href="#ln-1130"></a><span class="k">elemental </span><span class="kt">logical </span><span class="k">function </span><span class="n">package_has_library</span><span class="p">(</span><span class="n">self</span><span class="p">)</span><span class="w"> </span><span class="k">result</span><span class="p">(</span><span class="n">has_library</span><span class="p">)</span>
-<a id="ln-1131" name="ln-1131" href="#ln-1131"></a><span class="w">    </span><span class="k">class</span><span class="p">(</span><span class="n">package_t</span><span class="p">),</span><span class="w"> </span><span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">)</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">self</span>
-<a id="ln-1132" name="ln-1132" href="#ln-1132"></a><span class="w">    </span>
-<a id="ln-1133" name="ln-1133" href="#ln-1133"></a><span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="nb">allocated</span><span class="p">(</span><span class="n">self</span><span class="p">%</span><span class="n">sources</span><span class="p">))</span><span class="w"> </span><span class="k">then </span>
-<a id="ln-1134" name="ln-1134" href="#ln-1134"></a><span class="k">        </span><span class="n">has_library</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">any</span><span class="p">(</span><span class="n">self</span><span class="p">%</span><span class="n">sources</span><span class="p">%</span><span class="n">unit_scope</span><span class="o">==</span><span class="n">FPM_SCOPE_LIB</span><span class="p">)</span>
-<a id="ln-1135" name="ln-1135" href="#ln-1135"></a><span class="w">    </span><span class="k">else</span>
-<a id="ln-1136" name="ln-1136" href="#ln-1136"></a><span class="k">        </span><span class="n">has_library</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">.</span><span class="n">false</span><span class="p">.</span>
-<a id="ln-1137" name="ln-1137" href="#ln-1137"></a><span class="w">    </span><span class="k">end if</span>
-<a id="ln-1138" name="ln-1138" href="#ln-1138"></a><span class="k">    </span>
-<a id="ln-1139" name="ln-1139" href="#ln-1139"></a><span class="k">end function </span><span class="n">package_has_library</span>
-<a id="ln-1140" name="ln-1140" href="#ln-1140"></a>
-<a id="ln-1141" name="ln-1141" href="#ln-1141"></a>
-<a id="ln-1142" name="ln-1142" href="#ln-1142"></a><span class="k">end module </span><span class="n">fpm_model</span>
+<a id="ln-1127" name="ln-1127" href="#ln-1127"></a><span class="w">    </span><span class="c">! If requested, export the list of dependency IDs</span>
+<a id="ln-1128" name="ln-1128" href="#ln-1128"></a><span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="nb">present</span><span class="p">(</span><span class="n">dep_IDs</span><span class="p">))</span><span class="w"> </span><span class="k">call </span><span class="nb">move_alloc</span><span class="p">(</span><span class="n">from</span><span class="o">=</span><span class="n">sorted_package_IDs</span><span class="p">,</span><span class="n">to</span><span class="o">=</span><span class="n">dep_IDs</span><span class="p">)</span>
+<a id="ln-1129" name="ln-1129" href="#ln-1129"></a><span class="w">    </span>
+<a id="ln-1130" name="ln-1130" href="#ln-1130"></a><span class="k">end function </span><span class="n">get_package_libraries_link</span>
+<a id="ln-1131" name="ln-1131" href="#ln-1131"></a>
+<a id="ln-1132" name="ln-1132" href="#ln-1132"></a><span class="c">!&gt; Check whether a package has an object library</span>
+<a id="ln-1133" name="ln-1133" href="#ln-1133"></a><span class="k">elemental </span><span class="kt">logical </span><span class="k">function </span><span class="n">package_has_library</span><span class="p">(</span><span class="n">self</span><span class="p">)</span><span class="w"> </span><span class="k">result</span><span class="p">(</span><span class="n">has_library</span><span class="p">)</span>
+<a id="ln-1134" name="ln-1134" href="#ln-1134"></a><span class="w">    </span><span class="k">class</span><span class="p">(</span><span class="n">package_t</span><span class="p">),</span><span class="w"> </span><span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">)</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">self</span>
+<a id="ln-1135" name="ln-1135" href="#ln-1135"></a><span class="w">    </span>
+<a id="ln-1136" name="ln-1136" href="#ln-1136"></a><span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="nb">allocated</span><span class="p">(</span><span class="n">self</span><span class="p">%</span><span class="n">sources</span><span class="p">))</span><span class="w"> </span><span class="k">then </span>
+<a id="ln-1137" name="ln-1137" href="#ln-1137"></a><span class="k">        </span><span class="n">has_library</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">any</span><span class="p">(</span><span class="n">self</span><span class="p">%</span><span class="n">sources</span><span class="p">%</span><span class="n">unit_scope</span><span class="o">==</span><span class="n">FPM_SCOPE_LIB</span><span class="p">)</span>
+<a id="ln-1138" name="ln-1138" href="#ln-1138"></a><span class="w">    </span><span class="k">else</span>
+<a id="ln-1139" name="ln-1139" href="#ln-1139"></a><span class="k">        </span><span class="n">has_library</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">.</span><span class="n">false</span><span class="p">.</span>
+<a id="ln-1140" name="ln-1140" href="#ln-1140"></a><span class="w">    </span><span class="k">end if</span>
+<a id="ln-1141" name="ln-1141" href="#ln-1141"></a><span class="k">    </span>
+<a id="ln-1142" name="ln-1142" href="#ln-1142"></a><span class="k">end function </span><span class="n">package_has_library</span>
+<a id="ln-1143" name="ln-1143" href="#ln-1143"></a>
+<a id="ln-1144" name="ln-1144" href="#ln-1144"></a>
+<a id="ln-1145" name="ln-1145" href="#ln-1145"></a><span class="k">end module </span><span class="n">fpm_model</span>
 </pre></div>
 
       </section>
@@ -1334,7 +1337,7 @@
             <p class="text-end">
               Documentation generated by
               <a href="https://github.com/Fortran-FOSS-Programmers/ford">FORD</a>
- on 2025-09-01 14:20 +0000             </p>
+ on 2025-09-02 08:29 +0000             </p>
           </div>
         </div>
         <br>
