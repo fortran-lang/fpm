@@ -40,6 +40,7 @@ contains
 
         self%source_dir = "src"
         self%include_dir = [string_t("include")]
+        self%lib_type = [string_t("monolithic")]
 
     end subroutine default_library
 

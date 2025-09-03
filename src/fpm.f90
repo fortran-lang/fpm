@@ -9,7 +9,7 @@ use fpm_command_line, only: fpm_build_settings, fpm_new_settings, &
 use fpm_dependency, only : new_dependency_tree
 use fpm_filesystem, only: is_dir, join_path, list_files, exists, &
                    basename, filewrite, mkdir, run, os_delete_dir, delete_file
-use fpm_model, only: fpm_model_t, srcfile_t, show_model, fortran_features_t, &
+use fpm_model, only: fpm_model_t, srcfile_t, show_model, &
                     FPM_SCOPE_UNKNOWN, FPM_SCOPE_LIB, FPM_SCOPE_DEP, &
                     FPM_SCOPE_APP, FPM_SCOPE_EXAMPLE, FPM_SCOPE_TEST
 use fpm_compiler, only: new_compiler, new_archiver, set_cpp_preprocessor_flags

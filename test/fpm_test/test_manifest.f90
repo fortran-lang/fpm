@@ -24,6 +24,7 @@ contains
             & new_unittest("valid-manifest", test_valid_manifest), &
             & new_unittest("invalid-manifest", test_invalid_manifest, should_fail=.true.), &
             & new_unittest("default-library", test_default_library), &
+            & new_unittest("default-library-type", test_default_library_type), &
             & new_unittest("default-executable", test_default_executable), &
             & new_unittest("dependency-empty", test_dependency_empty, should_fail=.true.), &
             & new_unittest("dependency-pathtag", test_dependency_pathtag, should_fail=.true.), &
@@ -68,6 +69,7 @@ contains
             & new_unittest("example-empty", test_example_empty, should_fail=.true.), &
             & new_unittest("install-library", test_install_library), &
             & new_unittest("install-empty", test_install_empty), &
+            & new_unittest("install-module-dir", test_install_module_dir), &
             & new_unittest("install-wrongkey", test_install_wrongkey, should_fail=.true.), &
             & new_unittest("preprocess-empty", test_preprocess_empty), &
             & new_unittest("preprocess-wrongkey", test_preprocess_wrongkey, should_fail=.true.), &
@@ -231,6 +233,55 @@ contains
         if (allocated(error)) return
 
     end subroutine test_default_library
+
+
+    !> Test that a package with non-specified library returns monolithic and not shared/static
+    subroutine test_default_library_type(error)
+
+        !> Error handling
+        type(error_t), allocatable, intent(out) :: error
+
+        type(package_config_t) :: package
+        character(len=*), parameter :: manifest = 'fpm-default-library-type.toml'
+        integer :: unit
+
+        open(file=manifest, newunit=unit)
+        write(unit, '(a)') &
+            & 'name = "example"', &
+            & '[library]'
+        close(unit)
+
+        call get_package_data(package, manifest, error)
+
+        open(file=manifest, newunit=unit)
+        close(unit, status='delete')
+
+        if (allocated(error)) return
+
+        if (.not.allocated(package%library)) then
+            call test_failed(error, "Default library is not present in package data")
+            return
+        end if
+
+        if (.not.package%library%monolithic()) then
+            call test_failed(error, "Default library should be monolithic")
+            return
+        end if
+
+        if (package%library%shared()) then
+            call test_failed(error, "Default library should not be shared")
+            return
+        end if
+
+        if (package%library%static()) then
+            call test_failed(error, "Default library should not be static")
+            return
+        end if
+
+        call package%test_serialization('test_default_library_type',error)
+        if (allocated(error)) return
+
+    end subroutine test_default_library_type
 
 
     !> Create a default executable
@@ -1359,6 +1410,34 @@ contains
 
     end subroutine test_install_wrongkey
 
+
+    subroutine test_install_module_dir(error)
+        use fpm_manifest_install
+
+        !> Error handling
+        type(error_t), allocatable, intent(out) :: error
+
+        type(toml_table) :: table
+        type(install_config_t) :: install
+
+        table = toml_table()
+        call set_value(table, "module-dir", "custom_modules")
+
+        call new_install_config(install, table, error)
+        if (allocated(error)) return
+
+        if (.not.allocated(install%module_dir)) then
+            call test_failed(error, "Module directory should be allocated")
+            return
+        end if
+
+        if (install%module_dir /= "custom_modules") then
+            call test_failed(error, "Module directory should match input")
+            return
+        end if
+
+    end subroutine test_install_module_dir
+
     subroutine test_preprocess_empty(error)
         use fpm_manifest_preprocess
 
@@ -1414,7 +1493,7 @@ contains
 
     !> Test macro parsing function get_macros_from_manifest
     subroutine test_macro_parsing(error)
-        use fpm_compiler, only: get_macros, compiler_enum
+        use fpm_compiler, only: get_macros, compiler_enum, id_gcc
 
         !> Error handling
         type(error_t), allocatable, intent(out) :: error
@@ -1423,6 +1502,8 @@ contains
         character(:), allocatable :: temp_file
         integer :: unit
         integer(compiler_enum)  :: id
+        
+        id = id_gcc
 
         allocate(temp_file, source=get_temp_filename())
 

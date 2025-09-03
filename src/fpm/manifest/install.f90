@@ -4,11 +4,12 @@
 !>
 !>```toml
 !>library = bool
+!>module-dir = "path"
 !>```
 module fpm_manifest_install
   use fpm_error, only : error_t, fatal_error, syntax_error
   use tomlf, only : toml_table, toml_key, toml_stat
-  use fpm_toml, only : get_value, set_value, serializable_t
+  use fpm_toml, only : get_value, set_value, serializable_t, set_string
   implicit none
   private
 
@@ -22,6 +23,9 @@ module fpm_manifest_install
 
     !> Install tests with this project
     logical :: test = .false.
+
+    !> Directory where compiled module files should be installed
+    character(len=:), allocatable :: module_dir
 
   contains
 
@@ -56,6 +60,7 @@ contains
 
     call get_value(table, "library", self%library, .false.)
     call get_value(table, "test", self%test, .false.)
+    call get_value(table, "module-dir", self%module_dir)
 
   end subroutine new_install_config
 
@@ -80,7 +85,7 @@ contains
       case default
         call syntax_error(error, "Key "//list(ikey)%key//" is not allowed in install table")
         exit
-      case("library","test")
+      case("library","test","module-dir")
         continue
       end select
     end do
@@ -114,6 +119,9 @@ contains
     write(unit, fmt) "Install configuration"
     write(unit, fmt) " - library install", trim(merge("enabled ", "disabled", self%library))
     write(unit, fmt) " - test    install", trim(merge("enabled ", "disabled", self%test))
+    if (allocated(self%module_dir)) then
+      write(unit, fmt) " - module directory", self%module_dir
+    end if
 
   end subroutine info
 
@@ -127,6 +135,10 @@ contains
        type is (install_config_t)
           if (this%library.neqv.other%library) return
           if (this%test.neqv.other%test) return
+          if (allocated(this%module_dir).neqv.allocated(other%module_dir)) return
+          if (allocated(this%module_dir)) then
+            if (.not.(this%module_dir==other%module_dir)) return
+          end if
        class default
           ! Not the same type
           return
@@ -155,6 +167,9 @@ contains
     call set_value(table, "test", self%test, error, class_name)
     if (allocated(error)) return
 
+    call set_string(table, "module-dir", self%module_dir, error, class_name)
+    if (allocated(error)) return
+
   end subroutine dump_to_toml
 
   !> Read install config from toml table (no checks made at this stage)
@@ -174,6 +189,8 @@ contains
     call get_value(table, "library", self%library, error, class_name)
     if (allocated(error)) return
     call get_value(table, "test", self%test, error, class_name)
+    if (allocated(error)) return
+    call get_value(table, "module-dir", self%module_dir)
     if (allocated(error)) return
 
   end subroutine load_from_toml
