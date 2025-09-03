@@ -63,7 +63,7 @@ contains
 
     call new_installer(installer, prefix=settings%prefix, &
       bindir=settings%bindir, libdir=settings%libdir, testdir=settings%testdir, &
-      includedir=settings%includedir, &
+      includedir=settings%includedir, moduledir=package%install%module_dir, &
       verbosity=merge(2, 1, settings%verbose))
 
     if (allocated(package%library) .and. package%install%library) then
@@ -141,7 +141,7 @@ contains
     call filter_modules(targets, modules)
 
     do ii = 1, size(modules)
-      call installer%install_header(modules(ii)%s//".mod", error)
+      call installer%install_module(modules(ii)%s//".mod", error)
       if (allocated(error)) exit
     end do
     if (allocated(error)) return

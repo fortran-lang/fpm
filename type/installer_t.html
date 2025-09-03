@@ -92,7 +92,7 @@
 
             <li class="list-inline-item" id="statements"><i class="fa fa-list-ol"></i>
               <a data-bs-toggle="tooltip" data-bs-placement="bottom" data-bs-html="true"
-                 title="<p> 3.5% of total for derived types.</p>Including implementation: 146 statements,  2.5% of total for derived types.">21 statements</a>
+                 title="<p> 3.8% of total for derived types.</p>Including implementation: 154 statements,  2.6% of total for derived types.">23 statements</a>
             </li>
 
             <li class="list-inline-item" id="source-file">
@@ -135,15 +135,16 @@
       <div id="vars-0" class="collapse">
         <div class="list-group list-group-flush">
             <a class="list-group-item" href="../type/installer_t.html#variable-bindir~2">bindir</a>
-            <a class="list-group-item" href="../type/installer_t.html#variable-copy~2">copy</a>
+            <a class="list-group-item" href="../type/installer_t.html#variable-copy">copy</a>
             <a class="list-group-item" href="../type/installer_t.html#variable-includedir~2">includedir</a>
-            <a class="list-group-item" href="../type/installer_t.html#variable-libdir~4">libdir</a>
+            <a class="list-group-item" href="../type/installer_t.html#variable-libdir~2">libdir</a>
+            <a class="list-group-item" href="../type/installer_t.html#variable-moduledir">moduledir</a>
             <a class="list-group-item" href="../type/installer_t.html#variable-move">move</a>
-            <a class="list-group-item" href="../type/installer_t.html#variable-os~5">os</a>
-            <a class="list-group-item" href="../type/installer_t.html#variable-prefix~4">prefix</a>
+            <a class="list-group-item" href="../type/installer_t.html#variable-os~2">os</a>
+            <a class="list-group-item" href="../type/installer_t.html#variable-prefix~2">prefix</a>
             <a class="list-group-item" href="../type/installer_t.html#variable-testdir~2">testdir</a>
-            <a class="list-group-item" href="../type/installer_t.html#variable-unit~29">unit</a>
-            <a class="list-group-item" href="../type/installer_t.html#variable-verbosity~17">verbosity</a>
+            <a class="list-group-item" href="../type/installer_t.html#variable-unit~2">unit</a>
+            <a class="list-group-item" href="../type/installer_t.html#variable-verbosity~2">verbosity</a>
         </div>
       </div>
     </div>
@@ -175,6 +176,7 @@
             <a class="list-group-item" href="../type/installer_t.html#boundprocedure-install_executable">install_executable</a>
             <a class="list-group-item" href="../type/installer_t.html#boundprocedure-install_header">install_header</a>
             <a class="list-group-item" href="../type/installer_t.html#boundprocedure-install_library">install_library</a>
+            <a class="list-group-item" href="../type/installer_t.html#boundprocedure-install_module">install_module</a>
             <a class="list-group-item" href="../type/installer_t.html#boundprocedure-install_test">install_test</a>
             <a class="list-group-item" href="../type/installer_t.html#boundprocedure-make_dir">make_dir</a>
             <a class="list-group-item" href="../type/installer_t.html#boundprocedure-run">run</a>
@@ -233,7 +235,7 @@
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-copy~2"></span>
+              <span class="anchor" id="variable-copy"></span>
               character(len=:),
             </td>
               <td>public,</td>
@@ -267,7 +269,7 @@
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-libdir~4"></span>
+              <span class="anchor" id="variable-libdir~2"></span>
               character(len=:),
             </td>
               <td>public,</td>
@@ -280,6 +282,23 @@
                 <td></td>
             <td>
                 <p>Library directory relative to the installation prefix</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-moduledir"></span>
+              character(len=:),
+            </td>
+              <td>public,</td>
+            <td>
+              allocatable
+            </td>
+            <td>::</td>
+            <td><strong>moduledir</strong></td>
+                <td></td>
+                <td></td>
+            <td>
+                <p>Module directory relative to the installation prefix</p>
             </td>
         </tr>
         <tr>
@@ -301,7 +320,7 @@
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-os~5"></span>
+              <span class="anchor" id="variable-os~2"></span>
               integer,
             </td>
               <td>public</td>
@@ -318,7 +337,7 @@
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-prefix~4"></span>
+              <span class="anchor" id="variable-prefix~2"></span>
               character(len=:),
             </td>
               <td>public,</td>
@@ -352,7 +371,7 @@
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-unit~29"></span>
+              <span class="anchor" id="variable-unit~2"></span>
               integer,
             </td>
               <td>public</td>
@@ -369,7 +388,7 @@
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-verbosity~17"></span>
+              <span class="anchor" id="variable-verbosity~2"></span>
               integer,
             </td>
               <td>public</td>
@@ -837,6 +856,93 @@
           <div class="row">
               <div class="card mt-3">
     <div class="card-header codesum">
+      <span class="anchor" id="boundprocedure-install_module"></span>
+      <h3>
+          procedure, public ::
+  <strong>install_module</strong>
+        
+      </h3>
+    </div>
+        <div class="card-body">
+          
+          <p>Install a module in its correct subdirectory</p>
+        </div>
+      <ul class="list-group">
+          <li class="list-group-item">
+                    <h3>
+    private  subroutine install_module(self, module, error)  
+</h3>
+
+  <p>Install a module in its correct subdirectory</p>
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" ></span>
+              class(<a href='installer_t.html'>installer_t</a>),
+            </td>
+<td>intent(inout)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>self</strong></td>
+            <td>
+                <p>Instance of the installer</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" ></span>
+              character(len=*),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>module</strong></td>
+            <td>
+                <p>Path to the module</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" ></span>
+              type(<a href='error_t.html'>error_t</a>),
+            </td>
+<td>intent(out),</td>
+              <td></td>            <td>
+              allocatable
+            </td>
+            <td>::</td>
+            <td><strong>error</strong></td>
+            <td>
+                <p>Error handling</p>
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+
+          </li>
+      </ul>
+  </div>
+
+          </div>
+          <div class="row">
+              <div class="card mt-3">
+    <div class="card-header codesum">
       <span class="anchor" id="boundprocedure-install_test"></span>
       <h3>
           procedure, public ::
@@ -1110,6 +1216,8 @@
 <span class="w">    </span><span class="kt">character</span><span class="p">(</span><span class="nb">len</span><span class="o">=</span><span class="p">:),</span><span class="w"> </span><span class="k">allocatable</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">testdir</span>
 <span class="w">    </span><span class="c">!&gt; Include directory relative to the installation prefix</span>
 <span class="w">    </span><span class="kt">character</span><span class="p">(</span><span class="nb">len</span><span class="o">=</span><span class="p">:),</span><span class="w"> </span><span class="k">allocatable</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">includedir</span>
+<span class="w">    </span><span class="c">!&gt; Module directory relative to the installation prefix</span>
+<span class="w">    </span><span class="kt">character</span><span class="p">(</span><span class="nb">len</span><span class="o">=</span><span class="p">:),</span><span class="w"> </span><span class="k">allocatable</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">moduledir</span>
 <span class="w">    </span><span class="c">!&gt; Output unit for informative printout</span>
 <span class="w">    </span><span class="kt">integer</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">unit</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">output_unit</span>
 <span class="w">    </span><span class="c">!&gt; Verbosity of the installer</span>
@@ -1129,6 +1237,8 @@
 <span class="w">    </span><span class="k">procedure</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">install_library</span>
 <span class="w">    </span><span class="c">!&gt; Install a header/module in its correct subdirectory</span>
 <span class="w">    </span><span class="k">procedure</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">install_header</span>
+<span class="w">    </span><span class="c">!&gt; Install a module in its correct subdirectory</span>
+<span class="w">    </span><span class="k">procedure</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">install_module</span>
 <span class="w">    </span><span class="c">!&gt; Install a test program in its correct subdirectory</span>
 <span class="w">    </span><span class="k">procedure</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">install_test</span>
 <span class="w">    </span><span class="c">!&gt; Install a generic file into a subdirectory in the installation prefix</span>
@@ -1161,7 +1271,7 @@
             <p class="text-end">
               Documentation generated by
               <a href="https://github.com/Fortran-FOSS-Programmers/ford">FORD</a>
- on 2025-09-02 08:29 +0000             </p>
+ on 2025-09-03 07:37 +0000             </p>
           </div>
         </div>
         <br>
