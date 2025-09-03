@@ -69,6 +69,7 @@ contains
             & new_unittest("example-empty", test_example_empty, should_fail=.true.), &
             & new_unittest("install-library", test_install_library), &
             & new_unittest("install-empty", test_install_empty), &
+            & new_unittest("install-module-dir", test_install_module_dir), &
             & new_unittest("install-wrongkey", test_install_wrongkey, should_fail=.true.), &
             & new_unittest("preprocess-empty", test_preprocess_empty), &
             & new_unittest("preprocess-wrongkey", test_preprocess_wrongkey, should_fail=.true.), &
@@ -1408,6 +1409,34 @@ contains
         call new_install_config(install, table, error)
 
     end subroutine test_install_wrongkey
+
+
+    subroutine test_install_module_dir(error)
+        use fpm_manifest_install
+
+        !> Error handling
+        type(error_t), allocatable, intent(out) :: error
+
+        type(toml_table) :: table
+        type(install_config_t) :: install
+
+        table = toml_table()
+        call set_value(table, "module-dir", "custom_modules")
+
+        call new_install_config(install, table, error)
+        if (allocated(error)) return
+
+        if (.not.allocated(install%module_dir)) then
+            call test_failed(error, "Module directory should be allocated")
+            return
+        end if
+
+        if (install%module_dir /= "custom_modules") then
+            call test_failed(error, "Module directory should match input")
+            return
+        end if
+
+    end subroutine test_install_module_dir
 
     subroutine test_preprocess_empty(error)
         use fpm_manifest_preprocess
