@@ -92,7 +92,7 @@
 
             <li class="list-inline-item" id="statements"><i class="fa fa-list-ol"></i>
               <a data-bs-toggle="tooltip" data-bs-placement="bottom" data-bs-html="true"
-                 title=" 3.0% of total for modules and submodules.">465 statements</a>
+                 title=" 3.3% of total for modules and submodules.">524 statements</a>
             </li>
 
             <li class="list-inline-item" id="source-file">
@@ -221,13 +221,13 @@
         <ul class="list-group list-group-flush">
             <li class="list-group-item">
               <ul class="list-inline">
-                  <li class="list-inline-item"><a href='fpm_filesystem.html'>fpm_filesystem</a></li>
-                  <li class="list-inline-item"><a href='fpm_strings.html'>fpm_strings</a></li>
-                  <li class="list-inline-item"><a href='http://fortranwiki.org/fortran/show/iso_fortran_env'>iso_fortran_env</a></li>
                   <li class="list-inline-item"><a href='fpm_error.html'>fpm_error</a></li>
                   <li class="list-inline-item"><a href='fpm_os.html'>fpm_os</a></li>
-                  <li class="list-inline-item"><a href='fpm_release.html'>fpm_release</a></li>
                   <li class="list-inline-item"><a href='fpm_environment.html'>fpm_environment</a></li>
+                  <li class="list-inline-item"><a href='http://fortranwiki.org/fortran/show/iso_fortran_env'>iso_fortran_env</a></li>
+                  <li class="list-inline-item"><a href='fpm_release.html'>fpm_release</a></li>
+                  <li class="list-inline-item"><a href='fpm_strings.html'>fpm_strings</a></li>
+                  <li class="list-inline-item"><a href='fpm_filesystem.html'>fpm_filesystem</a></li>
                   <li class="list-inline-item"><a href='https://github.com/urbanjost/M_CLI2'>M_CLI2</a></li>
               </ul>
             </li>
@@ -338,7 +338,7 @@
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-compiler~3"></span>
+              <span class="anchor" id="variable-compiler"></span>
               character(len=:),
             </td>
               <td>public,</td>
@@ -440,7 +440,7 @@
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-list~2"></span>
+              <span class="anchor" id="variable-list"></span>
               logical,
             </td>
               <td>public</td>
@@ -570,7 +570,7 @@
     <div class="card-header codesum">
       <span class="anchor" id="type-fpm_clean_settings"></span>
       <h3>
-        type, public, extends(<a href='../type/fpm_cmd_settings.html'>fpm_cmd_settings</a>)&nbsp;::&nbsp;
+        type, public, extends(<a href='../type/fpm_build_settings.html'>fpm_build_settings</a>)&nbsp;::&nbsp;
         <a href='../type/fpm_clean_settings.html'>fpm_clean_settings</a>
         
       </h3>
@@ -591,6 +591,74 @@
     <tbody>
         <tr>
             <td>
+              <span class="anchor" id="variable-archiver"></span>
+              character(len=:),
+            </td>
+              <td>public,</td>
+            <td>
+              allocatable
+            </td>
+            <td>::</td>
+            <td><strong>archiver</strong></td>
+                <td></td>
+                <td></td>
+            <td>
+
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-build_tests"></span>
+              logical,
+            </td>
+              <td>public</td>
+            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>build_tests</strong></td>
+<td> =</td>
+                <td>.false.</td>
+            <td>
+
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-c_compiler"></span>
+              character(len=:),
+            </td>
+              <td>public,</td>
+            <td>
+              allocatable
+            </td>
+            <td>::</td>
+            <td><strong>c_compiler</strong></td>
+                <td></td>
+                <td></td>
+            <td>
+
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-cflag"></span>
+              character(len=:),
+            </td>
+              <td>public,</td>
+            <td>
+              allocatable
+            </td>
+            <td>::</td>
+            <td><strong>cflag</strong></td>
+                <td></td>
+                <td></td>
+            <td>
+
+            </td>
+        </tr>
+        <tr>
+            <td>
               <span class="anchor" id="variable-clean_all"></span>
               logical,
             </td>
@@ -600,6 +668,40 @@
             </td>
             <td>::</td>
             <td><strong>clean_all</strong></td>
+<td> =</td>
+                <td>.false.</td>
+            <td>
+
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-clean_apps"></span>
+              logical,
+            </td>
+              <td>public</td>
+            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>clean_apps</strong></td>
+<td> =</td>
+                <td>.false.</td>
+            <td>
+
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-clean_examples"></span>
+              logical,
+            </td>
+              <td>public</td>
+            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>clean_examples</strong></td>
 <td> =</td>
                 <td>.false.</td>
             <td>
@@ -625,6 +727,142 @@
         </tr>
         <tr>
             <td>
+              <span class="anchor" id="variable-clean_test"></span>
+              logical,
+            </td>
+              <td>public</td>
+            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>clean_test</strong></td>
+<td> =</td>
+                <td>.false.</td>
+            <td>
+
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-compiler"></span>
+              character(len=:),
+            </td>
+              <td>public,</td>
+            <td>
+              allocatable
+            </td>
+            <td>::</td>
+            <td><strong>compiler</strong></td>
+                <td></td>
+                <td></td>
+            <td>
+
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-cxx_compiler"></span>
+              character(len=:),
+            </td>
+              <td>public,</td>
+            <td>
+              allocatable
+            </td>
+            <td>::</td>
+            <td><strong>cxx_compiler</strong></td>
+                <td></td>
+                <td></td>
+            <td>
+
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-cxxflag"></span>
+              character(len=:),
+            </td>
+              <td>public,</td>
+            <td>
+              allocatable
+            </td>
+            <td>::</td>
+            <td><strong>cxxflag</strong></td>
+                <td></td>
+                <td></td>
+            <td>
+
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-dump"></span>
+              character(len=:),
+            </td>
+              <td>public,</td>
+            <td>
+              allocatable
+            </td>
+            <td>::</td>
+            <td><strong>dump</strong></td>
+                <td></td>
+                <td></td>
+            <td>
+
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-flag"></span>
+              character(len=:),
+            </td>
+              <td>public,</td>
+            <td>
+              allocatable
+            </td>
+            <td>::</td>
+            <td><strong>flag</strong></td>
+                <td></td>
+                <td></td>
+            <td>
+
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-ldflag"></span>
+              character(len=:),
+            </td>
+              <td>public,</td>
+            <td>
+              allocatable
+            </td>
+            <td>::</td>
+            <td><strong>ldflag</strong></td>
+                <td></td>
+                <td></td>
+            <td>
+
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-list"></span>
+              logical,
+            </td>
+              <td>public</td>
+            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>list</strong></td>
+<td> =</td>
+                <td>.false.</td>
+            <td>
+
+            </td>
+        </tr>
+        <tr>
+            <td>
               <span class="anchor" id="variable-path_to_config"></span>
               character(len=:),
             </td>
@@ -642,6 +880,40 @@
         </tr>
         <tr>
             <td>
+              <span class="anchor" id="variable-profile"></span>
+              character(len=:),
+            </td>
+              <td>public,</td>
+            <td>
+              allocatable
+            </td>
+            <td>::</td>
+            <td><strong>profile</strong></td>
+                <td></td>
+                <td></td>
+            <td>
+
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-prune"></span>
+              logical,
+            </td>
+              <td>public</td>
+            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>prune</strong></td>
+<td> =</td>
+                <td>.true.</td>
+            <td>
+
+            </td>
+        </tr>
+        <tr>
+            <td>
               <span class="anchor" id="variable-registry_cache"></span>
               logical,
             </td>
@@ -651,6 +923,23 @@
             </td>
             <td>::</td>
             <td><strong>registry_cache</strong></td>
+<td> =</td>
+                <td>.false.</td>
+            <td>
+
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-show_model"></span>
+              logical,
+            </td>
+              <td>public</td>
+            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>show_model</strong></td>
 <td> =</td>
                 <td>.false.</td>
             <td>
@@ -876,7 +1165,7 @@
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-compiler~3"></span>
+              <span class="anchor" id="variable-compiler"></span>
               character(len=:),
             </td>
               <td>public,</td>
@@ -1029,7 +1318,7 @@
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-list~2"></span>
+              <span class="anchor" id="variable-list"></span>
               logical,
             </td>
               <td>public</td>
@@ -1265,7 +1554,7 @@
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-compiler~3"></span>
+              <span class="anchor" id="variable-compiler"></span>
               character(len=:),
             </td>
               <td>public,</td>
@@ -1401,7 +1690,7 @@
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-list~2"></span>
+              <span class="anchor" id="variable-list"></span>
               logical,
             </td>
               <td>public</td>
@@ -1620,7 +1909,7 @@
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-name"></span>
+              <span class="anchor" id="variable-name~2"></span>
               character(len=:),
             </td>
               <td>public,</td>
@@ -1890,7 +2179,7 @@
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-compiler~3"></span>
+              <span class="anchor" id="variable-compiler"></span>
               character(len=:),
             </td>
               <td>public,</td>
@@ -2009,7 +2298,7 @@
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-list~2"></span>
+              <span class="anchor" id="variable-list"></span>
               logical,
             </td>
               <td>public</td>
@@ -2296,7 +2585,7 @@
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-compiler~3"></span>
+              <span class="anchor" id="variable-compiler"></span>
               character(len=:),
             </td>
               <td>public,</td>
@@ -2415,7 +2704,7 @@
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-list~2"></span>
+              <span class="anchor" id="variable-list"></span>
               logical,
             </td>
               <td>public</td>
@@ -2432,7 +2721,7 @@
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-name~2"></span>
+              <span class="anchor" id="variable-name~3"></span>
               character(len=ibug),
             </td>
               <td>public,</td>
@@ -2717,7 +3006,7 @@
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-compiler~3"></span>
+              <span class="anchor" id="variable-compiler"></span>
               character(len=:),
             </td>
               <td>public,</td>
@@ -2836,7 +3125,7 @@
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-list~2"></span>
+              <span class="anchor" id="variable-list"></span>
               logical,
             </td>
               <td>public</td>
@@ -2853,7 +3142,7 @@
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-name~2"></span>
+              <span class="anchor" id="variable-name~3"></span>
               character(len=ibug),
             </td>
               <td>public,</td>
@@ -3104,7 +3393,7 @@
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-name~3"></span>
+              <span class="anchor" id="variable-name~4"></span>
               character(len=ibug),
             </td>
               <td>public,</td>
@@ -3314,7 +3603,7 @@ used by fpm is prefixed with FPM_.</p>
             <p class="text-end">
               Documentation generated by
               <a href="https://github.com/Fortran-FOSS-Programmers/ford">FORD</a>
- on 2025-09-03 07:37 +0000             </p>
+ on 2025-09-04 17:25 +0000             </p>
           </div>
         </div>
         <br>

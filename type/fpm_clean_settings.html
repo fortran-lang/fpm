@@ -92,7 +92,7 @@
 
             <li class="list-inline-item" id="statements"><i class="fa fa-list-ol"></i>
               <a data-bs-toggle="tooltip" data-bs-placement="bottom" data-bs-html="true"
-                 title="<p> 0.8% of total for derived types.</p>Including implementation: 5 statements,  0.1% of total for derived types.">5 statements</a>
+                 title="<p> 1.3% of total for derived types.</p>Including implementation: 8 statements,  0.1% of total for derived types.">8 statements</a>
             </li>
 
             <li class="list-inline-item" id="source-file">
@@ -134,10 +134,27 @@
       </a>
       <div id="vars-0" class="collapse">
         <div class="list-group list-group-flush">
+            <a class="list-group-item" href="../type/fpm_clean_settings.html#variable-archiver">archiver</a>
+            <a class="list-group-item" href="../type/fpm_clean_settings.html#variable-build_tests">build_tests</a>
+            <a class="list-group-item" href="../type/fpm_clean_settings.html#variable-c_compiler">c_compiler</a>
+            <a class="list-group-item" href="../type/fpm_clean_settings.html#variable-cflag">cflag</a>
             <a class="list-group-item" href="../type/fpm_clean_settings.html#variable-clean_all">clean_all</a>
+            <a class="list-group-item" href="../type/fpm_clean_settings.html#variable-clean_apps">clean_apps</a>
+            <a class="list-group-item" href="../type/fpm_clean_settings.html#variable-clean_examples">clean_examples</a>
             <a class="list-group-item" href="../type/fpm_clean_settings.html#variable-clean_skip">clean_skip</a>
+            <a class="list-group-item" href="../type/fpm_clean_settings.html#variable-clean_test">clean_test</a>
+            <a class="list-group-item" href="../type/fpm_clean_settings.html#variable-compiler">compiler</a>
+            <a class="list-group-item" href="../type/fpm_clean_settings.html#variable-cxx_compiler">cxx_compiler</a>
+            <a class="list-group-item" href="../type/fpm_clean_settings.html#variable-cxxflag">cxxflag</a>
+            <a class="list-group-item" href="../type/fpm_clean_settings.html#variable-dump">dump</a>
+            <a class="list-group-item" href="../type/fpm_clean_settings.html#variable-flag">flag</a>
+            <a class="list-group-item" href="../type/fpm_clean_settings.html#variable-ldflag">ldflag</a>
+            <a class="list-group-item" href="../type/fpm_clean_settings.html#variable-list">list</a>
             <a class="list-group-item" href="../type/fpm_clean_settings.html#variable-path_to_config">path_to_config</a>
+            <a class="list-group-item" href="../type/fpm_clean_settings.html#variable-profile">profile</a>
+            <a class="list-group-item" href="../type/fpm_clean_settings.html#variable-prune">prune</a>
             <a class="list-group-item" href="../type/fpm_clean_settings.html#variable-registry_cache">registry_cache</a>
+            <a class="list-group-item" href="../type/fpm_clean_settings.html#variable-show_model">show_model</a>
             <a class="list-group-item" href="../type/fpm_clean_settings.html#variable-verbose">verbose</a>
             <a class="list-group-item" href="../type/fpm_clean_settings.html#variable-working_dir">working_dir</a>
         </div>
@@ -170,7 +187,7 @@
     
     <div class="col-md-9" id='text'>
       <h2 id="type-def-statement">
-        type, public, extends(<a href='fpm_cmd_settings.html'>fpm_cmd_settings</a>) :: fpm_clean_settings</h2>
+        type, public, extends(<a href='fpm_build_settings.html'>fpm_build_settings</a>) :: fpm_clean_settings</h2>
     
     <br>
 
@@ -188,6 +205,74 @@
     <tbody>
         <tr>
             <td>
+              <span class="anchor" id="variable-archiver"></span>
+              character(len=:),
+            </td>
+              <td>public,</td>
+            <td>
+              allocatable
+            </td>
+            <td>::</td>
+            <td><strong>archiver</strong></td>
+                <td></td>
+                <td></td>
+            <td>
+                
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-build_tests"></span>
+              logical,
+            </td>
+              <td>public</td>
+            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>build_tests</strong></td>
+<td> =</td>
+                <td>.false.</td>
+            <td>
+                
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-c_compiler"></span>
+              character(len=:),
+            </td>
+              <td>public,</td>
+            <td>
+              allocatable
+            </td>
+            <td>::</td>
+            <td><strong>c_compiler</strong></td>
+                <td></td>
+                <td></td>
+            <td>
+                
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-cflag"></span>
+              character(len=:),
+            </td>
+              <td>public,</td>
+            <td>
+              allocatable
+            </td>
+            <td>::</td>
+            <td><strong>cflag</strong></td>
+                <td></td>
+                <td></td>
+            <td>
+                
+            </td>
+        </tr>
+        <tr>
+            <td>
               <span class="anchor" id="variable-clean_all"></span>
               logical,
             </td>
@@ -197,6 +282,40 @@
             </td>
             <td>::</td>
             <td><strong>clean_all</strong></td>
+<td> =</td>
+                <td>.false.</td>
+            <td>
+                
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-clean_apps"></span>
+              logical,
+            </td>
+              <td>public</td>
+            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>clean_apps</strong></td>
+<td> =</td>
+                <td>.false.</td>
+            <td>
+                
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-clean_examples"></span>
+              logical,
+            </td>
+              <td>public</td>
+            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>clean_examples</strong></td>
 <td> =</td>
                 <td>.false.</td>
             <td>
@@ -222,6 +341,142 @@
         </tr>
         <tr>
             <td>
+              <span class="anchor" id="variable-clean_test"></span>
+              logical,
+            </td>
+              <td>public</td>
+            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>clean_test</strong></td>
+<td> =</td>
+                <td>.false.</td>
+            <td>
+                
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-compiler"></span>
+              character(len=:),
+            </td>
+              <td>public,</td>
+            <td>
+              allocatable
+            </td>
+            <td>::</td>
+            <td><strong>compiler</strong></td>
+                <td></td>
+                <td></td>
+            <td>
+                
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-cxx_compiler"></span>
+              character(len=:),
+            </td>
+              <td>public,</td>
+            <td>
+              allocatable
+            </td>
+            <td>::</td>
+            <td><strong>cxx_compiler</strong></td>
+                <td></td>
+                <td></td>
+            <td>
+                
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-cxxflag"></span>
+              character(len=:),
+            </td>
+              <td>public,</td>
+            <td>
+              allocatable
+            </td>
+            <td>::</td>
+            <td><strong>cxxflag</strong></td>
+                <td></td>
+                <td></td>
+            <td>
+                
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-dump"></span>
+              character(len=:),
+            </td>
+              <td>public,</td>
+            <td>
+              allocatable
+            </td>
+            <td>::</td>
+            <td><strong>dump</strong></td>
+                <td></td>
+                <td></td>
+            <td>
+                
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-flag"></span>
+              character(len=:),
+            </td>
+              <td>public,</td>
+            <td>
+              allocatable
+            </td>
+            <td>::</td>
+            <td><strong>flag</strong></td>
+                <td></td>
+                <td></td>
+            <td>
+                
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-ldflag"></span>
+              character(len=:),
+            </td>
+              <td>public,</td>
+            <td>
+              allocatable
+            </td>
+            <td>::</td>
+            <td><strong>ldflag</strong></td>
+                <td></td>
+                <td></td>
+            <td>
+                
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-list"></span>
+              logical,
+            </td>
+              <td>public</td>
+            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>list</strong></td>
+<td> =</td>
+                <td>.false.</td>
+            <td>
+                
+            </td>
+        </tr>
+        <tr>
+            <td>
               <span class="anchor" id="variable-path_to_config"></span>
               character(len=:),
             </td>
@@ -239,6 +494,40 @@
         </tr>
         <tr>
             <td>
+              <span class="anchor" id="variable-profile"></span>
+              character(len=:),
+            </td>
+              <td>public,</td>
+            <td>
+              allocatable
+            </td>
+            <td>::</td>
+            <td><strong>profile</strong></td>
+                <td></td>
+                <td></td>
+            <td>
+                
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-prune"></span>
+              logical,
+            </td>
+              <td>public</td>
+            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>prune</strong></td>
+<td> =</td>
+                <td>.true.</td>
+            <td>
+                
+            </td>
+        </tr>
+        <tr>
+            <td>
               <span class="anchor" id="variable-registry_cache"></span>
               logical,
             </td>
@@ -248,6 +537,23 @@
             </td>
             <td>::</td>
             <td><strong>registry_cache</strong></td>
+<td> =</td>
+                <td>.false.</td>
+            <td>
+                
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-show_model"></span>
+              logical,
+            </td>
+              <td>public</td>
+            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>show_model</strong></td>
 <td> =</td>
                 <td>.false.</td>
             <td>
@@ -316,7 +622,7 @@
             <p class="text-end">
               Documentation generated by
               <a href="https://github.com/Fortran-FOSS-Programmers/ford">FORD</a>
- on 2025-09-03 07:37 +0000             </p>
+ on 2025-09-04 17:25 +0000             </p>
           </div>
         </div>
         <br>
