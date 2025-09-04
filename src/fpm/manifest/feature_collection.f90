@@ -1,7 +1,7 @@
 
 module fpm_manifest_feature_collection
     use fpm_manifest_feature, only: feature_config_t, new_feature
-    use fpm_manifest_platform, only: platform_config_t
+    use fpm_manifest_platform, only: platform_config_t, is_platform_key
     use fpm_error, only: error_t, fatal_error, syntax_error
     use fpm_environment, only: OS_UNKNOWN, OS_LINUX, OS_MACOS, OS_WINDOWS, OS_CYGWIN, OS_SOLARIS, &
                              OS_FREEBSD, OS_OPENBSD, OS_ALL, OS_NAME, match_os_type
@@ -222,10 +222,48 @@ module fpm_manifest_feature_collection
         character(*), intent(in) :: name
         type(error_t), allocatable, intent(out) :: error
         
+        integer :: i
+        type(toml_key), allocatable :: keys(:)
+        type(toml_table), pointer :: subtable, leaf
+        logical, allocatable :: is_subtable(:)
+        
+        ! First pass: check if we have os/compiler subtables
+        call table%get_keys(keys)
+        allocate(is_subtable(size(keys)), source=.false.)
+        
+        ! Check if this key is a valid OS/compiler name
+        do i = 1, size(keys)            
+            
+            ! Check if this subtable is valid: there must be up to 2 platform_key levels, and no 
+            ! node siblings            
+            if (is_platform_key(keys(i)%key)) then 
+                
+                call get_value(table, keys(i)%key, subtable) 
+                leaf => get_platform_subtable(subtable)
+                
+                if (associated(leaf)) then 
+                
+                endif
+                
+            else
+                
+                is_subtable(i) = .false.
+                
+            end if
+            
+        end do         
+        
+        ! Load 
+        
+        
+       
         ! Initialize base feature
         self%base%name = name
         self%base%platform%compiler = id_all
         self%base%platform%os_type = OS_ALL
+        
+       
+        
         
         ! Traverse the table hierarchy to find variants
         call traverse_feature_table(self, table, name, OS_ALL, id_all, error)
@@ -235,8 +273,63 @@ module fpm_manifest_feature_collection
         
     end subroutine new_collection_from_subtable
     
+    recursive function get_platform_subtable(subtable, level) result(leaf_node)
+        type(toml_table), pointer, intent(in) :: subtable
+        integer, optional, intent(in) :: level
+        type(toml_table), pointer :: leaf_node
+        
+        type(toml_key), allocatable :: keys(:)
+        type(toml_table), pointer :: down
+        integer :: depth, stat, i
+        integer, parameter :: MAX_DEPTH = 2
+        
+        if (present(level)) then 
+            depth = level
+        else
+            depth = 1
+        end if
+        
+        nullify(leaf_node)
+        
+        ! This is not a node
+        if (.not.associated(subtable)) return
+        
+        call subtable%get_keys(keys)
+        
+        if (size(keys)<=0) then 
+            
+            return
+        elseif (size(keys)==1) then 
+            
+            ! If this is a platform node, must be the only key, and we must be within 
+            ! the first 2 node levels
+            if (is_platform_key(keys(1)%key) .and.  depth<=MAX_DEPTH) then 
+            
+                ! This is an OS constraint - get subtable and recurse
+                call get_value(subtable, keys(1)%key, down, stat=stat)
+                if (.not.associated(down)) return                  
+                
+                leaf_node => get_platform_subtable(down, depth+1)
+                
+            endif
+            
+        else
+            ! If there is more than one key, none must be platform
+            do i=1,size(keys)
+                if (is_platform_key(keys(i)%key)) return
+            end do
+            
+            ! No keys are platform: this is a leaf node
+            leaf_node => subtable
+            
+        end if
+        
+    end function get_platform_subtable
+    
+    
     !> Recursively traverse a feature table to find variants
     recursive subroutine traverse_feature_table(collection, table, feature_name, os_constraint, compiler_constraint, error)
+        use fpm_manifest_feature, only: init_feature_components
         type(feature_collection_t), intent(inout) :: collection
         type(toml_table), intent(inout) :: table
         character(*), intent(in) :: feature_name
@@ -248,38 +341,30 @@ module fpm_manifest_feature_collection
         character(len=:), allocatable :: value_str
         integer :: i, stat, os_type, compiler_type
         type(feature_config_t) :: feature_variant
-        logical :: has_feature_data
+        logical :: has_platform_keys, has_feature_data
         
         call table%get_keys(keys)
+        has_platform_keys = .false.
         has_feature_data = .false.
         
+        ! First pass: check what types of keys we have
         do i = 1, size(keys)
-            ! Check if this key is an OS name
+            ! Check if this key is a valid OS name
             os_type = match_os_type(keys(i)%key)
             if (os_type /= OS_UNKNOWN) then
-                ! This is an OS constraint - get subtable and recurse
-                call get_value(table, keys(i)%key, subtable, stat=stat)
-                if (stat == toml_stat%success) then
-                    call traverse_feature_table(collection, subtable, feature_name, os_type, compiler_constraint, error)
-                    if (allocated(error)) return
-                end if
+                has_platform_keys = .true.
                 cycle
             end if
             
-            ! Check if this key is a compiler name  
+            ! Check if this key is a valid compiler name  
             compiler_type = match_compiler_type(keys(i)%key)
             if (compiler_type /= id_unknown) then
-                ! This is a compiler constraint - get subtable and recurse
-                call get_value(table, keys(i)%key, subtable, stat=stat)
-                if (stat == toml_stat%success) then
-                    call traverse_feature_table(collection, subtable, feature_name, os_constraint, compiler_type, error)
-                    if (allocated(error)) return
-                end if
+                has_platform_keys = .true.
                 cycle
             end if
             
             ! Check if this looks like it should be an OS or compiler but isn't valid
-            if (is_potential_platform_key(keys(i)%key)) then
+            if (is_platform_key(keys(i)%key)) then
                 call fatal_error(error, "Key '"//keys(i)%key//"' is not allowed in feature table")
                 return
             end if
@@ -288,14 +373,45 @@ module fpm_manifest_feature_collection
             has_feature_data = .true.
         end do
         
-        ! If we found feature data at this level, create a feature config
+        ! If we have platform keys, traverse them
+        if (has_platform_keys) then
+            do i = 1, size(keys)
+                ! Check if this key is an OS name
+                os_type = match_os_type(keys(i)%key)
+                if (os_type /= OS_UNKNOWN) then
+                    ! This is an OS constraint - get subtable and recurse
+                    call get_value(table, keys(i)%key, subtable, stat=stat)
+                    if (stat == toml_stat%success) then
+                        call traverse_feature_table(collection, subtable, feature_name, os_type, compiler_constraint, error)
+                        if (allocated(error)) return
+                    end if
+                    cycle
+                end if
+                
+                ! Check if this key is a compiler name  
+                compiler_type = match_compiler_type(keys(i)%key)
+                if (compiler_type /= id_unknown) then
+                    ! This is a compiler constraint - get subtable and recurse
+                    call get_value(table, keys(i)%key, subtable, stat=stat)
+                    if (stat == toml_stat%success) then
+                        call traverse_feature_table(collection, subtable, feature_name, os_constraint, compiler_type, error)
+                        if (allocated(error)) return
+                    end if
+                    cycle
+                end if
+            end do
+        end if
+        
+        ! If we found feature data at this level (no more platform keys), initialize feature components
         if (has_feature_data) then
-            ! Create feature from the current table
-            call new_feature(feature_variant, table, error=error, name=feature_name)
-            if (allocated(error)) return
-            
+            ! Initialize a new feature variant
+            feature_variant%name = feature_name
             feature_variant%platform%os_type = os_constraint
             feature_variant%platform%compiler = compiler_constraint
+            
+            ! Initialize feature components from the table
+            call init_feature_components(feature_variant, table, error=error)
+            if (allocated(error)) return
             
             if (os_constraint == OS_ALL .and. compiler_constraint == id_all) then
                 ! This is a base feature specification
@@ -307,34 +423,17 @@ module fpm_manifest_feature_collection
             end if
         end if
         
+        ! If this is the root table and we haven't processed any feature data yet, 
+        ! call init_feature_components on the base feature (may be empty)
+        if (.not. has_platform_keys .and. .not. has_feature_data .and. &
+            os_constraint == OS_ALL .and. compiler_constraint == id_all) then
+            ! Initialize base feature components from empty or root table
+            call init_feature_components(collection%base, table, error=error)
+            if (allocated(error)) return
+        end if
+        
     end subroutine traverse_feature_table
     
-    !> Check if a key looks like it should be a platform constraint but isn't valid
-    logical function is_potential_platform_key(key)
-        character(*), intent(in) :: key
-        
-        ! Simple heuristic: if it's not a known feature configuration key,
-        ! and it looks like it could be a platform identifier, flag it as invalid
-        
-        ! Known feature configuration keys
-        if (key == "flags" .or. key == "preprocess" .or. key == "link" .or. &
-            key == "include-dir" .or. key == "source-dir" .or. key == "dependencies") then
-            is_potential_platform_key = .false.
-            return
-        end if
-        
-        ! If it contains common OS or compiler-like patterns, it might be an invalid platform key
-        if (index(key, "os") > 0 .or. index(key, "compiler") > 0 .or. &
-            index(key, "win") > 0 .or. index(key, "linux") > 0 .or. &
-            index(key, "mac") > 0 .or. index(key, "fort") > 0 .or. &
-            index(key, "gcc") > 0 .or. index(key, "intel") > 0) then
-            is_potential_platform_key = .true.
-            return
-        end if
-        
-        is_potential_platform_key = .false.
-    end function is_potential_platform_key
-
     !> Merge two feature configurations (for base feature merging)
     subroutine merge_feature_configs(target, source, error)
         type(feature_config_t), intent(inout) :: target

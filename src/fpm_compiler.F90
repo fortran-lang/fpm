@@ -1045,7 +1045,7 @@ function match_compiler_type(compiler) result(id)
 end function match_compiler_type
 
 !> Check if compiler name is a valid compiler name
-subroutine validate_compiler_name(compiler_name, is_valid)
+pure elemental subroutine validate_compiler_name(compiler_name, is_valid)
 
     !> Name of a compiler
     character(len=*), intent(in) :: compiler_name

@@ -105,7 +105,7 @@ contains
     end function match_os_type
 
     !> Check if os_name is a valid name of a supported OS
-    subroutine validate_os_name(os_name, is_valid)
+    pure elemental subroutine validate_os_name(os_name, is_valid)
 
        !> Name of an operating system
        character(len=*), intent(in) :: os_name

@@ -168,7 +168,7 @@ contains
     end function platform_is_suitable
 
     !> Check if a key (os or compiler) can be used for platform setting
-    logical function is_platform_key(key)
+    elemental logical function is_platform_key(key)
         character(*), intent(in) :: key
         
         call validate_compiler_name(key, is_platform_key)
