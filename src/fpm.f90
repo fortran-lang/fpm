@@ -728,9 +728,6 @@ subroutine delete_targets(settings, error)
     call get_package_data(package, "fpm.toml", error, apply_defaults=.true.)
     if (allocated(error)) return
     
-    ! Ensure tests will be modeled
-    if (settings%clean_test) settings%build_tests = .true.  
-
     ! Build the model to understand targets
     call build_model(model, settings, package, error)
     if (allocated(error)) return

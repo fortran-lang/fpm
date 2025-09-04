@@ -682,6 +682,9 @@ contains
                     cln%clean_apps     = clean_apps
                     cln%clean_examples = clean_examples
 
+                    ! Ensure tests will be modeled if they have to be cleaned
+                    if (clean_test) cln%build_tests = .true.  
+                    
                 end select
             end block
 
