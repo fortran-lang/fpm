@@ -8,7 +8,7 @@ use fpm_command_line, only: fpm_build_settings, fpm_new_settings, &
                       fpm_clean_settings
 use fpm_dependency, only : new_dependency_tree
 use fpm_filesystem, only: is_dir, join_path, list_files, exists, &
-                   basename, filewrite, mkdir, run, os_delete_dir
+                   basename, filewrite, mkdir, run, os_delete_dir, delete_file
 use fpm_model, only: fpm_model_t, srcfile_t, show_model, &
                     FPM_SCOPE_UNKNOWN, FPM_SCOPE_LIB, FPM_SCOPE_DEP, &
                     FPM_SCOPE_APP, FPM_SCOPE_EXAMPLE, FPM_SCOPE_TEST
@@ -17,7 +17,7 @@ use fpm_compiler, only: new_compiler, new_archiver, set_cpp_preprocessor_flags
 
 use fpm_sources, only: add_executable_sources, add_sources_from_dir
 use fpm_targets, only: targets_from_sources, build_target_t, build_target_ptr, &
-                        FPM_TARGET_EXECUTABLE, get_library_dirs
+                        FPM_TARGET_EXECUTABLE, get_library_dirs, filter_executable_targets
 use fpm_manifest, only : get_package_data, package_config_t
 use fpm_meta, only : resolve_metapackages
 use fpm_error, only : error_t, fatal_error, fpm_stop
@@ -692,11 +692,76 @@ subroutine delete_skip(is_unix)
     end do
 end subroutine delete_skip
 
+!> Delete targets of a specific scope with given description
+subroutine delete_targets_by_scope(targets, scope, scope_name, deleted_any)
+    type(build_target_ptr), intent(in) :: targets(:)
+    integer, intent(in) :: scope
+    character(len=*), intent(in) :: scope_name
+    logical, intent(inout) :: deleted_any
+
+    type(string_t), allocatable :: scope_targets(:)
+    integer :: i
+
+    call filter_executable_targets(targets, scope, scope_targets)
+    if (size(scope_targets) > 0) then
+        do i = 1, size(scope_targets)
+            if (exists(scope_targets(i)%s)) then
+                write(stdout, '(A,A,A,A)') "<INFO> Deleted ", scope_name, " target: ", basename(scope_targets(i)%s)
+                call delete_file(scope_targets(i)%s)
+                deleted_any = .true.
+            end if
+        end do
+    end if
+end subroutine delete_targets_by_scope
+
+!> Delete build artifacts for specific target types (test, apps, examples)
+subroutine delete_targets(settings, error)
+    class(fpm_clean_settings), intent(inout) :: settings
+    type(error_t), allocatable, intent(out) :: error
+
+    type(package_config_t) :: package
+    type(fpm_model_t) :: model
+    type(build_target_ptr), allocatable :: targets(:)
+    logical :: deleted_any
+
+    ! Get package configuration
+    call get_package_data(package, "fpm.toml", error, apply_defaults=.true.)
+    if (allocated(error)) return
+    
+    ! Build the model to understand targets
+    call build_model(model, settings, package, error)
+    if (allocated(error)) return
+
+    ! Get the exact targets
+    call targets_from_sources(targets, model, settings%prune, package%library, error)
+    if (allocated(error)) return
+
+    deleted_any = .false.
+
+    ! Delete targets by scope using the original approach
+    if (settings%clean_test) then
+        call delete_targets_by_scope(targets, FPM_SCOPE_TEST, "test", deleted_any)
+    end if
+
+    if (settings%clean_apps) then
+        call delete_targets_by_scope(targets, FPM_SCOPE_APP, "app", deleted_any)
+    end if
+
+    if (settings%clean_examples) then
+        call delete_targets_by_scope(targets, FPM_SCOPE_EXAMPLE, "example", deleted_any)
+    end if
+
+    if (.not. deleted_any) then
+        write(stdout, '(A)') "No matching build targets found to delete."
+    end if
+
+end subroutine delete_targets
+
 !> Delete the build directory including or excluding dependencies. Can be used
 !> to clear the registry cache.
 subroutine cmd_clean(settings)
     !> Settings for the clean command.
-    class(fpm_clean_settings), intent(in) :: settings
+    class(fpm_clean_settings), intent(inout) :: settings
 
     character :: user_response
     type(fpm_global_settings) :: global_settings
@@ -708,6 +773,20 @@ subroutine cmd_clean(settings)
         if (allocated(error)) return
 
         call os_delete_dir(os_is_unix(), global_settings%registry_settings%cache_path)
+    end if
+
+    ! Handle target-specific cleaning
+    if (any([settings%clean_test, settings%clean_apps, settings%clean_examples])) then
+        if (.not. is_dir('build')) then
+            write (stdout, '(A)') "fpm: No build directory found."
+            return
+        end if
+        call delete_targets(settings, error)
+        if (allocated(error)) then
+            write(stderr, '(A)') 'Error: ' // error%message
+            return
+        end if
+        return
     end if
 
     if (is_dir('build')) then
