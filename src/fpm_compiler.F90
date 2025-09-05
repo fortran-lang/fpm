@@ -273,7 +273,7 @@ character(*), parameter :: &
     flag_cray_free_form = " -ffree"
 
 character(*), parameter :: &
-    flag_flang_new_openmp = " -fopenmp"
+    flag_flang_openmp = " -fopenmp"
 
 contains
 
