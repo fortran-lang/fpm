@@ -294,12 +294,12 @@ function get_default_flags(self, release) result(flags)
     ! Append position-independent code (PIC) flag, that is necessary 
     ! building shared libraries
     select case (self%id)
-    case (id_gcc, id_f95, id_caf, id_flang, id_f18, id_lfortran, &
+    case (id_gcc, id_f95, id_caf, id_flang_classic, id_f18, id_lfortran, &
           id_intel_classic_nix, id_intel_classic_mac, id_intel_llvm_nix, &
           id_pgi, id_nvhpc, id_nag, id_cray, id_ibmxl)
         pic_flag = " -fPIC"
-    case (id_flang_new)
-        ! flang-new doesn't support -fPIC on Windows MSVC target
+    case (id_flang)
+        ! LLVM Flang doesn't support -fPIC on Windows MSVC target
         if (get_os_type() == OS_WINDOWS) then
             pic_flag = ""
         else
@@ -519,7 +519,7 @@ pure subroutine set_cpp_preprocessor_flags(id, flags)
     select case(id)
     case default
         flag_cpp_preprocessor = ""
-    case(id_caf, id_gcc, id_f95, id_nvhpc, id_flang_new)
+    case(id_caf, id_gcc, id_f95, id_nvhpc, id_flang)
         flag_cpp_preprocessor = "-cpp"
     case(id_intel_classic_windows, id_intel_llvm_windows)
         flag_cpp_preprocessor = "/fpp"
@@ -672,7 +672,7 @@ function get_shared_flag(self) result(shared_flag)
     select case (self%id)
     case default
         shared_flag = "-shared"
-    case (id_gcc, id_f95, id_flang, id_flang_new, id_lfortran)
+    case (id_gcc, id_f95, id_flang, id_flang_classic, id_lfortran)
         shared_flag = "-shared"
     case (id_intel_classic_nix, id_intel_llvm_nix, id_pgi, id_nvhpc)
         shared_flag = "-shared"
