@@ -14,6 +14,7 @@ program fpm_testing
     use test_versioning, only : collect_versioning
     use test_settings, only : collect_settings
     use test_os, only: collect_os
+    use test_features, only : collect_features
 
     implicit none
     integer :: stat, is
@@ -26,6 +27,7 @@ program fpm_testing
     suite = [ &
         & new_testsuite("fpm_toml", collect_toml), &        
         & new_testsuite("fpm_manifest", collect_manifest), &
+        & new_testsuite("fpm_features", collect_features), &
         & new_testsuite("fpm_filesystem", collect_filesystem), &
         & new_testsuite("fpm_source_parsing", collect_source_parsing), &
         & new_testsuite("fpm_module_dependencies", collect_module_dependencies), &
