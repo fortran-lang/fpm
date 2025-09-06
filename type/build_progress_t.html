@@ -92,7 +92,7 @@
 
             <li class="list-inline-item" id="statements"><i class="fa fa-list-ol"></i>
               <a data-bs-toggle="tooltip" data-bs-placement="bottom" data-bs-html="true"
-                 title="<p> 2.8% of total for derived types.</p>Including implementation: 79 statements,  1.3% of total for derived types.">17 statements</a>
+                 title="<p> 3.0% of total for derived types.</p>Including implementation: 80 statements,  1.3% of total for derived types.">18 statements</a>
             </li>
 
             <li class="list-inline-item" id="source-file">
@@ -134,8 +134,9 @@
       </a>
       <div id="vars-0" class="collapse">
         <div class="list-group list-group-flush">
+            <a class="list-group-item" href="../type/build_progress_t.html#variable-build_dir~3">build_dir</a>
             <a class="list-group-item" href="../type/build_progress_t.html#variable-compile_commands">compile_commands</a>
-            <a class="list-group-item" href="../type/build_progress_t.html#variable-console~3">console</a>
+            <a class="list-group-item" href="../type/build_progress_t.html#variable-console">console</a>
             <a class="list-group-item" href="../type/build_progress_t.html#variable-n_complete">n_complete</a>
             <a class="list-group-item" href="../type/build_progress_t.html#variable-n_target">n_target</a>
             <a class="list-group-item" href="../type/build_progress_t.html#variable-output_lines">output_lines</a>
@@ -181,7 +182,7 @@
             <a class="list-group-item" href="../type/build_progress_t.html#boundprocedure-compiling_status">compiling_status</a>
             <a class="list-group-item" href="../type/build_progress_t.html#boundprocedure-completed_status">completed_status</a>
             <a class="list-group-item" href="../type/build_progress_t.html#boundprocedure-dump_commands">dump_commands</a>
-            <a class="list-group-item" href="../type/build_progress_t.html#boundprocedure-success~8">success</a>
+            <a class="list-group-item" href="../type/build_progress_t.html#boundprocedure-success~10">success</a>
         </div>
       </div>
     </div>
@@ -220,6 +221,23 @@
     <tbody>
         <tr>
             <td>
+              <span class="anchor" id="variable-build_dir~3"></span>
+              character(len=:),
+            </td>
+              <td>public,</td>
+            <td>
+              allocatable
+            </td>
+            <td>::</td>
+            <td><strong>build_dir</strong></td>
+                <td></td>
+                <td></td>
+            <td>
+                <p>Build directory</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
               <span class="anchor" id="variable-compile_commands"></span>
               type(<a href='compile_command_table_t.html'>compile_command_table_t</a>),
             </td>
@@ -237,7 +255,7 @@
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-console~3"></span>
+              <span class="anchor" id="variable-console"></span>
               type(<a href='console_t.html'>console_t</a>),
             </td>
               <td>public</td>
@@ -357,7 +375,7 @@
     <ul class="list-group">
           <li class="list-group-item">
                 <h3>
-    private  function new_build_progress(target_queue, plain_mode) result(progress)  
+    private  function new_build_progress(target_queue, plain_mode, build_dir) result(progress)  
 
     </h3>
   <p>Initialise a new build progress object</p>
@@ -401,6 +419,21 @@
             <td><strong>plain_mode</strong></td>
             <td>
                 <p>Enable &lsquo;plain&rsquo; output for progress object</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-build_dir~4"></span>
+              character(len=*),
+            </td>
+<td>intent(in),</td>
+              <td>optional</td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>build_dir</strong></td>
+            <td>
+                <p>Build directory</p>
             </td>
         </tr>
     </tbody>
@@ -656,7 +689,7 @@
           <div class="row">
               <div class="card mt-3">
     <div class="card-header codesum">
-      <span class="anchor" id="boundprocedure-success~8"></span>
+      <span class="anchor" id="boundprocedure-success~10"></span>
       <h3>
           procedure, public ::
   <strong>success</strong> => output_progress_success
@@ -725,6 +758,8 @@
 <span class="w">    </span><span class="kt">logical</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">plain_mode</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">.</span><span class="n">true</span><span class="p">.</span>
 <span class="w">    </span><span class="c">!&gt; Store needed when updating previous console lines</span>
 <span class="w">    </span><span class="kt">integer</span><span class="p">,</span><span class="w"> </span><span class="k">allocatable</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">output_lines</span><span class="p">(:)</span>
+<span class="w">    </span><span class="c">!&gt; Build directory</span>
+<span class="w">    </span><span class="kt">character</span><span class="p">(:),</span><span class="w"> </span><span class="k">allocatable</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">build_dir</span>
 <span class="w">    </span><span class="c">!&gt; Queue of scheduled build targets</span>
 <span class="w">    </span><span class="k">type</span><span class="p">(</span><span class="n">build_target_ptr</span><span class="p">),</span><span class="w"> </span><span class="k">pointer</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">target_queue</span><span class="p">(:)</span>
 <span class="w">    </span><span class="c">!&gt; The compile_commands.json table</span>
@@ -761,7 +796,7 @@
             <p class="text-end">
               Documentation generated by
               <a href="https://github.com/Fortran-FOSS-Programmers/ford">FORD</a>
- on 2025-09-04 17:25 +0000             </p>
+ on 2025-09-06 07:53 +0000             </p>
           </div>
         </div>
         <br>

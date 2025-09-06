@@ -92,7 +92,7 @@
 
             <li class="list-inline-item" id="statements"><i class="fa fa-list-ol"></i>
               <a data-bs-toggle="tooltip" data-bs-placement="bottom" data-bs-html="true"
-                 title=" 0.1% of total for procedures.">11 statements</a>
+                 title=" 0.2% of total for procedures.">16 statements</a>
             </li>
 
             <li class="list-inline-item" id="source-file">
@@ -159,7 +159,7 @@
     </div>
     
     <div class="col-md-9" id='text'>
-    <h2>public  subroutine new_dependency_tree(self, verbosity, cache, path_to_config)  
+    <h2>public  subroutine new_dependency_tree(self, verbosity, cache, path_to_config, build_dir)  
 </h2>
     
 
@@ -179,7 +179,7 @@
     <tbody>
         <tr>
             <td>
-              <span class="anchor" id="variable-self~103"></span>
+              <span class="anchor" id="variable-self~8"></span>
               type(<a href='../type/dependency_tree_t.html'>dependency_tree_t</a>),
             </td>
 <td>intent(out)</td>
@@ -194,7 +194,7 @@
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-verbosity~10"></span>
+              <span class="anchor" id="variable-verbosity~3"></span>
               integer,
             </td>
 <td>intent(in),</td>
@@ -209,7 +209,7 @@
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-cache~4"></span>
+              <span class="anchor" id="variable-cache~2"></span>
               character(len=*),
             </td>
 <td>intent(in),</td>
@@ -224,7 +224,7 @@
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-path_to_config~3"></span>
+              <span class="anchor" id="variable-path_to_config~2"></span>
               character(len=*),
             </td>
 <td>intent(in),</td>
@@ -235,6 +235,21 @@
             <td><strong>path_to_config</strong></td>
             <td>
                 <p>Path to the global config file.</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-build_dir"></span>
+              character(len=*),
+            </td>
+<td>intent(in),</td>
+              <td>optional</td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>build_dir</strong></td>
+            <td>
+                <p>Custom build directory</p>
             </td>
         </tr>
     </tbody>
@@ -254,7 +269,7 @@
     
     <section>
     <h2><span class="anchor" id="src"></span>Source Code</h2>
-    <div class="hl codehilite"><pre><span></span><span class="w">  </span><span class="k">subroutine </span><span class="n">new_dependency_tree</span><span class="p">(</span><span class="n">self</span><span class="p">,</span><span class="w"> </span><span class="n">verbosity</span><span class="p">,</span><span class="w"> </span><span class="n">cache</span><span class="p">,</span><span class="w"> </span><span class="n">path_to_config</span><span class="p">)</span>
+    <div class="hl codehilite"><pre><span></span><span class="w">  </span><span class="k">subroutine </span><span class="n">new_dependency_tree</span><span class="p">(</span><span class="n">self</span><span class="p">,</span><span class="w"> </span><span class="n">verbosity</span><span class="p">,</span><span class="w"> </span><span class="n">cache</span><span class="p">,</span><span class="w"> </span><span class="n">path_to_config</span><span class="p">,</span><span class="w"> </span><span class="n">build_dir</span><span class="p">)</span>
 <span class="w">    </span><span class="c">!&gt; Instance of the dependency tree</span>
 <span class="w">    </span><span class="k">type</span><span class="p">(</span><span class="n">dependency_tree_t</span><span class="p">),</span><span class="w"> </span><span class="k">intent</span><span class="p">(</span><span class="n">out</span><span class="p">)</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">self</span>
 <span class="w">    </span><span class="c">!&gt; Verbosity of printout</span>
@@ -263,11 +278,17 @@
 <span class="w">    </span><span class="kt">character</span><span class="p">(</span><span class="nb">len</span><span class="o">=*</span><span class="p">),</span><span class="w"> </span><span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">),</span><span class="w"> </span><span class="k">optional</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">cache</span>
 <span class="w">    </span><span class="c">!&gt; Path to the global config file.</span>
 <span class="w">    </span><span class="kt">character</span><span class="p">(</span><span class="nb">len</span><span class="o">=*</span><span class="p">),</span><span class="w"> </span><span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">),</span><span class="w"> </span><span class="k">optional</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">path_to_config</span>
+<span class="w">    </span><span class="c">!&gt; Custom build directory</span>
+<span class="w">    </span><span class="kt">character</span><span class="p">(</span><span class="nb">len</span><span class="o">=*</span><span class="p">),</span><span class="w"> </span><span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">),</span><span class="w"> </span><span class="k">optional</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">build_dir</span>
 
 <span class="w">    </span><span class="k">call </span><span class="n">resize</span><span class="p">(</span><span class="n">self</span><span class="p">%</span><span class="n">dep</span><span class="p">)</span>
-<span class="w">    </span><span class="n">self</span><span class="p">%</span><span class="n">dep_dir</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">join_path</span><span class="p">(</span><span class="s2">&quot;build&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;dependencies&quot;</span><span class="p">)</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="nb">present</span><span class="p">(</span><span class="n">build_dir</span><span class="p">))</span><span class="w"> </span><span class="k">then</span>
+<span class="k">        </span><span class="n">self</span><span class="p">%</span><span class="n">dep_dir</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">join_path</span><span class="p">(</span><span class="n">build_dir</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;dependencies&quot;</span><span class="p">)</span>
+<span class="w">    </span><span class="k">else</span>
+<span class="k">        </span><span class="n">self</span><span class="p">%</span><span class="n">dep_dir</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">join_path</span><span class="p">(</span><span class="s2">&quot;build&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;dependencies&quot;</span><span class="p">)</span>
+<span class="w">    </span><span class="k">end if</span>
 
-<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="nb">present</span><span class="p">(</span><span class="n">verbosity</span><span class="p">))</span><span class="w"> </span><span class="n">self</span><span class="p">%</span><span class="n">verbosity</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">verbosity</span>
+<span class="k">    if</span><span class="w"> </span><span class="p">(</span><span class="nb">present</span><span class="p">(</span><span class="n">verbosity</span><span class="p">))</span><span class="w"> </span><span class="n">self</span><span class="p">%</span><span class="n">verbosity</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">verbosity</span>
 
 <span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="nb">present</span><span class="p">(</span><span class="n">cache</span><span class="p">))</span><span class="w"> </span><span class="n">self</span><span class="p">%</span><span class="n">cache</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">cache</span>
 
@@ -297,7 +318,7 @@
             <p class="text-end">
               Documentation generated by
               <a href="https://github.com/Fortran-FOSS-Programmers/ford">FORD</a>
- on 2025-09-04 17:25 +0000             </p>
+ on 2025-09-06 07:53 +0000             </p>
           </div>
         </div>
         <br>

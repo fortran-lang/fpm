@@ -1,5 +1,5 @@
 module fpm_cmd_update
-  use fpm_command_line, only : fpm_update_settings
+  use fpm_command_line, only : fpm_update_settings, get_fpm_env
   use fpm_dependency, only : dependency_tree_t, new_dependency_tree
   use fpm_error, only : error_t, fpm_stop
   use fpm_filesystem, only : exists, mkdir, join_path, delete_file, filewrite
@@ -20,21 +20,24 @@ contains
     type(dependency_tree_t) :: deps
     type(error_t), allocatable :: error
     integer :: ii
-    character(len=:), allocatable :: cache
+    character(len=:), allocatable :: cache, build_dir
 
     call get_package_data(package, "fpm.toml", error, apply_defaults=.true.)
     call handle_error(error)
 
-    if (.not. exists("build")) then
-      call mkdir("build")
-      call filewrite(join_path("build", ".gitignore"),["*"])
+    ! Get build directory from environment variable or use default
+    build_dir = get_fpm_env("BUILD_DIR", "build")
+
+    if (.not. exists(build_dir)) then
+      call mkdir(build_dir)
+      call filewrite(join_path(build_dir, ".gitignore"),["*"])
     end if
 
-    cache = join_path("build", "cache.toml")
+    cache = join_path(build_dir, "cache.toml")
     if (settings%clean) call delete_file(cache)
 
     call new_dependency_tree(deps, cache=cache, verbosity=merge(2, 1, settings%verbose), &
-    & path_to_config=settings%path_to_config)
+    & path_to_config=settings%path_to_config, build_dir=build_dir)
 
     call deps%add(package, error)
     call handle_error(error)

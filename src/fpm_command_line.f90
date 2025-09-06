@@ -38,7 +38,6 @@ use fpm_release,      only : fpm_version, version_t
 use,intrinsic :: iso_fortran_env, only : stdin=>input_unit, &
                                        & stdout=>output_unit, &
                                        & stderr=>error_unit
-
 implicit none
 
 private
@@ -89,6 +88,7 @@ type, extends(fpm_cmd_settings)  :: fpm_build_settings
     character(len=:),allocatable :: cflag
     character(len=:),allocatable :: cxxflag
     character(len=:),allocatable :: ldflag
+    character(len=:),allocatable :: build_dir
 end type
 
 type, extends(fpm_build_settings)  :: fpm_run_settings
@@ -169,7 +169,9 @@ character(len=80), parameter :: help_text_build_common(*) = [character(len=80) :
     '                   high optimization and "debug" for full debug options.        ',&
     '                   If --flag is not specified the "debug" flags are the         ',&
     '                   default.                                                     ',&
-    ' --no-prune        Disable tree-shaking/pruning of unused module dependencies   '&
+    ' --no-prune        Disable tree-shaking/pruning of unused module dependencies   ',&
+    ' --build-dir DIR   Specify the build directory. Default is "build" unless set   ',&
+    '                   by the environment variable FPM_BUILD_DIR.                   '&
     ]
 !   '12345678901234567890123456789012345678901234567890123456789012345678901234567890',&
 character(len=80), parameter :: help_text_compiler(*) = [character(len=80) :: &
@@ -226,7 +228,10 @@ character(len=80), parameter :: help_text_environment(*) = [character(len=80) ::
     '                   will be overwritten by --archiver command line option', &
     '', &
     ' FPM_LDFLAGS       sets additional link arguments for creating executables', &
-    '                   will be overwritten by --link-flag command line option' &
+    '                   will be overwritten by --link-flag command line option', &
+    '', &
+    ' FPM_BUILD_DIR     sets the build directory for compilation output', &
+    '                   will be overwritten by --build-dir command line option' &
     ]
 
 contains
@@ -246,7 +251,7 @@ contains
         character(len=*), parameter :: fc_env = "FC", cc_env = "CC", ar_env = "AR", &
             & fflags_env = "FFLAGS", cflags_env = "CFLAGS", cxxflags_env = "CXXFLAGS", ldflags_env = "LDFLAGS", &
             & fc_default = "gfortran", cc_default = " ", ar_default = " ", flags_default = " ", &
-            & cxx_env = "CXX", cxx_default = " "
+            & cxx_env = "CXX", cxx_default = " ", build_dir_env = "BUILD_DIR", build_dir_default = "build"
         type(error_t), allocatable :: error
 
         call set_help()
@@ -300,7 +305,8 @@ contains
           ' --flag:: "'//get_fpm_env(fflags_env, flags_default)//'"' // &
           ' --c-flag:: "'//get_fpm_env(cflags_env, flags_default)//'"' // &
           ' --cxx-flag:: "'//get_fpm_env(cxxflags_env, flags_default)//'"' // &
-          ' --link-flag:: "'//get_fpm_env(ldflags_env, flags_default)//'"'
+          ' --link-flag:: "'//get_fpm_env(ldflags_env, flags_default)//'"' // &
+          ' --build-dir "'//get_fpm_env(build_dir_env, build_dir_default)//'"'
 
         ! now set subcommand-specific help text and process commandline
         ! arguments. Then call subcommand routine
@@ -363,7 +369,6 @@ contains
                     cmd%runner_args = val_runner_args
                     
             end select
-
         case('build')
             call set_args(common_args // compiler_args //'&
             & --list F &
@@ -375,7 +380,7 @@ contains
 
             ! Create and populate a base fpm_build_settings from CLI/env
             allocate( fpm_build_settings :: cmd_settings )
-            
+
             select type (cmd => cmd_settings)
                class is (fpm_build_settings)
                    call build_settings(cmd, list=lget('list'),                 &
@@ -525,12 +530,14 @@ contains
                 &', help_install, version_text)
 
             config_file = sget('config-file')
+
             allocate(install_settings)
 
             call build_settings(install_settings, list=lget('list'),  &
                                 build_tests=lget('test'), config_file=config_file)
             
             install_settings%no_rebuild = lget('no-rebuild')
+
             call get_char_arg(install_settings%prefix, 'prefix')
             call get_char_arg(install_settings%libdir, 'libdir')
             call get_char_arg(install_settings%testdir, 'testdir')
@@ -593,7 +600,7 @@ contains
                 cmd%runner_args = val_runner_args
                 
             end select
-            
+
         case('update')
             call set_args(common_args // '&
             & --fetch-only F &
@@ -749,7 +756,40 @@ contains
             call move_alloc(working_dir, cmd_settings%working_dir)
         end if
 
-    contains
+    end subroutine get_command_line_settings
+
+    !> Validate that build directory is not a reserved source directory name
+    subroutine validate_build_dir(build_dir)
+        character(len=*), intent(in) :: build_dir
+        character(len=*), parameter :: reserved_names(*) = [ &
+            "src     ", "app     ", "test    ", "tests   ", &
+            "example ", "examples", "include "]
+        character(len=:), allocatable :: normalized_build_dir, normalized_reserved
+        integer :: i
+        
+        ! Skip validation if build_dir is empty (will use default)
+        if (len_trim(build_dir) == 0) return
+        
+        ! Normalize the build directory path
+        normalized_build_dir = canon_path(build_dir)
+        
+        ! Check against reserved directory names
+        do i = 1, size(reserved_names)
+            normalized_reserved = canon_path(trim(reserved_names(i)))
+            if (normalized_build_dir == normalized_reserved) then
+                call fpm_stop(1, 'Error: Build directory "'//trim(build_dir) &
+                                  //'" conflicts with source directory "' &
+                                  //trim(reserved_names(i))//'".')
+            end if
+        end do
+        
+        ! Additional checks for problematic cases
+        if (trim(build_dir) == "." .or. trim(build_dir) == "..") then
+            call fpm_stop(1, 'Error: Build directory cannot be "'//trim(build_dir)// &
+                             '" as it would overwrite the current or parent directory.')
+        end if
+        
+    end subroutine validate_build_dir
 
     !> Print help text and stop
     subroutine printhelp(lines)
@@ -765,8 +805,6 @@ contains
         endif
         stop
     end subroutine printhelp
-
-    end subroutine get_command_line_settings
 
     subroutine set_help()
    help_list_nodash=[character(len=80) :: &
@@ -1117,7 +1155,8 @@ contains
     '                                                                       ', &
     'SYNOPSIS                                                               ', &
     ' fpm build [--profile PROF] [--flag FFLAGS] [--compiler COMPILER_NAME] ', &
-    '           [--list] [--tests] [--config-file PATH] [--dump [FILENAME]] ', &
+    '           [--build-dir DIR] [--list] [--tests] [--config-file PATH]    ', &
+    '           [--dump [FILENAME]]                                          ', &
     '                                                                       ', &
     ' fpm build --help|--version                                            ', &
     '                                                                       ', &
@@ -1133,7 +1172,7 @@ contains
     '    o test/    main program(s) and support files for project tests     ', &
     '    o example/ main program(s) for example programs                    ', &
     ' Changed or new files found are rebuilt. The results are placed in     ', &
-    ' the build/ directory.                                                 ', &
+    ' the build directory (default: build/).                               ', &
     '                                                                       ', &
     ' Non-default pathnames and remote dependencies are used if             ', &
     ' specified in the "fpm.toml" file.                                     ', &
@@ -1144,7 +1183,7 @@ contains
     help_text_flag, &
     ' --list        list candidates instead of building or running them.    ', &
     '               all dependencies are downloaded, and the build sequence ', &
-    '               is saved to `build/compile_commands.json`.              ', &
+    '               is saved to `<build-dir>/compile_commands.json`.         ', &
     ' --tests       build all tests (otherwise only if needed)              ', &
     ' --show-model  show the model and exit (do not build)                  ', &
     ' --dump [FILENAME] save model representation to file. use JSON format  ', &
@@ -1161,6 +1200,7 @@ contains
     '                                                                       ', &
     '  fpm build                   # build with debug options               ', &
     '  fpm build --profile release # build with high optimization           ', &
+    '  fpm build --build-dir /tmp/my_build # build to custom directory      ', &
     '' ]
 
     help_help=[character(len=80) :: &
@@ -1565,7 +1605,7 @@ contains
 
         character(len=:), allocatable :: comp, ccomp, cxcomp, arch
         character(len=:), allocatable :: fflags, cflags, cxxflags, ldflags
-        character(len=:), allocatable :: prof, cfg, dump
+        character(len=:), allocatable :: prof, cfg, dump, dir
 
         ! Read CLI/env values (sget returns what set_args registered, including defaults)
         ! This is equivalent to check_build_vals
@@ -1575,11 +1615,15 @@ contains
         cxxflags = ' ' // sget('cxx-flag')
         ldflags  = ' ' // sget('link-flag')
         prof     = sget('profile')
+        
+        ! Set and validate build directory
+        dir      = sget('build-dir')
+        call validate_build_dir(dir)
 
         ccomp    = sget('c-compiler')
         cxcomp   = sget('cxx-compiler')
         arch     = sget('archiver')
-
+        
         ! Handle --dump default (empty value means use 'fpm_model.toml')
         if (specified('dump')) then 
            dump = sget('dump')
@@ -1604,6 +1648,7 @@ contains
         self%compiler      = comp
         self%c_compiler    = ccomp
         self%cxx_compiler  = cxcomp
+        self%build_dir     = dir
         self%archiver      = arch
         self%path_to_config= cfg
         self%flag          = fflags
