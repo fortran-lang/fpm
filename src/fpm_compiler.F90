@@ -69,8 +69,8 @@ enum, bind(C)
         id_pgi, &
         id_nvhpc, &
         id_nag, &
+        id_flang_classic, &
         id_flang, &
-        id_flang_new, &
         id_f18, &
         id_ibmxl, &
         id_cray, &
@@ -300,11 +300,11 @@ function get_default_flags(self, release) result(flags)
     ! Append position-independent code (PIC) flag, that is necessary 
     ! building shared libraries
     select case (self%id)
-    case (id_gcc, id_f95, id_caf, id_flang, id_f18, id_lfortran, &
+    case (id_gcc, id_f95, id_caf, id_flang_classic, id_f18, id_lfortran, &
           id_intel_classic_nix, id_intel_classic_mac, id_intel_llvm_nix, &
           id_pgi, id_nvhpc, id_nag, id_cray, id_ibmxl)
         pic_flag = " -fPIC"
-    case (id_flang_new)
+    case (id_flang)
         ! flang-new doesn't support -fPIC on Windows MSVC target
         if (get_os_type() == OS_WINDOWS) then
             pic_flag = ""
@@ -418,7 +418,7 @@ subroutine get_release_compile_flags(id, flags)
         flags = &
             flag_lfortran_opt
 
-    case(id_flang_new)
+    case(id_flang)
         flags = &
             flag_flang_new_opt//&
             flag_flang_new_pic
@@ -519,7 +519,7 @@ subroutine get_debug_compile_flags(id, flags)
     case(id_lfortran)
         flags = ""
 
-    case(id_flang_new)
+    case(id_flang)
         flags = &
             flag_flang_new_debug//&
             flag_flang_new_pic
@@ -536,7 +536,7 @@ pure subroutine set_cpp_preprocessor_flags(id, flags)
     select case(id)
     case default
         flag_cpp_preprocessor = ""
-    case(id_caf, id_gcc, id_f95, id_nvhpc, id_flang_new)
+    case(id_caf, id_gcc, id_f95, id_nvhpc, id_flang)
         flag_cpp_preprocessor = "-cpp"
     case(id_intel_classic_windows, id_intel_llvm_windows)
         flag_cpp_preprocessor = "/fpp"
@@ -631,7 +631,7 @@ function get_include_flag(self, path) result(flags)
         flags = "-I "//path
 
     case(id_caf, id_gcc, id_f95, id_cray, id_nvhpc, id_pgi, &
-        & id_flang, id_flang_new, id_f18, &
+        & id_flang_classic, id_flang, id_f18, &
         & id_intel_classic_nix, id_intel_classic_mac, &
         & id_intel_llvm_nix, id_lahey, id_nag, id_ibmxl, &
         & id_lfortran)
@@ -655,10 +655,10 @@ function get_module_flag(self, path) result(flags)
     case(id_caf, id_gcc, id_f95, id_cray, id_lfortran)
         flags = "-J "//path
 
-    case(id_nvhpc, id_pgi, id_flang)
+    case(id_nvhpc, id_pgi, id_flang_classic)
         flags = "-module "//path
 
-    case(id_flang_new, id_f18)
+    case(id_flang, id_f18)
         flags = "-module-dir "//path
 
     case(id_intel_classic_nix, id_intel_classic_mac, &
@@ -689,7 +689,7 @@ function get_shared_flag(self) result(shared_flag)
     select case (self%id)
     case default
         shared_flag = "-shared"
-    case (id_gcc, id_f95, id_flang, id_flang_new, id_lfortran)
+    case (id_gcc, id_f95, id_flang_classic, id_flang, id_lfortran)
         shared_flag = "-shared"
     case (id_intel_classic_nix, id_intel_llvm_nix, id_pgi, id_nvhpc)
         shared_flag = "-shared"
@@ -724,7 +724,7 @@ function get_feature_flag(self, feature) result(flags)
        case(id_cray)
            flags = flag_cray_no_implicit_typing
 
-       case(id_flang_new)
+       case(id_flang)
            flags = flag_flang_new_no_implicit_typing
 
        end select
@@ -758,7 +758,7 @@ function get_feature_flag(self, feature) result(flags)
        case(id_caf, id_gcc, id_f95)
            flags = flag_gnu_free_form
 
-       case(id_pgi, id_nvhpc, id_flang)
+       case(id_pgi, id_nvhpc, id_flang_classic)
            flags = flag_pgi_free_form
 
        case(id_nag)
@@ -774,7 +774,7 @@ function get_feature_flag(self, feature) result(flags)
        case(id_cray)
            flags = flag_cray_free_form
 
-       case(id_flang_new)
+       case(id_flang)
            flags = flag_flang_new_free_form
 
        end select
@@ -784,7 +784,7 @@ function get_feature_flag(self, feature) result(flags)
        case(id_caf, id_gcc, id_f95)
            flags = flag_gnu_fixed_form
 
-       case(id_pgi, id_nvhpc, id_flang)
+       case(id_pgi, id_nvhpc, id_flang_classic)
            flags = flag_pgi_fixed_form
 
        case(id_nag)
@@ -803,7 +803,7 @@ function get_feature_flag(self, feature) result(flags)
        case(id_lfortran)
            flags = flag_lfortran_fixed_form
 
-       case(id_flang_new)
+       case(id_flang)
            flags = flag_flang_new_fixed_form
 
        end select
@@ -875,7 +875,7 @@ subroutine get_default_c_compiler(f_compiler, c_compiler)
     case(id_intel_llvm_nix,id_intel_llvm_windows)
         c_compiler = 'icx'
 
-    case(id_flang, id_flang_new, id_f18)
+    case(id_flang_classic, id_flang, id_f18)
         c_compiler='clang'
 
     case(id_ibmxl)
@@ -910,7 +910,7 @@ subroutine get_default_cxx_compiler(f_compiler, cxx_compiler)
     case(id_intel_llvm_nix,id_intel_llvm_windows)
         cxx_compiler = 'icpx'
 
-    case(id_flang, id_flang_new, id_f18)
+    case(id_flang_classic, id_flang, id_f18)
         cxx_compiler='clang++'
 
     case(id_ibmxl)
@@ -1024,7 +1024,7 @@ function get_id(compiler) result(id)
     end if
 
     if (check_compiler(compiler, "flang-new")) then
-        id = id_flang_new
+        id = id_flang
         return
     end if
 
@@ -1034,12 +1034,12 @@ function get_id(compiler) result(id)
     end if
 
     if (check_compiler(compiler, "flang-classic")) then
-        id = id_flang
+        id = id_flang_classic
         return
     end if
 
     if (check_compiler(compiler, "flang")) then
-        id = id_flang_new
+        id = id_flang
         return
     end if
 
@@ -1783,8 +1783,8 @@ pure function compiler_name(self) result(name)
        case(id_pgi);       name = "pgfortran"
        case(id_nvhpc);     name = "nvfortran"
        case(id_nag);       name = "nagfor"
-       case(id_flang);     name = "flang-classic"
-       case(id_flang_new); name = "flang-new"
+       case(id_flang_classic);     name = "flang-classic"
+       case(id_flang); name = "flang"
        case(id_f18);       name = "f18"
        case(id_ibmxl);     name = "xlf90"
        case(id_cray);      name = "crayftn"
