@@ -132,7 +132,8 @@ module fpm_manifest_feature_collection
         do i = 1, size(keys)
             call get_value(ptr_vars, keys(i), ptr)
             if (.not. associated(ptr)) then
-                call fatal_error(error, "feature_collection_t: invalid variant entry '"//keys(i)%key//"'"); return
+                call fatal_error(error, "feature_collection_t: invalid variant entry '" &
+                                        //keys(i)%key//"'"); return
             end if
             call self%variants(i)%load_from_toml(ptr, error); if (allocated(error)) return
         end do
@@ -328,7 +329,8 @@ module fpm_manifest_feature_collection
     
     
     !> Recursively traverse a feature table to find variants
-    recursive subroutine traverse_feature_table(collection, table, feature_name, os_constraint, compiler_constraint, error)
+    recursive subroutine traverse_feature_table(collection, table, feature_name, os_constraint, &
+                                                compiler_constraint, error)
         use fpm_manifest_feature, only: init_feature_components
         type(feature_collection_t), intent(inout) :: collection
         type(toml_table), intent(inout) :: table
@@ -382,7 +384,8 @@ module fpm_manifest_feature_collection
                     ! This is an OS constraint - get subtable and recurse
                     call get_value(table, keys(i)%key, subtable, stat=stat)
                     if (stat == toml_stat%success) then
-                        call traverse_feature_table(collection, subtable, feature_name, os_type, compiler_constraint, error)
+                        call traverse_feature_table(collection, subtable, feature_name, os_type, &
+                                                    compiler_constraint, error)
                         if (allocated(error)) return
                     end if
                     cycle
@@ -394,7 +397,8 @@ module fpm_manifest_feature_collection
                     ! This is a compiler constraint - get subtable and recurse
                     call get_value(table, keys(i)%key, subtable, stat=stat)
                     if (stat == toml_stat%success) then
-                        call traverse_feature_table(collection, subtable, feature_name, os_constraint, compiler_type, error)
+                        call traverse_feature_table(collection, subtable, feature_name, os_constraint, &
+                                                    compiler_type, error)
                         if (allocated(error)) return
                     end if
                     cycle
@@ -657,16 +661,16 @@ module fpm_manifest_feature_collection
             ' -fp-model precise -pc64 -align all -error-limit 1 -reentrancy&
             & threaded -nogen-interfaces -assume byterecl'))
             
-        call collection%push_variant(default_variant('release-ifort-windows', id_intel_classic_nix, OS_WINDOWS, &
-            ' /fp:precise /align:all /error-limit:1 /reentrancy:threaded&
+        call collection%push_variant(default_variant('release-ifort-windows', id_intel_classic_nix, &
+            OS_WINDOWS, ' /fp:precise /align:all /error-limit:1 /reentrancy:threaded&
             & /nogen-interfaces /assume:byterecl'))
             
         call collection%push_variant(default_variant('release-ifx', id_intel_llvm_nix, OS_ALL, &
             ' -fp-model=precise -pc64 -align all -error-limit 1 -reentrancy&
             & threaded -nogen-interfaces -assume byterecl'))
             
-        call collection%push_variant(default_variant('release-ifx-windows', id_intel_llvm_nix, OS_WINDOWS, &
-            ' /fp:precise /align:all /error-limit:1 /reentrancy:threaded&
+        call collection%push_variant(default_variant('release-ifx-windows', id_intel_llvm_nix, &
+            OS_WINDOWS, ' /fp:precise /align:all /error-limit:1 /reentrancy:threaded&
             & /nogen-interfaces /assume:byterecl'))
             
         call collection%push_variant(default_variant('release-nagfor', id_nag, OS_ALL, &
@@ -780,20 +784,23 @@ module fpm_manifest_feature_collection
             do i = 1, size(self%variants)
                 ! Validate OS and compiler settings
                 if (self%variants(i)%platform%os_type == OS_UNKNOWN) then
-                    call fatal_error(error, "Variant "//trim(str(i))//" of feature '"//self%base%name//"' has invalid OS type")
+                    call fatal_error(error, "Variant "//trim(str(i))//" of feature '" &
+                                     //self%base%name//"' has invalid OS type")
                     return
                 end if
                 
                 if (self%variants(i)%platform%compiler == id_unknown) then
-                    call fatal_error(error, "Variant "//trim(str(i))//" of feature '"//self%base%name//"' has invalid compiler type")
+                    call fatal_error(error, "Variant "//trim(str(i))//" of feature '" &
+                                     //self%base%name//"' has invalid compiler type")
                     return
                 end if
                 
                 ! Check that variant name matches base name
                 if (allocated(self%variants(i)%name) .and. allocated(self%base%name)) then
                     if (self%variants(i)%name /= self%base%name) then
-                        call fatal_error(error, "Variant "//trim(str(i))//" name '"//self%variants(i)%name// &
-                                              "' does not match base name '"//self%base%name//"'")
+                        call fatal_error(error, "Variant "//trim(str(i))//" name '" *
+                                                //self%variants(i)%name// &
+                                                 "' does not match base name '"//self%base%name//"'")
                         return
                     end if
                 end if
@@ -802,15 +809,17 @@ module fpm_manifest_feature_collection
                 do j = i + 1, size(self%variants)
                     if (self%variants(i)%platform == self%variants(j)%platform) then
                         call fatal_error(error, "Duplicate platform configuration found between variants "// &
-                                              trim(str(i))//" and "//trim(str(j))//" of feature '"//self%base%name//"'")
+                                              trim(str(i))//" and "//trim(str(j)) &
+                                              //" of feature '"//self%base%name//"'")
                         return
                     end if
                 end do
                 
                 ! Check that variant doesn't have identical platform to base (which would be redundant)
                 if (self%variants(i)%platform == self%base%platform) then
-                    call fatal_error(error, "Variant "//trim(str(i))//" of feature '"//self%base%name// &
-                                          "' has identical platform as the base feature (redundant)")
+                    call fatal_error(error, "Variant "//trim(str(i))//" of feature '"//&
+                                            self%base%name// &
+                                            "' has identical platform as the base feature (redundant)")
                     return
                 end if
             end do
