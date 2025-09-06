@@ -38,7 +38,6 @@ use fpm_release,      only : fpm_version, version_t
 use,intrinsic :: iso_fortran_env, only : stdin=>input_unit, &
                                        & stdout=>output_unit, &
                                        & stderr=>error_unit
-
 implicit none
 
 private
@@ -757,12 +756,10 @@ contains
             call move_alloc(working_dir, cmd_settings%working_dir)
         end if
 
-    contains
+    end subroutine get_command_line_settings
 
     !> Validate that build directory is not a reserved source directory name
     subroutine validate_build_dir(build_dir)
-        use fpm_error, only: fpm_stop
-        use fpm_filesystem, only: canon_path
         character(len=*), intent(in) :: build_dir
         character(len=*), parameter :: reserved_names(*) = [ &
             "src     ", "app     ", "test    ", "tests   ", &
@@ -808,8 +805,6 @@ contains
         endif
         stop
     end subroutine printhelp
-
-    end subroutine get_command_line_settings
 
     subroutine set_help()
    help_list_nodash=[character(len=80) :: &
