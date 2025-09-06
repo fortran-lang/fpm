@@ -197,6 +197,9 @@ type, extends(serializable_t) :: fpm_model_t
     !> Base directory for build
     character(:), allocatable :: build_prefix
 
+    !> Build directory
+    character(:), allocatable :: build_dir
+
     !> Include directories
     type(string_t), allocatable :: include_dirs(:)
 
@@ -345,6 +348,7 @@ function info_model(model) result(s)
     s = s // ', cxx_compile_flags="' // model%cxx_compile_flags // '"'
     s = s // ', link_flags="' // model%link_flags // '"'
     s = s // ', build_prefix="' // model%build_prefix // '"'
+    s = s // ', build_dir="' // model%build_dir // '"'
     !    type(string_t), allocatable :: link_libraries(:)
     s = s // ", link_libraries=["
     do i = 1, size(model%link_libraries)
@@ -840,6 +844,10 @@ logical function model_is_same(this,that)
            if (allocated(this%build_prefix)) then
              if (.not.(this%build_prefix==other%build_prefix)) return
            end if
+           if (allocated(this%build_dir).neqv.allocated(other%build_dir)) return
+           if (allocated(this%build_dir)) then
+             if (.not.(this%build_dir==other%build_dir)) return
+           end if
            if (allocated(this%include_dirs).neqv.allocated(other%include_dirs)) return
            if (allocated(this%include_dirs)) then
              if (.not.(this%include_dirs==other%include_dirs)) return
@@ -905,6 +913,8 @@ subroutine model_dump_to_toml(self, table, error)
     call set_string(table, "link-flags", self%link_flags, error, 'fpm_model_t')
     if (allocated(error)) return
     call set_string(table, "build-prefix", self%build_prefix, error, 'fpm_model_t')
+    if (allocated(error)) return
+    call set_string(table, "build-dir", self%build_dir, error, 'fpm_model_t')
     if (allocated(error)) return
     call set_list(table, "include-dirs", self%include_dirs, error)
     if (allocated(error)) return
@@ -984,6 +994,7 @@ subroutine model_load_from_toml(self, table, error)
     call get_value(table, "cxx-flags", self%cxx_compile_flags)
     call get_value(table, "link-flags", self%link_flags)
     call get_value(table, "build-prefix", self%build_prefix)
+    call get_value(table, "build-dir", self%build_dir)
 
     if (allocated(self%packages)) deallocate(self%packages)
     sub_deps: do ii = 1, size(keys)

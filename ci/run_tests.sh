@@ -366,5 +366,8 @@ pushd both_lib_types
 test $(ls lib/libboth_lib_types* | wc -l) -eq 2
 popd
 
+# Test custom build directory functionality 
+bash "../ci/test_custom_build_dir.sh" "$fpm" hello_world
+
 # Cleanup
 rm -rf ./*/build
