@@ -197,8 +197,8 @@ module fpm_manifest_profile
         !> Boolean value of whether compiler_name is valid or not
         logical, intent(out) :: is_valid
         select case(compiler_name)
-          case("gfortran", "ifort", "ifx", "pgfortran", "nvfortran", "flang", "caf", &
-                        & "f95", "lfortran", "lfc", "nagfor", "crayftn", "xlf90", "ftn95")
+          case("gfortran", "ifort", "ifx", "pgfortran", "nvfortran", "flang", "flang-new", "flang-classic", "caf", &
+                        & "f18", "f95", "lfortran", "lfc", "nagfor", "crayftn", "xlf90", "ftn95")
             is_valid = .true.
           case default
             is_valid = .false.
@@ -726,6 +726,11 @@ module fpm_manifest_profile
         type(profile_config_t), allocatable :: default_profiles(:)
 
         default_profiles = [ &
+              & new_profile('release', &
+                & 'flang', &
+                & OS_ALL, &
+                & flags=' -O3 -Wall -Warray-bounds', &
+                & is_built_in=.true.), &
               & new_profile('release', &
                 & 'caf', &
                 & OS_ALL, &
