@@ -1620,12 +1620,15 @@ contains
         cxxflags = ' ' // sget('cxx-flag')
         ldflags  = ' ' // sget('link-flag')
         prof     = sget('profile')
+        
+        ! Set and validate build directory
         dir      = sget('build-dir')
+        call validate_build_dir(dir)
 
         ccomp    = sget('c-compiler')
         cxcomp   = sget('cxx-compiler')
         arch     = sget('archiver')
-
+        
         ! Handle --dump default (empty value means use 'fpm_model.toml')
         if (specified('dump')) then 
            dump = sget('dump')
