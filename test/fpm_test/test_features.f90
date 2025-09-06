@@ -28,12 +28,16 @@ contains
             & new_unittest("feature-collection-duplicates", test_feature_collection_duplicates, should_fail=.true.), &
             & new_unittest("feature-collection-extract", test_feature_collection_extract), &
             & new_unittest("feature-collection-platform-validation", test_feature_collection_platform_validation, should_fail=.true.), &
-            & new_unittest("feature-collection-complex", test_feature_collection_complex) &
+            & new_unittest("feature-collection-complex", test_feature_collection_complex), &
+            & new_unittest("feature-allocatable-conflict", test_feature_allocatable_conflict, should_fail=.true.), &
+            & new_unittest("feature-flag-addition", test_feature_flag_addition), &
+            & new_unittest("feature-metapackage-addition", test_feature_metapackage_addition) &
             & ]
 
     end subroutine collect_features
 
     !> Test basic feature collection functionality
+    !> This should create two variants: gfortran+OS_ALL and ifort+OS_ALL (NOT duplicates)
     subroutine test_feature_collection_basic(error)
 
         !> Error handling
@@ -81,9 +85,19 @@ contains
                     return
                 end if
 
-                ! Verify we have the expected variants
-                if (size(package%features(i)%variants) < 1) then
-                    call test_failed(error, "Debug collection has no variants")
+                ! Should have exactly 2 variants: gfortran and ifort
+                if (size(package%features(i)%variants) /= 2) then
+                    call test_failed(error, "Debug collection should have exactly 2 variants")
+                    return
+                end if
+                
+                ! Check that variants have different platform configurations
+                if (package%features(i)%variants(1)%platform == package%features(i)%variants(2)%platform) then
+                    call test_failed(error, "Variants should have different platform configurations: " &
+                                   //"variant1.compiler="//package%features(i)%variants(1)%platform%compiler_name() &
+                                   //" variant1.os="//package%features(i)%variants(1)%platform%os_name() &
+                                   //" variant2.compiler="//package%features(i)%variants(2)%platform%compiler_name() &
+                                   //" variant2.os="//package%features(i)%variants(2)%platform%os_name())
                     return
                 end if
                 
@@ -208,7 +222,7 @@ contains
                         
     end subroutine test_feature_collection_duplicates
 
-    !> Test feature collection extract_for_target functionality
+    !> Test feature collection extract_for_target functionality  
     subroutine test_feature_collection_extract(error)
 
         !> Error handling
@@ -301,16 +315,8 @@ contains
             & 'test.invalidcompiler.flags = "-test"'  ! Invalid compiler name
         close(unit)
                 
+        ! Should return error
         call get_package_data(package, temp_file, error)
-        
-        ! This should fail due to invalid compiler
-        if (.not. allocated(error)) then
-            call test_failed(error, "Expected error for invalid compiler was not generated")
-            return
-        end if
-        
-        ! Clear the expected error
-        deallocate(error)
                         
     end subroutine test_feature_collection_platform_validation
 
@@ -378,5 +384,173 @@ contains
         end if
                         
     end subroutine test_feature_collection_complex
+
+    !> Test that allocatable configurations cannot appear in multiple variants (should fail)
+    subroutine test_feature_allocatable_conflict(error)
+        !> Error handling
+        type(error_t), allocatable, intent(out) :: error
+
+        type(package_config_t) :: package
+        character(:), allocatable :: temp_file
+        integer :: unit
+
+        allocate(temp_file, source=get_temp_filename())
+
+        open(file=temp_file, newunit=unit)
+        write(unit, '(a)') &
+            & 'name = "conflict-test"', &
+            & 'version = "0.1.0"', &
+            & '[features]', &
+            & 'myfeature.gfortran.fortran.source-dir = "src/gfortran"', &
+            & 'myfeature.linux.fortran.source-dir = "src/linux"'  
+        close(unit)
+                
+        ! Conflict: both would apply to gfortran+linux
+        call get_package_data(package, temp_file, error)
+
+    end subroutine test_feature_allocatable_conflict
+
+    !> Test that flags are properly added together (additive)
+    subroutine test_feature_flag_addition(error)
+        !> Error handling
+        type(error_t), allocatable, intent(out) :: error
+
+        type(package_config_t) :: package
+        character(:), allocatable :: temp_file
+        integer :: unit
+        type(feature_config_t) :: extracted_feature
+        type(platform_config_t) :: target_platform
+        integer :: i
+
+        allocate(temp_file, source=get_temp_filename())
+
+        open(file=temp_file, newunit=unit)
+        write(unit, '(a)') &
+            & 'name = "addition-test"', &
+            & 'version = "0.1.0"', &
+            & '[features]', &
+            & 'myfeature.flags = "-DBASE"', &
+            & 'myfeature.gfortran.flags = "-DGFORTRAN"', &
+            & 'myfeature.linux.flags = "-DLINUX"'
+        close(unit)
+                
+        call get_package_data(package, temp_file, error)
+        if (allocated(error)) return
+        
+        ! Should have feature collection
+        if (.not. allocated(package%features) .or. size(package%features) < 1) then
+            call test_failed(error, "No feature collections found for addition test")
+            return
+        end if
+        
+        ! Find myfeature collection
+        do i = 1, size(package%features)
+            if (package%features(i)%base%name == "myfeature") then
+                
+                ! Test extraction for gfortran on linux (should get all three flags)
+                target_platform%compiler = id_gcc
+                target_platform%os_type = OS_LINUX
+                extracted_feature = package%features(i)%extract_for_target(target_platform)
+                
+                ! Should have flags from base, gfortran, and linux variants
+                if (.not. allocated(extracted_feature%flags)) then
+                    call test_failed(error, "Extracted feature missing flags")
+                    return
+                end if
+                
+                ! Should contain all three flags (additive behavior)
+                if (index(extracted_feature%flags, "-DBASE") == 0) then
+                    call test_failed(error, "Missing base flags (-DBASE)")
+                    return
+                end if
+                
+                if (index(extracted_feature%flags, "-DGFORTRAN") == 0) then
+                    call test_failed(error, "Missing compiler-specific flags (-DGFORTRAN)")
+                    return
+                end if
+                
+                if (index(extracted_feature%flags, "-DLINUX") == 0) then
+                    call test_failed(error, "Missing OS-specific flags (-DLINUX)")
+                    return
+                end if
+                
+                return ! Test passed
+            end if
+        end do
+        
+        call test_failed(error, "myfeature collection not found for addition test")
+                        
+    end subroutine test_feature_flag_addition
+
+    !> Test that metapackages are properly combined with OR logic (additive)
+    subroutine test_feature_metapackage_addition(error)
+        !> Error handling
+        type(error_t), allocatable, intent(out) :: error
+
+        type(package_config_t) :: package
+        character(:), allocatable :: temp_file
+        integer :: unit
+        type(feature_config_t) :: extracted_feature
+        type(platform_config_t) :: target_platform
+        integer :: i
+
+        allocate(temp_file, source=get_temp_filename())
+
+        open(file=temp_file, newunit=unit)
+        write(unit, '(a)') &
+            & 'name = "meta-test"', &
+            & 'version = "0.1.0"', &
+            & '[features]', &
+            & 'myfeature.dependencies.openmp = "*"', &
+            & 'myfeature.gfortran.dependencies.stdlib = "*"', &
+            & 'myfeature.linux.dependencies.mpi = "*"'
+        close(unit)
+                
+        call get_package_data(package, temp_file, error)
+        if (allocated(error)) return
+        
+        ! Should have feature collection
+        if (.not. allocated(package%features) .or. size(package%features) < 1) then
+            call test_failed(error, "No feature collections found for metapackage test")
+            return
+        end if
+        
+        ! Find myfeature collection  
+        do i = 1, size(package%features)
+            if (package%features(i)%base%name == "myfeature") then
+                
+                ! Test extraction for gfortran on linux (should get all three metapackages)
+                target_platform%compiler = id_gcc
+                target_platform%os_type = OS_LINUX
+                extracted_feature = package%features(i)%extract_for_target(target_platform)
+                
+                if (.not. package%features(i)%base%meta%openmp%on) then
+                    call test_failed(error, "Missing base openmp metapackage")
+                    return
+                end if
+                                
+                ! Should have all three metapackages enabled (OR logic)
+                if (.not. extracted_feature%meta%openmp%on) then
+                    call test_failed(error, "Missing openmp metapackage")
+                    return
+                end if
+                
+                if (.not. extracted_feature%meta%stdlib%on) then
+                    call test_failed(error, "Missing stdlib metapackage") 
+                    return
+                end if
+                
+                if (.not. extracted_feature%meta%mpi%on) then
+                    call test_failed(error, "Missing mpi metapackage")
+                    return
+                end if
+                
+                return ! Test passed
+            end if
+        end do
+        
+        call test_failed(error, "myfeature collection not found for metapackage test")
+                        
+    end subroutine test_feature_metapackage_addition
 
 end module test_features

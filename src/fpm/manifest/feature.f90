@@ -116,6 +116,9 @@ module fpm_manifest_feature
         !> Print information on this instance
         procedure :: info
         
+        !> Check validity of the TOML table
+        procedure, nopass :: check
+        
         !> Get manifest name
         procedure :: manifest_name
 
@@ -215,7 +218,7 @@ contains
             case("description", "default", "platform", "flags", "c-flags", &
                  "cxx-flags", "link-time-flags", "preprocessor", "requires", &
                  "build", "install", "fortran", "library", "dependencies", &
-                 "dev-dependencies", "executable", "example", "test", "preprocess", "metapackages")
+                 "dev-dependencies", "executable", "example", "test", "preprocess")
                  
                  continue
                  

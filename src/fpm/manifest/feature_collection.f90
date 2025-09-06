@@ -2,6 +2,7 @@
 module fpm_manifest_feature_collection
     use fpm_manifest_feature, only: feature_config_t, new_feature, init_feature_components
     use fpm_manifest_platform, only: platform_config_t, is_platform_key
+    use fpm_manifest_metapackages, only: metapackage_config_t
     use fpm_error, only: error_t, fatal_error, syntax_error
     use fpm_environment, only: OS_UNKNOWN, OS_LINUX, OS_MACOS, OS_WINDOWS, OS_CYGWIN, OS_SOLARIS, &
                              OS_FREEBSD, OS_OPENBSD, OS_ALL, match_os_type, OS_NAME
@@ -233,9 +234,11 @@ module fpm_manifest_feature_collection
         
         ! Traverse the table hierarchy to find variants
         call traverse_feature_table(self, table, name, default_platform, error)
+        if (allocated(error)) return
         
         ! Check collection
         call self%check(error)        
+        if (allocated(error)) return
         
     end subroutine new_collection_from_subtable
     
@@ -282,7 +285,15 @@ module fpm_manifest_feature_collection
             ! This is a feature specification (like "flags" or "preprocess")
             has_feature_data = .true.
             
+            ! No compiler/OS flags can appear in feature specification branches
+            if (is_platform_key(keys(i)%key)) then
+                call fatal_error(error, "Key '"//keys(i)%key//"' is not allowed in feature table")
+                return
+            end if              
+            
         end do
+        
+        print *, 'has_platform_keys = ', has_platform_keys,' has_heature=',has_feature_data
         
         ! If we have platform keys, traverse them
         if (has_platform_keys) then
@@ -322,22 +333,35 @@ module fpm_manifest_feature_collection
 
             ! Initialize a new feature variant
             feature_variant%name = feature_name
+            
+            ! Check that the table is right
+            call feature_variant%check(table, error)            
+            if (allocated(error)) return            
+            
+            print *, 'init feature variant ',feature_name
             call init_feature_components(feature_variant, table, constraint, error=error)
             if (allocated(error)) return
             
             if (constraint%any_platform()) then
                 ! This is a base feature specification
+                print *, 'merge features with base'
                 call merge_feature_configs(collection%base, feature_variant, error)
                 if (allocated(error)) return
             else
                 ! This is a constrained variant
+                print *, 'push vairane'
                 call collection%push_variant(feature_variant)
             end if
         end if
         
         ! If this is the root table and we haven't processed any feature data yet, 
         ! call init_feature_components on the base feature (may be empty)
-        if (.not. has_platform_keys .and. .not. has_feature_data .and. constraint%any_platform()) then
+        if (constraint%any_platform() .and. .not.(has_platform_keys.or.has_feature_data)) then
+            
+            ! Check that the table is right
+            call feature_variant%check(table, error)            
+            if (allocated(error)) return                        
+            
             ! Initialize base feature components from empty or root table
             call init_feature_components(collection%base, table, error=error)
             if (allocated(error)) return
@@ -594,8 +618,7 @@ module fpm_manifest_feature_collection
     end subroutine merge_string_arrays
 
     !> Merge metapackages using OR logic - if either requests it, turn it on
-    subroutine merge_metapackages_additive(target, source)
-        use fpm_manifest_metapackages, only: metapackage_config_t
+    subroutine merge_metapackages_additive(target, source)        
         type(metapackage_config_t), intent(inout) :: target
         type(metapackage_config_t), intent(in) :: source
         
@@ -607,6 +630,8 @@ module fpm_manifest_feature_collection
                 target%openmp%version = source%openmp%version
             end if
         end if
+        
+        print *, 'source openmp ',source%openmp%on,' target ',target%openmp%on
         
         if (source%stdlib%on) then
             target%stdlib%on = .true.
