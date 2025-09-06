@@ -172,7 +172,7 @@ contains
         end if
 
         ! Initialize common components
-        call init_feature_components(self, table, root, error)
+        call init_feature_components(self, table, root=root, error=error)
         if (allocated(error)) return
 
         ! For features, get platform configuration (optional for packages)
@@ -966,9 +966,10 @@ contains
 
 
       !> Initialize the feature components (shared between new_feature and new_package)
-      subroutine init_feature_components(self, table, root, error)
+      subroutine init_feature_components(self, table, platform, root, error)
           type(feature_config_t), intent(inout) :: self
           type(toml_table), intent(inout) :: table
+          type(platform_config_t), optional, intent(in) :: platform
           character(len=*), intent(in), optional :: root
           type(error_t), allocatable, intent(out) :: error
 
@@ -976,9 +977,12 @@ contains
           type(toml_array), pointer :: children
           integer :: ii, nn, stat
 
-          ! Initialize platform with defaults (packages don't have platform constraints)
-          self%platform%compiler = id_all
-          self%platform%os_type = OS_ALL
+          ! Initialize platform with defaults 
+          if (present(platform)) then 
+              self%platform = platform
+          else
+              self%platform = platform_config_t(id_all,OS_ALL)  
+          end if
 
           ! Get description and default flag
           call get_value(table, "description", self%description)
@@ -1180,7 +1184,15 @@ contains
           class(feature_config_t), intent(in) :: self
           character(:), allocatable :: name
           
-          name = self%name//'.'//self%platform%name()
+          character(:), allocatable :: platform
+          
+          platform = self%platform%name()
+          
+          if (len(platform)>0) then 
+              name = self%name//'.'//platform
+          else  
+              name = self%name
+          end if
           
       end function manifest_name
 

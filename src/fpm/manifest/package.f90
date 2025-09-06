@@ -155,7 +155,7 @@ contains
         call get_value(table, "copyright", self%copyright)
 
         ! Initialize shared feature components
-        call init_feature_components(self%feature_config_t, table, root, error)
+        call init_feature_components(self%feature_config_t, table, root=root, error=error)
         if (allocated(error)) return
 
         call get_value(table, "version", version, "0")

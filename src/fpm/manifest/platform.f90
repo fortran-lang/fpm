@@ -48,6 +48,11 @@ module fpm_manifest_platform
         !> Get configuration name as it appears in the manifest
         procedure :: name => platform_config_name
         
+        !> Properties
+        procedure, non_overridable :: any_compiler
+        procedure, non_overridable :: any_os
+        procedure, non_overridable :: any_platform
+        
     end type platform_config_t
     
     ! Overloaded initializer
@@ -220,5 +225,19 @@ contains
         end if
         
     end function platform_config_name
+    
+    !> Whether the configuration is generic
+    elemental logical function any_compiler(self)
+        class(platform_config_t), intent(in) :: self
+        any_compiler = self%compiler == id_all
+    end function any_compiler
+    elemental logical function any_os(self)
+        class(platform_config_t), intent(in) :: self
+        any_os = self%os_type == OS_ALL
+    end function any_os
+    elemental logical function any_platform(self)
+        class(platform_config_t), intent(in) :: self
+        any_platform = any_os(self) .and. any_compiler(self)
+    end function any_platform
 
 end module fpm_manifest_platform
