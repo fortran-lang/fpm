@@ -798,7 +798,7 @@ module fpm_manifest_feature_collection
                 ! Check that variant name matches base name
                 if (allocated(self%variants(i)%name) .and. allocated(self%base%name)) then
                     if (self%variants(i)%name /= self%base%name) then
-                        call fatal_error(error, "Variant "//trim(str(i))//" name '" *
+                        call fatal_error(error, "Variant "//trim(str(i))//" name '" &
                                                 //self%variants(i)%name// &
                                                  "' does not match base name '"//self%base%name//"'")
                         return
