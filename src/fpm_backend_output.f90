@@ -33,6 +33,8 @@ type build_progress_t
     logical :: plain_mode = .true.
     !> Store needed when updating previous console lines
     integer, allocatable :: output_lines(:)
+    !> Build directory
+    character(:), allocatable :: build_dir
     !> Queue of scheduled build targets
     type(build_target_ptr), pointer :: target_queue(:)
     !> The compile_commands.json table
@@ -56,11 +58,13 @@ end interface build_progress_t
 contains
     
     !> Initialise a new build progress object
-    function new_build_progress(target_queue,plain_mode) result(progress)
+    function new_build_progress(target_queue,plain_mode,build_dir) result(progress)
         !> The queue of scheduled targets
         type(build_target_ptr), intent(in), target :: target_queue(:)
         !> Enable 'plain' output for progress object
         logical, intent(in), optional :: plain_mode
+        !> Build directory
+        character(*), intent(in), optional :: build_dir
         !> Progress object to initialise
         type(build_progress_t) :: progress
         
@@ -70,6 +74,12 @@ contains
         progress%target_queue => target_queue
         progress%plain_mode = plain_mode
         progress%n_complete = 0
+
+        if (present(build_dir)) then
+            progress%build_dir = build_dir
+        else
+            progress%build_dir = "build"
+        end if
 
         allocate(progress%output_lines(progress%n_target))
 
@@ -191,7 +201,7 @@ contains
         type(error_t), allocatable :: error
         
         ! Write compile commands 
-        path = join_path('build','compile_commands.json')
+        path = join_path(progress%build_dir,'compile_commands.json')
         
         call progress%compile_commands%write(filename=path, error=error) 
         

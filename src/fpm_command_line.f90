@@ -38,7 +38,6 @@ use fpm_release,      only : fpm_version, version_t
 use,intrinsic :: iso_fortran_env, only : stdin=>input_unit, &
                                        & stdout=>output_unit, &
                                        & stderr=>error_unit
-
 implicit none
 
 private
@@ -89,6 +88,7 @@ type, extends(fpm_cmd_settings)  :: fpm_build_settings
     character(len=:),allocatable :: cflag
     character(len=:),allocatable :: cxxflag
     character(len=:),allocatable :: ldflag
+    character(len=:),allocatable :: build_dir
 end type
 
 type, extends(fpm_build_settings)  :: fpm_run_settings
@@ -129,9 +129,12 @@ type, extends(fpm_build_settings) :: fpm_export_settings
     character(len=:),allocatable  :: dump_model
 end type
 
-type, extends(fpm_cmd_settings)   :: fpm_clean_settings
+type, extends(fpm_build_settings) :: fpm_clean_settings
     logical                       :: clean_skip = .false.
     logical                       :: clean_all = .false.
+    logical                       :: clean_test = .false.
+    logical                       :: clean_apps = .false.
+    logical                       :: clean_examples = .false.
     logical                       :: registry_cache = .false.
 end type
 
@@ -157,9 +160,7 @@ character(len=20),parameter :: manual(*)=[ character(len=20) ::&
 &  ' ',     'fpm',    'new',     'build',  'run',    'clean',  &
 &  'test',  'runner', 'install', 'update', 'list',   'help',   'version', 'publish' ]
 
-character(len=:), allocatable :: val_runner, val_compiler, val_flag, val_cflag, val_cxxflag, val_ldflag, &
-    val_profile, val_runner_args, val_dump
-
+character(len=:), allocatable :: val_runner,val_runner_args,val_dump
 
 !   '12345678901234567890123456789012345678901234567890123456789012345678901234567890',&
 character(len=80), parameter :: help_text_build_common(*) = [character(len=80) ::      &
@@ -168,7 +169,9 @@ character(len=80), parameter :: help_text_build_common(*) = [character(len=80) :
     '                   high optimization and "debug" for full debug options.        ',&
     '                   If --flag is not specified the "debug" flags are the         ',&
     '                   default.                                                     ',&
-    ' --no-prune        Disable tree-shaking/pruning of unused module dependencies   '&
+    ' --no-prune        Disable tree-shaking/pruning of unused module dependencies   ',&
+    ' --build-dir DIR   Specify the build directory. Default is "build" unless set   ',&
+    '                   by the environment variable FPM_BUILD_DIR.                   '&
     ]
 !   '12345678901234567890123456789012345678901234567890123456789012345678901234567890',&
 character(len=80), parameter :: help_text_compiler(*) = [character(len=80) :: &
@@ -225,7 +228,10 @@ character(len=80), parameter :: help_text_environment(*) = [character(len=80) ::
     '                   will be overwritten by --archiver command line option', &
     '', &
     ' FPM_LDFLAGS       sets additional link arguments for creating executables', &
-    '                   will be overwritten by --link-flag command line option' &
+    '                   will be overwritten by --link-flag command line option', &
+    '', &
+    ' FPM_BUILD_DIR     sets the build directory for compilation output', &
+    '                   will be overwritten by --build-dir command line option' &
     ]
 
 contains
@@ -237,7 +243,6 @@ contains
         integer                       :: i
         integer                       :: os
         type(fpm_install_settings), allocatable :: install_settings
-        type(fpm_publish_settings), allocatable :: publish_settings
         type(fpm_export_settings) , allocatable :: export_settings
         type(version_t) :: version
         character(len=:), allocatable :: common_args, compiler_args, run_args, working_dir, &
@@ -246,7 +251,7 @@ contains
         character(len=*), parameter :: fc_env = "FC", cc_env = "CC", ar_env = "AR", &
             & fflags_env = "FFLAGS", cflags_env = "CFLAGS", cxxflags_env = "CXXFLAGS", ldflags_env = "LDFLAGS", &
             & fc_default = "gfortran", cc_default = " ", ar_default = " ", flags_default = " ", &
-            & cxx_env = "CXX", cxx_default = " "
+            & cxx_env = "CXX", cxx_default = " ", build_dir_env = "BUILD_DIR", build_dir_default = "build"
         type(error_t), allocatable :: error
 
         call set_help()
@@ -279,7 +284,7 @@ contains
         ! not starting with dash
         CLI_RESPONSE_FILE=.true.
         cmdarg = get_subcommand()
-
+        
         common_args = &
           ' --directory:C " "' // &
           ' --verbose F'
@@ -300,7 +305,8 @@ contains
           ' --flag:: "'//get_fpm_env(fflags_env, flags_default)//'"' // &
           ' --c-flag:: "'//get_fpm_env(cflags_env, flags_default)//'"' // &
           ' --cxx-flag:: "'//get_fpm_env(cxxflags_env, flags_default)//'"' // &
-          ' --link-flag:: "'//get_fpm_env(ldflags_env, flags_default)//'"'
+          ' --link-flag:: "'//get_fpm_env(ldflags_env, flags_default)//'"' // &
+          ' --build-dir "'//get_fpm_env(build_dir_env, build_dir_default)//'"'
 
         ! now set subcommand-specific help text and process commandline
         ! arguments. Then call subcommand routine
@@ -313,8 +319,7 @@ contains
             & --config-file " " &
             & --',help_run,version_text)
 
-            call check_build_vals()
-
+            ! Collect target names
             if( size(unnamed) > 1 )then
                 names=unnamed(2:)
             else
@@ -342,35 +347,28 @@ contains
             val_runner_args=sget('runner-args')
             call remove_characters_in_set(val_runner_args,set='"')
 
-            c_compiler = sget('c-compiler')
-            cxx_compiler = sget('cxx-compiler')
-            archiver = sget('archiver')
-            config_file = sget('config-file')
+            ! Allocate and populate (parent build settings via helper)
             allocate(fpm_run_settings :: cmd_settings)
-            val_runner=sget('runner')
-            if(specified('runner') .and. val_runner=='')val_runner='echo'
+            
+            select type (cmd => cmd_settings)
+                
+                type is (fpm_run_settings)
+            
+                    call build_settings(cmd, list=lget('list'), build_tests=.false., &
+                                        config_file=sget('config-file'))
 
-            cmd_settings=fpm_run_settings(&
-            & args=remaining,&
-            & profile=val_profile,&
-            & prune=.not.lget('no-prune'), &
-            & compiler=val_compiler, &
-            & c_compiler=c_compiler, &
-            & cxx_compiler=cxx_compiler, &
-            & archiver=archiver, &
-            & path_to_config=config_file, &
-            & flag=val_flag, &
-            & cflag=val_cflag, &
-            & cxxflag=val_cxxflag, &
-            & ldflag=val_ldflag, &
-            & example=lget('example'), &
-            & list=lget('list'),&
-            & build_tests=.false.,&
-            & name=names,&
-            & runner=val_runner,&
-            & runner_args=val_runner_args, &
-            & verbose=lget('verbose') )
+                    ! Runner defaults/overrides
+                    val_runner = sget('runner')
+                    if (specified('runner') .and. val_runner == '') val_runner = 'echo'
 
+                    ! Run-specific fields
+                    if (allocated(remaining)) cmd%args = remaining
+                    cmd%example     = lget('example')
+                    cmd%name        = names
+                    cmd%runner      = val_runner
+                    cmd%runner_args = val_runner_args
+                    
+            end select
         case('build')
             call set_args(common_args // compiler_args //'&
             & --list F &
@@ -380,33 +378,16 @@ contains
             & --config-file " " &
             & --',help_build,version_text)
 
-            call check_build_vals()
-
-            c_compiler = sget('c-compiler')
-            cxx_compiler = sget('cxx-compiler')
-            archiver = sget('archiver')
-            config_file = sget('config-file')
-            val_dump = sget('dump')
-            if (specified('dump') .and. val_dump=='')val_dump='fpm_model.toml'
-
+            ! Create and populate a base fpm_build_settings from CLI/env
             allocate( fpm_build_settings :: cmd_settings )
-            cmd_settings=fpm_build_settings(  &
-            & profile=val_profile,&
-            & dump=val_dump,&
-            & prune=.not.lget('no-prune'), &
-            & compiler=val_compiler, &
-            & c_compiler=c_compiler, &
-            & cxx_compiler=cxx_compiler, &
-            & archiver=archiver, &
-            & path_to_config=config_file, &
-            & flag=val_flag, &
-            & cflag=val_cflag, &
-            & cxxflag=val_cxxflag, &
-            & ldflag=val_ldflag, &
-            & list=lget('list'),&
-            & show_model=lget('show-model'),&
-            & build_tests=lget('tests'),&
-            & verbose=lget('verbose') )
+
+            select type (cmd => cmd_settings)
+               class is (fpm_build_settings)
+                   call build_settings(cmd, list=lget('list'),                 &
+                                            show_model=lget('show-model'),     &
+                                            build_tests=lget('tests'),         &
+                                            config_file=sget('config-file') )
+            end select
 
         case('new')
             call set_args(common_args // '&
@@ -548,28 +529,15 @@ contains
                 & --config-file " " &
                 &', help_install, version_text)
 
-            call check_build_vals()
-
-            c_compiler = sget('c-compiler')
-            cxx_compiler = sget('cxx-compiler')
-            archiver = sget('archiver')
             config_file = sget('config-file')
-            allocate(install_settings, source=fpm_install_settings(&
-                list=lget('list'), &
-                build_tests=lget('test'), &
-                profile=val_profile,&
-                prune=.not.lget('no-prune'), &
-                compiler=val_compiler, &
-                c_compiler=c_compiler, &
-                cxx_compiler=cxx_compiler, &
-                archiver=archiver, &
-                path_to_config=config_file, &
-                flag=val_flag, &
-                cflag=val_cflag, &
-                cxxflag=val_cxxflag, &
-                ldflag=val_ldflag, &
-                no_rebuild=lget('no-rebuild'), &
-                verbose=lget('verbose')))
+
+            allocate(install_settings)
+
+            call build_settings(install_settings, list=lget('list'),  &
+                                build_tests=lget('test'), config_file=config_file)
+            
+            install_settings%no_rebuild = lget('no-rebuild')
+
             call get_char_arg(install_settings%prefix, 'prefix')
             call get_char_arg(install_settings%libdir, 'libdir')
             call get_char_arg(install_settings%testdir, 'testdir')
@@ -593,8 +561,6 @@ contains
             & --config-file " " &
             & -- ', help_test,version_text)
 
-            call check_build_vals()
-
             if( size(unnamed) > 1 )then
                 names=unnamed(2:)
             else
@@ -617,35 +583,23 @@ contains
             val_runner_args=sget('runner-args')
             call remove_characters_in_set(val_runner_args,set='"')
 
-            c_compiler = sget('c-compiler')
-            cxx_compiler = sget('cxx-compiler')
-            archiver = sget('archiver')
-            config_file = sget('config-file')
-
             allocate(fpm_test_settings :: cmd_settings)
             val_runner=sget('runner')
             if(specified('runner') .and. val_runner=='')val_runner='echo'
+            
+            select type (cmd => cmd_settings)
+            type is (fpm_test_settings)
+                
+                call build_settings(cmd, list=lget('list'), build_tests=.true., &
+                                    config_file=sget('config-file'))
 
-            cmd_settings=fpm_test_settings(&
-            & args=remaining, &
-            & profile=val_profile, &
-            & prune=.not.lget('no-prune'), &
-            & compiler=val_compiler, &
-            & c_compiler=c_compiler, &
-            & cxx_compiler=cxx_compiler, &
-            & archiver=archiver, &
-            & path_to_config=config_file, &
-            & flag=val_flag, &
-            & cflag=val_cflag, &
-            & cxxflag=val_cxxflag, &
-            & ldflag=val_ldflag, &
-            & example=.false., &
-            & list=lget('list'), &
-            & build_tests=.true., &
-            & name=names, &
-            & runner=val_runner, &
-            & runner_args=val_runner_args, &
-            & verbose=lget('verbose'))
+                if (allocated(remaining)) cmd%args = remaining
+                cmd%example     = .false.
+                cmd%name        = names
+                cmd%runner      = val_runner
+                cmd%runner_args = val_runner_args
+                
+            end select
 
         case('update')
             call set_args(common_args // '&
@@ -683,56 +637,62 @@ contains
                 & --dependencies "filename" ', &
                 help_build, version_text)
 
-            call check_build_vals()
-
-            c_compiler = sget('c-compiler')
-            cxx_compiler = sget('cxx-compiler')
-            archiver = sget('archiver')
-            allocate(export_settings, source=fpm_export_settings(&
-                profile=val_profile,&
-                prune=.not.lget('no-prune'), &
-                compiler=val_compiler, &
-                c_compiler=c_compiler, &
-                cxx_compiler=cxx_compiler, &
-                archiver=archiver, &
-                flag=val_flag, &
-                cflag=val_cflag, &
-                show_model=.true., &
-                cxxflag=val_cxxflag, &
-                ldflag=val_ldflag, &
-                verbose=lget('verbose')))
+            allocate(export_settings)
+            call build_settings(export_settings, show_model=.true.)
             call get_char_arg(export_settings%dump_model, 'model')
             call get_char_arg(export_settings%dump_manifest, 'manifest')
             call get_char_arg(export_settings%dump_dependencies, 'dependencies')
             call move_alloc(export_settings, cmd_settings)
 
-
         case('clean')
-            call set_args(common_args // &
+            call set_args(common_args // compiler_args // &
             &   ' --registry-cache'   // &
             &   ' --skip'             // &
             &   ' --all'              // &
+            &   ' --test'             // &
+            &   ' --apps'             // &
+            &   ' --examples'         // &
             &   ' --config-file ""', help_clean, version_text)
 
             block
-                logical :: skip, clean_all
+                logical :: skip, clean_all, clean_test, clean_apps, clean_examples
+                logical :: target_specific
 
                 skip = lget('skip')
                 clean_all = lget('all')
+                clean_test = lget('test')
+                clean_apps = lget('apps')
+                clean_examples = lget('examples')
                 config_file = sget('config-file')
+
+                target_specific = any([clean_test, clean_apps, clean_examples])
 
                 if (all([skip, clean_all])) then
                     call fpm_stop(6, 'Do not specify both --skip and --all options on the clean subcommand.')
                 end if
 
+                if (target_specific .and. any([skip, clean_all])) then
+                    call fpm_stop(6, 'Cannot combine target-specific flags (--test, --apps, --examples) with --skip or --all.')
+                end if
+
                 allocate(fpm_clean_settings :: cmd_settings)
-                call get_current_directory(working_dir, error)
-                cmd_settings = fpm_clean_settings( &
-                &   working_dir=working_dir, &
-                &   clean_skip=skip, &
-                &   registry_cache=lget('registry-cache'), &
-                &   clean_all=clean_all, &
-                &   path_to_config=config_file)
+
+                select type (cln => cmd_settings)
+                type is (fpm_clean_settings)
+
+                    call build_settings(cln, config_file=config_file)
+
+                    cln%clean_skip     = skip
+                    cln%registry_cache = lget('registry-cache')
+                    cln%clean_all      = clean_all
+                    cln%clean_test     = clean_test
+                    cln%clean_apps     = clean_apps
+                    cln%clean_examples = clean_examples
+
+                    ! Ensure tests will be modeled if they have to be cleaned
+                    if (clean_test) cln%build_tests = .true.  
+                    
+                end select
             end block
 
         case('publish')
@@ -747,35 +707,22 @@ contains
             & --config-file " " &
             & --', help_publish, version_text)
 
-            call check_build_vals()
-
-            c_compiler = sget('c-compiler')
-            cxx_compiler = sget('cxx-compiler')
-            archiver = sget('archiver')
             config_file = sget('config-file')
             token_s = sget('token')
 
             allocate(fpm_publish_settings :: cmd_settings)
-            cmd_settings = fpm_publish_settings( &
-            & show_package_version = lget('show-package-version'), &
-            & show_upload_data = lget('show-upload-data'), &
-            & is_dry_run = lget('dry-run'), &
-            & profile=val_profile,&
-            & prune=.not.lget('no-prune'), &
-            & compiler=val_compiler, &
-            & c_compiler=c_compiler, &
-            & cxx_compiler=cxx_compiler, &
-            & archiver=archiver, &
-            & flag=val_flag, &
-            & cflag=val_cflag, &
-            & cxxflag=val_cxxflag, &
-            & ldflag=val_ldflag, &
-            & list=lget('list'),&
-            & show_model=lget('show-model'),&
-            & build_tests=lget('tests'),&
-            & path_to_config=config_file, &
-            & verbose=lget('verbose'),&
-            & token=token_s)
+            select type (pub => cmd_settings)
+            type is (fpm_publish_settings)
+
+                call build_settings(pub, list=lget('list'), show_model=lget('show-model'), &
+                                    build_tests=lget('tests'), config_file=config_file)
+
+                pub%show_package_version = lget('show-package-version')
+                pub%show_upload_data     = lget('show-upload-data')
+                pub%is_dry_run           = lget('dry-run')
+                pub%token                = token_s
+
+            end select
 
         case default
 
@@ -809,19 +756,40 @@ contains
             call move_alloc(working_dir, cmd_settings%working_dir)
         end if
 
-    contains
+    end subroutine get_command_line_settings
 
-    subroutine check_build_vals()
-        val_compiler=sget('compiler')
-        if(val_compiler=='') val_compiler='gfortran'
-
-        val_flag = " " // sget('flag')
-        val_cflag = " " // sget('c-flag')
-        val_cxxflag = " " // sget('cxx-flag')
-        val_ldflag = " " // sget('link-flag')
-        val_profile = sget('profile')
-
-    end subroutine check_build_vals
+    !> Validate that build directory is not a reserved source directory name
+    subroutine validate_build_dir(build_dir)
+        character(len=*), intent(in) :: build_dir
+        character(len=*), parameter :: reserved_names(*) = [ &
+            "src     ", "app     ", "test    ", "tests   ", &
+            "example ", "examples", "include "]
+        character(len=:), allocatable :: normalized_build_dir, normalized_reserved
+        integer :: i
+        
+        ! Skip validation if build_dir is empty (will use default)
+        if (len_trim(build_dir) == 0) return
+        
+        ! Normalize the build directory path
+        normalized_build_dir = canon_path(build_dir)
+        
+        ! Check against reserved directory names
+        do i = 1, size(reserved_names)
+            normalized_reserved = canon_path(trim(reserved_names(i)))
+            if (normalized_build_dir == normalized_reserved) then
+                call fpm_stop(1, 'Error: Build directory "'//trim(build_dir) &
+                                  //'" conflicts with source directory "' &
+                                  //trim(reserved_names(i))//'".')
+            end if
+        end do
+        
+        ! Additional checks for problematic cases
+        if (trim(build_dir) == "." .or. trim(build_dir) == "..") then
+            call fpm_stop(1, 'Error: Build directory cannot be "'//trim(build_dir)// &
+                             '" as it would overwrite the current or parent directory.')
+        end if
+        
+    end subroutine validate_build_dir
 
     !> Print help text and stop
     subroutine printhelp(lines)
@@ -837,8 +805,6 @@ contains
         endif
         stop
     end subroutine printhelp
-
-    end subroutine get_command_line_settings
 
     subroutine set_help()
    help_list_nodash=[character(len=80) :: &
@@ -877,7 +843,8 @@ contains
    '      [--list] [--compiler COMPILER_NAME] [--config-file PATH] [-- ARGS]        ', &
    ' install [--profile PROF] [--flag FFLAGS] [--no-rebuild] [--prefix PATH]        ', &
    '         [--config-file PATH] [--registry-cache] [options]                      ', &
-   ' clean [--skip] [--all] [--config-file PATH] [--registry-cache]                 ', &
+   ' clean [--skip|--all] [--test] [--apps] [--examples] [--config-file PATH]       ', &
+   '       [--registry-cache]                                                      ', &
    ' publish [--token TOKEN] [--show-package-version] [--show-upload-data]          ', &
    '         [--dry-run] [--verbose] [--config-file PATH]                           ', &
    ' ']
@@ -987,7 +954,7 @@ contains
     '  + list     Display brief descriptions of all subcommands.            ', &
     '  + install  Install project.                                          ', &
     '  + clean    Delete directories in the "build/" directory, except      ', &
-    '             dependencies. Prompts for confirmation to delete.         ', &
+    '             dependencies. Use --test/--apps/--examples for selective. ', &
     '  + publish  Publish package to the registry.                          ', &
     '                                                                       ', &
     '  Their syntax is                                                      ', &
@@ -1008,7 +975,8 @@ contains
     '    list [--list]                                                               ', &
     '    install [--profile PROF] [--flag FFLAGS] [--no-rebuild] [--prefix PATH]     ', &
     '            [options] [--config-file PATH] [--registry-cache]                    ', &
-    '    clean [--skip] [--all] [--config-file PATH] [--registry-cache]               ', &
+    '    clean [--skip|--all] [--test] [--apps] [--examples] [--config-file PATH]     ', &
+    '          [--registry-cache]                                                    ', &
     '    publish [--token TOKEN] [--show-package-version] [--show-upload-data]       ', &
     '            [--dry-run] [--verbose] [--config-file PATH]                        ', &
     '                                                                                ', &
@@ -1187,7 +1155,8 @@ contains
     '                                                                       ', &
     'SYNOPSIS                                                               ', &
     ' fpm build [--profile PROF] [--flag FFLAGS] [--compiler COMPILER_NAME] ', &
-    '           [--list] [--tests] [--config-file PATH] [--dump [FILENAME]] ', &
+    '           [--build-dir DIR] [--list] [--tests] [--config-file PATH]    ', &
+    '           [--dump [FILENAME]]                                          ', &
     '                                                                       ', &
     ' fpm build --help|--version                                            ', &
     '                                                                       ', &
@@ -1203,7 +1172,7 @@ contains
     '    o test/    main program(s) and support files for project tests     ', &
     '    o example/ main program(s) for example programs                    ', &
     ' Changed or new files found are rebuilt. The results are placed in     ', &
-    ' the build/ directory.                                                 ', &
+    ' the build directory (default: build/).                               ', &
     '                                                                       ', &
     ' Non-default pathnames and remote dependencies are used if             ', &
     ' specified in the "fpm.toml" file.                                     ', &
@@ -1214,7 +1183,7 @@ contains
     help_text_flag, &
     ' --list        list candidates instead of building or running them.    ', &
     '               all dependencies are downloaded, and the build sequence ', &
-    '               is saved to `build/compile_commands.json`.              ', &
+    '               is saved to `<build-dir>/compile_commands.json`.         ', &
     ' --tests       build all tests (otherwise only if needed)              ', &
     ' --show-model  show the model and exit (do not build)                  ', &
     ' --dump [FILENAME] save model representation to file. use JSON format  ', &
@@ -1231,6 +1200,7 @@ contains
     '                                                                       ', &
     '  fpm build                   # build with debug options               ', &
     '  fpm build --profile release # build with high optimization           ', &
+    '  fpm build --build-dir /tmp/my_build # build to custom directory      ', &
     '' ]
 
     help_help=[character(len=80) :: &
@@ -1501,16 +1471,21 @@ contains
     ' clean(1) - delete the build', &
     '', &
     'SYNOPSIS', &
-    ' fpm clean', &
+    ' fpm clean [--skip|--all]', &
+    ' fpm clean [--test] [--apps] [--examples]', &
     '', &
     'DESCRIPTION', &
     ' Prompts the user to confirm deletion of the build. If affirmative,', &
     ' directories in the build/ directory are deleted, except dependencies.', &
     ' Use the --registry-cache option to delete the registry cache.', &
+    ' Use target-specific flags to delete only certain build artifacts.', &
     '', &
     'OPTIONS', &
     ' --skip              Delete the build without prompting but skip dependencies.', &
     ' --all               Delete the build without prompting including dependencies.', &
+    ' --test              Delete only test executables.', &
+    ' --apps              Delete only application executables.', &
+    ' --examples          Delete only example executables.', &
     ' --config-file PATH  Custom location of the global config file.', &
     ' --registry-cache    Delete registry cache.', &
     '' ]
@@ -1620,6 +1595,74 @@ contains
        end do
     
     end function name_ID
+
+    ! Populate build settings from the current CLI/environment 
+    ! (after set_args has been called).
+    subroutine build_settings(self, list, show_model, build_tests, config_file)
+        class(fpm_build_settings), intent(inout) :: self
+        logical,           intent(in), optional  :: list, show_model, build_tests
+        character(len=*),  intent(in), optional  :: config_file
+
+        character(len=:), allocatable :: comp, ccomp, cxcomp, arch
+        character(len=:), allocatable :: fflags, cflags, cxxflags, ldflags
+        character(len=:), allocatable :: prof, cfg, dump, dir
+
+        ! Read CLI/env values (sget returns what set_args registered, including defaults)
+        ! This is equivalent to check_build_vals
+        comp     = sget('compiler');          if (comp == '') comp = 'gfortran'
+        fflags   = ' ' // sget('flag')
+        cflags   = ' ' // sget('c-flag')
+        cxxflags = ' ' // sget('cxx-flag')
+        ldflags  = ' ' // sget('link-flag')
+        prof     = sget('profile')
+        
+        ! Set and validate build directory
+        dir      = sget('build-dir')
+        call validate_build_dir(dir)
+
+        ccomp    = sget('c-compiler')
+        cxcomp   = sget('cxx-compiler')
+        arch     = sget('archiver')
+        
+        ! Handle --dump default (empty value means use 'fpm_model.toml')
+        if (specified('dump')) then 
+           dump = sget('dump')
+           if (dump=='') dump='fpm_model.toml'
+        else
+           dump = ''
+        endif
+
+        if (present(config_file)) then
+            if (len_trim(config_file) > 0) then
+                cfg = config_file
+            else
+                cfg = sget('config-file')
+            end if
+        else
+            cfg = sget('config-file')
+        end if
+        
+        ! Assign into this (polymorphic) object; allocatable chars auto-allocate
+        self%profile       = prof
+        self%prune         = .not. lget('no-prune')
+        self%compiler      = comp
+        self%c_compiler    = ccomp
+        self%cxx_compiler  = cxcomp
+        self%build_dir     = dir
+        self%archiver      = arch
+        self%path_to_config= cfg
+        self%flag          = fflags
+        self%cflag         = cflags
+        self%cxxflag       = cxxflags
+        self%ldflag        = ldflags
+        self%verbose       = lget('verbose')
+        self%dump          = dump
+
+        ! Optional overrides from caller
+        if (present(list))        self%list        = list
+        if (present(show_model))  self%show_model  = show_model
+        if (present(build_tests)) self%build_tests = build_tests
+    end subroutine build_settings
 
 
 end module fpm_command_line
