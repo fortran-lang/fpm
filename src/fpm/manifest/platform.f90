@@ -39,6 +39,15 @@ module fpm_manifest_platform
         !> Return .true. if THIS platform selector is compatible with CURRENT (wildcards allowed)
         procedure :: matches => platform_is_suitable        
         
+        !> Get compiler name as string
+        procedure :: compiler_name => platform_compiler_name
+        
+        !> Get OS name as string  
+        procedure :: os_name => platform_os_name
+        
+        !> Get configuration name as it appears in the manifest
+        procedure :: name => platform_config_name
+        
     end type platform_config_t
     
     ! Overloaded initializer
@@ -151,7 +160,7 @@ contains
 
         logical :: compiler_ok, os_ok
 
-        ! Unknowns are conservative (donÕt match)
+        ! Unknowns are conservative (donï¿½t match)
         if (any([self%compiler,target%compiler] == id_unknown)) then
             ok = .false.
             return
@@ -179,5 +188,37 @@ contains
         
     end function is_platform_key
 
+    !> Get compiler name as string
+    function platform_compiler_name(self) result(name)
+        class(platform_config_t), intent(in) :: self
+        character(len=:), allocatable :: name
+        
+        name = compiler_id_name(self%compiler)
+    end function platform_compiler_name
+    
+    !> Get OS name as string
+    function platform_os_name(self) result(name)
+        class(platform_config_t), intent(in) :: self
+        character(len=:), allocatable :: name
+        
+        name = OS_NAME(self%os_type)
+    end function platform_os_name
+    
+    !> Get configuration name
+    function platform_config_name(self) result(name)
+        class(platform_config_t), intent(in) :: self
+        character(len=:), allocatable :: name
+        
+        if (self%os_type==OS_ALL .and. self%compiler==id_all) then 
+            name = ""
+        elseif (self%os_type==OS_ALL) then 
+            name = self%compiler_name()
+        elseif (self%compiler==id_all) then 
+            name = self%os_name()
+        else
+            name = self%os_name()//'.'//self%compiler_name()
+        end if
+        
+    end function platform_config_name
 
 end module fpm_manifest_platform

@@ -980,9 +980,9 @@ use fpm_environment, only: OS_NAME
                 ! Check for exact duplicate platforms
                 do j = i + 1, size(self%variants)
                     if (self%variants(i)%platform == self%variants(j)%platform) then
-                        call fatal_error(error, "Duplicate platform configuration found between variants "// &
-                                              trim(str(i))//" and "//trim(str(j)) &
-                                              //" of feature '"//self%base%name//"'")
+                        call fatal_error(error, "Duplicate platform configurations: "// &
+                                                self%variants(i)%manifest_name()// &
+                                                " and "//self%variants(j)%manifest_name()) 
                         return
                     end if
                 end do

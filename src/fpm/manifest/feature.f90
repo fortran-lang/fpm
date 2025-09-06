@@ -115,6 +115,9 @@ module fpm_manifest_feature
 
         !> Print information on this instance
         procedure :: info
+        
+        !> Get manifest name
+        procedure :: manifest_name
 
         !> Serialization interface
         procedure :: serializable_is_same => feature_is_same
@@ -1171,5 +1174,14 @@ contains
           if (allocated(error)) return
 
       end subroutine unique_programs2
+      
+      !> Return a name string as it would appear in the TOML manifest
+      function manifest_name(self) result(name)
+          class(feature_config_t), intent(in) :: self
+          character(:), allocatable :: name
+          
+          name = self%name//'.'//self%platform%name()
+          
+      end function manifest_name
 
 end module fpm_manifest_feature
