@@ -554,19 +554,22 @@ contains
     type(package_config_t) function export_config(self, platform, features, profile, error) result(cfg)
         
         !> Instance of the package configuration  
-        class(package_config_t), intent(in) :: self
+        class(package_config_t), intent(in), target :: self
         
         !> Target platform
         type(platform_config_t), intent(in) :: platform
         
         !> Optional list of features to apply (cannot be used with profile)
-        type(string_t), optional, intent(in) :: features(:)
+        type(string_t), optional, intent(in), target :: features(:)
         
         !> Optional profile name to apply (cannot be used with features)
         character(len=*), optional, intent(in) :: profile
         
         !> Error handling
         type(error_t), allocatable, intent(out) :: error
+        
+        integer :: i, idx
+        type(string_t), pointer :: want_features(:)
         
         ! Validate that both profile and features are not specified simultaneously
         if (present(profile) .and. present(features)) then
@@ -576,6 +579,38 @@ contains
         
         ! Copy the entire package configuration
         cfg = self
+        
+        ! TODO: Feature processing will be implemented here
+        ! For now, features parameter is ignored as requested
+        if (present(features)) then 
+            want_features => features
+        elseif (present(profile)) then 
+            idx = find_profile(self, profile)
+            if (idx<=0) then 
+                call fatal_error(error, "Cannot find profile "//profile)
+                return
+            end if                  
+            want_features => self%profiles(idx)%features                  
+        else
+            nullify(want_features)
+        endif
+            
+        apply_features: if (associated(want_features)) then 
+            do i=1,size(want_features)
+                
+                ! Find feature
+                idx = self%find_feature(want_features(i)%s)
+                if (idx<=0) then 
+                    call fatal_error(error, "Cannot find feature "//want_features(i)%s)
+                    return
+                end if
+                
+                ! Add it to the current configuration
+                call self%features(idx)%merge_into_package(cfg, platform, error)
+                if (allocated(error)) return
+                
+            end do
+        end if apply_features
         
         ! Ensure allocatable fields are always allocated with default values if not already set
         if (.not. allocated(cfg%build)) then
@@ -597,13 +632,40 @@ contains
             cfg%fortran%implicit_typing = .false.
             cfg%fortran%implicit_external = .false.
             cfg%fortran%source_form = 'free'
-        end if
-        
-        ! TODO: Feature processing will be implemented here
-        ! For now, features parameter is ignored as requested
+        end if        
         
     end function export_config
 
+    !> Find profile by name, returns index or 0 if not found
+    function find_profile(self, profile_name) result(idx)
+        
+        !> Instance of the package configuration
+        class(package_config_t), intent(in) :: self
+        
+        !> Name of the feature to find
+        character(len=*), intent(in) :: profile_name
+        
+        !> Index of the feature (0 if not found)
+        integer :: idx
+        
+        integer :: i
+        
+        idx = 0
+        
+        ! Check if features are allocated
+        if (.not. allocated(self%profiles)) return
+        
+        ! Search through features array
+        do i = 1, size(self%profiles)
+            if (allocated(self%profiles(i)%name)) then
+                if (self%profiles(i)%name == profile_name) then
+                    idx = i
+                    return
+                end if
+            end if
+        end do
+        
+    end function find_profile
 
     !> Find feature by name, returns index or 0 if not found
     function find_feature(self, feature_name) result(idx)

@@ -82,7 +82,7 @@ subroutine build_model(model, settings, package_config, error)
     model%include_tests        = settings%build_tests    
     
     ! Extract the current package configuration request
-    package = package_config%export_config(target_platform,error=error)
+    package = package_config%export_config(target_platform,settings%features,settings%profile,error)
     if (allocated(error)) return    
     
     ! Resolve meta-dependencies into the package and the model

@@ -46,6 +46,7 @@ module fpm_manifest_feature_collection
             procedure :: push_variant
             procedure :: extract_for_target
             procedure :: check => check_collection
+            procedure :: merge_into_package
 
     end type feature_collection_t
 
@@ -987,16 +988,37 @@ module fpm_manifest_feature_collection
             target%library = source%library
         end if
     end subroutine simulate_merge
-
-    !> Extract a merged feature configuration for the given target platform
-    function extract_for_target(self, target) result(feature)
+    
+    !> Merge a feature configuration into an existing global package
+    subroutine merge_into_package(self, package, target, error)
         class(feature_collection_t), intent(in) :: self
+        
+        class(feature_config_t), intent(inout) :: package
+        
         type(platform_config_t), intent(in) :: target
+        
+        type(error_t), allocatable, intent(out) :: error
+        
         type(feature_config_t) :: feature
         
-        integer :: i
-        type(error_t), allocatable :: error
+        ! Extract the feature configuration for the target platform
+        feature = self%extract_for_target(target, error)
+        if (allocated(error)) return
         
+        ! Merge the extracted feature into the package
+        call merge_feature_configs(package, feature, error)
+        if (allocated(error)) return
+        
+    end subroutine merge_into_package
+
+    !> Extract a merged feature configuration for the given target platform
+    type(feature_config_t) function extract_for_target(self, target, error) result(feature)
+        class(feature_collection_t), intent(in) :: self
+        type(platform_config_t), intent(in) :: target
+        type(error_t), allocatable, intent(out) :: error
+        
+        integer :: i
+                
         ! Start with base feature as foundation
         feature = self%base
         
@@ -1006,16 +1028,12 @@ module fpm_manifest_feature_collection
                 if (self%variants(i)%platform%matches(target)) then
                     ! Merge this variant into the feature
                     call merge_feature_configs(feature, self%variants(i), error)
-                    if (allocated(error)) then
-                        ! If merge fails, just continue with what we have
-                        deallocate(error)
-                    end if
+                    if (allocated(error)) return
                 end if
             end do
         end if
         
     end function extract_for_target
-
 
     !> Add default features to existing features array if they don't already exist
     subroutine add_default_features(features, error)

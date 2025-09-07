@@ -271,7 +271,8 @@ contains
                 ! Test extraction for gfortran on linux
                 target_platform%compiler = id_gcc
                 target_platform%os_type = OS_LINUX
-                extracted_feature = package%features(i)%extract_for_target(target_platform)
+                extracted_feature = package%features(i)%extract_for_target(target_platform, error=error)
+                if (allocated(error)) return
                 
                 ! Should have both base and gfortran-specific flags
                 if (.not. allocated(extracted_feature%flags)) then
@@ -288,7 +289,8 @@ contains
                 
                 ! Test extraction for ifort
                 target_platform%compiler = id_intel_classic_nix
-                extracted_feature = package%features(i)%extract_for_target(target_platform)
+                extracted_feature = package%features(i)%extract_for_target(target_platform, error=error)
+                if (allocated(error)) return
                 
                 if (.not. allocated(extracted_feature%flags)) then
                     call test_failed(error, "Extracted ifort feature missing flags")
@@ -458,7 +460,8 @@ contains
                 ! Test extraction for gfortran on linux (should get all three flags)
                 target_platform%compiler = id_gcc
                 target_platform%os_type = OS_LINUX
-                extracted_feature = package%features(i)%extract_for_target(target_platform)
+                extracted_feature = package%features(i)%extract_for_target(target_platform, error=error)
+                if (allocated(error)) return
                 
                 ! Should have flags from base, gfortran, and linux variants
                 if (.not. allocated(extracted_feature%flags)) then
@@ -530,7 +533,8 @@ contains
                 ! Test extraction for gfortran on linux (should get all three metapackages)
                 target_platform%compiler = id_gcc
                 target_platform%os_type = OS_LINUX
-                extracted_feature = package%features(i)%extract_for_target(target_platform)
+                extracted_feature = package%features(i)%extract_for_target(target_platform, error=error)
+                if (allocated(error)) return
                 
                 if (.not. package%features(i)%base%meta%openmp%on) then
                     call test_failed(error, "Missing base openmp metapackage")
@@ -604,7 +608,8 @@ contains
         do i = 1, size(package%features)
             if (package%features(i)%base%name == "debug") then
                 target_platform = platform_config_t(id_gcc, OS_LINUX)
-                extracted_feature = package%features(i)%extract_for_target(target_platform)
+                extracted_feature = package%features(i)%extract_for_target(target_platform, error=error)
+                if (allocated(error)) return
                 
                 ! Check flags are combined correctly
                 if (.not. allocated(extracted_feature%flags)) then
@@ -688,7 +693,8 @@ contains
         do i = 1, size(package%features)
             if (package%features(i)%base%name == "debug") then
                 target_platform = platform_config_t("ifort", OS_WINDOWS)
-                extracted_feature = package%features(i)%extract_for_target(target_platform)
+                extracted_feature = package%features(i)%extract_for_target(target_platform, error=error)
+                if (allocated(error)) return
                 
                 ! Check flags: should have base + ifort + windows (but NOT linux)
                 if (.not. allocated(extracted_feature%flags)) then
@@ -781,7 +787,8 @@ contains
         do i = 1, size(package%features)
             if (package%features(i)%base%name == "testing") then
                 target_platform = platform_config_t(id_gcc, OS_MACOS)
-                extracted_feature = package%features(i)%extract_for_target(target_platform)
+                extracted_feature = package%features(i)%extract_for_target(target_platform, error=error)
+                if (allocated(error)) return
                 
                 ! Check that all dependencies are combined (base + gfortran + macos)
                 if (.not. allocated(extracted_feature%dependency)) then
@@ -870,7 +877,8 @@ contains
         do i = 1, size(package%features)
             if (package%features(i)%base%name == "optimization") then
                 target_platform = platform_config_t(id_intel_classic_nix, OS_LINUX)
-                extracted_feature = package%features(i)%extract_for_target(target_platform)
+                extracted_feature = package%features(i)%extract_for_target(target_platform, error=error)
+                if (allocated(error)) return
                 
                 ! Check that build config is present
                 if (.not. allocated(extracted_feature%build)) then
@@ -952,7 +960,8 @@ contains
         do i = 1, size(package%features)
             if (package%features(i)%base%name == "testing") then
                 target_platform = platform_config_t(id_gcc, OS_WINDOWS)
-                extracted_feature = package%features(i)%extract_for_target(target_platform)
+                extracted_feature = package%features(i)%extract_for_target(target_platform, error=error)
+                if (allocated(error)) return
                 
                 ! Check that all test configs are combined (base + gfortran + windows + gfortran.windows)
                 if (.not. allocated(extracted_feature%test) .or. size(extracted_feature%test) < 4) then
@@ -1045,7 +1054,8 @@ contains
         do i = 1, size(package%features)
             if (package%features(i)%base%name == "showcase") then
                 target_platform = platform_config_t(id_intel_llvm_nix, OS_MACOS)
-                extracted_feature = package%features(i)%extract_for_target(target_platform)
+                extracted_feature = package%features(i)%extract_for_target(target_platform, error=error)
+                if (allocated(error)) return
                 
                 ! Check that all example configs are combined (base + ifx + macos + ifx.macos)
                 if (.not. allocated(extracted_feature%example) .or. size(extracted_feature%example) < 4) then
