@@ -43,7 +43,7 @@ implicit none
 
 private
 public :: f_string, lower, upper, split, split_first_last, split_lines_first_last, str_ends_with, string_t, str_begins_with_str
-public :: to_fortran_name, is_fortran_name
+public :: to_fortran_name, is_fortran_name, is_valid_feature_name
 public :: string_array_contains, string_cat, len_trim, operator(.in.), fnv_1a
 public :: replace, resize, str, join, glob
 public :: notabs, dilate, remove_newline_characters, remove_characters_in_set
@@ -1658,5 +1658,33 @@ function dilate(instr) result(outstr)
    outstr = outstr(:lgth)
 
 end function dilate
+
+!> Check if feature name is valid (alphanumeric, underscore, dash allowed)
+logical function is_valid_feature_name(name) result(valid)
+    character(len=*), intent(in) :: name
+    integer :: i
+    character :: c
+    
+    valid = .false.
+    
+    ! Must not be empty and not too long
+    if (len_trim(name) == 0 .or. len_trim(name) > 64) return
+    
+    ! First character must be alphabetic or underscore
+    c = name(1:1)
+    if (.not. ((c >= 'a' .and. c <= 'z') .or. (c >= 'A' .and. c <= 'Z') .or. c == '_')) return
+    
+    ! Remaining characters can be alphanumeric, underscore, or dash
+    do i = 2, len_trim(name)
+        c = name(i:i)
+        if (.not. ((c >= 'a' .and. c <= 'z') .or. (c >= 'A' .and. c <= 'Z') .or. &
+                  (c >= '0' .and. c <= '9') .or. c == '_' .or. c == '-')) then
+            return
+        end if
+    end do
+    
+    valid = .true.
+    
+end function is_valid_feature_name
 
 end module fpm_strings

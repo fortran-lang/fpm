@@ -29,7 +29,7 @@ use fpm_environment,  only : get_os_type, get_env, &
 use M_CLI2,           only : set_args, lget, sget, unnamed, remaining, specified
 use M_CLI2,           only : get_subcommand, CLI_RESPONSE_FILE
 use fpm_strings,      only : lower, split, to_fortran_name, is_fortran_name, remove_characters_in_set, &
-                             string_t, glob
+                             string_t, glob, is_valid_feature_name
 use fpm_filesystem,   only : basename, canon_path, which, run
 use fpm_environment,  only : get_command_arguments_quoted
 use fpm_error,        only : fpm_stop, error_t
@@ -84,7 +84,7 @@ type, extends(fpm_cmd_settings)  :: fpm_build_settings
     character(len=:),allocatable :: cxx_compiler
     character(len=:),allocatable :: archiver
     character(len=:),allocatable :: profile
-    character(len=:),allocatable :: features
+    type(string_t), allocatable :: features(:)
     character(len=:),allocatable :: flag
     character(len=:),allocatable :: cflag
     character(len=:),allocatable :: cxxflag
@@ -1663,9 +1663,15 @@ contains
             call fpm_stop(1, 'Error: --profile and --features cannot be used together')
         end if
         
+        ! Parse comma-separated features
+        if (specified('features') .and. len_trim(feats) > 0) then
+            call parse_features(feats, self%features)
+        else
+            allocate(self%features(0))
+        end if
+        
         ! Assign into this (polymorphic) object; allocatable chars auto-allocate
         self%profile       = prof
-        self%features      = feats
         self%prune         = .not. lget('no-prune')
         self%compiler      = comp
         self%c_compiler    = ccomp
@@ -1685,6 +1691,43 @@ contains
         if (present(show_model))  self%show_model  = show_model
         if (present(build_tests)) self%build_tests = build_tests
     end subroutine build_settings
+
+    !> Parse comma-separated features string into string_t array
+    subroutine parse_features(features_str, features_array)
+        character(len=*), intent(in) :: features_str
+        type(string_t), allocatable, intent(out) :: features_array(:)
+        
+        character(len=:), allocatable :: trimmed_features(:)
+        integer :: i
+        
+        ! Split by comma
+        call split(features_str, trimmed_features, delimiters=',')
+        
+        ! Validate and clean feature names
+        if (size(trimmed_features) == 0) then
+            call fpm_stop(1, 'Error: Empty features list provided')
+        end if
+        
+        allocate(features_array(size(trimmed_features)))
+        
+        do i = 1, size(trimmed_features)
+            ! Trim whitespace
+            trimmed_features(i) = trim(adjustl(trimmed_features(i)))
+            
+            ! Validate feature name
+            if (len_trim(trimmed_features(i)) == 0) then
+                call fpm_stop(1, 'Error: Empty feature name in features list')
+            end if
+            
+            ! Check for valid feature name (similar to Fortran identifier rules)
+            if (.not. is_valid_feature_name(trimmed_features(i))) then
+                call fpm_stop(1, 'Error: Invalid feature name "'//trimmed_features(i)//'"')
+            end if
+            
+            features_array(i)%s = trimmed_features(i)
+        end do
+        
+    end subroutine parse_features
 
 
 end module fpm_command_line
