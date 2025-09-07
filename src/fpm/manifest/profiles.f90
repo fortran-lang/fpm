@@ -15,7 +15,7 @@
 module fpm_manifest_profile
     use fpm_error, only: error_t, fatal_error, syntax_error
     use fpm_strings, only: string_t, operator(==)
-    use tomlf, only: toml_table, toml_key, toml_stat
+    use tomlf, only: toml_table, toml_array, toml_key, toml_stat, len
     use fpm_toml, only: get_value, serializable_t, set_string, set_list, get_list, add_table
     
     implicit none
@@ -48,14 +48,14 @@ module fpm_manifest_profile
 
 contains
 
-    !> Construct a new profile configuration from a TOML data structure
-    subroutine new_profile(self, table, profile_name, error)
+    !> Construct a new profile configuration from a TOML array
+    subroutine new_profile(self, features_array, profile_name, error)
 
         !> Instance of the profile configuration
         type(profile_config_t), intent(out) :: self
 
-        !> Instance of the TOML data structure
-        type(toml_table), intent(inout) :: table
+        !> TOML array containing the feature names
+        type(toml_array), intent(inout) :: features_array
 
         !> Name of the profile
         character(len=*), intent(in) :: profile_name
@@ -63,53 +63,29 @@ contains
         !> Error handling
         type(error_t), allocatable, intent(out) :: error
 
-        call check(table, error)
-        if (allocated(error)) return
+        integer :: i, stat
+        character(len=:), allocatable :: feature_name
 
         ! Set profile name
         self%name = profile_name
 
-        ! Get list of features
-        call get_list(table, "features", self%features, error)
-        if (allocated(error)) return
-
-        ! If no features specified, initialize empty array
-        if (.not. allocated(self%features)) then
+        ! Get feature names from array
+        if (len(features_array) > 0) then
+            allocate(self%features(len(features_array)))
+            do i = 1, len(features_array)
+                call get_value(features_array, i, feature_name, stat=stat)
+                if (stat /= toml_stat%success) then
+                    call fatal_error(error, "Failed to read feature name from profile " // profile_name)
+                    return
+                end if
+                self%features(i)%s = feature_name
+            end do
+        else
             allocate(self%features(0))
         end if
 
     end subroutine new_profile
 
-    !> Check local schema for allowed entries
-    subroutine check(table, error)
-
-        !> Instance of the TOML data structure
-        type(toml_table), intent(inout) :: table
-
-        !> Error handling
-        type(error_t), allocatable, intent(out) :: error
-
-        type(toml_key), allocatable :: list(:)
-        integer :: ikey
-
-        call table%get_keys(list)
-
-        ! Profile table can be empty (no features)
-        if (size(list) < 1) return
-
-        do ikey = 1, size(list)
-            select case(list(ikey)%key)
-            case default
-                call syntax_error(error, "Key "//list(ikey)%key//" is not allowed in profile table")
-                exit
-
-            case("features")
-                continue
-
-            end select
-        end do
-
-    end subroutine check
 
     !> Construct new profiles array from a TOML data structure
     subroutine new_profiles(profiles, table, error)
@@ -123,7 +99,7 @@ contains
         !> Error handling
         type(error_t), allocatable, intent(out) :: error
 
-        type(toml_table), pointer :: node
+        type(toml_array), pointer :: array_node
         type(toml_key), allocatable :: list(:)
         integer :: iprofile, stat
 
@@ -137,12 +113,12 @@ contains
         allocate(profiles(size(list)))
 
         do iprofile = 1, size(list)
-            call get_value(table, list(iprofile)%key, node, stat=stat)
+            call get_value(table, list(iprofile)%key, array_node, stat=stat)
             if (stat /= toml_stat%success) then
-                call fatal_error(error, "Profile "//list(iprofile)%key//" must be a table entry")
+                call fatal_error(error, "Profile "//list(iprofile)%key//" must be an array of feature names")
                 exit
             end if
-            call new_profile(profiles(iprofile), node, list(iprofile)%key, error)
+            call new_profile(profiles(iprofile), array_node, list(iprofile)%key, error)
             if (allocated(error)) exit
         end do
 

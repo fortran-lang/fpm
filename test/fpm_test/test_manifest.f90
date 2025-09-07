@@ -548,9 +548,9 @@ contains
         write(unit, '(a)') &
             & 'name = "example"', &
             & '[profiles]', &
-            & 'development.features = ["debug", "testing"]', &
-            & 'release.features = ["optimized"]', &
-            & 'full-test.features = ["debug", "testing", "benchmarks"]'
+            & 'development = ["debug", "testing"]', &
+            & 'release = ["optimized"]', &
+            & 'full-test = ["debug", "testing", "benchmarks"]'
         close(unit)
 
         call get_package_data(package, manifest, error)
@@ -604,7 +604,7 @@ contains
         write(unit, '(a)') &
             & 'name = "example"', &
             & '[profiles]', &
-            & 'development.invalid_key = "should_fail"'
+            & 'development = "not_an_array"'
         close(unit)
 
         call get_package_data(package, manifest, error)
