@@ -29,7 +29,9 @@ contains
     type(build_target_ptr), allocatable :: targets(:), libraries(:)
     type(installer_t) :: installer
     type(string_t), allocatable :: list(:)
-    logical :: installable
+    logical :: installable, has_install_config, install_library, install_tests
+    logical :: has_library, has_executables
+    character(len=:), allocatable :: module_dir
     integer :: ntargets,i
 
     call get_package_data(package, "fpm.toml", error, apply_defaults=.true.)
@@ -38,8 +40,19 @@ contains
     call build_model(model, settings, package, error)
     call handle_error(error)
 
+    ! Set up logical variables to avoid repetitive conditions
+    has_install_config = allocated(package%install)
+    install_library = has_install_config .and. package%install%library
+    install_tests = has_install_config .and. package%install%test
+    has_library = allocated(package%library)
+    has_executables = allocated(package%executable)
+    
+    ! Set module directory (or leave unallocated because `optional`)
+    if (has_install_config .and. allocated(package%install%module_dir)) &
+        module_dir = package%install%module_dir
+
     ! ifx bug: does not resolve allocatable -> optional
-    if (allocated(package%library)) then 
+    if (has_library) then 
        call targets_from_sources(targets, model, settings%prune, package%library, error)
     else
        call targets_from_sources(targets, model, settings%prune, error=error) 
@@ -49,8 +62,7 @@ contains
     call install_info(output_unit, settings%list, targets, ntargets)
     if (settings%list) return
 
-    installable = (allocated(package%library) .and. package%install%library) &
-                   .or. allocated(package%executable) .or. ntargets>0
+    installable = (has_library .and. install_library) .or. has_executables .or. ntargets>0
     
     if (.not.installable) then
       call fatal_error(error, "Project does not contain any installable targets")
@@ -63,10 +75,10 @@ contains
 
     call new_installer(installer, prefix=settings%prefix, &
       bindir=settings%bindir, libdir=settings%libdir, testdir=settings%testdir, &
-      includedir=settings%includedir, moduledir=package%install%module_dir, &
+      includedir=settings%includedir, moduledir=module_dir, &
       verbosity=merge(2, 1, settings%verbose))
 
-    if (allocated(package%library) .and. package%install%library) then
+    if (has_library .and. install_library) then
       call filter_library_targets(targets, libraries)
 
       if (size(libraries) > 0) then
@@ -80,12 +92,12 @@ contains
       end if
     end if
     
-    if (allocated(package%executable) .or. ntargets>0) then
+    if (has_executables .or. ntargets>0) then
       call install_executables(installer, targets, error)
       call handle_error(error)
     end if
 
-    if (allocated(package%test) .and. (package%install%test .or. model%include_tests)) then 
+    if (allocated(package%test) .and. (install_tests .or. model%include_tests)) then 
         
         call install_tests(installer, targets, error)
         call handle_error(error)
