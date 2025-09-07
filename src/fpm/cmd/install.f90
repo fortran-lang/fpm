@@ -29,7 +29,7 @@ contains
     type(build_target_ptr), allocatable :: targets(:), libraries(:)
     type(installer_t) :: installer
     type(string_t), allocatable :: list(:)
-    logical :: installable, has_install_config, with_library, with_tests
+    logical :: installable, has_install, with_library, with_tests
     logical :: has_library, has_executables
     character(len=:), allocatable :: module_dir
     integer :: ntargets,i
@@ -41,16 +41,19 @@ contains
     call handle_error(error)
 
     ! Set up logical variables to avoid repetitive conditions
-    has_install_config = allocated(package%install)
-    with_library = has_install_config .and. package%install%library
-    with_tests = has_install_config .and. package%install%test
-    has_library = allocated(package%library)
-    has_executables = allocated(package%executable)
+    has_install     = allocated(package%install)
+    has_library     = allocated(package%library)
+    has_executables = allocated(package%executable)    
+    if (has_install) then 
+        with_library = has_install .and. package%install%library
+        with_tests   = has_install .and. package%install%test
+        ! Set module directory (or leave unallocated because `optional`)
+        if (allocated(package%install%module_dir)) module_dir = package%install%module_dir
+    else
+        with_library = .false.
+        with_tests   = .false.
+    endif
     
-    ! Set module directory (or leave unallocated because `optional`)
-    if (has_install_config .and. allocated(package%install%module_dir)) &
-        module_dir = package%install%module_dir
-
     ! ifx bug: does not resolve allocatable -> optional
     if (has_library) then 
        call targets_from_sources(targets, model, settings%prune, package%library, error)
