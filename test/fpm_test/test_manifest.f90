@@ -38,6 +38,9 @@ contains
             & new_unittest("dependency-invalid-git", test_dependency_invalid_git, should_fail=.true.), &
             & new_unittest("dependency-no-namespace", test_dependency_no_namespace, should_fail=.true.), &
             & new_unittest("dependency-redundant-v", test_dependency_redundant_v, should_fail=.true.), &
+            & new_unittest("dependency-features-present", test_dependency_features_present), &
+            & new_unittest("dependency-features-absent",  test_dependency_features_absent),  &
+            & new_unittest("dependency-features-empty",   test_dependency_features_empty),   &
             & new_unittest("dependency-wrongkey", test_dependency_wrongkey, should_fail=.true.), &
             & new_unittest("dependencies-empty", test_dependencies_empty), &
             & new_unittest("dependencies-typeerror", test_dependencies_typeerror, should_fail=.true.), &
@@ -1558,5 +1561,171 @@ contains
         end if
 
     end subroutine test_macro_parsing_dependency
+
+    !> Ensure dependency "features" array is correctly parsed when present
+    subroutine test_dependency_features_present(error)
+        !> Error handling
+        type(error_t), allocatable, intent(out) :: error
+
+        type(package_config_t) :: package
+        character(:), allocatable :: temp_file
+        integer :: unit, i, idx_dep0, idx_dep1, idx_dep2
+
+        allocate(temp_file, source=get_temp_filename())
+
+        open(file=temp_file, newunit=unit)
+        write(unit, '(a)') &
+            & 'name = "example"', &
+            & 'version = "0.1.0"', &
+            & '[dependencies]', &
+            & '"dep0" = { path = "local/dep0", features = ["featA", "featB"] }', &
+            & '"dep1" = { git = "https://example.com/repo.git", tag = "v1.2.3", features = ["only"] }', &
+            & '"dep2" = { path = "other/dep2" }'
+        close(unit)
+
+        call get_package_data(package, temp_file, error)
+        if (allocated(error)) return
+
+        if (.not.allocated(package%dependency)) then
+            call test_failed(error, 'No dependencies parsed from manifest')
+            return
+        end if
+
+        idx_dep0 = 0; idx_dep1 = 0; idx_dep2 = 0
+        do i = 1, size(package%dependency)
+            select case (package%dependency(i)%name)
+            case ('dep0'); idx_dep0 = i
+            case ('dep1'); idx_dep1 = i
+            case ('dep2'); idx_dep2 = i
+            end select
+        end do
+
+        if (idx_dep0 == 0 .or. idx_dep1 == 0 .or. idx_dep2 == 0) then
+            call test_failed(error, 'Expected dependencies dep0/dep1/dep2 not found')
+            return
+        end if
+
+        ! dep0: features = ["featA","featB"]
+        if (.not.allocated(package%dependency(idx_dep0)%features)) then
+            call test_failed(error, 'dep0 features not allocated')
+            return
+        end if
+        if (size(package%dependency(idx_dep0)%features) /= 2) then
+            call test_failed(error, 'dep0 features size /= 2')
+            return
+        end if
+        if (package%dependency(idx_dep0)%features(1)%s /= 'featA' .or. &
+            & package%dependency(idx_dep0)%features(2)%s /= 'featB') then
+            call test_failed(error, 'dep0 features values mismatch')
+            return
+        end if
+
+        ! dep1: features = ["only"]
+        if (.not.allocated(package%dependency(idx_dep1)%features)) then
+            call test_failed(error, 'dep1 features not allocated')
+            return
+        end if
+        if (size(package%dependency(idx_dep1)%features) /= 1) then
+            call test_failed(error, 'dep1 features size /= 1')
+            return
+        end if
+        if (package%dependency(idx_dep1)%features(1)%s /= 'only') then
+            call test_failed(error, 'dep1 features value mismatch')
+            return
+        end if
+
+        ! dep2: no features key -> should be NOT allocated
+        if (allocated(package%dependency(idx_dep2)%features)) then
+            call test_failed(error, 'dep2 features should be unallocated when key is absent')
+            return
+        end if
+    end subroutine test_dependency_features_present
+
+
+    !> Ensure a dependency without "features" key is accepted (no allocation)
+    subroutine test_dependency_features_absent(error)
+        !> Error handling
+        type(error_t), allocatable, intent(out) :: error
+
+        type(package_config_t) :: package
+        character(:), allocatable :: temp_file
+        integer :: unit, i
+
+        allocate(temp_file, source=get_temp_filename())
+
+        open(file=temp_file, newunit=unit)
+        write(unit, '(a)') &
+            & 'name = "example"', &
+            & '[dependencies]', &
+            & '"a" = { path = "a" }', &
+            & '"b" = { git = "https://example.org/b.git", branch = "main" }'
+        close(unit)
+
+        call get_package_data(package, temp_file, error)
+        if (allocated(error)) return
+
+        if (.not.allocated(package%dependency)) then
+            call test_failed(error, 'No dependencies parsed from manifest')
+            return
+        end if
+
+        do i = 1, size(package%dependency)
+            if (allocated(package%dependency(i)%features)) then
+                call test_failed(error, 'features should be unallocated when not specified')
+                return
+            end if
+        end do
+    end subroutine test_dependency_features_absent
+
+
+    !> Accept an explicit empty "features = []" list
+    subroutine test_dependency_features_empty(error)
+        !> Error handling
+        type(error_t), allocatable, intent(out) :: error
+
+        type(package_config_t) :: package
+        character(:), allocatable :: temp_file
+        integer :: unit, i, idx
+
+        allocate(temp_file, source=get_temp_filename())
+
+        open(file=temp_file, newunit=unit)
+        write(unit, '(a)') &
+            & 'name = "example"', &
+            & '[dependencies]', &
+            & '"empty" = { path = "local/empty", features = [] }'
+        close(unit)
+
+        call get_package_data(package, temp_file, error)
+        if (allocated(error)) return
+
+        idx = -1
+        if (.not.allocated(package%dependency)) then
+            call test_failed(error, 'No dependencies parsed from manifest')
+            return
+        end if
+
+        do i = 1, size(package%dependency)
+            if (package%dependency(i)%name == 'empty') then
+                idx = i
+                exit
+            end if
+        end do
+
+        if (idx < 1) then
+            call test_failed(error, 'Dependency "empty" not found')
+            return
+        end if
+
+        if (.not.allocated(package%dependency(idx)%features)) then
+            call test_failed(error, 'features should be allocated (size=0) for empty list')
+            return
+        end if
+        if (size(package%dependency(idx)%features) /= 0) then
+            call test_failed(error, 'features size should be zero for empty list')
+            return
+        end if
+    end subroutine test_dependency_features_empty
+
 
 end module test_manifest

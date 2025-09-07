@@ -587,7 +587,7 @@ contains
         elseif (present(profile)) then 
             idx = find_profile(self, profile)
             if (idx<=0) then 
-                call fatal_error(error, "Cannot find profile "//profile)
+                call fatal_error(error, "Cannot find profile "//profile//" in package "//self%name)
                 return
             end if                  
             want_features => self%profiles(idx)%features                  
@@ -601,7 +601,8 @@ contains
                 ! Find feature
                 idx = self%find_feature(want_features(i)%s)
                 if (idx<=0) then 
-                    call fatal_error(error, "Cannot find feature "//want_features(i)%s)
+                    call fatal_error(error, "Cannot find feature "//want_features(i)%s//&
+                                            " in package "//self%name)
                     return
                 end if
                 
