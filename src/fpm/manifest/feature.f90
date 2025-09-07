@@ -40,12 +40,7 @@ module fpm_manifest_feature
     use fpm_error, only: error_t, fatal_error, syntax_error
     use fpm_environment, only: OS_UNKNOWN, OS_LINUX, OS_MACOS, OS_WINDOWS, OS_CYGWIN, OS_SOLARIS, &
                              OS_FREEBSD, OS_OPENBSD, OS_ALL, OS_NAME, match_os_type
-    use fpm_compiler, only: compiler_enum, compiler_id_name, match_compiler_type, &
-                          id_unknown, id_gcc, id_f95, id_caf, &
-                          id_intel_classic_nix, id_intel_classic_mac, id_intel_classic_windows, &
-                          id_intel_llvm_nix, id_intel_llvm_windows, id_intel_llvm_unknown, &
-                          id_pgi, id_nvhpc, id_nag, id_flang, id_flang_new, id_f18, &
-                          id_ibmxl, id_cray, id_lahey, id_lfortran, id_all
+    use fpm_compiler, only: compiler_enum, compiler_id_name, match_compiler_type, id_all
     use fpm_strings, only: string_t, lower, operator(==)
     use tomlf, only: toml_table, toml_array, toml_key, toml_stat
     use fpm_toml, only: get_value, len, serializable_t, set_value, set_string, set_list, add_table, &

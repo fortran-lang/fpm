@@ -53,11 +53,7 @@ module fpm_manifest_profile
                              OS_CYGWIN, OS_SOLARIS, OS_FREEBSD, OS_OPENBSD, OS_NAME, OS_ALL, &
                              validate_os_name, match_os_type
     use fpm_compiler, only: compiler_enum, compiler_id_name, match_compiler_type, &
-                          id_unknown, id_gcc, id_f95, id_caf, validate_compiler_name, &
-                          id_intel_classic_nix, id_intel_classic_mac, id_intel_classic_windows, &
-                          id_intel_llvm_nix, id_intel_llvm_windows, id_intel_llvm_unknown, &
-                          id_pgi, id_nvhpc, id_nag, id_flang, id_flang_new, id_f18, &
-                          id_ibmxl, id_cray, id_lahey, id_lfortran, id_all
+                            validate_compiler_name
     use fpm_filesystem, only: join_path
     implicit none
     public :: profile_config_t, new_profile, new_profiles, find_profile, DEFAULT_COMPILER

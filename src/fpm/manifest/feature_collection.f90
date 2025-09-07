@@ -15,8 +15,7 @@ module fpm_manifest_feature_collection
                           id_unknown, id_gcc, id_f95, id_caf, &
                           id_intel_classic_nix, id_intel_classic_mac, id_intel_classic_windows, &
                           id_intel_llvm_nix, id_intel_llvm_windows, id_intel_llvm_unknown, &
-                          id_pgi, id_nvhpc, id_nag, id_flang, id_flang_new, id_f18, &
-                          id_ibmxl, id_cray, id_lahey, id_lfortran, id_all
+                          id_pgi, id_nvhpc, id_nag, id_flang, id_lahey, id_lfortran, id_all
     use fpm_strings, only: string_t, lower, operator(==), split, str
     use tomlf, only: toml_table, toml_array, toml_key, toml_stat
     use fpm_toml, only: get_value, len, serializable_t, set_value, set_string, set_list, add_table, &
