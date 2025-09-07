@@ -225,7 +225,7 @@ type, extends(serializable_t) :: fpm_model_t
     type(string_t) :: module_prefix
 
     !> Target operating system
-    integer :: target_os = OS_UNKNOWN
+    integer :: target_os = OS_ALL
 
     contains
     
@@ -1101,8 +1101,8 @@ subroutine model_load_from_toml(self, table, error)
         self%target_os = match_os_type(os_string) 
 
     else
-        ! Default to current OS if not specified
-        self%target_os = get_os_type()
+        ! Default to ALL OS if not specified
+        self%target_os = OS_ALL
     end if
 
 end subroutine model_load_from_toml

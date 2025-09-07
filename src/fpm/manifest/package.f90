@@ -59,9 +59,6 @@ module fpm_manifest_package
 
     public :: package_config_t, new_package
 
-
-
-
     !> Package meta data
     !> Package configuration data - extends a `feature_config_t` to represent the "default" 
     !> package feature. The following are now inherited from feature_config_t: name (but for package 

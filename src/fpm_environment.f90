@@ -82,7 +82,7 @@ contains
             case (OS_FREEBSD); OS_NAME =  "FreeBSD"
             case (OS_OPENBSD); OS_NAME =  "OpenBSD"
             case (OS_UNKNOWN); OS_NAME =  "Unknown"
-            case (OS_ALL)    ; OS_NAME =  "All"
+            case (OS_ALL)    ; OS_NAME =  "all"
             case default     ; OS_NAME =  "UNKNOWN"
         end select
     end function OS_NAME
@@ -113,9 +113,9 @@ contains
        !> Boolean value of whether os_name is valid or not
        logical, intent(out) :: is_valid
 
-       select case (os_name)
+       select case (lower(os_name))
          case ("linux", "macos", "windows", "cygwin", "solaris", "freebsd", &
-                         & "openbsd", "unknown")
+                         & "openbsd", "all")
            is_valid = .true.
          case default
            is_valid = .false.
