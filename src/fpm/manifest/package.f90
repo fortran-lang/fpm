@@ -36,7 +36,7 @@
 module fpm_manifest_package
     use fpm_manifest_build, only: build_config_t, new_build_config
     use fpm_manifest_dependency, only : dependency_config_t, new_dependencies
-    use fpm_manifest_profile, only : profile_config_t, new_profiles
+    use fpm_manifest_profile, only : profile_config_t, new_profiles, get_default_profiles
     use fpm_manifest_example, only : example_config_t, new_example
     use fpm_manifest_executable, only : executable_config_t, new_executable
     use fpm_manifest_fortran, only : fortran_config_t, new_fortran_config
@@ -188,8 +188,9 @@ contains
             call new_profiles(self%profiles, child, error)
             if (allocated(error)) return
         else
-            ! Leave profiles unallocated for now
-            allocate(self%profiles(0))
+            ! Set default profiles: debug = ["debug"], release = ["release"]
+            call get_default_profiles(self%profiles, error)
+            if (allocated(error)) return
         end if
 
         call get_value(table, "features", child, requested=.false.)

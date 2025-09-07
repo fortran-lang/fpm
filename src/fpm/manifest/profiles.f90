@@ -21,7 +21,7 @@ module fpm_manifest_profile
     implicit none
     private
 
-    public :: profile_config_t, new_profile, new_profiles
+    public :: profile_config_t, new_profile, new_profiles, get_default_profiles
 
     !> Configuration data for a profile
     type, extends(serializable_t) :: profile_config_t
@@ -237,5 +237,30 @@ contains
         if (allocated(error)) return
 
     end subroutine load_from_toml
+
+
+    !> Create default profiles with standard features
+    subroutine get_default_profiles(profiles, error)
+
+        !> Instance of the profile configuration array
+        type(profile_config_t), allocatable, intent(out) :: profiles(:)
+
+        !> Error handling
+        type(error_t), allocatable, intent(out) :: error
+
+        ! Create two default profiles: debug and release
+        allocate(profiles(2))
+
+        ! Debug profile with "debug" feature
+        profiles(1)%name = "debug"
+        allocate(profiles(1)%features(1))
+        profiles(1)%features(1)%s = "debug"
+
+        ! Release profile with "release" feature  
+        profiles(2)%name = "release"
+        allocate(profiles(2)%features(1))
+        profiles(2)%features(1)%s = "release"
+
+    end subroutine get_default_profiles
 
 end module fpm_manifest_profile
