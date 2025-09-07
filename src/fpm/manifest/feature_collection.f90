@@ -26,7 +26,7 @@ module fpm_manifest_feature_collection
     
     public :: new_collections, get_default_features, &
               default_debug_feature, default_release_feature, &
-              add_default_features
+              add_default_features, collection_from_feature
     
     !> Feature configuration data
     type, public, extends(serializable_t) :: feature_collection_t
@@ -48,6 +48,11 @@ module fpm_manifest_feature_collection
             procedure :: check => check_collection
 
     end type feature_collection_t
+
+    !> Interface for feature_collection_t constructor
+    interface feature_collection_t
+        module procedure collection_from_feature
+    end interface feature_collection_t
 
     contains
     
@@ -1077,5 +1082,30 @@ module fpm_manifest_feature_collection
         call move_alloc(temp_features, features)
 
     end subroutine add_default_features
+
+
+    !> Create a feature collection from a single feature_config_t
+    !> The feature becomes the base configuration for all OS/compiler combinations
+    type(feature_collection_t) function collection_from_feature(self) result(collection)
+        
+        !> Feature configuration to convert
+        class(feature_config_t), intent(in) :: self
+        
+        ! Copy the feature into the base configuration
+        collection%base = self
+        
+        ! Set platform to all OS and all compilers for the base
+        collection%base%platform%os_type = OS_ALL
+        collection%base%platform%compiler = id_all
+        
+        ! Copy the name if available
+        if (allocated(self%name)) then
+            collection%base%name = self%name
+        end if
+        
+        ! No variants initially - just the base configuration
+        ! (variants can be added later if needed)
+        
+    end function collection_from_feature
     
 end module fpm_manifest_feature_collection

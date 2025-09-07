@@ -82,7 +82,8 @@ subroutine build_model(model, settings, package_config, error)
     model%include_tests        = settings%build_tests    
     
     ! Extract the current package configuration request
-    package = package_config%export_config(target_platform)    
+    package = package_config%export_config(target_platform,error=error)
+    if (allocated(error)) return    
     
     ! Resolve meta-dependencies into the package and the model
     call resolve_metapackages(model,package,settings,error)
@@ -128,7 +129,8 @@ subroutine build_model(model, settings, package_config, error)
                 if (allocated(error)) exit          
                 
                 ! Adapt it to the current profile/platform
-                dependency = dependency_config%export_config(target_platform)
+                dependency = dependency_config%export_config(target_platform,error=error)
+                if (allocated(error)) exit
                 
                 manifest => dependency
             end if            

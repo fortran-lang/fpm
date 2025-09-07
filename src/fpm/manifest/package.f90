@@ -551,7 +551,7 @@ contains
      end subroutine load_from_toml
 
     !> Export package configuration for a given (OS+compiler) platform
-    type(package_config_t) function export_config(self, platform, features) result(cfg)
+    type(package_config_t) function export_config(self, platform, features, profile, error) result(cfg)
         
         !> Instance of the package configuration  
         class(package_config_t), intent(in) :: self
@@ -559,8 +559,20 @@ contains
         !> Target platform
         type(platform_config_t), intent(in) :: platform
         
-        !> Optional list of features to apply (currently idle)
+        !> Optional list of features to apply (cannot be used with profile)
         type(string_t), optional, intent(in) :: features(:)
+        
+        !> Optional profile name to apply (cannot be used with features)
+        character(len=*), optional, intent(in) :: profile
+        
+        !> Error handling
+        type(error_t), allocatable, intent(out) :: error
+        
+        ! Validate that both profile and features are not specified simultaneously
+        if (present(profile) .and. present(features)) then
+            call syntax_error(error, "Cannot specify both 'profile' and 'features' parameters simultaneously")
+            return
+        end if
         
         ! Copy the entire package configuration
         cfg = self
