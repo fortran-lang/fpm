@@ -129,7 +129,8 @@ subroutine build_model(model, settings, package_config, error)
                 if (allocated(error)) exit          
                 
                 ! Adapt it to the current profile/platform
-                dependency = dependency_config%export_config(target_platform,error=error)
+                dependency = dependency_config%export_config(target_platform, &
+                                                             dep%features,error=error)
                 if (allocated(error)) exit
                 
                 manifest => dependency
