@@ -20,7 +20,7 @@ module fpm_manifest_fortran
         character(:), allocatable :: source_form
 
         contains
-
+        
             !> Serialization interface
             procedure :: serializable_is_same => fortran_is_same
             procedure :: dump_to_toml
@@ -33,7 +33,7 @@ module fpm_manifest_fortran
 contains
 
     !> Initialize fortran config
-    pure subroutine default_fortran_config(self)
+    subroutine default_fortran_config(self)
         type(fortran_config_t), intent(inout) :: self
         
         self%implicit_external = .false.

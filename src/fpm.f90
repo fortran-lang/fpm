@@ -48,7 +48,7 @@ subroutine build_model(model, settings, package, error)
     type(package_config_t), pointer :: manifest
     character(len=:), allocatable :: file_name, lib_dir
     logical :: has_cpp
-    logical :: duplicates_found
+    logical :: duplicates_found, auto_exe, auto_example, auto_test
     type(string_t) :: include_dir
 
     model%package_name = package%name
@@ -71,9 +71,11 @@ subroutine build_model(model, settings, package, error)
     call new_compiler_flags(model,settings)
     model%build_dir            = settings%build_dir
     model%build_prefix         = join_path(settings%build_dir, basename(model%compiler%fc))
-    model%include_tests        = settings%build_tests
-    model%enforce_module_names = package%build%module_naming
-    model%module_prefix        = package%build%module_prefix
+    model%include_tests        = settings%build_tests    
+    if (allocated(package%build)) then 
+        model%enforce_module_names = package%build%module_naming
+        model%module_prefix        = package%build%module_prefix
+    endif
 
     ! Resolve meta-dependencies into the package and the model
     call resolve_metapackages(model,package,settings,error)
@@ -159,18 +161,22 @@ subroutine build_model(model, settings, package, error)
                 end if
 
             end if
+            
+            if (allocated(manifest%build)) then 
 
-            if (allocated(manifest%build%link)) then
-                model%link_libraries = [model%link_libraries, manifest%build%link]
-            end if
+                if (allocated(manifest%build%link)) then
+                    model%link_libraries = [model%link_libraries, manifest%build%link]
+                end if
 
-            if (allocated(manifest%build%external_modules)) then
-                model%external_modules = [model%external_modules, manifest%build%external_modules]
-            end if
+                if (allocated(manifest%build%external_modules)) then
+                    model%external_modules = [model%external_modules, manifest%build%external_modules]
+                end if
 
-            ! Copy naming conventions from this dependency's manifest
-            model%packages(i)%enforce_module_names = manifest%build%module_naming
-            model%packages(i)%module_prefix        = manifest%build%module_prefix
+                ! Copy naming conventions from this dependency's manifest
+                model%packages(i)%enforce_module_names = manifest%build%module_naming
+                model%packages(i)%module_prefix        = manifest%build%module_prefix
+            
+            endif
 
         end associate
     end do
@@ -180,7 +186,18 @@ subroutine build_model(model, settings, package, error)
     if (has_cpp) call set_cpp_preprocessor_flags(model%compiler%id, model%fortran_compile_flags)
 
     ! Add sources from executable directories
-    if (is_dir('app') .and. package%build%auto_executables) then
+    
+    if (allocated(package%build)) then 
+        auto_exe = package%build%auto_executables
+        auto_example = package%build%auto_examples
+        auto_test = package%build%auto_tests
+    else
+        auto_exe = .true.
+        auto_example = .true.
+        auto_test = .true.
+    endif
+    
+    if (is_dir('app') .and. auto_exe) then
         call add_sources_from_dir(model%packages(1)%sources,'app', FPM_SCOPE_APP, &
                                    with_executables=.true., with_f_ext=model%packages(1)%preprocess%suffixes,&
                                    error=error)
@@ -190,7 +207,7 @@ subroutine build_model(model, settings, package, error)
         end if
 
     end if
-    if (is_dir('example') .and. package%build%auto_examples) then
+    if (is_dir('example') .and. auto_example) then
         call add_sources_from_dir(model%packages(1)%sources,'example', FPM_SCOPE_EXAMPLE, &
                                   with_executables=.true., &
                                   with_f_ext=model%packages(1)%preprocess%suffixes,error=error)
@@ -200,7 +217,7 @@ subroutine build_model(model, settings, package, error)
         end if
 
     end if
-    if (is_dir('test') .and. package%build%auto_tests) then
+    if (is_dir('test') .and. auto_test) then
         call add_sources_from_dir(model%packages(1)%sources,'test', FPM_SCOPE_TEST, &
                                   with_executables=.true., &
                                   with_f_ext=model%packages(1)%preprocess%suffixes,error=error)
@@ -212,7 +229,7 @@ subroutine build_model(model, settings, package, error)
     end if
     if (allocated(package%executable)) then
         call add_executable_sources(model%packages(1)%sources, package%executable, FPM_SCOPE_APP, &
-                                     auto_discover=package%build%auto_executables, &
+                                     auto_discover=auto_exe, &
                                      with_f_ext=model%packages(1)%preprocess%suffixes, &
                                      error=error)
 
@@ -223,7 +240,7 @@ subroutine build_model(model, settings, package, error)
     end if
     if (allocated(package%example)) then
         call add_executable_sources(model%packages(1)%sources, package%example, FPM_SCOPE_EXAMPLE, &
-                                     auto_discover=package%build%auto_examples, &
+                                     auto_discover=auto_example, &
                                      with_f_ext=model%packages(1)%preprocess%suffixes, &
                                      error=error)
 
@@ -234,7 +251,7 @@ subroutine build_model(model, settings, package, error)
     end if
     if (allocated(package%test)) then
         call add_executable_sources(model%packages(1)%sources, package%test, FPM_SCOPE_TEST, &
-                                     auto_discover=package%build%auto_tests, &
+                                     auto_discover=auto_test, &
                                      with_f_ext=model%packages(1)%preprocess%suffixes, &
                                      error=error)
 
