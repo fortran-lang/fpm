@@ -6,7 +6,7 @@ module test_features
     use fpm_manifest_feature_collection, only: feature_collection_t
     use fpm_manifest_platform, only: platform_config_t
     use fpm_environment, only: OS_ALL, OS_LINUX, OS_MACOS, OS_WINDOWS
-    use fpm_compiler, only: id_all, id_gcc, id_intel_classic_nix
+    use fpm_compiler, only: id_all, id_gcc, id_intel_classic_nix, id_intel_classic_windows, match_compiler_type
     use fpm_strings, only: string_t
     use fpm_filesystem, only: get_temp_filename
     implicit none
@@ -31,7 +31,9 @@ contains
             & new_unittest("feature-collection-complex", test_feature_collection_complex), &
             & new_unittest("feature-allocatable-conflict", test_feature_allocatable_conflict, should_fail=.true.), &
             & new_unittest("feature-flag-addition", test_feature_flag_addition), &
-            & new_unittest("feature-metapackage-addition", test_feature_metapackage_addition) &
+            & new_unittest("feature-metapackage-addition", test_feature_metapackage_addition), &
+            & new_unittest("feature-extract-gfortran-linux", test_feature_extract_gfortran_linux), &
+            & new_unittest("feature-extract-ifort-windows", test_feature_extract_ifort_windows) &
             & ]
 
     end subroutine collect_features
@@ -552,5 +554,178 @@ contains
         call test_failed(error, "myfeature collection not found for metapackage test")
                         
     end subroutine test_feature_metapackage_addition
+
+    !> Test comprehensive feature extraction for gfortran+Linux target (flags + executables + build)
+    subroutine test_feature_extract_gfortran_linux(error)
+        !> Error handling
+        type(error_t), allocatable, intent(out) :: error
+
+        type(package_config_t) :: package
+        character(:), allocatable :: temp_file
+        integer :: unit
+        type(feature_config_t) :: extracted_feature
+        type(platform_config_t) :: target_platform
+        integer :: i
+
+        allocate(temp_file, source=get_temp_filename())
+
+        open(file=temp_file, newunit=unit)
+        write(unit, '(a)') &
+            & 'name = "extract-test"', &
+            & 'version = "0.1.0"', &
+            & '[features]', &
+            & 'debug.flags = "-g"', &
+            & 'debug.gfortran.flags = "-Wall -fcheck=bounds"', &
+            & 'debug.linux.flags = "-DLINUX"', &
+            & 'debug.linux.gfortran.flags = "-fbacktrace"', &
+            & '[[features.debug.executable]]', &
+            & 'name = "base_prog"', &
+            & 'source-dir = "app"', &
+            & '[[features.debug.gfortran.executable]]', &
+            & 'name = "gfortran_prog"', &
+            & 'source-dir = "app/gfortran"', &
+            & '[[features.debug.linux.executable]]', &
+            & 'name = "linux_prog"', &
+            & 'source-dir = "app/linux"', &
+            & '[features.debug.gfortran.build]', &
+            & 'auto-executables = false'
+        close(unit)
+                
+        call get_package_data(package, temp_file, error)
+        if (allocated(error)) return
+        
+        ! Find debug collection and extract for gfortran+Linux
+        do i = 1, size(package%features)
+            if (package%features(i)%base%name == "debug") then
+                target_platform = platform_config_t(id_gcc, OS_LINUX)
+                extracted_feature = package%features(i)%extract_for_target(target_platform)
+                
+                ! Check flags are combined correctly
+                if (.not. allocated(extracted_feature%flags)) then
+                    call test_failed(error, "No flags in extracted gfortran+Linux feature")
+                    return
+                end if
+                
+                if (index(extracted_feature%flags, "-g") == 0 .or. &
+                    index(extracted_feature%flags, "-Wall") == 0 .or. &
+                    index(extracted_feature%flags, "-DLINUX") == 0 .or. &
+                    index(extracted_feature%flags, "-fbacktrace") == 0) then
+                    call test_failed(error, "Missing expected flags in gfortran+Linux extraction")
+                    return
+                end if
+                
+                ! Check that all executables are combined (base + gfortran + linux)
+                if (.not. allocated(extracted_feature%executable) .or. size(extracted_feature%executable) < 3) then
+                    call test_failed(error, "Wrong number of executables in gfortran+Linux (expected 3)")
+                    return
+                end if
+                
+                ! Check that build config is set (only gfortran variant has it)
+                if (.not. allocated(extracted_feature%build)) then
+                    call test_failed(error, "Missing build config in gfortran+Linux extraction")
+                    return
+                end if
+                
+                if (extracted_feature%build%auto_executables) then
+                    call test_failed(error, "Build config not applied correctly")
+                    return
+                end if
+                
+                return ! Test passed
+            end if
+        end do
+        
+        call test_failed(error, "debug collection not found")
+                        
+    end subroutine test_feature_extract_gfortran_linux
+
+    !> Test comprehensive feature extraction for ifort+Windows target (flags + tests + library)  
+    subroutine test_feature_extract_ifort_windows(error)
+        !> Error handling
+        type(error_t), allocatable, intent(out) :: error
+
+        type(package_config_t) :: package
+        character(:), allocatable :: temp_file
+        integer :: unit
+        type(feature_config_t) :: extracted_feature
+        type(platform_config_t) :: target_platform
+        integer :: i
+
+        allocate(temp_file, source=get_temp_filename())
+
+        open(file=temp_file, newunit=unit)
+        write(unit, '(a)') &
+            & 'name = "extract-test"', &
+            & 'version = "0.1.0"', &
+            & '[features]', &
+            & 'debug.flags = "/debug"', &
+            & 'debug.ifort.flags = "/warn:all"', &
+            & 'debug.windows.flags = "/DWINDOWS"', &
+            & 'debug.linux.flags = "-DLINUX"', & ! Should not be included for Windows target
+            & '[[features.debug.test]]', &
+            & 'name = "base_test"', &
+            & 'source-dir = "test"', &
+            & '[[features.debug.ifort.test]]', &
+            & 'name = "ifort_test"', &
+            & 'source-dir = "test/ifort"', &
+            & '[[features.debug.windows.test]]', &
+            & 'name = "windows_test"', &
+            & 'source-dir = "test/windows"', &
+            & '[features.debug.windows.library]', &
+            & 'source-dir = "src/windows"'
+        close(unit)
+                
+        call get_package_data(package, temp_file, error)
+        if (allocated(error)) return
+        
+        ! Find debug collection and extract for gfortran+Windows
+        do i = 1, size(package%features)
+            if (package%features(i)%base%name == "debug") then
+                target_platform = platform_config_t("ifort", OS_WINDOWS)
+                extracted_feature = package%features(i)%extract_for_target(target_platform)
+                
+                ! Check flags: should have base + ifort + windows (but NOT linux)
+                if (.not. allocated(extracted_feature%flags)) then
+                    call test_failed(error, "No flags in extracted ifort+Windows feature")
+                    return
+                end if
+                
+                if (index(extracted_feature%flags, "/debug") == 0 .or. &
+                    index(extracted_feature%flags, "/warn:all") == 0 .or. &
+                    index(extracted_feature%flags, "/DWINDOWS") == 0) then
+                    call test_failed(error, "Missing expected flags in ifort+Windows extraction. Got: '"//extracted_feature%flags//"'")
+                    return
+                end if
+                
+                ! Should NOT have linux-specific flag
+                if (index(extracted_feature%flags, "-DLINUX") > 0) then
+                    call test_failed(error, "Incorrectly included Linux flag -DLINUX in ifort+Windows")
+                    return
+                end if
+                
+                ! Check that all tests are combined (base + ifort + windows)
+                if (.not. allocated(extracted_feature%test) .or. size(extracted_feature%test) < 3) then
+                    call test_failed(error, "Wrong number of tests in ifort+Windows (expected 3)")
+                    return
+                end if
+                
+                ! Check that library config is set (only windows variant has it)
+                if (.not. allocated(extracted_feature%library)) then
+                    call test_failed(error, "Missing library config in ifort+Windows extraction")
+                    return
+                end if
+                
+                if (extracted_feature%library%source_dir /= "src/windows") then
+                    call test_failed(error, "Library config not applied correctly")
+                    return
+                end if
+                
+                return ! Test passed
+            end if
+        end do
+        
+        call test_failed(error, "debug collection not found")
+                        
+    end subroutine test_feature_extract_ifort_windows
 
 end module test_features
