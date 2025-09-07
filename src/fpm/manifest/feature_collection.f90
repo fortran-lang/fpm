@@ -1,8 +1,13 @@
 
 module fpm_manifest_feature_collection
     use fpm_manifest_feature, only: feature_config_t, new_feature, init_feature_components
-    use fpm_manifest_platform, only: platform_config_t, is_platform_key
-    use fpm_manifest_metapackages, only: metapackage_config_t
+    use fpm_manifest_platform, only: platform_config_t, is_platform_key    
+    use fpm_manifest_dependency, only: dependency_config_t
+    use fpm_manifest_example, only: example_config_t
+    use fpm_manifest_executable, only: executable_config_t
+    use fpm_manifest_metapackages, only: metapackage_config_t, metapackage_request_t
+    use fpm_manifest_test, only: test_config_t
+    use fpm_manifest_preprocess, only: preprocess_config_t
     use fpm_error, only: error_t, fatal_error, syntax_error
     use fpm_environment, only: OS_UNKNOWN, OS_LINUX, OS_MACOS, OS_WINDOWS, OS_CYGWIN, OS_SOLARIS, &
                              OS_FREEBSD, OS_OPENBSD, OS_ALL, match_os_type, OS_NAME
@@ -263,8 +268,6 @@ module fpm_manifest_feature_collection
         has_platform_keys = .false.
         has_feature_data = .false.
         
-        print *, 'constraint <'//constraint%name()//'>'
-        
         ! First pass: check what types of keys we have
         do i = 1, size(keys)
             
@@ -292,8 +295,6 @@ module fpm_manifest_feature_collection
             end if              
             
         end do
-        
-        print *, 'has_platform_keys = ', has_platform_keys,' has_heature=',has_feature_data
         
         ! If we have platform keys, traverse them
         if (has_platform_keys) then
@@ -338,18 +339,15 @@ module fpm_manifest_feature_collection
             call feature_variant%check(table, error)            
             if (allocated(error)) return            
             
-            print *, 'init feature variant ',feature_name
             call init_feature_components(feature_variant, table, constraint, error=error)
             if (allocated(error)) return
             
             if (constraint%any_platform()) then
                 ! This is a base feature specification
-                print *, 'merge features with base'
                 call merge_feature_configs(collection%base, feature_variant, error)
                 if (allocated(error)) return
             else
                 ! This is a constrained variant
-                print *, 'push vairane'
                 call collection%push_variant(feature_variant)
             end if
         end if
@@ -442,13 +440,12 @@ module fpm_manifest_feature_collection
         call merge_string_arrays(target%requires_features, source%requires_features)
 
         ! ADDITIVE: Metapackages - OR logic (if either requests it, turn it on)
-        call merge_metapackages_additive(target%meta, source%meta)
+        call merge_metapackages(target%meta, source%meta)
 
     end subroutine merge_feature_configs
 
     !> Merge executable arrays by appending source to target
-    subroutine merge_executable_arrays(target, source)
-        use fpm_manifest_executable, only: executable_config_t
+    subroutine merge_executable_arrays(target, source)        
         type(executable_config_t), allocatable, intent(inout) :: target(:)
         type(executable_config_t), allocatable, intent(in) :: source(:)
         
@@ -461,8 +458,7 @@ module fpm_manifest_feature_collection
         if (source_size == 0) return
         
         if (.not. allocated(target)) then
-            allocate(target(source_size))
-            target = source
+            allocate(target(source_size), source=source)
         else
             target_size = size(target)
             allocate(temp(target_size + source_size))
@@ -474,8 +470,7 @@ module fpm_manifest_feature_collection
     end subroutine merge_executable_arrays
 
     !> Merge dependency arrays by appending source to target  
-    subroutine merge_dependency_arrays(target, source)
-        use fpm_manifest_dependency, only: dependency_config_t
+    subroutine merge_dependency_arrays(target, source)        
         type(dependency_config_t), allocatable, intent(inout) :: target(:)
         type(dependency_config_t), allocatable, intent(in) :: source(:)
         
@@ -488,8 +483,7 @@ module fpm_manifest_feature_collection
         if (source_size == 0) return
         
         if (.not. allocated(target)) then
-            allocate(target(source_size))
-            target = source
+            allocate(target(source_size), source=source)
         else
             target_size = size(target)
             allocate(temp(target_size + source_size))
@@ -515,8 +509,7 @@ module fpm_manifest_feature_collection
     end subroutine merge_string_additive
 
     !> Merge example arrays by appending source to target
-    subroutine merge_example_arrays(target, source)
-        use fpm_manifest_example, only: example_config_t
+    subroutine merge_example_arrays(target, source)        
         type(example_config_t), allocatable, intent(inout) :: target(:)
         type(example_config_t), allocatable, intent(in) :: source(:)
         
@@ -529,8 +522,7 @@ module fpm_manifest_feature_collection
         if (source_size == 0) return
         
         if (.not. allocated(target)) then
-            allocate(target(source_size))
-            target = source
+            allocate(target(source_size), source=source)
         else
             target_size = size(target)
             allocate(temp(target_size + source_size))
@@ -541,8 +533,7 @@ module fpm_manifest_feature_collection
     end subroutine merge_example_arrays
 
     !> Merge test arrays by appending source to target  
-    subroutine merge_test_arrays(target, source)
-        use fpm_manifest_test, only: test_config_t
+    subroutine merge_test_arrays(target, source)        
         type(test_config_t), allocatable, intent(inout) :: target(:)
         type(test_config_t), allocatable, intent(in) :: source(:)
         
@@ -567,8 +558,7 @@ module fpm_manifest_feature_collection
     end subroutine merge_test_arrays
 
     !> Merge preprocess arrays by appending source to target
-    subroutine merge_preprocess_arrays(target, source)
-        use fpm_manifest_preprocess, only: preprocess_config_t
+    subroutine merge_preprocess_arrays(target, source)        
         type(preprocess_config_t), allocatable, intent(inout) :: target(:)
         type(preprocess_config_t), allocatable, intent(in) :: source(:)
         
@@ -618,63 +608,35 @@ module fpm_manifest_feature_collection
     end subroutine merge_string_arrays
 
     !> Merge metapackages using OR logic - if either requests it, turn it on
-    subroutine merge_metapackages_additive(target, source)        
+    subroutine merge_metapackages_additive(target, source)
+        type(metapackage_request_t), intent(inout) :: target
+        type(metapackage_request_t), intent(in) :: source
+        
+        ! OR logic: if either requests a metapackage, turn it on
+        if (source%on) then
+            target%on = .true.
+            ! Use source version if target doesn't have one
+            if (allocated(source%version) .and. .not. allocated(target%version)) then
+                target%version = source%version
+            end if
+        end if        
+        
+    end subroutine merge_metapackages_additive
+
+    !> Merge whole metapackage config
+    subroutine merge_metapackages(target, source)        
         type(metapackage_config_t), intent(inout) :: target
         type(metapackage_config_t), intent(in) :: source
         
-        ! OR logic: if either requests a metapackage, turn it on
-        if (source%openmp%on) then
-            target%openmp%on = .true.
-            ! Use source version if target doesn't have one
-            if (allocated(source%openmp%version) .and. .not. allocated(target%openmp%version)) then
-                target%openmp%version = source%openmp%version
-            end if
-        end if
-        
-        print *, 'source openmp ',source%openmp%on,' target ',target%openmp%on
-        
-        if (source%stdlib%on) then
-            target%stdlib%on = .true.
-            if (allocated(source%stdlib%version) .and. .not. allocated(target%stdlib%version)) then
-                target%stdlib%version = source%stdlib%version
-            end if
-        end if
-        
-        if (source%minpack%on) then
-            target%minpack%on = .true.
-            if (allocated(source%minpack%version) .and. .not. allocated(target%minpack%version)) then
-                target%minpack%version = source%minpack%version
-            end if
-        end if
-        
-        if (source%mpi%on) then
-            target%mpi%on = .true.
-            if (allocated(source%mpi%version) .and. .not. allocated(target%mpi%version)) then
-                target%mpi%version = source%mpi%version
-            end if
-        end if
-        
-        if (source%hdf5%on) then
-            target%hdf5%on = .true.
-            if (allocated(source%hdf5%version) .and. .not. allocated(target%hdf5%version)) then
-                target%hdf5%version = source%hdf5%version
-            end if
-        end if
-        
-        if (source%netcdf%on) then
-            target%netcdf%on = .true.
-            if (allocated(source%netcdf%version) .and. .not. allocated(target%netcdf%version)) then
-                target%netcdf%version = source%netcdf%version
-            end if
-        end if
-        
-        if (source%blas%on) then
-            target%blas%on = .true.
-            if (allocated(source%blas%version) .and. .not. allocated(target%blas%version)) then
-                target%blas%version = source%blas%version
-            end if
-        end if
-    end subroutine merge_metapackages_additive
+        call merge_metapackages_additive(target%openmp,source%openmp)
+        call merge_metapackages_additive(target%stdlib,source%stdlib)
+        call merge_metapackages_additive(target%minpack,source%minpack)
+        call merge_metapackages_additive(target%mpi,source%mpi)
+        call merge_metapackages_additive(target%hdf5,source%hdf5)
+        call merge_metapackages_additive(target%netcdf,source%netcdf)
+        call merge_metapackages_additive(target%blas,source%blas)
+
+    end subroutine merge_metapackages
 
     !> Create default debug feature collection  
     function default_debug_feature() result(collection)
