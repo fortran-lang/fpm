@@ -39,7 +39,9 @@ contains
             & new_unittest("feature-extract-dependencies-examples", test_feature_extract_dependencies_examples), &
             & new_unittest("feature-extract-build-configs", test_feature_extract_build_configs), &
             & new_unittest("feature-extract-test-configs", test_feature_extract_test_configs), &
-            & new_unittest("feature-extract-example-configs", test_feature_extract_example_configs) &
+            & new_unittest("feature-extract-example-configs", test_feature_extract_example_configs), &
+            & new_unittest("dependency-feature-propagation", test_dependency_feature_propagation), &
+            & new_unittest("dependency-features-specification", test_dependency_features_specification) &
             & ]
 
     end subroutine collect_features
@@ -1106,5 +1108,199 @@ contains
         call test_failed(error, "showcase collection not found")
                         
     end subroutine test_feature_extract_example_configs
+
+    !> Test that dependency features are correctly propagated and applied
+    subroutine test_dependency_feature_propagation(error)
+        !> Error handling
+        type(error_t), allocatable, intent(out) :: error
+
+        type(package_config_t) :: dependency_config, exported_config
+        character(:), allocatable :: temp_file
+        integer :: unit
+        type(platform_config_t) :: target_platform
+        type(string_t), allocatable :: test_features(:)
+
+        allocate(temp_file, source=get_temp_filename())
+
+        ! Create a dependency manifest with features
+        open(file=temp_file, newunit=unit)
+        write(unit, '(a)') &
+            & 'name = "test-dependency"', &
+            & 'version = "0.1.0"', &
+            & '[features]', &
+            & 'debug.flags = "-g -DDEBUG"', &
+            & 'debug.gfortran.flags = "-fcheck=bounds"', &
+            & 'mpi.flags = "-DUSE_MPI"', &
+            & 'mpi.dependencies.mpi = "*"', &
+            & '[[features.debug.executable]]', &
+            & 'name = "debug_tool"', &
+            & 'source-dir = "debug_tools"'
+        close(unit)
+
+        ! Load the dependency configuration
+        call get_package_data(dependency_config, temp_file, error)
+        if (allocated(error)) return
+
+        ! Simulate dependency requesting specific features (like dep%features from build_model)
+        allocate(test_features(2))
+        test_features(1)%s = "debug" 
+        test_features(2)%s = "mpi"
+
+        ! Test export_config with these features (mimics line 132-133 in fpm.f90)
+        target_platform = platform_config_t(id_gcc, OS_LINUX)
+        exported_config = dependency_config%export_config(target_platform, test_features, error=error)
+        if (allocated(error)) return
+
+        ! Verify that debug feature flags were applied
+        if (.not. allocated(exported_config%flags)) then
+            call test_failed(error, "Dependency export_config missing flags from debug feature")
+            return
+        end if
+
+        if (index(exported_config%flags, "-g") == 0 .or. &
+            index(exported_config%flags, "-DDEBUG") == 0) then
+            call test_failed(error, "Dependency missing debug flags: got '" // exported_config%flags // "'")
+            return
+        end if
+
+        if (index(exported_config%flags, "-fcheck=bounds") == 0) then
+            call test_failed(error, "Dependency missing gfortran-specific debug flags")
+            return
+        end if
+
+        ! Verify that mpi feature flags were applied  
+        if (index(exported_config%flags, "-DUSE_MPI") == 0) then
+            call test_failed(error, "Dependency missing mpi flags")
+            return
+        end if
+
+        ! Verify that mpi metapackage was enabled
+        if (.not. exported_config%meta%mpi%on) then
+            call test_failed(error, "Dependency mpi metapackage not enabled")
+            return
+        end if
+
+        ! Verify that debug executable was included
+        if (.not. allocated(exported_config%executable)) then
+            call test_failed(error, "Dependency debug executable not included")
+            return  
+        end if
+
+        if (size(exported_config%executable) < 1) then
+            call test_failed(error, "Dependency should have debug executable")
+            return
+        end if
+
+        if (exported_config%executable(1)%name /= "debug_tool") then
+            call test_failed(error, "Dependency debug executable has wrong name")
+            return
+        end if
+
+    end subroutine test_dependency_feature_propagation
+
+    !> Test that main package can specify features for its dependencies
+    subroutine test_dependency_features_specification(error)
+        !> Error handling
+        type(error_t), allocatable, intent(out) :: error
+
+        type(package_config_t) :: main_package
+        character(:), allocatable :: temp_file
+        integer :: unit, i
+        logical :: found_tomlf_dep
+
+        allocate(temp_file, source=get_temp_filename())
+
+        ! Create a main package manifest that specifies features for dependencies
+        open(file=temp_file, newunit=unit)
+        write(unit, '(a)') &
+            & 'name = "main-package"', &
+            & 'version = "0.1.0"', &
+            & '[dependencies]', &
+            & '"dep-a" = { path = "../dep-a", features = ["openmp", "json"] }', &
+            & '"dep-b" = { path = "../dep-b", features = ["debug"] }'
+        close(unit)
+
+        ! Load the main package configuration
+        call get_package_data(main_package, temp_file, error)
+        if (allocated(error)) return
+
+        ! Verify dependencies were parsed correctly
+        if (.not. allocated(main_package%dependency)) then
+            call test_failed(error, "Main package dependencies not allocated")
+            return
+        end if
+
+        if (size(main_package%dependency) /= 2) then
+            call test_failed(error, "Expected 2 dependencies, got " // & 
+                           char(size(main_package%dependency) + ichar('0')))
+            return
+        end if
+
+        ! Find and verify dep-a dependency with features
+        found_tomlf_dep = .false.
+        do i = 1, size(main_package%dependency)
+            if (main_package%dependency(i)%name == "dep-a") then
+                found_tomlf_dep = .true.
+
+                ! Verify path configuration exists
+                if (.not. allocated(main_package%dependency(i)%path)) then
+                    call test_failed(error, "dep-a dependency missing path configuration")
+                    return
+                end if
+
+                ! Path gets canonicalized, so just check it ends with the relative path
+                if (index(main_package%dependency(i)%path, "../dep-a") == 0) then
+                    call test_failed(error, "dep-a dependency path should contain '../dep-a', got: '" // &
+                                          main_package%dependency(i)%path // "'")
+                    return
+                end if
+
+                ! Verify features array - this is the key test
+                if (.not. allocated(main_package%dependency(i)%features)) then
+                    call test_failed(error, "dep-a dependency features not allocated")
+                    return
+                end if
+
+                if (size(main_package%dependency(i)%features) /= 2) then
+                    call test_failed(error, "dep-a dependency should have 2 features")
+                    return
+                end if
+
+                if (main_package%dependency(i)%features(1)%s /= "openmp" .or. &
+                    main_package%dependency(i)%features(2)%s /= "json") then
+                    call test_failed(error, "dep-a dependency has wrong feature names")
+                    return
+                end if
+                exit
+            end if
+        end do
+
+        if (.not. found_tomlf_dep) then
+            call test_failed(error, "dep-a dependency not found")
+            return
+        end if
+
+        ! Verify dep-b dependency has features
+        do i = 1, size(main_package%dependency)
+            if (main_package%dependency(i)%name == "dep-b") then
+                if (.not. allocated(main_package%dependency(i)%features)) then
+                    call test_failed(error, "dep-b dependency features not allocated")
+                    return
+                end if
+
+                if (size(main_package%dependency(i)%features) /= 1) then
+                    call test_failed(error, "dep-b dependency should have 1 feature")
+                    return
+                end if
+
+                if (main_package%dependency(i)%features(1)%s /= "debug") then
+                    call test_failed(error, "dep-b dependency has wrong feature name")
+                    return
+                end if
+                exit
+            end if
+        end do
+
+    end subroutine test_dependency_features_specification
 
 end module test_features
