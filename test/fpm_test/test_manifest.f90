@@ -3,7 +3,7 @@ module test_manifest
     use fpm_filesystem, only: get_temp_filename
     use testsuite, only : new_unittest, unittest_t, error_t, test_failed, check_string
     use fpm_manifest
-    use fpm_manifest_profile, only: profile_config_t, find_profile
+    use fpm_manifest_profile, only: profile_config_t
     use fpm_manifest_platform, only: platform_config_t
     use fpm_manifest_feature_collection, only: feature_collection_t
     use fpm_compiler, only: id_gcc, id_intel_classic_nix
@@ -81,13 +81,17 @@ contains
             & new_unittest("preprocess-wrongkey", test_preprocess_wrongkey, should_fail=.true.), &
             & new_unittest("preprocessors-empty", test_preprocessors_empty, should_fail=.true.), &
             & new_unittest("macro-parsing", test_macro_parsing, should_fail=.false.), &
-            & new_unittest("macro-parsing-dependency", test_macro_parsing_dependency, should_fail=.false.), &
+            & new_unittest("macro-parsing-dependency", &
+            &              test_macro_parsing_dependency, should_fail=.false.), &
             & new_unittest("feature-collection-basic", test_feature_collection_basic), &
             & new_unittest("feature-collection-flexible", test_feature_collection_flexible), &
-            & new_unittest("feature-collection-invalid", test_feature_collection_invalid, should_fail=.true.), &
-            & new_unittest("feature-collection-duplicates", test_feature_collection_duplicates, should_fail=.true.), &
+            & new_unittest("feature-collection-invalid", &
+            &              test_feature_collection_invalid, should_fail=.true.), &
+            & new_unittest("feature-collection-duplicates", &
+            &              test_feature_collection_duplicates, should_fail=.true.), &
             & new_unittest("feature-collection-extract", test_feature_collection_extract), &
-            & new_unittest("feature-collection-platform-validation", test_feature_collection_platform_validation, should_fail=.true.), &
+            & new_unittest("feature-collection-platform-validation", &
+            &              test_feature_collection_platform_validation, should_fail=.true.), &
             & new_unittest("feature-collection-complex", test_feature_collection_complex) &
             & ]
 
