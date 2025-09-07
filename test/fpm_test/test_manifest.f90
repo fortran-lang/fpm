@@ -41,9 +41,8 @@ contains
             & new_unittest("dependency-wrongkey", test_dependency_wrongkey, should_fail=.true.), &
             & new_unittest("dependencies-empty", test_dependencies_empty), &
             & new_unittest("dependencies-typeerror", test_dependencies_typeerror, should_fail=.true.), &
-            ! FROZEN: Profile tests disabled during transition to feature-based architecture
-            ! & new_unittest("profiles", test_profiles), &
-            ! & new_unittest("profiles-keyvalue-table", test_profiles_keyvalue_table, should_fail=.true.), &
+            & new_unittest("profiles", test_profiles), &
+            & new_unittest("profiles-invalid", test_profiles_invalid, should_fail=.true.), &
             & new_unittest("executable-empty", test_executable_empty, should_fail=.true.), &
             & new_unittest("executable-typeerror", test_executable_typeerror, should_fail=.true.), &
             & new_unittest("executable-noname", test_executable_noname, should_fail=.true.), &
@@ -535,10 +534,7 @@ contains
 
     end subroutine test_dependencies_typeerror
 
-    !> FROZEN TEST: Include a table of profiles in toml, check whether they are parsed correctly and stored in package
-    !> NOTE: This test is frozen during transition to feature-based architecture.
-    !>       Profiles are now empty arrays, functionality moved to features.
-    !>       Will be replaced with feature-based tests in future.
+    !> Test profile parsing and storage in package
     subroutine test_profiles(error)
 
         !> Error handling
@@ -547,24 +543,14 @@ contains
         type(package_config_t) :: package
         character(len=*), parameter :: manifest = 'fpm-profiles.toml'
         integer :: unit
-        character(:), allocatable :: profile_name
-        logical :: profile_found
-        type(platform_config_t) :: target
-        type(profile_config_t) :: chosen_profile
 
         open(file=manifest, newunit=unit)
         write(unit, '(a)') &
             & 'name = "example"', &
-            & '[profiles.release.gfortran.linux]', &
-            & 'flags = "1" #release.gfortran.linux', &
-            & '[profiles.release.gfortran]', &
-            & 'flags = "2" #release.gfortran.all', &
-            & '[profiles.gfortran.linux]', &
-            & 'flags = "3" #all.gfortran.linux', &
-            & '[profiles.gfortran]', &
-            & 'flags = "4" #all.gfortran.all', &
-            & '[profiles.release.ifort]', &
-            & 'flags = "5" #release.ifort.all'
+            & '[profiles]', &
+            & 'development.features = ["debug", "testing"]', &
+            & 'release.features = ["optimized"]', &
+            & 'full-test.features = ["debug", "testing", "benchmarks"]'
         close(unit)
 
         call get_package_data(package, manifest, error)
@@ -574,68 +560,38 @@ contains
 
         if (allocated(error)) return
 
-!        profile_name = 'release'
-!        compiler = 'gfortran'
-!        
-!        call find_profile(package%profiles, profile_name, compiler, 1, profile_found, chosen_profile)
-!        if (.not.(chosen_profile%flags().eq.'1 3')) then
-!            call test_failed(error, "Failed to append flags from profiles named 'all'")
-!            return
-!        end if
-!
-!        call chosen_profile%test_serialization('profile serialization: '//profile_name//' '//compiler,error)
-!        if (allocated(error)) return
-!
-!        profile_name = 'release'
-!        compiler = 'gfortran'
-!        call find_profile(package%profiles, profile_name, compiler, 3, profile_found, chosen_profile)
-!        if (.not.(chosen_profile%flags().eq.'2 4')) then
-!            call test_failed(error, "Failed to choose profile with OS 'all'")
-!            return
-!        end if
-!
-!        call chosen_profile%test_serialization('profile serialization: '//profile_name//' '//compiler,error)
-!        if (allocated(error)) return
-!
-!        profile_name = 'publish'
-!        compiler = 'gfortran'
-!        call find_profile(package%profiles, profile_name, compiler, 1, profile_found, chosen_profile)
-!        if (profile_found) then
-!            call test_failed(error, "Profile named "//profile_name//" should not exist")
-!            return
-!        end if
-!
-!        call chosen_profile%test_serialization('profile serialization: '//profile_name//' '//compiler,error)
-!        if (allocated(error)) return
-!
-!        profile_name = 'debug'
-!        compiler = 'ifort'
-!        call find_profile(package%profiles, profile_name, compiler, 3, profile_found, chosen_profile)
-!        if (.not.(chosen_profile%flags().eq.&
-!            ' /warn:all /check:all /error-limit:1 /Od /Z7 /assume:byterecl /traceback')) then
-!            call test_failed(error, "Failed to load built-in profile "//profile_name)
-!            return
-!        end if
-!
-!        call chosen_profile%test_serialization('profile serialization: '//profile_name//' '//compiler,error)
-!        if (allocated(error)) return
-!
-!        profile_name = 'release'
-!        compiler = 'ifort'
-!        call find_profile(package%profiles, profile_name, compiler, 1, profile_found, chosen_profile)
-!        if (.not.(chosen_profile%flags().eq.'5')) then
-!            call test_failed(error, "Failed to overwrite built-in profile")
-!            return
-!        end if
+        ! Check that profiles were parsed correctly
+        if (.not. allocated(package%profiles)) then
+            call test_failed(error, "No profiles found in package")
+            return
+        end if
 
-!        call chosen_profile%test_serialization('profile serialization: '//profile_name//' '//compiler,error)
-!        if (allocated(error)) return
+        if (size(package%profiles) /= 3) then
+            call test_failed(error, "Unexpected number of profiles, should be 3")
+            return
+        end if
+
+        ! Check development profile
+        if (package%profiles(1)%name /= "development") then
+            call test_failed(error, "Expected profile name 'development', got '" // package%profiles(1)%name // "'")
+            return
+        end if
+
+        if (size(package%profiles(1)%features) /= 2) then
+            call test_failed(error, "Unexpected number of features, should be 2")
+            return
+        end if
+
+        if (package%profiles(1)%features(1)%s /= "debug" .or. &
+            package%profiles(1)%features(2)%s /= "testing") then
+            call test_failed(error, "Incorrect features in development profile")
+            return
+        end if
 
     end subroutine test_profiles
 
-    !> FROZEN TEST: 'flags' is a key-value entry, test should fail as it is defined as a table
-    !> NOTE: This test is frozen during transition to feature-based architecture.
-    subroutine test_profiles_keyvalue_table(error)
+    !> Test invalid profile configuration should fail
+    subroutine test_profiles_invalid(error)
 
         !> Error handling
         type(error_t), allocatable, intent(out) :: error
@@ -647,14 +603,15 @@ contains
         open(file=manifest, newunit=unit)
         write(unit, '(a)') &
             & 'name = "example"', &
-            & '[profiles.linux.flags]'
+            & '[profiles]', &
+            & 'development.invalid_key = "should_fail"'
         close(unit)
 
         call get_package_data(package, manifest, error)
 
         open(file=manifest, newunit=unit)
         close(unit, status='delete')
-    end subroutine test_profiles_keyvalue_table
+    end subroutine test_profiles_invalid
 
     !> Executables cannot be created from empty tables
     subroutine test_executable_empty(error)

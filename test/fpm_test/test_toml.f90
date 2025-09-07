@@ -20,6 +20,7 @@ module test_toml
     use fpm_manifest_platform, only: platform_config_t
     use fpm_manifest_metapackages, only: metapackage_config_t
     use fpm_manifest_feature_collection, only: feature_collection_t
+    use fpm_manifest_profile, only: profile_config_t
     use fpm_environment, only: OS_ALL, OS_LINUX, OS_MACOS
     use fpm_versioning, only: new_version
     use fpm_strings, only: string_t, operator(==), split
@@ -75,7 +76,8 @@ contains
            & new_unittest("serialize-model", fpm_model_roundtrip), &
            & new_unittest("serialize-model-invalid", fpm_model_invalid, should_fail=.true.), &
            & new_unittest("serialize-metapackage-config", metapackage_config_roundtrip), &
-           & new_unittest("serialize-feature-collection", feature_collection_roundtrip)]
+           & new_unittest("serialize-feature-collection", feature_collection_roundtrip), &
+           & new_unittest("serialize-profile-config", profile_config_roundtrip)]
 
 
     end subroutine collect_toml
@@ -1329,6 +1331,24 @@ contains
         call fc%test_serialization('feature_collection: base + 2 variants', error)
         
     end subroutine feature_collection_roundtrip
+
+    subroutine profile_config_roundtrip(error)
+        type(error_t), allocatable, intent(out) :: error
+        type(profile_config_t) :: profile
+
+        ! Set up a profile with features
+        profile%name = "development"
+        
+        ! Allocate and populate features array
+        allocate(profile%features(3))
+        profile%features(1)%s = "debug"
+        profile%features(2)%s = "testing"  
+        profile%features(3)%s = "verbose"
+
+        ! Round-trip via the generic serialization tester
+        call profile%test_serialization('profile_config_t: development profile', error)
+        
+    end subroutine profile_config_roundtrip
 
 
 end module test_toml
