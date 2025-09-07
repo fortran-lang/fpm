@@ -29,7 +29,7 @@ contains
     type(build_target_ptr), allocatable :: targets(:), libraries(:)
     type(installer_t) :: installer
     type(string_t), allocatable :: list(:)
-    logical :: installable, has_install_config, install_library, install_tests
+    logical :: installable, has_install_config, with_library, with_tests
     logical :: has_library, has_executables
     character(len=:), allocatable :: module_dir
     integer :: ntargets,i
@@ -42,8 +42,8 @@ contains
 
     ! Set up logical variables to avoid repetitive conditions
     has_install_config = allocated(package%install)
-    install_library = has_install_config .and. package%install%library
-    install_tests = has_install_config .and. package%install%test
+    with_library = has_install_config .and. package%install%library
+    with_tests = has_install_config .and. package%install%test
     has_library = allocated(package%library)
     has_executables = allocated(package%executable)
     
@@ -62,7 +62,7 @@ contains
     call install_info(output_unit, settings%list, targets, ntargets)
     if (settings%list) return
 
-    installable = (has_library .and. install_library) .or. has_executables .or. ntargets>0
+    installable = (has_library .and. with_library) .or. has_executables .or. ntargets>0
     
     if (.not.installable) then
       call fatal_error(error, "Project does not contain any installable targets")
@@ -78,7 +78,7 @@ contains
       includedir=settings%includedir, moduledir=module_dir, &
       verbosity=merge(2, 1, settings%verbose))
 
-    if (has_library .and. install_library) then
+    if (has_library .and. with_library) then
       call filter_library_targets(targets, libraries)
 
       if (size(libraries) > 0) then
@@ -97,7 +97,7 @@ contains
       call handle_error(error)
     end if
 
-    if (allocated(package%test) .and. (install_tests .or. model%include_tests)) then 
+    if (allocated(package%test) .and. (with_tests .or. model%include_tests)) then 
         
         call install_tests(installer, targets, error)
         call handle_error(error)
