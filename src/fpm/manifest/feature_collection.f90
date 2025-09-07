@@ -25,7 +25,8 @@ module fpm_manifest_feature_collection
     private
     
     public :: new_collections, get_default_features, &
-              get_default_features_as_features, default_debug_feature, default_release_feature
+              default_debug_feature, default_release_feature, &
+              add_default_features
     
     !> Feature configuration data
     type, public, extends(serializable_t) :: feature_collection_t
@@ -749,52 +750,6 @@ module fpm_manifest_feature_collection
         
     end subroutine get_default_features
 
-    !> Convert feature collections to individual features (for backward compatibility)
-    subroutine get_default_features_as_features(features, error)
-        
-        !> Features array to populate (backward compatible)
-        type(feature_config_t), allocatable, intent(out) :: features(:)
-        
-        !> Error handling
-        type(error_t), allocatable, intent(out) :: error
-        
-        type(feature_collection_t), allocatable :: collections(:)
-        integer :: total_features, ifeature, icol, ivar
-        
-        ! Get the feature collections
-        call get_default_features(collections, error)
-        if (allocated(error)) return
-        
-        ! Count total features needed
-        total_features = 0
-        do icol = 1, size(collections)
-            total_features = total_features + 1  ! base feature
-            if (allocated(collections(icol)%variants)) then
-                total_features = total_features + size(collections(icol)%variants)
-            end if
-        end do
-        
-        ! Allocate features array
-        allocate(features(total_features))
-        
-        ! Copy features from collections
-        ifeature = 1
-        do icol = 1, size(collections)
-            ! Add base feature
-            features(ifeature) = collections(icol)%base
-            ifeature = ifeature + 1
-            
-            ! Add variants
-            if (allocated(collections(icol)%variants)) then
-                do ivar = 1, size(collections(icol)%variants)
-                    features(ifeature) = collections(icol)%variants(ivar)
-                    ifeature = ifeature + 1
-                end do
-            end if
-        end do
-        
-    end subroutine get_default_features_as_features
-
     !> Helper to create a feature variant
     function default_variant(name, compiler_id, os_type, flags) result(feature)
         character(len=*), intent(in) :: name
@@ -1055,5 +1010,72 @@ module fpm_manifest_feature_collection
         end if
         
     end function extract_for_target
+
+
+    !> Add default features to existing features array if they don't already exist
+    subroutine add_default_features(features, error)
+
+        !> Instance of the feature collections array (will be resized)
+        type(feature_collection_t), allocatable, intent(inout) :: features(:)
+
+        !> Error handling
+        type(error_t), allocatable, intent(out) :: error
+
+        type(feature_collection_t), allocatable :: temp_features(:)
+        type(feature_collection_t), allocatable :: default_features(:)
+        logical :: debug_exists, release_exists
+        integer :: i, current_size, new_size
+
+        ! Get default features
+        call get_default_features(default_features, error)
+        if (allocated(error)) return
+
+        ! Check if debug and release features already exist
+        debug_exists = .false.
+        release_exists = .false.
+
+        if (allocated(features)) then
+            do i = 1, size(features)
+                if (allocated(features(i)%base%name)) then
+                    if (features(i)%base%name == "debug") debug_exists = .true.
+                    if (features(i)%base%name == "release") release_exists = .true.
+                end if
+            end do
+            current_size = size(features)
+        else
+            current_size = 0
+        end if
+
+        ! Calculate how many features to add
+        new_size = current_size
+        if (.not. debug_exists) new_size = new_size + 1
+        if (.not. release_exists) new_size = new_size + 1
+
+        ! If nothing to add, return
+        if (new_size == current_size) return
+
+        ! Create new array with existing + missing defaults
+        allocate(temp_features(new_size))
+
+        ! Copy existing features
+        if (current_size > 0) then
+            temp_features(1:current_size) = features(1:current_size)
+        end if
+
+        ! Add missing defaults
+        i = current_size
+        if (.not. debug_exists) then
+            i = i + 1
+            temp_features(i) = default_features(1)  ! debug feature
+        end if
+        if (.not. release_exists) then
+            i = i + 1
+            temp_features(i) = default_features(2)  ! release feature
+        end if
+
+        ! Replace the features array
+        call move_alloc(temp_features, features)
+
+    end subroutine add_default_features
     
 end module fpm_manifest_feature_collection

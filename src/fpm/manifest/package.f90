@@ -36,7 +36,7 @@
 module fpm_manifest_package
     use fpm_manifest_build, only: build_config_t, new_build_config
     use fpm_manifest_dependency, only : dependency_config_t, new_dependencies
-    use fpm_manifest_profile, only : profile_config_t, new_profiles, get_default_profiles
+    use fpm_manifest_profile, only : profile_config_t, new_profiles, add_default_profiles
     use fpm_manifest_example, only : example_config_t, new_example
     use fpm_manifest_executable, only : executable_config_t, new_executable
     use fpm_manifest_fortran, only : fortran_config_t, new_fortran_config
@@ -45,7 +45,7 @@ module fpm_manifest_package
     use fpm_manifest_test, only : test_config_t, new_test
     use fpm_manifest_preprocess, only : preprocess_config_t, new_preprocessors
     use fpm_manifest_feature, only: feature_config_t, init_feature_components
-    use fpm_manifest_feature_collection, only: feature_collection_t, get_default_features, new_collections
+    use fpm_manifest_feature_collection, only: feature_collection_t, new_collections, add_default_features
     use fpm_manifest_platform, only: platform_config_t
     use fpm_strings, only: string_t
     use fpm_filesystem, only : exists, getline, join_path
@@ -95,6 +95,9 @@ module fpm_manifest_package
 
         !> Export package configuration with features applied
         procedure :: export_config
+
+        !> Find feature by name, returns index or 0 if not found
+        procedure :: find_feature
 
     end type package_config_t
 
@@ -188,9 +191,8 @@ contains
             call new_profiles(self%profiles, child, error)
             if (allocated(error)) return
         else
-            ! Set default profiles: debug = ["debug"], release = ["release"]
-            call get_default_profiles(self%profiles, error)
-            if (allocated(error)) return
+            ! No profiles defined - start with empty array
+            allocate(self%profiles(0))
         end if
 
         call get_value(table, "features", child, requested=.false.)
@@ -199,10 +201,20 @@ contains
             call new_collections(self%features, child, error)
             if (allocated(error)) return
         else
-            ! Initialize with default feature collections (debug and release)
-            call get_default_features(self%features, error)
-            if (allocated(error)) return
+            ! No features defined - start with empty array
+            allocate(self%features(0))
         end if
+
+        ! Add default features and profiles if they don't already exist
+        call add_default_features(self%features, error)
+        if (allocated(error)) return
+
+        call add_default_profiles(self%profiles, error)
+        if (allocated(error)) return
+
+        ! Validate profiles after all features and profiles have been loaded
+        call validate_profiles(self, error)
+        if (allocated(error)) return
 
     end subroutine new_package
 
@@ -579,6 +591,81 @@ contains
         ! For now, features parameter is ignored as requested
         
     end function export_config
+
+
+    !> Find feature by name, returns index or 0 if not found
+    function find_feature(self, feature_name) result(idx)
+        
+        !> Instance of the package configuration
+        class(package_config_t), intent(in) :: self
+        
+        !> Name of the feature to find
+        character(len=*), intent(in) :: feature_name
+        
+        !> Index of the feature (0 if not found)
+        integer :: idx
+        
+        integer :: i
+        
+        idx = 0
+        
+        ! Check if features are allocated
+        if (.not. allocated(self%features)) return
+        
+        ! Search through features array
+        do i = 1, size(self%features)
+            if (allocated(self%features(i)%base%name)) then
+                if (self%features(i)%base%name == feature_name) then
+                    idx = i
+                    return
+                end if
+            end if
+        end do
+        
+    end function find_feature
+
+
+    !> Validate profiles - check for duplicate names and valid feature references
+    subroutine validate_profiles(self, error)
+        
+        !> Instance of the package configuration
+        class(package_config_t), intent(in) :: self
+        
+        !> Error handling
+        type(error_t), allocatable, intent(out) :: error
+        
+        integer :: i, j
+        
+        ! Check if profiles are allocated
+        if (.not. allocated(self%profiles)) return
+        
+        ! Check for duplicate profile names
+        do i = 1, size(self%profiles)
+            do j = i + 1, size(self%profiles)
+                if (allocated(self%profiles(i)%name) .and. allocated(self%profiles(j)%name)) then
+                    if (self%profiles(i)%name == self%profiles(j)%name) then
+                        call syntax_error(error, "Duplicate profile name '" // self%profiles(i)%name // "'")
+                        return
+                    end if
+                end if
+            end do
+        end do
+        
+        ! Check that all profile features reference valid features
+        do i = 1, size(self%profiles)
+            if (allocated(self%profiles(i)%features)) then
+                do j = 1, size(self%profiles(i)%features)
+                    ! Check if feature exists (case sensitive)
+                    if (self%find_feature(self%profiles(i)%features(j)%s) == 0) then
+                        call syntax_error(error, "Profile '" // self%profiles(i)%name // &
+                            "' references undefined feature '" // self%profiles(i)%features(j)%s // "'")
+                        return
+                    end if
+                end do
+            end if
+        end do
+        
+    end subroutine validate_profiles
 
 
 end module fpm_manifest_package

@@ -550,7 +550,11 @@ contains
             & '[profiles]', &
             & 'development = ["debug", "testing"]', &
             & 'release = ["optimized"]', &
-            & 'full-test = ["debug", "testing", "benchmarks"]'
+            & 'full-test = ["debug", "testing", "benchmarks"]', &
+            & '[features]', &
+            & 'testing.flags = " -g"', &            
+            & 'optimized.flags = " -O2"', &            
+            & 'benchmarks.flags = " -O3"'
         close(unit)
 
         call get_package_data(package, manifest, error)
@@ -566,8 +570,9 @@ contains
             return
         end if
 
-        if (size(package%profiles) /= 3) then
-            call test_failed(error, "Unexpected number of profiles, should be 3")
+        ! debug, release, development, full-test
+        if (size(package%profiles) /= 4) then
+            call test_failed(error, "Unexpected number of profiles, should be 4")
             return
         end if
 

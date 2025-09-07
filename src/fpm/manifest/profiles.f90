@@ -21,7 +21,7 @@ module fpm_manifest_profile
     implicit none
     private
 
-    public :: profile_config_t, new_profile, new_profiles, get_default_profiles
+    public :: profile_config_t, new_profile, new_profiles, get_default_profiles, add_default_profiles
 
     !> Configuration data for a profile
     type, extends(serializable_t) :: profile_config_t
@@ -262,5 +262,72 @@ contains
         profiles(2)%features(1)%s = "release"
 
     end subroutine get_default_profiles
+
+
+    !> Add default profiles to existing profiles array if they don't already exist
+    subroutine add_default_profiles(profiles, error)
+
+        !> Instance of the profile configuration array (will be resized)
+        type(profile_config_t), allocatable, intent(inout) :: profiles(:)
+
+        !> Error handling
+        type(error_t), allocatable, intent(out) :: error
+
+        type(profile_config_t), allocatable :: temp_profiles(:)
+        type(profile_config_t), allocatable :: default_profiles(:)
+        logical :: debug_exists, release_exists
+        integer :: i, current_size, new_size
+
+        ! Get default profiles
+        call get_default_profiles(default_profiles, error)
+        if (allocated(error)) return
+
+        ! Check if debug and release profiles already exist
+        debug_exists = .false.
+        release_exists = .false.
+
+        if (allocated(profiles)) then
+            do i = 1, size(profiles)
+                if (allocated(profiles(i)%name)) then
+                    if (profiles(i)%name == "debug") debug_exists = .true.
+                    if (profiles(i)%name == "release") release_exists = .true.
+                end if
+            end do
+            current_size = size(profiles)
+        else
+            current_size = 0
+        end if
+
+        ! Calculate how many profiles to add
+        new_size = current_size
+        if (.not. debug_exists) new_size = new_size + 1
+        if (.not. release_exists) new_size = new_size + 1
+
+        ! If nothing to add, return
+        if (new_size == current_size) return
+
+        ! Create new array with existing + missing defaults
+        allocate(temp_profiles(new_size))
+
+        ! Copy existing profiles
+        if (current_size > 0) then
+            temp_profiles(1:current_size) = profiles(1:current_size)
+        end if
+
+        ! Add missing defaults
+        i = current_size
+        if (.not. debug_exists) then
+            i = i + 1
+            temp_profiles(i) = default_profiles(1)  ! debug profile
+        end if
+        if (.not. release_exists) then
+            i = i + 1
+            temp_profiles(i) = default_profiles(2)  ! release profile
+        end if
+
+        ! Replace the profiles array
+        call move_alloc(temp_profiles, profiles)
+
+    end subroutine add_default_profiles
 
 end module fpm_manifest_profile
