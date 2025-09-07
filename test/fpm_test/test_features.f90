@@ -6,7 +6,7 @@ module test_features
     use fpm_manifest_feature_collection, only: feature_collection_t
     use fpm_manifest_platform, only: platform_config_t
     use fpm_environment, only: OS_ALL, OS_LINUX, OS_MACOS, OS_WINDOWS
-    use fpm_compiler, only: id_all, id_gcc, id_intel_classic_nix, id_intel_classic_windows, match_compiler_type
+    use fpm_compiler, only: id_all, id_gcc, id_intel_classic_nix, id_intel_classic_windows, id_intel_llvm_nix, match_compiler_type
     use fpm_strings, only: string_t
     use fpm_filesystem, only: get_temp_filename
     implicit none
@@ -33,7 +33,11 @@ contains
             & new_unittest("feature-flag-addition", test_feature_flag_addition), &
             & new_unittest("feature-metapackage-addition", test_feature_metapackage_addition), &
             & new_unittest("feature-extract-gfortran-linux", test_feature_extract_gfortran_linux), &
-            & new_unittest("feature-extract-ifort-windows", test_feature_extract_ifort_windows) &
+            & new_unittest("feature-extract-ifort-windows", test_feature_extract_ifort_windows), &
+            & new_unittest("feature-extract-dependencies-examples", test_feature_extract_dependencies_examples), &
+            & new_unittest("feature-extract-build-configs", test_feature_extract_build_configs), &
+            & new_unittest("feature-extract-test-configs", test_feature_extract_test_configs), &
+            & new_unittest("feature-extract-example-configs", test_feature_extract_example_configs) &
             & ]
 
     end subroutine collect_features
@@ -727,5 +731,365 @@ contains
         call test_failed(error, "debug collection not found")
                         
     end subroutine test_feature_extract_ifort_windows
+
+    !> Test feature extraction with dependencies and examples for gfortran+macOS target
+    subroutine test_feature_extract_dependencies_examples(error)
+        !> Error handling
+        type(error_t), allocatable, intent(out) :: error
+
+        type(package_config_t) :: package
+        character(:), allocatable :: temp_file
+        integer :: unit
+        type(feature_config_t) :: extracted_feature
+        type(platform_config_t) :: target_platform
+        integer :: i, j
+        logical :: has_gfortran_dep, has_macos_dep
+
+        allocate(temp_file, source=get_temp_filename())
+
+        open(file=temp_file, newunit=unit)
+        write(unit, '(a)') &
+            & 'name = "deps-test"', &
+            & 'version = "0.1.0"', &
+            & '[features]', &
+            & '[features.testing.dependencies]', &
+            & 'base_dep.git = "https://github.com/example/base"', &
+            & '[features.testing.gfortran.dependencies]', &
+            & 'gfortran_dep.git = "https://github.com/example/gfortran"', &
+            & '[features.testing.macos.dependencies]', &
+            & 'macos_dep.git = "https://github.com/example/macos"', &
+            & '[[features.testing.example]]', &
+            & 'name = "base_example"', &
+            & 'source-dir = "example"', &
+            & '[[features.testing.gfortran.example]]', &
+            & 'name = "gfortran_example"', &
+            & 'source-dir = "example/gfortran"', &
+            & '[[features.testing.macos.example]]', &
+            & 'name = "macos_example"', &
+            & 'source-dir = "example/macos"', &
+            & '[features.testing.macos.fortran]', &
+            & 'implicit-typing = false'
+        close(unit)
+                
+        call get_package_data(package, temp_file, error)
+        if (allocated(error)) return
+        
+        ! Find testing collection and extract for gfortran+macOS
+        do i = 1, size(package%features)
+            if (package%features(i)%base%name == "testing") then
+                target_platform = platform_config_t(id_gcc, OS_MACOS)
+                extracted_feature = package%features(i)%extract_for_target(target_platform)
+                
+                ! Check that all dependencies are combined (base + gfortran + macos)
+                if (.not. allocated(extracted_feature%dependency)) then
+                    call test_failed(error, "Missing dependencies in gfortran+macOS extraction")
+                    return
+                end if
+                
+                ! Verify that specific dependencies are present by checking names
+                has_gfortran_dep = .false.
+                has_macos_dep = .false.
+                
+                do j = 1, size(extracted_feature%dependency)
+                    if (extracted_feature%dependency(j)%name == "gfortran_dep") then
+                        has_gfortran_dep = .true.
+                    end if
+                    if (extracted_feature%dependency(j)%name == "macos_dep") then
+                        has_macos_dep = .true.
+                    end if
+                end do
+                
+                if (.not. has_gfortran_dep) then
+                    call test_failed(error, "Missing gfortran_dep dependency in gfortran+macOS extraction")
+                    return
+                end if
+                if (.not. has_macos_dep) then
+                    call test_failed(error, "Missing macos_dep dependency in gfortran+macOS extraction")
+                    return
+                end if
+                
+                ! Check that all examples are combined (base + gfortran + macos)
+                if (.not. allocated(extracted_feature%example) .or. size(extracted_feature%example) < 3) then
+                    call test_failed(error, "Wrong number of examples in gfortran+macOS (expected 3)")
+                    return
+                end if
+                
+                ! Check that fortran config is set (only macOS variant has it)
+                if (.not. allocated(extracted_feature%fortran)) then
+                    call test_failed(error, "Missing fortran config in gfortran+macOS extraction")
+                    return
+                end if
+                
+                if (extracted_feature%fortran%implicit_typing) then
+                    call test_failed(error, "Fortran config not applied correctly - implicit typing should be false")
+                    return
+                end if
+                
+                return ! Test passed
+            end if
+        end do
+        
+        call test_failed(error, "testing collection not found")
+                        
+    end subroutine test_feature_extract_dependencies_examples
+
+    !> Test feature extraction with build configurations for ifort+Linux target
+    subroutine test_feature_extract_build_configs(error)
+        !> Error handling
+        type(error_t), allocatable, intent(out) :: error
+
+        type(package_config_t) :: package
+        character(:), allocatable :: temp_file
+        integer :: unit
+        type(feature_config_t) :: extracted_feature
+        type(platform_config_t) :: target_platform
+        integer :: i
+
+        allocate(temp_file, source=get_temp_filename())
+
+        open(file=temp_file, newunit=unit)
+        write(unit, '(a)') &
+            & 'name = "build-test"', &
+            & 'version = "0.1.0"', &
+            & '[features]', &
+            & '[features.optimization.ifort.linux.build]', &
+            & 'auto-executables = false', &
+            & 'auto-tests = false', &
+            & 'link = ["mylib"]', &
+            & 'external-modules = ["external_mod"]'
+        close(unit)
+                
+        call get_package_data(package, temp_file, error)
+        if (allocated(error)) return
+        
+        ! Find optimization collection and extract for ifort+Linux
+        do i = 1, size(package%features)
+            if (package%features(i)%base%name == "optimization") then
+                target_platform = platform_config_t(id_intel_classic_nix, OS_LINUX)
+                extracted_feature = package%features(i)%extract_for_target(target_platform)
+                
+                ! Check that build config is present
+                if (.not. allocated(extracted_feature%build)) then
+                    call test_failed(error, "Missing build config in ifort+Linux extraction")
+                    return
+                end if
+                
+                ! Check that auto-executables is set correctly
+                if (extracted_feature%build%auto_executables) then
+                    call test_failed(error, "Build config auto-executables should be false")
+                    return
+                end if
+                
+                ! Check that auto-tests is set correctly
+                if (extracted_feature%build%auto_tests) then
+                    call test_failed(error, "Build config auto-tests should be false")
+                    return
+                end if
+                
+                ! Check that link libraries are present
+                if (.not. allocated(extracted_feature%build%link) .or. size(extracted_feature%build%link) < 1) then
+                    call test_failed(error, "Missing link libraries in ifort+Linux build config")
+                    return
+                end if
+                
+                ! Check that external modules are present
+                if (.not. allocated(extracted_feature%build%external_modules) .or. size(extracted_feature%build%external_modules) < 1) then
+                    call test_failed(error, "Missing external modules in ifort+Linux build config")
+                    return
+                end if
+                
+                return ! Test passed
+            end if
+        end do
+        
+        call test_failed(error, "optimization collection not found")
+                        
+    end subroutine test_feature_extract_build_configs
+
+    !> Test feature extraction with test configurations for gfortran+Windows target
+    subroutine test_feature_extract_test_configs(error)
+        !> Error handling
+        type(error_t), allocatable, intent(out) :: error
+
+        type(package_config_t) :: package
+        character(:), allocatable :: temp_file
+        integer :: unit
+        type(feature_config_t) :: extracted_feature
+        type(platform_config_t) :: target_platform
+        integer :: i, j
+        logical :: has_base, has_gfortran, has_windows, has_specific
+
+        allocate(temp_file, source=get_temp_filename())
+
+        open(file=temp_file, newunit=unit)
+        write(unit, '(a)') &
+            & 'name = "test-configs"', &
+            & 'version = "0.1.0"', &
+            & '[features]', &
+            & '[[features.testing.test]]', &
+            & 'name = "base_test"', &
+            & 'source-dir = "test"', &
+            & '[[features.testing.gfortran.test]]', &
+            & 'name = "gfortran_test"', &
+            & 'source-dir = "test/gfortran"', &
+            & '[[features.testing.windows.test]]', &
+            & 'name = "windows_test"', &
+            & 'source-dir = "test/windows"', &
+            & '[[features.testing.gfortran.windows.test]]', &
+            & 'name = "gfortran_windows_test"', &
+            & 'source-dir = "test/gfortran_windows"'
+        close(unit)
+                
+        call get_package_data(package, temp_file, error)
+        if (allocated(error)) return
+        
+        ! Find testing collection and extract for gfortran+Windows
+        do i = 1, size(package%features)
+            if (package%features(i)%base%name == "testing") then
+                target_platform = platform_config_t(id_gcc, OS_WINDOWS)
+                extracted_feature = package%features(i)%extract_for_target(target_platform)
+                
+                ! Check that all test configs are combined (base + gfortran + windows + gfortran.windows)
+                if (.not. allocated(extracted_feature%test) .or. size(extracted_feature%test) < 4) then
+                    call test_failed(error, "Wrong number of test configs in gfortran+Windows (expected 4)")
+                    return
+                end if
+                
+                ! Verify that specific test configs are present by checking names
+                has_base = .false.
+                has_gfortran = .false.
+                has_windows = .false.
+                has_specific = .false.
+                
+                do j = 1, size(extracted_feature%test)
+                    select case (extracted_feature%test(j)%name)
+                        case ("base_test")
+                            has_base = .true.
+                        case ("gfortran_test")
+                            has_gfortran = .true.
+                        case ("windows_test")
+                            has_windows = .true.
+                        case ("gfortran_windows_test")
+                            has_specific = .true.
+                    end select
+                end do
+                
+                if (.not. has_base) then
+                    call test_failed(error, "Missing base_test in gfortran+Windows extraction")
+                    return
+                end if
+                if (.not. has_gfortran) then
+                    call test_failed(error, "Missing gfortran_test in gfortran+Windows extraction")
+                    return
+                end if
+                if (.not. has_windows) then
+                    call test_failed(error, "Missing windows_test in gfortran+Windows extraction")
+                    return
+                end if
+                if (.not. has_specific) then
+                    call test_failed(error, "Missing gfortran_windows_test in gfortran+Windows extraction")
+                    return
+                end if
+                
+                return ! Test passed
+            end if
+        end do
+        
+        call test_failed(error, "testing collection not found")
+                        
+    end subroutine test_feature_extract_test_configs
+
+    !> Test feature extraction with example configurations for ifx+macOS target
+    subroutine test_feature_extract_example_configs(error)
+        !> Error handling
+        type(error_t), allocatable, intent(out) :: error
+
+        type(package_config_t) :: package
+        character(:), allocatable :: temp_file
+        integer :: unit
+        type(feature_config_t) :: extracted_feature
+        type(platform_config_t) :: target_platform
+        integer :: i, j
+        logical :: has_base, has_ifx, has_macos, has_specific
+
+        allocate(temp_file, source=get_temp_filename())
+
+        open(file=temp_file, newunit=unit)
+        write(unit, '(a)') &
+            & 'name = "example-configs"', &
+            & 'version = "0.1.0"', &
+            & '[features]', &
+            & '[[features.showcase.example]]', &
+            & 'name = "base_example"', &
+            & 'source-dir = "examples"', &
+            & '[[features.showcase.ifx.example]]', &
+            & 'name = "ifx_example"', &
+            & 'source-dir = "examples/ifx"', &
+            & '[[features.showcase.macos.example]]', &
+            & 'name = "macos_example"', &
+            & 'source-dir = "examples/macos"', &
+            & '[[features.showcase.ifx.macos.example]]', &
+            & 'name = "ifx_macos_example"', &
+            & 'source-dir = "examples/ifx_macos"'
+        close(unit)
+                
+        call get_package_data(package, temp_file, error)
+        if (allocated(error)) return
+        
+        ! Find showcase collection and extract for ifx+macOS
+        do i = 1, size(package%features)
+            if (package%features(i)%base%name == "showcase") then
+                target_platform = platform_config_t(id_intel_llvm_nix, OS_MACOS)
+                extracted_feature = package%features(i)%extract_for_target(target_platform)
+                
+                ! Check that all example configs are combined (base + ifx + macos + ifx.macos)
+                if (.not. allocated(extracted_feature%example) .or. size(extracted_feature%example) < 4) then
+                    call test_failed(error, "Wrong number of example configs in ifx+macOS (expected 4)")
+                    return
+                end if
+                
+                ! Verify that specific example configs are present by checking names
+                has_base = .false.
+                has_ifx = .false.
+                has_macos = .false.
+                has_specific = .false.
+                
+                do j = 1, size(extracted_feature%example)
+                    select case (extracted_feature%example(j)%name)
+                        case ("base_example")
+                            has_base = .true.
+                        case ("ifx_example")
+                            has_ifx = .true.
+                        case ("macos_example")
+                            has_macos = .true.
+                        case ("ifx_macos_example")
+                            has_specific = .true.
+                    end select
+                end do
+                
+                if (.not. has_base) then
+                    call test_failed(error, "Missing base_example in ifx+macOS extraction")
+                    return
+                end if
+                if (.not. has_ifx) then
+                    call test_failed(error, "Missing ifx_example in ifx+macOS extraction")
+                    return
+                end if
+                if (.not. has_macos) then
+                    call test_failed(error, "Missing macos_example in ifx+macOS extraction")
+                    return
+                end if
+                if (.not. has_specific) then
+                    call test_failed(error, "Missing ifx_macos_example in ifx+macOS extraction")
+                    return
+                end if
+                
+                return ! Test passed
+            end if
+        end do
+        
+        call test_failed(error, "showcase collection not found")
+                        
+    end subroutine test_feature_extract_example_configs
 
 end module test_features
