@@ -1663,15 +1663,20 @@ contains
             call fpm_stop(1, 'Error: --profile and --features cannot be used together')
         end if
         
-        ! Parse comma-separated features
+        ! Parse comma-separated features and profiles
         if (specified('features') .and. len_trim(feats) > 0) then
             call parse_features(feats, self%features)
         else
-            allocate(self%features(0))
+            if (allocated(self%features)) deallocate(self%features)
         end if
         
-        ! Assign into this (polymorphic) object; allocatable chars auto-allocate
-        self%profile       = prof
+        if (specified('profile') .and. len_trim(prof) > 0) then 
+            self%profile = prof
+        else
+            if (allocated(self%profile)) deallocate(self%profile)
+        end if
+        
+        ! Assign into this (polymorphic) object; allocatable chars auto-allocate        
         self%prune         = .not. lget('no-prune')
         self%compiler      = comp
         self%c_compiler    = ccomp
