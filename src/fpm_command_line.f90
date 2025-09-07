@@ -84,6 +84,7 @@ type, extends(fpm_cmd_settings)  :: fpm_build_settings
     character(len=:),allocatable :: cxx_compiler
     character(len=:),allocatable :: archiver
     character(len=:),allocatable :: profile
+    character(len=:),allocatable :: features
     character(len=:),allocatable :: flag
     character(len=:),allocatable :: cflag
     character(len=:),allocatable :: cxxflag
@@ -164,11 +165,14 @@ character(len=:), allocatable :: val_runner,val_runner_args,val_dump
 
 !   '12345678901234567890123456789012345678901234567890123456789012345678901234567890',&
 character(len=80), parameter :: help_text_build_common(*) = [character(len=80) ::      &
-    ' --profile PROF    Selects the compilation profile for the build.               ',&
-    '                   Currently available profiles are "release" for               ',&
-    '                   high optimization and "debug" for full debug options.        ',&
-    '                   If --flag is not specified the "debug" flags are the         ',&
+    ' --profile PROF    Selects either a compilation profile ("release", "debug") or   ',&
+    '                   a feature profile defined in fpm.toml. Feature profiles     ',&
+    '                   group multiple features together. Cannot be used with        ',&
+    '                   --features. If --flag is not specified the "debug" flags    ',&
     '                   default.                                                     ',&
+    ' --features LIST   Comma-separated list of features to enable (defined in      ',&
+    '                   fpm.toml). Cannot be used with --profile.                   ',&
+    '                   Example: `fpm build --features mpi,openmp,hdf5 `             ',&
     ' --no-prune        Disable tree-shaking/pruning of unused module dependencies   ',&
     ' --build-dir DIR   Specify the build directory. Default is "build" unless set   ',&
     '                   by the environment variable FPM_BUILD_DIR.                   '&
@@ -249,9 +253,10 @@ contains
             & c_compiler, cxx_compiler, archiver, version_s, token_s, config_file
 
         character(len=*), parameter :: fc_env = "FC", cc_env = "CC", ar_env = "AR", &
-            & fflags_env = "FFLAGS", cflags_env = "CFLAGS", cxxflags_env = "CXXFLAGS", ldflags_env = "LDFLAGS", &
-            & fc_default = "gfortran", cc_default = " ", ar_default = " ", flags_default = " ", &
-            & cxx_env = "CXX", cxx_default = " ", build_dir_env = "BUILD_DIR", build_dir_default = "build"
+            & fflags_env = "FFLAGS", cflags_env = "CFLAGS", cxxflags_env = "CXXFLAGS", &
+            & ldflags_env = "LDFLAGS", fc_default = "gfortran", cc_default = " ", ar_default = " ", &
+            & flags_default = " ", cxx_env = "CXX", cxx_default = " ", build_dir_env = "BUILD_DIR", &
+            & build_dir_default = "build"
         type(error_t), allocatable :: error
 
         call set_help()
@@ -297,6 +302,7 @@ contains
 
         compiler_args = &
           ' --profile " "' // &
+          ' --features " "' // &
           ' --no-prune F' // &
           ' --compiler "'//get_fpm_env(fc_env, fc_default)//'"' // &
           ' --c-compiler "'//get_fpm_env(cc_env, cc_default)//'"' // &
@@ -406,14 +412,16 @@ contains
                    name='.'
                 else
                    write(stderr,'(*(7x,g0,/))') &
-                   & '<USAGE> fpm new NAME [[--lib|--src] [--app] [--test] [--example]]|[--full|--bare] [--backfill]'
+                   & '<USAGE> fpm new NAME [[--lib|--src] [--app] [--test] '//&
+                   & ' [--example]]|[--full|--bare] [--backfill]'
                    call fpm_stop(1,'directory name required')
                 endif
             case(2)
                 name=trim(unnamed(2))
             case default
                 write(stderr,'(7x,g0)') &
-                & '<USAGE> fpm new NAME [[--lib|--src] [--app] [--test] [--example]]| [--full|--bare] [--backfill]'
+                & '<USAGE> fpm new NAME [[--lib|--src] [--app] [--test] [--example]] '//&
+                & '| [--full|--bare] [--backfill]'
                 call fpm_stop(2,'only one directory name allowed')
             end select
             !*! canon_path is not converting ".", etc.
@@ -672,7 +680,8 @@ contains
                 end if
 
                 if (target_specific .and. any([skip, clean_all])) then
-                    call fpm_stop(6, 'Cannot combine target-specific flags (--test, --apps, --examples) with --skip or --all.')
+                    call fpm_stop(6, 'Cannot combine target-specific flags (--test, --apps, '//&
+                                     '--examples) with --skip or --all.')
                 end if
 
                 allocate(fpm_clean_settings :: cmd_settings)
@@ -829,18 +838,20 @@ contains
    ' ']
    help_list_dash = [character(len=80) :: &
    '                                                                                ', &
-   ' build [--compiler COMPILER_NAME] [--profile PROF] [--flag FFLAGS] [--list]     ', &
-   '       [--tests] [--no-prune] [--dump [FILENAME]] [--config-file PATH]          ', &
+   ' build [--compiler COMPILER_NAME] [--profile PROF] [--features LIST] [--list]   ', &
+   '       [--flag FFLAGS] [--tests] [--no-prune] [--dump [FILENAME]]               ', &
+   '       [--config-file PATH]                                                     ', &
    ' help [NAME(s)]                                                                 ', &
    ' new NAME [[--lib|--src] [--app] [--test] [--example]]|                         ', &
    '          [--full|--bare][--backfill]                                           ', &
    ' update [NAME(s)] [--fetch-only] [--clean] [--verbose] [--dump [FILENAME]]      ', &
    ' list [--list]                                                                  ', &
-   ' run  [[--target] NAME(s) [--example] [--profile PROF] [--flag FFLAGS] [--all]  ', &
+   ' run  [[--target] NAME(s) [--example] [--profile PROF] [--features LIST] [--all]', &
    '      [--runner "CMD"] [--compiler COMPILER_NAME] [--list] [-- ARGS]            ', &
-   '      [--config-file PATH]                                                      ', &
-   ' test [[--target] NAME(s)] [--profile PROF] [--flag FFLAGS] [--runner "CMD"]    ', &
-   '      [--list] [--compiler COMPILER_NAME] [--config-file PATH] [-- ARGS]        ', &
+   '      [--config-file PATH] [--flag FFLAGS]                                      ', &
+   ' test [[--target] NAME(s)] [--profile PROF] [--features LIST] [--flag FFLAGS]   ', &
+   '      [--runner "CMD"] [--list] [--compiler COMPILER_NAME] [--config-file PATH] ', &
+   '      [-- ARGS]                                                                 ', &    
    ' install [--profile PROF] [--flag FFLAGS] [--no-rebuild] [--prefix PATH]        ', &
    '         [--config-file PATH] [--registry-cache] [options]                      ', &
    ' clean [--skip|--all] [--test] [--apps] [--examples] [--config-file PATH]       ', &
@@ -1154,9 +1165,9 @@ contains
     ' build(1) - the fpm(1) subcommand to build a project                   ', &
     '                                                                       ', &
     'SYNOPSIS                                                               ', &
-    ' fpm build [--profile PROF] [--flag FFLAGS] [--compiler COMPILER_NAME] ', &
-    '           [--build-dir DIR] [--list] [--tests] [--config-file PATH]    ', &
-    '           [--dump [FILENAME]]                                          ', &
+    ' fpm build [--profile PROF] [--features LIST] [--flag FFLAGS]         ', &
+    '           [--compiler COMPILER_NAME] [--build-dir DIR] [--list]        ', &
+    '           [--tests] [--config-file PATH] [--dump [FILENAME]]           ', &
     '                                                                       ', &
     ' fpm build --help|--version                                            ', &
     '                                                                       ', &
@@ -1200,6 +1211,8 @@ contains
     '                                                                       ', &
     '  fpm build                   # build with debug options               ', &
     '  fpm build --profile release # build with high optimization           ', &
+    '  fpm build --features mpi,openmp # build with specific features       ', &
+    '  fpm build --profile development  # use feature profile from fpm.toml', &
     '  fpm build --build-dir /tmp/my_build # build to custom directory      ', &
     '' ]
 
@@ -1343,9 +1356,9 @@ contains
     ' test(1) - the fpm(1) subcommand to run project tests                  ', &
     '                                                                       ', &
     'SYNOPSIS                                                               ', &
-    ' fpm test [[--target] NAME(s)] [--profile PROF] [--flag FFLAGS]        ', &
-    '          [--compiler COMPILER_NAME ] [--runner "CMD"] [--list]        ', &
-    '          [-- ARGS] [--config-file PATH]                               ', &
+    ' fpm test [[--target] NAME(s)] [--profile PROF] [--features LIST]     ', &
+    '          [--flag FFLAGS] [--compiler COMPILER_NAME] [--runner "CMD"]   ', &
+    '          [--list] [-- ARGS] [--config-file PATH]                      ', &
     '                                                                       ', &
     ' fpm test --help|--version                                             ', &
     '                                                                       ', &
@@ -1387,7 +1400,8 @@ contains
     ' # run a specific test and pass arguments to the command               ', &
     ' fpm test mytest -- -x 10 -y 20 --title "my title line"                ', &
     '                                                                       ', &
-    ' fpm test tst1 tst2 --profile PROF  # run production version of two tests', &
+    ' fpm test tst1 tst2 --profile release   # run release version of tests   ', &
+    ' fpm test --features debug,mpi       # run tests with specific features ', &
     '' ]
     help_update=[character(len=80) :: &
     'NAME', &
@@ -1606,6 +1620,7 @@ contains
         character(len=:), allocatable :: comp, ccomp, cxcomp, arch
         character(len=:), allocatable :: fflags, cflags, cxxflags, ldflags
         character(len=:), allocatable :: prof, cfg, dump, dir
+        character(len=:), allocatable :: feats
 
         ! Read CLI/env values (sget returns what set_args registered, including defaults)
         ! This is equivalent to check_build_vals
@@ -1615,6 +1630,7 @@ contains
         cxxflags = ' ' // sget('cxx-flag')
         ldflags  = ' ' // sget('link-flag')
         prof     = sget('profile')
+        feats    = sget('features')
         
         ! Set and validate build directory
         dir      = sget('build-dir')
@@ -1642,8 +1658,14 @@ contains
             cfg = sget('config-file')
         end if
         
+        ! Validate mutually exclusive options
+        if (specified('profile') .and. specified('features')) then
+            call fpm_stop(1, 'Error: --profile and --features cannot be used together')
+        end if
+        
         ! Assign into this (polymorphic) object; allocatable chars auto-allocate
         self%profile       = prof
+        self%features      = feats
         self%prune         = .not. lget('no-prune')
         self%compiler      = comp
         self%c_compiler    = ccomp
