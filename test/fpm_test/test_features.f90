@@ -6,7 +6,8 @@ module test_features
     use fpm_manifest_feature_collection, only: feature_collection_t
     use fpm_manifest_platform, only: platform_config_t
     use fpm_environment, only: OS_ALL, OS_LINUX, OS_MACOS, OS_WINDOWS
-    use fpm_compiler, only: id_all, id_gcc, id_intel_classic_nix, id_intel_classic_windows, id_intel_llvm_nix, match_compiler_type
+    use fpm_compiler, only: id_all, id_gcc, id_intel_classic_nix, id_intel_classic_windows, id_intel_llvm_nix, &
+        match_compiler_type
     use fpm_strings, only: string_t
     use fpm_filesystem, only: get_temp_filename
     implicit none
@@ -27,7 +28,8 @@ contains
             & new_unittest("feature-collection-invalid", test_feature_collection_invalid, should_fail=.true.), &
             & new_unittest("feature-collection-duplicates", test_feature_collection_duplicates, should_fail=.true.), &
             & new_unittest("feature-collection-extract", test_feature_collection_extract), &
-            & new_unittest("feature-collection-platform-validation", test_feature_collection_platform_validation, should_fail=.true.), &
+            & new_unittest("feature-collection-platform-validation", test_feature_collection_platform_validation, &
+            &                                                        should_fail=.true.), &
             & new_unittest("feature-collection-complex", test_feature_collection_complex), &
             & new_unittest("feature-allocatable-conflict", test_feature_allocatable_conflict, should_fail=.true.), &
             & new_unittest("feature-flag-addition", test_feature_flag_addition), &
@@ -697,7 +699,8 @@ contains
                 if (index(extracted_feature%flags, "/debug") == 0 .or. &
                     index(extracted_feature%flags, "/warn:all") == 0 .or. &
                     index(extracted_feature%flags, "/DWINDOWS") == 0) then
-                    call test_failed(error, "Missing expected flags in ifort+Windows extraction. Got: '"//extracted_feature%flags//"'")
+                    call test_failed(error, "Missing expected flags in ifort+Windows extraction. Got: '" &
+                                            //extracted_feature%flags//"'")
                     return
                 end if
                 
@@ -821,7 +824,8 @@ contains
                 end if
                 
                 if (extracted_feature%fortran%implicit_typing) then
-                    call test_failed(error, "Fortran config not applied correctly - implicit typing should be false")
+                    call test_failed(error, "Fortran config not applied correctly - "// &
+                                            " implicit typing should be false")
                     return
                 end if
                 
@@ -893,7 +897,8 @@ contains
                 end if
                 
                 ! Check that external modules are present
-                if (.not. allocated(extracted_feature%build%external_modules) .or. size(extracted_feature%build%external_modules) < 1) then
+                if (.not. allocated(extracted_feature%build%external_modules) &
+                    .or. size(extracted_feature%build%external_modules) < 1) then
                     call test_failed(error, "Missing external modules in ifort+Linux build config")
                     return
                 end if
