@@ -46,6 +46,8 @@ module fpm_manifest_package
     use fpm_manifest_preprocess, only : preprocess_config_t, new_preprocessors
     use fpm_manifest_feature, only: feature_config_t, init_feature_components
     use fpm_manifest_feature_collection, only: feature_collection_t, get_default_features, new_collections
+    use fpm_manifest_platform, only: platform_config_t
+    use fpm_strings, only: string_t
     use fpm_filesystem, only : exists, getline, join_path
     use fpm_error, only : error_t, fatal_error, syntax_error, bad_name_error
     use tomlf, only : toml_table, toml_array, toml_key, toml_stat
@@ -93,6 +95,9 @@ module fpm_manifest_package
         procedure :: serializable_is_same => manifest_is_same
         procedure :: dump_to_toml
         procedure :: load_from_toml
+
+        !> Export package configuration with features applied
+        procedure :: export_config
 
     end type package_config_t
 
@@ -534,6 +539,48 @@ contains
         end do sub_deps
 
      end subroutine load_from_toml
+
+    !> Export package configuration for a given (OS+compiler) platform
+    type(package_config_t) function export_config(self, platform, features) result(cfg)
+        
+        !> Instance of the package configuration  
+        class(package_config_t), intent(in) :: self
+        
+        !> Target platform
+        type(platform_config_t), intent(in) :: platform
+        
+        !> Optional list of features to apply (currently idle)
+        type(string_t), optional, intent(in) :: features(:)
+        
+        ! Copy the entire package configuration
+        cfg = self
+        
+        ! Ensure allocatable fields are always allocated with default values if not already set
+        if (.not. allocated(cfg%build)) then
+            allocate(cfg%build)
+            cfg%build%auto_executables = .true.
+            cfg%build%auto_examples = .true.
+            cfg%build%auto_tests = .true.
+            cfg%build%module_naming = .false.
+        end if
+        
+        if (.not. allocated(cfg%install)) then
+            allocate(cfg%install)
+            cfg%install%library = .false.
+            cfg%install%test = .false.
+        end if
+        
+        if (.not. allocated(cfg%fortran)) then
+            allocate(cfg%fortran)
+            cfg%fortran%implicit_typing = .false.
+            cfg%fortran%implicit_external = .false.
+            cfg%fortran%source_form = 'free'
+        end if
+        
+        ! TODO: Feature processing will be implemented here
+        ! For now, features parameter is ignored as requested
+        
+    end function export_config
 
 
 end module fpm_manifest_package
