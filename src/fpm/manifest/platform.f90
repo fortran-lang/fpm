@@ -22,7 +22,12 @@ module fpm_manifest_platform
 
     public :: platform_config_t
     public :: is_platform_key
-
+    
+    !> Shortcuts for the Intel OS variants
+    integer(compiler_enum), parameter :: &
+        id_intel_classic(*) = [id_intel_classic_mac,id_intel_classic_nix,id_intel_classic_windows], &
+        id_intel_llvm   (*) = [id_intel_llvm_nix,id_intel_llvm_windows]
+        
     !> Serializable platform configuration (compiler + OS only)
     type, extends(serializable_t) :: platform_config_t
         
@@ -109,7 +114,7 @@ contains
         
         ! Intel classic compilers: map to OS-specific version
         select case (compiler_id)
-        case (id_intel_classic_nix, id_intel_classic_mac, id_intel_classic_windows)
+        case (id_intel_classic_mac,id_intel_classic_nix,id_intel_classic_windows)
             select case (os_type)
             case (OS_WINDOWS)
                 corrected_id = id_intel_classic_windows
@@ -119,7 +124,7 @@ contains
                 corrected_id = id_intel_classic_nix  ! Fallback to unix version
             end select
             
-        case (id_intel_llvm_nix, id_intel_llvm_windows)
+        case (id_intel_llvm_nix,id_intel_llvm_windows)
             select case (os_type)
             case (OS_WINDOWS)
                 corrected_id = id_intel_llvm_windows
@@ -130,27 +135,32 @@ contains
         
     end function correct_compiler_for_os
 
-    !> Check if two Intel compiler IDs are equivalent (same family, different OS versions)
-    logical function intel_compilers_equivalent(compiler1, compiler2) result(equivalent)
-        integer(compiler_enum), intent(in) :: compiler1, compiler2
+    !> Check if a compiler ID is suitable for a target platform
+    !> Handles special cases like Intel compiler variants
+    logical function compiler_is_suitable(compiler_id, target) result(suitable)
+        integer(compiler_enum), intent(in) :: compiler_id
+        type(platform_config_t), intent(in) :: target
         
-        equivalent = .false.
+        ! Default case: exact match or compiler_id is id_all
+        suitable = (compiler_id == id_all .or. compiler_id == target%compiler)
         
-        ! Intel classic compilers are equivalent across OS variants
-        if (any(compiler1 == [id_intel_classic_nix, id_intel_classic_mac, id_intel_classic_windows]) .and. &
-            any(compiler2 == [id_intel_classic_nix, id_intel_classic_mac, id_intel_classic_windows])) then
-            equivalent = .true.
+        if (suitable) return
+        
+        ! Intel classic compilers: all variants are equivalent
+        if (any(compiler_id == id_intel_classic) .and. any(target%compiler == id_intel_classic)) then
+            suitable = .true.
             return
         end if
         
-        ! Intel LLVM compilers are equivalent across OS variants
-        if (any(compiler1 == [id_intel_llvm_nix, id_intel_llvm_windows]) .and. &
-            any(compiler2 == [id_intel_llvm_nix, id_intel_llvm_windows])) then
-            equivalent = .true.
+        ! Intel LLVM compilers: all variants are equivalent  
+        if (any(compiler_id == id_intel_llvm) .and. any(target%compiler == id_intel_llvm)) then
+            suitable = .true.
             return
         end if
         
-    end function intel_compilers_equivalent
+        ! Future extensions can be added here for other compiler families
+        
+    end function compiler_is_suitable
 
     !> Compare two platform_config_t (semantic equality)
     logical function platform_is_same(this, that)
@@ -247,8 +257,8 @@ contains
             ok = .false.
             return
         end if
-
-        compiler_ok = any(self%compiler == [id_all,target%compiler])
+        
+        compiler_ok = compiler_is_suitable(self%compiler, target)
         os_ok       = any(self%os_type  == [OS_ALL,target%os_type])
 
         ! Basic matching
