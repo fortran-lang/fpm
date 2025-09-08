@@ -583,13 +583,15 @@ module fpm_manifest_feature_collection
         end if
     end subroutine merge_test_arrays
 
-    !> Merge preprocess arrays by appending source to target
+    !> Merge preprocess arrays by merging configurations for same preprocessor names
+    !> and appending new ones
     subroutine merge_preprocess_arrays(target, source)        
         type(preprocess_config_t), allocatable, intent(inout) :: target(:)
         type(preprocess_config_t), allocatable, intent(in) :: source(:)
         
         type(preprocess_config_t), allocatable :: temp(:)
-        integer :: target_size, source_size
+        integer :: target_size, source_size, i, j, new_count
+        integer, allocatable :: source_to_target_map(:)  ! Maps source index to target index (0 = new)
         
         if (.not. allocated(source)) return
         
@@ -597,16 +599,70 @@ module fpm_manifest_feature_collection
         if (source_size == 0) return
         
         if (.not. allocated(target)) then
-            allocate(target(source_size))
-            target = source
-        else
-            target_size = size(target)
-            allocate(temp(target_size + source_size))
+            allocate(target(source_size), source=source)
+            return
+        end if
+        
+        target_size = size(target)
+        
+        ! Create mapping arrays in a single pass
+        allocate(source_to_target_map(source_size), source=0)
+        
+        ! Single loop to build the mapping
+        do i = 1, source_size
+            if (allocated(source(i)%name)) then
+                do j = 1, target_size
+                    if (allocated(target(j)%name)) then
+                        if (target(j)%name == source(i)%name) then
+                            source_to_target_map(i) = j
+                            exit
+                        end if
+                    end if
+                end do
+            end if
+        end do
+        
+        ! Merge overlapping configurations
+        do i = 1, source_size
+            j = source_to_target_map(i)
+            if (j==0) cycle ! new config
+            call merge_preprocessor_config(target(j), source(i))
+        end do
+        
+        ! Count and add new preprocessors
+        new_count = count(source_to_target_map==0)
+        if (new_count > 0) then
+            allocate(temp(target_size + new_count))
             temp(1:target_size) = target
-            temp(target_size+1:target_size+source_size) = source
+            
+            ! Add new preprocessors in a single pass
+            j = target_size
+            do i = 1, source_size
+                if (source_to_target_map(i)==0) then
+                    j = j + 1
+                    temp(j) = source(i)
+                end if
+            end do
+            
             call move_alloc(temp, target)
         end if
     end subroutine merge_preprocess_arrays
+    
+    !> Helper to merge two preprocessor configurations with the same name
+    subroutine merge_preprocessor_config(target, source)
+        type(preprocess_config_t), intent(inout) :: target
+        type(preprocess_config_t), intent(in) :: source
+        
+        ! Merge suffixes arrays
+        call merge_string_arrays(target%suffixes, source%suffixes)
+        
+        ! Merge directories arrays  
+        call merge_string_arrays(target%directories, source%directories)
+        
+        ! Merge macros arrays
+        call merge_string_arrays(target%macros, source%macros)
+        
+    end subroutine merge_preprocessor_config
 
     !> Merge string arrays by appending source to target
     subroutine merge_string_arrays(target, source)
