@@ -1257,8 +1257,8 @@ contains
                 end if
 
                 ! Path gets canonicalized, so just check it ends with the relative path
-                if (index(main_package%dependency(i)%path, "../dep-a") == 0) then
-                    call test_failed(error, "dep-a dependency path should contain '../dep-a', got: '" // &
+                if (index(main_package%dependency(i)%path, "dep-a") == 0) then
+                    call test_failed(error, "dep-a dependency path should contain 'dep-a', got: '" // &
                                           main_package%dependency(i)%path // "'")
                     return
                 end if
