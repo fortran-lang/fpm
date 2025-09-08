@@ -457,11 +457,21 @@ module fpm_manifest_feature_collection
         end if
 
         ! ADDITIVE: Array properties - append source to target
-        call merge_executable_arrays(target%executable, source%executable)
-        call merge_dependency_arrays(target%dependency, source%dependency)
-        call merge_dependency_arrays(target%dev_dependency, source%dev_dependency)
-        call merge_example_arrays(target%example, source%example)
-        call merge_test_arrays(target%test, source%test) 
+        call merge_executable_arrays(target%executable, source%executable, error)
+        if (allocated(error)) return
+        
+        call merge_dependency_arrays(target%dependency, source%dependency, error)
+        if (allocated(error)) return
+        
+        call merge_dependency_arrays(target%dev_dependency, source%dev_dependency, error)
+        if (allocated(error)) return
+        
+        call merge_example_arrays(target%example, source%example, error)
+        if (allocated(error)) return
+        
+        call merge_test_arrays(target%test, source%test, error)
+        if (allocated(error)) return
+        
         call merge_preprocess_arrays(target%preprocess, source%preprocess)
         call merge_string_arrays(target%requires_features, source%requires_features)
 
@@ -470,18 +480,35 @@ module fpm_manifest_feature_collection
 
     end subroutine merge_feature_configs
 
-    !> Merge executable arrays by appending source to target
-    subroutine merge_executable_arrays(target, source)        
+    !> Merge executable arrays by appending source to target, checking for duplicates
+    subroutine merge_executable_arrays(target, source, error)        
         type(executable_config_t), allocatable, intent(inout) :: target(:)
         type(executable_config_t), allocatable, intent(in) :: source(:)
+        type(error_t), allocatable, intent(out) :: error
         
         type(executable_config_t), allocatable :: temp(:)
-        integer :: target_size, source_size
+        integer :: target_size, source_size, i, j
         
         if (.not. allocated(source)) return
         
         source_size = size(source)
         if (source_size == 0) return
+        
+        ! Check for duplicates between source and target
+        if (allocated(target)) then
+            target_size = size(target)
+            do i = 1, source_size
+                do j = 1, target_size
+                    if (allocated(source(i)%name) .and. allocated(target(j)%name)) then
+                        if (source(i)%name == target(j)%name) then
+                            call fatal_error(error, "Duplicate executable '"//source(i)%name//"' found. " // &
+                                           "Multiple definitions of the same executable are not currently allowed.")
+                            return
+                        end if
+                    end if
+                end do
+            end do
+        end if
         
         if (.not. allocated(target)) then
             allocate(target(source_size), source=source)
@@ -495,18 +522,35 @@ module fpm_manifest_feature_collection
         
     end subroutine merge_executable_arrays
 
-    !> Merge dependency arrays by appending source to target  
-    subroutine merge_dependency_arrays(target, source)        
+    !> Merge dependency arrays by appending source to target, checking for duplicates
+    subroutine merge_dependency_arrays(target, source, error)        
         type(dependency_config_t), allocatable, intent(inout) :: target(:)
         type(dependency_config_t), allocatable, intent(in) :: source(:)
+        type(error_t), allocatable, intent(out) :: error
         
         type(dependency_config_t), allocatable :: temp(:)
-        integer :: target_size, source_size
+        integer :: target_size, source_size, i, j
         
         if (.not. allocated(source)) return
         
         source_size = size(source)
         if (source_size == 0) return
+        
+        ! Check for duplicates between source and target
+        if (allocated(target)) then
+            target_size = size(target)
+            do i = 1, source_size
+                do j = 1, target_size
+                    if (allocated(source(i)%name) .and. allocated(target(j)%name)) then
+                        if (source(i)%name == target(j)%name) then
+                            call fatal_error(error, "Duplicate dependency '"//source(i)%name//"' found. " // &
+                                           "Multiple definitions of the same dependency are not currently allowed.")
+                            return
+                        end if
+                    end if
+                end do
+            end do
+        end if
         
         if (.not. allocated(target)) then
             allocate(target(source_size), source=source)
@@ -534,18 +578,35 @@ module fpm_manifest_feature_collection
         end if
     end subroutine merge_string_additive
 
-    !> Merge example arrays by appending source to target
-    subroutine merge_example_arrays(target, source)        
+    !> Merge example arrays by appending source to target, checking for duplicates
+    subroutine merge_example_arrays(target, source, error)        
         type(example_config_t), allocatable, intent(inout) :: target(:)
         type(example_config_t), allocatable, intent(in) :: source(:)
+        type(error_t), allocatable, intent(out) :: error
         
         type(example_config_t), allocatable :: temp(:)
-        integer :: target_size, source_size
+        integer :: target_size, source_size, i, j
         
         if (.not. allocated(source)) return
         
         source_size = size(source)
         if (source_size == 0) return
+        
+        ! Check for duplicates between source and target
+        if (allocated(target)) then
+            target_size = size(target)
+            do i = 1, source_size
+                do j = 1, target_size
+                    if (allocated(source(i)%name) .and. allocated(target(j)%name)) then
+                        if (source(i)%name == target(j)%name) then
+                            call fatal_error(error, "Duplicate example '"//source(i)%name//"' found. " // &
+                                           "Multiple definitions of the same example are not currently allowed.")
+                            return
+                        end if
+                    end if
+                end do
+            end do
+        end if
         
         if (.not. allocated(target)) then
             allocate(target(source_size), source=source)
@@ -558,18 +619,35 @@ module fpm_manifest_feature_collection
         end if
     end subroutine merge_example_arrays
 
-    !> Merge test arrays by appending source to target  
-    subroutine merge_test_arrays(target, source)        
+    !> Merge test arrays by appending source to target, checking for duplicates
+    subroutine merge_test_arrays(target, source, error)        
         type(test_config_t), allocatable, intent(inout) :: target(:)
         type(test_config_t), allocatable, intent(in) :: source(:)
+        type(error_t), allocatable, intent(out) :: error
         
         type(test_config_t), allocatable :: temp(:)
-        integer :: target_size, source_size
+        integer :: target_size, source_size, i, j
         
         if (.not. allocated(source)) return
         
         source_size = size(source)
         if (source_size == 0) return
+        
+        ! Check for duplicates between source and target
+        if (allocated(target)) then
+            target_size = size(target)
+            do i = 1, source_size
+                do j = 1, target_size
+                    if (allocated(source(i)%name) .and. allocated(target(j)%name)) then
+                        if (source(i)%name == target(j)%name) then
+                            call fatal_error(error, "Duplicate test '"//source(i)%name//"' found. " // &
+                                           "Multiple definitions of the same test are not currently allowed.")
+                            return
+                        end if
+                    end if
+                end do
+            end do
+        end if
         
         if (.not. allocated(target)) then
             allocate(target(source_size))
@@ -1193,9 +1271,7 @@ module fpm_manifest_feature_collection
         collection%base%platform%compiler = id_all
         
         ! Copy the name if available
-        if (allocated(self%name)) then
-            collection%base%name = self%name
-        end if
+        if (allocated(self%name)) collection%base%name = self%name
         
         ! No variants initially - just the base configuration
         ! (variants can be added later if needed)
