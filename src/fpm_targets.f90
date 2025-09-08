@@ -1238,11 +1238,10 @@ subroutine resolve_target_linking(targets, model, library, error)
                                                                             error=error, &
                                                                             exclude_self=.not.has_self_lib)   
                                                                             
-                        
-                        ! On macOS, add room for 2 install_name_tool paths
-                        target%link_flags = target%link_flags // model%compiler%get_headerpad_flags()
-                        
                     end if
+                    
+                    ! On macOS, add room for 2 install_name_tool paths
+                    target%link_flags = target%link_flags // model%compiler%get_headerpad_flags()
 
                     if (allocated(target%link_libraries)) then
                         if (size(target%link_libraries) > 0) then
