@@ -83,7 +83,8 @@ contains
             & new_unittest("preprocessors-empty", test_preprocessors_empty, should_fail=.true.), &
             & new_unittest("macro-parsing", test_macro_parsing, should_fail=.false.), &
             & new_unittest("macro-parsing-dependency", &
-            &              test_macro_parsing_dependency, should_fail=.false.) &
+            &              test_macro_parsing_dependency, should_fail=.false.), &
+            & new_unittest("features-demo-serialization", test_features_demo_serialization) &
             & ]
 
     end subroutine collect_manifest
@@ -1726,6 +1727,86 @@ contains
             return
         end if
     end subroutine test_dependency_features_empty
+
+    !> Test features demo manifest serialization (from example_packages/features_demo/fpm.toml)
+    subroutine test_features_demo_serialization(error)
+        !> Error handling
+        type(error_t), allocatable, intent(out) :: error
+
+        type(package_config_t) :: package
+        character(:), allocatable :: temp_file
+        integer :: unit
+
+        allocate(temp_file, source=get_temp_filename())
+
+        open(file=temp_file, newunit=unit)
+        write(unit, '(a)') &
+            & 'name = "features_demo"', &
+            & 'version = "0.1.0"', &
+            & 'license = "MIT"', &
+            & 'description = "Demo package for FPM features functionality"', &
+            & '', &
+            & '[[executable]]', &
+            & 'name = "features_demo"', &
+            & 'source-dir = "app"', &
+            & 'main = "main.f90"', &
+            & '', &
+            & '[features]', &
+            & '# Base debug feature', &
+            & 'debug.flags = "-g"', &
+            & 'debug.preprocess.cpp.macros = "DEBUG"', &
+            & '', &
+            & '# Release feature', &
+            & 'release.flags = "-O3"', &
+            & 'release.preprocess.cpp.macros = "RELEASE"', &
+            & '', &
+            & '# Compiler-specific features', &
+            & 'debug.gfortran.flags = "-Wall -fcheck=bounds"', &
+            & 'release.gfortran.flags = "-march=native"', &
+            & '', &
+            & '# Platform-specific features', &
+            & 'linux.preprocess.cpp.macros = "LINUX_BUILD"', &
+            & '', &
+            & '# Parallel features', &
+            & 'mpi.preprocess.cpp.macros = "USE_MPI"', &
+            & 'mpi.dependencies.mpi = "*"', &
+            & 'openmp.preprocess.cpp.macros = "USE_OPENMP"', &
+            & 'openmp.dependencies.openmp = "*"', &
+            & '', &
+            & '[profiles]', &
+            & 'development = ["debug"]', &
+            & 'production = ["release", "openmp"]'
+        close(unit)
+
+        call get_package_data(package, temp_file, error)
+        if (allocated(error)) return
+
+        ! Verify basic package structure
+        if (package%name /= "features_demo") then
+            call test_failed(error, "Package name should be 'features_demo'")
+            return
+        end if
+
+        if (.not. allocated(package%features)) then
+            call test_failed(error, "Features should be allocated")
+            return
+        end if
+
+        if (.not. allocated(package%profiles)) then
+            call test_failed(error, "Profiles should be allocated") 
+            return
+        end if
+
+        if (.not. allocated(package%executable)) then
+            call test_failed(error, "Executables should be allocated")
+            return
+        end if
+
+        ! Test package serialization roundtrip
+        call package%test_serialization('test_features_demo_serialization', error)
+        if (allocated(error)) return
+
+    end subroutine test_features_demo_serialization
 
 
 end module test_manifest
