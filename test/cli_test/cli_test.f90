@@ -279,14 +279,14 @@ type is (fpm_new_settings)
     act_w_t=settings%with_test
     act_name=[trim(settings%name)]
 type is (fpm_build_settings)
-    act_profile=settings%profile
+    if (allocated(settings%profile) act_profile=settings%profile
     if (allocated(settings%features)) then
         do i = 1, min(size(settings%features),size(act_features))
             act_features(i) = settings%features(i)%s
         end do
     end if
 type is (fpm_run_settings)
-    act_profile=settings%profile
+    if (allocated(settings%profile) act_profile=settings%profile
     if (allocated(settings%features)) then
         do i = 1, min(size(settings%features),size(act_features))
             act_features(i) = settings%features(i)%s
@@ -295,7 +295,7 @@ type is (fpm_run_settings)
     act_name=settings%name
     if (allocated(settings%args)) act_args=settings%args
 type is (fpm_test_settings)
-    act_profile=settings%profile
+    if (allocated(settings%profile) act_profile=settings%profile
     if (allocated(settings%features)) then
         do i = 1, min(size(settings%features),size(act_features))
             act_features(i) = settings%features(i)%s
