@@ -215,7 +215,10 @@ contains
         ! Validate profiles after all features and profiles have been loaded
         call validate_profiles(self, error)
         if (allocated(error)) return
-
+        
+        ! Ensure metapackage data is initialized although off
+        call self%meta%reset()
+        
     end subroutine new_package
 
 

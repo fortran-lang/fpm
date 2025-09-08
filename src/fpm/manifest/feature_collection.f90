@@ -697,6 +697,7 @@ module fpm_manifest_feature_collection
         ! OR logic: if either requests a metapackage, turn it on
         if (source%on) then
             target%on = .true.
+            target%name = source%name
             ! Use source version if target doesn't have one
             if (allocated(source%version) .and. .not. allocated(target%version)) then
                 target%version = source%version

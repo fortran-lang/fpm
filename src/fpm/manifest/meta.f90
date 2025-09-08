@@ -67,7 +67,10 @@ module fpm_manifest_metapackages
         contains
         
            procedure :: get_requests
+           
+           ! Cleanup configuration; assert package names
            final     :: meta_config_final
+           procedure :: reset => meta_config_reset
 
            procedure :: serializable_is_same => meta_config_same
            procedure :: dump_to_toml        => meta_config_dump
@@ -384,7 +387,13 @@ contains
     
     ! Ensure the names of all packages are always defined
     subroutine meta_config_final(self)
-        type(metapackage_config_t), intent(inout) :: self
+        type(metapackage_config_t), intent(inout) :: self    
+        call meta_config_reset(self)            
+    end subroutine meta_config_final
+
+    ! Ensure the names of all packages are always defined
+    subroutine meta_config_reset(self)
+        class(metapackage_config_t), intent(inout) :: self
         
         call request_destroy(self%openmp); self%openmp%name = "openmp"
         call request_destroy(self%stdlib); self%stdlib%name = "stdlib"
@@ -394,7 +403,7 @@ contains
         call request_destroy(self%netcdf); self%netcdf%name = "netcdf"
         call request_destroy(self%blas);   self%blas%name   = "blas"        
         
-    end subroutine meta_config_final
+    end subroutine meta_config_reset
 
     subroutine meta_config_load(self, table, error)
         class(metapackage_config_t), intent(inout) :: self
