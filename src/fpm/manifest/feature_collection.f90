@@ -309,7 +309,17 @@ module fpm_manifest_feature_collection
                 ! Check if this key is an OS name
                 os_type = match_os_type(keys(i)%key)
                 if (os_type /= OS_UNKNOWN) then
-                    ! This is an OS constraint - get subtable and recurse
+                    ! This is an OS constraint 
+                    
+                    ! Check for chained OS commands (e.g., feature.windows.linux)
+                    if (constraint%os_type /= OS_ALL) then
+                        call fatal_error(error, "Cannot chain OS constraints: '" // &
+                                        constraint%os_name() // "." // keys(i)%key // &
+                                        "' - OS was already specified")
+                        return
+                    end if                    
+                    
+                    ! Get subtable and recurse
                     call get_value(table, keys(i)%key, subtable, stat=stat)
                     if (stat == toml_stat%success) then
                         platform = platform_config_t(constraint%compiler,os_type)
@@ -323,6 +333,15 @@ module fpm_manifest_feature_collection
                 ! Check if this key is a compiler name  
                 compiler_type = match_compiler_type(keys(i)%key)
                 if (compiler_type /= id_unknown) then
+                    
+                    ! Check for chained compiler commands (e.g., feature.gfortran.ifort)
+                    if (constraint%compiler /= id_all) then
+                        call fatal_error(error, "Cannot chain compiler constraints: '" // &
+                                        constraint%compiler_name() // "." // keys(i)%key // &
+                                        "' - compiler was already specified")
+                        return
+                    end if                    
+                    
                     ! This is a compiler constraint - get subtable and recurse
                     call get_value(table, keys(i)%key, subtable, stat=stat)
                     if (stat == toml_stat%success) then

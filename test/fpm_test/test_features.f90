@@ -41,7 +41,12 @@ contains
             & new_unittest("feature-extract-test-configs", test_feature_extract_test_configs), &
             & new_unittest("feature-extract-example-configs", test_feature_extract_example_configs), &
             & new_unittest("dependency-feature-propagation", test_dependency_feature_propagation), &
-            & new_unittest("dependency-features-specification", test_dependency_features_specification) &
+            & new_unittest("dependency-features-specification", test_dependency_features_specification), &
+            & new_unittest("feature-chained-os-commands", test_feature_chained_os_commands, should_fail=.true.), &
+            & new_unittest("feature-chained-compiler-commands", test_feature_chained_compiler_commands, should_fail=.true.), &
+            & new_unittest("feature-complex-chain-compiler-os-compiler", test_feature_complex_chain_compiler_os_compiler, should_fail=.true.), &
+            & new_unittest("feature-complex-chain-os-compiler-os", test_feature_complex_chain_os_compiler_os, should_fail=.true.), &
+            & new_unittest("feature-mixed-valid-chains", test_feature_mixed_valid_chains) &
             & ]
 
     end subroutine collect_features
@@ -1302,5 +1307,164 @@ contains
         end do
 
     end subroutine test_dependency_features_specification
+
+    !> Test that chained OS commands are rejected (should fail)
+    subroutine test_feature_chained_os_commands(error)
+        !> Error handling
+        type(error_t), allocatable, intent(out) :: error
+
+        type(package_config_t) :: package
+        character(:), allocatable :: temp_file
+        integer :: unit
+
+        allocate(temp_file, source=get_temp_filename())
+
+        open(file=temp_file, newunit=unit)
+        write(unit, '(a)') &
+            & 'name = "chained-os-test"', &
+            & 'version = "0.1.0"', &
+            & '[features]', &
+            & 'myfeature.windows.linux.flags = "-invalid"'  ! Chained OS: windows.linux
+        close(unit)
+                
+        call get_package_data(package, temp_file, error)
+        
+        ! This should fail due to chained OS commands
+                        
+    end subroutine test_feature_chained_os_commands
+
+    !> Test that chained compiler commands are rejected (should fail)  
+    subroutine test_feature_chained_compiler_commands(error)
+        !> Error handling
+        type(error_t), allocatable, intent(out) :: error
+
+        type(package_config_t) :: package
+        character(:), allocatable :: temp_file
+        integer :: unit
+
+        allocate(temp_file, source=get_temp_filename())
+
+        open(file=temp_file, newunit=unit)
+        write(unit, '(a)') &
+            & 'name = "chained-compiler-test"', &
+            & 'version = "0.1.0"', &
+            & '[features]', &
+            & 'myfeature.gfortran.ifort.flags = "-invalid"'  ! Chained compiler: gfortran.ifort
+        close(unit)
+                
+        call get_package_data(package, temp_file, error)
+        
+        ! This should fail due to chained compiler commands
+                        
+    end subroutine test_feature_chained_compiler_commands
+
+    !> Test complex chaining: compiler.os.compiler (should fail)
+    subroutine test_feature_complex_chain_compiler_os_compiler(error)
+        !> Error handling
+        type(error_t), allocatable, intent(out) :: error
+
+        type(package_config_t) :: package
+        character(:), allocatable :: temp_file
+        integer :: unit
+
+        allocate(temp_file, source=get_temp_filename())
+
+        open(file=temp_file, newunit=unit)
+        write(unit, '(a)') &
+            & 'name = "complex-chain-test"', &
+            & 'version = "0.1.0"', &
+            & '[features]', &
+            & 'myfeature.gfortran.windows.ifort.flags = "-invalid"'  ! gfortran.windows.ifort chain
+        close(unit)
+                
+        call get_package_data(package, temp_file, error)
+        
+        ! This should fail due to chained compiler constraints: gfortran -> windows (OK) -> ifort (ERROR)
+                        
+    end subroutine test_feature_complex_chain_compiler_os_compiler
+
+    !> Test complex chaining: os.compiler.os (should fail)
+    subroutine test_feature_complex_chain_os_compiler_os(error)
+        !> Error handling
+        type(error_t), allocatable, intent(out) :: error
+
+        type(package_config_t) :: package
+        character(:), allocatable :: temp_file
+        integer :: unit
+
+        allocate(temp_file, source=get_temp_filename())
+
+        open(file=temp_file, newunit=unit)
+        write(unit, '(a)') &
+            & 'name = "complex-chain-test2"', &
+            & 'version = "0.1.0"', &
+            & '[features]', &
+            & 'myfeature.windows.ifx.macos.flags = "-invalid"'  ! windows.ifx.macos chain
+        close(unit)
+                
+        call get_package_data(package, temp_file, error)
+        
+        ! This should fail due to chained OS constraints: windows -> ifx (OK) -> macos (ERROR)
+                        
+    end subroutine test_feature_complex_chain_os_compiler_os
+
+    !> Test mixed valid chains (should pass)
+    subroutine test_feature_mixed_valid_chains(error)
+        !> Error handling
+        type(error_t), allocatable, intent(out) :: error
+
+        type(package_config_t) :: package
+        character(:), allocatable :: temp_file
+        integer :: unit
+        integer :: i
+
+        allocate(temp_file, source=get_temp_filename())
+
+        open(file=temp_file, newunit=unit)
+        write(unit, '(a)') &
+            & 'name = "valid-chains-test"', &
+            & 'version = "0.1.0"', &
+            & '[features]', &
+            & 'debug.flags = "-g"', &  ! Base feature (all OS, all compilers)
+            & 'debug.gfortran.flags = "-Wall"', &  ! Compiler-specific (gfortran, all OS)
+            & 'debug.windows.flags = "-DWINDOWS"', &  ! OS-specific (all compilers, Windows)
+            & 'debug.gfortran.windows.flags = "-fbacktrace"', &  ! Target-specific (gfortran + Windows)
+            & 'debug.linux.ifort.flags = "-check all"', &  ! Target-specific (Linux + ifort)
+            & 'release.ifx.macos.flags = "-O3"'  ! Another valid target-specific (ifx + macOS)
+        close(unit)
+                
+        call get_package_data(package, temp_file, error)
+        if (allocated(error)) return
+        
+        ! Verify that valid chains are accepted and collections created
+        if (.not. allocated(package%features)) then
+            call test_failed(error, "No feature collections found for valid chains test")
+            return
+        end if
+        
+        ! Should have debug and release features
+        if (size(package%features) < 2) then
+            call test_failed(error, "Expected at least 2 feature collections for valid chains")
+            return
+        end if
+        
+        ! Check that debug feature has multiple variants
+        do i = 1, size(package%features)
+            if (package%features(i)%base%name == "debug") then
+                if (.not. allocated(package%features(i)%variants)) then
+                    call test_failed(error, "Debug collection should have variants for valid chains")
+                    return
+                end if
+                
+                ! Should have multiple variants: gfortran, windows, gfortran.windows, linux.ifort
+                if (size(package%features(i)%variants) < 4) then
+                    call test_failed(error, "Debug collection should have at least 4 variants for valid chains")
+                    return
+                end if
+                exit
+            end if
+        end do
+                        
+    end subroutine test_feature_mixed_valid_chains
 
 end module test_features
