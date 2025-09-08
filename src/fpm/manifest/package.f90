@@ -92,6 +92,9 @@ module fpm_manifest_package
         procedure :: serializable_is_same => manifest_is_same
         procedure :: dump_to_toml
         procedure :: load_from_toml
+        
+        !> Check if any features has a cpp configuration
+        procedure :: has_cpp
 
         !> Export package configuration with features applied
         procedure :: export_config
@@ -609,6 +612,8 @@ contains
                     return
                 end if
                 
+                print *, 'merge feature ',want_features(i)%s,' into ',cfg%name
+                
                 ! Add it to the current configuration
                 call self%features(idx)%merge_into_package(cfg, platform, error)
                 if (allocated(error)) return
@@ -745,5 +750,21 @@ contains
         
     end subroutine validate_profiles
 
+    !> Check if there is a CPP preprocessor configuration
+    elemental logical function has_cpp(self) 
+        class(package_config_t), intent(in) :: self
+          
+        integer :: i
+         
+        has_cpp = self%feature_config_t%has_cpp()
+        if (has_cpp) return
+        if (.not.allocated(self%features)) return
+          
+        do i=1,size(self%features)
+            has_cpp = self%features(i)%has_cpp()
+            if (has_cpp) return
+        end do
+          
+    end function has_cpp
 
 end module fpm_manifest_package

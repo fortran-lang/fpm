@@ -112,7 +112,11 @@ subroutine build_model(model, settings, package_config, error)
     end if
 
     allocate(model%packages(model%deps%ndep))
-    has_cpp = .false.
+    
+    ! The current configuration may not have preprocessing, but some of its features may. 
+    ! This means there will be directives that need to be considered even if not currently 
+    ! active. Turn preprocessing on even in this case
+    has_cpp = package_config%has_cpp() .or. package%has_cpp()
 
     do i = 1, model%deps%ndep
         associate(dep => model%deps%dep(i))

@@ -47,6 +47,7 @@ module fpm_manifest_feature_collection
             procedure :: extract_for_target
             procedure :: check => check_collection
             procedure :: merge_into_package
+            procedure :: has_cpp
 
     end type feature_collection_t
 
@@ -1277,5 +1278,23 @@ module fpm_manifest_feature_collection
         ! (variants can be added later if needed)
         
     end function collection_from_feature
+    
+      
+    !> Check if there is a CPP preprocessor configuration
+    elemental logical function has_cpp(self) 
+        class(feature_collection_t), intent(in) :: self
+          
+        integer :: i
+          
+        has_cpp = self%base%has_cpp()
+        if (has_cpp) return
+        if (.not.allocated(self%variants)) return
+          
+        do i=1,size(self%variants)
+            has_cpp = self%variants(i)%has_cpp()
+            if (has_cpp) return
+        end do
+          
+    end function has_cpp    
     
 end module fpm_manifest_feature_collection
