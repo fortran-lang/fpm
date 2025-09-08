@@ -43,7 +43,7 @@ echo "✓ Multiple features work"
 # Test 4: Feature-specific executable (debug_demo only available with debug feature)
 echo "Test 4: Feature-specific executable"
 rm -rf build
-"$fpm" run --feature debug --target debug_demo | tee output.txt
+"$fpm" run --features debug --target debug_demo | tee output.txt
 grep -q "Debug Demo Program" output.txt
 grep -q "Debug mode: ON" output.txt
 echo "✓ Feature-specific executable works"
@@ -71,7 +71,7 @@ echo "✓ Baseline (no features) works"
 # Test 7: Build listing with features
 echo "Test 7: Build listing with features"
 rm -rf build
-"$fpm" build --feature debug --list | tee build_list.txt
+"$fpm" build --features debug --list | tee build_list.txt
 grep -q "debug_demo" build_list.txt
 grep -q "features_demo" build_list.txt  
 echo "✓ Build listing with features works"
@@ -79,7 +79,7 @@ echo "✓ Build listing with features works"
 # Test 8: Error handling - invalid feature
 echo "Test 8: Error handling for invalid feature"
 rm -rf build
-if "$fpm" run --feature nonexistent --target features_demo 2>&1 | grep -q "undefined feature"; then
+if "$fpm" run --features nonexistent --target features_demo 2>&1 | grep -q "undefined feature"; then
     echo "✓ Correctly rejected invalid feature"
 else
     echo "ERROR: Should reject invalid feature" && exit 1
@@ -97,7 +97,7 @@ fi
 # Test 10: Features and profile mutual exclusion
 echo "Test 10: Features and profile mutual exclusion"
 rm -rf build
-if "$fpm" run --feature debug --profile development --target features_demo 2>&1 | grep -q "cannot specify both"; then
+if "$fpm" run --features debug --profile development --target features_demo 2>&1 | grep -q "cannot specify both"; then
     echo "✓ Correctly rejected features + profile combination"
 else
     echo "ERROR: Should reject features + profile combination" && exit 1  
