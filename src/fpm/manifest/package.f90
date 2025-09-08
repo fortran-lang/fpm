@@ -612,8 +612,6 @@ contains
                     return
                 end if
                 
-                print *, 'merge feature ',want_features(i)%s,' into ',cfg%name
-                
                 ! Add it to the current configuration
                 call self%features(idx)%merge_into_package(cfg, platform, error)
                 if (allocated(error)) return
