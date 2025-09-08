@@ -43,9 +43,12 @@ contains
             & new_unittest("dependency-feature-propagation", test_dependency_feature_propagation), &
             & new_unittest("dependency-features-specification", test_dependency_features_specification), &
             & new_unittest("feature-chained-os-commands", test_feature_chained_os_commands, should_fail=.true.), &
-            & new_unittest("feature-chained-compiler-commands", test_feature_chained_compiler_commands, should_fail=.true.), &
-            & new_unittest("feature-complex-chain-compiler-os-compiler", test_feature_complex_chain_compiler_os_compiler, should_fail=.true.), &
-            & new_unittest("feature-complex-chain-os-compiler-os", test_feature_complex_chain_os_compiler_os, should_fail=.true.), &
+            & new_unittest("feature-chained-compiler-commands", &
+            &              test_feature_chained_compiler_commands, should_fail=.true.), &
+            & new_unittest("feature-complex-chain-compiler-os-compiler", &
+            &              test_feature_complex_chain_compiler_os_compiler, should_fail=.true.), &
+            & new_unittest("feature-complex-chain-os-compiler-os", &
+            &              test_feature_complex_chain_os_compiler_os, should_fail=.true.), &
             & new_unittest("feature-mixed-valid-chains", test_feature_mixed_valid_chains) &
             & ]
 
