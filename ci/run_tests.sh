@@ -369,5 +369,9 @@ popd
 # Test custom build directory functionality 
 bash "../ci/test_custom_build_dir.sh" "$fpm" hello_world
 
+# Test FPM features functionality
+echo "=== Testing FPM Features Functionality ==="
+bash "../ci/test_features.sh" "$fpm"
+
 # Cleanup
 rm -rf ./*/build
