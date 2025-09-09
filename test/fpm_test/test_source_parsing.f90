@@ -50,7 +50,8 @@ contains
             & new_unittest("invalid-submodule", &
                            test_invalid_submodule, should_fail=.true.), &
             & new_unittest("use-statement",test_use_statement), &
-            & new_unittest("conditional-compilation", test_conditional_compilation) &
+            & new_unittest("conditional-compilation", test_conditional_compilation), &
+            & new_unittest("conditional-if-defined", test_conditional_if_defined) &
             ]
 
     end subroutine collect_source_parsing
@@ -1359,6 +1360,75 @@ contains
         end if
 
     end subroutine test_conditional_compilation
+
+    !> Test conditional compilation parsing with #if defined() syntax
+    subroutine test_conditional_if_defined(error)
+
+        !> Error handling
+        type(error_t), allocatable, intent(out) :: error
+
+        type(srcfile_t) :: f_source
+        character(:), allocatable :: temp_file
+        integer :: unit
+        type(preprocess_config_t) :: cpp_config
+
+        temp_file = get_temp_filename()
+
+        open(file=temp_file, newunit=unit)
+        write(unit, '(a)') &
+            'module test_mod', &
+            '#if defined(SOME_FEATURE)', &
+            '  use some_module', &
+            '#endif', &
+            '#if !defined(OTHER_FEATURE)', &
+            '  use other_module', &
+            '#endif', &
+            '#if SIMPLE_MACRO', &
+            '  use third_module', &
+            '#endif', &
+            '#ifdef FOURTH_FEATURE', &
+            '  use fourth_module', &
+            '#endif', &
+            '#ifndef FIFTH_FEATURE', &
+            '  use fifth_module', &
+            '#endif', &
+            '  implicit none', &
+            'end module test_mod'
+        close(unit)
+
+        ! Without preprocessing - should detect all dependencies
+        f_source = parse_f_source(temp_file, error)
+        if (allocated(error)) return
+
+        if (size(f_source%modules_used) /= 5) then
+            call test_failed(error, 'Expected 5 module dependencies without preprocessing')
+            return
+        end if
+
+        ! With preprocessing - should skip all dependencies (no macros defined)
+        call cpp_config%new([string_t::])
+        
+        f_source = parse_f_source(temp_file, error, preprocess=cpp_config)
+        if (allocated(error)) return
+
+        ! Should find 2 dependencies: !defined(OTHER_FEATURE) and #ifndef FIFTH_FEATURE are both true
+        if (size(f_source%modules_used) /= 2) then
+            call test_failed(error, 'Expected 2 module dependencies with preprocessing enabled (negative conditions)')
+            return
+        end if
+
+        ! Test with some macros defined - should find active dependencies
+        call cpp_config%new([string_t('SOME_FEATURE'), string_t('SIMPLE_MACRO')])
+        
+        f_source = parse_f_source(temp_file, error, preprocess=cpp_config)
+        if (allocated(error)) return
+
+        if (size(f_source%modules_used) /= 2) then
+            call test_failed(error, 'Expected 2 module dependencies with SOME_FEATURE and SIMPLE_MACRO defined')
+            return
+        end if
+
+    end subroutine test_conditional_if_defined
 
 
 end module test_source_parsing

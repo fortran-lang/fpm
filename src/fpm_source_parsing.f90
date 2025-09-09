@@ -16,7 +16,8 @@
 !>
 module fpm_source_parsing
 use fpm_error, only: error_t, file_parse_error, fatal_error, file_not_found_error
-use fpm_strings, only: string_t, string_cat, len_trim, split, lower, str_ends_with, fnv_1a, is_fortran_name
+use fpm_strings, only: string_t, string_cat, len_trim, split, lower, str_ends_with, fnv_1a, &
+    is_fortran_name, operator(.in.)
 use fpm_model, only: srcfile_t, &
                     FPM_UNIT_UNKNOWN, FPM_UNIT_PROGRAM, FPM_UNIT_MODULE, &
                     FPM_UNIT_SUBMODULE, FPM_UNIT_SUBPROGRAM, &
@@ -30,6 +31,76 @@ private
 public :: parse_f_source, parse_c_source, parse_use_statement
 
 contains
+
+!> Start a CPP conditional block (active or inactive)
+pure subroutine start_cpp_block(conditional_depth, inside_conditional_block, is_active)
+    integer, intent(inout) :: conditional_depth
+    logical, intent(inout) :: inside_conditional_block
+    logical, intent(in) :: is_active
+    
+    conditional_depth = conditional_depth + 1
+    if (conditional_depth == 1) then
+        inside_conditional_block = .not. is_active
+    end if
+end subroutine start_cpp_block
+
+!> End a CPP conditional block  
+pure subroutine end_cpp_block(conditional_depth, inside_conditional_block)
+    integer, intent(inout) :: conditional_depth
+    logical, intent(inout) :: inside_conditional_block
+    
+    conditional_depth = max(0, conditional_depth - 1)
+    if (conditional_depth == 0) then
+        inside_conditional_block = .false.
+    end if
+end subroutine end_cpp_block
+
+!> Parse CPP conditional directive and determine if block should be active
+function parse_cpp_condition(line, macros) result(is_active)
+    character(*), intent(in) :: line
+    type(string_t), intent(in) :: macros(:)
+    logical :: is_active
+    character(:), allocatable :: macro_name
+    integer :: start_pos, end_pos
+    
+    is_active = .false.
+    
+    if (index(line, '#ifdef') == 1) then
+        ! #ifdef MACRO
+        start_pos = index(line, ' ') + 1
+        macro_name = trim(adjustl(line(start_pos:)))
+        is_active = macro_name .in. macros
+        
+    elseif (index(line, '#ifndef') == 1) then
+        ! #ifndef MACRO  
+        start_pos = index(line, ' ') + 1
+        macro_name = trim(adjustl(line(start_pos:)))
+        is_active = .not. (macro_name .in. macros)
+        
+    elseif (index(line, '#if ') == 1) then
+        ! Handle various #if patterns
+        if (index(line, 'defined(') > 0) then
+            ! #if defined(MACRO) or #if !defined(MACRO)
+            start_pos = index(line, 'defined(') + 8
+            end_pos = index(line(start_pos:), ')') - 1
+            if (end_pos > 0) then
+                macro_name = line(start_pos:start_pos + end_pos - 1)
+                if (index(line, '!defined(') > 0) then
+                    is_active = .not. (macro_name .in. macros)
+                else
+                    is_active = macro_name .in. macros
+                end if
+            end if
+        else
+            ! #if MACRO (simple macro check)
+            start_pos = 4  ! Skip "#if "
+            end_pos = len_trim(line)
+            macro_name = trim(adjustl(line(start_pos:end_pos)))
+            is_active = macro_name .in. macros
+        end if
+    end if
+    
+end function parse_cpp_condition
 
 !> Parsing of free-form fortran source files
 !>
@@ -127,24 +198,25 @@ function parse_f_source(f_filename,error,preprocess) result(f_source)
                     ! Check for conditional compilation directives
                     if (index(file_lines_lower(i)%s,'#ifdef') == 1 .or. &
                         index(file_lines_lower(i)%s,'#ifndef') == 1 .or. &
-                        index(file_lines_lower(i)%s,'#if') == 1) then
+                        index(file_lines_lower(i)%s,'#if ') == 1) then
                         
-                        conditional_depth = conditional_depth + 1
-                        if (conditional_depth == 1) then
-                            inside_conditional_block = .true.
+                        ! Determine if this conditional block should be active
+                        if (present(preprocess) .and. allocated(preprocess%macros)) then
+                            call start_cpp_block(conditional_depth, inside_conditional_block, &
+                                               parse_cpp_condition(file_lines_lower(i)%s, preprocess%macros))
+                        else
+                            ! No macros defined, treat all conditions as inactive
+                            call start_cpp_block(conditional_depth, inside_conditional_block, .false.)
                         end if
                         
                     elseif (index(file_lines_lower(i)%s,'#endif') == 1) then
                         
-                        conditional_depth = max(0, conditional_depth - 1)
-                        if (conditional_depth == 0) then
-                            inside_conditional_block = .false.
-                        end if
+                        call end_cpp_block(conditional_depth, inside_conditional_block)
                         
                     elseif (index(file_lines_lower(i)%s,'#else') == 1 .or. &
                             index(file_lines_lower(i)%s,'#elif') == 1) then
                         ! For simplicity, treat #else/#elif as keeping the conditional block active
-                        ! In a more sophisticated implementation, we would evaluate conditions
+                        ! TODO: More sophisticated handling would flip the condition for #else
                         continue
                         
                     end if
