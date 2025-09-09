@@ -6,8 +6,9 @@ module test_source_parsing
     use fpm_model, only: srcfile_t, FPM_UNIT_PROGRAM, FPM_UNIT_MODULE, &
                          FPM_UNIT_SUBMODULE, FPM_UNIT_SUBPROGRAM, FPM_UNIT_CSOURCE, &
                          FPM_UNIT_CPPSOURCE, FPM_UNIT_NAME
-    use fpm_strings, only: operator(.in.), lower
+    use fpm_strings, only: operator(.in.), lower, string_t
     use fpm_error, only: file_parse_error, fatal_error
+    use fpm_manifest_preprocess, only: preprocess_config_t
     implicit none
     private
 
@@ -48,7 +49,8 @@ contains
                            test_invalid_module, should_fail=.true.), &
             & new_unittest("invalid-submodule", &
                            test_invalid_submodule, should_fail=.true.), &
-            & new_unittest("use-statement",test_use_statement) &
+            & new_unittest("use-statement",test_use_statement), &
+            & new_unittest("conditional-compilation", test_conditional_compilation) &
             ]
 
     end subroutine collect_source_parsing
@@ -1287,6 +1289,76 @@ contains
         endif
 
     end subroutine test_use_statement
+
+    !> Test conditional compilation parsing with CPP preprocessing
+    subroutine test_conditional_compilation(error)
+
+        !> Error handling
+        type(error_t), allocatable, intent(out) :: error
+
+        type(srcfile_t) :: f_source
+        character(:), allocatable :: temp_file
+        integer :: unit
+        type(preprocess_config_t) :: cpp_config
+
+        ! Test 1: Without preprocessing, should include dependencies from #ifdef blocks
+        temp_file = get_temp_filename()
+
+        open(file=temp_file, newunit=unit)
+        write(unit, '(a)') &
+            'module test_mod', &
+            '#ifdef SOME_FEATURE', &
+            '  use nonexistent_module', &
+            '#endif', &
+            '  implicit none', &
+            'contains', &
+            '  subroutine test_sub()', &
+            '    print *, "test"', &
+            '  end subroutine', &
+            'end module test_mod'
+        close(unit)
+
+        ! Parse without preprocessing - should detect the use statement
+        f_source = parse_f_source(temp_file, error)
+        if (allocated(error)) return
+
+        if (size(f_source%modules_used) /= 1) then
+            call test_failed(error, 'Expected 1 module dependency without preprocessing, got different count')
+            return
+        end if
+
+        if (f_source%modules_used(1)%s /= 'nonexistent_module') then
+            call test_failed(error, 'Expected nonexistent_module, got: '//f_source%modules_used(1)%s)
+            return
+        end if
+
+        ! Test 2: With preprocessing enabled, should skip dependencies from #ifdef blocks
+        call cpp_config%new([string_t::])
+
+        f_source = parse_f_source(temp_file, error, preprocess=cpp_config)
+        if (allocated(error)) return
+
+        if (size(f_source%modules_used) /= 0) then
+            call test_failed(error, 'Expected 0 module dependencies with preprocessing, got some dependencies')
+            return
+        end if
+
+        if (f_source%unit_type /= FPM_UNIT_MODULE) then
+            call test_failed(error, 'Expected module unit type')
+            return
+        end if
+
+        if (size(f_source%modules_provided) /= 1) then
+            call test_failed(error, 'Expected 1 provided module')
+            return
+        end if
+
+        if (f_source%modules_provided(1)%s /= 'test_mod') then
+            call test_failed(error, 'Expected test_mod, got: '//f_source%modules_provided(1)%s)
+            return
+        end if
+
+    end subroutine test_conditional_compilation
 
 
 end module test_source_parsing
