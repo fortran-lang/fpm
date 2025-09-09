@@ -17,7 +17,7 @@
 module fpm_source_parsing
 use fpm_error, only: error_t, file_parse_error, fatal_error, file_not_found_error
 use fpm_strings, only: string_t, string_cat, len_trim, split, lower, str_ends_with, fnv_1a, &
-    is_fortran_name, operator(.in.)
+    is_fortran_name, operator(.in.), operator(==)
 use fpm_model, only: srcfile_t, &
                     FPM_UNIT_UNKNOWN, FPM_UNIT_PROGRAM, FPM_UNIT_MODULE, &
                     FPM_UNIT_SUBMODULE, FPM_UNIT_SUBPROGRAM, &
@@ -46,12 +46,14 @@ contains
 !> Case-insensitive check if macro_name is in the macros list
 logical function macro_in_list_ci(macro_name, macros)
     character(*), intent(in) :: macro_name
-    type(string_t), intent(in) :: macros(:)
+    type(string_t), optional, intent(in) :: macros(:)
     integer :: i
     
     macro_in_list_ci = .false.
+    if (.not.present(macros)) return
+    
     do i = 1, size(macros)
-        if (lower(trim(macro_name)) == lower(trim(macros(i)%s))) then
+        if (string_t(lower(macro_name)) == macros(i)) then
             macro_in_list_ci = .true.
             return
         end if
@@ -138,8 +140,6 @@ subroutine parse_cpp_condition(line, preprocess, is_active, macro_name)
         return
     endif
     
-    is_active = .false.
-    
     ! There are macros: test if active    
     if (index(line, '#ifdef') == 1) then
         ! #ifdef MACRO
@@ -166,6 +166,9 @@ subroutine parse_cpp_condition(line, preprocess, is_active, macro_name)
                 else
                     is_active = macro_in_list_ci(macro_name, preprocess%macros)
                 end if
+            else
+                ! More complex condition
+                is_active = .false.
             end if
         else
             ! #if MACRO (simple macro check)
@@ -174,6 +177,8 @@ subroutine parse_cpp_condition(line, preprocess, is_active, macro_name)
             macro_name = trim(adjustl(line(start_pos:end_pos)))
             is_active = macro_in_list_ci(macro_name, preprocess%macros)
         end if
+    else
+        is_active = .false.
     end if
     
 end subroutine parse_cpp_condition
