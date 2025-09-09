@@ -22,6 +22,7 @@ use fpm_model, only: srcfile_t, &
                     FPM_UNIT_SUBMODULE, FPM_UNIT_SUBPROGRAM, &
                     FPM_UNIT_CSOURCE, FPM_UNIT_CHEADER, FPM_SCOPE_UNKNOWN, &
                     FPM_SCOPE_DEP, FPM_SCOPE_APP, FPM_SCOPE_TEST, FPM_UNIT_CPPSOURCE
+use fpm_manifest_preprocess, only: preprocess_config_t
 use fpm_filesystem, only: read_lines, read_lines_expanded, exists
 implicit none
 
@@ -63,14 +64,17 @@ contains
 !>    my_module
 !>```
 !>
-function parse_f_source(f_filename,error) result(f_source)
+function parse_f_source(f_filename,error,preprocess) result(f_source)
     character(*), intent(in) :: f_filename
-    type(srcfile_t) :: f_source
     type(error_t), allocatable, intent(out) :: error
+    type(preprocess_config_t), optional, intent(in) :: preprocess
+    type(srcfile_t) :: f_source
 
     logical :: inside_module, inside_interface, using, intrinsic_module
+    logical :: inside_conditional_block, cpp_conditional_parsing
     integer :: stat
     integer :: fh, n_use, n_include, n_mod, n_parent, i, j, ic, pass
+    integer :: conditional_depth
     type(string_t), allocatable :: file_lines(:), file_lines_lower(:)
     character(:), allocatable :: temp_string, mod_name, string_parts(:)
 
@@ -80,7 +84,11 @@ function parse_f_source(f_filename,error) result(f_source)
     end if
 
     f_source%file_name = f_filename
-
+    
+    ! Only use conditional parsing if preprocessing is enabled with CPP
+    cpp_conditional_parsing = .false.
+    if (present(preprocess)) cpp_conditional_parsing = preprocess%is_cpp()
+        
     file_lines = read_lines_expanded(f_filename)
 
     ! for efficiency in parsing make a lowercase left-adjusted copy of the file
@@ -100,12 +108,56 @@ function parse_f_source(f_filename,error) result(f_source)
         n_parent = 0
         inside_module = .false.
         inside_interface = .false.
+        inside_conditional_block = .false.
+        conditional_depth = 0
         file_loop: do i=1,size(file_lines_lower)
 
-            ! Skip comment lines and preprocessor directives
+            ! Skip comment lines and empty lines
             if (index(file_lines_lower(i)%s,'!') == 1 .or. &
-                index(file_lines_lower(i)%s,'#') == 1 .or. &
                 len_trim(file_lines_lower(i)%s) < 1) then
+                cycle
+            end if
+
+            ! Handle preprocessor directives 
+            if (index(file_lines_lower(i)%s,'#') == 1) then
+                
+                ! If conditional parsing is enabled, track preprocessor blocks
+                if (cpp_conditional_parsing) then
+                    
+                    ! Check for conditional compilation directives
+                    if (index(file_lines_lower(i)%s,'#ifdef') == 1 .or. &
+                        index(file_lines_lower(i)%s,'#ifndef') == 1 .or. &
+                        index(file_lines_lower(i)%s,'#if') == 1) then
+                        
+                        conditional_depth = conditional_depth + 1
+                        if (conditional_depth == 1) then
+                            inside_conditional_block = .true.
+                        end if
+                        
+                    elseif (index(file_lines_lower(i)%s,'#endif') == 1) then
+                        
+                        conditional_depth = max(0, conditional_depth - 1)
+                        if (conditional_depth == 0) then
+                            inside_conditional_block = .false.
+                        end if
+                        
+                    elseif (index(file_lines_lower(i)%s,'#else') == 1 .or. &
+                            index(file_lines_lower(i)%s,'#elif') == 1) then
+                        ! For simplicity, treat #else/#elif as keeping the conditional block active
+                        ! In a more sophisticated implementation, we would evaluate conditions
+                        continue
+                        
+                    end if
+                    
+                end if
+                
+                ! Skip all preprocessor directive lines (both old and new behavior)
+                cycle
+                
+            end if
+
+            ! Skip content inside conditional blocks when conditional parsing is enabled
+            if (cpp_conditional_parsing .and. inside_conditional_block) then
                 cycle
             end if
 
