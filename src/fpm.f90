@@ -147,7 +147,8 @@ subroutine build_model(model, settings, package, error)
                     lib_dir = join_path(dep%proj_dir, manifest%library%source_dir)
                     if (is_dir(lib_dir)) then
                         call add_sources_from_dir(model%packages(i)%sources, lib_dir, FPM_SCOPE_LIB, &
-                            with_f_ext=model%packages(i)%preprocess%suffixes, error=error)
+                            with_f_ext=model%packages(i)%preprocess%suffixes, error=error, &
+                            preprocess=model%packages(i)%preprocess)
                         if (allocated(error)) exit
                     end if
                 end if
@@ -186,7 +187,7 @@ subroutine build_model(model, settings, package, error)
     if (is_dir('app') .and. package%build%auto_executables) then
         call add_sources_from_dir(model%packages(1)%sources,'app', FPM_SCOPE_APP, &
                                    with_executables=.true., with_f_ext=model%packages(1)%preprocess%suffixes,&
-                                   error=error)
+                                   error=error,preprocess=model%packages(1)%preprocess)
 
         if (allocated(error)) then
             return
@@ -196,7 +197,8 @@ subroutine build_model(model, settings, package, error)
     if (is_dir('example') .and. package%build%auto_examples) then
         call add_sources_from_dir(model%packages(1)%sources,'example', FPM_SCOPE_EXAMPLE, &
                                   with_executables=.true., &
-                                  with_f_ext=model%packages(1)%preprocess%suffixes,error=error)
+                                  with_f_ext=model%packages(1)%preprocess%suffixes,error=error,&
+                                  preprocess=model%packages(1)%preprocess)
 
         if (allocated(error)) then
             return
@@ -206,7 +208,8 @@ subroutine build_model(model, settings, package, error)
     if (is_dir('test') .and. package%build%auto_tests) then
         call add_sources_from_dir(model%packages(1)%sources,'test', FPM_SCOPE_TEST, &
                                   with_executables=.true., &
-                                  with_f_ext=model%packages(1)%preprocess%suffixes,error=error)
+                                  with_f_ext=model%packages(1)%preprocess%suffixes,error=error,&
+                                  preprocess=model%packages(1)%preprocess)
 
         if (allocated(error)) then
             return
@@ -217,7 +220,7 @@ subroutine build_model(model, settings, package, error)
         call add_executable_sources(model%packages(1)%sources, package%executable, FPM_SCOPE_APP, &
                                      auto_discover=package%build%auto_executables, &
                                      with_f_ext=model%packages(1)%preprocess%suffixes, &
-                                     error=error)
+                                     error=error,preprocess=model%packages(1)%preprocess)
 
         if (allocated(error)) then
             return
@@ -228,7 +231,7 @@ subroutine build_model(model, settings, package, error)
         call add_executable_sources(model%packages(1)%sources, package%example, FPM_SCOPE_EXAMPLE, &
                                      auto_discover=package%build%auto_examples, &
                                      with_f_ext=model%packages(1)%preprocess%suffixes, &
-                                     error=error)
+                                     error=error,preprocess=model%packages(1)%preprocess)
 
         if (allocated(error)) then
             return
@@ -239,7 +242,7 @@ subroutine build_model(model, settings, package, error)
         call add_executable_sources(model%packages(1)%sources, package%test, FPM_SCOPE_TEST, &
                                      auto_discover=package%build%auto_tests, &
                                      with_f_ext=model%packages(1)%preprocess%suffixes, &
-                                     error=error)
+                                     error=error,preprocess=model%packages(1)%preprocess)
 
         if (allocated(error)) then
             return

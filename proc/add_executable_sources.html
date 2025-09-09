@@ -92,7 +92,7 @@
 
             <li class="list-inline-item" id="statements"><i class="fa fa-list-ol"></i>
               <a data-bs-toggle="tooltip" data-bs-placement="bottom" data-bs-html="true"
-                 title=" 0.6% of total for procedures.">45 statements</a>
+                 title=" 0.6% of total for procedures.">46 statements</a>
             </li>
 
             <li class="list-inline-item" id="source-file">
@@ -159,7 +159,7 @@
     </div>
     
     <div class="col-md-9" id='text'>
-    <h2>public  subroutine add_executable_sources(sources, executables, scope, auto_discover, with_f_ext, error)  
+    <h2>public  subroutine add_executable_sources(sources, executables, scope, auto_discover, with_f_ext, error, preprocess)  
 </h2>
     
 
@@ -197,7 +197,7 @@ Compare lowercase strings to allow auto-discovery of pre-processed extensions</p
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-executables"></span>
+              <span class="anchor" id="variable-executables~3"></span>
               class(<a href='../type/executable_config_t.html'>executable_config_t</a>),
             </td>
 <td>intent(in)</td>
@@ -212,7 +212,7 @@ Compare lowercase strings to allow auto-discovery of pre-processed extensions</p
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-scope~5"></span>
+              <span class="anchor" id="variable-scope~4"></span>
               integer,
             </td>
 <td>intent(in)</td>
@@ -257,7 +257,7 @@ Compare lowercase strings to allow auto-discovery of pre-processed extensions</p
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-error~201"></span>
+              <span class="anchor" id="variable-error~106"></span>
               type(<a href='../type/error_t.html'>error_t</a>),
             </td>
 <td>intent(out),</td>
@@ -268,6 +268,21 @@ Compare lowercase strings to allow auto-discovery of pre-processed extensions</p
             <td><strong>error</strong></td>
             <td>
                 <p>Error handling</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-preprocess~6"></span>
+              type(<a href='../type/preprocess_config_t.html'>preprocess_config_t</a>),
+            </td>
+<td>intent(in),</td>
+              <td>optional</td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>preprocess</strong></td>
+            <td>
+                <p>Optional source preprocessor configuration</p>
             </td>
         </tr>
     </tbody>
@@ -287,7 +302,7 @@ Compare lowercase strings to allow auto-discovery of pre-processed extensions</p
     
     <section>
     <h2><span class="anchor" id="src"></span>Source Code</h2>
-    <div class="hl codehilite"><pre><span></span><span class="k">subroutine </span><span class="n">add_executable_sources</span><span class="p">(</span><span class="n">sources</span><span class="p">,</span><span class="n">executables</span><span class="p">,</span><span class="n">scope</span><span class="p">,</span><span class="n">auto_discover</span><span class="p">,</span><span class="n">with_f_ext</span><span class="p">,</span><span class="n">error</span><span class="p">)</span>
+    <div class="hl codehilite"><pre><span></span><span class="k">subroutine </span><span class="n">add_executable_sources</span><span class="p">(</span><span class="n">sources</span><span class="p">,</span><span class="n">executables</span><span class="p">,</span><span class="n">scope</span><span class="p">,</span><span class="n">auto_discover</span><span class="p">,</span><span class="n">with_f_ext</span><span class="p">,</span><span class="n">error</span><span class="p">,</span><span class="n">preprocess</span><span class="p">)</span>
 <span class="w">    </span><span class="c">!&gt; List of `[[srcfile_t]]` objects to append to. Allocated if not allocated</span>
 <span class="w">    </span><span class="k">type</span><span class="p">(</span><span class="n">srcfile_t</span><span class="p">),</span><span class="w"> </span><span class="k">allocatable</span><span class="p">,</span><span class="w"> </span><span class="k">intent</span><span class="p">(</span><span class="n">inout</span><span class="p">),</span><span class="w"> </span><span class="k">target</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">sources</span><span class="p">(:)</span>
 <span class="w">    </span><span class="c">!&gt; List of `[[executable_config_t]]` entries from manifest</span>
@@ -300,6 +315,8 @@ Compare lowercase strings to allow auto-discovery of pre-processed extensions</p
 <span class="w">    </span><span class="k">type</span><span class="p">(</span><span class="n">string_t</span><span class="p">),</span><span class="w"> </span><span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">),</span><span class="w"> </span><span class="k">optional</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">with_f_ext</span><span class="p">(:)</span>
 <span class="w">    </span><span class="c">!&gt; Error handling</span>
 <span class="w">    </span><span class="k">type</span><span class="p">(</span><span class="n">error_t</span><span class="p">),</span><span class="w"> </span><span class="k">allocatable</span><span class="p">,</span><span class="w"> </span><span class="k">intent</span><span class="p">(</span><span class="n">out</span><span class="p">)</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">error</span>
+<span class="w">    </span><span class="c">!&gt; Optional source preprocessor configuration</span>
+<span class="w">    </span><span class="k">type</span><span class="p">(</span><span class="n">preprocess_config_t</span><span class="p">),</span><span class="w"> </span><span class="k">optional</span><span class="p">,</span><span class="w"> </span><span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">)</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">preprocess</span>
 
 <span class="w">    </span><span class="kt">integer</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">i</span><span class="p">,</span><span class="w"> </span><span class="n">j</span>
 
@@ -310,7 +327,8 @@ Compare lowercase strings to allow auto-discovery of pre-processed extensions</p
 
 <span class="w">    </span><span class="k">do </span><span class="n">i</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span><span class="n">size</span><span class="p">(</span><span class="n">exe_dirs</span><span class="p">)</span>
 <span class="w">        </span><span class="k">call </span><span class="n">add_sources_from_dir</span><span class="p">(</span><span class="n">sources</span><span class="p">,</span><span class="n">exe_dirs</span><span class="p">(</span><span class="n">i</span><span class="p">)%</span><span class="n">s</span><span class="p">,</span><span class="w"> </span><span class="n">scope</span><span class="p">,</span><span class="w"> </span><span class="p">&amp;</span>
-<span class="w">                     </span><span class="n">with_executables</span><span class="o">=</span><span class="n">auto_discover</span><span class="p">,</span><span class="w"> </span><span class="n">with_f_ext</span><span class="o">=</span><span class="n">with_f_ext</span><span class="p">,</span><span class="n">recurse</span><span class="o">=</span><span class="p">.</span><span class="n">false</span><span class="p">.,</span><span class="w"> </span><span class="n">error</span><span class="o">=</span><span class="n">error</span><span class="p">)</span>
+<span class="w">                     </span><span class="n">with_executables</span><span class="o">=</span><span class="n">auto_discover</span><span class="p">,</span><span class="w"> </span><span class="n">with_f_ext</span><span class="o">=</span><span class="n">with_f_ext</span><span class="p">,</span><span class="n">recurse</span><span class="o">=</span><span class="p">.</span><span class="n">false</span><span class="p">.,</span><span class="w"> </span><span class="p">&amp;</span>
+<span class="w">                     </span><span class="n">error</span><span class="o">=</span><span class="n">error</span><span class="p">,</span><span class="w"> </span><span class="n">preprocess</span><span class="o">=</span><span class="n">preprocess</span><span class="p">)</span>
 
 <span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="nb">allocated</span><span class="p">(</span><span class="n">error</span><span class="p">))</span><span class="w"> </span><span class="k">then</span>
 <span class="k">            return</span>
@@ -341,7 +359,7 @@ Compare lowercase strings to allow auto-discovery of pre-processed extensions</p
 
 <span class="w">        </span><span class="c">! Add if not already discovered (auto_discovery off)</span>
 <span class="w">        </span><span class="k">associate</span><span class="p">(</span><span class="n">exe</span><span class="w"> </span><span class="o">=&gt;</span><span class="w"> </span><span class="n">executables</span><span class="p">(</span><span class="n">i</span><span class="p">))</span>
-<span class="w">            </span><span class="n">exe_source</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">parse_source</span><span class="p">(</span><span class="n">join_path</span><span class="p">(</span><span class="n">exe</span><span class="p">%</span><span class="n">source_dir</span><span class="p">,</span><span class="n">exe</span><span class="p">%</span><span class="n">main</span><span class="p">),</span><span class="n">with_f_ext</span><span class="p">,</span><span class="n">error</span><span class="p">)</span>
+<span class="w">            </span><span class="n">exe_source</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">parse_source</span><span class="p">(</span><span class="n">join_path</span><span class="p">(</span><span class="n">exe</span><span class="p">%</span><span class="n">source_dir</span><span class="p">,</span><span class="n">exe</span><span class="p">%</span><span class="n">main</span><span class="p">),</span><span class="n">with_f_ext</span><span class="p">,</span><span class="n">error</span><span class="p">,</span><span class="n">preprocess</span><span class="p">)</span>
 <span class="w">            </span><span class="n">exe_source</span><span class="p">%</span><span class="n">exe_name</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">exe</span><span class="p">%</span><span class="n">name</span>
 <span class="w">            </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="nb">allocated</span><span class="p">(</span><span class="n">exe</span><span class="p">%</span><span class="nb">link</span><span class="p">))</span><span class="w"> </span><span class="k">then</span>
 <span class="k">                </span><span class="n">exe_source</span><span class="p">%</span><span class="n">link_libraries</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">exe</span><span class="p">%</span><span class="nb">link</span>
@@ -384,7 +402,7 @@ Compare lowercase strings to allow auto-discovery of pre-processed extensions</p
             <p class="text-end">
               Documentation generated by
               <a href="https://github.com/Fortran-FOSS-Programmers/ford">FORD</a>
- on 2025-09-08 20:11 +0000             </p>
+ on 2025-09-09 17:12 +0000             </p>
           </div>
         </div>
         <br>

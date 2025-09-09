@@ -92,7 +92,7 @@
 
             <li class="list-inline-item" id="statements"><i class="fa fa-list-ol"></i>
               <a data-bs-toggle="tooltip" data-bs-placement="bottom" data-bs-html="true"
-                 title=" 2.5% of total for procedures.">190 statements</a>
+                 title=" 2.8% of total for procedures.">212 statements</a>
             </li>
 
             <li class="list-inline-item" id="source-file">
@@ -159,7 +159,7 @@
     </div>
     
     <div class="col-md-9" id='text'>
-    <h2>public  function parse_f_source(f_filename, error) result(f_source)  
+    <h2>public  function parse_f_source(f_filename, error, preprocess) result(f_source)  
 </h2>
     
 
@@ -218,7 +218,7 @@
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-error~210"></span>
+              <span class="anchor" id="variable-error~107"></span>
               type(<a href='../type/error_t.html'>error_t</a>),
             </td>
 <td>intent(out),</td>
@@ -227,6 +227,21 @@
             </td>
             <td>::</td>
             <td><strong>error</strong></td>
+            <td>
+                
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-preprocess~9"></span>
+              type(<a href='../type/preprocess_config_t.html'>preprocess_config_t</a>),
+            </td>
+<td>intent(in),</td>
+              <td>optional</td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>preprocess</strong></td>
             <td>
                 
             </td>
@@ -255,15 +270,18 @@
     
     <section>
     <h2><span class="anchor" id="src"></span>Source Code</h2>
-    <div class="hl codehilite"><pre><span></span><span class="k">function </span><span class="n">parse_f_source</span><span class="p">(</span><span class="n">f_filename</span><span class="p">,</span><span class="n">error</span><span class="p">)</span><span class="w"> </span><span class="k">result</span><span class="p">(</span><span class="n">f_source</span><span class="p">)</span>
+    <div class="hl codehilite"><pre><span></span><span class="k">function </span><span class="n">parse_f_source</span><span class="p">(</span><span class="n">f_filename</span><span class="p">,</span><span class="n">error</span><span class="p">,</span><span class="n">preprocess</span><span class="p">)</span><span class="w"> </span><span class="k">result</span><span class="p">(</span><span class="n">f_source</span><span class="p">)</span>
 <span class="w">    </span><span class="kt">character</span><span class="p">(</span><span class="o">*</span><span class="p">),</span><span class="w"> </span><span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">)</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">f_filename</span>
-<span class="w">    </span><span class="k">type</span><span class="p">(</span><span class="n">srcfile_t</span><span class="p">)</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">f_source</span>
 <span class="w">    </span><span class="k">type</span><span class="p">(</span><span class="n">error_t</span><span class="p">),</span><span class="w"> </span><span class="k">allocatable</span><span class="p">,</span><span class="w"> </span><span class="k">intent</span><span class="p">(</span><span class="n">out</span><span class="p">)</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">error</span>
+<span class="w">    </span><span class="k">type</span><span class="p">(</span><span class="n">preprocess_config_t</span><span class="p">),</span><span class="w"> </span><span class="k">optional</span><span class="p">,</span><span class="w"> </span><span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">)</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">preprocess</span>
+<span class="w">    </span><span class="k">type</span><span class="p">(</span><span class="n">srcfile_t</span><span class="p">)</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">f_source</span>
 
 <span class="w">    </span><span class="kt">logical</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">inside_module</span><span class="p">,</span><span class="w"> </span><span class="n">inside_interface</span><span class="p">,</span><span class="w"> </span><span class="n">using</span><span class="p">,</span><span class="w"> </span><span class="n">intrinsic_module</span>
+<span class="w">    </span><span class="kt">logical</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">cpp_conditional_parsing</span>
 <span class="w">    </span><span class="kt">integer</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="nb">stat</span>
 <span class="nb">    </span><span class="kt">integer</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">fh</span><span class="p">,</span><span class="w"> </span><span class="n">n_use</span><span class="p">,</span><span class="w"> </span><span class="n">n_include</span><span class="p">,</span><span class="w"> </span><span class="n">n_mod</span><span class="p">,</span><span class="w"> </span><span class="n">n_parent</span><span class="p">,</span><span class="w"> </span><span class="n">i</span><span class="p">,</span><span class="w"> </span><span class="n">j</span><span class="p">,</span><span class="w"> </span><span class="n">ic</span><span class="p">,</span><span class="w"> </span><span class="k">pass</span>
-<span class="k">    type</span><span class="p">(</span><span class="n">string_t</span><span class="p">),</span><span class="w"> </span><span class="k">allocatable</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">file_lines</span><span class="p">(:),</span><span class="w"> </span><span class="n">file_lines_lower</span><span class="p">(:)</span>
+<span class="k">    type</span><span class="p">(</span><span class="n">cpp_block</span><span class="p">)</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">cpp_blk</span>
+<span class="w">    </span><span class="k">type</span><span class="p">(</span><span class="n">string_t</span><span class="p">),</span><span class="w"> </span><span class="k">allocatable</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">file_lines</span><span class="p">(:),</span><span class="w"> </span><span class="n">file_lines_lower</span><span class="p">(:)</span>
 <span class="w">    </span><span class="kt">character</span><span class="p">(:),</span><span class="w"> </span><span class="k">allocatable</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">temp_string</span><span class="p">,</span><span class="w"> </span><span class="n">mod_name</span><span class="p">,</span><span class="w"> </span><span class="n">string_parts</span><span class="p">(:)</span>
 
 <span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(.</span><span class="nb">not</span><span class="p">.</span><span class="w"> </span><span class="n">exists</span><span class="p">(</span><span class="n">f_filename</span><span class="p">))</span><span class="w"> </span><span class="k">then</span>
@@ -272,7 +290,11 @@
 <span class="k">    end if</span>
 
 <span class="k">    </span><span class="n">f_source</span><span class="p">%</span><span class="n">file_name</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">f_filename</span>
-
+<span class="w">    </span>
+<span class="w">    </span><span class="c">! Only use conditional parsing if preprocessing is enabled with CPP</span>
+<span class="w">    </span><span class="n">cpp_conditional_parsing</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">.</span><span class="n">false</span><span class="p">.</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="nb">present</span><span class="p">(</span><span class="n">preprocess</span><span class="p">))</span><span class="w"> </span><span class="n">cpp_conditional_parsing</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">preprocess</span><span class="p">%</span><span class="n">is_cpp</span><span class="p">()</span>
+<span class="w">        </span>
 <span class="w">    </span><span class="n">file_lines</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">read_lines_expanded</span><span class="p">(</span><span class="n">f_filename</span><span class="p">)</span>
 
 <span class="w">    </span><span class="c">! for efficiency in parsing make a lowercase left-adjusted copy of the file</span>
@@ -292,14 +314,54 @@
 <span class="w">        </span><span class="n">n_parent</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span>
 <span class="w">        </span><span class="n">inside_module</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">.</span><span class="n">false</span><span class="p">.</span>
 <span class="w">        </span><span class="n">inside_interface</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">.</span><span class="n">false</span><span class="p">.</span>
+<span class="w">        </span><span class="n">cpp_blk</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">cpp_block</span><span class="p">()</span><span class="w">  </span><span class="c">! Initialize with default values</span>
 <span class="w">        </span><span class="n">file_loop</span><span class="p">:</span><span class="w"> </span><span class="k">do </span><span class="n">i</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span><span class="n">size</span><span class="p">(</span><span class="n">file_lines_lower</span><span class="p">)</span>
 
-<span class="w">            </span><span class="c">! Skip comment lines and preprocessor directives</span>
+<span class="w">            </span><span class="c">! Skip comment lines and empty lines</span>
 <span class="w">            </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="nb">index</span><span class="p">(</span><span class="n">file_lines_lower</span><span class="p">(</span><span class="n">i</span><span class="p">)%</span><span class="n">s</span><span class="p">,</span><span class="s1">&#39;!&#39;</span><span class="p">)</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="mi">1</span><span class="w"> </span><span class="p">.</span><span class="nb">or</span><span class="p">.</span><span class="w"> </span><span class="p">&amp;</span>
-<span class="w">                </span><span class="nb">index</span><span class="p">(</span><span class="n">file_lines_lower</span><span class="p">(</span><span class="n">i</span><span class="p">)%</span><span class="n">s</span><span class="p">,</span><span class="s1">&#39;#&#39;</span><span class="p">)</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="mi">1</span><span class="w"> </span><span class="p">.</span><span class="nb">or</span><span class="p">.</span><span class="w"> </span><span class="p">&amp;</span>
 <span class="w">                </span><span class="nb">len_trim</span><span class="p">(</span><span class="n">file_lines_lower</span><span class="p">(</span><span class="n">i</span><span class="p">)%</span><span class="n">s</span><span class="p">)</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="mi">1</span><span class="p">)</span><span class="w"> </span><span class="k">then</span>
 <span class="k">                cycle</span>
 <span class="k">            end if</span>
+
+<span class="w">            </span><span class="c">! Handle preprocessor directives </span>
+<span class="w">            </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="nb">index</span><span class="p">(</span><span class="n">file_lines_lower</span><span class="p">(</span><span class="n">i</span><span class="p">)%</span><span class="n">s</span><span class="p">,</span><span class="s1">&#39;#&#39;</span><span class="p">)</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="mi">1</span><span class="p">)</span><span class="w"> </span><span class="k">then</span>
+<span class="w">                </span>
+<span class="w">                </span><span class="c">! If conditional parsing is enabled, track preprocessor blocks</span>
+<span class="w">                </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">cpp_conditional_parsing</span><span class="p">)</span><span class="w"> </span><span class="k">then</span>
+<span class="w">                    </span>
+<span class="w">                    </span><span class="c">! Check for conditional compilation directives</span>
+<span class="w">                    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="nb">index</span><span class="p">(</span><span class="n">file_lines_lower</span><span class="p">(</span><span class="n">i</span><span class="p">)%</span><span class="n">s</span><span class="p">,</span><span class="s1">&#39;#ifdef&#39;</span><span class="p">)</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="mi">1</span><span class="w"> </span><span class="p">.</span><span class="nb">or</span><span class="p">.</span><span class="w"> </span><span class="p">&amp;</span>
+<span class="w">                        </span><span class="nb">index</span><span class="p">(</span><span class="n">file_lines_lower</span><span class="p">(</span><span class="n">i</span><span class="p">)%</span><span class="n">s</span><span class="p">,</span><span class="s1">&#39;#ifndef&#39;</span><span class="p">)</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="mi">1</span><span class="w"> </span><span class="p">.</span><span class="nb">or</span><span class="p">.</span><span class="w"> </span><span class="p">&amp;</span>
+<span class="w">                        </span><span class="nb">index</span><span class="p">(</span><span class="n">file_lines_lower</span><span class="p">(</span><span class="n">i</span><span class="p">)%</span><span class="n">s</span><span class="p">,</span><span class="s1">&#39;#if &#39;</span><span class="p">)</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="mi">1</span><span class="p">)</span><span class="w"> </span><span class="k">then</span>
+<span class="w">                        </span>
+<span class="w">                        </span><span class="c">! Determine if this conditional block should be active</span>
+<span class="w">                        </span><span class="k">call </span><span class="n">start_cpp_block</span><span class="p">(</span><span class="n">cpp_blk</span><span class="p">,</span><span class="w"> </span><span class="n">file_lines_lower</span><span class="p">(</span><span class="n">i</span><span class="p">)%</span><span class="n">s</span><span class="p">,</span><span class="w"> </span><span class="n">file_lines</span><span class="p">(</span><span class="n">i</span><span class="p">)%</span><span class="n">s</span><span class="p">,</span><span class="w"> </span><span class="n">preprocess</span><span class="p">)</span>
+<span class="w">                        </span>
+<span class="w">                    </span><span class="k">elseif</span><span class="w"> </span><span class="p">(</span><span class="nb">index</span><span class="p">(</span><span class="n">file_lines_lower</span><span class="p">(</span><span class="n">i</span><span class="p">)%</span><span class="n">s</span><span class="p">,</span><span class="s1">&#39;#endif&#39;</span><span class="p">)</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="mi">1</span><span class="p">)</span><span class="w"> </span><span class="k">then</span>
+<span class="k">                        </span>
+<span class="k">                        call </span><span class="n">end_cpp_block</span><span class="p">(</span><span class="n">cpp_blk</span><span class="p">)</span>
+<span class="w">                        </span>
+<span class="w">                    </span><span class="k">elseif</span><span class="w"> </span><span class="p">(</span><span class="nb">index</span><span class="p">(</span><span class="n">file_lines_lower</span><span class="p">(</span><span class="n">i</span><span class="p">)%</span><span class="n">s</span><span class="p">,</span><span class="s1">&#39;#else&#39;</span><span class="p">)</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="mi">1</span><span class="p">)</span><span class="w"> </span><span class="k">then</span>
+<span class="k">                        </span>
+<span class="k">                        call </span><span class="n">handle_else_block</span><span class="p">(</span><span class="n">cpp_blk</span><span class="p">)</span>
+<span class="w">                        </span>
+<span class="w">                    </span><span class="k">elseif</span><span class="w"> </span><span class="p">(</span><span class="nb">index</span><span class="p">(</span><span class="n">file_lines_lower</span><span class="p">(</span><span class="n">i</span><span class="p">)%</span><span class="n">s</span><span class="p">,</span><span class="s1">&#39;#elif&#39;</span><span class="p">)</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="mi">1</span><span class="p">)</span><span class="w"> </span><span class="k">then</span>
+<span class="w">                        </span>
+<span class="w">                        </span><span class="c">! Treat #elif as #else followed by #if</span>
+<span class="w">                        </span><span class="k">call </span><span class="n">handle_else_block</span><span class="p">(</span><span class="n">cpp_blk</span><span class="p">)</span>
+<span class="w">                        </span><span class="k">call </span><span class="n">start_cpp_block</span><span class="p">(</span><span class="n">cpp_blk</span><span class="p">,</span><span class="w"> </span><span class="n">file_lines_lower</span><span class="p">(</span><span class="n">i</span><span class="p">)%</span><span class="n">s</span><span class="p">,</span><span class="w"> </span><span class="n">file_lines</span><span class="p">(</span><span class="n">i</span><span class="p">)%</span><span class="n">s</span><span class="p">,</span><span class="w"> </span><span class="n">preprocess</span><span class="p">)</span>
+<span class="w">                        </span>
+<span class="w">                    </span><span class="k">end if</span>
+<span class="k">                    </span>
+<span class="k">                end if</span>
+<span class="w">                </span>
+<span class="w">                </span><span class="c">! Skip all preprocessor directive lines (both old and new behavior)</span>
+<span class="w">                </span><span class="k">cycle</span>
+<span class="k">                </span>
+<span class="k">            end if</span>
+
+<span class="w">            </span><span class="c">! Skip content inside conditional blocks when conditional parsing is enabled</span>
+<span class="w">            </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">cpp_conditional_parsing</span><span class="w"> </span><span class="p">.</span><span class="nb">and</span><span class="p">.</span><span class="w"> </span><span class="n">cpp_blk</span><span class="p">%</span><span class="n">inside_inactive_block</span><span class="p">)</span><span class="w"> </span><span class="k">cycle</span>
 
 <span class="w">            </span><span class="c">! Detect exported C-API via bind(C)</span>
 <span class="w">            </span><span class="k">if</span><span class="w"> </span><span class="p">(.</span><span class="nb">not</span><span class="p">.</span><span class="n">inside_interface</span><span class="w"> </span><span class="p">.</span><span class="nb">and</span><span class="p">.</span><span class="w"> </span><span class="p">&amp;</span>
@@ -607,7 +669,7 @@
             <p class="text-end">
               Documentation generated by
               <a href="https://github.com/Fortran-FOSS-Programmers/ford">FORD</a>
- on 2025-09-08 20:11 +0000             </p>
+ on 2025-09-09 17:12 +0000             </p>
           </div>
         </div>
         <br>

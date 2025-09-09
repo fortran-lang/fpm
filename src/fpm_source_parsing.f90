@@ -16,19 +16,186 @@
 !>
 module fpm_source_parsing
 use fpm_error, only: error_t, file_parse_error, fatal_error, file_not_found_error
-use fpm_strings, only: string_t, string_cat, len_trim, split, lower, str_ends_with, fnv_1a, is_fortran_name
+use fpm_strings, only: string_t, string_cat, len_trim, split, lower, str_ends_with, fnv_1a, &
+    is_fortran_name, operator(.in.), operator(==)
 use fpm_model, only: srcfile_t, &
                     FPM_UNIT_UNKNOWN, FPM_UNIT_PROGRAM, FPM_UNIT_MODULE, &
                     FPM_UNIT_SUBMODULE, FPM_UNIT_SUBPROGRAM, &
                     FPM_UNIT_CSOURCE, FPM_UNIT_CHEADER, FPM_SCOPE_UNKNOWN, &
                     FPM_SCOPE_DEP, FPM_SCOPE_APP, FPM_SCOPE_TEST, FPM_UNIT_CPPSOURCE
+use fpm_manifest_preprocess, only: preprocess_config_t
 use fpm_filesystem, only: read_lines, read_lines_expanded, exists
 implicit none
 
 private
 public :: parse_f_source, parse_c_source, parse_use_statement
 
+type :: cpp_block
+    ! Nested block total depth
+    integer :: depth = 0
+    ! Whether currently inside an inactive conditional block
+    logical :: inside_inactive_block = .false.
+    ! Depth at which we became inactive (0 if active)
+    integer :: inactive_depth = 0
+    ! Current macro
+    character(:), allocatable :: name
+end type cpp_block
+
 contains
+
+!> Case-insensitive check if macro_name is in the macros list
+logical function macro_in_list(macro_name, macros)
+    character(*), intent(in) :: macro_name
+    type(string_t), optional, intent(in) :: macros(:)
+    integer :: i
+    
+    type(string_t) :: lmacro
+    
+    macro_in_list = .false.
+    if (.not.present(macros)) return
+    
+    macro_in_list = macro_name .in. macros
+
+end function macro_in_list
+
+!> Start a CPP conditional block (active or inactive)
+subroutine start_cpp_block(blk, lower_line, line, preprocess)
+    type(cpp_block), intent(inout) :: blk
+    character(*), intent(in) :: lower_line, line
+    type(preprocess_config_t), optional, intent(in) :: preprocess
+    
+    logical :: is_active
+    character(:), allocatable :: macro_name
+    
+    call parse_cpp_condition(lower_line, line, preprocess, is_active, macro_name)
+    
+    blk%depth = blk%depth + 1
+    
+    ! If we're not already in an inactive block, check this condition
+    enter_inactive: if (.not. blk%inside_inactive_block) then
+        blk%name = macro_name    
+        if (.not. is_active) then
+            ! This condition is false, so we enter an inactive block
+            blk%inside_inactive_block = .true.
+            blk%inactive_depth = blk%depth            
+        end if
+    end if enter_inactive
+    
+    ! If we're already in an inactive block, stay inactive regardless of this condition
+        
+end subroutine start_cpp_block
+
+!> End a CPP conditional block  
+subroutine end_cpp_block(blk)
+    type(cpp_block), intent(inout) :: blk
+    
+    ! If we're ending the block where we became inactive, reactivate
+    if (blk%inside_inactive_block .and. blk%depth == blk%inactive_depth) then
+        blk%inside_inactive_block = .false.
+        blk%inactive_depth = 0
+    end if
+    
+    blk%depth = max(0, blk%depth - 1)
+        
+end subroutine end_cpp_block
+
+!> Handle #else directive by flipping the current condition
+subroutine handle_else_block(blk)
+    type(cpp_block), intent(inout) :: blk
+    
+    ! #else only matters if we're at the same level where we became inactive
+    if (blk%inside_inactive_block .and. blk%depth == blk%inactive_depth) then
+        ! We're in an inactive block at this level, #else makes it active
+        blk%inside_inactive_block = .false.
+        blk%inactive_depth = 0
+    elseif (.not. blk%inside_inactive_block .and. blk%depth > 0) then
+        ! We're in an active block at this level, #else makes it inactive
+        blk%inside_inactive_block = .true.
+        blk%inactive_depth = blk%depth
+    end if
+         
+end subroutine handle_else_block
+
+!> Parse CPP conditional directive and determine if block should be active
+subroutine parse_cpp_condition(lower_line, line, preprocess, is_active, macro_name)
+    character(*), intent(in) :: lower_line, line
+    type(preprocess_config_t), optional, intent(in) :: preprocess
+    character(:), allocatable, intent(out) :: macro_name
+    logical, intent(out) :: is_active
+    integer :: start_pos, end_pos, heading_blanks, i
+    
+    ! Always active if CPP preprocessor is not active
+    if (.not. present(preprocess)) then
+        is_active = .true.
+        macro_name = ""
+        return
+    endif
+    
+    ! If CPP is not enabled, always active
+    if (.not. preprocess%is_cpp()) then
+        is_active = .true.
+        macro_name = ""
+        return
+    endif
+    
+    ! Find offset between lowercase adjustl and standard line
+    heading_blanks = 0
+    do i=1,len(line)
+        if (line(i:i)==' ') then 
+            heading_blanks = heading_blanks+1
+        else
+            exit
+        end if
+    end do    
+    
+    ! There are macros: test if active    
+    if (index(lower_line, '#ifdef') == 1) then
+        ! #ifdef MACRO
+        start_pos = index(lower_line, ' ') + heading_blanks + 1
+        
+        ! Pick non-lowercase macro name
+        macro_name = trim(adjustl(line(start_pos:)))
+        is_active = macro_in_list(macro_name, preprocess%macros)
+        
+    elseif (index(lower_line, '#ifndef') == 1) then
+        ! #ifndef MACRO  
+        start_pos = index(lower_line, ' ') + heading_blanks + 1
+        macro_name = trim(adjustl(line(start_pos:)))
+        is_active = .not. macro_in_list(macro_name, preprocess%macros)
+        
+    elseif (index(lower_line, '#if ') == 1) then
+        ! Handle various #if patterns
+        if (index(lower_line, 'defined(') > 0) then
+            ! #if defined(MACRO) or #if !defined(MACRO)
+            start_pos = index(lower_line, 'defined(') + 8
+            end_pos = index(lower_line(start_pos:), ')') - 1
+            
+            start_pos = start_pos+heading_blanks
+            end_pos   = end_pos+heading_blanks
+            
+            if (end_pos > 0) then
+                macro_name = line(start_pos:start_pos + end_pos - 1)
+                if (index(lower_line, '!defined(') > 0) then
+                    is_active = .not. macro_in_list(macro_name, preprocess%macros)
+                else
+                    is_active = macro_in_list(macro_name, preprocess%macros)
+                end if
+            else
+                ! More complex condition
+                is_active = .false.
+            end if
+        else
+            ! #if MACRO (simple macro check)
+            start_pos = 4 + heading_blanks ! Skip "#if "
+            end_pos = len_trim(lower_line) + heading_blanks
+            macro_name = trim(adjustl(line(start_pos:end_pos)))
+            is_active = macro_in_list(macro_name, preprocess%macros)
+        end if
+    else
+        is_active = .false.
+    end if
+    
+end subroutine parse_cpp_condition
 
 !> Parsing of free-form fortran source files
 !>
@@ -63,14 +230,17 @@ contains
 !>    my_module
 !>```
 !>
-function parse_f_source(f_filename,error) result(f_source)
+function parse_f_source(f_filename,error,preprocess) result(f_source)
     character(*), intent(in) :: f_filename
-    type(srcfile_t) :: f_source
     type(error_t), allocatable, intent(out) :: error
+    type(preprocess_config_t), optional, intent(in) :: preprocess
+    type(srcfile_t) :: f_source
 
     logical :: inside_module, inside_interface, using, intrinsic_module
+    logical :: cpp_conditional_parsing
     integer :: stat
     integer :: fh, n_use, n_include, n_mod, n_parent, i, j, ic, pass
+    type(cpp_block) :: cpp_blk
     type(string_t), allocatable :: file_lines(:), file_lines_lower(:)
     character(:), allocatable :: temp_string, mod_name, string_parts(:)
 
@@ -80,7 +250,11 @@ function parse_f_source(f_filename,error) result(f_source)
     end if
 
     f_source%file_name = f_filename
-
+    
+    ! Only use conditional parsing if preprocessing is enabled with CPP
+    cpp_conditional_parsing = .false.
+    if (present(preprocess)) cpp_conditional_parsing = preprocess%is_cpp()
+        
     file_lines = read_lines_expanded(f_filename)
 
     ! for efficiency in parsing make a lowercase left-adjusted copy of the file
@@ -100,14 +274,54 @@ function parse_f_source(f_filename,error) result(f_source)
         n_parent = 0
         inside_module = .false.
         inside_interface = .false.
+        cpp_blk = cpp_block()  ! Initialize with default values
         file_loop: do i=1,size(file_lines_lower)
 
-            ! Skip comment lines and preprocessor directives
+            ! Skip comment lines and empty lines
             if (index(file_lines_lower(i)%s,'!') == 1 .or. &
-                index(file_lines_lower(i)%s,'#') == 1 .or. &
                 len_trim(file_lines_lower(i)%s) < 1) then
                 cycle
             end if
+
+            ! Handle preprocessor directives 
+            if (index(file_lines_lower(i)%s,'#') == 1) then
+                
+                ! If conditional parsing is enabled, track preprocessor blocks
+                if (cpp_conditional_parsing) then
+                    
+                    ! Check for conditional compilation directives
+                    if (index(file_lines_lower(i)%s,'#ifdef') == 1 .or. &
+                        index(file_lines_lower(i)%s,'#ifndef') == 1 .or. &
+                        index(file_lines_lower(i)%s,'#if ') == 1) then
+                        
+                        ! Determine if this conditional block should be active
+                        call start_cpp_block(cpp_blk, file_lines_lower(i)%s, file_lines(i)%s, preprocess)
+                        
+                    elseif (index(file_lines_lower(i)%s,'#endif') == 1) then
+                        
+                        call end_cpp_block(cpp_blk)
+                        
+                    elseif (index(file_lines_lower(i)%s,'#else') == 1) then
+                        
+                        call handle_else_block(cpp_blk)
+                        
+                    elseif (index(file_lines_lower(i)%s,'#elif') == 1) then
+                        
+                        ! Treat #elif as #else followed by #if
+                        call handle_else_block(cpp_blk)
+                        call start_cpp_block(cpp_blk, file_lines_lower(i)%s, file_lines(i)%s, preprocess)
+                        
+                    end if
+                    
+                end if
+                
+                ! Skip all preprocessor directive lines (both old and new behavior)
+                cycle
+                
+            end if
+
+            ! Skip content inside conditional blocks when conditional parsing is enabled
+            if (cpp_conditional_parsing .and. cpp_blk%inside_inactive_block) cycle
 
             ! Detect exported C-API via bind(C)
             if (.not.inside_interface .and. &
