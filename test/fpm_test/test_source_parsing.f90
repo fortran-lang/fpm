@@ -1335,6 +1335,7 @@ contains
 
         ! Test 2: With preprocessing enabled, should skip dependencies from #ifdef blocks
         call cpp_config%new([string_t::])
+        cpp_config%name = "cpp"
 
         f_source = parse_f_source(temp_file, error, preprocess=cpp_config)
         if (allocated(error)) return
@@ -1391,40 +1392,97 @@ contains
             '#endif', &
             '#ifndef FIFTH_FEATURE', &
             '  use fifth_module', &
+            '  #ifdef NESTED_FEATURE', &
+            '    use nested_module', &
+            '  #endif', &
             '#endif', &
             '  implicit none', &
             'end module test_mod'
         close(unit)
 
-        ! Without preprocessing - should detect all dependencies
+        ! Without preprocessing - should detect all dependencies (including nested)
         f_source = parse_f_source(temp_file, error)
         if (allocated(error)) return
 
-        if (size(f_source%modules_used) /= 5) then
-            call test_failed(error, 'Expected 5 module dependencies without preprocessing')
+        if (size(f_source%modules_used) /= 6) then
+            call test_failed(error, 'Expected 6 module dependencies without preprocessing')
             return
         end if
 
         ! With preprocessing - should skip all dependencies (no macros defined)
         call cpp_config%new([string_t::])
+        cpp_config%name = "cpp"
         
         f_source = parse_f_source(temp_file, error, preprocess=cpp_config)
         if (allocated(error)) return
 
         ! Should find 2 dependencies: !defined(OTHER_FEATURE) and #ifndef FIFTH_FEATURE are both true
+        ! The nested #ifdef NESTED_FEATURE should be inactive since NESTED_FEATURE is not defined
         if (size(f_source%modules_used) /= 2) then
-            call test_failed(error, 'Expected 2 module dependencies with preprocessing enabled (negative conditions)')
+            if (size(f_source%modules_used) > 0) then
+                call test_failed(error, 'Expected 2 module dependencies with preprocessing, got ' // &
+                               f_source%modules_used(1)%s // ' (and others)')
+            else
+                call test_failed(error, 'Expected 2 module dependencies with preprocessing, got 0')
+            end if
             return
         end if
 
         ! Test with some macros defined - should find active dependencies
         call cpp_config%new([string_t('SOME_FEATURE'), string_t('SIMPLE_MACRO')])
+        cpp_config%name = "cpp"
+        
+        f_source = parse_f_source(temp_file, error, preprocess=cpp_config)
+        if (allocated(error)) return
+        
+        if (size(f_source%modules_used) /= 4) then ! some_module
+            call test_failed(error, 'Expected 4 module dependencies with SOME_FEATURE and SIMPLE_MACRO defined')
+            return
+        end if
+        
+        if (.not.('some_module' .in. f_source%modules_used)) then ! some_module
+            call test_failed(error, 'Expected "some_module" dependency with SOME_FEATURE and SIMPLE_MACRO defined')            
+            return
+        end if    
+        if (.not.('other_module' .in. f_source%modules_used)) then ! some_module
+            call test_failed(error, 'Expected "other_module" dependency with SOME_FEATURE and SIMPLE_MACRO defined')            
+            return
+        end if   
+        if (.not.('third_module' .in. f_source%modules_used)) then ! some_module
+            call test_failed(error, 'Expected "third_module" dependency with SOME_FEATURE and SIMPLE_MACRO defined')            
+            return
+        end if     
+        if (.not.('fifth_module' .in. f_source%modules_used)) then ! some_module
+            call test_failed(error, 'Expected "fifth_module" dependency with SOME_FEATURE and SIMPLE_MACRO defined')            
+            return
+        end if                           
+        
+        ! Test nested condition: define outer but not inner macro
+        call cpp_config%new([string_t('FIFTH_FEATURE')])  ! This makes #ifndef FIFTH_FEATURE inactive
+        cpp_config%name = "cpp"
         
         f_source = parse_f_source(temp_file, error, preprocess=cpp_config)
         if (allocated(error)) return
 
-        if (size(f_source%modules_used) /= 2) then
-            call test_failed(error, 'Expected 2 module dependencies with SOME_FEATURE and SIMPLE_MACRO defined')
+        if (size(f_source%modules_used) /= 1) then
+            if (size(f_source%modules_used) > 0) then
+                call test_failed(error, 'Expected 1 module dependency with FIFTH_FEATURE defined, got: ' // &
+                               f_source%modules_used(2)%s // ' (and maybe others)')
+            else
+                call test_failed(error, 'Expected 1 module dependency with FIFTH_FEATURE defined, got 0')
+            end if
+            return
+        end if
+        
+        ! Test nested condition: define both outer condition (negative) and inner (positive)
+        call cpp_config%new([string_t('NESTED_FEATURE')])  ! FIFTH_FEATURE not defined, NESTED_FEATURE defined
+        cpp_config%name = "cpp"
+        
+        f_source = parse_f_source(temp_file, error, preprocess=cpp_config)
+        if (allocated(error)) return
+
+        if (size(f_source%modules_used) /= 3) then
+            call test_failed(error, 'Expected 3 module dependencies with nested conditions active')
             return
         end if
 
