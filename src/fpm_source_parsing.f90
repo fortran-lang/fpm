@@ -44,32 +44,30 @@ end type cpp_block
 contains
 
 !> Case-insensitive check if macro_name is in the macros list
-logical function macro_in_list_ci(macro_name, macros)
+logical function macro_in_list(macro_name, macros)
     character(*), intent(in) :: macro_name
     type(string_t), optional, intent(in) :: macros(:)
     integer :: i
     
-    macro_in_list_ci = .false.
+    type(string_t) :: lmacro
+    
+    macro_in_list = .false.
     if (.not.present(macros)) return
     
-    do i = 1, size(macros)
-        if (string_t(lower(macro_name)) == macros(i)) then
-            macro_in_list_ci = .true.
-            return
-        end if
-    end do
-end function macro_in_list_ci
+    macro_in_list = macro_name .in. macros
+
+end function macro_in_list
 
 !> Start a CPP conditional block (active or inactive)
-subroutine start_cpp_block(blk, line, preprocess)
+subroutine start_cpp_block(blk, lower_line, line, preprocess)
     type(cpp_block), intent(inout) :: blk
-    character(*), intent(in) :: line
+    character(*), intent(in) :: lower_line, line
     type(preprocess_config_t), optional, intent(in) :: preprocess
     
     logical :: is_active
     character(:), allocatable :: macro_name
     
-    call parse_cpp_condition(line, preprocess, is_active, macro_name)
+    call parse_cpp_condition(lower_line, line, preprocess, is_active, macro_name)
     
     blk%depth = blk%depth + 1
     
@@ -119,12 +117,12 @@ subroutine handle_else_block(blk)
 end subroutine handle_else_block
 
 !> Parse CPP conditional directive and determine if block should be active
-subroutine parse_cpp_condition(line, preprocess, is_active, macro_name)
-    character(*), intent(in) :: line
+subroutine parse_cpp_condition(lower_line, line, preprocess, is_active, macro_name)
+    character(*), intent(in) :: lower_line, line
     type(preprocess_config_t), optional, intent(in) :: preprocess
     character(:), allocatable, intent(out) :: macro_name
     logical, intent(out) :: is_active
-    integer :: start_pos, end_pos
+    integer :: start_pos, end_pos, heading_blanks, i
     
     ! Always active if CPP preprocessor is not active
     if (.not. present(preprocess)) then
@@ -140,31 +138,47 @@ subroutine parse_cpp_condition(line, preprocess, is_active, macro_name)
         return
     endif
     
+    ! Find offset between lowercase adjustl and standard line
+    heading_blanks = 0
+    do i=1,len(line)
+        if (line(i:i)==' ') then 
+            heading_blanks = heading_blanks+1
+        else
+            exit
+        end if
+    end do    
+    
     ! There are macros: test if active    
-    if (index(line, '#ifdef') == 1) then
+    if (index(lower_line, '#ifdef') == 1) then
         ! #ifdef MACRO
-        start_pos = index(line, ' ') + 1
-        macro_name = trim(adjustl(line(start_pos:)))
-        is_active = macro_in_list_ci(macro_name, preprocess%macros)
+        start_pos = index(lower_line, ' ') + heading_blanks + 1
         
-    elseif (index(line, '#ifndef') == 1) then
+        ! Pick non-lowercase macro name
+        macro_name = trim(adjustl(line(start_pos:)))
+        is_active = macro_in_list(macro_name, preprocess%macros)
+        
+    elseif (index(lower_line, '#ifndef') == 1) then
         ! #ifndef MACRO  
-        start_pos = index(line, ' ') + 1
+        start_pos = index(lower_line, ' ') + heading_blanks + 1
         macro_name = trim(adjustl(line(start_pos:)))
-        is_active = .not. macro_in_list_ci(macro_name, preprocess%macros)
+        is_active = .not. macro_in_list(macro_name, preprocess%macros)
         
-    elseif (index(line, '#if ') == 1) then
+    elseif (index(lower_line, '#if ') == 1) then
         ! Handle various #if patterns
-        if (index(line, 'defined(') > 0) then
+        if (index(lower_line, 'defined(') > 0) then
             ! #if defined(MACRO) or #if !defined(MACRO)
-            start_pos = index(line, 'defined(') + 8
-            end_pos = index(line(start_pos:), ')') - 1
+            start_pos = index(lower_line, 'defined(') + 8
+            end_pos = index(lower_line(start_pos:), ')') - 1
+            
+            start_pos = start_pos+heading_blanks
+            end_pos   = end_pos+heading_blanks
+            
             if (end_pos > 0) then
                 macro_name = line(start_pos:start_pos + end_pos - 1)
-                if (index(line, '!defined(') > 0) then
-                    is_active = .not. macro_in_list_ci(macro_name, preprocess%macros)
+                if (index(lower_line, '!defined(') > 0) then
+                    is_active = .not. macro_in_list(macro_name, preprocess%macros)
                 else
-                    is_active = macro_in_list_ci(macro_name, preprocess%macros)
+                    is_active = macro_in_list(macro_name, preprocess%macros)
                 end if
             else
                 ! More complex condition
@@ -172,10 +186,10 @@ subroutine parse_cpp_condition(line, preprocess, is_active, macro_name)
             end if
         else
             ! #if MACRO (simple macro check)
-            start_pos = 4  ! Skip "#if "
-            end_pos = len_trim(line)
+            start_pos = 4 + heading_blanks ! Skip "#if "
+            end_pos = len_trim(lower_line) + heading_blanks
             macro_name = trim(adjustl(line(start_pos:end_pos)))
-            is_active = macro_in_list_ci(macro_name, preprocess%macros)
+            is_active = macro_in_list(macro_name, preprocess%macros)
         end if
     else
         is_active = .false.
@@ -281,7 +295,7 @@ function parse_f_source(f_filename,error,preprocess) result(f_source)
                         index(file_lines_lower(i)%s,'#if ') == 1) then
                         
                         ! Determine if this conditional block should be active
-                        call start_cpp_block(cpp_blk, file_lines_lower(i)%s, preprocess)
+                        call start_cpp_block(cpp_blk, file_lines_lower(i)%s, file_lines(i)%s, preprocess)
                         
                     elseif (index(file_lines_lower(i)%s,'#endif') == 1) then
                         
@@ -295,7 +309,7 @@ function parse_f_source(f_filename,error,preprocess) result(f_source)
                         
                         ! Treat #elif as #else followed by #if
                         call handle_else_block(cpp_blk)
-                        call start_cpp_block(cpp_blk, file_lines_lower(i)%s, preprocess)
+                        call start_cpp_block(cpp_blk, file_lines_lower(i)%s, file_lines(i)%s, preprocess)
                         
                     end if
                     

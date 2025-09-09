@@ -1435,11 +1435,6 @@ contains
         f_source = parse_f_source(temp_file, error, preprocess=cpp_config)
         if (allocated(error)) return
         
-        if (size(f_source%modules_used) /= 4) then ! some_module
-            call test_failed(error, 'Expected 4 module dependencies with SOME_FEATURE and SIMPLE_MACRO defined')
-            return
-        end if
-        
         if (.not.('some_module' .in. f_source%modules_used)) then ! some_module
             call test_failed(error, 'Expected "some_module" dependency with SOME_FEATURE and SIMPLE_MACRO defined')            
             return
@@ -1455,7 +1450,12 @@ contains
         if (.not.('fifth_module' .in. f_source%modules_used)) then ! some_module
             call test_failed(error, 'Expected "fifth_module" dependency with SOME_FEATURE and SIMPLE_MACRO defined')            
             return
-        end if                           
+        end if         
+        
+        if (size(f_source%modules_used) /= 4) then ! some_module
+            call test_failed(error, 'Expected 4 module dependencies with SOME_FEATURE and SIMPLE_MACRO defined')
+            return
+        end if                          
         
         ! Test nested condition: define outer but not inner macro
         call cpp_config%new([string_t('FIFTH_FEATURE')])  ! This makes #ifndef FIFTH_FEATURE inactive
