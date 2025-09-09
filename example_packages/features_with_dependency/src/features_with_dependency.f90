@@ -1,12 +1,14 @@
 module features_with_dependency
-    use features_demo, only: show_features => show_features, get_build_info
+#ifdef WITH_DEMO
+    use features_demo, only: show_demo_features => show_features
+#endif    
     implicit none
     private
-    public :: show_features => show_local_features
+    public :: show_features
     
 contains
     
-    subroutine show_local_features()
+    subroutine show_features()
         print *, "Local package features:"
         
 #ifdef WITH_DEBUG_DEPENDENCY
@@ -31,9 +33,13 @@ contains
 #endif
 
         print *, ""
-        print *, "Dependency (features_demo) status:"
-        call show_features()  ! Call features_demo's show_features
+#ifdef WITH_DEMO        
+        print *, "Dependency (features_demo) status:"        
+        call show_demo_features()  ! Call features_demo's show_features
+#else
+        print *, "Dependency (features_demo) is not attached"
+#endif        
         
-    end subroutine show_local_features
+    end subroutine show_features
     
 end module features_with_dependency
