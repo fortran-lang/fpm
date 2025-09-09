@@ -1439,20 +1439,20 @@ contains
             call test_failed(error, 'Expected "some_module" dependency with SOME_FEATURE and SIMPLE_MACRO defined')            
             return
         end if    
-        if (.not.('other_module' .in. f_source%modules_used)) then ! some_module
+        if (.not.('other_module' .in. f_source%modules_used)) then ! other_module
             call test_failed(error, 'Expected "other_module" dependency with SOME_FEATURE and SIMPLE_MACRO defined')            
             return
         end if   
-        if (.not.('third_module' .in. f_source%modules_used)) then ! some_module
+        if (.not.('third_module' .in. f_source%modules_used)) then ! third_module
             call test_failed(error, 'Expected "third_module" dependency with SOME_FEATURE and SIMPLE_MACRO defined')            
             return
         end if     
-        if (.not.('fifth_module' .in. f_source%modules_used)) then ! some_module
+        if (.not.('fifth_module' .in. f_source%modules_used)) then ! fifth_module
             call test_failed(error, 'Expected "fifth_module" dependency with SOME_FEATURE and SIMPLE_MACRO defined')            
             return
         end if         
         
-        if (size(f_source%modules_used) /= 4) then ! some_module
+        if (size(f_source%modules_used) /= 4) then ! all modules
             call test_failed(error, 'Expected 4 module dependencies with SOME_FEATURE and SIMPLE_MACRO defined')
             return
         end if                          
