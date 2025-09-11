@@ -1324,7 +1324,7 @@ contains
 
         ! Variant 2: any compiler on macOS → Accelerate framework
         fc%variants(2)%name      = "my_blas"
-        fc%variants(1)%platform  = platform_config_t("all",OS_MACOS)
+        fc%variants(2)%platform  = platform_config_t("all",OS_MACOS)
         fc%variants(2)%link_time_flags = "-framework Accelerate"
 
         ! Round-trip via the generic serialization tester

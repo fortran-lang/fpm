@@ -164,6 +164,11 @@ pushd program_with_module
 "$fpm" run --target Program_with_module
 popd
 
+pushd program_with_cpp_guarded_module
+"$fpm" build
+"$fpm" run 
+popd
+
 pushd link_executable
 "$fpm" build
 "$fpm" run --target gomp_test

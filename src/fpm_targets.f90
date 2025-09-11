@@ -1243,6 +1243,9 @@ subroutine resolve_target_linking(targets, model, library, error)
                     ! On macOS, add room for 2 install_name_tool paths
                     target%link_flags = target%link_flags // model%compiler%get_headerpad_flags()
 
+                    ! On macOS, add room for 2 install_name_tool paths (always needed for executables)
+                    target%link_flags = target%link_flags // model%compiler%get_headerpad_flags()
+
                     if (allocated(target%link_libraries)) then
                         if (size(target%link_libraries) > 0) then
                             target%link_flags = model%compiler%enumerate_libraries(target%link_flags, target%link_libraries)

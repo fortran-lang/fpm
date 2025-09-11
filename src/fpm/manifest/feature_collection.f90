@@ -15,8 +15,7 @@ module fpm_manifest_feature_collection
                           id_unknown, id_gcc, id_f95, id_caf, &
                           id_intel_classic_nix, id_intel_classic_mac, id_intel_classic_windows, &
                           id_intel_llvm_nix, id_intel_llvm_windows, id_intel_llvm_unknown, &
-                          id_pgi, id_nvhpc, id_nag, id_flang, id_flang_new, id_f18, &
-                          id_ibmxl, id_cray, id_lahey, id_lfortran, id_all
+                          id_pgi, id_nvhpc, id_nag, id_flang, id_lahey, id_lfortran, id_all
     use fpm_strings, only: string_t, lower, operator(==), split, str
     use tomlf, only: toml_table, toml_array, toml_key, toml_stat
     use fpm_toml, only: get_value, len, serializable_t, set_value, set_string, set_list, add_table, &
@@ -857,38 +856,38 @@ module fpm_manifest_feature_collection
         collection%base%default = .true.
         
         ! Add release variants for different compilers
-        call collection%push_variant(default_variant('release-caf', id_caf, OS_ALL, &
+        call collection%push_variant(default_variant('release', id_caf, OS_ALL, &
             ' -O3 -Wimplicit-interface -fPIC -fmax-errors=1 -funroll-loops'))
             
-        call collection%push_variant(default_variant('release-gfortran', id_gcc, OS_ALL, &
+        call collection%push_variant(default_variant('release', id_gcc, OS_ALL, &
             ' -O3 -Wimplicit-interface -fPIC -fmax-errors=1 -funroll-loops -fcoarray=single'))
             
-        call collection%push_variant(default_variant('release-f95', id_f95, OS_ALL, &
+        call collection%push_variant(default_variant('release', id_f95, OS_ALL, &
             ' -O3 -Wimplicit-interface -fPIC -fmax-errors=1 -ffast-math -funroll-loops'))
             
-        call collection%push_variant(default_variant('release-nvfortran', id_nvhpc, OS_ALL, &
+        call collection%push_variant(default_variant('release', id_nvhpc, OS_ALL, &
             ' -Mbackslash'))
             
-        call collection%push_variant(default_variant('release-ifort', id_intel_classic_nix, OS_ALL, &
+        call collection%push_variant(default_variant('release', id_intel_classic_nix, OS_LINUX, &
             ' -fp-model precise -pc64 -align all -error-limit 1 -reentrancy&
             & threaded -nogen-interfaces -assume byterecl'))
             
-        call collection%push_variant(default_variant('release-ifort-windows', id_intel_classic_nix, &
+        call collection%push_variant(default_variant('release', id_intel_classic_windows, &
             OS_WINDOWS, ' /fp:precise /align:all /error-limit:1 /reentrancy:threaded&
             & /nogen-interfaces /assume:byterecl'))
             
-        call collection%push_variant(default_variant('release-ifx', id_intel_llvm_nix, OS_ALL, &
-            ' -fp-model=precise -pc64 -align all -error-limit 1 -reentrancy&
-            & threaded -nogen-interfaces -assume byterecl'))
+        call collection%push_variant(default_variant('release', id_intel_llvm_nix, &
+            OS_LINUX, ' -fp-model=precise -pc64 -align all -error-limit 1 -reentrancy threaded&
+            & -nogen-interfaces -assume byterecl'))
             
-        call collection%push_variant(default_variant('release-ifx-windows', id_intel_llvm_nix, &
+        call collection%push_variant(default_variant('release', id_intel_llvm_nix, &
             OS_WINDOWS, ' /fp:precise /align:all /error-limit:1 /reentrancy:threaded&
             & /nogen-interfaces /assume:byterecl'))
             
-        call collection%push_variant(default_variant('release-nagfor', id_nag, OS_ALL, &
+        call collection%push_variant(default_variant('release', id_nag, OS_ALL, &
             ' -O4 -coarray=single -PIC'))
             
-        call collection%push_variant(default_variant('release-lfortran', id_lfortran, OS_ALL, &
+        call collection%push_variant(default_variant('release', id_lfortran, OS_ALL, &
             ' flag_lfortran_opt'))
             
     end function default_release_feature
