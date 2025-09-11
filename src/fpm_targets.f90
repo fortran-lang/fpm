@@ -1107,7 +1107,7 @@ subroutine resolve_target_linking(targets, model, library, error)
             if (.not.allocated(target%compile_flags)) allocate(character(len=0) :: target%compile_flags)
 
             target%compile_flags = target%compile_flags//' '
-
+            
             select case (target%target_type)
                case (FPM_TARGET_C_OBJECT)
                    target%compile_flags = target%compile_flags//model%c_compile_flags
