@@ -92,7 +92,7 @@
 
             <li class="list-inline-item" id="statements"><i class="fa fa-list-ol"></i>
               <a data-bs-toggle="tooltip" data-bs-placement="bottom" data-bs-html="true"
-                 title=" 0.6% of total for procedures.">43 statements</a>
+                 title=" 0.5% of total for procedures.">43 statements</a>
             </li>
 
             <li class="list-inline-item" id="source-file">
@@ -127,7 +127,18 @@
       <div id="sidebar">
       <h3>Contents</h3>
   
-  
+      <div class="card mb-4">
+      <a data-bs-toggle="collapse" href="#vars-0"
+         aria-expanded="false" aria-controls="vars-0">
+         <h4 class="card-header bg-primary text-white">Variables</h4>
+      </a>
+      <div id="vars-0" class="collapse">
+        <div class="list-group list-group-flush">
+            <a class="list-group-item" href="../proc/new_profile.html#variable-compiler_id~3">compiler_id</a>
+        </div>
+      </div>
+    </div>
+
   
   
   
@@ -163,7 +174,7 @@
 </h2>
     
 
-    <p>Construct a new profile configuration from a TOML data structure</p>
+    <p>Construct a new profile configuration from a TOML data structure  </p>
 
 
     <h3>Arguments</h3>
@@ -179,7 +190,7 @@
     <tbody>
         <tr>
             <td>
-              <span class="anchor" id="variable-profile_name~3"></span>
+              <span class="anchor" id="variable-profile_name~2"></span>
               character(len=*),
             </td>
 <td>intent(in)</td>
@@ -194,7 +205,7 @@
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-compiler~11"></span>
+              <span class="anchor" id="variable-compiler~25"></span>
               character(len=*),
             </td>
 <td>intent(in)</td>
@@ -209,7 +220,7 @@
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-os_type~3"></span>
+              <span class="anchor" id="variable-os_type~6"></span>
               integer,
             </td>
 <td>intent(in)</td>
@@ -224,7 +235,7 @@
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-flags~22"></span>
+              <span class="anchor" id="variable-flags~11"></span>
               character(len=*),
             </td>
 <td>intent(in),</td>
@@ -239,7 +250,7 @@
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-c_flags~2"></span>
+              <span class="anchor" id="variable-c_flags~3"></span>
               character(len=*),
             </td>
 <td>intent(in),</td>
@@ -254,7 +265,7 @@
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-cxx_flags~2"></span>
+              <span class="anchor" id="variable-cxx_flags~3"></span>
               character(len=*),
             </td>
 <td>intent(in),</td>
@@ -269,7 +280,7 @@
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-link_time_flags~2"></span>
+              <span class="anchor" id="variable-link_time_flags~3"></span>
               character(len=*),
             </td>
 <td>intent(in),</td>
@@ -317,7 +328,7 @@
 
       <h3>Return Value
         <small>
-          <span class="anchor" id="variable-profile"></span>
+          <span class="anchor" id="variable-profile~2"></span>
           type(<a href='../type/profile_config_t.html'>profile_config_t</a>)
         </small>
       </h3>
@@ -325,6 +336,40 @@
     <br>
 
 
+    <section>    
+      <h2>Variables</h2>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Visibility</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+<th></th><th scope="col">Initial</th>        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-compiler_id~3"></span>
+              integer(kind=compiler_enum),
+            </td>
+              <td>public</td>
+            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>compiler_id</strong></td>
+                <td></td>
+                <td></td>
+            <td>
+                
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+    </section>
+    <br>
     
     
 
@@ -368,37 +413,42 @@
 <span class="w">        </span><span class="kt">logical</span><span class="p">,</span><span class="w"> </span><span class="k">optional</span><span class="p">,</span><span class="w"> </span><span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">)</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">is_built_in</span>
 
 <span class="w">        </span><span class="k">type</span><span class="p">(</span><span class="n">profile_config_t</span><span class="p">)</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">profile</span>
+<span class="w">        </span><span class="kt">integer</span><span class="p">(</span><span class="n">compiler_enum</span><span class="p">)</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">compiler_id</span>
 
-<span class="w">        </span><span class="n">profile</span><span class="p">%</span><span class="n">profile_name</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">profile_name</span>
-<span class="w">        </span><span class="n">profile</span><span class="p">%</span><span class="n">compiler</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">compiler</span>
-<span class="w">        </span><span class="n">profile</span><span class="p">%</span><span class="n">os_type</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">os_type</span>
-<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="nb">present</span><span class="p">(</span><span class="n">flags</span><span class="p">))</span><span class="w"> </span><span class="k">then</span>
-<span class="k">          </span><span class="n">profile</span><span class="p">%</span><span class="n">flags</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">flags</span>
+<span class="w">        </span><span class="c">! Initialize the profile feature</span>
+<span class="w">        </span><span class="n">profile</span><span class="p">%</span><span class="n">profile_feature</span><span class="p">%</span><span class="n">name</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">profile_name</span>
+<span class="w">        </span><span class="n">profile</span><span class="p">%</span><span class="n">profile_feature</span><span class="p">%</span><span class="n">platform</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">platform_config_t</span><span class="p">(</span><span class="n">compiler</span><span class="p">,</span><span class="w"> </span><span class="n">os_type</span><span class="p">)</span>
+<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="nb">present</span><span class="p">(</span><span class="n">is_built_in</span><span class="p">))</span><span class="w"> </span><span class="k">then</span>
+<span class="k">           </span><span class="n">profile</span><span class="p">%</span><span class="n">profile_feature</span><span class="p">%</span><span class="n">default</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">is_built_in</span>
 <span class="w">        </span><span class="k">else</span>
-<span class="k">          </span><span class="n">profile</span><span class="p">%</span><span class="n">flags</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;&quot;</span>
+<span class="k">           </span><span class="n">profile</span><span class="p">%</span><span class="n">profile_feature</span><span class="p">%</span><span class="n">default</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">.</span><span class="n">false</span><span class="p">.</span>
+<span class="w">        </span><span class="k">end if</span>
+<span class="w">        </span>
+<span class="w">        </span><span class="c">! Set flags</span>
+<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="nb">present</span><span class="p">(</span><span class="n">flags</span><span class="p">))</span><span class="w"> </span><span class="k">then</span>
+<span class="k">          </span><span class="n">profile</span><span class="p">%</span><span class="n">profile_feature</span><span class="p">%</span><span class="n">flags</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">flags</span>
+<span class="w">        </span><span class="k">else</span>
+<span class="k">          </span><span class="n">profile</span><span class="p">%</span><span class="n">profile_feature</span><span class="p">%</span><span class="n">flags</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;&quot;</span>
 <span class="w">        </span><span class="k">end if</span>
 <span class="k">        if</span><span class="w"> </span><span class="p">(</span><span class="nb">present</span><span class="p">(</span><span class="n">c_flags</span><span class="p">))</span><span class="w"> </span><span class="k">then</span>
-<span class="k">          </span><span class="n">profile</span><span class="p">%</span><span class="n">c_flags</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">c_flags</span>
+<span class="k">          </span><span class="n">profile</span><span class="p">%</span><span class="n">profile_feature</span><span class="p">%</span><span class="n">c_flags</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">c_flags</span>
 <span class="w">        </span><span class="k">else</span>
-<span class="k">          </span><span class="n">profile</span><span class="p">%</span><span class="n">c_flags</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;&quot;</span>
+<span class="k">          </span><span class="n">profile</span><span class="p">%</span><span class="n">profile_feature</span><span class="p">%</span><span class="n">c_flags</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;&quot;</span>
 <span class="w">        </span><span class="k">end if</span>
 <span class="k">        if</span><span class="w"> </span><span class="p">(</span><span class="nb">present</span><span class="p">(</span><span class="n">cxx_flags</span><span class="p">))</span><span class="w"> </span><span class="k">then</span>
-<span class="k">          </span><span class="n">profile</span><span class="p">%</span><span class="n">cxx_flags</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">cxx_flags</span>
+<span class="k">          </span><span class="n">profile</span><span class="p">%</span><span class="n">profile_feature</span><span class="p">%</span><span class="n">cxx_flags</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">cxx_flags</span>
 <span class="w">        </span><span class="k">else</span>
-<span class="k">          </span><span class="n">profile</span><span class="p">%</span><span class="n">cxx_flags</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;&quot;</span>
+<span class="k">          </span><span class="n">profile</span><span class="p">%</span><span class="n">profile_feature</span><span class="p">%</span><span class="n">cxx_flags</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;&quot;</span>
 <span class="w">        </span><span class="k">end if</span>
 <span class="k">        if</span><span class="w"> </span><span class="p">(</span><span class="nb">present</span><span class="p">(</span><span class="n">link_time_flags</span><span class="p">))</span><span class="w"> </span><span class="k">then</span>
-<span class="k">          </span><span class="n">profile</span><span class="p">%</span><span class="n">link_time_flags</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">link_time_flags</span>
+<span class="k">          </span><span class="n">profile</span><span class="p">%</span><span class="n">profile_feature</span><span class="p">%</span><span class="n">link_time_flags</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">link_time_flags</span>
 <span class="w">        </span><span class="k">else</span>
-<span class="k">          </span><span class="n">profile</span><span class="p">%</span><span class="n">link_time_flags</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;&quot;</span>
+<span class="k">          </span><span class="n">profile</span><span class="p">%</span><span class="n">profile_feature</span><span class="p">%</span><span class="n">link_time_flags</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;&quot;</span>
 <span class="w">        </span><span class="k">end if</span>
-<span class="k">        if</span><span class="w"> </span><span class="p">(</span><span class="nb">present</span><span class="p">(</span><span class="n">file_scope_flags</span><span class="p">))</span><span class="w"> </span><span class="k">then</span>
+<span class="w">        </span>
+<span class="w">        </span><span class="c">! Set file scope flags (maintained for backward compatibility)</span>
+<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="nb">present</span><span class="p">(</span><span class="n">file_scope_flags</span><span class="p">))</span><span class="w"> </span><span class="k">then</span>
 <span class="k">           </span><span class="n">profile</span><span class="p">%</span><span class="n">file_scope_flags</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">file_scope_flags</span>
-<span class="w">        </span><span class="k">end if</span>
-<span class="k">        if</span><span class="w"> </span><span class="p">(</span><span class="nb">present</span><span class="p">(</span><span class="n">is_built_in</span><span class="p">))</span><span class="w"> </span><span class="k">then</span>
-<span class="k">           </span><span class="n">profile</span><span class="p">%</span><span class="n">is_built_in</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">is_built_in</span>
-<span class="w">        </span><span class="k">else</span>
-<span class="k">           </span><span class="n">profile</span><span class="p">%</span><span class="n">is_built_in</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">.</span><span class="n">false</span><span class="p">.</span>
 <span class="w">        </span><span class="k">end if</span>
 
 <span class="k">      end function </span><span class="n">new_profile</span>
@@ -425,7 +475,7 @@
             <p class="text-end">
               Documentation generated by
               <a href="https://github.com/Fortran-FOSS-Programmers/ford">FORD</a>
- on 2025-09-09 17:12 +0000             </p>
+ on 2025-09-11 10:25 +0000             </p>
           </div>
         </div>
         <br>

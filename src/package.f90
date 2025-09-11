@@ -36,7 +36,7 @@
 module fpm_manifest_package
     use fpm_manifest_build, only: build_config_t, new_build_config
     use fpm_manifest_dependency, only : dependency_config_t, new_dependencies
-    use fpm_manifest_profile, only : profile_config_t, new_profiles, get_default_profiles
+    use fpm_manifest_profile, only : profile_config_t, new_profiles
     use fpm_manifest_example, only : example_config_t, new_example
     use fpm_manifest_executable, only : executable_config_t, new_executable
     use fpm_manifest_fortran, only : fortran_config_t, new_fortran_config
@@ -44,80 +44,44 @@ module fpm_manifest_package
     use fpm_manifest_install, only: install_config_t, new_install_config
     use fpm_manifest_test, only : test_config_t, new_test
     use fpm_manifest_preprocess, only : preprocess_config_t, new_preprocessors
-    use fpm_manifest_metapackages, only: metapackage_config_t, new_meta_config
+    use fpm_manifest_feature, only: feature_config_t, init_feature_components
+    use fpm_manifest_feature_collection, only: feature_collection_t, get_default_features, new_collections
+    use fpm_manifest_platform, only: platform_config_t
+    use fpm_strings, only: string_t
     use fpm_filesystem, only : exists, getline, join_path
     use fpm_error, only : error_t, fatal_error, syntax_error, bad_name_error
     use tomlf, only : toml_table, toml_array, toml_key, toml_stat
     use fpm_toml, only : get_value, len, serializable_t, set_value, set_string, set_list, add_table
     use fpm_versioning, only : version_t, new_version
+    
     implicit none
     private
 
     public :: package_config_t, new_package
 
-
-    interface unique_programs
-        module procedure :: unique_programs1
-        module procedure :: unique_programs2
-    end interface unique_programs
-
-
     !> Package meta data
-    type, extends(serializable_t) :: package_config_t
+    !> Package configuration data - extends a `feature_config_t` to represent the "default" 
+    !> package feature. The following are now inherited from feature_config_t: name (but for package 
+    !> it's the package name), description, compiler, os_type (defaults to id_all, OS_ALL for packages)
+    !> library, executable(:), dependency(:), dev_dependency(:), example(:), test(:), preprocess(:)
+    !> flags, c_flags, cxx_flags, link_time_flags, requires_features(:)
 
-        !> Name of the package
-        character(len=:), allocatable :: name
+    type, extends(feature_config_t) :: package_config_t
 
-        !> Package version
+        !> Package version (name is inherited from feature_config_t%name)
         type(version_t) :: version
 
-        !> Build configuration data
-        type(build_config_t) :: build
-
-        !> Metapackage data
-        type(metapackage_config_t) :: meta
-
-        !> Installation configuration data
-        type(install_config_t) :: install
-
-        !> Fortran meta data
-        type(fortran_config_t) :: fortran
-
-        !> License meta data
+        !> Package metadata (package-specific)  
         character(len=:), allocatable :: license
-
-        !> Author meta data
         character(len=:), allocatable :: author
-
-        !> Maintainer meta data
         character(len=:), allocatable :: maintainer
-
-        !> Copyright meta data
         character(len=:), allocatable :: copyright
 
-        !> Library meta data
-        type(library_config_t), allocatable :: library
+        !> Additional feature collections beyond the default package feature
+        type(feature_collection_t), allocatable :: features(:)
 
-        !> Executable meta data
-        type(executable_config_t), allocatable :: executable(:)
-
-        !> Dependency meta data
-        type(dependency_config_t), allocatable :: dependency(:)
-
-        !> Development dependency meta data
-        type(dependency_config_t), allocatable :: dev_dependency(:)
-
-        !> Profiles meta data
+        !> Profiles (collections of features)
         type(profile_config_t), allocatable :: profiles(:)
-
-        !> Example meta data
-        type(example_config_t), allocatable :: example(:)
-
-        !> Test meta data
-        type(test_config_t), allocatable :: test(:)
-
-        !> Preprocess meta data
-        type(preprocess_config_t), allocatable :: preprocess(:)
 
     contains
 
@@ -128,6 +92,9 @@ module fpm_manifest_package
         procedure :: serializable_is_same => manifest_is_same
         procedure :: dump_to_toml
         procedure :: load_from_toml
+
+        !> Export package configuration with features applied
+        procedure :: export_config
 
     end type package_config_t
 
@@ -164,19 +131,13 @@ contains
         call check(table, error)
         if (allocated(error)) return
 
+        ! Get package name and perform validation
         call get_value(table, "name", self%name)
         if (.not.allocated(self%name)) then
            call syntax_error(error, "Could not retrieve package name")
            return
         end if
-        if (bad_name_error(error,'package',self%name))then
-           return
-        endif
-
-        call get_value(table, "license", self%license)
-        call get_value(table, "author", self%author)
-        call get_value(table, "maintainer", self%maintainer)
-        call get_value(table, "copyright", self%copyright)
+        if (bad_name_error(error,'package',self%name)) return
 
         if (len(self%name) <= 0) then
             call syntax_error(error, "Package name must be a non-empty string")
@@ -189,28 +150,14 @@ contains
             return
         end if
 
-        call get_value(table, "build", child, requested=.true., stat=stat)
-        if (stat /= toml_stat%success) then
-            call fatal_error(error, "Type mismatch for build entry, must be a table")
-            return
-        end if
-        call new_build_config(self%build, child, self%name, error)
-        if (allocated(error)) return
+        ! Get package-specific metadata
+        call get_value(table, "license", self%license)
+        call get_value(table, "author", self%author)
+        call get_value(table, "maintainer", self%maintainer)
+        call get_value(table, "copyright", self%copyright)
 
-        call get_value(table, "install", child, requested=.true., stat=stat)
-        if (stat /= toml_stat%success) then
-            call fatal_error(error, "Type mismatch for install entry, must be a table")
-            return
-        end if
-        call new_install_config(self%install, child, error)
-        if (allocated(error)) return
-
-        call get_value(table, "fortran", child, requested=.true., stat=stat)
-        if (stat /= toml_stat%success) then
-            call fatal_error(error, "Type mismatch for fortran entry, must be a table")
-            return
-        end if
-        call new_fortran_config(self%fortran, child, error)
+        ! Initialize shared feature components
+        call init_feature_components(self%feature_config_t, table, root=root, error=error)
         if (allocated(error)) return
 
         call get_value(table, "version", version, "0")
@@ -236,101 +183,26 @@ contains
         end if
         if (allocated(error)) return
 
-        call get_value(table, "dependencies", child, requested=.false.)
-        if (associated(child)) then
-            call new_dependencies(self%dependency, child, root, self%meta, error)
-            if (allocated(error)) return
-        end if
-
-        call get_value(table, "dev-dependencies", child, requested=.false.)
-        if (associated(child)) then
-            call new_dependencies(self%dev_dependency, child, root, error=error)
-            if (allocated(error)) return
-        end if
-
-        call get_value(table, "library", child, requested=.false.)
-        if (associated(child)) then
-            allocate(self%library)
-            call new_library(self%library, child, error)
-            if (allocated(error)) return
-        end if
-
         call get_value(table, "profiles", child, requested=.false.)
         if (associated(child)) then
             call new_profiles(self%profiles, child, error)
             if (allocated(error)) return
         else
-            self%profiles = get_default_profiles(error)
-            if (allocated(error)) return
+            ! Leave profiles unallocated for now
+            allocate(self%profiles(0))
         end if
 
-        call get_value(table, "executable", children, requested=.false.)
-        if (associated(children)) then
-            nn = len(children)
-            allocate(self%executable(nn))
-            do ii = 1, nn
-                call get_value(children, ii, node, stat=stat)
-                if (stat /= toml_stat%success) then
-                    call fatal_error(error, "Could not retrieve executable from array entry")
-                    exit
-                end if
-                call new_executable(self%executable(ii), node, error)
-                if (allocated(error)) exit
-            end do
-            if (allocated(error)) return
-
-            call unique_programs(self%executable, error)
-            if (allocated(error)) return
-        end if
-
-        call get_value(table, "example", children, requested=.false.)
-        if (associated(children)) then
-            nn = len(children)
-            allocate(self%example(nn))
-            do ii = 1, nn
-                call get_value(children, ii, node, stat=stat)
-                if (stat /= toml_stat%success) then
-                    call fatal_error(error, "Could not retrieve example from array entry")
-                    exit
-                end if
-                call new_example(self%example(ii), node, error)
-                if (allocated(error)) exit
-            end do
-            if (allocated(error)) return
-
-            call unique_programs(self%example, error)
-            if (allocated(error)) return
-
-            if (allocated(self%executable)) then
-                call unique_programs(self%executable, self%example, error)
-                if (allocated(error)) return
-            end if
-        end if
-
-        call get_value(table, "test", children, requested=.false.)
-        if (associated(children)) then
-            nn = len(children)
-            allocate(self%test(nn))
-            do ii = 1, nn
-                call get_value(children, ii, node, stat=stat)
-                if (stat /= toml_stat%success) then
-                    call fatal_error(error, "Could not retrieve test from array entry")
-                    exit
-                end if
-                call new_test(self%test(ii), node, error)
-                if (allocated(error)) exit
-            end do
-            if (allocated(error)) return
-
-            call unique_programs(self%test, error)
-            if (allocated(error)) return
-        end if
-
-        call get_value(table, "preprocess", child, requested=.false.)
+        call get_value(table, "features", child, requested=.false.)
         if (associated(child)) then
-            call new_preprocessors(self%preprocess, child, error)
+            ! Parse features from manifest using new_collections
+            call new_collections(self%features, child, error)
+            if (allocated(error)) return
+        else
+            ! Initialize with default feature collections (debug and release)
+            call get_default_features(self%features, error)
             if (allocated(error)) return
         end if
+
     end subroutine new_package
 
 
@@ -367,7 +239,7 @@ contains
 
             case("version", "license", "author", "maintainer", "copyright", &
                     & "description", "keywords", "categories", "homepage", "build", &
-                    & "dependencies", "dev-dependencies", "profiles", "test", "executable", &
+                    & "dependencies", "dev-dependencies", "profiles", "features", "test", "executable", &
                     & "example", "library", "install", "extra", "preprocess", "fortran")
                 continue
 
@@ -477,59 +349,6 @@ contains
     end subroutine info
 
 
-    !> Check whether or not the names in a set of executables are unique
-    subroutine unique_programs1(executable, error)
-
-        !> Array of executables
-        class(executable_config_t), intent(in) :: executable(:)
-
-        !> Error handling
-        type(error_t), allocatable, intent(out) :: error
-
-        integer :: i, j
-
-        do i = 1, size(executable)
-            do j = 1, i - 1
-                if (executable(i)%name == executable(j)%name) then
-                    call fatal_error(error, "The program named '"//&
-                        executable(j)%name//"' is duplicated. "//&
-                        "Unique program names are required.")
-                    exit
-                end if
-            end do
-        end do
-        if (allocated(error)) return
-
-    end subroutine unique_programs1
-
-
-    !> Check whether or not the names in a set of executables are unique
-    subroutine unique_programs2(executable_i, executable_j, error)
-
-        !> Array of executables
-        class(executable_config_t), intent(in) :: executable_i(:)
-
-        !> Array of executables
-        class(executable_config_t), intent(in) :: executable_j(:)
-
-        !> Error handling
-        type(error_t), allocatable, intent(out) :: error
-
-        integer :: i, j
-
-        do i = 1, size(executable_i)
-            do j = 1, size(executable_j)
-                if (executable_i(i)%name == executable_j(j)%name) then
-                    call fatal_error(error, "The program named '"//&
-                        executable_j(j)%name//"' is duplicated. "//&
-                        "Unique program names are required.")
-                    exit
-                end if
-            end do
-        end do
-        if (allocated(error)) return
-
-    end subroutine unique_programs2
 
    logical function manifest_is_same(this,that)
       class(package_config_t), intent(in) :: this
@@ -541,14 +360,12 @@ contains
 
       select type (other=>that)
          type is (package_config_t)
-         if (allocated(this%name).neqv.allocated(other%name)) return
-            if (allocated(this%name) .and. allocated(other%name)) then
-                if (.not.this%name==other%name) return
-            end if
+            
+            ! Compare base fields
+            if (.not.this%feature_config_t==other%feature_config_t) return            
+            
+            ! Manifest-specific fields
             if (.not.this%version==other%version) return
-            if (.not.this%build==other%build) return
-            if (.not.this%install==other%install) return
-            if (.not.this%fortran==other%fortran) return
             if (allocated(this%license).neqv.allocated(other%license)) return
             if (allocated(this%license)) then
                 if (.not.this%license==other%license) return
@@ -565,57 +382,11 @@ contains
             if (allocated(this%copyright)) then
                 if (.not.this%copyright==other%copyright) return
             end if
-            if (allocated(this%library).neqv.allocated(other%library)) return
-            if (allocated(this%library)) then
-                if (.not.this%library==other%library) return
-            endif
-            if (allocated(this%executable).neqv.allocated(other%executable)) return
-            if (allocated(this%executable)) then
-                if (.not.size(this%executable)==size(other%executable)) return
-                do ii=1,size(this%executable)
-                    if (.not.this%executable(ii)==other%executable(ii)) return
-                end do
-            end if
-            if (allocated(this%dependency).neqv.allocated(other%dependency)) return
-            if (allocated(this%dependency)) then
-                if (.not.size(this%dependency)==size(other%dependency)) return
-                do ii=1,size(this%dependency)
-                    if (.not.this%dependency(ii)==other%dependency(ii)) return
-                end do
-            end if
-            if (allocated(this%dev_dependency).neqv.allocated(other%dev_dependency)) return
-            if (allocated(this%dev_dependency)) then
-                if (.not.size(this%dev_dependency)==size(other%dev_dependency)) return
-                do ii=1,size(this%dev_dependency)
-                    if (.not.this%dev_dependency(ii)==other%dev_dependency(ii)) return
-                end do
-            end if
             if (allocated(this%profiles).neqv.allocated(other%profiles)) return
             if (allocated(this%profiles)) then
                 if (.not.size(this%profiles)==size(other%profiles)) return
                 do ii=1,size(this%profiles)
                     if (.not.this%profiles(ii)==other%profiles(ii)) return
-                end do
-            end if
-            if (allocated(this%example).neqv.allocated(other%example)) return
-            if (allocated(this%example)) then
-                if (.not.size(this%example)==size(other%example)) return
-                do ii=1,size(this%example)
-                    if (.not.this%example(ii)==other%example(ii)) return
-                end do
-            end if
-            if (allocated(this%preprocess).neqv.allocated(other%preprocess)) return
-            if (allocated(this%preprocess)) then
-                if (.not.size(this%preprocess)==size(other%preprocess)) return
-                do ii=1,size(this%preprocess)
-                    if (.not.this%preprocess(ii)==other%preprocess(ii)) return
-                end do
-            end if
-            if (allocated(this%test).neqv.allocated(other%test)) return
-            if (allocated(this%test)) then
-                if (.not.size(this%test)==size(other%test)) return
-                do ii=1,size(this%test)
-                    if (.not.this%test(ii)==other%test(ii)) return
                 end do
             end if
 
@@ -645,9 +416,12 @@ contains
        type(toml_table), pointer :: ptr,ptr_pkg
        character(30) :: unnamed
        character(128) :: profile_name
-
-       call set_string(table, "name", self%name, error, class_name)
+       
+       ! Dump feature first
+       call self%feature_config_t%dump_to_toml(table, error)       
        if (allocated(error)) return
+
+       ! Package-specific fields
        call set_string(table, "version", self%version%s(), error, class_name)
        if (allocated(error)) return
        call set_string(table, "license", self%license, error, class_name)
@@ -658,115 +432,6 @@ contains
        if (allocated(error)) return
        call set_string(table, "copyright", self%copyright, error, class_name)
        if (allocated(error)) return
-
-       call add_table(table, "build", ptr, error, class_name)
-       if (allocated(error)) return
-       call self%build%dump_to_toml(ptr, error)
-       if (allocated(error)) return
-
-       call add_table(table, "fortran", ptr, error, class_name)
-       if (allocated(error)) return
-       call self%fortran%dump_to_toml(ptr, error)
-       if (allocated(error)) return
-
-       call add_table(table, "install", ptr, error, class_name)
-       if (allocated(error)) return
-       call self%install%dump_to_toml(ptr, error)
-       if (allocated(error)) return
-
-       if (allocated(self%library)) then
-           call add_table(table, "library", ptr, error, class_name)
-           if (allocated(error)) return
-           call self%library%dump_to_toml(ptr, error)
-           if (allocated(error)) return
-       end if
-
-       if (allocated(self%executable)) then
-
-           call add_table(table, "executable", ptr_pkg)
-           if (.not. associated(ptr_pkg)) then
-              call fatal_error(error, class_name//" cannot create 'executable' table ")
-              return
-           end if
-
-           do ii = 1, size(self%executable)
-
-              associate (pkg => self%executable(ii))
-
-                 !> Because dependencies are named, fallback if this has no name
-                 !> So, serialization will work regardless of size(self%dep) == self%ndep
-                 if (len_trim(pkg%name)==0) then
-                    write(unnamed,1) 'EXECUTABLE',ii
-                    call add_table(ptr_pkg, trim(unnamed), ptr, error, class_name//'(executable)')
-                 else
-                    call add_table(ptr_pkg, pkg%name, ptr, error, class_name//'(executable)')
-                 end if
-                 if (allocated(error)) return
-                 call pkg%dump_to_toml(ptr, error)
-                 if (allocated(error)) return
-
-              end associate
-
-           end do
-       end if
-
-       if (allocated(self%dependency)) then
-
-           call add_table(table, "dependencies", ptr_pkg)
-           if (.not. associated(ptr_pkg)) then
-              call fatal_error(error, class_name//" cannot create 'dependencies' table ")
-              return
-           end if
-
-           do ii = 1, size(self%dependency)
-
-              associate (pkg => self%dependency(ii))
-
-                 !> Because dependencies are named, fallback if this has no name
-                 !> So, serialization will work regardless of size(self%dep) == self%ndep
-                 if (len_trim(pkg%name)==0) then
-                    write(unnamed,1) 'DEPENDENCY',ii
-                    call add_table(ptr_pkg, trim(unnamed), ptr, error, class_name//'(dependencies)')
-                 else
-                    call add_table(ptr_pkg, pkg%name, ptr, error, class_name//'(dependencies)')
-                 end if
-                 if (allocated(error)) return
-                 call pkg%dump_to_toml(ptr, error)
-                 if (allocated(error)) return
-
-              end associate
-
-           end do
-       end if
-
-       if (allocated(self%dev_dependency)) then
-
-           call add_table(table, "dev-dependencies", ptr_pkg)
-           if (.not. associated(ptr_pkg)) then
-              call fatal_error(error, class_name//" cannot create 'dev-dependencies' table ")
-              return
-           end if
-
-           do ii = 1, size(self%dev_dependency)
-
-              associate (pkg => self%dev_dependency(ii))
-
-                 !> Because dependencies are named, fallback if this has no name
-                 !> So, serialization will work regardless of size(self%dep) == self%ndep
-                 if (len_trim(pkg%name)==0) then
-                    write(unnamed,1) 'DEV-DEPENDENCY',ii
-                    call add_table(ptr_pkg, trim(unnamed), ptr, error, class_name//'(dev-dependencies)')
-                 else
-                    call add_table(ptr_pkg, pkg%name, ptr, error, class_name//'(dev-dependencies)')
-                 end if
-                 if (allocated(error)) return
-                 call pkg%dump_to_toml(ptr, error)
-                 if (allocated(error)) return
-
-              end associate
-
-           end do
-       end if
 
        if (allocated(self%profiles)) then
 
@@ -784,93 +449,6 @@ contains
                  !> same name, same compiler, etc. So, use a unique name here
                  write(profile_name,2) ii
                  call add_table(ptr_pkg, trim(profile_name), ptr, error, class_name//'(profiles)')
-                 if (allocated(error)) return
-                 call pkg%dump_to_toml(ptr, error)
-                 if (allocated(error)) return
-
-              end associate
-
-           end do
-       end if
-
-       if (allocated(self%example)) then
-
-           call add_table(table, "example", ptr_pkg)
-           if (.not. associated(ptr_pkg)) then
-              call fatal_error(error, class_name//" cannot create 'example' table ")
-              return
-           end if
-
-           do ii = 1, size(self%example)
-
-              associate (pkg => self%example(ii))
-
-                 !> Because dependencies are named, fallback if this has no name
-                 !> So, serialization will work regardless of size(self%dep) == self%ndep
-                 if (len_trim(pkg%name)==0) then
-                    write(unnamed,1) 'EXAMPLE',ii
-                    call add_table(ptr_pkg, trim(unnamed), ptr, error, class_name//'(example)')
-                 else
-                    call add_table(ptr_pkg, pkg%name, ptr, error, class_name//'(example)')
-                 end if
-                 if (allocated(error)) return
-                 call pkg%dump_to_toml(ptr, error)
-                 if (allocated(error)) return
-
-              end associate
-
-           end do
-       end if
-
-       if (allocated(self%test)) then
-
-           call add_table(table, "test", ptr_pkg)
-           if (.not. associated(ptr_pkg)) then
-              call fatal_error(error, class_name//" cannot create 'test' table ")
-              return
-           end if
-
-           do ii = 1, size(self%test)
-
-              associate (pkg => self%test(ii))
-
-                 !> Because dependencies are named, fallback if this has no name
-                 !> So, serialization will work regardless of size(self%dep) == self%ndep
-                 if (len_trim(pkg%name)==0) then
-                    write(unnamed,1) 'TEST',ii
-                    call add_table(ptr_pkg, trim(unnamed), ptr, error, class_name//'(test)')
-                 else
-                    call add_table(ptr_pkg, pkg%name, ptr, error, class_name//'(test)')
-                 end if
-                 if (allocated(error)) return
-                 call pkg%dump_to_toml(ptr, error)
-                 if (allocated(error)) return
-
-              end associate
-
-           end do
-       end if
-
-       if (allocated(self%preprocess)) then
-
-           call add_table(table, "preprocess", ptr_pkg)
-           if (.not. associated(ptr_pkg)) then
-              call fatal_error(error, class_name//" cannot create 'preprocess' table ")
-              return
-           end if
-
-           do ii = 1, size(self%preprocess)
-
-              associate (pkg => self%preprocess(ii))
-
-                 !> Because dependencies are named, fallback if this has no name
-                 !> So, serialization will work regardless of size(self%dep) == self%ndep
-                 if (len_trim(pkg%name)==0) then
-                    write(unnamed,1) 'PREPROCESS',ii
-                    call add_table(ptr_pkg, trim(unnamed), ptr, error, class_name//'(preprocess)')
-                 else
-                    call add_table(ptr_pkg, pkg%name, ptr, error, class_name//'(preprocess)')
-                 end if
                  if (allocated(error)) return
                  call pkg%dump_to_toml(ptr, error)
                  if (allocated(error)) return
@@ -901,10 +479,23 @@ contains
         integer :: ii, jj
         character(len=:), allocatable :: flag
         type(toml_table), pointer :: ptr,ptr_pkg
+        
+        ! Clean state
+        if (allocated(self%library)) deallocate(self%library)
+        if (allocated(self%executable)) deallocate(self%executable)
+        if (allocated(self%dependency)) deallocate(self%dependency)
+        if (allocated(self%dev_dependency)) deallocate(self%dev_dependency)
+        if (allocated(self%profiles)) deallocate(self%profiles)
+        if (allocated(self%example)) deallocate(self%example)
+        if (allocated(self%test)) deallocate(self%test)
+        if (allocated(self%preprocess)) deallocate(self%preprocess)        
+        
+        !> Load base fields
+        call self%feature_config_t%load_from_toml(table, error)
+        if (allocated(error)) return
 
         call table%get_keys(keys)
 
-        call get_value(table, "name", self%name)
         call get_value(table, "license", self%license)
         call get_value(table, "author", self%author)
         call get_value(table, "maintainer", self%maintainer)
@@ -916,105 +507,9 @@ contains
            return
         endif
 
-        if (allocated(self%library)) deallocate(self%library)
-        if (allocated(self%executable)) deallocate(self%executable)
-        if (allocated(self%dependency)) deallocate(self%dependency)
-        if (allocated(self%dev_dependency)) deallocate(self%dev_dependency)
-        if (allocated(self%profiles)) deallocate(self%profiles)
-        if (allocated(self%example)) deallocate(self%example)
-        if (allocated(self%test)) deallocate(self%test)
-        if (allocated(self%preprocess)) deallocate(self%preprocess)
         sub_deps: do ii = 1, size(keys)
 
            select case (keys(ii)%key)
-              case ("build")
-                   call get_value(table, keys(ii), ptr)
-                   if (.not.associated(ptr)) then
-                      call fatal_error(error,class_name//': error retrieving '//keys(ii)%key//' table')
-                      return
-                   end if
-                   call self%build%load_from_toml(ptr, error)
-                   if (allocated(error)) return
-
-              case ("install")
-                   call get_value(table, keys(ii), ptr)
-                   if (.not.associated(ptr)) then
-                      call fatal_error(error,class_name//': error retrieving '//keys(ii)%key//' table')
-                      return
-                   end if
-                   call self%install%load_from_toml(ptr, error)
-
-              case ("fortran")
-                   call get_value(table, keys(ii), ptr)
-                   if (.not.associated(ptr)) then
-                      call fatal_error(error,class_name//': error retrieving '//keys(ii)%key//' table')
-                      return
-                   end if
-                   call self%fortran%load_from_toml(ptr, error)
-
-              case ("library")
-
-                   allocate(self%library)
-                   call get_value(table, keys(ii), ptr)
-                   if (.not.associated(ptr)) then
-                      call fatal_error(error,class_name//': error retrieving '//keys(ii)%key//' table')
-                      return
-                   end if
-                   call self%library%load_from_toml(ptr, error)
-
-              case ("executable")
-
-                   call get_value(table, keys(ii), ptr)
-                   if (.not.associated(ptr)) then
-                      call fatal_error(error,class_name//': error retrieving executable table')
-                      return
-                   end if
-
-                   !> Read all packages
-                   call ptr%get_keys(pkg_keys)
-                   allocate(self%executable(size(pkg_keys)))
-
-                   do jj = 1, size(pkg_keys)
-                      call get_value(ptr, pkg_keys(jj), ptr_pkg)
-                      call self%executable(jj)%load_from_toml(ptr_pkg, error)
-                      if (allocated(error)) return
-                   end do
-
-              case ("dependencies")
-
-                   call get_value(table, keys(ii), ptr)
-                   if (.not.associated(ptr)) then
-                      call fatal_error(error,class_name//': error retrieving dependency table')
-                      return
-                   end if
-
-                   !> Read all packages
-                   call ptr%get_keys(pkg_keys)
-                   allocate(self%dependency(size(pkg_keys)))
-
-                   do jj = 1, size(pkg_keys)
-                      call get_value(ptr, pkg_keys(jj), ptr_pkg)
-                      call self%dependency(jj)%load_from_toml(ptr_pkg, error)
-                      if (allocated(error)) return
-                   end do
-
-              case ("dev-dependencies")
-
-                   call get_value(table, keys(ii), ptr)
-                   if (.not.associated(ptr)) then
-                      call fatal_error(error,class_name//': error retrieving dev-dependencies table')
-                      return
-                   end if
-
-                   !> Read all packages
-                   call ptr%get_keys(pkg_keys)
-                   allocate(self%dev_dependency(size(pkg_keys)))
-
-                   do jj = 1, size(pkg_keys)
-                      call get_value(ptr, pkg_keys(jj), ptr_pkg)
-                      call self%dev_dependency(jj)%load_from_toml(ptr_pkg, error)
-                      if (allocated(error)) return
-                   end do
 
               case ("profiles")
 
@@ -1034,60 +529,6 @@ contains
                       if (allocated(error)) return
                    end do
 
-              case ("example")
-
-                   call get_value(table, keys(ii), ptr)
-                   if (.not.associated(ptr)) then
-                      call fatal_error(error,class_name//': error retrieving example table')
-                      return
-                   end if
-
-                   !> Read all packages
-                   call ptr%get_keys(pkg_keys)
-                   allocate(self%example(size(pkg_keys)))
-
-                   do jj = 1, size(pkg_keys)
-                      call get_value(ptr, pkg_keys(jj), ptr_pkg)
-                      call self%example(jj)%load_from_toml(ptr_pkg, error)
-                      if (allocated(error)) return
-                   end do
-
-              case ("test")
-
-                   call get_value(table, keys(ii), ptr)
-                   if (.not.associated(ptr)) then
-                      call fatal_error(error,class_name//': error retrieving test table')
-                      return
-                   end if
-
-                   !> Read all packages
-                   call ptr%get_keys(pkg_keys)
-                   allocate(self%test(size(pkg_keys)))
-
-                   do jj = 1, size(pkg_keys)
-                      call get_value(ptr, pkg_keys(jj), ptr_pkg)
-                      call self%test(jj)%load_from_toml(ptr_pkg, error)
-                      if (allocated(error)) return
-                   end do
-
-              case ("preprocess")
-
-                   call get_value(table, keys(ii), ptr)
-                   if (.not.associated(ptr)) then
-                      call fatal_error(error,class_name//': error retrieving preprocess table')
-                      return
-                   end if
-
-                   !> Read all packages
-                   call ptr%get_keys(pkg_keys)
-                   allocate(self%preprocess(size(pkg_keys)))
-
-                   do jj = 1, size(pkg_keys)
-                      call get_value(ptr, pkg_keys(jj), ptr_pkg)
-                      call self%preprocess(jj)%load_from_toml(ptr_pkg, error)
-                      if (allocated(error)) return
-                   end do
-
               case default
                     cycle sub_deps
            end select
@@ -1095,5 +536,48 @@ contains
         end do sub_deps
 
      end subroutine load_from_toml
+
+    !> Export package configuration for a given (OS+compiler) platform
+    type(package_config_t) function export_config(self, platform, features) result(cfg)
+        
+        !> Instance of the package configuration  
+        class(package_config_t), intent(in) :: self
+        
+        !> Target platform
+        type(platform_config_t), intent(in) :: platform
+        
+        !> Optional list of features to apply (currently idle)
+        type(string_t), optional, intent(in) :: features(:)
+        
+        ! Copy the entire package configuration
+        cfg = self
+        
+        ! Ensure allocatable fields are always allocated with default values if not already set
+        if (.not. allocated(cfg%build)) then
+            allocate(cfg%build)
+            cfg%build%auto_executables = .true.
+            cfg%build%auto_examples = .true.
+            cfg%build%auto_tests = .true.
+            cfg%build%module_naming = .false.
+        end if
+        
+        if (.not. allocated(cfg%install)) then
+            allocate(cfg%install)
+            cfg%install%library = .false.
+            cfg%install%test = .false.
+        end if
+        
+        if (.not. allocated(cfg%fortran)) then
+            allocate(cfg%fortran)
+            cfg%fortran%implicit_typing = .false.
+            cfg%fortran%implicit_external = .false.
+            cfg%fortran%source_form = 'free'
+        end if
+        
+        ! TODO: Feature processing will be implemented here
+        ! For now, features parameter is ignored as requested
+        
+    end function export_config
+
 
 end module fpm_manifest_package

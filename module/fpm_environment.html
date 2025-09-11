@@ -92,7 +92,7 @@
 
             <li class="list-inline-item" id="statements"><i class="fa fa-list-ol"></i>
               <a data-bs-toggle="tooltip" data-bs-placement="bottom" data-bs-html="true"
-                 title=" 2.0% of total for modules and submodules.">311 statements</a>
+                 title=" 2.0% of total for modules and submodules.">350 statements</a>
             </li>
 
             <li class="list-inline-item" id="source-file">
@@ -133,6 +133,7 @@
       </a>
       <div id="vars-0" class="collapse">
         <div class="list-group list-group-flush">
+            <a class="list-group-item" href="../module/fpm_environment.html#variable-os_all">OS_ALL</a>
             <a class="list-group-item" href="../module/fpm_environment.html#variable-os_cygwin">OS_CYGWIN</a>
             <a class="list-group-item" href="../module/fpm_environment.html#variable-os_freebsd">OS_FREEBSD</a>
             <a class="list-group-item" href="../module/fpm_environment.html#variable-os_linux">OS_LINUX</a>
@@ -167,6 +168,7 @@
             <a class="list-group-item" href="../module/fpm_environment.html#proc-get_env">get_env</a>
             <a class="list-group-item" href="../module/fpm_environment.html#proc-get_os_type">get_os_type</a>
             <a class="list-group-item" href="../module/fpm_environment.html#proc-library_filename">library_filename</a>
+            <a class="list-group-item" href="../module/fpm_environment.html#proc-match_os_type">match_os_type</a>
             <a class="list-group-item" href="../module/fpm_environment.html#proc-os_is_unix">os_is_unix</a>
             <a class="list-group-item" href="../module/fpm_environment.html#proc-separator">separator</a>
             <a class="list-group-item" href="../module/fpm_environment.html#proc-set_env">set_env</a>
@@ -174,7 +176,18 @@
       </div>
     </div>
 
-  
+      <div class="card mb-4">
+      <a data-bs-toggle="collapse" href="#subs-0"
+         aria-expanded="false" aria-controls="subs-0">
+         <h4 class="card-header bg-primary text-white">Subroutines</h4>
+      </a>
+      <div id="subs-0" class="collapse">
+        <div class="list-group list-group-flush">
+            <a class="list-group-item" href="../module/fpm_environment.html#proc-validate_os_name">validate_os_name</a>
+        </div>
+      </div>
+    </div>
+
   
   
   
@@ -201,8 +214,9 @@
             <li class="list-group-item">
               <ul class="list-inline">
                   <li class="list-inline-item"><a href='http://fortranwiki.org/fortran/show/iso_c_binding'>iso_c_binding</a></li>
-                  <li class="list-inline-item"><a href='http://fortranwiki.org/fortran/show/iso_fortran_env'>iso_fortran_env</a></li>
+                  <li class="list-inline-item"><a href='fpm_strings.html'>fpm_strings</a></li>
                   <li class="list-inline-item"><a href='fpm_error.html'>fpm_error</a></li>
+                  <li class="list-inline-item"><a href='http://fortranwiki.org/fortran/show/iso_fortran_env'>iso_fortran_env</a></li>
               </ul>
             </li>
         </ul>
@@ -225,6 +239,23 @@
 <th></th><th scope="col">Initial</th>        <th scope="col"></th>
     </thead>
     <tbody>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-os_all"></span>
+              integer,
+            </td>
+              <td>public,</td>
+            <td>
+parameter               
+            </td>
+            <td>::</td>
+            <td><strong>OS_ALL</strong></td>
+<td> =</td>
+                <td>-1</td>
+            <td>
+                
+            </td>
+        </tr>
         <tr>
             <td>
               <span class="anchor" id="variable-os_cygwin"></span>
@@ -393,7 +424,7 @@ parameter
     <tbody>
         <tr>
             <td>
-              <span class="anchor" id="variable-os"></span>
+              <span class="anchor" id="variable-os~2"></span>
               integer,
             </td>
 <td>intent(in)</td>
@@ -439,7 +470,7 @@ Returns an error if the variable did not exist in the first place</p><a href="..
     <tbody>
         <tr>
             <td>
-              <span class="anchor" id="variable-name~4"></span>
+              <span class="anchor" id="variable-name~21"></span>
               character(len=*),
             </td>
 <td>intent(in)</td>
@@ -583,7 +614,7 @@ Returns an error if the variable did not exist in the first place</p><a href="..
     <tbody>
         <tr>
             <td>
-              <span class="anchor" id="variable-package_name"></span>
+              <span class="anchor" id="variable-package_name~8"></span>
               character(len=*),
             </td>
 <td>intent(in)</td>
@@ -628,7 +659,7 @@ Returns an error if the variable did not exist in the first place</p><a href="..
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-target_os"></span>
+              <span class="anchor" id="variable-target_os~2"></span>
               integer,
             </td>
 <td>intent(in)</td>
@@ -647,6 +678,51 @@ Returns an error if the variable did not exist in the first place</p><a href="..
     <h4>
     Return Value
     <small>character(len=:), allocatable</small>
+    </h4>
+    
+
+    </div>
+  </div>
+
+              <div class="card">
+    <div class="card-header codesum"><span class="anchor" id="proc-match_os_type"></span> <h3>public  function <a href='../proc/match_os_type.html'>match_os_type</a>(os_name) result(os_type)  
+</h3></div>
+    <div class="card-body">
+          
+  <p>Match os_name to os_type enum (similar to profiles.f90)</p>
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-os_name~2"></span>
+              character(len=*),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>os_name</strong></td>
+            <td>
+
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+    <h4>
+    Return Value
+    <small>integer</small>
     </h4>
     
 
@@ -675,7 +751,7 @@ and return .TRUE. if they match and .FALSE. otherwise</p>
     <tbody>
         <tr>
             <td>
-              <span class="anchor" id="variable-os~2"></span>
+              <span class="anchor" id="variable-os~3"></span>
               integer,
             </td>
 <td>intent(in),</td>
@@ -738,7 +814,7 @@ and return .TRUE. if they match and .FALSE. otherwise</p>
     <tbody>
         <tr>
             <td>
-              <span class="anchor" id="variable-name~3"></span>
+              <span class="anchor" id="variable-name~20"></span>
               character(len=*),
             </td>
 <td>intent(in)</td>
@@ -753,7 +829,7 @@ and return .TRUE. if they match and .FALSE. otherwise</p>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-value"></span>
+              <span class="anchor" id="variable-value~2"></span>
               character(len=*),
             </td>
 <td>intent(in)</td>
@@ -796,6 +872,65 @@ and return .TRUE. if they match and .FALSE. otherwise</p>
         </section>
         <br>
 
+        <section>
+          <h2>Subroutines</h2>
+              <div class="card">
+    <div class="card-header codesum"><span class="anchor" id="proc-validate_os_name"></span> <h3>public pure elemental subroutine <a href='../proc/validate_os_name.html'>validate_os_name</a>(os_name, is_valid)  
+</h3></div>
+    <div class="card-body">
+          
+  <p>Check if os_name is a valid name of a supported OS</p>
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-os_name~3"></span>
+              character(len=*),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>os_name</strong></td>
+            <td>
+<p>Name of an operating system</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-is_valid~2"></span>
+              logical,
+            </td>
+<td>intent(out)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>is_valid</strong></td>
+            <td>
+<p>Boolean value of whether os_name is valid or not</p>
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+
+    </div>
+  </div>
+
+        </section>
+        <br>
 
 
 
@@ -817,7 +952,7 @@ and return .TRUE. if they match and .FALSE. otherwise</p>
             <p class="text-end">
               Documentation generated by
               <a href="https://github.com/Fortran-FOSS-Programmers/ford">FORD</a>
- on 2025-09-09 17:12 +0000             </p>
+ on 2025-09-11 10:25 +0000             </p>
           </div>
         </div>
         <br>

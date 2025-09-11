@@ -92,7 +92,7 @@
 
             <li class="list-inline-item" id="statements"><i class="fa fa-list-ol"></i>
               <a data-bs-toggle="tooltip" data-bs-placement="bottom" data-bs-html="true"
-                 title=" 0.6% of total for procedures.">48 statements</a>
+                 title=" 0.4% of total for procedures.">34 statements</a>
             </li>
 
             <li class="list-inline-item" id="source-file">
@@ -134,9 +134,9 @@
       </a>
       <div id="vars-0" class="collapse">
         <div class="list-group list-group-flush">
-            <a class="list-group-item" href="../proc/profile_dump.html#variable-ierr~14">ierr</a>
-            <a class="list-group-item" href="../proc/profile_dump.html#variable-ii~27">ii</a>
-            <a class="list-group-item" href="../proc/profile_dump.html#variable-ptr~16">ptr</a>
+            <a class="list-group-item" href="../proc/profile_dump.html#variable-ierr~18">ierr</a>
+            <a class="list-group-item" href="../proc/profile_dump.html#variable-ii~30">ii</a>
+            <a class="list-group-item" href="../proc/profile_dump.html#variable-ptr~13">ptr</a>
             <a class="list-group-item" href="../proc/profile_dump.html#variable-ptr_deps~3">ptr_deps</a>
             <a class="list-group-item" href="../proc/profile_dump.html#variable-unnamed~4">unnamed</a>
         </div>
@@ -197,7 +197,7 @@
     <tbody>
         <tr>
             <td>
-              <span class="anchor" id="variable-self~111"></span>
+              <span class="anchor" id="variable-self~87"></span>
               class(<a href='../type/profile_config_t.html'>profile_config_t</a>),
             </td>
 <td>intent(inout)</td>
@@ -212,7 +212,7 @@
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-table~47"></span>
+              <span class="anchor" id="variable-table~74"></span>
               type(toml_table),
             </td>
 <td>intent(inout)</td>
@@ -227,7 +227,7 @@
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-error~124"></span>
+              <span class="anchor" id="variable-error~149"></span>
               type(<a href='../type/error_t.html'>error_t</a>),
             </td>
 <td>intent(out),</td>
@@ -260,7 +260,7 @@
     <tbody>
         <tr>
             <td>
-              <span class="anchor" id="variable-ierr~14"></span>
+              <span class="anchor" id="variable-ierr~18"></span>
               integer,
             </td>
               <td>public</td>
@@ -277,7 +277,7 @@
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-ii~27"></span>
+              <span class="anchor" id="variable-ii~30"></span>
               integer,
             </td>
               <td>public</td>
@@ -294,7 +294,7 @@
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-ptr~16"></span>
+              <span class="anchor" id="variable-ptr~13"></span>
               type(toml_table),
             </td>
               <td>public,</td>
@@ -375,24 +375,13 @@
 <span class="w">       </span><span class="k">type</span><span class="p">(</span><span class="n">toml_table</span><span class="p">),</span><span class="w"> </span><span class="k">pointer</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">ptr_deps</span><span class="p">,</span><span class="w"> </span><span class="n">ptr</span>
 <span class="w">       </span><span class="kt">character</span><span class="p">(</span><span class="nb">len</span><span class="o">=</span><span class="mi">30</span><span class="p">)</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">unnamed</span>
 
-<span class="w">       </span><span class="k">call </span><span class="n">set_string</span><span class="p">(</span><span class="n">table</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;profile-name&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">self</span><span class="p">%</span><span class="n">profile_name</span><span class="p">,</span><span class="w"> </span><span class="n">error</span><span class="p">)</span>
+<span class="w">       </span><span class="c">! Dump the underlying feature data</span>
+<span class="w">       </span><span class="k">call </span><span class="n">self</span><span class="p">%</span><span class="n">profile_feature</span><span class="p">%</span><span class="n">dump_to_toml</span><span class="p">(</span><span class="n">table</span><span class="p">,</span><span class="w"> </span><span class="n">error</span><span class="p">)</span>
 <span class="w">       </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="nb">allocated</span><span class="p">(</span><span class="n">error</span><span class="p">))</span><span class="w"> </span><span class="k">return</span>
-<span class="k">       call </span><span class="n">set_string</span><span class="p">(</span><span class="n">table</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;compiler&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">self</span><span class="p">%</span><span class="n">compiler</span><span class="p">,</span><span class="w"> </span><span class="n">error</span><span class="p">)</span>
-<span class="w">       </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="nb">allocated</span><span class="p">(</span><span class="n">error</span><span class="p">))</span><span class="w"> </span><span class="k">return</span>
-<span class="k">       call </span><span class="n">set_string</span><span class="p">(</span><span class="n">table</span><span class="p">,</span><span class="s2">&quot;os-type&quot;</span><span class="p">,</span><span class="n">os_type_name</span><span class="p">(</span><span class="n">self</span><span class="p">%</span><span class="n">os_type</span><span class="p">),</span><span class="w"> </span><span class="n">error</span><span class="p">,</span><span class="w"> </span><span class="s1">&#39;profile_config_t&#39;</span><span class="p">)</span>
-<span class="w">       </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="nb">allocated</span><span class="p">(</span><span class="n">error</span><span class="p">))</span><span class="w"> </span><span class="k">return</span>
-<span class="k">       call </span><span class="n">set_string</span><span class="p">(</span><span class="n">table</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;flags&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">self</span><span class="p">%</span><span class="n">flags</span><span class="p">,</span><span class="w"> </span><span class="n">error</span><span class="p">)</span>
-<span class="w">       </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="nb">allocated</span><span class="p">(</span><span class="n">error</span><span class="p">))</span><span class="w"> </span><span class="k">return</span>
-<span class="k">       call </span><span class="n">set_string</span><span class="p">(</span><span class="n">table</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;c-flags&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">self</span><span class="p">%</span><span class="n">c_flags</span><span class="p">,</span><span class="w"> </span><span class="n">error</span><span class="p">)</span>
-<span class="w">       </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="nb">allocated</span><span class="p">(</span><span class="n">error</span><span class="p">))</span><span class="w"> </span><span class="k">return</span>
-<span class="k">       call </span><span class="n">set_string</span><span class="p">(</span><span class="n">table</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;cxx-flags&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">self</span><span class="p">%</span><span class="n">cxx_flags</span><span class="p">,</span><span class="w"> </span><span class="n">error</span><span class="p">)</span>
-<span class="w">       </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="nb">allocated</span><span class="p">(</span><span class="n">error</span><span class="p">))</span><span class="w"> </span><span class="k">return</span>
-<span class="k">       call </span><span class="n">set_string</span><span class="p">(</span><span class="n">table</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;link-time-flags&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">self</span><span class="p">%</span><span class="n">link_time_flags</span><span class="p">,</span><span class="w"> </span><span class="n">error</span><span class="p">)</span>
-<span class="w">       </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="nb">allocated</span><span class="p">(</span><span class="n">error</span><span class="p">))</span><span class="w"> </span><span class="k">return</span>
-
+<span class="k">       </span>
 <span class="k">       if</span><span class="w"> </span><span class="p">(</span><span class="nb">allocated</span><span class="p">(</span><span class="n">self</span><span class="p">%</span><span class="n">file_scope_flags</span><span class="p">))</span><span class="w"> </span><span class="k">then</span>
 
-<span class="w">           </span><span class="c">! Create dependency table</span>
+<span class="w">           </span><span class="c">! Create file scope flags table</span>
 <span class="w">           </span><span class="k">call </span><span class="n">add_table</span><span class="p">(</span><span class="n">table</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;file-scope-flags&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">ptr_deps</span><span class="p">)</span>
 <span class="w">           </span><span class="k">if</span><span class="w"> </span><span class="p">(.</span><span class="nb">not</span><span class="p">.</span><span class="w"> </span><span class="nb">associated</span><span class="p">(</span><span class="n">ptr_deps</span><span class="p">))</span><span class="w"> </span><span class="k">then</span>
 <span class="k">              call </span><span class="n">fatal_error</span><span class="p">(</span><span class="n">error</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;profile_config_t cannot create file scope table &quot;</span><span class="p">)</span>
@@ -420,9 +409,6 @@
 
 <span class="k">       endif</span>
 
-<span class="k">       call </span><span class="n">set_value</span><span class="p">(</span><span class="n">table</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;is-built-in&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">self</span><span class="p">%</span><span class="n">is_built_in</span><span class="p">,</span><span class="w"> </span><span class="n">error</span><span class="p">,</span><span class="w"> </span><span class="s1">&#39;profile_config_t&#39;</span><span class="p">)</span>
-<span class="w">       </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="nb">allocated</span><span class="p">(</span><span class="n">error</span><span class="p">))</span><span class="w"> </span><span class="k">return</span>
-
 <span class="k">       </span><span class="mi">1</span><span class="w"> </span><span class="k">format</span><span class="p">(</span><span class="s1">&#39;UNNAMED_FILE_&#39;</span><span class="p">,</span><span class="n">i0</span><span class="p">)</span>
 
 <span class="w">     </span><span class="k">end subroutine </span><span class="n">profile_dump</span>
@@ -449,7 +435,7 @@
             <p class="text-end">
               Documentation generated by
               <a href="https://github.com/Fortran-FOSS-Programmers/ford">FORD</a>
- on 2025-09-09 17:12 +0000             </p>
+ on 2025-09-11 10:25 +0000             </p>
           </div>
         </div>
         <br>

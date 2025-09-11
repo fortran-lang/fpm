@@ -82,7 +82,7 @@
     <div class="container">
   <div class="row">
     <h1>match_os_type
-      <small>Subroutine</small>
+      <small>Function</small>
       
     </h1>
       <div class="container p-2 mb-4 bg-light border rounded-3">
@@ -92,20 +92,20 @@
 
             <li class="list-inline-item" id="statements"><i class="fa fa-list-ol"></i>
               <a data-bs-toggle="tooltip" data-bs-placement="bottom" data-bs-html="true"
-                 title=" 0.3% of total for procedures.">24 statements</a>
+                 title=" 0.3% of total for procedures.">23 statements</a>
             </li>
 
             <li class="list-inline-item" id="source-file">
               <i class="fa fa-code"></i>
-              <a href="../src/profiles.f90"> Source File</a>
+              <a href="../src/fpm_environment.f90"> Source File</a>
             </li>
         </ul>
       </div>
       <div class="col">
         <nav aria-label="breadcrumb">
           <ol class="breadcrumb justify-content-end mb-0">
-                <li class="breadcrumb-item"><a href='../sourcefile/profiles.f90.html'>profiles.f90</a></li>
-                <li class="breadcrumb-item"><a href='../module/fpm_manifest_profile.html'>fpm_manifest_profile</a></li>
+                <li class="breadcrumb-item"><a href='../sourcefile/fpm_environment.f90.html'>fpm_environment.f90</a></li>
+                <li class="breadcrumb-item"><a href='../module/fpm_environment.html'>fpm_environment</a></li>
             <li class="breadcrumb-item active" aria-current="page">match_os_type</li>
           </ol>
         </nav>
@@ -159,11 +159,11 @@
     </div>
     
     <div class="col-md-9" id='text'>
-    <h2>public  subroutine match_os_type(os_name, os_type)  
+    <h2>public  function match_os_type(os_name) result(os_type)  
 </h2>
     
 
-    <p>Match os_type enum to a lowercase string with name of OS</p>
+    <p>Match os_name to os_type enum (similar to profiles.f90)</p>
 
 
     <h3>Arguments</h3>
@@ -180,36 +180,28 @@
         <tr>
             <td>
               <span class="anchor" id="variable-os_name~2"></span>
-              character(len=:),
+              character(len=*),
             </td>
-<td>intent(in),</td>
-              <td></td>            <td>
-              allocatable
-            </td>
-            <td>::</td>
-            <td><strong>os_name</strong></td>
-            <td>
-                <p>Name of operating system</p>
-            </td>
-        </tr>
-        <tr>
-            <td>
-              <span class="anchor" id="variable-os_type~4"></span>
-              integer,
-            </td>
-<td>intent(out)</td>
+<td>intent(in)</td>
               <td></td>            <td>
               
             </td>
             <td>::</td>
-            <td><strong>os_type</strong></td>
+            <td><strong>os_name</strong></td>
             <td>
-                <p>Enum representing type of OS</p>
+                
             </td>
         </tr>
     </tbody>
   </table>
 
+      <h3>Return Value
+        <small>
+          <span class="anchor" id="variable-os_type"></span>
+          integer
+        </small>
+      </h3>
+      
     <br>
 
 
@@ -224,27 +216,21 @@
     
     <section>
     <h2><span class="anchor" id="src"></span>Source Code</h2>
-    <div class="hl codehilite"><pre><span></span><span class="w">      </span><span class="k">subroutine </span><span class="n">match_os_type</span><span class="p">(</span><span class="n">os_name</span><span class="p">,</span><span class="w"> </span><span class="n">os_type</span><span class="p">)</span>
-
-<span class="w">        </span><span class="c">!&gt; Name of operating system</span>
-<span class="w">        </span><span class="kt">character</span><span class="p">(</span><span class="nb">len</span><span class="o">=</span><span class="p">:),</span><span class="w"> </span><span class="k">allocatable</span><span class="p">,</span><span class="w"> </span><span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">)</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">os_name</span>
-
-<span class="w">        </span><span class="c">!&gt; Enum representing type of OS</span>
-<span class="w">        </span><span class="kt">integer</span><span class="p">,</span><span class="w"> </span><span class="k">intent</span><span class="p">(</span><span class="n">out</span><span class="p">)</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">os_type</span>
-
-<span class="w">        </span><span class="k">select case</span><span class="w"> </span><span class="p">(</span><span class="n">os_name</span><span class="p">)</span>
-<span class="w">          </span><span class="k">case</span><span class="w"> </span><span class="p">(</span><span class="s2">&quot;linux&quot;</span><span class="p">);</span><span class="w">   </span><span class="n">os_type</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">OS_LINUX</span>
-<span class="w">          </span><span class="k">case</span><span class="w"> </span><span class="p">(</span><span class="s2">&quot;macos&quot;</span><span class="p">);</span><span class="w">   </span><span class="n">os_type</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">OS_MACOS</span>
-<span class="w">          </span><span class="k">case</span><span class="w"> </span><span class="p">(</span><span class="s2">&quot;windows&quot;</span><span class="p">);</span><span class="w"> </span><span class="n">os_type</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">OS_WINDOWS</span>
-<span class="w">          </span><span class="k">case</span><span class="w"> </span><span class="p">(</span><span class="s2">&quot;cygwin&quot;</span><span class="p">);</span><span class="w">  </span><span class="n">os_type</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">OS_CYGWIN</span>
-<span class="w">          </span><span class="k">case</span><span class="w"> </span><span class="p">(</span><span class="s2">&quot;solaris&quot;</span><span class="p">);</span><span class="w"> </span><span class="n">os_type</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">OS_SOLARIS</span>
-<span class="w">          </span><span class="k">case</span><span class="w"> </span><span class="p">(</span><span class="s2">&quot;freebsd&quot;</span><span class="p">);</span><span class="w"> </span><span class="n">os_type</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">OS_FREEBSD</span>
-<span class="w">          </span><span class="k">case</span><span class="w"> </span><span class="p">(</span><span class="s2">&quot;openbsd&quot;</span><span class="p">);</span><span class="w"> </span><span class="n">os_type</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">OS_OPENBSD</span>
-<span class="w">          </span><span class="k">case</span><span class="w"> </span><span class="p">(</span><span class="s2">&quot;all&quot;</span><span class="p">);</span><span class="w">     </span><span class="n">os_type</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">OS_ALL</span>
-<span class="w">          </span><span class="k">case </span><span class="n">default</span><span class="p">;</span><span class="w">     </span><span class="n">os_type</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">OS_UNKNOWN</span>
+    <div class="hl codehilite"><pre><span></span><span class="w">    </span><span class="kt">integer </span><span class="k">function </span><span class="n">match_os_type</span><span class="p">(</span><span class="n">os_name</span><span class="p">)</span><span class="w"> </span><span class="k">result</span><span class="p">(</span><span class="n">os_type</span><span class="p">)</span>
+<span class="w">        </span><span class="kt">character</span><span class="p">(</span><span class="nb">len</span><span class="o">=*</span><span class="p">),</span><span class="w"> </span><span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">)</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">os_name</span>
+<span class="w">        </span>
+<span class="w">        </span><span class="k">select case</span><span class="w"> </span><span class="p">(</span><span class="n">lower</span><span class="p">(</span><span class="n">os_name</span><span class="p">))</span>
+<span class="w">            </span><span class="k">case</span><span class="w"> </span><span class="p">(</span><span class="s2">&quot;linux&quot;</span><span class="p">);</span><span class="w">   </span><span class="n">os_type</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">OS_LINUX</span>
+<span class="w">            </span><span class="k">case</span><span class="w"> </span><span class="p">(</span><span class="s2">&quot;macos&quot;</span><span class="p">);</span><span class="w">   </span><span class="n">os_type</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">OS_MACOS</span>
+<span class="w">            </span><span class="k">case</span><span class="w"> </span><span class="p">(</span><span class="s2">&quot;windows&quot;</span><span class="p">);</span><span class="w"> </span><span class="n">os_type</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">OS_WINDOWS</span>
+<span class="w">            </span><span class="k">case</span><span class="w"> </span><span class="p">(</span><span class="s2">&quot;cygwin&quot;</span><span class="p">);</span><span class="w">  </span><span class="n">os_type</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">OS_CYGWIN</span>
+<span class="w">            </span><span class="k">case</span><span class="w"> </span><span class="p">(</span><span class="s2">&quot;solaris&quot;</span><span class="p">);</span><span class="w"> </span><span class="n">os_type</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">OS_SOLARIS</span>
+<span class="w">            </span><span class="k">case</span><span class="w"> </span><span class="p">(</span><span class="s2">&quot;freebsd&quot;</span><span class="p">);</span><span class="w"> </span><span class="n">os_type</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">OS_FREEBSD</span>
+<span class="w">            </span><span class="k">case</span><span class="w"> </span><span class="p">(</span><span class="s2">&quot;openbsd&quot;</span><span class="p">);</span><span class="w"> </span><span class="n">os_type</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">OS_OPENBSD</span>
+<span class="w">            </span><span class="k">case</span><span class="w"> </span><span class="p">(</span><span class="s2">&quot;all&quot;</span><span class="p">);</span><span class="w">     </span><span class="n">os_type</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">OS_ALL</span>
+<span class="w">            </span><span class="k">case </span><span class="n">default</span><span class="p">;</span><span class="w">     </span><span class="n">os_type</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">OS_UNKNOWN</span>
 <span class="w">        </span><span class="k">end select</span>
-
-<span class="k">      end subroutine </span><span class="n">match_os_type</span>
+<span class="k">    end function </span><span class="n">match_os_type</span>
 </pre></div>
 
     </section>
@@ -268,7 +254,7 @@
             <p class="text-end">
               Documentation generated by
               <a href="https://github.com/Fortran-FOSS-Programmers/ford">FORD</a>
- on 2025-09-09 17:12 +0000             </p>
+ on 2025-09-11 10:25 +0000             </p>
           </div>
         </div>
         <br>

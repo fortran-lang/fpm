@@ -92,7 +92,7 @@
 
             <li class="list-inline-item" id="statements"><i class="fa fa-list-ol"></i>
               <a data-bs-toggle="tooltip" data-bs-placement="bottom" data-bs-html="true"
-                 title=" 0.5% of total for procedures.">38 statements</a>
+                 title=" 0.4% of total for procedures.">30 statements</a>
             </li>
 
             <li class="list-inline-item" id="source-file">
@@ -134,12 +134,13 @@
       </a>
       <div id="vars-0" class="collapse">
         <div class="list-group list-group-flush">
+            <a class="list-group-item" href="../proc/profile_load.html#variable-compiler_name~8">compiler_name</a>
             <a class="list-group-item" href="../proc/profile_load.html#variable-dep_keys~2">dep_keys</a>
-            <a class="list-group-item" href="../proc/profile_load.html#variable-flag~5">flag</a>
-            <a class="list-group-item" href="../proc/profile_load.html#variable-ii~28">ii</a>
+            <a class="list-group-item" href="../proc/profile_load.html#variable-flag~6">flag</a>
+            <a class="list-group-item" href="../proc/profile_load.html#variable-ii~31">ii</a>
             <a class="list-group-item" href="../proc/profile_load.html#variable-jj~7">jj</a>
-            <a class="list-group-item" href="../proc/profile_load.html#variable-keys~5">keys</a>
-            <a class="list-group-item" href="../proc/profile_load.html#variable-ptr~17">ptr</a>
+            <a class="list-group-item" href="../proc/profile_load.html#variable-keys~10">keys</a>
+            <a class="list-group-item" href="../proc/profile_load.html#variable-ptr~14">ptr</a>
             <a class="list-group-item" href="../proc/profile_load.html#variable-ptr_dep">ptr_dep</a>
         </div>
       </div>
@@ -181,7 +182,7 @@
     
 
     <p>Read from toml table (no checks made at this stage)</p>
-<p>Read all packages</p>
+<p>Read all file scope flags</p>
 
     <h3>Type Bound</h3>
     <p><a href='../type/profile_config_t.html'>profile_config_t</a></p>
@@ -199,7 +200,7 @@
     <tbody>
         <tr>
             <td>
-              <span class="anchor" id="variable-self~112"></span>
+              <span class="anchor" id="variable-self~88"></span>
               class(<a href='../type/profile_config_t.html'>profile_config_t</a>),
             </td>
 <td>intent(inout)</td>
@@ -214,7 +215,7 @@
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-table~48"></span>
+              <span class="anchor" id="variable-table~75"></span>
               type(toml_table),
             </td>
 <td>intent(inout)</td>
@@ -229,7 +230,7 @@
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-error~125"></span>
+              <span class="anchor" id="variable-error~150"></span>
               type(<a href='../type/error_t.html'>error_t</a>),
             </td>
 <td>intent(out),</td>
@@ -262,6 +263,23 @@
     <tbody>
         <tr>
             <td>
+              <span class="anchor" id="variable-compiler_name~8"></span>
+              character(len=:),
+            </td>
+              <td>public,</td>
+            <td>
+              allocatable
+            </td>
+            <td>::</td>
+            <td><strong>compiler_name</strong></td>
+                <td></td>
+                <td></td>
+            <td>
+                <p>Local variables</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
               <span class="anchor" id="variable-dep_keys~2"></span>
               type(toml_key),
             </td>
@@ -279,7 +297,7 @@
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-flag~5"></span>
+              <span class="anchor" id="variable-flag~6"></span>
               character(len=:),
             </td>
               <td>public,</td>
@@ -296,7 +314,7 @@
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-ii~28"></span>
+              <span class="anchor" id="variable-ii~31"></span>
               integer,
             </td>
               <td>public</td>
@@ -330,7 +348,7 @@
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-keys~5"></span>
+              <span class="anchor" id="variable-keys~10"></span>
               type(toml_key),
             </td>
               <td>public,</td>
@@ -347,7 +365,7 @@
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-ptr~17"></span>
+              <span class="anchor" id="variable-ptr~14"></span>
               type(toml_table),
             </td>
               <td>public,</td>
@@ -407,23 +425,17 @@
 <span class="w">        </span><span class="k">type</span><span class="p">(</span><span class="n">error_t</span><span class="p">),</span><span class="w"> </span><span class="k">allocatable</span><span class="p">,</span><span class="w"> </span><span class="k">intent</span><span class="p">(</span><span class="n">out</span><span class="p">)</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">error</span>
 
 <span class="w">        </span><span class="c">!&gt; Local variables</span>
-<span class="w">        </span><span class="kt">character</span><span class="p">(</span><span class="nb">len</span><span class="o">=</span><span class="p">:),</span><span class="w"> </span><span class="k">allocatable</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">flag</span>
+<span class="w">        </span><span class="kt">character</span><span class="p">(</span><span class="nb">len</span><span class="o">=</span><span class="p">:),</span><span class="w"> </span><span class="k">allocatable</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">flag</span><span class="p">,</span><span class="w"> </span><span class="n">compiler_name</span>
 <span class="w">        </span><span class="kt">integer</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">ii</span><span class="p">,</span><span class="w"> </span><span class="n">jj</span>
 <span class="w">        </span><span class="k">type</span><span class="p">(</span><span class="n">toml_table</span><span class="p">),</span><span class="w"> </span><span class="k">pointer</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">ptr_dep</span><span class="p">,</span><span class="w"> </span><span class="n">ptr</span>
 <span class="w">        </span><span class="k">type</span><span class="p">(</span><span class="n">toml_key</span><span class="p">),</span><span class="w"> </span><span class="k">allocatable</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">keys</span><span class="p">(:),</span><span class="n">dep_keys</span><span class="p">(:)</span>
 
 <span class="w">        </span><span class="k">call </span><span class="n">table</span><span class="p">%</span><span class="n">get_keys</span><span class="p">(</span><span class="n">keys</span><span class="p">)</span>
 
-<span class="w">        </span><span class="k">call </span><span class="n">get_value</span><span class="p">(</span><span class="n">table</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;profile-name&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">self</span><span class="p">%</span><span class="n">profile_name</span><span class="p">)</span>
-<span class="w">        </span><span class="k">call </span><span class="n">get_value</span><span class="p">(</span><span class="n">table</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;compiler&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">self</span><span class="p">%</span><span class="n">compiler</span><span class="p">)</span>
-<span class="w">        </span><span class="k">call </span><span class="n">get_value</span><span class="p">(</span><span class="n">table</span><span class="p">,</span><span class="s2">&quot;os-type&quot;</span><span class="p">,</span><span class="n">flag</span><span class="p">)</span>
-<span class="w">        </span><span class="k">call </span><span class="n">match_os_type</span><span class="p">(</span><span class="n">flag</span><span class="p">,</span><span class="w"> </span><span class="n">self</span><span class="p">%</span><span class="n">os_type</span><span class="p">)</span>
-<span class="w">        </span><span class="k">call </span><span class="n">get_value</span><span class="p">(</span><span class="n">table</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;flags&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">self</span><span class="p">%</span><span class="n">flags</span><span class="p">)</span>
-<span class="w">        </span><span class="k">call </span><span class="n">get_value</span><span class="p">(</span><span class="n">table</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;c-flags&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">self</span><span class="p">%</span><span class="n">c_flags</span><span class="p">)</span>
-<span class="w">        </span><span class="k">call </span><span class="n">get_value</span><span class="p">(</span><span class="n">table</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;cxx-flags&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">self</span><span class="p">%</span><span class="n">cxx_flags</span><span class="p">)</span>
-<span class="w">        </span><span class="k">call </span><span class="n">get_value</span><span class="p">(</span><span class="n">table</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;link-time-flags&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">self</span><span class="p">%</span><span class="n">link_time_flags</span><span class="p">)</span>
-<span class="w">        </span><span class="k">call </span><span class="n">get_value</span><span class="p">(</span><span class="n">table</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;is-built-in&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">self</span><span class="p">%</span><span class="n">is_built_in</span><span class="p">,</span><span class="w"> </span><span class="n">error</span><span class="p">,</span><span class="w"> </span><span class="s1">&#39;profile_config_t&#39;</span><span class="p">)</span>
-<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="nb">allocated</span><span class="p">(</span><span class="n">error</span><span class="p">))</span><span class="w"> </span><span class="k">return</span>
+<span class="w">        </span><span class="c">! Load into feature structure</span>
+<span class="w">       </span><span class="c">! Dump the underlying feature data</span>
+<span class="w">       </span><span class="k">call </span><span class="n">self</span><span class="p">%</span><span class="n">profile_feature</span><span class="p">%</span><span class="n">load_from_toml</span><span class="p">(</span><span class="n">table</span><span class="p">,</span><span class="w"> </span><span class="n">error</span><span class="p">)</span>
+<span class="w">       </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="nb">allocated</span><span class="p">(</span><span class="n">error</span><span class="p">))</span><span class="w"> </span><span class="k">return</span>
 
 <span class="k">        if</span><span class="w"> </span><span class="p">(</span><span class="nb">allocated</span><span class="p">(</span><span class="n">self</span><span class="p">%</span><span class="n">file_scope_flags</span><span class="p">))</span><span class="w"> </span><span class="k">deallocate</span><span class="p">(</span><span class="n">self</span><span class="p">%</span><span class="n">file_scope_flags</span><span class="p">)</span>
 <span class="w">        </span><span class="n">sub_deps</span><span class="p">:</span><span class="w"> </span><span class="k">do </span><span class="n">ii</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="n">size</span><span class="p">(</span><span class="n">keys</span><span class="p">)</span>
@@ -437,7 +449,7 @@
 <span class="w">                  </span><span class="k">return</span>
 <span class="k">               end if</span>
 
-<span class="w">               </span><span class="c">!&gt; Read all packages</span>
+<span class="w">               </span><span class="c">!&gt; Read all file scope flags</span>
 <span class="w">               </span><span class="k">call </span><span class="n">ptr</span><span class="p">%</span><span class="n">get_keys</span><span class="p">(</span><span class="n">dep_keys</span><span class="p">)</span>
 <span class="w">               </span><span class="k">allocate</span><span class="p">(</span><span class="n">self</span><span class="p">%</span><span class="n">file_scope_flags</span><span class="p">(</span><span class="n">size</span><span class="p">(</span><span class="n">dep_keys</span><span class="p">)))</span>
 
@@ -476,7 +488,7 @@
             <p class="text-end">
               Documentation generated by
               <a href="https://github.com/Fortran-FOSS-Programmers/ford">FORD</a>
- on 2025-09-09 17:12 +0000             </p>
+ on 2025-09-11 10:25 +0000             </p>
           </div>
         </div>
         <br>

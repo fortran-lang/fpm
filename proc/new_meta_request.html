@@ -92,7 +92,7 @@
 
             <li class="list-inline-item" id="statements"><i class="fa fa-list-ol"></i>
               <a data-bs-toggle="tooltip" data-bs-placement="bottom" data-bs-html="true"
-                 title=" 0.5% of total for procedures.">41 statements</a>
+                 title=" 0.5% of total for procedures.">40 statements</a>
             </li>
 
             <li class="list-inline-item" id="source-file">
@@ -163,11 +163,8 @@
 </h2>
     
 
-    <p>Construct a new metapackage request from the dependencies table</p>
-<p>Set name
-The toml table is not checked here because it already passed
-the &ldquo;new_dependencies&rdquo; check</p>
-<p>Set list of entries that are allowed to be metapackages</p>
+    <p>Construct a new metapackage request from the dependencies table
+Set name</p>
 
 
     <h3>Arguments</h3>
@@ -183,7 +180,7 @@ the &ldquo;new_dependencies&rdquo; check</p>
     <tbody>
         <tr>
             <td>
-              <span class="anchor" id="variable-self~174"></span>
+              <span class="anchor" id="variable-self~116"></span>
               type(<a href='../type/metapackage_request_t.html'>metapackage_request_t</a>),
             </td>
 <td>intent(out)</td>
@@ -198,7 +195,7 @@ the &ldquo;new_dependencies&rdquo; check</p>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-key~15"></span>
+              <span class="anchor" id="variable-key~16"></span>
               character(len=*),
             </td>
 <td>intent(in)</td>
@@ -213,7 +210,7 @@ the &ldquo;new_dependencies&rdquo; check</p>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-table~102"></span>
+              <span class="anchor" id="variable-table~85"></span>
               type(toml_table),
             </td>
 <td>intent(inout)</td>
@@ -243,7 +240,7 @@ the &ldquo;new_dependencies&rdquo; check</p>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-error~226"></span>
+              <span class="anchor" id="variable-error~183"></span>
               type(<a href='../type/error_t.html'>error_t</a>),
             </td>
 <td>intent(out),</td>
@@ -274,7 +271,6 @@ the &ldquo;new_dependencies&rdquo; check</p>
     <section>
     <h2><span class="anchor" id="src"></span>Source Code</h2>
     <div class="hl codehilite"><pre><span></span><span class="w">    </span><span class="k">subroutine </span><span class="n">new_meta_request</span><span class="p">(</span><span class="n">self</span><span class="p">,</span><span class="w"> </span><span class="n">key</span><span class="p">,</span><span class="w"> </span><span class="n">table</span><span class="p">,</span><span class="w"> </span><span class="n">meta_allowed</span><span class="p">,</span><span class="w"> </span><span class="n">error</span><span class="p">)</span>
-
 <span class="w">        </span><span class="k">type</span><span class="p">(</span><span class="n">metapackage_request_t</span><span class="p">),</span><span class="w"> </span><span class="k">intent</span><span class="p">(</span><span class="n">out</span><span class="p">)</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">self</span>
 
 <span class="w">        </span><span class="c">!&gt; The package name</span>
@@ -289,8 +285,7 @@ the &ldquo;new_dependencies&rdquo; check</p>
 <span class="w">        </span><span class="c">!&gt; Error handling</span>
 <span class="w">        </span><span class="k">type</span><span class="p">(</span><span class="n">error_t</span><span class="p">),</span><span class="w"> </span><span class="k">allocatable</span><span class="p">,</span><span class="w"> </span><span class="k">intent</span><span class="p">(</span><span class="n">out</span><span class="p">)</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">error</span>
 
-
-<span class="w">        </span><span class="kt">integer</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="nb">stat</span><span class="p">,</span><span class="n">i</span>
+<span class="w">        </span><span class="kt">integer</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">i</span>
 <span class="w">        </span><span class="kt">character</span><span class="p">(</span><span class="nb">len</span><span class="o">=</span><span class="p">:),</span><span class="w"> </span><span class="k">allocatable</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="k">value</span>
 <span class="k">        </span><span class="kt">logical</span><span class="p">,</span><span class="w"> </span><span class="k">allocatable</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">allow_meta</span><span class="p">(:)</span>
 <span class="w">        </span><span class="k">type</span><span class="p">(</span><span class="n">toml_key</span><span class="p">),</span><span class="w"> </span><span class="k">allocatable</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">keys</span><span class="p">(:)</span>
@@ -304,12 +299,8 @@ the &ldquo;new_dependencies&rdquo; check</p>
 <span class="w">            </span><span class="k">return</span>
 <span class="k">        end if</span>
 
-<span class="w">        </span><span class="c">!&gt; The toml table is not checked here because it already passed</span>
-<span class="w">        </span><span class="c">!&gt; the &quot;new_dependencies&quot; check</span>
+<span class="k">        call </span><span class="n">table</span><span class="p">%</span><span class="n">get_keys</span><span class="p">(</span><span class="n">keys</span><span class="p">)</span>
 
-<span class="w">        </span><span class="k">call </span><span class="n">table</span><span class="p">%</span><span class="n">get_keys</span><span class="p">(</span><span class="n">keys</span><span class="p">)</span>
-
-<span class="w">        </span><span class="c">!&gt; Set list of entries that are allowed to be metapackages</span>
 <span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="nb">present</span><span class="p">(</span><span class="n">meta_allowed</span><span class="p">))</span><span class="w"> </span><span class="k">then</span>
 <span class="k">            if</span><span class="w"> </span><span class="p">(</span><span class="n">size</span><span class="p">(</span><span class="n">meta_allowed</span><span class="p">)</span><span class="o">/=</span><span class="n">size</span><span class="p">(</span><span class="n">keys</span><span class="p">))</span><span class="w"> </span><span class="k">then</span>
 <span class="k">                 call </span><span class="n">fatal_error</span><span class="p">(</span><span class="n">error</span><span class="p">,</span><span class="s2">&quot;Internal error: list of metapackage-enable entries does not match table size&quot;</span><span class="p">)</span>
@@ -320,12 +311,8 @@ the &ldquo;new_dependencies&rdquo; check</p>
 <span class="k">            allocate</span><span class="p">(</span><span class="n">allow_meta</span><span class="p">(</span><span class="n">size</span><span class="p">(</span><span class="n">keys</span><span class="p">)),</span><span class="n">source</span><span class="o">=</span><span class="p">.</span><span class="n">true</span><span class="p">.)</span>
 <span class="w">        </span><span class="k">endif</span>
 
-
 <span class="k">        do </span><span class="n">i</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span><span class="n">size</span><span class="p">(</span><span class="n">keys</span><span class="p">)</span>
-
-<span class="w">            </span><span class="c">! Skip standard dependencies</span>
 <span class="w">            </span><span class="k">if</span><span class="w"> </span><span class="p">(.</span><span class="nb">not</span><span class="p">.</span><span class="n">allow_meta</span><span class="p">(</span><span class="n">i</span><span class="p">))</span><span class="w"> </span><span class="k">cycle</span>
-
 <span class="k">            if</span><span class="w"> </span><span class="p">(</span><span class="n">keys</span><span class="p">(</span><span class="n">i</span><span class="p">)%</span><span class="n">key</span><span class="o">==</span><span class="n">key</span><span class="p">)</span><span class="w"> </span><span class="k">then</span>
 <span class="k">                call </span><span class="n">get_value</span><span class="p">(</span><span class="n">table</span><span class="p">,</span><span class="w"> </span><span class="n">key</span><span class="p">,</span><span class="w"> </span><span class="k">value</span><span class="p">)</span>
 <span class="w">                </span><span class="k">if</span><span class="w"> </span><span class="p">(.</span><span class="nb">not</span><span class="p">.</span><span class="w"> </span><span class="nb">allocated</span><span class="p">(</span><span class="k">value</span><span class="p">))</span><span class="w"> </span><span class="k">then</span>
@@ -337,11 +324,8 @@ the &ldquo;new_dependencies&rdquo; check</p>
 <span class="k">                endif</span>
 <span class="k">            end if</span>
 <span class="k">        end do</span>
-
-<span class="w">        </span><span class="c">! Key is not present, metapackage not requested</span>
-<span class="w">        </span><span class="k">return</span>
-
-<span class="k">    end subroutine </span><span class="n">new_meta_request</span>
+<span class="w">        </span><span class="c">! If we reach here, key not present =&gt; request remains off</span>
+<span class="w">    </span><span class="k">end subroutine </span><span class="n">new_meta_request</span>
 </pre></div>
 
     </section>
@@ -365,7 +349,7 @@ the &ldquo;new_dependencies&rdquo; check</p>
             <p class="text-end">
               Documentation generated by
               <a href="https://github.com/Fortran-FOSS-Programmers/ford">FORD</a>
- on 2025-09-09 17:12 +0000             </p>
+ on 2025-09-11 10:25 +0000             </p>
           </div>
         </div>
         <br>

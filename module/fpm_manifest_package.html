@@ -92,7 +92,7 @@
 
             <li class="list-inline-item" id="statements"><i class="fa fa-list-ol"></i>
               <a data-bs-toggle="tooltip" data-bs-placement="bottom" data-bs-html="true"
-                 title=" 4.8% of total for modules and submodules.">762 statements</a>
+                 title=" 2.1% of total for modules and submodules.">359 statements</a>
             </li>
 
             <li class="list-inline-item" id="source-file">
@@ -210,22 +210,25 @@
         <ul class="list-group list-group-flush">
             <li class="list-group-item">
               <ul class="list-inline">
-                  <li class="list-inline-item"><a href='fpm_manifest_install.html'>fpm_manifest_install</a></li>
-                  <li class="list-inline-item"><a href='fpm_toml.html'>fpm_toml</a></li>
+                  <li class="list-inline-item"><a href='fpm_strings.html'>fpm_strings</a></li>
+                  <li class="list-inline-item"><a href='https://toml-f.github.io/toml-f'>tomlf</a></li>
                   <li class="list-inline-item"><a href='fpm_manifest_example.html'>fpm_manifest_example</a></li>
+                  <li class="list-inline-item"><a href='fpm_manifest_executable.html'>fpm_manifest_executable</a></li>
+                  <li class="list-inline-item"><a href='fpm_manifest_feature_collection.html'>fpm_manifest_feature_collection</a></li>
+                  <li class="list-inline-item"><a href='fpm_manifest_dependency.html'>fpm_manifest_dependency</a></li>
+                  <li class="list-inline-item"><a href='fpm_manifest_feature.html'>fpm_manifest_feature</a></li>
+                  <li class="list-inline-item"><a href='fpm_filesystem.html'>fpm_filesystem</a></li>
+                  <li class="list-inline-item"><a href='fpm_toml.html'>fpm_toml</a></li>
+                  <li class="list-inline-item"><a href='fpm_manifest_install.html'>fpm_manifest_install</a></li>
+                  <li class="list-inline-item"><a href='fpm_manifest_fortran.html'>fpm_manifest_fortran</a></li>
                   <li class="list-inline-item"><a href='fpm_manifest_test.html'>fpm_manifest_test</a></li>
                   <li class="list-inline-item"><a href='fpm_manifest_preprocess.html'>fpm_manifest_preprocess</a></li>
-                  <li class="list-inline-item"><a href='fpm_filesystem.html'>fpm_filesystem</a></li>
-                  <li class="list-inline-item"><a href='https://toml-f.github.io/toml-f'>tomlf</a></li>
-                  <li class="list-inline-item"><a href='fpm_manifest_executable.html'>fpm_manifest_executable</a></li>
-                  <li class="list-inline-item"><a href='fpm_manifest_dependency.html'>fpm_manifest_dependency</a></li>
                   <li class="list-inline-item"><a href='fpm_error.html'>fpm_error</a></li>
                   <li class="list-inline-item"><a href='fpm_versioning.html'>fpm_versioning</a></li>
-                  <li class="list-inline-item"><a href='fpm_manifest_fortran.html'>fpm_manifest_fortran</a></li>
-                  <li class="list-inline-item"><a href='fpm_manifest_metapackages.html'>fpm_manifest_metapackages</a></li>
                   <li class="list-inline-item"><a href='fpm_manifest_build.html'>fpm_manifest_build</a></li>
                   <li class="list-inline-item"><a href='fpm_manifest_profile.html'>fpm_manifest_profile</a></li>
                   <li class="list-inline-item"><a href='fpm_manifest_library.html'>fpm_manifest_library</a></li>
+                  <li class="list-inline-item"><a href='fpm_manifest_platform.html'>fpm_manifest_platform</a></li>
               </ul>
             </li>
         </ul>
@@ -246,13 +249,18 @@
     <div class="card-header codesum">
       <span class="anchor" id="type-package_config_t"></span>
       <h3>
-        type, public, extends(<a href='../type/serializable_t.html'>serializable_t</a>)&nbsp;::&nbsp;
+        type, public, extends(<a href='../type/feature_config_t.html'>feature_config_t</a>)&nbsp;::&nbsp;
         <a href='../type/package_config_t.html'>package_config_t</a>
         
       </h3>
     </div>
     <div class="card-body">
-      <p>Package meta data</p>
+      <p>Package meta data
+Package configuration data - extends a <code>feature_config_t</code> to represent the &ldquo;default&rdquo; 
+package feature. The following are now inherited from feature_config_t: name (but for package 
+it&rsquo;s the package name), description, compiler, os_type (defaults to id_all, OS_ALL for packages)
+library, executable(:), dependency(:), dev_dependency(:), example(:), test(:), preprocess(:)
+flags, c_flags, cxx_flags, link_time_flags, requires_features(:)</p>
 
         <h4>Components</h4>
           <table class="table table-striped varlist">
@@ -279,7 +287,7 @@
                 <td></td>
                 <td></td>
             <td>
-<p>Author meta data</p>
+
             </td>
         </tr>
         <tr>
@@ -287,16 +295,33 @@
               <span class="anchor" id="variable-build"></span>
               type(<a href='../type/build_config_t.html'>build_config_t</a>),
             </td>
-              <td>public</td>
+              <td>public,</td>
             <td>
-              
+              allocatable
             </td>
             <td>::</td>
             <td><strong>build</strong></td>
                 <td></td>
                 <td></td>
             <td>
-<p>Build configuration data</p>
+<p>Build configuration</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-c_flags"></span>
+              character(len=:),
+            </td>
+              <td>public,</td>
+            <td>
+              allocatable
+            </td>
+            <td>::</td>
+            <td><strong>c_flags</strong></td>
+                <td></td>
+                <td></td>
+            <td>
+
             </td>
         </tr>
         <tr>
@@ -313,12 +338,46 @@
                 <td></td>
                 <td></td>
             <td>
-<p>Copyright meta data</p>
+
             </td>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-dependency~10"></span>
+              <span class="anchor" id="variable-cxx_flags"></span>
+              character(len=:),
+            </td>
+              <td>public,</td>
+            <td>
+              allocatable
+            </td>
+            <td>::</td>
+            <td><strong>cxx_flags</strong></td>
+                <td></td>
+                <td></td>
+            <td>
+
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-default"></span>
+              logical,
+            </td>
+              <td>public</td>
+            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>default</strong></td>
+<td> =</td>
+                <td>.false.</td>
+            <td>
+<p>Is this feature enabled by default</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-dependency~3"></span>
               type(<a href='../type/dependency_config_t.html'>dependency_config_t</a>),
             </td>
               <td>public,</td>
@@ -330,7 +389,24 @@
                 <td></td>
                 <td></td>
             <td>
-<p>Dependency meta data</p>
+<p>Dependencies</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-description"></span>
+              character(len=:),
+            </td>
+              <td>public,</td>
+            <td>
+              allocatable
+            </td>
+            <td>::</td>
+            <td><strong>description</strong></td>
+                <td></td>
+                <td></td>
+            <td>
+
             </td>
         </tr>
         <tr>
@@ -347,7 +423,7 @@
                 <td></td>
                 <td></td>
             <td>
-<p>Development dependency meta data</p>
+<p>Development dependencies</p>
             </td>
         </tr>
         <tr>
@@ -364,12 +440,12 @@
                 <td></td>
                 <td></td>
             <td>
-<p>Example meta data</p>
+<p>Examples</p>
             </td>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-executable"></span>
+              <span class="anchor" id="variable-executable~2"></span>
               type(<a href='../type/executable_config_t.html'>executable_config_t</a>),
             </td>
               <td>public,</td>
@@ -381,46 +457,80 @@
                 <td></td>
                 <td></td>
             <td>
-<p>Executable meta data</p>
+<p>Executable configurations</p>
             </td>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-fortran~2"></span>
+              <span class="anchor" id="variable-features~9"></span>
+              type(<a href='../type/feature_collection_t.html'>feature_collection_t</a>),
+            </td>
+              <td>public,</td>
+            <td>
+              allocatable
+            </td>
+            <td>::</td>
+            <td><strong>features</strong>(:)</td>
+                <td></td>
+                <td></td>
+            <td>
+<p>Additional feature collections beyond the default package feature</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-flags~6"></span>
+              character(len=:),
+            </td>
+              <td>public,</td>
+            <td>
+              allocatable
+            </td>
+            <td>::</td>
+            <td><strong>flags</strong></td>
+                <td></td>
+                <td></td>
+            <td>
+<p>Compiler flags  </p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-fortran"></span>
               type(<a href='../type/fortran_config_t.html'>fortran_config_t</a>),
             </td>
-              <td>public</td>
+              <td>public,</td>
             <td>
-              
+              allocatable
             </td>
             <td>::</td>
             <td><strong>fortran</strong></td>
                 <td></td>
                 <td></td>
             <td>
-<p>Fortran meta data</p>
+<p>Fortran configuration</p>
             </td>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-install"></span>
+              <span class="anchor" id="variable-install~2"></span>
               type(<a href='../type/install_config_t.html'>install_config_t</a>),
             </td>
-              <td>public</td>
+              <td>public,</td>
             <td>
-              
+              allocatable
             </td>
             <td>::</td>
             <td><strong>install</strong></td>
                 <td></td>
                 <td></td>
             <td>
-<p>Installation configuration data</p>
+<p>Installation configuration</p>
             </td>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-library"></span>
+              <span class="anchor" id="variable-library~2"></span>
               type(<a href='../type/library_config_t.html'>library_config_t</a>),
             </td>
               <td>public,</td>
@@ -432,7 +542,7 @@
                 <td></td>
                 <td></td>
             <td>
-<p>Library meta data</p>
+<p>Library configuration</p>
             </td>
         </tr>
         <tr>
@@ -449,7 +559,24 @@
                 <td></td>
                 <td></td>
             <td>
-<p>License meta data</p>
+<p>Package metadata (package-specific)  </p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-link_time_flags"></span>
+              character(len=:),
+            </td>
+              <td>public,</td>
+            <td>
+              allocatable
+            </td>
+            <td>::</td>
+            <td><strong>link_time_flags</strong></td>
+                <td></td>
+                <td></td>
+            <td>
+
             </td>
         </tr>
         <tr>
@@ -466,7 +593,7 @@
                 <td></td>
                 <td></td>
             <td>
-<p>Maintainer meta data</p>
+
             </td>
         </tr>
         <tr>
@@ -488,7 +615,7 @@
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-name~9"></span>
+              <span class="anchor" id="variable-name~15"></span>
               character(len=:),
             </td>
               <td>public,</td>
@@ -500,12 +627,29 @@
                 <td></td>
                 <td></td>
             <td>
-<p>Name of the package</p>
+<p>Feature identity  </p>
             </td>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-preprocess~2"></span>
+              <span class="anchor" id="variable-platform"></span>
+              type(<a href='../type/platform_config_t.html'>platform_config_t</a>),
+            </td>
+              <td>public</td>
+            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>platform</strong></td>
+                <td></td>
+                <td></td>
+            <td>
+<p>Compiler/OS targeting (consistent with profile_config_t pattern)</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-preprocess~5"></span>
               type(<a href='../type/preprocess_config_t.html'>preprocess_config_t</a>),
             </td>
               <td>public,</td>
@@ -517,12 +661,12 @@
                 <td></td>
                 <td></td>
             <td>
-<p>Preprocess meta data</p>
+<p>Preprocessor configuration</p>
             </td>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-profiles"></span>
+              <span class="anchor" id="variable-profiles~6"></span>
               type(<a href='../type/profile_config_t.html'>profile_config_t</a>),
             </td>
               <td>public,</td>
@@ -534,12 +678,29 @@
                 <td></td>
                 <td></td>
             <td>
-<p>Profiles meta data</p>
+<p>Profiles (collections of features)</p>
             </td>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-test"></span>
+              <span class="anchor" id="variable-requires_features"></span>
+              type(<a href='../type/string_t.html'>string_t</a>),
+            </td>
+              <td>public,</td>
+            <td>
+              allocatable
+            </td>
+            <td>::</td>
+            <td><strong>requires_features</strong>(:)</td>
+                <td></td>
+                <td></td>
+            <td>
+<p>Feature dependencies</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-test~3"></span>
               type(<a href='../type/test_config_t.html'>test_config_t</a>),
             </td>
               <td>public,</td>
@@ -551,12 +712,12 @@
                 <td></td>
                 <td></td>
             <td>
-<p>Test meta data</p>
+<p>Tests</p>
             </td>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-version~9"></span>
+              <span class="anchor" id="variable-version~21"></span>
               type(<a href='../type/version_t.html'>version_t</a>),
             </td>
               <td>public</td>
@@ -568,7 +729,7 @@
                 <td></td>
                 <td></td>
             <td>
-<p>Package version</p>
+<p>Package version (name is inherited from feature_config_t%name)</p>
             </td>
         </tr>
     </tbody>
@@ -581,38 +742,53 @@
         <table class="table table-striped varlist">
           <tbody>
               <tr>
+                <td>  procedure, public, nopass ::
+  <strong><a href='../type/feature_config_t.html#boundprocedure-check'>check</a></strong></td>
+                  <td><p>Check validity of the TOML table</p></td>
+              </tr>
+              <tr>
                 <td>  generic, public ::
-  <strong><a href='../type/package_config_t.html#boundprocedure-dump~9'>dump</a></strong> => <a href='/home/runner/work/fpm/fpm/fpm-doc/type/srcfile_t.html#boundprocedure-dump_to_toml~6'>dump_to_toml</a>, dump_to_file, dump_to_unit</td>
+  <strong><a href='../type/package_config_t.html#boundprocedure-dump~30'>dump</a></strong> => <a href='/home/runner/work/fpm/fpm/fpm-doc/type/srcfile_t.html#boundprocedure-dump_to_toml~6'>dump_to_toml</a>, dump_to_file, dump_to_unit</td>
                   <td></td>
               </tr>
               <tr>
                 <td>  procedure, public ::
-  <strong><a href='../type/package_config_t.html#boundprocedure-dump_to_toml~5'>dump_to_toml</a></strong></td>
+  <strong><a href='../type/package_config_t.html#boundprocedure-dump_to_toml~25'>dump_to_toml</a></strong></td>
                   <td></td>
               </tr>
               <tr>
                 <td>  procedure, public ::
-  <strong><a href='../type/package_config_t.html#boundprocedure-info~3'>info</a></strong></td>
+  <strong><a href='../type/package_config_t.html#boundprocedure-export_config'>export_config</a></strong></td>
+                  <td><p>Export package configuration with features applied</p></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/package_config_t.html#boundprocedure-info~14'>info</a></strong></td>
                   <td><p>Print information on this instance</p></td>
               </tr>
               <tr>
                 <td>  generic, public ::
-  <strong><a href='../type/package_config_t.html#boundprocedure-load~6'>load</a></strong> => <a href='/home/runner/work/fpm/fpm/fpm-doc/type/srcfile_t.html#boundprocedure-load_from_toml~6'>load_from_toml</a>, load_from_file, load_from_unit</td>
+  <strong><a href='../type/package_config_t.html#boundprocedure-load~27'>load</a></strong> => <a href='/home/runner/work/fpm/fpm/fpm-doc/type/srcfile_t.html#boundprocedure-load_from_toml~6'>load_from_toml</a>, load_from_file, load_from_unit</td>
                   <td></td>
               </tr>
               <tr>
                 <td>  procedure, public ::
-  <strong><a href='../type/package_config_t.html#boundprocedure-load_from_toml~5'>load_from_toml</a></strong></td>
+  <strong><a href='../type/package_config_t.html#boundprocedure-load_from_toml~25'>load_from_toml</a></strong></td>
                   <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/feature_config_t.html#boundprocedure-manifest_name'>manifest_name</a></strong></td>
+                  <td><p>Get manifest name</p></td>
               </tr>
               <tr>
                 <td>  generic, public ::
-  <strong><a href='../type/package_config_t.html#boundprocedure-operator%28%3D%3D%29~7'>operator(==)</a></strong> => <a href='/home/runner/work/fpm/fpm/fpm-doc/type/srcfile_t.html#boundprocedure-serializable_is_same~6'>serializable_is_same</a></td>
+  <strong><a href='../type/package_config_t.html#boundprocedure-operator%28%3D%3D%29~28'>operator(==)</a></strong> => <a href='/home/runner/work/fpm/fpm/fpm-doc/type/srcfile_t.html#boundprocedure-serializable_is_same~6'>serializable_is_same</a></td>
                   <td></td>
               </tr>
               <tr>
                 <td>  procedure, public ::
-  <strong><a href='../type/package_config_t.html#boundprocedure-serializable_is_same~5'>serializable_is_same</a></strong> => manifest_is_same</td>
+  <strong><a href='../type/package_config_t.html#boundprocedure-serializable_is_same~25'>serializable_is_same</a></strong> => manifest_is_same</td>
                   <td><p>Serialization interface</p></td>
               </tr>
               <tr>
@@ -651,7 +827,7 @@
     <tbody>
         <tr>
             <td>
-              <span class="anchor" id="variable-self~40"></span>
+              <span class="anchor" id="variable-self~199"></span>
               type(<a href='../type/package_config_t.html'>package_config_t</a>),
             </td>
 <td>intent(out)</td>
@@ -666,7 +842,7 @@
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-table~17"></span>
+              <span class="anchor" id="variable-table~115"></span>
               type(toml_table),
             </td>
 <td>intent(inout)</td>
@@ -681,7 +857,7 @@
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-root~7"></span>
+              <span class="anchor" id="variable-root~14"></span>
               character(len=*),
             </td>
 <td>intent(in),</td>
@@ -696,7 +872,7 @@
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-error~42"></span>
+              <span class="anchor" id="variable-error~245"></span>
               type(<a href='../type/error_t.html'>error_t</a>),
             </td>
 <td>intent(out),</td>
@@ -739,7 +915,7 @@
             <p class="text-end">
               Documentation generated by
               <a href="https://github.com/Fortran-FOSS-Programmers/ford">FORD</a>
- on 2025-09-09 17:12 +0000             </p>
+ on 2025-09-11 10:25 +0000             </p>
           </div>
         </div>
         <br>

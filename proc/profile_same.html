@@ -92,7 +92,7 @@
 
             <li class="list-inline-item" id="statements"><i class="fa fa-list-ol"></i>
               <a data-bs-toggle="tooltip" data-bs-placement="bottom" data-bs-html="true"
-                 title=" 0.6% of total for procedures.">46 statements</a>
+                 title=" 0.3% of total for procedures.">20 statements</a>
             </li>
 
             <li class="list-inline-item" id="source-file">
@@ -134,7 +134,7 @@
       </a>
       <div id="vars-0" class="collapse">
         <div class="list-group list-group-flush">
-            <a class="list-group-item" href="../proc/profile_same.html#variable-ii~26">ii</a>
+            <a class="list-group-item" href="../proc/profile_same.html#variable-ii~29">ii</a>
         </div>
       </div>
     </div>
@@ -192,7 +192,7 @@
     <tbody>
         <tr>
             <td>
-              <span class="anchor" id="variable-this~20"></span>
+              <span class="anchor" id="variable-this~31"></span>
               class(<a href='../type/profile_config_t.html'>profile_config_t</a>),
             </td>
 <td>intent(in)</td>
@@ -207,7 +207,7 @@
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-that~14"></span>
+              <span class="anchor" id="variable-that~17"></span>
               class(<a href='../type/serializable_t.html'>serializable_t</a>),
             </td>
 <td>intent(in)</td>
@@ -247,7 +247,7 @@
     <tbody>
         <tr>
             <td>
-              <span class="anchor" id="variable-ii~26"></span>
+              <span class="anchor" id="variable-ii~29"></span>
               integer,
             </td>
               <td>public</td>
@@ -288,42 +288,18 @@
 
 <span class="w">          </span><span class="k">select type</span><span class="w"> </span><span class="p">(</span><span class="n">other</span><span class="o">=&gt;</span><span class="n">that</span><span class="p">)</span>
 <span class="w">             </span><span class="k">type is</span><span class="w"> </span><span class="p">(</span><span class="n">profile_config_t</span><span class="p">)</span>
-<span class="w">                </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="nb">allocated</span><span class="p">(</span><span class="n">this</span><span class="p">%</span><span class="n">profile_name</span><span class="p">).</span><span class="n">neqv</span><span class="p">.</span><span class="nb">allocated</span><span class="p">(</span><span class="n">other</span><span class="p">%</span><span class="n">profile_name</span><span class="p">))</span><span class="w"> </span><span class="k">return</span>
-<span class="k">                if</span><span class="w"> </span><span class="p">(</span><span class="nb">allocated</span><span class="p">(</span><span class="n">this</span><span class="p">%</span><span class="n">profile_name</span><span class="p">))</span><span class="w"> </span><span class="k">then</span>
-<span class="k">                    if</span><span class="w"> </span><span class="p">(.</span><span class="nb">not</span><span class="p">.(</span><span class="n">this</span><span class="p">%</span><span class="n">profile_name</span><span class="o">==</span><span class="n">other</span><span class="p">%</span><span class="n">profile_name</span><span class="p">))</span><span class="w"> </span><span class="k">return</span>
-<span class="k">                endif</span>
-<span class="k">                if</span><span class="w"> </span><span class="p">(</span><span class="nb">allocated</span><span class="p">(</span><span class="n">this</span><span class="p">%</span><span class="n">compiler</span><span class="p">).</span><span class="n">neqv</span><span class="p">.</span><span class="nb">allocated</span><span class="p">(</span><span class="n">other</span><span class="p">%</span><span class="n">compiler</span><span class="p">))</span><span class="w"> </span><span class="k">return</span>
-<span class="k">                if</span><span class="w"> </span><span class="p">(</span><span class="nb">allocated</span><span class="p">(</span><span class="n">this</span><span class="p">%</span><span class="n">compiler</span><span class="p">))</span><span class="w"> </span><span class="k">then</span>
-<span class="k">                    if</span><span class="w"> </span><span class="p">(.</span><span class="nb">not</span><span class="p">.(</span><span class="n">this</span><span class="p">%</span><span class="n">compiler</span><span class="o">==</span><span class="n">other</span><span class="p">%</span><span class="n">compiler</span><span class="p">))</span><span class="w"> </span><span class="k">return</span>
-<span class="k">                endif</span>
-<span class="k">                if</span><span class="w"> </span><span class="p">(</span><span class="n">this</span><span class="p">%</span><span class="n">os_type</span><span class="o">/=</span><span class="n">other</span><span class="p">%</span><span class="n">os_type</span><span class="p">)</span><span class="w"> </span><span class="k">return</span>
-<span class="k">                if</span><span class="w"> </span><span class="p">(</span><span class="nb">allocated</span><span class="p">(</span><span class="n">this</span><span class="p">%</span><span class="n">flags</span><span class="p">).</span><span class="n">neqv</span><span class="p">.</span><span class="nb">allocated</span><span class="p">(</span><span class="n">other</span><span class="p">%</span><span class="n">flags</span><span class="p">))</span><span class="w"> </span><span class="k">return</span>
-<span class="k">                if</span><span class="w"> </span><span class="p">(</span><span class="nb">allocated</span><span class="p">(</span><span class="n">this</span><span class="p">%</span><span class="n">flags</span><span class="p">))</span><span class="w"> </span><span class="k">then</span>
-<span class="k">                    if</span><span class="w"> </span><span class="p">(.</span><span class="nb">not</span><span class="p">.(</span><span class="n">this</span><span class="p">%</span><span class="n">flags</span><span class="o">==</span><span class="n">other</span><span class="p">%</span><span class="n">flags</span><span class="p">))</span><span class="w"> </span><span class="k">return</span>
-<span class="k">                endif</span>
-<span class="k">                if</span><span class="w"> </span><span class="p">(</span><span class="nb">allocated</span><span class="p">(</span><span class="n">this</span><span class="p">%</span><span class="n">c_flags</span><span class="p">).</span><span class="n">neqv</span><span class="p">.</span><span class="nb">allocated</span><span class="p">(</span><span class="n">other</span><span class="p">%</span><span class="n">c_flags</span><span class="p">))</span><span class="w"> </span><span class="k">return</span>
-<span class="k">                if</span><span class="w"> </span><span class="p">(</span><span class="nb">allocated</span><span class="p">(</span><span class="n">this</span><span class="p">%</span><span class="n">c_flags</span><span class="p">))</span><span class="w"> </span><span class="k">then</span>
-<span class="k">                    if</span><span class="w"> </span><span class="p">(.</span><span class="nb">not</span><span class="p">.(</span><span class="n">this</span><span class="p">%</span><span class="n">c_flags</span><span class="o">==</span><span class="n">other</span><span class="p">%</span><span class="n">c_flags</span><span class="p">))</span><span class="w"> </span><span class="k">return</span>
-<span class="k">                endif</span>
-<span class="k">                if</span><span class="w"> </span><span class="p">(</span><span class="nb">allocated</span><span class="p">(</span><span class="n">this</span><span class="p">%</span><span class="n">cxx_flags</span><span class="p">).</span><span class="n">neqv</span><span class="p">.</span><span class="nb">allocated</span><span class="p">(</span><span class="n">other</span><span class="p">%</span><span class="n">cxx_flags</span><span class="p">))</span><span class="w"> </span><span class="k">return</span>
-<span class="k">                if</span><span class="w"> </span><span class="p">(</span><span class="nb">allocated</span><span class="p">(</span><span class="n">this</span><span class="p">%</span><span class="n">cxx_flags</span><span class="p">))</span><span class="w"> </span><span class="k">then</span>
-<span class="k">                    if</span><span class="w"> </span><span class="p">(.</span><span class="nb">not</span><span class="p">.(</span><span class="n">this</span><span class="p">%</span><span class="n">cxx_flags</span><span class="o">==</span><span class="n">other</span><span class="p">%</span><span class="n">cxx_flags</span><span class="p">))</span><span class="w"> </span><span class="k">return</span>
-<span class="k">                endif</span>
-<span class="k">                if</span><span class="w"> </span><span class="p">(</span><span class="nb">allocated</span><span class="p">(</span><span class="n">this</span><span class="p">%</span><span class="n">link_time_flags</span><span class="p">).</span><span class="n">neqv</span><span class="p">.</span><span class="nb">allocated</span><span class="p">(</span><span class="n">other</span><span class="p">%</span><span class="n">link_time_flags</span><span class="p">))</span><span class="w"> </span><span class="k">return</span>
-<span class="k">                if</span><span class="w"> </span><span class="p">(</span><span class="nb">allocated</span><span class="p">(</span><span class="n">this</span><span class="p">%</span><span class="n">link_time_flags</span><span class="p">))</span><span class="w"> </span><span class="k">then</span>
-<span class="k">                    if</span><span class="w"> </span><span class="p">(.</span><span class="nb">not</span><span class="p">.(</span><span class="n">this</span><span class="p">%</span><span class="n">link_time_flags</span><span class="o">==</span><span class="n">other</span><span class="p">%</span><span class="n">link_time_flags</span><span class="p">))</span><span class="w"> </span><span class="k">return</span>
-<span class="k">                endif</span>
+<span class="w">                </span>
+<span class="w">                </span><span class="c">! Compare the underlying features</span>
+<span class="w">                </span><span class="k">if</span><span class="w"> </span><span class="p">(.</span><span class="nb">not</span><span class="p">.(</span><span class="n">this</span><span class="p">%</span><span class="n">profile_feature</span><span class="o">==</span><span class="n">other</span><span class="p">%</span><span class="n">profile_feature</span><span class="p">))</span><span class="w"> </span><span class="k">return</span>
 
-<span class="k">                if</span><span class="w"> </span><span class="p">(</span><span class="nb">allocated</span><span class="p">(</span><span class="n">this</span><span class="p">%</span><span class="n">file_scope_flags</span><span class="p">).</span><span class="n">neqv</span><span class="p">.</span><span class="nb">allocated</span><span class="p">(</span><span class="n">other</span><span class="p">%</span><span class="n">file_scope_flags</span><span class="p">))</span><span class="w"> </span><span class="k">return</span>
+<span class="w">                </span><span class="c">! Compare file scope flags (maintained for backward compatibility)</span>
+<span class="w">                </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="nb">allocated</span><span class="p">(</span><span class="n">this</span><span class="p">%</span><span class="n">file_scope_flags</span><span class="p">).</span><span class="n">neqv</span><span class="p">.</span><span class="nb">allocated</span><span class="p">(</span><span class="n">other</span><span class="p">%</span><span class="n">file_scope_flags</span><span class="p">))</span><span class="w"> </span><span class="k">return</span>
 <span class="k">                if</span><span class="w"> </span><span class="p">(</span><span class="nb">allocated</span><span class="p">(</span><span class="n">this</span><span class="p">%</span><span class="n">file_scope_flags</span><span class="p">))</span><span class="w"> </span><span class="k">then</span>
 <span class="k">                    if</span><span class="w"> </span><span class="p">(.</span><span class="nb">not</span><span class="p">.</span><span class="n">size</span><span class="p">(</span><span class="n">this</span><span class="p">%</span><span class="n">file_scope_flags</span><span class="p">)</span><span class="o">==</span><span class="n">size</span><span class="p">(</span><span class="n">other</span><span class="p">%</span><span class="n">file_scope_flags</span><span class="p">))</span><span class="w"> </span><span class="k">return</span>
 <span class="k">                    do </span><span class="n">ii</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span><span class="n">size</span><span class="p">(</span><span class="n">this</span><span class="p">%</span><span class="n">file_scope_flags</span><span class="p">)</span>
-<span class="w">                        </span><span class="k">print</span><span class="w"> </span><span class="o">*</span><span class="p">,</span><span class="w"> </span><span class="s1">&#39;check ii-th file scope: &#39;</span><span class="p">,</span><span class="n">ii</span>
 <span class="w">                       </span><span class="k">if</span><span class="w"> </span><span class="p">(.</span><span class="nb">not</span><span class="p">.</span><span class="n">this</span><span class="p">%</span><span class="n">file_scope_flags</span><span class="p">(</span><span class="n">ii</span><span class="p">)</span><span class="o">==</span><span class="n">other</span><span class="p">%</span><span class="n">file_scope_flags</span><span class="p">(</span><span class="n">ii</span><span class="p">))</span><span class="w"> </span><span class="k">return</span>
 <span class="k">                    end do</span>
 <span class="k">                endif</span>
-
-<span class="k">                if</span><span class="w"> </span><span class="p">(</span><span class="n">this</span><span class="p">%</span><span class="n">is_built_in</span><span class="p">.</span><span class="n">neqv</span><span class="p">.</span><span class="n">other</span><span class="p">%</span><span class="n">is_built_in</span><span class="p">)</span><span class="w"> </span><span class="k">return</span>
 
 <span class="k">             class </span><span class="n">default</span>
 <span class="w">                </span><span class="c">! Not the same type</span>
@@ -357,7 +333,7 @@
             <p class="text-end">
               Documentation generated by
               <a href="https://github.com/Fortran-FOSS-Programmers/ford">FORD</a>
- on 2025-09-09 17:12 +0000             </p>
+ on 2025-09-11 10:25 +0000             </p>
           </div>
         </div>
         <br>

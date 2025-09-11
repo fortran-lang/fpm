@@ -92,7 +92,7 @@
 
             <li class="list-inline-item" id="statements"><i class="fa fa-list-ol"></i>
               <a data-bs-toggle="tooltip" data-bs-placement="bottom" data-bs-html="true"
-                 title=" 0.6% of total for procedures.">46 statements</a>
+                 title=" 0.1% of total for procedures.">5 statements</a>
             </li>
 
             <li class="list-inline-item" id="source-file">
@@ -181,7 +181,7 @@
     <tbody>
         <tr>
             <td>
-              <span class="anchor" id="variable-self~88"></span>
+              <span class="anchor" id="variable-self~190"></span>
               class(<a href='../type/compiler_t.html'>compiler_t</a>),
             </td>
 <td>intent(in)</td>
@@ -199,7 +199,7 @@
 
       <h3>Return Value
         <small>
-          <span class="anchor" id="variable-name~20"></span>
+          <span class="anchor" id="variable-name~47"></span>
           character(len=:), allocatable
         </small>
       </h3>
@@ -223,29 +223,7 @@
 <span class="w">   </span><span class="k">class</span><span class="p">(</span><span class="n">compiler_t</span><span class="p">),</span><span class="w"> </span><span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">)</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">self</span>
 <span class="w">   </span><span class="c">!&gt; Representation as string</span>
 <span class="w">   </span><span class="kt">character</span><span class="p">(</span><span class="nb">len</span><span class="o">=</span><span class="p">:),</span><span class="w"> </span><span class="k">allocatable</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">name</span>
-
-<span class="w">   </span><span class="k">select case</span><span class="w"> </span><span class="p">(</span><span class="n">self</span><span class="p">%</span><span class="n">id</span><span class="p">)</span>
-<span class="w">       </span><span class="k">case</span><span class="p">(</span><span class="n">id_gcc</span><span class="p">);</span><span class="w"> </span><span class="n">name</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;gfortran&quot;</span>
-<span class="w">       </span><span class="k">case</span><span class="p">(</span><span class="n">id_f95</span><span class="p">);</span><span class="w"> </span><span class="n">name</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;f95&quot;</span>
-<span class="w">       </span><span class="k">case</span><span class="p">(</span><span class="n">id_caf</span><span class="p">);</span><span class="w"> </span><span class="n">name</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;caf&quot;</span>
-<span class="w">       </span><span class="k">case</span><span class="p">(</span><span class="n">id_intel_classic_nix</span><span class="p">);</span><span class="w">     </span><span class="n">name</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;ifort&quot;</span>
-<span class="w">       </span><span class="k">case</span><span class="p">(</span><span class="n">id_intel_classic_mac</span><span class="p">);</span><span class="w">     </span><span class="n">name</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;ifort&quot;</span>
-<span class="w">       </span><span class="k">case</span><span class="p">(</span><span class="n">id_intel_classic_windows</span><span class="p">);</span><span class="w"> </span><span class="n">name</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;ifort&quot;</span>
-<span class="w">       </span><span class="k">case</span><span class="p">(</span><span class="n">id_intel_llvm_nix</span><span class="p">);</span><span class="w">     </span><span class="n">name</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;ifx&quot;</span>
-<span class="w">       </span><span class="k">case</span><span class="p">(</span><span class="n">id_intel_llvm_windows</span><span class="p">);</span><span class="w"> </span><span class="n">name</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;ifx&quot;</span>
-<span class="w">       </span><span class="k">case</span><span class="p">(</span><span class="n">id_intel_llvm_unknown</span><span class="p">);</span><span class="w"> </span><span class="n">name</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;ifx&quot;</span>
-<span class="w">       </span><span class="k">case</span><span class="p">(</span><span class="n">id_pgi</span><span class="p">);</span><span class="w">       </span><span class="n">name</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;pgfortran&quot;</span>
-<span class="w">       </span><span class="k">case</span><span class="p">(</span><span class="n">id_nvhpc</span><span class="p">);</span><span class="w">     </span><span class="n">name</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;nvfortran&quot;</span>
-<span class="w">       </span><span class="k">case</span><span class="p">(</span><span class="n">id_nag</span><span class="p">);</span><span class="w">       </span><span class="n">name</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;nagfor&quot;</span>
-<span class="w">       </span><span class="k">case</span><span class="p">(</span><span class="n">id_flang_classic</span><span class="p">);</span><span class="w">     </span><span class="n">name</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;flang-classic&quot;</span>
-<span class="w">       </span><span class="k">case</span><span class="p">(</span><span class="n">id_flang</span><span class="p">);</span><span class="w"> </span><span class="n">name</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;flang&quot;</span>
-<span class="w">       </span><span class="k">case</span><span class="p">(</span><span class="n">id_f18</span><span class="p">);</span><span class="w">       </span><span class="n">name</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;f18&quot;</span>
-<span class="w">       </span><span class="k">case</span><span class="p">(</span><span class="n">id_ibmxl</span><span class="p">);</span><span class="w">     </span><span class="n">name</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;xlf90&quot;</span>
-<span class="w">       </span><span class="k">case</span><span class="p">(</span><span class="n">id_cray</span><span class="p">);</span><span class="w">      </span><span class="n">name</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;crayftn&quot;</span>
-<span class="w">       </span><span class="k">case</span><span class="p">(</span><span class="n">id_lahey</span><span class="p">);</span><span class="w">     </span><span class="n">name</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;lfc&quot;</span>
-<span class="w">       </span><span class="k">case</span><span class="p">(</span><span class="n">id_lfortran</span><span class="p">);</span><span class="w">  </span><span class="n">name</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;lFortran&quot;</span>
-<span class="w">       </span><span class="k">case </span><span class="n">default</span><span class="p">;</span><span class="w">       </span><span class="n">name</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;invalid/unknown&quot;</span>
-<span class="w">   </span><span class="k">end select</span>
+<span class="w">   </span><span class="n">name</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">compiler_id_name</span><span class="p">(</span><span class="n">self</span><span class="p">%</span><span class="n">id</span><span class="p">)</span>
 <span class="k">end function </span><span class="n">compiler_name</span>
 </pre></div>
 
@@ -270,7 +248,7 @@
             <p class="text-end">
               Documentation generated by
               <a href="https://github.com/Fortran-FOSS-Programmers/ford">FORD</a>
- on 2025-09-09 17:12 +0000             </p>
+ on 2025-09-11 10:25 +0000             </p>
           </div>
         </div>
         <br>

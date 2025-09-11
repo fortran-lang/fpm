@@ -92,7 +92,7 @@
 
             <li class="list-inline-item" id="statements"><i class="fa fa-list-ol"></i>
               <a data-bs-toggle="tooltip" data-bs-placement="bottom" data-bs-html="true"
-                 title=" 4.8% of total for modules and submodules.">759 statements</a>
+                 title=" 4.5% of total for modules and submodules.">783 statements</a>
             </li>
 
             <li class="list-inline-item" id="source-file">
@@ -245,17 +245,18 @@
         <ul class="list-group list-group-flush">
             <li class="list-group-item">
               <ul class="list-inline">
-                  <li class="list-inline-item"><a href='fpm_toml.html'>fpm_toml</a></li>
-                  <li class="list-inline-item"><a href='fpm_manifest_preprocess.html'>fpm_manifest_preprocess</a></li>
-                  <li class="list-inline-item"><a href='fpm_environment.html'>fpm_environment</a></li>
-                  <li class="list-inline-item"><a href='https://toml-f.github.io/toml-f'>tomlf</a></li>
-                  <li class="list-inline-item"><a href='fpm_compiler.html'>fpm_compiler</a></li>
-                  <li class="list-inline-item"><a href='http://fortranwiki.org/fortran/show/iso_fortran_env'>iso_fortran_env</a></li>
-                  <li class="list-inline-item"><a href='fpm_versioning.html'>fpm_versioning</a></li>
                   <li class="list-inline-item"><a href='fpm_error.html'>fpm_error</a></li>
+                  <li class="list-inline-item"><a href='fpm_strings.html'>fpm_strings</a></li>
+                  <li class="list-inline-item"><a href='https://toml-f.github.io/toml-f'>tomlf</a></li>
+                  <li class="list-inline-item"><a href='fpm_manifest_platform.html'>fpm_manifest_platform</a></li>
+                  <li class="list-inline-item"><a href='http://fortranwiki.org/fortran/show/iso_fortran_env'>iso_fortran_env</a></li>
                   <li class="list-inline-item"><a href='fpm_dependency.html'>fpm_dependency</a></li>
                   <li class="list-inline-item"><a href='fpm_manifest_fortran.html'>fpm_manifest_fortran</a></li>
-                  <li class="list-inline-item"><a href='fpm_strings.html'>fpm_strings</a></li>
+                  <li class="list-inline-item"><a href='fpm_compiler.html'>fpm_compiler</a></li>
+                  <li class="list-inline-item"><a href='fpm_environment.html'>fpm_environment</a></li>
+                  <li class="list-inline-item"><a href='fpm_manifest_preprocess.html'>fpm_manifest_preprocess</a></li>
+                  <li class="list-inline-item"><a href='fpm_toml.html'>fpm_toml</a></li>
+                  <li class="list-inline-item"><a href='fpm_versioning.html'>fpm_versioning</a></li>
               </ul>
             </li>
         </ul>
@@ -570,7 +571,7 @@ parameter
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-build_dir~3"></span>
+              <span class="anchor" id="variable-build_dir~2"></span>
               character(len=:),
             </td>
               <td>public,</td>
@@ -621,7 +622,7 @@ parameter
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-compiler~5"></span>
+              <span class="anchor" id="variable-compiler~21"></span>
               type(<a href='../type/compiler_t.html'>compiler_t</a>),
             </td>
               <td>public</td>
@@ -655,7 +656,7 @@ parameter
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-deps~2"></span>
+              <span class="anchor" id="variable-deps~3"></span>
               type(<a href='../type/dependency_tree_t.html'>dependency_tree_t</a>),
             </td>
               <td>public</td>
@@ -672,7 +673,7 @@ parameter
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-enforce_module_names~2"></span>
+              <span class="anchor" id="variable-enforce_module_names~3"></span>
               logical,
             </td>
               <td>public</td>
@@ -689,7 +690,7 @@ parameter
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-external_modules~3"></span>
+              <span class="anchor" id="variable-external_modules~2"></span>
               type(<a href='../type/string_t.html'>string_t</a>),
             </td>
               <td>public,</td>
@@ -757,7 +758,7 @@ parameter
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-link_flags~2"></span>
+              <span class="anchor" id="variable-link_flags"></span>
               character(len=:),
             </td>
               <td>public,</td>
@@ -791,7 +792,7 @@ parameter
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-module_prefix~3"></span>
+              <span class="anchor" id="variable-module_prefix~4"></span>
               type(<a href='../type/string_t.html'>string_t</a>),
             </td>
               <td>public</td>
@@ -808,7 +809,7 @@ parameter
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-package_name~4"></span>
+              <span class="anchor" id="variable-package_name~6"></span>
               character(len=:),
             </td>
               <td>public,</td>
@@ -838,6 +839,23 @@ parameter
                 <td></td>
             <td>
 <p>Array of packages (including the root package)</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-target_os"></span>
+              integer,
+            </td>
+              <td>public</td>
+            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>target_os</strong></td>
+<td> =</td>
+                <td>OS_ALL</td>
+            <td>
+<p>Target operating system</p>
             </td>
         </tr>
     </tbody>
@@ -885,6 +903,11 @@ parameter
                   <td><p>Serialization interface</p></td>
               </tr>
               <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/fpm_model_t.html#boundprocedure-target_platform~2'>target_platform</a></strong></td>
+                  <td><p>Get target platform configuration</p></td>
+              </tr>
+              <tr>
                 <td>  procedure, public, non_overridable ::
   <strong><a href='../type/serializable_t.html#boundprocedure-test_serialization'>test_serialization</a></strong></td>
                   <td><p>Test load/write roundtrip</p></td>
@@ -919,7 +942,7 @@ parameter
     <tbody>
         <tr>
             <td>
-              <span class="anchor" id="variable-enforce_module_names"></span>
+              <span class="anchor" id="variable-enforce_module_names~2"></span>
               logical,
             </td>
               <td>public</td>
@@ -953,7 +976,7 @@ parameter
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-module_prefix~2"></span>
+              <span class="anchor" id="variable-module_prefix~3"></span>
               type(<a href='../type/string_t.html'>string_t</a>),
             </td>
               <td>public</td>
@@ -970,7 +993,7 @@ parameter
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-name~13"></span>
+              <span class="anchor" id="variable-name~10"></span>
               character(len=:),
             </td>
               <td>public,</td>
@@ -987,7 +1010,7 @@ parameter
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-preprocess~3"></span>
+              <span class="anchor" id="variable-preprocess~4"></span>
               type(<a href='../type/preprocess_config_t.html'>preprocess_config_t</a>),
             </td>
               <td>public</td>
@@ -1021,7 +1044,7 @@ parameter
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-version~11"></span>
+              <span class="anchor" id="variable-version~4"></span>
               type(<a href='../type/version_t.html'>version_t</a>),
             </td>
               <td>public,</td>
@@ -1149,7 +1172,7 @@ parameter
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-file_name"></span>
+              <span class="anchor" id="variable-file_name~2"></span>
               character(len=:),
             </td>
               <td>public,</td>
@@ -1357,7 +1380,7 @@ parameter
     <tbody>
         <tr>
             <td>
-              <span class="anchor" id="variable-flag~2"></span>
+              <span class="anchor" id="variable-flag"></span>
               integer,
             </td>
 <td>intent(in)</td>
@@ -1402,7 +1425,7 @@ parameter
     <tbody>
         <tr>
             <td>
-              <span class="anchor" id="variable-flag~3"></span>
+              <span class="anchor" id="variable-flag~2"></span>
               integer,
             </td>
 <td>intent(in)</td>
@@ -1452,7 +1475,7 @@ parameter
     <tbody>
         <tr>
             <td>
-              <span class="anchor" id="variable-model~7"></span>
+              <span class="anchor" id="variable-model~12"></span>
               type(<a href='../type/fpm_model_t.html'>fpm_model_t</a>),
             </td>
 <td>intent(in)</td>
@@ -1495,7 +1518,7 @@ parameter
             <p class="text-end">
               Documentation generated by
               <a href="https://github.com/Fortran-FOSS-Programmers/ford">FORD</a>
- on 2025-09-09 17:12 +0000             </p>
+ on 2025-09-11 10:25 +0000             </p>
           </div>
         </div>
         <br>

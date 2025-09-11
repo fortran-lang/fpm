@@ -92,20 +92,20 @@
 
             <li class="list-inline-item" id="statements"><i class="fa fa-list-ol"></i>
               <a data-bs-toggle="tooltip" data-bs-placement="bottom" data-bs-html="true"
-                 title=" 0.1% of total for procedures.">10 statements</a>
+                 title=" 0.2% of total for procedures.">12 statements</a>
             </li>
 
             <li class="list-inline-item" id="source-file">
               <i class="fa fa-code"></i>
-              <a href="../src/profiles.f90"> Source File</a>
+              <a href="../src/fpm_compiler.F90"> Source File</a>
             </li>
         </ul>
       </div>
       <div class="col">
         <nav aria-label="breadcrumb">
           <ol class="breadcrumb justify-content-end mb-0">
-                <li class="breadcrumb-item"><a href='../sourcefile/profiles.f90.html'>profiles.f90</a></li>
-                <li class="breadcrumb-item"><a href='../module/fpm_manifest_profile.html'>fpm_manifest_profile</a></li>
+                <li class="breadcrumb-item"><a href='../sourcefile/fpm_compiler.f90.html'>fpm_compiler.F90</a></li>
+                <li class="breadcrumb-item"><a href='../module/fpm_compiler.html'>fpm_compiler</a></li>
             <li class="breadcrumb-item active" aria-current="page">validate_compiler_name</li>
           </ol>
         </nav>
@@ -127,7 +127,18 @@
       <div id="sidebar">
       <h3>Contents</h3>
   
-  
+      <div class="card mb-4">
+      <a data-bs-toggle="collapse" href="#vars-0"
+         aria-expanded="false" aria-controls="vars-0">
+         <h4 class="card-header bg-primary text-white">Variables</h4>
+      </a>
+      <div id="vars-0" class="collapse">
+        <div class="list-group list-group-flush">
+            <a class="list-group-item" href="../proc/validate_compiler_name.html#variable-lname">lname</a>
+        </div>
+      </div>
+    </div>
+
   
   
   
@@ -159,7 +170,7 @@
     </div>
     
     <div class="col-md-9" id='text'>
-    <h2>public  subroutine validate_compiler_name(compiler_name, is_valid)  
+    <h2>public pure elemental subroutine validate_compiler_name(compiler_name, is_valid)  
 </h2>
     
 
@@ -179,12 +190,12 @@
     <tbody>
         <tr>
             <td>
-              <span class="anchor" id="variable-compiler_name"></span>
-              character(len=:),
+              <span class="anchor" id="variable-compiler_name~9"></span>
+              character(len=*),
             </td>
-<td>intent(in),</td>
+<td>intent(in)</td>
               <td></td>            <td>
-              allocatable
+              
             </td>
             <td>::</td>
             <td><strong>compiler_name</strong></td>
@@ -194,7 +205,7 @@
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-is_valid"></span>
+              <span class="anchor" id="variable-is_valid~9"></span>
               logical,
             </td>
 <td>intent(out)</td>
@@ -213,6 +224,40 @@
     <br>
 
 
+    <section>    
+      <h2>Variables</h2>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Visibility</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+<th></th><th scope="col">Initial</th>        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-lname"></span>
+              character(len=:),
+            </td>
+              <td>public,</td>
+            <td>
+              allocatable
+            </td>
+            <td>::</td>
+            <td><strong>lname</strong></td>
+                <td></td>
+                <td></td>
+            <td>
+                
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+    </section>
+    <br>
     
     
 
@@ -224,21 +269,29 @@
     
     <section>
     <h2><span class="anchor" id="src"></span>Source Code</h2>
-    <div class="hl codehilite"><pre><span></span><span class="w">      </span><span class="k">subroutine </span><span class="n">validate_compiler_name</span><span class="p">(</span><span class="n">compiler_name</span><span class="p">,</span><span class="w"> </span><span class="n">is_valid</span><span class="p">)</span>
+    <div class="hl codehilite"><pre><span></span><span class="k">pure elemental subroutine </span><span class="n">validate_compiler_name</span><span class="p">(</span><span class="n">compiler_name</span><span class="p">,</span><span class="w"> </span><span class="n">is_valid</span><span class="p">)</span>
 
-<span class="w">        </span><span class="c">!&gt; Name of a compiler</span>
-<span class="w">        </span><span class="kt">character</span><span class="p">(</span><span class="nb">len</span><span class="o">=</span><span class="p">:),</span><span class="w"> </span><span class="k">allocatable</span><span class="p">,</span><span class="w"> </span><span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">)</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">compiler_name</span>
+<span class="w">    </span><span class="c">!&gt; Name of a compiler</span>
+<span class="w">    </span><span class="kt">character</span><span class="p">(</span><span class="nb">len</span><span class="o">=*</span><span class="p">),</span><span class="w"> </span><span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">)</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">compiler_name</span>
 
-<span class="w">        </span><span class="c">!&gt; Boolean value of whether compiler_name is valid or not</span>
-<span class="w">        </span><span class="kt">logical</span><span class="p">,</span><span class="w"> </span><span class="k">intent</span><span class="p">(</span><span class="n">out</span><span class="p">)</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">is_valid</span>
-<span class="w">        </span><span class="k">select case</span><span class="p">(</span><span class="n">compiler_name</span><span class="p">)</span>
-<span class="w">          </span><span class="k">case</span><span class="p">(</span><span class="s2">&quot;gfortran&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;ifort&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;ifx&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;pgfortran&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;nvfortran&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;flang&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;caf&quot;</span><span class="p">,</span><span class="w"> </span><span class="p">&amp;</span>
-<span class="w">                        </span><span class="p">&amp;</span><span class="w"> </span><span class="s2">&quot;f95&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;lfortran&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;lfc&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;nagfor&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;crayftn&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;xlf90&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;ftn95&quot;</span><span class="p">)</span>
-<span class="w">            </span><span class="n">is_valid</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">.</span><span class="n">true</span><span class="p">.</span>
-<span class="w">          </span><span class="k">case </span><span class="n">default</span>
-<span class="w">            </span><span class="n">is_valid</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">.</span><span class="n">false</span><span class="p">.</span>
-<span class="w">        </span><span class="k">end select</span>
-<span class="k">      end subroutine </span><span class="n">validate_compiler_name</span>
+<span class="w">    </span><span class="c">!&gt; Boolean value of whether compiler_name is valid or not</span>
+<span class="w">    </span><span class="kt">logical</span><span class="p">,</span><span class="w"> </span><span class="k">intent</span><span class="p">(</span><span class="n">out</span><span class="p">)</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">is_valid</span>
+<span class="w">    </span>
+<span class="w">    </span><span class="kt">character</span><span class="p">(:),</span><span class="w"> </span><span class="k">allocatable</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">lname</span>
+<span class="w">    </span>
+<span class="w">    </span><span class="n">lname</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">lower</span><span class="p">(</span><span class="n">compiler_name</span><span class="p">)</span>
+<span class="w">    </span>
+<span class="w">    </span><span class="k">select case</span><span class="w"> </span><span class="p">(</span><span class="n">lname</span><span class="p">)</span>
+<span class="w">      </span><span class="k">case</span><span class="p">(</span><span class="s2">&quot;gfortran&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;ifort&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;ifx&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;pgfortran&quot;</span><span class="p">,</span><span class="w"> </span><span class="p">&amp;</span>
+<span class="w">           </span><span class="s2">&quot;nvfortran&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;flang&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;caf&quot;</span><span class="p">,</span><span class="w"> </span><span class="p">&amp;</span>
+<span class="w">           </span><span class="s2">&quot;f95&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;lfortran&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;lfc&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;nagfor&quot;</span><span class="p">,&amp;</span>
+<span class="w">           </span><span class="s2">&quot;crayftn&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;xlf90&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;ftn95&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;all&quot;</span><span class="p">)</span>
+<span class="w">        </span><span class="n">is_valid</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">.</span><span class="n">true</span><span class="p">.</span>
+<span class="w">      </span><span class="k">case </span><span class="n">default</span>
+<span class="w">        </span><span class="n">is_valid</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">.</span><span class="n">false</span><span class="p">.</span>
+<span class="w">    </span><span class="k">end select</span>
+<span class="k">    </span>
+<span class="k">end subroutine </span><span class="n">validate_compiler_name</span>
 </pre></div>
 
     </section>
@@ -262,7 +315,7 @@
             <p class="text-end">
               Documentation generated by
               <a href="https://github.com/Fortran-FOSS-Programmers/ford">FORD</a>
- on 2025-09-09 17:12 +0000             </p>
+ on 2025-09-11 10:25 +0000             </p>
           </div>
         </div>
         <br>

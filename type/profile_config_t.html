@@ -92,7 +92,7 @@
 
             <li class="list-inline-item" id="statements"><i class="fa fa-list-ol"></i>
               <a data-bs-toggle="tooltip" data-bs-placement="bottom" data-bs-html="true"
-                 title="<p> 2.6% of total for derived types.</p>Including implementation: 200 statements,  3.3% of total for derived types.">16 statements</a>
+                 title="<p> 2.5% of total for derived types.</p>Including implementation: 190 statements,  2.8% of total for derived types.">17 statements</a>
             </li>
 
             <li class="list-inline-item" id="source-file">
@@ -134,15 +134,8 @@
       </a>
       <div id="vars-0" class="collapse">
         <div class="list-group list-group-flush">
-            <a class="list-group-item" href="../type/profile_config_t.html#variable-c_flags">c_flags</a>
-            <a class="list-group-item" href="../type/profile_config_t.html#variable-compiler~10">compiler</a>
-            <a class="list-group-item" href="../type/profile_config_t.html#variable-cxx_flags">cxx_flags</a>
             <a class="list-group-item" href="../type/profile_config_t.html#variable-file_scope_flags">file_scope_flags</a>
-            <a class="list-group-item" href="../type/profile_config_t.html#variable-flags~21">flags</a>
-            <a class="list-group-item" href="../type/profile_config_t.html#variable-is_built_in">is_built_in</a>
-            <a class="list-group-item" href="../type/profile_config_t.html#variable-link_time_flags">link_time_flags</a>
-            <a class="list-group-item" href="../type/profile_config_t.html#variable-os_type~2">os_type</a>
-            <a class="list-group-item" href="../type/profile_config_t.html#variable-profile_name~2">profile_name</a>
+            <a class="list-group-item" href="../type/profile_config_t.html#variable-profile_feature">profile_feature</a>
         </div>
       </div>
     </div>
@@ -169,13 +162,21 @@
       </a>
       <div id="boundprocs-0" class="collapse">
         <div class="list-group list-group-flush">
-            <a class="list-group-item" href="../type/profile_config_t.html#boundprocedure-dump~17">dump</a>
-            <a class="list-group-item" href="../type/profile_config_t.html#boundprocedure-dump_to_toml~13">dump_to_toml</a>
-            <a class="list-group-item" href="../type/profile_config_t.html#boundprocedure-info~5">info</a>
-            <a class="list-group-item" href="../type/profile_config_t.html#boundprocedure-load~14">load</a>
-            <a class="list-group-item" href="../type/profile_config_t.html#boundprocedure-load_from_toml~13">load_from_toml</a>
-            <a class="list-group-item" href="../type/profile_config_t.html#boundprocedure-operator%28%3D%3D%29~15">operator(==)</a>
-            <a class="list-group-item" href="../type/profile_config_t.html#boundprocedure-serializable_is_same~13">serializable_is_same</a>
+            <a class="list-group-item" href="../type/profile_config_t.html#boundprocedure-c_flags~2">c_flags</a>
+            <a class="list-group-item" href="../type/profile_config_t.html#boundprocedure-compiler~24">compiler</a>
+            <a class="list-group-item" href="../type/profile_config_t.html#boundprocedure-cxx_flags~2">cxx_flags</a>
+            <a class="list-group-item" href="../type/profile_config_t.html#boundprocedure-dump~18">dump</a>
+            <a class="list-group-item" href="../type/profile_config_t.html#boundprocedure-dump_to_toml~14">dump_to_toml</a>
+            <a class="list-group-item" href="../type/profile_config_t.html#boundprocedure-flags~10">flags</a>
+            <a class="list-group-item" href="../type/profile_config_t.html#boundprocedure-info~6">info</a>
+            <a class="list-group-item" href="../type/profile_config_t.html#boundprocedure-is_built_in">is_built_in</a>
+            <a class="list-group-item" href="../type/profile_config_t.html#boundprocedure-link_time_flags~2">link_time_flags</a>
+            <a class="list-group-item" href="../type/profile_config_t.html#boundprocedure-load~15">load</a>
+            <a class="list-group-item" href="../type/profile_config_t.html#boundprocedure-load_from_toml~14">load_from_toml</a>
+            <a class="list-group-item" href="../type/profile_config_t.html#boundprocedure-operator%28%3D%3D%29~16">operator(==)</a>
+            <a class="list-group-item" href="../type/profile_config_t.html#boundprocedure-os_type~5">os_type</a>
+            <a class="list-group-item" href="../type/profile_config_t.html#boundprocedure-profile_name">profile_name</a>
+            <a class="list-group-item" href="../type/profile_config_t.html#boundprocedure-serializable_is_same~14">serializable_is_same</a>
             <a class="list-group-item" href="../type/profile_config_t.html#boundprocedure-test_serialization">test_serialization</a>
         </div>
       </div>
@@ -198,7 +199,7 @@
     <div class="col-md-9" id='text'>
       <h2 id="type-def-statement">
         type, public, extends(<a href='serializable_t.html'>serializable_t</a>) :: profile_config_t</h2>
-    <p>Configuration meta data for a profile</p>
+    <p>Configuration meta data for a profile (now based on features)</p>
     <br>
 
     <section>
@@ -215,57 +216,6 @@
     <tbody>
         <tr>
             <td>
-              <span class="anchor" id="variable-c_flags"></span>
-              character(len=:),
-            </td>
-              <td>public,</td>
-            <td>
-              allocatable
-            </td>
-            <td>::</td>
-            <td><strong>c_flags</strong></td>
-                <td></td>
-                <td></td>
-            <td>
-                <p>C compiler flags</p>
-            </td>
-        </tr>
-        <tr>
-            <td>
-              <span class="anchor" id="variable-compiler~10"></span>
-              character(len=:),
-            </td>
-              <td>public,</td>
-            <td>
-              allocatable
-            </td>
-            <td>::</td>
-            <td><strong>compiler</strong></td>
-                <td></td>
-                <td></td>
-            <td>
-                <p>Name of the compiler</p>
-            </td>
-        </tr>
-        <tr>
-            <td>
-              <span class="anchor" id="variable-cxx_flags"></span>
-              character(len=:),
-            </td>
-              <td>public,</td>
-            <td>
-              allocatable
-            </td>
-            <td>::</td>
-            <td><strong>cxx_flags</strong></td>
-                <td></td>
-                <td></td>
-            <td>
-                <p>C++ compiler flags</p>
-            </td>
-        </tr>
-        <tr>
-            <td>
               <span class="anchor" id="variable-file_scope_flags"></span>
               type(<a href='file_scope_flag.html'>file_scope_flag</a>),
             </td>
@@ -278,92 +228,24 @@
                 <td></td>
                 <td></td>
             <td>
-                <p>File scope flags</p>
+                <p>File scope flags (maintained for backwards compatibility)</p>
             </td>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-flags~21"></span>
-              character(len=:),
-            </td>
-              <td>public,</td>
-            <td>
-              allocatable
-            </td>
-            <td>::</td>
-            <td><strong>flags</strong></td>
-                <td></td>
-                <td></td>
-            <td>
-                <p>Fortran compiler flags</p>
-            </td>
-        </tr>
-        <tr>
-            <td>
-              <span class="anchor" id="variable-is_built_in"></span>
-              logical,
+              <span class="anchor" id="variable-profile_feature"></span>
+              type(<a href='feature_config_t.html'>feature_config_t</a>),
             </td>
               <td>public</td>
             <td>
               
             </td>
             <td>::</td>
-            <td><strong>is_built_in</strong></td>
-<td> =</td>
-                <td>.false.</td>
-            <td>
-                <p>Is this profile one of the built-in ones?</p>
-            </td>
-        </tr>
-        <tr>
-            <td>
-              <span class="anchor" id="variable-link_time_flags"></span>
-              character(len=:),
-            </td>
-              <td>public,</td>
-            <td>
-              allocatable
-            </td>
-            <td>::</td>
-            <td><strong>link_time_flags</strong></td>
+            <td><strong>profile_feature</strong></td>
                 <td></td>
                 <td></td>
             <td>
-                <p>Link time compiler flags</p>
-            </td>
-        </tr>
-        <tr>
-            <td>
-              <span class="anchor" id="variable-os_type~2"></span>
-              integer,
-            </td>
-              <td>public</td>
-            <td>
-              
-            </td>
-            <td>::</td>
-            <td><strong>os_type</strong></td>
-<td> =</td>
-                <td>OS_ALL</td>
-            <td>
-                <p>Value repesenting OS</p>
-            </td>
-        </tr>
-        <tr>
-            <td>
-              <span class="anchor" id="variable-profile_name~2"></span>
-              character(len=:),
-            </td>
-              <td>public,</td>
-            <td>
-              allocatable
-            </td>
-            <td>::</td>
-            <td><strong>profile_name</strong></td>
-                <td></td>
-                <td></td>
-            <td>
-                <p>Name of the profile</p>
+                <p>Profile feature - contains all profile configuration</p>
             </td>
         </tr>
     </tbody>
@@ -379,7 +261,184 @@
           <div class="row">
               <div class="card mt-3">
     <div class="card-header codesum">
-      <span class="anchor" id="boundprocedure-dump~17"></span>
+      <span class="anchor" id="boundprocedure-c_flags~2"></span>
+      <h3>
+          procedure, public ::
+  <strong>c_flags</strong> => <a href='/home/runner/work/fpm/fpm/fpm-doc/proc/get_profile_c_flags.html'>get_profile_c_flags</a>
+        
+      </h3>
+    </div>
+      <ul class="list-group">
+          <li class="list-group-item">
+                    <h3>
+    public  function <a href='../proc/get_profile_c_flags.html'>get_profile_c_flags</a>(self) result(c_flags)  
+</h3>
+    
+
+  <p>Get C flags</p>
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" ></span>
+              class(<a href='profile_config_t.html'>profile_config_t</a>),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>self</strong></td>
+            <td>
+
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+    <h4>
+    Return Value
+    <small>character(len=:), allocatable</small>
+    </h4>
+    
+
+          </li>
+      </ul>
+  </div>
+
+          </div>
+          <div class="row">
+              <div class="card mt-3">
+    <div class="card-header codesum">
+      <span class="anchor" id="boundprocedure-compiler~24"></span>
+      <h3>
+          procedure, public ::
+  <strong>compiler</strong> => <a href='/home/runner/work/fpm/fpm/fpm-doc/proc/get_profile_compiler.html'>get_profile_compiler</a>
+        
+      </h3>
+    </div>
+      <ul class="list-group">
+          <li class="list-group-item">
+                    <h3>
+    public  function <a href='../proc/get_profile_compiler.html'>get_profile_compiler</a>(self) result(compiler)  
+</h3>
+    
+
+  <p>Get compiler name</p>
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" ></span>
+              class(<a href='profile_config_t.html'>profile_config_t</a>),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>self</strong></td>
+            <td>
+
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+    <h4>
+    Return Value
+    <small>character(len=:), allocatable</small>
+    </h4>
+    
+
+          </li>
+      </ul>
+  </div>
+
+          </div>
+          <div class="row">
+              <div class="card mt-3">
+    <div class="card-header codesum">
+      <span class="anchor" id="boundprocedure-cxx_flags~2"></span>
+      <h3>
+          procedure, public ::
+  <strong>cxx_flags</strong> => <a href='/home/runner/work/fpm/fpm/fpm-doc/proc/get_profile_cxx_flags.html'>get_profile_cxx_flags</a>
+        
+      </h3>
+    </div>
+      <ul class="list-group">
+          <li class="list-group-item">
+                    <h3>
+    public  function <a href='../proc/get_profile_cxx_flags.html'>get_profile_cxx_flags</a>(self) result(cxx_flags)  
+</h3>
+    
+
+  <p>Get C++ flags</p>
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" ></span>
+              class(<a href='profile_config_t.html'>profile_config_t</a>),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>self</strong></td>
+            <td>
+
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+    <h4>
+    Return Value
+    <small>character(len=:), allocatable</small>
+    </h4>
+    
+
+          </li>
+      </ul>
+  </div>
+
+          </div>
+          <div class="row">
+              <div class="card mt-3">
+    <div class="card-header codesum">
+      <span class="anchor" id="boundprocedure-dump~18"></span>
       <h3>
           generic, public ::
   <strong>dump</strong> => <a href='/home/runner/work/fpm/fpm/fpm-doc/type/srcfile_t.html#boundprocedure-dump_to_toml~6'>dump_to_toml</a>, dump_to_file, dump_to_unit
@@ -628,7 +687,7 @@
           <div class="row">
               <div class="card mt-3">
     <div class="card-header codesum">
-      <span class="anchor" id="boundprocedure-dump_to_toml~13"></span>
+      <span class="anchor" id="boundprocedure-dump_to_toml~14"></span>
       <h3>
           procedure, public ::
   <strong>dump_to_toml</strong> => <a href='/home/runner/work/fpm/fpm/fpm-doc/proc/profile_dump.html'>profile_dump</a>
@@ -712,7 +771,66 @@
           <div class="row">
               <div class="card mt-3">
     <div class="card-header codesum">
-      <span class="anchor" id="boundprocedure-info~5"></span>
+      <span class="anchor" id="boundprocedure-flags~10"></span>
+      <h3>
+          procedure, public ::
+  <strong>flags</strong> => <a href='/home/runner/work/fpm/fpm/fpm-doc/proc/get_profile_flags.html'>get_profile_flags</a>
+        
+      </h3>
+    </div>
+      <ul class="list-group">
+          <li class="list-group-item">
+                    <h3>
+    public  function <a href='../proc/get_profile_flags.html'>get_profile_flags</a>(self) result(flags)  
+</h3>
+    
+
+  <p>Get flags</p>
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" ></span>
+              class(<a href='profile_config_t.html'>profile_config_t</a>),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>self</strong></td>
+            <td>
+
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+    <h4>
+    Return Value
+    <small>character(len=:), allocatable</small>
+    </h4>
+    
+
+          </li>
+      </ul>
+  </div>
+
+          </div>
+          <div class="row">
+              <div class="card mt-3">
+    <div class="card-header codesum">
+      <span class="anchor" id="boundprocedure-info~6"></span>
       <h3>
           procedure, public ::
   <strong>info</strong>
@@ -726,7 +844,7 @@
       <ul class="list-group">
           <li class="list-group-item">
                     <h3>
-    public  subroutine <a href='../proc/info~5.html'>info</a>(self, unit, verbosity)  
+    public  subroutine <a href='../proc/info~6.html'>info</a>(self, unit, verbosity)  
 </h3>
     
 
@@ -800,7 +918,125 @@
           <div class="row">
               <div class="card mt-3">
     <div class="card-header codesum">
-      <span class="anchor" id="boundprocedure-load~14"></span>
+      <span class="anchor" id="boundprocedure-is_built_in"></span>
+      <h3>
+          procedure, public ::
+  <strong>is_built_in</strong> => <a href='/home/runner/work/fpm/fpm/fpm-doc/proc/get_profile_is_built_in.html'>get_profile_is_built_in</a>
+        
+      </h3>
+    </div>
+      <ul class="list-group">
+          <li class="list-group-item">
+                    <h3>
+    public  function <a href='../proc/get_profile_is_built_in.html'>get_profile_is_built_in</a>(self) result(is_built_in)  
+</h3>
+    
+
+  <p>Get is_built_in flag (maps to feature default flag)</p>
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" ></span>
+              class(<a href='profile_config_t.html'>profile_config_t</a>),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>self</strong></td>
+            <td>
+
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+    <h4>
+    Return Value
+    <small>logical</small>
+    </h4>
+    
+
+          </li>
+      </ul>
+  </div>
+
+          </div>
+          <div class="row">
+              <div class="card mt-3">
+    <div class="card-header codesum">
+      <span class="anchor" id="boundprocedure-link_time_flags~2"></span>
+      <h3>
+          procedure, public ::
+  <strong>link_time_flags</strong> => <a href='/home/runner/work/fpm/fpm/fpm-doc/proc/get_profile_link_time_flags.html'>get_profile_link_time_flags</a>
+        
+      </h3>
+    </div>
+      <ul class="list-group">
+          <li class="list-group-item">
+                    <h3>
+    public  function <a href='../proc/get_profile_link_time_flags.html'>get_profile_link_time_flags</a>(self) result(link_time_flags)  
+</h3>
+    
+
+  <p>Get link time flags</p>
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" ></span>
+              class(<a href='profile_config_t.html'>profile_config_t</a>),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>self</strong></td>
+            <td>
+
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+    <h4>
+    Return Value
+    <small>character(len=:), allocatable</small>
+    </h4>
+    
+
+          </li>
+      </ul>
+  </div>
+
+          </div>
+          <div class="row">
+              <div class="card mt-3">
+    <div class="card-header codesum">
+      <span class="anchor" id="boundprocedure-load~15"></span>
       <h3>
           generic, public ::
   <strong>load</strong> => <a href='/home/runner/work/fpm/fpm/fpm-doc/type/srcfile_t.html#boundprocedure-load_from_toml~6'>load_from_toml</a>, load_from_file, load_from_unit
@@ -1053,7 +1289,7 @@ Read object from TOML table</p>
           <div class="row">
               <div class="card mt-3">
     <div class="card-header codesum">
-      <span class="anchor" id="boundprocedure-load_from_toml~13"></span>
+      <span class="anchor" id="boundprocedure-load_from_toml~14"></span>
       <h3>
           procedure, public ::
   <strong>load_from_toml</strong> => <a href='/home/runner/work/fpm/fpm/fpm-doc/proc/profile_load.html'>profile_load</a>
@@ -1137,7 +1373,7 @@ Read object from TOML table</p>
           <div class="row">
               <div class="card mt-3">
     <div class="card-header codesum">
-      <span class="anchor" id="boundprocedure-operator%28%3D%3D%29~15"></span>
+      <span class="anchor" id="boundprocedure-operator%28%3D%3D%29~16"></span>
       <h3>
           generic, public ::
   <strong>operator(==)</strong> => <a href='/home/runner/work/fpm/fpm/fpm-doc/type/srcfile_t.html#boundprocedure-serializable_is_same~6'>serializable_is_same</a>
@@ -1211,7 +1447,130 @@ All checks passed!</p>
           <div class="row">
               <div class="card mt-3">
     <div class="card-header codesum">
-      <span class="anchor" id="boundprocedure-serializable_is_same~13"></span>
+      <span class="anchor" id="boundprocedure-os_type~5"></span>
+      <h3>
+          procedure, public ::
+  <strong>os_type</strong> => <a href='/home/runner/work/fpm/fpm/fpm-doc/proc/get_profile_os_type.html'>get_profile_os_type</a>
+        
+      </h3>
+    </div>
+      <ul class="list-group">
+          <li class="list-group-item">
+                    <h3>
+    public  function <a href='../proc/get_profile_os_type.html'>get_profile_os_type</a>(self) result(os_type)  
+</h3>
+    
+
+  <p>Get OS type</p>
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" ></span>
+              class(<a href='profile_config_t.html'>profile_config_t</a>),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>self</strong></td>
+            <td>
+
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+    <h4>
+    Return Value
+    <small>integer</small>
+    </h4>
+    
+
+          </li>
+      </ul>
+  </div>
+
+          </div>
+          <div class="row">
+              <div class="card mt-3">
+    <div class="card-header codesum">
+      <span class="anchor" id="boundprocedure-profile_name"></span>
+      <h3>
+          procedure, public ::
+  <strong>profile_name</strong> => <a href='/home/runner/work/fpm/fpm/fpm-doc/proc/get_profile_name.html'>get_profile_name</a>
+        
+      </h3>
+    </div>
+        <div class="card-body">
+          
+          <p>Convenience accessors for backward compatibility</p>
+        </div>
+      <ul class="list-group">
+          <li class="list-group-item">
+                    <h3>
+    public  function <a href='../proc/get_profile_name.html'>get_profile_name</a>(self) result(name)  
+</h3>
+    
+
+  <p>Convenience accessor procedures for backward compatibility
+Get profile name</p>
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" ></span>
+              class(<a href='profile_config_t.html'>profile_config_t</a>),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>self</strong></td>
+            <td>
+
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+    <h4>
+    Return Value
+    <small>character(len=:), allocatable</small>
+    </h4>
+    
+
+          </li>
+      </ul>
+  </div>
+
+          </div>
+          <div class="row">
+              <div class="card mt-3">
+    <div class="card-header codesum">
+      <span class="anchor" id="boundprocedure-serializable_is_same~14"></span>
       <h3>
           procedure, public ::
   <strong>serializable_is_same</strong> => <a href='/home/runner/work/fpm/fpm/fpm-doc/proc/profile_same.html'>profile_same</a>
@@ -1381,32 +1740,12 @@ Check same</p>
     <section>
     <h3><span class="anchor" id="src"></span>Source Code</h3>
     <div class="hl codehilite"><pre><span></span><span class="w">    </span><span class="k">type</span><span class="p">,</span><span class="w"> </span><span class="k">extends</span><span class="p">(</span><span class="n">serializable_t</span><span class="p">)</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">profile_config_t</span>
-<span class="w">      </span><span class="c">!&gt; Name of the profile</span>
-<span class="w">      </span><span class="kt">character</span><span class="p">(</span><span class="nb">len</span><span class="o">=</span><span class="p">:),</span><span class="w"> </span><span class="k">allocatable</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">profile_name</span>
+<span class="w">        </span>
+<span class="w">      </span><span class="c">!&gt; Profile feature - contains all profile configuration</span>
+<span class="w">      </span><span class="k">type</span><span class="p">(</span><span class="n">feature_config_t</span><span class="p">)</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">profile_feature</span>
 
-<span class="w">      </span><span class="c">!&gt; Name of the compiler</span>
-<span class="w">      </span><span class="kt">character</span><span class="p">(</span><span class="nb">len</span><span class="o">=</span><span class="p">:),</span><span class="w"> </span><span class="k">allocatable</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">compiler</span>
-
-<span class="w">      </span><span class="c">!&gt; Value repesenting OS</span>
-<span class="w">      </span><span class="kt">integer</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">os_type</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">OS_ALL</span>
-
-<span class="w">      </span><span class="c">!&gt; Fortran compiler flags</span>
-<span class="w">      </span><span class="kt">character</span><span class="p">(</span><span class="nb">len</span><span class="o">=</span><span class="p">:),</span><span class="w"> </span><span class="k">allocatable</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">flags</span>
-
-<span class="w">      </span><span class="c">!&gt; C compiler flags</span>
-<span class="w">      </span><span class="kt">character</span><span class="p">(</span><span class="nb">len</span><span class="o">=</span><span class="p">:),</span><span class="w"> </span><span class="k">allocatable</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">c_flags</span>
-
-<span class="w">      </span><span class="c">!&gt; C++ compiler flags</span>
-<span class="w">      </span><span class="kt">character</span><span class="p">(</span><span class="nb">len</span><span class="o">=</span><span class="p">:),</span><span class="w"> </span><span class="k">allocatable</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">cxx_flags</span>
-
-<span class="w">      </span><span class="c">!&gt; Link time compiler flags</span>
-<span class="w">      </span><span class="kt">character</span><span class="p">(</span><span class="nb">len</span><span class="o">=</span><span class="p">:),</span><span class="w"> </span><span class="k">allocatable</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">link_time_flags</span>
-
-<span class="w">      </span><span class="c">!&gt; File scope flags</span>
+<span class="w">      </span><span class="c">!&gt; File scope flags (maintained for backwards compatibility)</span>
 <span class="w">      </span><span class="k">type</span><span class="p">(</span><span class="n">file_scope_flag</span><span class="p">),</span><span class="w"> </span><span class="k">allocatable</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">file_scope_flags</span><span class="p">(:)</span>
-
-<span class="w">      </span><span class="c">!&gt; Is this profile one of the built-in ones?</span>
-<span class="w">      </span><span class="kt">logical</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">is_built_in</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">.</span><span class="n">false</span><span class="p">.</span>
 
 <span class="w">      </span><span class="k">contains</span>
 
@@ -1417,6 +1756,16 @@ Check same</p>
 <span class="w">        </span><span class="k">procedure</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">serializable_is_same</span><span class="w"> </span><span class="o">=&gt;</span><span class="w"> </span><span class="n">profile_same</span>
 <span class="w">        </span><span class="k">procedure</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">dump_to_toml</span><span class="w"> </span><span class="o">=&gt;</span><span class="w"> </span><span class="n">profile_dump</span>
 <span class="w">        </span><span class="k">procedure</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">load_from_toml</span><span class="w"> </span><span class="o">=&gt;</span><span class="w"> </span><span class="n">profile_load</span>
+
+<span class="w">        </span><span class="c">!&gt; Convenience accessors for backward compatibility</span>
+<span class="w">        </span><span class="k">procedure</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">profile_name</span><span class="w"> </span><span class="o">=&gt;</span><span class="w"> </span><span class="n">get_profile_name</span>
+<span class="w">        </span><span class="k">procedure</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">compiler</span><span class="w"> </span><span class="o">=&gt;</span><span class="w"> </span><span class="n">get_profile_compiler</span>
+<span class="w">        </span><span class="k">procedure</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">os_type</span><span class="w"> </span><span class="o">=&gt;</span><span class="w"> </span><span class="n">get_profile_os_type</span><span class="w">  </span>
+<span class="w">        </span><span class="k">procedure</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">flags</span><span class="w"> </span><span class="o">=&gt;</span><span class="w"> </span><span class="n">get_profile_flags</span>
+<span class="w">        </span><span class="k">procedure</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">c_flags</span><span class="w"> </span><span class="o">=&gt;</span><span class="w"> </span><span class="n">get_profile_c_flags</span>
+<span class="w">        </span><span class="k">procedure</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">cxx_flags</span><span class="w"> </span><span class="o">=&gt;</span><span class="w"> </span><span class="n">get_profile_cxx_flags</span>
+<span class="w">        </span><span class="k">procedure</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">link_time_flags</span><span class="w"> </span><span class="o">=&gt;</span><span class="w"> </span><span class="n">get_profile_link_time_flags</span>
+<span class="w">        </span><span class="k">procedure</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">is_built_in</span><span class="w"> </span><span class="o">=&gt;</span><span class="w"> </span><span class="n">get_profile_is_built_in</span>
 
 <span class="w">    </span><span class="k">end type </span><span class="n">profile_config_t</span>
 </pre></div>
@@ -1441,7 +1790,7 @@ Check same</p>
             <p class="text-end">
               Documentation generated by
               <a href="https://github.com/Fortran-FOSS-Programmers/ford">FORD</a>
- on 2025-09-09 17:12 +0000             </p>
+ on 2025-09-11 10:25 +0000             </p>
           </div>
         </div>
         <br>

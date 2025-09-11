@@ -88,7 +88,7 @@
 			 <thead><tr><th>Procedure</th><th>Location</th><th>Procedure Type</th><th>Description</th></tr></thead>
 			 <tbody>
 			   <tr>
-                 <td><a href='../proc/add_dependency~2.html'>add_dependency</a></td>
+                 <td><a href='../proc/add_dependency.html'>add_dependency</a></td>
                  <td><a href='../module/fpm_targets.html'>fpm_targets</a></td>
                  <td>Subroutine</td>
                  <td><p>Add pointer to dependeny in target%dependencies</p></td>
@@ -462,6 +462,12 @@ All checks passed!</p></td>
                  <td><p>Dump dependency to toml table</p></td>
                </tr>
 			   <tr>
+                 <td><a href='../proc/compiler_id_name.html'>compiler_id_name</a></td>
+                 <td><a href='../module/fpm_compiler.html'>fpm_compiler</a></td>
+                 <td>Function</td>
+                 <td><p>Convert compiler enum to name (reverse of match_compiler_type)</p></td>
+               </tr>
+			   <tr>
                  <td><a href='../proc/compiler_is_same.html'>compiler_is_same</a></td>
                  <td><a href='../module/fpm_compiler.html'>fpm_compiler</a></td>
                  <td>Function</td>
@@ -505,6 +511,12 @@ All checks passed!</p></td>
                  <td><p>String representation of a compiler object</p></td>
                </tr>
 			   <tr>
+                 <td><a href='../proc/default_debug_feature.html'>default_debug_feature</a></td>
+                 <td><a href='../module/fpm_manifest_feature_collection.html'>fpm_manifest_feature_collection</a></td>
+                 <td>Function</td>
+                 <td><p>Create default debug feature collection  </p></td>
+               </tr>
+			   <tr>
                  <td><a href='../proc/default_example.html'>default_example</a></td>
                  <td><a href='../module/fpm_manifest.html'>fpm_manifest</a></td>
                  <td>Subroutine</td>
@@ -517,10 +529,22 @@ All checks passed!</p></td>
                  <td><p>Populate executable in case we find the default app directory</p></td>
                </tr>
 			   <tr>
+                 <td><a href='../proc/default_fortran_config.html'>default_fortran_config</a></td>
+                 <td><a href='../module/fpm_manifest_fortran.html'>fpm_manifest_fortran</a></td>
+                 <td>Subroutine</td>
+                 <td><p>Initialize fortran config</p></td>
+               </tr>
+			   <tr>
                  <td><a href='../proc/default_library.html'>default_library</a></td>
                  <td><a href='../module/fpm_manifest.html'>fpm_manifest</a></td>
                  <td>Subroutine</td>
                  <td><p>Populate library in case we find the default src directory</p></td>
+               </tr>
+			   <tr>
+                 <td><a href='../proc/default_release_feature.html'>default_release_feature</a></td>
+                 <td><a href='../module/fpm_manifest_feature_collection.html'>fpm_manifest_feature_collection</a></td>
+                 <td>Function</td>
+                 <td><p>Create default release feature collection</p></td>
                </tr>
 			   <tr>
                  <td><a href='../proc/default_test.html'>default_test</a></td>
@@ -554,7 +578,7 @@ Returns an error if the variable did not exist in the first place</p><a href="..
                  <td><p>Code git descriptor to a string</p></td>
                </tr>
 			   <tr>
-                 <td><a href='../proc/destroy.html'>destroy</a></td>
+                 <td><a href='../proc/destroy~2.html'>destroy</a></td>
                  <td><a href='../module/fpm_meta_base.html'>fpm_meta_base</a></td>
                  <td>Subroutine</td>
                  <td></td>
@@ -578,16 +602,16 @@ Returns an error if the variable did not exist in the first place</p><a href="..
                  <td><p>Extract dirname from path</p></td>
                </tr>
 			   <tr>
-                 <td><a href='../proc/dump_to_toml~4.html'>dump_to_toml</a></td>
-                 <td><a href='../module/fpm_compiler.html'>fpm_compiler</a></td>
-                 <td>Subroutine</td>
-                 <td><p>Dump dependency to toml table</p><a href="../proc/dump_to_toml~4.html" class="pull-right"><emph>Read more&hellip;</emph></a></td>
-               </tr>
-			   <tr>
-                 <td><a href='../proc/dump_to_toml~5.html'>dump_to_toml</a></td>
+                 <td><a href='../proc/dump_to_toml~7.html'>dump_to_toml</a></td>
                  <td><a href='../module/fpm_git.html'>fpm_git</a></td>
                  <td>Subroutine</td>
                  <td><p>Dump dependency to toml table</p></td>
+               </tr>
+			   <tr>
+                 <td><a href='../proc/dump_to_toml~10.html'>dump_to_toml</a></td>
+                 <td><a href='../module/fpm_compiler.html'>fpm_compiler</a></td>
+                 <td>Subroutine</td>
+                 <td><p>Dump dependency to toml table</p><a href="../proc/dump_to_toml~10.html" class="pull-right"><emph>Read more&hellip;</emph></a></td>
                </tr>
 			   <tr>
                  <td><a href='../proc/enumerate_libraries.html'>enumerate_libraries</a></td>
@@ -685,6 +709,12 @@ single characters terminated with a C_NULL_CHAR character</p></td>
                  <td><a href='../module/fpm_targets.html'>fpm_targets</a></td>
                  <td>Subroutine</td>
                  <td></td>
+               </tr>
+			   <tr>
+                 <td><a href='../proc/find_feature.html'>find_feature</a></td>
+                 <td><a href='../module/fpm_manifest_feature.html'>fpm_manifest_feature</a></td>
+                 <td>Subroutine</td>
+                 <td><p>Find matching feature configuration (similar to find_profile)</p></td>
                </tr>
 			   <tr>
                  <td><a href='../proc/find_profile.html'>find_profile</a></td>
@@ -785,16 +815,22 @@ Expands home folder (~) on both Unix and Windows.</p></td>
                  <td><p>Get C++ Compiler.</p></td>
                </tr>
 			   <tr>
+                 <td><a href='../proc/get_default_features.html'>get_default_features</a></td>
+                 <td><a href='../module/fpm_manifest_feature_collection.html'>fpm_manifest_feature_collection</a></td>
+                 <td>Subroutine</td>
+                 <td><p>Get default feature collections (debug and release)</p></td>
+               </tr>
+			   <tr>
+                 <td><a href='../proc/get_default_features_as_features.html'>get_default_features_as_features</a></td>
+                 <td><a href='../module/fpm_manifest_feature_collection.html'>fpm_manifest_feature_collection</a></td>
+                 <td>Subroutine</td>
+                 <td><p>Convert feature collections to individual features (for backward compatibility)</p></td>
+               </tr>
+			   <tr>
                  <td><a href='../proc/get_default_flags.html'>get_default_flags</a></td>
                  <td><a href='../module/fpm_compiler.html'>fpm_compiler</a></td>
                  <td>Function</td>
                  <td></td>
-               </tr>
-			   <tr>
-                 <td><a href='../proc/get_default_profiles.html'>get_default_profiles</a></td>
-                 <td><a href='../module/fpm_manifest_profile.html'>fpm_manifest_profile</a></td>
-                 <td>Function</td>
-                 <td><p>Construct an array of built-in profiles</p></td>
                </tr>
 			   <tr>
                  <td><a href='../proc/get_dos_path.html'>get_dos_path</a></td>
@@ -861,12 +897,6 @@ used by fpm is prefixed with FPM_.</p></td>
                  <td><a href='../module/fpm_filesystem.html'>fpm_filesystem</a></td>
                  <td>Subroutine</td>
                  <td><p>Get the HOME directory on Unix and the %USERPROFILE% directory on Windows.</p></td>
-               </tr>
-			   <tr>
-                 <td><a href='../proc/get_id.html'>get_id</a></td>
-                 <td><a href='../module/fpm_compiler.html'>fpm_compiler</a></td>
-                 <td>Function</td>
-                 <td></td>
                </tr>
 			   <tr>
                  <td><a href='../proc/get_include_flag.html'>get_include_flag</a></td>
@@ -937,6 +967,55 @@ Split the macro name and value.</p><a href="../proc/get_macros.html" class="pull
                  <td><a href='../module/fpm_manifest.html'>fpm_manifest</a></td>
                  <td>Subroutine</td>
                  <td></td>
+               </tr>
+			   <tr>
+                 <td><a href='../proc/get_profile_c_flags.html'>get_profile_c_flags</a></td>
+                 <td><a href='../module/fpm_manifest_profile.html'>fpm_manifest_profile</a></td>
+                 <td>Function</td>
+                 <td><p>Get C flags</p></td>
+               </tr>
+			   <tr>
+                 <td><a href='../proc/get_profile_compiler.html'>get_profile_compiler</a></td>
+                 <td><a href='../module/fpm_manifest_profile.html'>fpm_manifest_profile</a></td>
+                 <td>Function</td>
+                 <td><p>Get compiler name</p></td>
+               </tr>
+			   <tr>
+                 <td><a href='../proc/get_profile_cxx_flags.html'>get_profile_cxx_flags</a></td>
+                 <td><a href='../module/fpm_manifest_profile.html'>fpm_manifest_profile</a></td>
+                 <td>Function</td>
+                 <td><p>Get C++ flags</p></td>
+               </tr>
+			   <tr>
+                 <td><a href='../proc/get_profile_flags.html'>get_profile_flags</a></td>
+                 <td><a href='../module/fpm_manifest_profile.html'>fpm_manifest_profile</a></td>
+                 <td>Function</td>
+                 <td><p>Get flags</p></td>
+               </tr>
+			   <tr>
+                 <td><a href='../proc/get_profile_is_built_in.html'>get_profile_is_built_in</a></td>
+                 <td><a href='../module/fpm_manifest_profile.html'>fpm_manifest_profile</a></td>
+                 <td>Function</td>
+                 <td><p>Get is_built_in flag (maps to feature default flag)</p></td>
+               </tr>
+			   <tr>
+                 <td><a href='../proc/get_profile_link_time_flags.html'>get_profile_link_time_flags</a></td>
+                 <td><a href='../module/fpm_manifest_profile.html'>fpm_manifest_profile</a></td>
+                 <td>Function</td>
+                 <td><p>Get link time flags</p></td>
+               </tr>
+			   <tr>
+                 <td><a href='../proc/get_profile_name.html'>get_profile_name</a></td>
+                 <td><a href='../module/fpm_manifest_profile.html'>fpm_manifest_profile</a></td>
+                 <td>Function</td>
+                 <td><p>Convenience accessor procedures for backward compatibility
+Get profile name</p></td>
+               </tr>
+			   <tr>
+                 <td><a href='../proc/get_profile_os_type.html'>get_profile_os_type</a></td>
+                 <td><a href='../module/fpm_manifest_profile.html'>fpm_manifest_profile</a></td>
+                 <td>Function</td>
+                 <td><p>Get OS type</p></td>
                </tr>
 			   <tr>
                  <td><a href='../proc/get_registry_settings.html'>get_registry_settings</a></td>
@@ -1041,7 +1120,7 @@ All checks passed!</p></td>
    contain wildcard characters.</p><a href="../proc/glob.html" class="pull-right"><emph>Read more&hellip;</emph></a></td>
                </tr>
 			   <tr>
-                 <td><a href='../proc/handle_error~2.html'>handle_error</a></td>
+                 <td><a href='../proc/handle_error~4.html'>handle_error</a></td>
                  <td><a href='../program/main.html'>main</a></td>
                  <td>Subroutine</td>
                  <td></td>
@@ -1077,22 +1156,16 @@ All checks passed!</p></td>
 3) If longer, package name must be followed by default separator plus at least one char</p><a href="../proc/has_valid_standard_prefix.html" class="pull-right"><emph>Read more&hellip;</emph></a></td>
                </tr>
 			   <tr>
-                 <td><a href='../proc/info~4.html'>info</a></td>
-                 <td><a href='../module/fpm_git.html'>fpm_git</a></td>
-                 <td>Subroutine</td>
-                 <td><p>Show information on git target</p></td>
-               </tr>
-			   <tr>
-                 <td><a href='../proc/info~5.html'>info</a></td>
+                 <td><a href='../proc/info~6.html'>info</a></td>
                  <td><a href='../module/fpm_manifest_profile.html'>fpm_manifest_profile</a></td>
                  <td>Subroutine</td>
                  <td><p>Write information on instance</p></td>
                </tr>
 			   <tr>
-                 <td><a href='../proc/info_profile.html'>info_profile</a></td>
-                 <td><a href='../module/fpm_manifest_profile.html'>fpm_manifest_profile</a></td>
-                 <td>Function</td>
-                 <td><p>Print a representation of profile_config_t</p></td>
+                 <td><a href='../proc/info~8.html'>info</a></td>
+                 <td><a href='../module/fpm_git.html'>fpm_git</a></td>
+                 <td>Subroutine</td>
+                 <td><p>Show information on git target</p></td>
                </tr>
 			   <tr>
                  <td><a href='../proc/init_blas.html'>init_blas</a></td>
@@ -1101,6 +1174,12 @@ All checks passed!</p></td>
                  <td><p>Initialize blas metapackage for the current system
 Cleanup
 Set name</p><a href="../proc/init_blas.html" class="pull-right"><emph>Read more&hellip;</emph></a></td>
+               </tr>
+			   <tr>
+                 <td><a href='../proc/init_feature_components.html'>init_feature_components</a></td>
+                 <td><a href='../module/fpm_manifest_feature.html'>fpm_manifest_feature</a></td>
+                 <td>Subroutine</td>
+                 <td><p>Initialize the feature components (shared between new_feature and new_package)</p></td>
                </tr>
 			   <tr>
                  <td><a href='../proc/init_hdf5.html'>init_hdf5</a></td>
@@ -1186,7 +1265,13 @@ Cleanup</p><a href="../proc/init_stdlib.html" class="pull-right"><emph>Read more
                  <td><a href='../proc/is_meta_package.html'>is_meta_package</a></td>
                  <td><a href='../module/fpm_manifest_metapackages.html'>fpm_manifest_metapackages</a></td>
                  <td>Function</td>
-                 <td><p>Check local schema for allowed entries</p><a href="../proc/is_meta_package.html" class="pull-right"><emph>Read more&hellip;</emph></a></td>
+                 <td><p>Check local schema for allowed entries</p></td>
+               </tr>
+			   <tr>
+                 <td><a href='../proc/is_platform_key.html'>is_platform_key</a></td>
+                 <td><a href='../module/fpm_manifest_platform.html'>fpm_manifest_platform</a></td>
+                 <td>Function</td>
+                 <td><p>Check if a key (os or compiler) can be used for platform setting</p></td>
                </tr>
 			   <tr>
                  <td><a href='../proc/is_unknown.html'>is_unknown</a></td>
@@ -1263,16 +1348,16 @@ Cleanup</p><a href="../proc/init_stdlib.html" class="pull-right"><emph>Read more
                  <td><p>Get file &amp; directory names in directory <code>dir</code> using iso_c_binding.</p><a href="../proc/list_files.html" class="pull-right"><emph>Read more&hellip;</emph></a></td>
                </tr>
 			   <tr>
-                 <td><a href='../proc/load_from_toml~4.html'>load_from_toml</a></td>
+                 <td><a href='../proc/load_from_toml~7.html'>load_from_toml</a></td>
+                 <td><a href='../module/fpm_git.html'>fpm_git</a></td>
+                 <td>Subroutine</td>
+                 <td><p>Read dependency from toml table (no checks made at this stage)</p><a href="../proc/load_from_toml~7.html" class="pull-right"><emph>Read more&hellip;</emph></a></td>
+               </tr>
+			   <tr>
+                 <td><a href='../proc/load_from_toml~10.html'>load_from_toml</a></td>
                  <td><a href='../module/fpm_compiler.html'>fpm_compiler</a></td>
                  <td>Subroutine</td>
                  <td><p>Read dependency from toml table (no checks made at this stage)</p></td>
-               </tr>
-			   <tr>
-                 <td><a href='../proc/load_from_toml~5.html'>load_from_toml</a></td>
-                 <td><a href='../module/fpm_git.html'>fpm_git</a></td>
-                 <td>Subroutine</td>
-                 <td><p>Read dependency from toml table (no checks made at this stage)</p><a href="../proc/load_from_toml~5.html" class="pull-right"><emph>Read more&hellip;</emph></a></td>
                </tr>
 			   <tr>
                  <td><a href='../proc/lower.html'>lower</a></td>
@@ -1293,10 +1378,16 @@ Cleanup</p><a href="../proc/init_stdlib.html" class="pull-right"><emph>Read more
                  <td><p>Check if two dependency configurations are different</p><a href="../proc/manifest_has_changed.html" class="pull-right"><emph>Read more&hellip;</emph></a></td>
                </tr>
 			   <tr>
+                 <td><a href='../proc/match_compiler_type.html'>match_compiler_type</a></td>
+                 <td><a href='../module/fpm_compiler.html'>fpm_compiler</a></td>
+                 <td>Function</td>
+                 <td></td>
+               </tr>
+			   <tr>
                  <td><a href='../proc/match_os_type.html'>match_os_type</a></td>
-                 <td><a href='../module/fpm_manifest_profile.html'>fpm_manifest_profile</a></td>
-                 <td>Subroutine</td>
-                 <td><p>Match os_type enum to a lowercase string with name of OS</p></td>
+                 <td><a href='../module/fpm_environment.html'>fpm_environment</a></td>
+                 <td>Function</td>
+                 <td><p>Match os_name to os_type enum (similar to profiles.f90)</p></td>
                </tr>
 			   <tr>
                  <td><a href='../proc/mkdir.html'>mkdir</a></td>
@@ -1341,6 +1432,12 @@ Cleanup</p><a href="../proc/init_stdlib.html" class="pull-right"><emph>Read more
                  <td><p>Construct a new build configuration from a TOML data structure</p><a href="../proc/new_build_config.html" class="pull-right"><emph>Read more&hellip;</emph></a></td>
                </tr>
 			   <tr>
+                 <td><a href='../proc/new_collections.html'>new_collections</a></td>
+                 <td><a href='../module/fpm_manifest_feature_collection.html'>fpm_manifest_feature_collection</a></td>
+                 <td>Subroutine</td>
+                 <td><p>Initialize multiple feature collections from manifest features table</p></td>
+               </tr>
+			   <tr>
                  <td><a href='../proc/new_compiler.html'>new_compiler</a></td>
                  <td><a href='../module/fpm_compiler.html'>fpm_compiler</a></td>
                  <td>Subroutine</td>
@@ -1383,6 +1480,18 @@ Cleanup</p><a href="../proc/init_stdlib.html" class="pull-right"><emph>Read more
                  <td><p>Construct a new executable configuration from a TOML data structure</p></td>
                </tr>
 			   <tr>
+                 <td><a href='../proc/new_feature.html'>new_feature</a></td>
+                 <td><a href='../module/fpm_manifest_feature.html'>fpm_manifest_feature</a></td>
+                 <td>Subroutine</td>
+                 <td><p>Construct a new feature configuration from a TOML data structure</p></td>
+               </tr>
+			   <tr>
+                 <td><a href='../proc/new_features.html'>new_features</a></td>
+                 <td><a href='../module/fpm_manifest_feature.html'>fpm_manifest_feature</a></td>
+                 <td>Subroutine</td>
+                 <td><p>Construct new feature array from a TOML data structure</p></td>
+               </tr>
+			   <tr>
                  <td><a href='../proc/new_fortran_config.html'>new_fortran_config</a></td>
                  <td><a href='../module/fpm_manifest_fortran.html'>fpm_manifest_fortran</a></td>
                  <td>Subroutine</td>
@@ -1416,7 +1525,8 @@ Cleanup</p><a href="../proc/init_stdlib.html" class="pull-right"><emph>Read more
                  <td><a href='../proc/new_meta_request.html'>new_meta_request</a></td>
                  <td><a href='../module/fpm_manifest_metapackages.html'>fpm_manifest_metapackages</a></td>
                  <td>Subroutine</td>
-                 <td><p>Construct a new metapackage request from the dependencies table</p><a href="../proc/new_meta_request.html" class="pull-right"><emph>Read more&hellip;</emph></a></td>
+                 <td><p>Construct a new metapackage request from the dependencies table
+Set name</p></td>
                </tr>
 			   <tr>
                  <td><a href='../proc/new_package.html'>new_package</a></td>
@@ -1434,7 +1544,7 @@ Cleanup</p><a href="../proc/init_stdlib.html" class="pull-right"><emph>Read more
                  <td><a href='../proc/new_profile.html'>new_profile</a></td>
                  <td><a href='../module/fpm_manifest_profile.html'>fpm_manifest_profile</a></td>
                  <td>Function</td>
-                 <td><p>Construct a new profile configuration from a TOML data structure</p></td>
+                 <td><p>Construct a new profile configuration from a TOML data structure  </p></td>
                </tr>
 			   <tr>
                  <td><a href='../proc/new_profiles.html'>new_profiles</a></td>
@@ -1573,6 +1683,12 @@ gfortran does not look into by default)</p></td>
                  <td><p>Return whole list of available pkg-cfg packages</p><a href="../proc/pkgcfg_list_all.html" class="pull-right"><emph>Read more&hellip;</emph></a></td>
                </tr>
 			   <tr>
+                 <td><a href='../interface/platform_config_t.html'>platform_config_t</a></td>
+                 <td><a href='../module/fpm_manifest_platform.html'>fpm_manifest_platform</a></td>
+                 <td>Interface</td>
+                 <td></td>
+               </tr>
+			   <tr>
                  <td><a href='../proc/profile_dump.html'>profile_dump</a></td>
                  <td><a href='../module/fpm_manifest_profile.html'>fpm_manifest_profile</a></td>
                  <td>Subroutine</td>
@@ -1634,15 +1750,15 @@ gfortran does not look into by default)</p></td>
                </tr>
 			   <tr>
                  <td><a href='../interface/resize.html'>resize</a></td>
-                 <td><a href='../module/fpm_dependency.html'>fpm_dependency</a></td>
-                 <td>Interface</td>
-                 <td><p>Overloaded reallocation interface</p></td>
-               </tr>
-			   <tr>
-                 <td><a href='../interface/resize~2.html'>resize</a></td>
                  <td><a href='../module/fpm_strings.html'>fpm_strings</a></td>
                  <td>Interface</td>
                  <td></td>
+               </tr>
+			   <tr>
+                 <td><a href='../interface/resize~2.html'>resize</a></td>
+                 <td><a href='../module/fpm_dependency.html'>fpm_dependency</a></td>
+                 <td>Interface</td>
+                 <td><p>Overloaded reallocation interface</p></td>
                </tr>
 			   <tr>
                  <td><a href='../interface/resize~3.html'>resize</a></td>
@@ -1664,10 +1780,10 @@ gfortran does not look into by default)</p></td>
  based on any modules used by the corresponding source file.</p><a href="../proc/resolve_module_dependencies.html" class="pull-right"><emph>Read more&hellip;</emph></a></td>
                </tr>
 			   <tr>
-                 <td><a href='../proc/run.html'>run</a></td>
+                 <td><a href='../proc/run~2.html'>run</a></td>
                  <td><a href='../module/fpm_filesystem.html'>fpm_filesystem</a></td>
                  <td>Subroutine</td>
-                 <td><p>Execute the specified system command. Optionally</p><a href="../proc/run.html" class="pull-right"><emph>Read more&hellip;</emph></a></td>
+                 <td><p>Execute the specified system command. Optionally</p><a href="../proc/run~2.html" class="pull-right"><emph>Read more&hellip;</emph></a></td>
                </tr>
 			   <tr>
                  <td><a href='../proc/run_wrapper.html'>run_wrapper</a></td>
@@ -1831,6 +1947,12 @@ expanded to other characters if needed.</p></td>
                  <td><p>Traverse operating system tables to obtain number of profiles</p></td>
                </tr>
 			   <tr>
+                 <td><a href='../interface/unique_programs.html'>unique_programs</a></td>
+                 <td><a href='../module/fpm_manifest_feature.html'>fpm_manifest_feature</a></td>
+                 <td>Interface</td>
+                 <td></td>
+               </tr>
+			   <tr>
                  <td><a href='../proc/unix_path.html'>unix_path</a></td>
                  <td><a href='../module/fpm_filesystem.html'>fpm_filesystem</a></td>
                  <td>Function</td>
@@ -1844,13 +1966,13 @@ expanded to other characters if needed.</p></td>
                </tr>
 			   <tr>
                  <td><a href='../proc/validate_compiler_name.html'>validate_compiler_name</a></td>
-                 <td><a href='../module/fpm_manifest_profile.html'>fpm_manifest_profile</a></td>
+                 <td><a href='../module/fpm_compiler.html'>fpm_compiler</a></td>
                  <td>Subroutine</td>
                  <td><p>Check if compiler name is a valid compiler name</p></td>
                </tr>
 			   <tr>
                  <td><a href='../proc/validate_os_name.html'>validate_os_name</a></td>
-                 <td><a href='../module/fpm_manifest_profile.html'>fpm_manifest_profile</a></td>
+                 <td><a href='../module/fpm_environment.html'>fpm_environment</a></td>
                  <td>Subroutine</td>
                  <td><p>Check if os_name is a valid name of a supported OS</p></td>
                </tr>
@@ -1918,7 +2040,7 @@ in case of errors.</p></td>
             <p class="text-end">
               Documentation generated by
               <a href="https://github.com/Fortran-FOSS-Programmers/ford">FORD</a>
- on 2025-09-09 17:12 +0000             </p>
+ on 2025-09-11 10:25 +0000             </p>
           </div>
         </div>
         <br>
