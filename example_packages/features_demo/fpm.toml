@@ -1,0 +1,35 @@
+name = "features_demo"
+version = "0.1.0" 
+license = "MIT"
+description = "Demo package for FPM features functionality"
+
+[[executable]]
+name = "features_demo"
+source-dir = "app"
+main = "main.f90"
+
+[features]
+# Base debug feature
+debug.flags = "-g"
+debug.preprocess.cpp.macros = "DEBUG"
+
+# Release feature  
+release.flags = "-O3"
+release.preprocess.cpp.macros = "RELEASE"
+
+# Compiler-specific features
+debug.gfortran.flags = "-Wall -fcheck=bounds"
+release.gfortran.flags = "-march=native"
+
+# Platform-specific features
+linux.preprocess.cpp.macros = "LINUX_BUILD"
+
+# Parallel features
+mpi.preprocess.cpp.macros = "USE_MPI"
+mpi.dependencies.mpi = "*"
+openmp.preprocess.cpp.macros = "USE_OPENMP"
+openmp.dependencies.openmp = "*"
+
+[profiles]
+development = ["debug"]
+production = ["release", "openmp"]

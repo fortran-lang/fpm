@@ -28,8 +28,8 @@ pushd metapackage_stdlib
 popd
 
 pushd metapackage_minpack
-"$fpm" build --verbose
-"$fpm" run --verbose
+"$fpm" build --verbose --flag " -Wno-external-argument-mismatch"
+"$fpm" run --verbose --flag " -Wno-external-argument-mismatch"
 popd
 
 pushd metapackage_mpi

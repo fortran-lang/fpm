@@ -82,7 +82,8 @@ subroutine build_model(model, settings, package_config, error)
     model%include_tests        = settings%build_tests    
     
     ! Extract the current package configuration request
-    package = package_config%export_config(target_platform)    
+    package = package_config%export_config(target_platform,settings%features,settings%profile,error)
+    if (allocated(error)) return    
     
     ! Resolve meta-dependencies into the package and the model
     call resolve_metapackages(model,package,settings,error)
@@ -111,7 +112,11 @@ subroutine build_model(model, settings, package_config, error)
     end if
 
     allocate(model%packages(model%deps%ndep))
-    has_cpp = .false.
+    
+    ! The current configuration may not have preprocessing, but some of its features may. 
+    ! This means there will be directives that need to be considered even if not currently 
+    ! active. Turn preprocessing on even in this case
+    has_cpp = package_config%has_cpp() .or. package%has_cpp()
 
     do i = 1, model%deps%ndep
         associate(dep => model%deps%dep(i))
@@ -128,7 +133,9 @@ subroutine build_model(model, settings, package_config, error)
                 if (allocated(error)) exit          
                 
                 ! Adapt it to the current profile/platform
-                dependency = dependency_config%export_config(target_platform)
+                dependency = dependency_config%export_config(target_platform, &
+                                                             dep%features,error=error)
+                if (allocated(error)) exit
                 
                 manifest => dependency
             end if            
@@ -310,15 +317,26 @@ subroutine new_compiler_flags(model,settings)
     type(fpm_build_settings), intent(in) :: settings
 
     character(len=:), allocatable :: flags, cflags, cxxflags, ldflags
-
-    if (settings%flag == '') then
-        flags = model%compiler%get_default_flags(settings%profile == "release")
+    logical :: release_profile
+    
+    if (allocated(settings%profile)) then 
+        release_profile = settings%profile == "release"
+    else
+        release_profile = .false.
+    end if
+    
+    if (.not.allocated(settings%flag)) then 
+        flags = model%compiler%get_default_flags(release_profile)
+    elseif (settings%flag == '') then
+        flags = model%compiler%get_default_flags(release_profile)
     else
         flags = settings%flag
-        select case(settings%profile)
-        case("release", "debug")
-            flags = flags // model%compiler%get_default_flags(settings%profile == "release")
-        end select
+        if (allocated(settings%profile)) then 
+            select case(settings%profile)
+            case("release", "debug")
+                flags = flags // model%compiler%get_default_flags(release_profile)
+            end select
+        endif
     end if
 
     cflags   = trim(settings%cflag)

@@ -208,6 +208,7 @@ contains
     end if
     
     call self%install(executable, self%bindir, error)
+    if (allocated(error)) return
 
     ! on MacOS, add two relative paths for search of dynamic library dependencies: 
     add_rpath: if (self%os==OS_MACOS) then  
