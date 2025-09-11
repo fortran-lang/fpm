@@ -1,4 +1,4 @@
-program features_with_dependency
+program features_with_dependency_demo
     use features_with_dependency, only: show_features
     implicit none
     
@@ -10,4 +10,4 @@ program features_with_dependency
     print *, ""
     print *, "This demonstrates feature propagation to dependencies."
     
-end program features_with_dependency
+end program features_with_dependency_demo
