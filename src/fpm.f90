@@ -325,7 +325,7 @@ subroutine new_compiler_flags(model,settings)
     elseif (allocated(settings%profile)) then 
         
         select case(settings%profile)
-        case("release", "debug")
+        case("release")
             flags = model%compiler%get_default_flags(release = .true.)
         case ("debug")
             flags = model%compiler%get_default_flags(release = .false.)
