@@ -318,15 +318,19 @@ subroutine new_compiler_flags(model,settings)
 
     character(len=:), allocatable :: flags, cflags, cxxflags, ldflags
 
-    if (settings%flag == '') then
-        flags = model%compiler%get_default_flags(settings%profile == "release")
-    else
+    if (len(settings%flag)>0) then
+        
         flags = settings%flag
+        
+    elseif (allocated(settings%profile)) then 
+        
         select case(settings%profile)
         case("release", "debug")
-            flags = flags // model%compiler%get_default_flags(settings%profile == "release")
-        end select
-    end if
+            flags = model%compiler%get_default_flags(release = .true.)
+        case ("debug")
+            flags = model%compiler%get_default_flags(release = .false.)
+        end select        
+    end if    
 
     cflags   = trim(settings%cflag)
     cxxflags = trim(settings%cxxflag)
