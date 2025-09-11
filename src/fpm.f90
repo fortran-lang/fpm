@@ -317,20 +317,27 @@ subroutine new_compiler_flags(model,settings)
     type(fpm_build_settings), intent(in) :: settings
 
     character(len=:), allocatable :: flags, cflags, cxxflags, ldflags
-
-    if (len(settings%flag)>0) then
-        
+    logical :: release_profile
+    
+    if (allocated(settings%profile)) then 
+        release_profile = settings%profile == "release"
+    else
+        release_profile = .false.
+    end if
+    
+    if (.not.allocated(settings%flag)) then 
+        flags = model%compiler%get_default_flags(release_profile)
+    elseif (settings%flag == '') then
+        flags = model%compiler%get_default_flags(release_profile)
+    else
         flags = settings%flag
-        
-    elseif (allocated(settings%profile)) then 
-        
-        select case(settings%profile)
-        case("release")
-            flags = model%compiler%get_default_flags(release = .true.)
-        case ("debug")
-            flags = model%compiler%get_default_flags(release = .false.)
-        end select        
-    end if    
+        if (allocated(settings%profile)) then 
+            select case(settings%profile)
+            case("release", "debug")
+                flags = flags // model%compiler%get_default_flags(release_profile)
+            end select
+        endif
+    end if
 
     cflags   = trim(settings%cflag)
     cxxflags = trim(settings%cxxflag)
