@@ -275,13 +275,13 @@ character(*), parameter :: &
     flag_cray_free_form = " -ffree"
 
 character(*), parameter :: &
-    flag_flang_openmp = " -fopenmp"
-    flag_flang_new_debug = " -g", &
-    flag_flang_new_opt = " -O3", &
-    flag_flang_new_pic = " -fPIC", &
-    flag_flang_new_free_form = " -ffree-form", &
-    flag_flang_new_fixed_form = " -ffixed-form", &
-    flag_flang_new_no_implicit_typing = " -fimplicit-none"
+    flag_flang_openmp = " -fopenmp", &
+    flag_flang_debug = " -g", &
+    flag_flang_opt = " -O3", &
+    flag_flang_pic = " -fPIC", &
+    flag_flang_free_form = " -ffree-form", &
+    flag_flang_fixed_form = " -ffixed-form", &
+    flag_flang_no_implicit_typing = " -fimplicit-none"
 
 contains
 
@@ -422,8 +422,8 @@ subroutine get_release_compile_flags(id, flags)
 
     case(id_flang)
         flags = &
-            flag_flang_new_opt//&
-            flag_flang_new_pic
+            flag_flang_opt//&
+            flag_flang_pic
 
     end select
 end subroutine get_release_compile_flags
@@ -523,8 +523,8 @@ subroutine get_debug_compile_flags(id, flags)
 
     case(id_flang)
         flags = &
-            flag_flang_new_debug//&
-            flag_flang_new_pic
+            flag_flang_debug//&
+            flag_flang_pic
 
     end select
 end subroutine get_debug_compile_flags
@@ -727,7 +727,7 @@ function get_feature_flag(self, feature) result(flags)
            flags = flag_cray_no_implicit_typing
 
        case(id_flang)
-           flags = flag_flang_new_no_implicit_typing
+           flags = flag_flang_no_implicit_typing
 
        end select
 
@@ -778,7 +778,7 @@ function get_feature_flag(self, feature) result(flags)
            flags = flag_cray_free_form
 
        case(id_flang)
-           flags = flag_flang_new_free_form
+           flags = flag_flang_free_form
 
        end select
 
@@ -807,7 +807,7 @@ function get_feature_flag(self, feature) result(flags)
            flags = flag_lfortran_fixed_form
 
        case(id_flang)
-           flags = flag_flang_new_fixed_form
+           flags = flag_flang_fixed_form
 
        end select
 
