@@ -44,9 +44,12 @@ use tomlf, only: toml_table, toml_stat
 use fpm_toml, only: serializable_t, set_value, set_list, get_value, &
                     & get_list, add_table, toml_key, add_array, set_string
 use fpm_error, only: error_t, fatal_error
-use fpm_environment, only: OS_WINDOWS,OS_MACOS
+use fpm_environment, only: OS_WINDOWS,OS_MACOS, get_os_type, OS_UNKNOWN, OS_LINUX, OS_CYGWIN, &
+                              OS_SOLARIS, OS_FREEBSD, OS_OPENBSD, OS_ALL, validate_os_name, OS_NAME, &
+                              match_os_type
 use fpm_manifest_preprocess, only: preprocess_config_t
 use fpm_manifest_fortran, only: fortran_config_t
+use fpm_manifest_platform, only: platform_config_t
 implicit none
 
 private
@@ -123,8 +126,8 @@ type, extends(serializable_t) :: srcfile_t
 
         !> Serialization interface
         procedure :: serializable_is_same => srcfile_is_same
-        procedure :: dump_to_toml   => srcfile_dump_to_toml
-        procedure :: load_from_toml => srcfile_load_from_toml
+        procedure :: dump_to_toml         => srcfile_dump_to_toml
+        procedure :: load_from_toml       => srcfile_load_from_toml
 
 end type srcfile_t
 
@@ -197,6 +200,9 @@ type, extends(serializable_t) :: fpm_model_t
     !> Base directory for build
     character(:), allocatable :: build_prefix
 
+    !> Build directory
+    character(:), allocatable :: build_dir
+
     !> Include directories
     type(string_t), allocatable :: include_dirs(:)
 
@@ -218,10 +224,16 @@ type, extends(serializable_t) :: fpm_model_t
     !> Prefix for all module names
     type(string_t) :: module_prefix
 
+    !> Target operating system
+    integer :: target_os = OS_ALL
+
     contains
     
         !> Get target link flags
         procedure :: get_package_libraries_link
+
+        !> Get target platform configuration
+        procedure :: target_platform
     
         !> Serialization interface
         procedure :: serializable_is_same => model_is_same
@@ -345,6 +357,7 @@ function info_model(model) result(s)
     s = s // ', cxx_compile_flags="' // model%cxx_compile_flags // '"'
     s = s // ', link_flags="' // model%link_flags // '"'
     s = s // ', build_prefix="' // model%build_prefix // '"'
+    s = s // ', build_dir="' // model%build_dir // '"'
     !    type(string_t), allocatable :: link_libraries(:)
     s = s // ", link_libraries=["
     do i = 1, size(model%link_libraries)
@@ -840,6 +853,10 @@ logical function model_is_same(this,that)
            if (allocated(this%build_prefix)) then
              if (.not.(this%build_prefix==other%build_prefix)) return
            end if
+           if (allocated(this%build_dir).neqv.allocated(other%build_dir)) return
+           if (allocated(this%build_dir)) then
+             if (.not.(this%build_dir==other%build_dir)) return
+           end if
            if (allocated(this%include_dirs).neqv.allocated(other%include_dirs)) return
            if (allocated(this%include_dirs)) then
              if (.not.(this%include_dirs==other%include_dirs)) return
@@ -856,6 +873,7 @@ logical function model_is_same(this,that)
            if (.not.(this%include_tests.eqv.other%include_tests)) return
            if (.not.(this%enforce_module_names.eqv.other%enforce_module_names)) return
            if (.not.(this%module_prefix==other%module_prefix)) return
+           if (.not.(this%target_os==other%target_os)) return
 
        class default
           ! Not the same type
@@ -906,6 +924,8 @@ subroutine model_dump_to_toml(self, table, error)
     if (allocated(error)) return
     call set_string(table, "build-prefix", self%build_prefix, error, 'fpm_model_t')
     if (allocated(error)) return
+    call set_string(table, "build-dir", self%build_dir, error, 'fpm_model_t')
+    if (allocated(error)) return
     call set_list(table, "include-dirs", self%include_dirs, error)
     if (allocated(error)) return
     call set_list(table, "link-libraries", self%link_libraries, error)
@@ -918,6 +938,10 @@ subroutine model_dump_to_toml(self, table, error)
     call set_value(table, "module-naming", self%enforce_module_names, error, 'fpm_model_t')
     if (allocated(error)) return
     call set_string(table, "module-prefix", self%module_prefix, error, 'fpm_model_t')
+    if (allocated(error)) return
+    
+    ! Serialize target OS as string
+    call set_string(table, "target-os", OS_NAME(self%target_os), error, 'fpm_model_t')
     if (allocated(error)) return
 
     call add_table(table, "deps", ptr, error, 'fpm_model_t')
@@ -975,7 +999,9 @@ subroutine model_load_from_toml(self, table, error)
     type(toml_key), allocatable :: keys(:),pkg_keys(:)
     integer :: ierr, ii, jj
     type(toml_table), pointer :: ptr,ptr_pkg
-
+    character(:), allocatable :: os_string
+    logical :: is_valid
+        
     call table%get_keys(keys)
 
     call get_value(table, "package-name", self%package_name)
@@ -984,6 +1010,7 @@ subroutine model_load_from_toml(self, table, error)
     call get_value(table, "cxx-flags", self%cxx_compile_flags)
     call get_value(table, "link-flags", self%link_flags)
     call get_value(table, "build-prefix", self%build_prefix)
+    call get_value(table, "build-dir", self%build_dir)
 
     if (allocated(self%packages)) deallocate(self%packages)
     sub_deps: do ii = 1, size(keys)
@@ -1061,7 +1088,34 @@ subroutine model_load_from_toml(self, table, error)
     if (allocated(error)) return
     call get_value(table, "module-prefix", self%module_prefix%s)
 
+    ! Load target OS from string and validate
+    call get_value(table, "target-os", os_string)
+    if (allocated(os_string)) then
+        ! Validate and convert OS string to integer
+        call validate_os_name(os_string, is_valid)
+        if (.not. is_valid) then
+            call fatal_error(error, "Invalid target OS: " // os_string)
+            return
+        end if
+        
+        self%target_os = match_os_type(os_string) 
+
+    else
+        ! Default to ALL OS if not specified
+        self%target_os = OS_ALL
+    end if
+
 end subroutine model_load_from_toml
+
+!> Get target platform configuration for the current model
+function target_platform(self) result(target)
+    class(fpm_model_t), intent(in) :: self
+    type(platform_config_t) :: target
+    
+    ! Initialize platform with compiler and target OS
+    target = platform_config_t(self%compiler%id, self%target_os)
+    
+end function target_platform
 
 function get_package_libraries_link(model, package_name, prefix, exclude_self, dep_IDs, error) result(r)
     class(fpm_model_t), intent(in) :: model

@@ -164,6 +164,11 @@ pushd program_with_module
 "$fpm" run --target Program_with_module
 popd
 
+pushd program_with_cpp_guarded_module
+"$fpm" build
+"$fpm" run 
+popd
+
 pushd link_executable
 "$fpm" build
 "$fpm" run --target gomp_test
@@ -365,6 +370,9 @@ pushd both_lib_types
 # Check that exactly 2 libboth_lib_types library files were installed
 test $(ls lib/libboth_lib_types* | wc -l) -eq 2
 popd
+
+# Test custom build directory functionality 
+bash "../ci/test_custom_build_dir.sh" "$fpm" hello_world
 
 # Cleanup
 rm -rf ./*/build

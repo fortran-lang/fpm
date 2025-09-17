@@ -37,12 +37,12 @@ module test_package_dependencies
 contains
 
   !> Collect all exported unit tests
-  subroutine collect_package_dependencies(tests)
+  subroutine collect_package_dependencies(testsuite)
 
     !> Collection of tests
-    type(unittest_t), allocatable, intent(out) :: tests(:)
+    type(unittest_t), allocatable, intent(out) :: testsuite(:)
 
-    tests = [ &
+    testsuite = [ &
         & new_unittest("cache-load-dump", test_cache_load_dump), &
         & new_unittest("cache-dump-load", test_cache_dump_load), &
         & new_unittest("status-after-load", test_status), &

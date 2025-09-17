@@ -8,9 +8,12 @@ module fpm_environment
                                            & stderr=>error_unit
     use,intrinsic :: iso_c_binding, only: c_char,c_int,c_null_char
     use fpm_error, only : fpm_stop
+    use fpm_strings, only : lower
     implicit none
     private
     public :: get_os_type
+    public :: match_os_type
+    public :: validate_os_name
     public :: os_is_unix
     public :: get_env
     public :: set_env
@@ -20,6 +23,7 @@ module fpm_environment
     public :: library_filename
     
                         public :: OS_NAME
+    integer, parameter, public :: OS_ALL     = -1   ! "all" flag for profile support
     integer, parameter, public :: OS_UNKNOWN = 0
     integer, parameter, public :: OS_LINUX   = 1
     integer, parameter, public :: OS_MACOS   = 2
@@ -78,9 +82,46 @@ contains
             case (OS_FREEBSD); OS_NAME =  "FreeBSD"
             case (OS_OPENBSD); OS_NAME =  "OpenBSD"
             case (OS_UNKNOWN); OS_NAME =  "Unknown"
+            case (OS_ALL)    ; OS_NAME =  "all"
             case default     ; OS_NAME =  "UNKNOWN"
         end select
     end function OS_NAME
+
+    !> Match os_name to os_type enum (similar to profiles.f90)
+    integer function match_os_type(os_name) result(os_type)
+        character(len=*), intent(in) :: os_name
+        
+        select case (lower(os_name))
+            case ("linux");   os_type = OS_LINUX
+            case ("macos");   os_type = OS_MACOS
+            case ("windows"); os_type = OS_WINDOWS
+            case ("cygwin");  os_type = OS_CYGWIN
+            case ("solaris"); os_type = OS_SOLARIS
+            case ("freebsd"); os_type = OS_FREEBSD
+            case ("openbsd"); os_type = OS_OPENBSD
+            case ("all");     os_type = OS_ALL
+            case default;     os_type = OS_UNKNOWN
+        end select
+    end function match_os_type
+
+    !> Check if os_name is a valid name of a supported OS
+    pure elemental subroutine validate_os_name(os_name, is_valid)
+
+       !> Name of an operating system
+       character(len=*), intent(in) :: os_name
+
+       !> Boolean value of whether os_name is valid or not
+       logical, intent(out) :: is_valid
+
+       select case (lower(os_name))
+         case ("linux", "macos", "windows", "cygwin", "solaris", "freebsd", &
+                         & "openbsd", "all")
+           is_valid = .true.
+         case default
+           is_valid = .false.
+       end select
+
+    end subroutine validate_os_name
 
     !> Determine the OS type
     integer function get_os_type() result(r)

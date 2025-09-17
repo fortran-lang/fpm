@@ -19,6 +19,7 @@ use fpm_sources, only: add_executable_sources, add_sources_from_dir
 use fpm_targets, only: targets_from_sources, build_target_t, build_target_ptr, &
                         FPM_TARGET_EXECUTABLE, get_library_dirs, filter_executable_targets
 use fpm_manifest, only : get_package_data, package_config_t
+use fpm_manifest_platform, only: platform_config_t
 use fpm_meta, only : resolve_metapackages
 use fpm_error, only : error_t, fatal_error, fpm_stop
 use fpm_toml, only: name_is_json
@@ -37,26 +38,30 @@ public :: build_model, check_modules_for_duplicates
 contains
 
 !> Constructs a valid fpm model from command line settings and the toml manifest.
-subroutine build_model(model, settings, package, error)
+subroutine build_model(model, settings, package_config, error)
     type(fpm_model_t), intent(out) :: model
     class(fpm_build_settings), intent(inout) :: settings
-    type(package_config_t), intent(inout), target :: package
+    type(package_config_t), intent(inout), target :: package_config
     type(error_t), allocatable, intent(out) :: error
 
     integer :: i, j
-    type(package_config_t), target  :: dependency
+    type(package_config_t), target  :: package, dependency_config, dependency
     type(package_config_t), pointer :: manifest
+    type(platform_config_t) :: target_platform
     character(len=:), allocatable :: file_name, lib_dir
     logical :: has_cpp
-    logical :: duplicates_found
+    logical :: duplicates_found, auto_exe, auto_example, auto_test
     type(string_t) :: include_dir
 
-    model%package_name = package%name
+    model%package_name = package_config%name
+
+    ! Set target OS to current OS (may be extended for cross-compilation in the future)
+    model%target_os = get_os_type()
 
     allocate(model%include_dirs(0))
     allocate(model%link_libraries(0))
     allocate(model%external_modules(0))
-
+    
     call new_compiler(model%compiler, settings%compiler, settings%c_compiler, &
         & settings%cxx_compiler, echo=settings%verbose, verbose=settings%verbose)
     call new_archiver(model%archiver, settings%archiver, &
@@ -67,20 +72,30 @@ subroutine build_model(model, settings, package, error)
             "<WARN>", "Unknown compiler", model%compiler%fc, "requested!", &
             "Defaults for this compiler might be incorrect"
     end if
-
+    
+    ! Extract the target platform for this build
+    target_platform = model%target_platform()
+    
     call new_compiler_flags(model,settings)
-    model%build_prefix         = join_path("build", basename(model%compiler%fc))
-    model%include_tests        = settings%build_tests
-    model%enforce_module_names = package%build%module_naming
-    model%module_prefix        = package%build%module_prefix
-
+    model%build_dir            = settings%build_dir
+    model%build_prefix         = join_path(settings%build_dir, basename(model%compiler%fc))
+    model%include_tests        = settings%build_tests    
+    
+    ! Extract the current package configuration request
+    package = package_config%export_config(target_platform)    
+    
     ! Resolve meta-dependencies into the package and the model
     call resolve_metapackages(model,package,settings,error)
     if (allocated(error)) return
     
+    if (allocated(package%build)) then 
+        model%enforce_module_names = package%build%module_naming
+        model%module_prefix        = package%build%module_prefix
+    endif      
+    
     ! Create dependencies
-    call new_dependency_tree(model%deps, cache=join_path("build", "cache.toml"), &
-    & path_to_config=settings%path_to_config)
+    call new_dependency_tree(model%deps, cache=join_path(settings%build_dir, "cache.toml"), &
+    & path_to_config=settings%path_to_config, build_dir=settings%build_dir)
 
     ! Build and resolve model dependencies
     call model%deps%add(package, error)
@@ -90,9 +105,9 @@ subroutine build_model(model, settings, package, error)
     call model%deps%update(error)
     if (allocated(error)) return
 
-    ! build/ directory should now exist
-    if (.not.exists("build/.gitignore")) then
-      call filewrite(join_path("build", ".gitignore"),["*"])
+    ! build directory should now exist
+    if (.not.exists(join_path(settings%build_dir, ".gitignore"))) then
+      call filewrite(join_path(settings%build_dir, ".gitignore"),["*"])
     end if
 
     allocate(model%packages(model%deps%ndep))
@@ -108,19 +123,20 @@ subroutine build_model(model, settings, package, error)
                 manifest => package
             else
                 
-                call get_package_data(dependency, file_name, error, apply_defaults=.true.)
-                if (allocated(error)) exit                
+                ! Extract this dependency config
+                call get_package_data(dependency_config, file_name, error, apply_defaults=.true.)
+                if (allocated(error)) exit          
+                
+                ! Adapt it to the current profile/platform
+                dependency = dependency_config%export_config(target_platform)
                 
                 manifest => dependency
             end if            
             
-            model%packages(i)%name = manifest%name
-            associate(features => model%packages(i)%features)
-                features%implicit_typing   = manifest%fortran%implicit_typing
-                features%implicit_external = manifest%fortran%implicit_external
-                features%source_form       = manifest%fortran%source_form
-            end associate
-            model%packages(i)%version = manifest%version
+
+            model%packages(i)%name     = manifest%name
+            model%packages(i)%features = manifest%fortran
+            model%packages(i)%version  = manifest%version
 
             !> Add this dependency's manifest macros
             if (allocated(manifest%preprocess)) then
@@ -146,7 +162,8 @@ subroutine build_model(model, settings, package, error)
                     lib_dir = join_path(dep%proj_dir, manifest%library%source_dir)
                     if (is_dir(lib_dir)) then
                         call add_sources_from_dir(model%packages(i)%sources, lib_dir, FPM_SCOPE_LIB, &
-                            with_f_ext=model%packages(i)%preprocess%suffixes, error=error)
+                            with_f_ext=model%packages(i)%preprocess%suffixes, error=error, &
+                            preprocess=model%packages(i)%preprocess)
                         if (allocated(error)) exit
                     end if
                 end if
@@ -161,18 +178,22 @@ subroutine build_model(model, settings, package, error)
                 end if
 
             end if
+            
+            if (allocated(manifest%build)) then 
 
-            if (allocated(manifest%build%link)) then
-                model%link_libraries = [model%link_libraries, manifest%build%link]
-            end if
+                if (allocated(manifest%build%link)) then
+                    model%link_libraries = [model%link_libraries, manifest%build%link]
+                end if
 
-            if (allocated(manifest%build%external_modules)) then
-                model%external_modules = [model%external_modules, manifest%build%external_modules]
-            end if
+                if (allocated(manifest%build%external_modules)) then
+                    model%external_modules = [model%external_modules, manifest%build%external_modules]
+                end if
 
-            ! Copy naming conventions from this dependency's manifest
-            model%packages(i)%enforce_module_names = manifest%build%module_naming
-            model%packages(i)%module_prefix        = manifest%build%module_prefix
+                ! Copy naming conventions from this dependency's manifest
+                model%packages(i)%enforce_module_names = manifest%build%module_naming
+                model%packages(i)%module_prefix        = manifest%build%module_prefix
+            
+            endif
 
         end associate
     end do
@@ -182,30 +203,43 @@ subroutine build_model(model, settings, package, error)
     if (has_cpp) call set_cpp_preprocessor_flags(model%compiler%id, model%fortran_compile_flags)
 
     ! Add sources from executable directories
-    if (is_dir('app') .and. package%build%auto_executables) then
+    
+    if (allocated(package%build)) then 
+        auto_exe = package%build%auto_executables
+        auto_example = package%build%auto_examples
+        auto_test = package%build%auto_tests
+    else
+        auto_exe = .true.
+        auto_example = .true.
+        auto_test = .true.
+    endif
+    
+    if (is_dir('app') .and. auto_exe) then
         call add_sources_from_dir(model%packages(1)%sources,'app', FPM_SCOPE_APP, &
                                    with_executables=.true., with_f_ext=model%packages(1)%preprocess%suffixes,&
-                                   error=error)
+                                   error=error,preprocess=model%packages(1)%preprocess)
 
         if (allocated(error)) then
             return
         end if
 
     end if
-    if (is_dir('example') .and. package%build%auto_examples) then
+    if (is_dir('example') .and. auto_example) then
         call add_sources_from_dir(model%packages(1)%sources,'example', FPM_SCOPE_EXAMPLE, &
                                   with_executables=.true., &
-                                  with_f_ext=model%packages(1)%preprocess%suffixes,error=error)
+                                  with_f_ext=model%packages(1)%preprocess%suffixes,error=error,&
+                                  preprocess=model%packages(1)%preprocess)
 
         if (allocated(error)) then
             return
         end if
 
     end if
-    if (is_dir('test') .and. package%build%auto_tests) then
+    if (is_dir('test') .and. auto_test) then
         call add_sources_from_dir(model%packages(1)%sources,'test', FPM_SCOPE_TEST, &
                                   with_executables=.true., &
-                                  with_f_ext=model%packages(1)%preprocess%suffixes,error=error)
+                                  with_f_ext=model%packages(1)%preprocess%suffixes,error=error,&
+                                  preprocess=model%packages(1)%preprocess)
 
         if (allocated(error)) then
             return
@@ -214,9 +248,9 @@ subroutine build_model(model, settings, package, error)
     end if
     if (allocated(package%executable)) then
         call add_executable_sources(model%packages(1)%sources, package%executable, FPM_SCOPE_APP, &
-                                     auto_discover=package%build%auto_executables, &
+                                     auto_discover=auto_exe, &
                                      with_f_ext=model%packages(1)%preprocess%suffixes, &
-                                     error=error)
+                                     error=error,preprocess=model%packages(1)%preprocess)
 
         if (allocated(error)) then
             return
@@ -225,9 +259,9 @@ subroutine build_model(model, settings, package, error)
     end if
     if (allocated(package%example)) then
         call add_executable_sources(model%packages(1)%sources, package%example, FPM_SCOPE_EXAMPLE, &
-                                     auto_discover=package%build%auto_examples, &
+                                     auto_discover=auto_example, &
                                      with_f_ext=model%packages(1)%preprocess%suffixes, &
-                                     error=error)
+                                     error=error,preprocess=model%packages(1)%preprocess)
 
         if (allocated(error)) then
             return
@@ -236,9 +270,9 @@ subroutine build_model(model, settings, package, error)
     end if
     if (allocated(package%test)) then
         call add_executable_sources(model%packages(1)%sources, package%test, FPM_SCOPE_TEST, &
-                                     auto_discover=package%build%auto_tests, &
+                                     auto_discover=auto_test, &
                                      with_f_ext=model%packages(1)%preprocess%suffixes, &
-                                     error=error)
+                                     error=error,preprocess=model%packages(1)%preprocess)
 
         if (allocated(error)) then
             return
