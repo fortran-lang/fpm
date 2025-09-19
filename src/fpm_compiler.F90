@@ -275,13 +275,13 @@ character(*), parameter :: &
     flag_cray_free_form = " -ffree"
 
 character(*), parameter :: &
-    flag_flang_new_openmp = " -fopenmp", &
-    flag_flang_new_debug = " -g", &
-    flag_flang_new_opt = " -O3", &
-    flag_flang_new_pic = " -fPIC", &
-    flag_flang_new_free_form = " -ffree-form", &
-    flag_flang_new_fixed_form = " -ffixed-form", &
-    flag_flang_new_no_implicit_typing = " -fimplicit-none"
+    flag_flang_openmp = " -fopenmp", &
+    flag_flang_debug = " -g", &
+    flag_flang_opt = " -O3", &
+    flag_flang_pic = " -fPIC", &
+    flag_flang_free_form = " -ffree-form", &
+    flag_flang_fixed_form = " -ffixed-form", &
+    flag_flang_no_implicit_typing = " -fimplicit-none"
 
 contains
 
@@ -307,7 +307,7 @@ function get_default_flags(self, release) result(flags)
           id_pgi, id_nvhpc, id_nag, id_cray, id_ibmxl)
         pic_flag = " -fPIC"
     case (id_flang)
-        ! flang-new doesn't support -fPIC on Windows MSVC target
+        ! LLVM Flang doesn't support -fPIC on Windows MSVC target
         if (get_os_type() == OS_WINDOWS) then
             pic_flag = ""
         else
@@ -422,8 +422,8 @@ subroutine get_release_compile_flags(id, flags)
 
     case(id_flang)
         flags = &
-            flag_flang_new_opt//&
-            flag_flang_new_pic
+            flag_flang_opt//&
+            flag_flang_pic
 
     end select
 end subroutine get_release_compile_flags
@@ -523,8 +523,8 @@ subroutine get_debug_compile_flags(id, flags)
 
     case(id_flang)
         flags = &
-            flag_flang_new_debug//&
-            flag_flang_new_pic
+            flag_flang_debug//&
+            flag_flang_pic
 
     end select
 end subroutine get_debug_compile_flags
@@ -691,7 +691,7 @@ function get_shared_flag(self) result(shared_flag)
     select case (self%id)
     case default
         shared_flag = "-shared"
-    case (id_gcc, id_f95, id_flang_classic, id_flang, id_lfortran)
+    case (id_gcc, id_f95, id_flang, id_flang_classic, id_lfortran)
         shared_flag = "-shared"
     case (id_intel_classic_nix, id_intel_llvm_nix, id_pgi, id_nvhpc)
         shared_flag = "-shared"
@@ -727,7 +727,7 @@ function get_feature_flag(self, feature) result(flags)
            flags = flag_cray_no_implicit_typing
 
        case(id_flang)
-           flags = flag_flang_new_no_implicit_typing
+           flags = flag_flang_no_implicit_typing
 
        end select
 
@@ -756,6 +756,7 @@ function get_feature_flag(self, feature) result(flags)
        end select
 
     case("free-form")
+
        select case(self%id)
        case(id_caf, id_gcc, id_f95)
            flags = flag_gnu_free_form
@@ -777,7 +778,7 @@ function get_feature_flag(self, feature) result(flags)
            flags = flag_cray_free_form
 
        case(id_flang)
-           flags = flag_flang_new_free_form
+           flags = flag_flang_free_form
 
        end select
 
@@ -806,7 +807,7 @@ function get_feature_flag(self, feature) result(flags)
            flags = flag_lfortran_fixed_form
 
        case(id_flang)
-           flags = flag_flang_new_fixed_form
+           flags = flag_flang_fixed_form
 
        end select
 
@@ -1025,23 +1026,18 @@ function match_compiler_type(compiler) result(id)
         return
     end if
 
-    if (check_compiler(compiler, "flang-new")) then
+    if (check_compiler(compiler, "flang-classic")) then
+        id = id_flang_classic
+        return
+    end if
+
+    if (check_compiler(compiler, "flang-new") .or. check_compiler(compiler, "flang")) then
         id = id_flang
         return
     end if
 
     if (check_compiler(compiler, "f18")) then
         id = id_f18
-        return
-    end if
-
-    if (check_compiler(compiler, "flang-classic")) then
-        id = id_flang_classic
-        return
-    end if
-
-    if (check_compiler(compiler, "flang")) then
-        id = id_flang
         return
     end if
 
@@ -1824,8 +1820,8 @@ pure function compiler_id_name(id) result(name)
        case(id_pgi);                   name = "pgfortran"
        case(id_nvhpc);                 name = "nvfortran"
        case(id_nag);                   name = "nagfor"
-       case(id_flang_classic);         name = "flang"
-       case(id_flang);                 name = "flang-new"
+       case(id_flang_classic);         name = "flang-classic"
+       case(id_flang);                 name = "flang"
        case(id_f18);                   name = "f18"
        case(id_ibmxl);                 name = "xlf90"
        case(id_cray);                  name = "crayftn"
