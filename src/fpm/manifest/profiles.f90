@@ -655,7 +655,6 @@ module fpm_manifest_profile
         end do
       end subroutine new_profiles
 
-
       !> Write information on instance
       subroutine info(self, unit, verbosity)
 
