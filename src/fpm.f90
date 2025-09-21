@@ -33,7 +33,7 @@ use fpm_settings, only: fpm_global_settings, get_global_settings
 implicit none
 private
 public :: cmd_build, cmd_run, cmd_clean
-public :: build_model, check_modules_for_duplicates
+public :: build_model, check_modules_for_duplicates, new_compiler_flags
 
 contains
 
@@ -79,9 +79,6 @@ subroutine build_model(model, settings, package_config, error)
     model%build_dir            = settings%build_dir
     model%build_prefix         = join_path(settings%build_dir, basename(model%compiler%fc))
     model%include_tests        = settings%build_tests
-
-    if (allocated(settings%features)) print *, 'features: ',(settings%features(i)%s//' ',i=1,size(settings%features))
-    if (allocated(settings%profile)) print *, 'profile: ',settings%profile
 
     ! Extract the current package configuration request
     package = package_config%export_config(target_platform,settings%features,settings%profile,error)

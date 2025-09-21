@@ -49,7 +49,8 @@ contains
             &              test_feature_complex_chain_compiler_os_compiler, should_fail=.true.), &
             & new_unittest("feature-complex-chain-os-compiler-os", &
             &              test_feature_complex_chain_os_compiler_os, should_fail=.true.), &
-            & new_unittest("feature-mixed-valid-chains", test_feature_mixed_valid_chains) &
+            & new_unittest("feature-mixed-valid-chains", test_feature_mixed_valid_chains), &
+            & new_unittest("feature-compiler-flags-integration", test_feature_compiler_flags_integration) &
             & ]
 
     end subroutine collect_features
@@ -1469,5 +1470,137 @@ contains
         end do
                         
     end subroutine test_feature_mixed_valid_chains
+
+    !> Test integration of feature compiler flags with new_compiler_flags
+    subroutine test_feature_compiler_flags_integration(error)
+        use fpm, only: new_compiler_flags
+        use fpm_model, only: fpm_model_t
+        use fpm_command_line, only: fpm_build_settings
+        use fpm_compiler, only: new_compiler, id_gcc
+
+        !> Error handling
+        type(error_t), allocatable, intent(out) :: error
+
+        type(package_config_t) :: package_config,package
+        type(fpm_model_t) :: model
+        type(fpm_build_settings) :: settings
+        type(platform_config_t) :: target_platform
+        character(:), allocatable :: temp_file
+        integer :: unit
+
+        allocate(temp_file, source=get_temp_filename())
+
+        ! Create a test package with feature-based compiler flags
+        open(newunit=unit, file=temp_file, status='unknown')
+        write(unit, '(a)') 'name = "test_flags"'
+        write(unit, '(a)') 'version = "0.1.0"'
+        write(unit, '(a)') ''
+        write(unit, '(a)') '[library]'
+        write(unit, '(a)') 'source-dir = "src"'
+        write(unit, '(a)') ''
+        write(unit, '(a)') '[features]'
+        write(unit, '(a)') 'debug.gfortran.flags = "-g -Wall -fcheck=bounds"'
+        write(unit, '(a)') 'debug.flags = "-g"'
+        write(unit, '(a)') 'release.gfortran.flags = "-O3 -march=native"'
+        write(unit, '(a)') 'release.flags = "-O2"'
+        write(unit, '(a)') ''
+        write(unit, '(a)') '[profiles]'
+        write(unit, '(a)') 'development = ["debug"]'
+        write(unit, '(a)') 'production = ["release"]'
+        close(unit)
+
+        ! Set up build settings without CLI flags
+        settings%flag = ""
+        settings%cflag = ""
+        settings%cxxflag = ""
+        settings%ldflag = ""
+
+        ! Load the package configuration
+        call get_package_data(package_config, temp_file, error, apply_defaults=.true.)
+        if (allocated(error)) return
+
+        ! 1) Choose first desired target platform: gfortran on Linux with development profile
+        target_platform = platform_config_t(id_gcc, OS_LINUX)
+        settings%profile = "development"  ! This should activate debug features
+
+        ! Extract the current package configuration request
+        package = package_config%export_config(target_platform, profile=settings%profile, error=error)
+        if (allocated(error)) return
+
+        ! Set up model with mock compiler
+        call new_compiler(model%compiler, "gfortran", "gcc", "g++", echo=.false., verbose=.false.)
+
+        ! Test that package flags are used when no CLI flags provided
+        call new_compiler_flags(model, settings, package)
+
+        ! 2) Ensure flags are picked from gfortran platform (should include both base debug and gfortran-specific)
+        if (.not. allocated(model%fortran_compile_flags)) then
+            call test_failed(error, "Expected fortran_compile_flags to be allocated for gfortran")
+            return
+        end if
+
+        if (index(model%fortran_compile_flags, "-g") == 0) then
+            call test_failed(error, "Expected debug flags to contain '-g' for gfortran platform")
+            return
+        end if
+
+        if (index(model%fortran_compile_flags, "-Wall") == 0) then
+            call test_failed(error, "Expected gfortran-specific flags to contain '-Wall'")
+            return
+        end if
+
+        if (index(model%fortran_compile_flags, "-fcheck=bounds") == 0) then
+            call test_failed(error, "Expected gfortran-specific flags to contain '-fcheck=bounds'")
+            return
+        end if
+
+        ! 3) Choose another target platform: gfortran on Linux with production profile
+        settings%profile = "production"  ! This should activate release features
+
+        ! Extract the new package configuration request
+        package = package_config%export_config(target_platform, profile=settings%profile, error=error)
+        if (allocated(error)) return
+
+        ! Reset flags and test production profile
+        call new_compiler_flags(model, settings, package)
+
+        ! 4) Ensure flags are picked from the release platform (should include release flags)
+        if (.not. allocated(model%fortran_compile_flags)) then
+            call test_failed(error, "Expected fortran_compile_flags to be allocated for release")
+            return
+        end if
+
+        if (index(model%fortran_compile_flags, "-O3") == 0) then
+            call test_failed(error, "Expected release gfortran flags to contain '-O3'")
+            return
+        end if
+
+        if (index(model%fortran_compile_flags, "-march=native") == 0) then
+            call test_failed(error, "Expected release gfortran flags to contain '-march=native'")
+            return
+        end if
+
+        if (index(model%fortran_compile_flags, "-O2") == 0) then
+            call test_failed(error, "Expected base release flags to contain '-O2'")
+            return
+        end if
+
+        ! Test CLI flags still override package flags
+        settings%flag = "-O1 -DCUSTOM"
+        call new_compiler_flags(model, settings, package)
+
+        if (index(model%fortran_compile_flags, "-O1") == 0) then
+            call test_failed(error, "Expected CLI flags to be used when provided")
+            return
+        end if
+
+        if (index(model%fortran_compile_flags, "-DCUSTOM") == 0) then
+            call test_failed(error, "Expected CLI flags to contain custom flags")
+            return
+        end if
+
+        ! Clean up - file was already closed after writing
+
+    end subroutine test_feature_compiler_flags_integration
 
 end module test_features
