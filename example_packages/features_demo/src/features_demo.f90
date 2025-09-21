@@ -57,16 +57,16 @@ contains
         info = 'Features: '
         
 #ifdef DEBUG
-        info = trim(info) // 'DEBUG '
+        info = trim(info) // ' DEBUG'
 #endif
 #ifdef RELEASE
-        info = trim(info) // 'RELEASE '  
+        info = trim(info) // ' RELEASE'  
 #endif
 #ifdef USE_MPI
-        info = trim(info) // 'MPI '
+        info = trim(info) // ' MPI'
 #endif
 #ifdef USE_OPENMP
-        info = trim(info) // 'OPENMP '
+        info = trim(info) // ' OPENMP'
 #endif
 
         if (len_trim(info) == 10) then ! Only "Features: "
