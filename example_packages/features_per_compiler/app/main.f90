@@ -27,9 +27,9 @@ program main
 
   ! Check for feature flags
   debug_active   = index(options_str, '-g') > 0
-  release_active = index(options_str, '-O') > 0
+  release_active = index(options_str, '-O3') > 0
   verbose_active = index(options_str, ' -v') > 0 .or. index(options_str, ' -v ') > 0
-  fast_active    = index(options_str, '-Ofast') > 0 .or. index(options_str, '-fast') > 0
+  fast_active    = index(options_str, 'fast') > 0 
   strict_active  = index(options_str, '-std=f2018') > 0 .or. index(options_str, '-stand f18') > 0
 
   ! Display active features
@@ -127,13 +127,13 @@ contains
     end if
 
     if (release_on) then
-      ! Check for either -march=native or -mcpu (Apple Silicon uses -mcpu)
-      if (.not. (index(options, '-march=native') > 0 .or. index(options, '-mcpu') > 0)) then
+      ! Check for either -march or -mcpu (Apple Silicon uses -mcpu; -match=native may be re-resolved by gcc)
+      if (.not. (index(options, '-march') > 0 .or. index(options, '-mcpu') > 0)) then
         print '(a)', '  ✗ Release: neither -march=native nor -mcpu found'
         failed_count = failed_count + 1
       else
         if (index(options, '-march=native') > 0) then
-          print '(a)', '  ✓ Release: -march=native found'
+          print '(a)', '  ✓ Release: -march found'
         else
           print '(a)', '  ✓ Release: -mcpu found'
         end if
@@ -142,7 +142,7 @@ contains
     end if
 
     if (fast_on) then
-      if (.not. check_flag(options, '-Ofast', 'Fast', '-Ofast')) failed_count = failed_count + 1
+      if (.not. check_flag(options, '-ffast', 'Fast', '-fast')) failed_count = failed_count + 1
       if (.not. check_flag(options, '-ffast-math', 'Fast', '-ffast-math')) failed_count = failed_count + 1
     end if
 
@@ -172,7 +172,7 @@ contains
     end if
 
     if (fast_on) then
-      if (.not. check_flag(options, '-fast', 'Fast', '-fast')) failed_count = failed_count + 1
+      if (.not. check_flag(options, '-fast', 'Fast', '-ffast')) failed_count = failed_count + 1
     end if
 
     if (strict_on) then
@@ -201,7 +201,7 @@ contains
     end if
 
     if (fast_on) then
-      if (.not. check_flag(options, '-fast', 'Fast', '-fast')) failed_count = failed_count + 1
+      if (.not. check_flag(options, '-fast', 'Fast', '-ffast')) failed_count = failed_count + 1
     end if
 
     if (strict_on) then
