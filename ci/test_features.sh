@@ -161,4 +161,136 @@ echo "✓ Debug dependency profile works"
 rm -rf build output.txt
 popd
 
+echo "=== Testing features_per_compiler package ==="
+
+# Test features per compiler package
+pushd "features_per_compiler"
+
+# Test 15: Development profile (debug + verbose)
+echo "Test 15: Features per compiler - development profile"
+rm -rf build
+if "$fpm" run --profile development | tee output.txt; then
+    echo "✓ Exit code 0 (success) as expected"
+else
+    echo "ERROR: Expected exit code 0 but got non-zero exit code"
+    exit 1
+fi
+grep -q "Features Per Compiler Demo" output.txt || { echo "ERROR: Features Per Compiler Demo not found"; exit 1; }
+grep -q "✓ DEBUG: -g flag found" output.txt || { echo "ERROR: Debug feature not detected"; exit 1; }
+grep -q "✓ VERBOSE: -v flag found" output.txt || { echo "ERROR: Verbose feature not detected"; exit 1; }
+grep -q "✓ All compiler flag checks PASSED" output.txt || { echo "ERROR: Expected all checks to pass"; exit 1; }
+# Check compiler-specific flags (will depend on detected compiler)
+if grep -q "Detected compiler: gfortran" output.txt; then
+    grep -q "✓ Debug: -Wall found" output.txt || { echo "ERROR: gfortran debug flag -Wall not found"; exit 1; }
+    grep -q "✓ Debug: -fcheck=bounds found" output.txt || { echo "ERROR: gfortran debug flag -fcheck=bounds not found"; exit 1; }
+fi
+echo "✓ Development profile works"
+
+# Test 16: Production profile (release + fast)
+echo "Test 16: Features per compiler - production profile"
+rm -rf build
+if "$fpm" run --profile production | tee output.txt; then
+    echo "✓ Exit code 0 (success) as expected"
+else
+    echo "ERROR: Expected exit code 0 but got non-zero exit code"
+    exit 1
+fi
+grep -q "Features Per Compiler Demo" output.txt || { echo "ERROR: Features Per Compiler Demo not found"; exit 1; }
+grep -q "✓ RELEASE: -O flags found" output.txt || { echo "ERROR: Release feature not detected"; exit 1; }
+grep -q "✓ FAST: fast optimization flags found" output.txt || { echo "ERROR: Fast feature not detected"; exit 1; }
+grep -q "✓ All compiler flag checks PASSED" output.txt || { echo "ERROR: Expected all checks to pass"; exit 1; }
+# Check compiler-specific flags (will depend on detected compiler)
+if grep -q "Detected compiler: gfortran" output.txt; then
+    # Check for either -march=native or -mcpu (Apple Silicon uses -mcpu)
+    if ! (grep -q "✓ Release: -march=native found" output.txt || grep -q "✓ Release: -mcpu found" output.txt); then
+        echo "ERROR: gfortran release architecture flag (-march=native or -mcpu) not found"
+        exit 1
+    fi
+    grep -q "✓ Fast: -Ofast found" output.txt || { echo "ERROR: gfortran fast flag -Ofast not found"; exit 1; }
+fi
+echo "✓ Production profile works"
+
+# Test 17: Testing profile (debug + strict)
+echo "Test 17: Features per compiler - testing profile"
+rm -rf build
+if "$fpm" run --profile testing | tee output.txt; then
+    echo "✓ Exit code 0 (success) as expected"
+else
+    echo "ERROR: Expected exit code 0 but got non-zero exit code"
+    exit 1
+fi
+grep -q "Features Per Compiler Demo" output.txt || { echo "ERROR: Features Per Compiler Demo not found"; exit 1; }
+grep -q "✓ DEBUG: -g flag found" output.txt || { echo "ERROR: Debug feature not detected"; exit 1; }
+grep -q "✓ STRICT: standard compliance flags found" output.txt || { echo "ERROR: Strict feature not detected"; exit 1; }
+grep -q "✓ All compiler flag checks PASSED" output.txt || { echo "ERROR: Expected all checks to pass"; exit 1; }
+# Check compiler-specific flags (will depend on detected compiler)
+if grep -q "Detected compiler: gfortran" output.txt; then
+    grep -q "✓ Strict: -Wpedantic found" output.txt || { echo "ERROR: gfortran strict flag -Wpedantic not found"; exit 1; }
+fi
+echo "✓ Testing profile works"
+
+# Test 18: Individual features - debug only
+echo "Test 18: Features per compiler - debug feature only"
+rm -rf build
+if "$fpm" run --features debug | tee output.txt; then
+    echo "✓ Exit code 0 (success) as expected"
+else
+    echo "ERROR: Expected exit code 0 but got non-zero exit code"
+    exit 1
+fi
+grep -q "Features Per Compiler Demo" output.txt || { echo "ERROR: Features Per Compiler Demo not found"; exit 1; }
+grep -q "✓ DEBUG: -g flag found" output.txt || { echo "ERROR: Debug feature not detected"; exit 1; }
+grep -q "✓ All compiler flag checks PASSED" output.txt || { echo "ERROR: Expected all checks to pass"; exit 1; }
+# Should NOT have release or fast flags
+if grep -q "✓ RELEASE: -O flags found" output.txt; then
+    echo "ERROR: Release flags should not be present with debug only"
+    exit 1
+fi
+echo "✓ Debug feature works"
+
+# Test 19: Individual features - release only
+echo "Test 19: Features per compiler - release feature only"
+rm -rf build
+if "$fpm" run --features release | tee output.txt; then
+    echo "✓ Exit code 0 (success) as expected"
+else
+    echo "ERROR: Expected exit code 0 but got non-zero exit code"
+    exit 1
+fi
+grep -q "Features Per Compiler Demo" output.txt || { echo "ERROR: Features Per Compiler Demo not found"; exit 1; }
+grep -q "✓ RELEASE: -O flags found" output.txt || { echo "ERROR: Release feature not detected"; exit 1; }
+grep -q "✓ All compiler flag checks PASSED" output.txt || { echo "ERROR: Expected all checks to pass"; exit 1; }
+# Should NOT have debug flags
+if grep -q "✓ DEBUG: -g flag found" output.txt; then
+    echo "ERROR: Debug flags should not be present with release only"
+    exit 1
+fi
+echo "✓ Release feature works"
+
+# Test 20: No profile/features - baseline
+echo "Test 20: Features per compiler - baseline (no profile)"
+rm -rf build
+if "$fpm" run | tee output.txt; then
+    echo "✓ Exit code 0 (success) as expected"
+else
+    echo "ERROR: Expected exit code 0 but got non-zero exit code"
+    exit 1
+fi
+grep -q "Features Per Compiler Demo" output.txt || { echo "ERROR: Features Per Compiler Demo not found"; exit 1; }
+grep -q "✓ All compiler flag checks PASSED" output.txt || { echo "ERROR: Expected all checks to pass"; exit 1; }
+# Should NOT have any feature flags in baseline
+if grep -q "✓ DEBUG: -g flag found" output.txt; then
+    echo "ERROR: Debug flags should not be present in baseline"
+    exit 1
+fi
+if grep -q "✓ RELEASE: -O flags found" output.txt; then
+    echo "ERROR: Release flags should not be present in baseline"
+    exit 1
+fi
+echo "✓ Baseline (no profile) works"
+
+# Cleanup
+rm -rf build output.txt
+popd
+
 echo "All FPM features tests passed!"

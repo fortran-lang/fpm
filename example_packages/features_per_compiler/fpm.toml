@@ -1,0 +1,55 @@
+name = "features_per_compiler"
+version = "0.1.0"
+license = "MIT"
+author = "Federico Perini"
+maintainer = "federico.perini@gmail.com"
+copyright = "Copyright 2025, Federico Perini"
+description = "Demo package showcasing features with per-compiler flags and introspection"
+
+[build]
+auto-executables=false
+
+[[executable]]
+name = "features_per_compiler"
+source-dir = "app"
+main = "main.f90"
+
+[profiles]
+# Development profile with debugging flags
+development = ["debug", "verbose"]
+
+# Production profile with optimization flags
+production = ["release", "fast"]
+
+# Testing profile with strict checking
+testing = ["debug", "strict"]
+
+[features]
+# Debug feature with base flags for all compilers, then per-compiler extensions
+debug.flags = "-g"  # Base debug flag for ALL compilers (applied first)
+debug.gfortran.flags = "-Wall -Wextra -fcheck=bounds,do,mem,pointer -fbacktrace"
+debug.ifort.flags = "-warn all -check bounds -traceback"  # Unix/Linux/macOS Intel
+debug.ifx.flags = "-warn all -check bounds -traceback"    # Intel oneAPI
+debug.preprocess.cpp.macros = "DEBUG"
+
+# Release feature with base optimization, then per-compiler extensions
+release.flags = "-O3"  # Base optimization for ALL compilers (applied first)
+release.gfortran.flags = "-march=native -funroll-loops"
+release.ifort.flags = "-xHost -unroll"     # Unix/Linux/macOS Intel
+release.ifx.flags = "-xHost -unroll"       # Intel oneAPI
+
+# Verbose feature for enhanced diagnostics (applies to all compilers)
+verbose.flags = "-v"
+
+# Fast feature with base optimization, then per-compiler extensions
+fast.flags = "-O3"  # Base fast optimization for ALL compilers (applied first)
+fast.gfortran.flags = "-Ofast -ffast-math"
+fast.ifort.flags = "-fast"
+fast.ifx.flags = "-fast"
+
+# Strict feature with base standard compliance, then per-compiler extensions
+strict.flags = "-std=f2018"  # Base standard compliance for ALL compilers (applied first)
+strict.gfortran.flags = "-Wpedantic -Werror"
+strict.ifort.flags = "-stand f18 -warn errors"
+strict.ifx.flags = "-stand f18 -warn errors"
+
