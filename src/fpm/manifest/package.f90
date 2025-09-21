@@ -101,6 +101,9 @@ module fpm_manifest_package
 
         !> Find feature by name, returns index or 0 if not found
         procedure :: find_feature
+        
+        !> Find profile by name, returns index or 0 if not found
+        procedure :: find_profile
 
     end type package_config_t
 

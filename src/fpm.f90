@@ -75,15 +75,20 @@ subroutine build_model(model, settings, package_config, error)
     
     ! Extract the target platform for this build
     target_platform = model%target_platform()
-    
-    call new_compiler_flags(model,settings)
+
     model%build_dir            = settings%build_dir
     model%build_prefix         = join_path(settings%build_dir, basename(model%compiler%fc))
-    model%include_tests        = settings%build_tests    
-    
+    model%include_tests        = settings%build_tests
+
+    if (allocated(settings%features)) print *, 'features: ',(settings%features(i)%s//' ',i=1,size(settings%features))
+    if (allocated(settings%profile)) print *, 'profile: ',settings%profile
+
     ! Extract the current package configuration request
     package = package_config%export_config(target_platform,settings%features,settings%profile,error)
-    if (allocated(error)) return    
+    if (allocated(error)) return
+
+    ! Initialize compiler flags using the feature-enabled package configuration
+    call new_compiler_flags(model, settings, package)  
     
     ! Resolve meta-dependencies into the package and the model
     call resolve_metapackages(model,package,settings,error)
@@ -311,42 +316,50 @@ subroutine build_model(model, settings, package_config, error)
     end if
 end subroutine build_model
 
-!> Initialize model compiler flags
-subroutine new_compiler_flags(model,settings)
+!> Helper: safely get string from either CLI or package, with fallback
+pure function assemble_flags(cli_flag, package_flag, fallback) result(flags)
+    character(len=*), optional, intent(in) :: cli_flag, package_flag, fallback
+    character(len=:), allocatable :: flags
+    
+    allocate(character(len=0) :: flags)
+
+    if (present(cli_flag))     flags = flags // ' ' // trim(cli_flag)
+    if (present(package_flag)) flags = flags // ' ' // trim(package_flag)
+    if (present(fallback))     flags = flags // ' ' // trim(fallback)
+
+end function assemble_flags
+
+!> Initialize model compiler flags from CLI settings and package configuration
+subroutine new_compiler_flags(model, settings, package)
     type(fpm_model_t), intent(inout) :: model
     type(fpm_build_settings), intent(in) :: settings
+    type(package_config_t), intent(in) :: package
 
-    character(len=:), allocatable :: flags, cflags, cxxflags, ldflags
-    logical :: release_profile
+    logical :: release_profile, debug_profile
     
-    if (allocated(settings%profile)) then 
-        release_profile = settings%profile == "release"
+    release_profile = .false.
+      debug_profile = .false.
+    if (allocated(settings%profile)) release_profile = settings%profile == "release"
+    if (allocated(settings%profile))   debug_profile = settings%profile == "debug"
+
+    ! Debug./Release profile requested but not defined: 
+    ! fallback to backward-compatible behavior
+    if (     (release_profile .and. package%find_profile("release")==0) &
+        .or. (debug_profile .and. package%find_profile("debug")==0) ) then 
+        
+        model%fortran_compile_flags = assemble_flags(settings%flag,package%flags,&
+                                                     model%compiler%get_default_flags(release_profile))
+        
+        
     else
-        release_profile = .false.
+        
+        model%fortran_compile_flags = assemble_flags(settings%flag, package%flags)
+        
     end if
     
-    if (.not.allocated(settings%flag)) then 
-        flags = model%compiler%get_default_flags(release_profile)
-    elseif (settings%flag == '') then
-        flags = model%compiler%get_default_flags(release_profile)
-    else
-        flags = settings%flag
-        if (allocated(settings%profile)) then 
-            select case(settings%profile)
-            case("release", "debug")
-                flags = flags // model%compiler%get_default_flags(release_profile)
-            end select
-        endif
-    end if
-
-    cflags   = trim(settings%cflag)
-    cxxflags = trim(settings%cxxflag)
-    ldflags  = trim(settings%ldflag)
-
-    model%fortran_compile_flags = flags
-    model%c_compile_flags       = cflags
-    model%cxx_compile_flags     = cxxflags
-    model%link_flags            = ldflags
+    model%c_compile_flags       = assemble_flags(settings%cflag,   package%c_flags)
+    model%cxx_compile_flags     = assemble_flags(settings%cxxflag, package%cxx_flags)
+    model%link_flags            = assemble_flags(settings%ldflag,  package%link_time_flags)
 
 end subroutine new_compiler_flags
 
