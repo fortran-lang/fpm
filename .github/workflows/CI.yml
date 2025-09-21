@@ -117,7 +117,7 @@ jobs:
     - name: Test Fortran fpm (bootstrap)
       shell: bash
       run: |
-        ${{ env.BOOTSTRAP }} test
+        ${{ env.BOOTSTRAP }} test --flag " -Wno-external-argument-mismatch"
 
     - name: Install Fortran fpm (bootstrap)
       shell: bash
