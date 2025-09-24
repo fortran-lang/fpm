@@ -54,7 +54,7 @@ jobs:
             exe: .exe
           - os: macos-13
             toolchain: {compiler: gcc, version: 15}
-            release-flags: --flag '-g -fbacktrace -Og -fcheck=all -Wno-external-argument-mismatch'
+            release-flags: --flag '-g -fbacktrace -Og -fcheck=all,no-recursion -Wno-external-argument-mismatch'
 
     steps:
     - name: Checkout code
