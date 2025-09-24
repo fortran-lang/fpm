@@ -53,9 +53,8 @@ jobs:
             release-flags: --flag '--static -g -fbacktrace -O3'
             exe: .exe
           - os: macos-13
-            os-arch: macos-x86_64
             toolchain: {compiler: gcc, version: 15}
-            release-flags: --flag '-g -fbacktrace -O3 -Wno-external-argument-mismatch'
+            release-flags: --flag '-g -fbacktrace -Og -fcheck=all -Wno-external-argument-mismatch'
 
     steps:
     - name: Checkout code
