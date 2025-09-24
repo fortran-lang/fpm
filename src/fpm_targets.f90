@@ -1519,8 +1519,8 @@ subroutine library_targets_to_deps(model, targets, target_ID)
     integer, allocatable, intent(out)        :: target_ID(:)
 
     integer :: it, ip, n
-
-    n = size(model%deps%dep)
+    
+    n = model%deps%ndep
     allocate(target_ID(n), source=0)
 
     do it = 1, size(targets)
