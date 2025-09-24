@@ -2,9 +2,9 @@ module fpm_meta_openmp
     use fpm_compiler, only: compiler_t, id_gcc, id_f95, id_intel_classic_windows, &
        id_intel_llvm_windows, id_intel_classic_nix, id_intel_llvm_nix, &
        id_intel_classic_mac, id_pgi, id_nvhpc, id_ibmxl, id_nag, id_lfortran, &
-       id_flang_classic, id_flang, flag_gnu_openmp, flag_intel_openmp_win, &
+       id_flang, id_flang_classic, flag_gnu_openmp, flag_intel_openmp_win, &
        flag_intel_openmp, flag_pgi_openmp, flag_nag_openmp, &
-       flag_lfortran_openmp, flag_flang_new_openmp
+       flag_lfortran_openmp, flag_flang_openmp
     use fpm_strings, only: string_t
     use fpm_meta_base, only: metapackage_t, destroy
     use fpm_error, only: error_t, fatal_error
@@ -73,9 +73,9 @@ module fpm_meta_openmp
                 openmp_flag = flag_lfortran_openmp
                 link_flag = flag_lfortran_openmp
 
-           case (id_flang_classic, id_flang)
-                openmp_flag = flag_flang_new_openmp
-                link_flag = flag_flang_new_openmp
+           case (id_flang, id_flang_classic)
+                openmp_flag = flag_flang_openmp
+                link_flag = flag_flang_openmp
 
            case default
               call fatal_error(error,'openmp not supported on compiler '//compiler%name()//' yet')
