@@ -231,10 +231,7 @@ pushd fpm_test_exe_issues
 popd
 
 pushd cpp_files
-which gcc-15
-which g++-15
-which gfortran
-"$fpm" test --verbose
+"$fpm" test 
 popd
 
 # Test Fortran features
