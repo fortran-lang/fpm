@@ -45,13 +45,16 @@ subroutine build_model(model, settings, package_config, error)
     type(error_t), allocatable, intent(out) :: error
 
     integer :: i, j
-    type(package_config_t), target  :: package, dependency_config, dependency
+    type(package_config_t), allocatable, target  :: package, dependency_config, dependency
     type(package_config_t), pointer :: manifest
-    type(platform_config_t) :: target_platform
+    type(platform_config_t), allocatable, target :: target_platform
     character(len=:), allocatable :: file_name, lib_dir
     logical :: has_cpp
     logical :: duplicates_found, auto_exe, auto_example, auto_test
     type(string_t) :: include_dir
+    
+    ! Large variables -> safer on heap
+    allocate(package,dependency_config,dependency,target_platform)
 
     model%package_name = package_config%name
 
@@ -472,12 +475,15 @@ end subroutine check_module_names
 subroutine cmd_build(settings)
 type(fpm_build_settings), intent(inout) :: settings
 
-type(package_config_t) :: package
-type(fpm_model_t) :: model
+type(package_config_t), allocatable :: package
+type(fpm_model_t), allocatable :: model
 type(build_target_ptr), allocatable :: targets(:)
 type(error_t), allocatable :: error
 
 integer :: i
+
+! Large variables -> safer on heap
+allocate(package, model)
 
 call get_package_data(package, "fpm.toml", error, apply_defaults=.true.)
 if (allocated(error)) then
@@ -520,8 +526,8 @@ subroutine cmd_run(settings,test)
     integer :: i, j, col_width
     logical :: found(size(settings%name))
     type(error_t), allocatable :: error
-    type(package_config_t) :: package
-    type(fpm_model_t) :: model
+    type(package_config_t), allocatable :: package
+    type(fpm_model_t), allocatable :: model
     type(build_target_ptr), allocatable :: targets(:)
     type(string_t) :: exe_cmd
     type(string_t), allocatable :: executables(:)
@@ -530,6 +536,9 @@ subroutine cmd_run(settings,test)
     integer :: run_scope,firsterror
     integer, allocatable :: stat(:),target_ID(:)
     character(len=:),allocatable :: line,run_cmd,library_path
+    
+    ! Large variables -> safer on heap
+    allocate(package,model)
 
     call get_package_data(package, "fpm.toml", error, apply_defaults=.true.)
     if (allocated(error)) then
@@ -753,10 +762,13 @@ subroutine delete_targets(settings, error)
     class(fpm_clean_settings), intent(inout) :: settings
     type(error_t), allocatable, intent(out) :: error
 
-    type(package_config_t) :: package
-    type(fpm_model_t) :: model
+    type(package_config_t), allocatable :: package
+    type(fpm_model_t), allocatable :: model
     type(build_target_ptr), allocatable :: targets(:)
     logical :: deleted_any
+    
+    ! Large variables -> safer on heap
+    allocate(package,model)
 
     ! Get package configuration
     call get_package_data(package, "fpm.toml", error, apply_defaults=.true.)
@@ -999,8 +1011,5 @@ subroutine restore_library_path(saved_path, error)
     if (.not.success) call fatal_error(error, "Cannot restore library path: "//saved_path)
 
 end subroutine restore_library_path
-
-
-
 
 end module fpm
