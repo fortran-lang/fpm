@@ -304,7 +304,7 @@ function get_default_flags(self, release) result(flags)
     select case (self%id)
     case (id_gcc, id_f95, id_caf, id_flang_classic, id_f18, id_lfortran, &
           id_intel_classic_nix, id_intel_classic_mac, id_intel_llvm_nix, &
-          id_pgi, id_nvhpc, id_nag, id_cray, id_ibmxl)
+          id_intel_llvm_unknown, id_pgi, id_nvhpc, id_nag, id_cray, id_ibmxl)
         pic_flag = " -fPIC"
     case (id_flang)
         ! LLVM Flang doesn't support -fPIC on Windows MSVC target
