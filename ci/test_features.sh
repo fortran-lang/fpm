@@ -206,7 +206,7 @@ if grep -q "Detected compiler: gfortran" output.txt; then
         echo "ERROR: gfortran release architecture flag (-march=native or -mcpu) not found"
         exit 1
     fi
-    grep -q "✓ Fast: -Ofast found" output.txt || { echo "ERROR: gfortran fast flag -Ofast not found"; exit 1; }
+    grep -q "✓ Fast: -ffast-math found" output.txt || { echo "ERROR: gfortran fast flag -ffast-math not found"; exit 1; }
 fi
 echo "✓ Production profile works"
 
