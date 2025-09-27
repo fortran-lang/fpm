@@ -43,7 +43,7 @@ implicit none
 
 private
 public :: f_string, lower, upper, split, split_first_last, split_lines_first_last, str_ends_with, string_t, str_begins_with_str
-public :: to_fortran_name, is_fortran_name
+public :: to_fortran_name, is_fortran_name, add_strings
 public :: string_array_contains, string_cat, len_trim, operator(.in.), fnv_1a
 public :: replace, resize, str, join, glob
 public :: notabs, dilate, remove_newline_characters, remove_characters_in_set
@@ -98,6 +98,11 @@ interface operator(==)
     module procedure string_is_same
     module procedure string_arrays_same
 end interface
+
+interface add_strings
+    module procedure add_strings_one
+    module procedure add_strings_many
+end interface add_strings
 
 contains
 
@@ -1658,5 +1663,56 @@ function dilate(instr) result(outstr)
    outstr = outstr(:lgth)
 
 end function dilate
+
+!> Add one element to a string array with a loop (gcc-15 bug on array initializer)
+pure subroutine add_strings_one(list,new)
+    type(string_t), allocatable, intent(inout) :: list(:)
+    type(string_t), intent(in) :: new
+
+    integer :: i,n
+    type(string_t), allocatable :: tmp(:)
+
+    if (allocated(list)) then 
+       n = size(list)
+    else
+       n = 0
+    endif     
+
+    allocate(tmp(n+1))
+    do i=1,n
+       tmp(i) = list(i)
+    end do   
+    tmp(n+1) = new
+    call move_alloc(from=tmp,to=list)
+
+end subroutine add_strings_one       
+
+!> Add elements to a string array with a loop (gcc-15 bug on array initializer)
+pure subroutine add_strings_many(list,new)
+    type(string_t), allocatable, intent(inout) :: list(:)
+    type(string_t), intent(in) :: new(:)
+
+    integer :: i,n,add
+    type(string_t), allocatable :: tmp(:)
+
+    if (allocated(list)) then 
+       n = size(list)
+    else
+       n = 0
+    endif     
+
+    add = size(new)
+    if (add<=0) return
+
+    allocate(tmp(n+add))
+    do i=1,n
+       tmp(i) = list(i)
+    end do   
+    do i=1,add
+       tmp(n+i) = new(i)
+    end do   
+    call move_alloc(from=tmp,to=list)
+
+end subroutine add_strings_many  
 
 end module fpm_strings

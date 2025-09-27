@@ -1,7 +1,7 @@
 module fpm_meta_util
     use fpm_meta_base, only: metapackage_t, destroy
     use fpm_filesystem, only: join_path
-    use fpm_strings, only: split, string_t, str_begins_with_str
+    use fpm_strings, only: split, string_t, str_begins_with_str, add_strings
     use fpm_error, only: error_t
     use fpm_versioning, only: new_version
     use fpm_pkg_config, only: pkgcfg_get_libs, pkgcfg_get_build_flags, pkgcfg_get_version
@@ -12,11 +12,6 @@ module fpm_meta_util
 
     public :: add_pkg_config_compile_options, lib_get_trailing, add_strings
     
-    interface add_strings
-        module procedure add_strings_one
-        module procedure add_strings_many
-    end interface add_strings
-
     contains
 
     !> Add pkgconfig compile options to a metapackage
@@ -124,56 +119,5 @@ module fpm_meta_util
         end if
 
     end subroutine lib_get_trailing
-    
-    !> Add one element to a string array with a loop (gcc-15 bug on array initializer)
-    pure subroutine add_strings_one(list,new)
-        type(string_t), allocatable, intent(inout) :: list(:)
-        type(string_t), intent(in) :: new
-
-        integer :: i,n
-        type(string_t), allocatable :: tmp(:)
-
-        if (allocated(list)) then 
-           n = size(list)
-        else
-           n = 0
-        endif     
-
-        allocate(tmp(n+1))
-        do i=1,n
-           tmp(i) = list(i)
-        end do   
-        tmp(n+1) = new
-        call move_alloc(from=tmp,to=list)
-
-    end subroutine add_strings_one       
-    
-    !> Add elements to a string array with a loop (gcc-15 bug on array initializer)
-    pure subroutine add_strings_many(list,new)
-        type(string_t), allocatable, intent(inout) :: list(:)
-        type(string_t), intent(in) :: new(:)
-
-        integer :: i,n,add
-        type(string_t), allocatable :: tmp(:)
-
-        if (allocated(list)) then 
-           n = size(list)
-        else
-           n = 0
-        endif     
-
-        add = size(new)
-        if (add<=0) return
-
-        allocate(tmp(n+add))
-        do i=1,n
-           tmp(i) = list(i)
-        end do   
-        do i=1,add
-           tmp(n+i) = new(i)
-        end do   
-        call move_alloc(from=tmp,to=list)
-
-    end subroutine add_strings_many     
     
 end module fpm_meta_util
