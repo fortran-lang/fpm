@@ -92,7 +92,7 @@
 
             <li class="list-inline-item" id="statements"><i class="fa fa-list-ol"></i>
               <a data-bs-toggle="tooltip" data-bs-placement="bottom" data-bs-html="true"
-                 title=" 2.1% of total for procedures.">166 statements</a>
+                 title=" 2.1% of total for procedures.">167 statements</a>
             </li>
 
             <li class="list-inline-item" id="source-file">
@@ -181,7 +181,7 @@ Add this dependency&rsquo;s package-level macros</p>
     <tbody>
         <tr>
             <td>
-              <span class="anchor" id="variable-model"></span>
+              <span class="anchor" id="variable-model~19"></span>
               type(<a href='../type/fpm_model_t.html'>fpm_model_t</a>),
             </td>
 <td>intent(out)</td>
@@ -196,7 +196,7 @@ Add this dependency&rsquo;s package-level macros</p>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-settings~2"></span>
+              <span class="anchor" id="variable-settings~10"></span>
               class(<a href='../type/fpm_build_settings.html'>fpm_build_settings</a>),
             </td>
 <td>intent(inout)</td>
@@ -226,7 +226,7 @@ Add this dependency&rsquo;s package-level macros</p>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-error~9"></span>
+              <span class="anchor" id="variable-error~244"></span>
               type(<a href='../type/error_t.html'>error_t</a>),
             </td>
 <td>intent(out),</td>
@@ -263,13 +263,16 @@ Add this dependency&rsquo;s package-level macros</p>
 <span class="w">    </span><span class="k">type</span><span class="p">(</span><span class="n">error_t</span><span class="p">),</span><span class="w"> </span><span class="k">allocatable</span><span class="p">,</span><span class="w"> </span><span class="k">intent</span><span class="p">(</span><span class="n">out</span><span class="p">)</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">error</span>
 
 <span class="w">    </span><span class="kt">integer</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">i</span><span class="p">,</span><span class="w"> </span><span class="n">j</span>
-<span class="w">    </span><span class="k">type</span><span class="p">(</span><span class="n">package_config_t</span><span class="p">),</span><span class="w"> </span><span class="k">target</span><span class="w">  </span><span class="kd">::</span><span class="w"> </span><span class="n">package</span><span class="p">,</span><span class="w"> </span><span class="n">dependency_config</span><span class="p">,</span><span class="w"> </span><span class="n">dependency</span>
+<span class="w">    </span><span class="k">type</span><span class="p">(</span><span class="n">package_config_t</span><span class="p">),</span><span class="w"> </span><span class="k">allocatable</span><span class="p">,</span><span class="w"> </span><span class="k">target</span><span class="w">  </span><span class="kd">::</span><span class="w"> </span><span class="n">package</span><span class="p">,</span><span class="w"> </span><span class="n">dependency_config</span><span class="p">,</span><span class="w"> </span><span class="n">dependency</span>
 <span class="w">    </span><span class="k">type</span><span class="p">(</span><span class="n">package_config_t</span><span class="p">),</span><span class="w"> </span><span class="k">pointer</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">manifest</span>
-<span class="w">    </span><span class="k">type</span><span class="p">(</span><span class="n">platform_config_t</span><span class="p">)</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">target_platform</span>
+<span class="w">    </span><span class="k">type</span><span class="p">(</span><span class="n">platform_config_t</span><span class="p">),</span><span class="w"> </span><span class="k">allocatable</span><span class="p">,</span><span class="w"> </span><span class="k">target</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">target_platform</span>
 <span class="w">    </span><span class="kt">character</span><span class="p">(</span><span class="nb">len</span><span class="o">=</span><span class="p">:),</span><span class="w"> </span><span class="k">allocatable</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">file_name</span><span class="p">,</span><span class="w"> </span><span class="n">lib_dir</span>
 <span class="w">    </span><span class="kt">logical</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">has_cpp</span>
 <span class="w">    </span><span class="kt">logical</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">duplicates_found</span><span class="p">,</span><span class="w"> </span><span class="n">auto_exe</span><span class="p">,</span><span class="w"> </span><span class="n">auto_example</span><span class="p">,</span><span class="w"> </span><span class="n">auto_test</span>
 <span class="w">    </span><span class="k">type</span><span class="p">(</span><span class="n">string_t</span><span class="p">)</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">include_dir</span>
+<span class="w">    </span>
+<span class="w">    </span><span class="c">! Large variables -&gt; safer on heap</span>
+<span class="w">    </span><span class="k">allocate</span><span class="p">(</span><span class="n">package</span><span class="p">,</span><span class="n">dependency_config</span><span class="p">,</span><span class="n">dependency</span><span class="p">,</span><span class="n">target_platform</span><span class="p">)</span>
 
 <span class="w">    </span><span class="n">model</span><span class="p">%</span><span class="n">package_name</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">package_config</span><span class="p">%</span><span class="n">name</span>
 
@@ -544,7 +547,7 @@ Add this dependency&rsquo;s package-level macros</p>
             <p class="text-end">
               Documentation generated by
               <a href="https://github.com/Fortran-FOSS-Programmers/ford">FORD</a>
- on 2025-09-19 11:00 +0000             </p>
+ on 2025-09-27 14:57 +0000             </p>
           </div>
         </div>
         <br>

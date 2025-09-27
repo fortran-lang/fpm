@@ -30,8 +30,9 @@ use fpm_model
 use fpm_compiler, only : compiler_t
 use fpm_environment, only: get_os_type, OS_WINDOWS, OS_MACOS, library_filename
 use fpm_filesystem, only: dirname, join_path, canon_path
-use fpm_strings, only: string_t, operator(.in.), string_cat, fnv_1a, resize, lower, str_ends_with
-use fpm_compiler, only: get_macros
+use fpm_strings, only: string_t, operator(.in.), string_cat, fnv_1a, resize, lower, str_ends_with, &
+    add_strings
+use fpm_compiler, only: get_macros, is_cxx_gnu_based
 use fpm_sources, only: get_exe_name_with_suffix
 use fpm_manifest_library, only: library_config_t
 use fpm_manifest_preprocess, only: preprocess_config_t
@@ -316,8 +317,8 @@ subroutine build_target_list(targets,model,library)
 
     integer :: i, j, k, n_source, exe_type
     character(:), allocatable :: exe_dir, compile_flags, lib_name
-    logical :: with_lib, monolithic, shared_lib, static_lib
-
+    logical :: with_lib, monolithic, shared_lib, static_lib, clang_cxx_backend_macos
+    
     ! Initialize targets
     allocate(targets(0))
 
@@ -326,6 +327,12 @@ subroutine build_target_list(targets,model,library)
                       j=1,size(model%packages))])
 
     if (n_source < 1) return
+    
+    if (get_os_type()==OS_MACOS) then 
+        clang_cxx_backend_macos = .not. is_cxx_gnu_based(model%compiler)
+    else
+        clang_cxx_backend_macos = .false.
+    endif
 
     with_lib = any(model%packages%has_library())
     
@@ -435,11 +442,13 @@ subroutine build_target_list(targets,model,library)
 
                     !> Add stdc++ as a linker flag. If not already there.
                     if (.not. ("stdc++" .in. model%link_libraries)) then
-
-                        if (get_os_type() == OS_MACOS) then
-                            model%link_libraries = [model%link_libraries, string_t("c++")]
+                        
+                        if (clang_cxx_backend_macos) then
+                            ! On macOS with non-GNU C++ compiler (e.g., Clang), use "c++"
+                            call add_strings(model%link_libraries, string_t("c++"))
                         else
-                            model%link_libraries = [model%link_libraries, string_t("stdc++")]
+                            ! For GNU C++ compiler or non-macOS systems, use "stdc++"
+                            call add_strings(model%link_libraries, string_t("stdc++"))
                         end if
 
                     end if
@@ -1009,7 +1018,7 @@ subroutine prune_build_targets(targets, root_package, prune_unused_objects)
 
                 if (.not.(target%source%modules_provided(j)%s .in. modules_used)) then
 
-                    modules_used = [modules_used, target%source%modules_provided(j)]
+                    call add_strings(modules_used, target%source%modules_provided(j))
 
                 end if
 
@@ -1294,7 +1303,7 @@ contains
 
                 ! Add dependency object file to link object list
                 temp_str%s = dep%output_file
-                link_objects = [link_objects, temp_str]
+                call add_strings(link_objects, temp_str)
                 
                 ! For executable objects, also need to include non-library
                 !  dependencies from dependencies (recurse)
@@ -1323,7 +1332,7 @@ subroutine add_include_build_dirs(model, targets)
             if (target%target_type /= FPM_TARGET_OBJECT) cycle
             if (target%output_dir .in. build_dirs) cycle
             temp%s = target%output_dir
-            build_dirs = [build_dirs, temp]
+            call add_strings(build_dirs, temp)
         end associate
     end do
 
@@ -1355,7 +1364,7 @@ subroutine get_library_dirs(model, targets, shared_lib_dirs)
             if (all(target%target_type /= [FPM_TARGET_SHARED,FPM_TARGET_ARCHIVE])) cycle
             if (target%output_dir .in. shared_lib_dirs) cycle
             temp = string_t(target%output_dir)
-            shared_lib_dirs = [shared_lib_dirs, temp]
+            call add_strings(shared_lib_dirs, temp)
         end associate
     end do
     
@@ -1519,8 +1528,8 @@ subroutine library_targets_to_deps(model, targets, target_ID)
     integer, allocatable, intent(out)        :: target_ID(:)
 
     integer :: it, ip, n
-
-    n = size(model%deps%dep)
+    
+    n = model%deps%ndep
     allocate(target_ID(n), source=0)
 
     do it = 1, size(targets)

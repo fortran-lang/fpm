@@ -189,9 +189,9 @@
         <ul class="list-group list-group-flush">
             <li class="list-group-item">
               <ul class="list-inline">
+                  <li class="list-inline-item"><a href='fpm_strings.html'>fpm_strings</a></li>
                   <li class="list-inline-item"><a href='fpm_toml.html'>fpm_toml</a></li>
                   <li class="list-inline-item"><a href='https://toml-f.github.io/toml-f'>tomlf</a></li>
-                  <li class="list-inline-item"><a href='fpm_strings.html'>fpm_strings</a></li>
                   <li class="list-inline-item"><a href='fpm_manifest_dependency.html'>fpm_manifest_dependency</a></li>
                   <li class="list-inline-item"><a href='fpm_error.html'>fpm_error</a></li>
               </ul>
@@ -235,7 +235,7 @@
     <tbody>
         <tr>
             <td>
-              <span class="anchor" id="variable-dependency~10"></span>
+              <span class="anchor" id="variable-dependency~12"></span>
               type(<a href='../type/dependency_config_t.html'>dependency_config_t</a>),
             </td>
               <td>public,</td>
@@ -252,7 +252,7 @@
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-link~2"></span>
+              <span class="anchor" id="variable-link~3"></span>
               type(<a href='../type/string_t.html'>string_t</a>),
             </td>
               <td>public,</td>
@@ -269,7 +269,7 @@
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-main~4"></span>
+              <span class="anchor" id="variable-main~5"></span>
               character(len=:),
             </td>
               <td>public,</td>
@@ -286,7 +286,7 @@
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-name~9"></span>
+              <span class="anchor" id="variable-name~52"></span>
               character(len=:),
             </td>
               <td>public,</td>
@@ -303,7 +303,7 @@
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-source_dir"></span>
+              <span class="anchor" id="variable-source_dir~2"></span>
               character(len=:),
             </td>
               <td>public,</td>
@@ -329,37 +329,37 @@
           <tbody>
               <tr>
                 <td>  generic, public ::
-  <strong><a href='../type/executable_config_t.html#boundprocedure-dump~11'>dump</a></strong> => <a href='/home/runner/work/fpm/fpm/fpm-doc/type/srcfile_t.html#boundprocedure-dump_to_toml~9'>dump_to_toml</a>, dump_to_file, dump_to_unit</td>
+  <strong><a href='../type/executable_config_t.html#boundprocedure-dump~31'>dump</a></strong> => <a href='/home/runner/work/fpm/fpm/fpm-doc/type/srcfile_t.html#boundprocedure-dump_to_toml~18'>dump_to_toml</a>, dump_to_file, dump_to_unit</td>
                   <td></td>
               </tr>
               <tr>
                 <td>  procedure, public ::
-  <strong><a href='../type/executable_config_t.html#boundprocedure-dump_to_toml~7'>dump_to_toml</a></strong></td>
+  <strong><a href='../type/executable_config_t.html#boundprocedure-dump_to_toml~25'>dump_to_toml</a></strong></td>
                   <td></td>
               </tr>
               <tr>
                 <td>  procedure, public ::
-  <strong><a href='../type/executable_config_t.html#boundprocedure-info~6'>info</a></strong></td>
+  <strong><a href='../type/executable_config_t.html#boundprocedure-info~15'>info</a></strong></td>
                   <td><p>Print information on this instance</p></td>
               </tr>
               <tr>
                 <td>  generic, public ::
-  <strong><a href='../type/executable_config_t.html#boundprocedure-load~8'>load</a></strong> => <a href='/home/runner/work/fpm/fpm/fpm-doc/type/srcfile_t.html#boundprocedure-load_from_toml~9'>load_from_toml</a>, load_from_file, load_from_unit</td>
+  <strong><a href='../type/executable_config_t.html#boundprocedure-load~28'>load</a></strong> => <a href='/home/runner/work/fpm/fpm/fpm-doc/type/srcfile_t.html#boundprocedure-load_from_toml~18'>load_from_toml</a>, load_from_file, load_from_unit</td>
                   <td></td>
               </tr>
               <tr>
                 <td>  procedure, public ::
-  <strong><a href='../type/executable_config_t.html#boundprocedure-load_from_toml~7'>load_from_toml</a></strong></td>
+  <strong><a href='../type/executable_config_t.html#boundprocedure-load_from_toml~25'>load_from_toml</a></strong></td>
                   <td></td>
               </tr>
               <tr>
                 <td>  generic, public ::
-  <strong><a href='../type/executable_config_t.html#boundprocedure-operator%28%3D%3D%29~9'>operator(==)</a></strong> => <a href='/home/runner/work/fpm/fpm/fpm-doc/type/srcfile_t.html#boundprocedure-serializable_is_same~9'>serializable_is_same</a></td>
+  <strong><a href='../type/executable_config_t.html#boundprocedure-operator%28%3D%3D%29~29'>operator(==)</a></strong> => <a href='/home/runner/work/fpm/fpm/fpm-doc/type/srcfile_t.html#boundprocedure-serializable_is_same~18'>serializable_is_same</a></td>
                   <td></td>
               </tr>
               <tr>
                 <td>  procedure, public ::
-  <strong><a href='../type/executable_config_t.html#boundprocedure-serializable_is_same~7'>serializable_is_same</a></strong> => exe_is_same</td>
+  <strong><a href='../type/executable_config_t.html#boundprocedure-serializable_is_same~25'>serializable_is_same</a></strong> => exe_is_same</td>
                   <td><p>Serialization interface</p></td>
               </tr>
               <tr>
@@ -398,7 +398,7 @@
     <tbody>
         <tr>
             <td>
-              <span class="anchor" id="variable-self~61"></span>
+              <span class="anchor" id="variable-self~205"></span>
               type(<a href='../type/executable_config_t.html'>executable_config_t</a>),
             </td>
 <td>intent(out)</td>
@@ -413,7 +413,7 @@
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-table~30"></span>
+              <span class="anchor" id="variable-table~97"></span>
               type(toml_table),
             </td>
 <td>intent(inout)</td>
@@ -428,7 +428,7 @@
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-error~72"></span>
+              <span class="anchor" id="variable-error~217"></span>
               type(<a href='../type/error_t.html'>error_t</a>),
             </td>
 <td>intent(out),</td>
@@ -471,7 +471,7 @@
             <p class="text-end">
               Documentation generated by
               <a href="https://github.com/Fortran-FOSS-Programmers/ford">FORD</a>
- on 2025-09-19 11:00 +0000             </p>
+ on 2025-09-27 14:57 +0000             </p>
           </div>
         </div>
         <br>
