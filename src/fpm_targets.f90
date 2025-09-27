@@ -47,7 +47,7 @@ public FPM_TARGET_UNKNOWN,  FPM_TARGET_EXECUTABLE, &
        FPM_TARGET_SHARED,   FPM_TARGET_NAME
 public build_target_t, build_target_ptr
 public targets_from_sources, resolve_module_dependencies
-public add_target, new_target, add_dependency, get_library_dirs
+public add_target, new_target, add_dependency, get_library_dirs, add_target_ptr
 public filter_library_targets, filter_executable_targets, filter_modules
 
 
@@ -155,6 +155,12 @@ interface add_target
     module procedure add_old_target
     module procedure add_old_targets
 end interface
+
+!> Add one or multiple build target pointers to array (gcc-15 bug workaround)
+interface add_target_ptr
+    module procedure add_target_ptr_one
+    module procedure add_target_ptr_many
+end interface add_target_ptr
 
 contains
 
@@ -699,7 +705,7 @@ subroutine add_old_targets(targets, add_targets)
         endassociate
     end do
     
-    targets = [targets, add_targets ]
+    call add_target_ptr(targets, add_targets)
 
 end subroutine add_old_targets
 
@@ -723,7 +729,7 @@ subroutine add_dependency(target, dependency)
     end do
     if (dependency%output_name==target%output_name) return
     
-    target%dependencies = [target%dependencies, build_target_ptr(dependency)]
+    call add_target_ptr(target%dependencies, build_target_ptr(dependency))
     
 end subroutine add_dependency
 
@@ -1544,5 +1550,56 @@ subroutine library_targets_to_deps(model, targets, target_ID)
     end do
 
 end subroutine library_targets_to_deps
+
+!> Add one build target pointer to array with a loop (gcc-15 bug on array initializer)
+subroutine add_target_ptr_one(list,new)
+    type(build_target_ptr), allocatable, intent(inout) :: list(:)
+    type(build_target_ptr), intent(in) :: new
+
+    integer :: i,n
+    type(build_target_ptr), allocatable :: tmp(:)
+
+    if (allocated(list)) then
+       n = size(list)
+    else
+       n = 0
+    end if
+
+    allocate(tmp(n+1))
+    do i=1,n
+       tmp(i) = list(i)
+    end do
+    tmp(n+1) = new
+    call move_alloc(from=tmp,to=list)
+
+end subroutine add_target_ptr_one
+
+!> Add multiple build target pointers to array with a loop (gcc-15 bug on array initializer)
+subroutine add_target_ptr_many(list,new)
+    type(build_target_ptr), allocatable, intent(inout) :: list(:)
+    type(build_target_ptr), intent(in) :: new(:)
+
+    integer :: i,n,add
+    type(build_target_ptr), allocatable :: tmp(:)
+
+    if (allocated(list)) then
+       n = size(list)
+    else
+       n = 0
+    end if
+
+    add = size(new)
+    if (add == 0) return
+
+    allocate(tmp(n+add))
+    do i=1,n
+       tmp(i) = list(i)
+    end do
+    do i=1,add
+       tmp(n+i) = new(i)
+    end do
+    call move_alloc(from=tmp,to=list)
+
+end subroutine add_target_ptr_many
 
 end module fpm_targets
