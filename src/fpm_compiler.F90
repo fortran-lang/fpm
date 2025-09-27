@@ -933,19 +933,22 @@ subroutine get_default_cxx_compiler(f_compiler, cxx_compiler)
 end subroutine get_default_cxx_compiler
 
 !> Check if C++ compiler is GNU-based by checking its version output
-function is_cxx_gnu_based(cxx_compiler) result(is_gnu)
-    character(len=*), intent(in) :: cxx_compiler
+function is_cxx_gnu_based(self) result(is_gnu)
+    class(compiler_t), intent(in) :: self
     logical :: is_gnu
     character(len=:), allocatable :: output_file, version_output
     integer :: stat, io
 
     is_gnu = .false.
+    
+    if (.not.allocated(self%cxx)) return
+    if (len_trim(self%cxx)<=0) return
 
     ! Get temporary file for compiler version output
     output_file = get_temp_filename()
 
     ! Run compiler with --version to get version info
-    call run(cxx_compiler//" --version > "//output_file//" 2>&1", &
+    call run(self%cxx//" --version > "//output_file//" 2>&1", &
              echo=.false., exitstat=stat)
 
     if (stat == 0) then

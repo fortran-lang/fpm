@@ -329,7 +329,7 @@ subroutine build_target_list(targets,model,library)
     if (n_source < 1) return
     
     if (get_os_type()==OS_MACOS) then 
-        clang_cxx_backend_macos = .not. is_cxx_gnu_based(model%compiler%cxx)
+        clang_cxx_backend_macos = .not. is_cxx_gnu_based(model%compiler)
     else
         clang_cxx_backend_macos = .false.
     endif
