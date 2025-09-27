@@ -12,6 +12,7 @@ module fpm_meta_mpi
         remove_newline_characters
     use fpm_environment, only: get_env, get_os_type, os_is_unix, OS_MACOS, OS_WINDOWS
     use fpm_meta_base, only: metapackage_t, destroy
+    use fpm_meta_util, only: add_strings
     use fpm_manifest_metapackages, only: metapackage_request_t
     use fpm_pkg_config, only: run_wrapper
     use shlex_module, only: shlex_split => split
@@ -766,19 +767,19 @@ contains
                          string_t(get_env('MPIf77','mpif77'))]
 
         if (get_os_type()==OS_WINDOWS) then
-            c_wrappers    = [c_wrappers,string_t('mpicc.bat')]
-            cpp_wrappers  = [cpp_wrappers,string_t('mpicxx.bat')]
-            fort_wrappers = [fort_wrappers,string_t('mpifc.bat')]
+            call add_strings(c_wrappers,[string_t('mpicc.bat')])
+            call add_strings(cpp_wrappers,[string_t('mpicxx.bat')])
+            call add_strings(fort_wrappers,[string_t('mpifc.bat')])
         endif
 
         ! Add compiler-specific wrappers
         compiler_specific: select case (compiler%id)
            case (id_gcc,id_f95)
 
-                c_wrappers = [c_wrappers,string_t('mpigcc'),string_t('mpgcc')]
-              cpp_wrappers = [cpp_wrappers,string_t('mpig++'),string_t('mpg++')]
-             fort_wrappers = [fort_wrappers,string_t('mpigfortran'),string_t('mpgfortran'),&
-                              string_t('mpig77'),string_t('mpg77')]
+             call add_strings(c_wrappers,[string_t('mpigcc'),string_t('mpgcc')])
+             call add_strings(cpp_wrappers,[string_t('mpig++'),string_t('mpg++')])
+             call add_strings(fort_wrappers,[string_t('mpigfortran'),string_t('mpgfortran'),&
+                                             string_t('mpig77'),string_t('mpg77')])
 
            case (id_intel_classic_windows,id_intel_classic_nix,id_intel_classic_mac)
                  
@@ -794,15 +795,15 @@ contains
 
                  intel_wrap = join_path(mpi_root,'mpiifort')
                  if (get_os_type()==OS_WINDOWS) intel_wrap = get_dos_path(intel_wrap,error)
-                 if (intel_wrap/="") fort_wrappers = [fort_wrappers,string_t(intel_wrap)]
+                 if (intel_wrap/="") call add_strings(fort_wrappers,[string_t(intel_wrap)])
 
                  intel_wrap = join_path(mpi_root,'mpiicc')
                  if (get_os_type()==OS_WINDOWS) intel_wrap = get_dos_path(intel_wrap,error)
-                 if (intel_wrap/="") c_wrappers = [c_wrappers,string_t(intel_wrap)]
+                 if (intel_wrap/="") call add_strings(c_wrappers,[string_t(intel_wrap)])
 
                  intel_wrap = join_path(mpi_root,'mpiicpc')
                  if (get_os_type()==OS_WINDOWS) intel_wrap = get_dos_path(intel_wrap,error)
-                 if (intel_wrap/="") cpp_wrappers = [cpp_wrappers,string_t(intel_wrap)]
+                 if (intel_wrap/="") call add_strings(cpp_wrappers,[string_t(intel_wrap)])
 
              end if
 
@@ -820,40 +821,41 @@ contains
 
                  intel_wrap = join_path(mpi_root,'mpiifx')
                  if (get_os_type()==OS_WINDOWS) intel_wrap = get_dos_path(intel_wrap,error)
-                 if (intel_wrap/="") fort_wrappers = [fort_wrappers,string_t(intel_wrap)]
+                 if (intel_wrap/="") call add_strings(fort_wrappers,[string_t(intel_wrap)])
 
                  intel_wrap = join_path(mpi_root,'mpiicx')
                  if (get_os_type()==OS_WINDOWS) intel_wrap = get_dos_path(intel_wrap,error)
-                 if (intel_wrap/="") c_wrappers = [c_wrappers,string_t(intel_wrap)]
+                 if (intel_wrap/="") call add_strings(c_wrappers,[string_t(intel_wrap)])
 
                  intel_wrap = join_path(mpi_root,'mpiicpx')
                  if (get_os_type()==OS_WINDOWS) intel_wrap = get_dos_path(intel_wrap,error)
-                 if (intel_wrap/="") cpp_wrappers = [cpp_wrappers,string_t(intel_wrap)]
+                 if (intel_wrap/="") call add_strings(cpp_wrappers,[string_t(intel_wrap)])
 
              end if
 
            case (id_pgi,id_nvhpc)
 
-                c_wrappers = [c_wrappers,string_t('mpipgicc'),string_t('mpgcc')]
-              cpp_wrappers = [cpp_wrappers,string_t('mpipgic++')]
-             fort_wrappers = [fort_wrappers,string_t('mpipgifort'),string_t('mpipgf90')]
+             call add_strings(c_wrappers,[string_t('mpipgicc'),string_t('mpgcc')])
+             call add_strings(cpp_wrappers,[string_t('mpipgic++')])
+             call add_strings(fort_wrappers,[string_t('mpipgifort'),string_t('mpipgf90')])
 
            case (id_cray)
 
-                c_wrappers = [c_wrappers,string_t('cc')]
-              cpp_wrappers = [cpp_wrappers,string_t('CC')]
-             fort_wrappers = [fort_wrappers,string_t('ftn')]
+             call add_strings(c_wrappers,[string_t('cc')])
+             call add_strings(cpp_wrappers,[string_t('CC')])
+             call add_strings(fort_wrappers,[string_t('ftn')])
 
         end select compiler_specific
 
-        call assert_mpi_wrappers(fort_wrappers,compiler)
-        call assert_mpi_wrappers(c_wrappers,compiler)
-        call assert_mpi_wrappers(cpp_wrappers,compiler)
+        call assert_mpi_wrappers('Fortran',fort_wrappers,compiler)
+        call assert_mpi_wrappers('C',c_wrappers,compiler)
+        call assert_mpi_wrappers('C++',cpp_wrappers,compiler)
 
     end subroutine mpi_wrappers
 
     !> Filter out invalid/unavailable mpi wrappers
-    subroutine assert_mpi_wrappers(wrappers,compiler,verbose)
+    subroutine assert_mpi_wrappers(language,wrappers,compiler,verbose)
+        character(*), intent(in) :: language
         type(string_t), allocatable, intent(inout) :: wrappers(:)
         type(compiler_t), intent(in) :: compiler
         logical, optional, intent(in) :: verbose
@@ -865,7 +867,7 @@ contains
 
         do i=1,size(wrappers)
             if (present(verbose)) then
-                if (verbose) print *, '+ MPI test wrapper <',wrappers(i)%s,'>'
+                if (verbose) print *, '+ MPI <',language,'> test wrapper <',wrappers(i)%s,'>'
             endif
             works(i) = which_mpi_library(wrappers(i),compiler,verbose)
         end do

@@ -5,7 +5,7 @@ module fpm_manifest_fortran
     implicit none
     private
 
-    public :: fortran_config_t, new_fortran_config
+    public :: fortran_config_t, new_fortran_config, default_fortran_config
 
     !> Configuration data for Fortran
     type, extends(serializable_t) :: fortran_config_t
@@ -20,17 +20,27 @@ module fpm_manifest_fortran
         character(:), allocatable :: source_form
 
         contains
-
+        
             !> Serialization interface
             procedure :: serializable_is_same => fortran_is_same
             procedure :: dump_to_toml
             procedure :: load_from_toml
-
+            
     end type fortran_config_t
 
     character(len=*), parameter, private :: class_name = 'fortran_config_t'
 
 contains
+
+    !> Initialize fortran config
+    subroutine default_fortran_config(self)
+        type(fortran_config_t), intent(inout) :: self
+        
+        self%implicit_external = .false.
+        self%implicit_typing = .false.
+        self%source_form = 'free'
+        
+    end subroutine default_fortran_config
 
     !> Construct a new build configuration from a TOML data structure
     subroutine new_fortran_config(self, table, error)

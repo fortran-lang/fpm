@@ -11,6 +11,7 @@ use fpm_environment, only: get_os_type,OS_WINDOWS
 use fpm_strings, only: lower, str_ends_with, string_t, operator(.in.)
 use fpm_source_parsing, only: parse_f_source, parse_c_source
 use fpm_manifest_executable, only: executable_config_t
+use fpm_manifest_preprocess, only: preprocess_config_t
 implicit none
 
 private
@@ -25,18 +26,19 @@ contains
 
 !> Wrapper to source parsing routines.
 !> Selects parsing routine based on source file name extension
-function parse_source(source_file_path,custom_f_ext,error) result(source)
+type(srcfile_t) function parse_source(source_file_path,custom_f_ext,error,preprocess) result(source)
     character(*), intent(in) :: source_file_path
     type(string_t), optional, intent(in) :: custom_f_ext(:)
     type(error_t), allocatable, intent(out) :: error
-    type(srcfile_t)  :: source
+    type(preprocess_config_t), optional, intent(in) :: preprocess
+    
     type(string_t), allocatable :: f_ext(:)
 
     call list_fortran_suffixes(f_ext,custom_f_ext)
 
     if (str_ends_with(lower(source_file_path), f_ext)) then
 
-        source = parse_f_source(source_file_path, error)
+        source = parse_f_source(source_file_path, error, preprocess)
 
         if (source%unit_type == FPM_UNIT_PROGRAM) then
             source%exe_name = basename(source_file_path,suffix=.false.)
@@ -78,7 +80,8 @@ subroutine list_fortran_suffixes(suffixes,with_f_ext)
 end subroutine list_fortran_suffixes
 
 !> Add to `sources` by looking for source files in `directory`
-subroutine add_sources_from_dir(sources,directory,scope,with_executables,with_f_ext,recurse,error)
+subroutine add_sources_from_dir(sources,directory,scope,with_executables,with_f_ext,recurse,error,&
+                                preprocess)
     !> List of `[[srcfile_t]]` objects to append to. Allocated if not allocated
     type(srcfile_t), allocatable, intent(inout), target :: sources(:)
     !> Directory in which to search for source files
@@ -93,6 +96,8 @@ subroutine add_sources_from_dir(sources,directory,scope,with_executables,with_f_
     logical, intent(in), optional :: recurse
     !> Error handling
     type(error_t), allocatable, intent(out) :: error
+    !> Optional source preprocessor configuration
+    type(preprocess_config_t), optional, intent(in) :: preprocess    
 
     integer :: i
     logical, allocatable :: is_source(:), exclude_source(:)
@@ -132,7 +137,7 @@ subroutine add_sources_from_dir(sources,directory,scope,with_executables,with_f_
 
     do i = 1, size(src_file_names)
 
-        dir_sources(i) = parse_source(src_file_names(i)%s,with_f_ext,error)
+        dir_sources(i) = parse_source(src_file_names(i)%s,with_f_ext,error,preprocess)
         if (allocated(error)) return
 
         dir_sources(i)%unit_scope = scope
@@ -163,7 +168,7 @@ end subroutine add_sources_from_dir
 !> Add to `sources` using the executable and test entries in the manifest and
 !> applies any executable-specific overrides such as `executable%name`.
 !> Adds all sources (including modules) from each `executable%source_dir`
-subroutine add_executable_sources(sources,executables,scope,auto_discover,with_f_ext,error)
+subroutine add_executable_sources(sources,executables,scope,auto_discover,with_f_ext,error,preprocess)
     !> List of `[[srcfile_t]]` objects to append to. Allocated if not allocated
     type(srcfile_t), allocatable, intent(inout), target :: sources(:)
     !> List of `[[executable_config_t]]` entries from manifest
@@ -176,6 +181,8 @@ subroutine add_executable_sources(sources,executables,scope,auto_discover,with_f
     type(string_t), intent(in), optional :: with_f_ext(:)
     !> Error handling
     type(error_t), allocatable, intent(out) :: error
+    !> Optional source preprocessor configuration
+    type(preprocess_config_t), optional, intent(in) :: preprocess
 
     integer :: i, j
 
@@ -186,7 +193,8 @@ subroutine add_executable_sources(sources,executables,scope,auto_discover,with_f
 
     do i=1,size(exe_dirs)
         call add_sources_from_dir(sources,exe_dirs(i)%s, scope, &
-                     with_executables=auto_discover, with_f_ext=with_f_ext,recurse=.false., error=error)
+                     with_executables=auto_discover, with_f_ext=with_f_ext,recurse=.false., &
+                     error=error, preprocess=preprocess)
 
         if (allocated(error)) then
             return
@@ -217,7 +225,7 @@ subroutine add_executable_sources(sources,executables,scope,auto_discover,with_f
 
         ! Add if not already discovered (auto_discovery off)
         associate(exe => executables(i))
-            exe_source = parse_source(join_path(exe%source_dir,exe%main),with_f_ext,error)
+            exe_source = parse_source(join_path(exe%source_dir,exe%main),with_f_ext,error,preprocess)
             exe_source%exe_name = exe%name
             if (allocated(exe%link)) then
                 exe_source%link_libraries = exe%link

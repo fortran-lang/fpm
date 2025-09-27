@@ -29,6 +29,9 @@ logical                              :: w_e,act_w_e          ; namelist/act_cli/
 logical                              :: w_t,act_w_t          ; namelist/act_cli/act_w_t
 logical                              :: c_s,act_c_s          ; namelist/act_cli/act_c_s
 logical                              :: c_a,act_c_a          ; namelist/act_cli/act_c_a
+logical                              :: c_t,act_c_t          ; namelist/act_cli/act_c_t
+logical                              :: c_apps,act_c_apps    ; namelist/act_cli/act_c_apps
+logical                              :: c_ex,act_c_ex        ; namelist/act_cli/act_c_ex
 logical                              :: reg_c,act_reg_c      ; namelist/act_cli/act_reg_c
 logical                              :: show_v,act_show_v    ; namelist/act_cli/act_show_v
 logical                              :: show_u_d,act_show_u_d; namelist/act_cli/act_show_u_d
@@ -37,7 +40,7 @@ character(len=:), allocatable        :: token, act_token     ; namelist/act_cli/
 
 character(len=:), allocatable        :: profile,act_profile  ; namelist/act_cli/act_profile
 character(len=:), allocatable        :: args,act_args        ; namelist/act_cli/act_args
-namelist/expected/cmd,cstat,estat,w_e,w_t,c_s,c_a,reg_c,name,profile,args,show_v,show_u_d,dry_run,token
+namelist/expected/cmd,cstat,estat,w_e,w_t,c_s,c_a,c_t,c_apps,c_ex,reg_c,name,profile,args,show_v,show_u_d,dry_run,token
 integer                              :: lun
 logical,allocatable                  :: tally(:)
 logical,allocatable                  :: subtally(:)
@@ -76,6 +79,10 @@ character(len=*),parameter           :: tests(*)= [ character(len=256) :: &
 'CMD="clean",                                                      NAME=, ARGS="",', &
 'CMD="clean --skip",                                        C_S=T, NAME=, ARGS="",', &
 'CMD="clean --all",                                         C_A=T, NAME=, ARGS="",', &
+'CMD="clean --test",                                        C_T=T, NAME=, ARGS="",', &
+'CMD="clean --apps",                                     C_APPS=T, NAME=, ARGS="",', &
+'CMD="clean --examples",                                    C_EX=T, NAME=, ARGS="",', &
+'CMD="clean --test --apps",                           C_T=T, C_APPS=T, NAME=, ARGS="",', &
 'CMD="clean --registry-cache",                            REG_C=T, NAME=, ARGS="",', &
 'CMD="publish --token abc --show-package-version",       SHOW_V=T, NAME=, token="abc",ARGS="",', &
 'CMD="publish --token abc --show-upload-data",           SHOW_U_D=T, NAME=, token="abc",ARGS="",', &
@@ -273,6 +280,9 @@ type is (fpm_test_settings)
 type is (fpm_clean_settings)
     act_c_s=settings%clean_skip
     act_c_a=settings%clean_all
+    act_c_t=settings%clean_test
+    act_c_apps=settings%clean_apps
+    act_c_ex=settings%clean_examples
     act_reg_c=settings%registry_cache
 type is (fpm_install_settings)
 type is (fpm_publish_settings)

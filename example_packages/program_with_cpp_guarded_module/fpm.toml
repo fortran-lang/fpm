@@ -1,0 +1,3 @@
+name = "Program_with_cpp_guarded_module"
+# Enable CPP but do not define macros
+[preprocess.cpp]

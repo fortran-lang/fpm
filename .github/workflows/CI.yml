@@ -40,6 +40,8 @@ jobs:
             toolchain: {compiler: gcc, version: 14}
           - os: windows-latest  # gcc 15 not available on Windows yet
             toolchain: {compiler: gcc, version: 15}
+          - os: ubuntu-latest  # gcc 15 not available on Ubuntu via setup-fortran yet
+            toolchain: {compiler: gcc, version: 15}
         include:
           - os: ubuntu-latest
             os-arch: linux-x86_64
@@ -51,13 +53,16 @@ jobs:
             os-arch: windows-x86_64
             release-flags: --flag '--static -g -fbacktrace -O3'
             exe: .exe
+          - os: macos-13
+            toolchain: {compiler: gcc, version: 15}
+            release-flags: --flag '-g -fbacktrace -Og -fcheck=all,no-recursion -Wno-external-argument-mismatch'
 
     steps:
     - name: Checkout code
       uses: actions/checkout@v4
 
     - name: Setup Fortran compiler
-      uses: fortran-lang/setup-fortran@v1.6.3
+      uses: fortran-lang/setup-fortran@v1.7.0
       id: setup-fortran
       with:
         compiler: ${{ matrix.toolchain.compiler }}
@@ -117,7 +122,7 @@ jobs:
       if: matrix.toolchain.compiler == 'gcc' && matrix.toolchain.version != 15
       shell: bash
       run: |
-        ${{ env.BOOTSTRAP }} test
+        ${{ env.BOOTSTRAP }} test --flag " -Wno-external-argument-mismatch"
 
     - name: Install Fortran fpm (bootstrap)
       shell: bash

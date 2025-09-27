@@ -6,8 +6,9 @@ module test_source_parsing
     use fpm_model, only: srcfile_t, FPM_UNIT_PROGRAM, FPM_UNIT_MODULE, &
                          FPM_UNIT_SUBMODULE, FPM_UNIT_SUBPROGRAM, FPM_UNIT_CSOURCE, &
                          FPM_UNIT_CPPSOURCE, FPM_UNIT_NAME
-    use fpm_strings, only: operator(.in.), lower
+    use fpm_strings, only: operator(.in.), lower, string_t
     use fpm_error, only: file_parse_error, fatal_error
+    use fpm_manifest_preprocess, only: preprocess_config_t
     implicit none
     private
 
@@ -48,7 +49,9 @@ contains
                            test_invalid_module, should_fail=.true.), &
             & new_unittest("invalid-submodule", &
                            test_invalid_submodule, should_fail=.true.), &
-            & new_unittest("use-statement",test_use_statement) &
+            & new_unittest("use-statement",test_use_statement), &
+            & new_unittest("conditional-compilation", test_conditional_compilation), &
+            & new_unittest("conditional-if-defined", test_conditional_if_defined) &
             ]
 
     end subroutine collect_source_parsing
@@ -1287,6 +1290,203 @@ contains
         endif
 
     end subroutine test_use_statement
+
+    !> Test conditional compilation parsing with CPP preprocessing
+    subroutine test_conditional_compilation(error)
+
+        !> Error handling
+        type(error_t), allocatable, intent(out) :: error
+
+        type(srcfile_t) :: f_source
+        character(:), allocatable :: temp_file
+        integer :: unit
+        type(preprocess_config_t) :: cpp_config
+
+        ! Test 1: Without preprocessing, should include dependencies from #ifdef blocks
+        temp_file = get_temp_filename()
+
+        open(file=temp_file, newunit=unit)
+        write(unit, '(a)') &
+            'module test_mod', &
+            '#ifdef SOME_FEATURE', &
+            '  use nonexistent_module', &
+            '#endif', &
+            '  implicit none', &
+            'contains', &
+            '  subroutine test_sub()', &
+            '    print *, "test"', &
+            '  end subroutine', &
+            'end module test_mod'
+        close(unit)
+
+        ! Parse without preprocessing - should detect the use statement
+        f_source = parse_f_source(temp_file, error)
+        if (allocated(error)) return
+
+        if (size(f_source%modules_used) /= 1) then
+            call test_failed(error, 'Expected 1 module dependency without preprocessing, got different count')
+            return
+        end if
+
+        if (f_source%modules_used(1)%s /= 'nonexistent_module') then
+            call test_failed(error, 'Expected nonexistent_module, got: '//f_source%modules_used(1)%s)
+            return
+        end if
+
+        ! Test 2: With preprocessing enabled, should skip dependencies from #ifdef blocks
+        call cpp_config%new([string_t::])
+        cpp_config%name = "cpp"
+
+        f_source = parse_f_source(temp_file, error, preprocess=cpp_config)
+        if (allocated(error)) return
+
+        if (size(f_source%modules_used) /= 0) then
+            call test_failed(error, 'Expected 0 module dependencies with preprocessing, got some dependencies')
+            return
+        end if
+
+        if (f_source%unit_type /= FPM_UNIT_MODULE) then
+            call test_failed(error, 'Expected module unit type')
+            return
+        end if
+
+        if (size(f_source%modules_provided) /= 1) then
+            call test_failed(error, 'Expected 1 provided module')
+            return
+        end if
+
+        if (f_source%modules_provided(1)%s /= 'test_mod') then
+            call test_failed(error, 'Expected test_mod, got: '//f_source%modules_provided(1)%s)
+            return
+        end if
+
+    end subroutine test_conditional_compilation
+
+    !> Test conditional compilation parsing with #if defined() syntax
+    subroutine test_conditional_if_defined(error)
+
+        !> Error handling
+        type(error_t), allocatable, intent(out) :: error
+
+        type(srcfile_t) :: f_source
+        character(:), allocatable :: temp_file
+        integer :: unit
+        type(preprocess_config_t) :: cpp_config
+
+        temp_file = get_temp_filename()
+
+        open(file=temp_file, newunit=unit)
+        write(unit, '(a)') &
+            'module test_mod', &
+            '#if defined(SOME_FEATURE)', &
+            '  use some_module', &
+            '#endif', &
+            '#if !defined(OTHER_FEATURE)', &
+            '  use other_module', &
+            '#endif', &
+            '#if SIMPLE_MACRO', &
+            '  use third_module', &
+            '#endif', &
+            '#ifdef FOURTH_FEATURE', &
+            '  use fourth_module', &
+            '#endif', &
+            '#ifndef FIFTH_FEATURE', &
+            '  use fifth_module', &
+            '  #ifdef NESTED_FEATURE', &
+            '    use nested_module', &
+            '  #endif', &
+            '#endif', &
+            '  implicit none', &
+            'end module test_mod'
+        close(unit)
+
+        ! Without preprocessing - should detect all dependencies (including nested)
+        f_source = parse_f_source(temp_file, error)
+        if (allocated(error)) return
+
+        if (size(f_source%modules_used) /= 6) then
+            call test_failed(error, 'Expected 6 module dependencies without preprocessing')
+            return
+        end if
+
+        ! With preprocessing - should skip all dependencies (no macros defined)
+        call cpp_config%new([string_t::])
+        cpp_config%name = "cpp"
+        
+        f_source = parse_f_source(temp_file, error, preprocess=cpp_config)
+        if (allocated(error)) return
+
+        ! Should find 2 dependencies: !defined(OTHER_FEATURE) and #ifndef FIFTH_FEATURE are both true
+        ! The nested #ifdef NESTED_FEATURE should be inactive since NESTED_FEATURE is not defined
+        if (size(f_source%modules_used) /= 2) then
+            if (size(f_source%modules_used) > 0) then
+                call test_failed(error, 'Expected 2 module dependencies with preprocessing, got ' // &
+                               f_source%modules_used(1)%s // ' (and others)')
+            else
+                call test_failed(error, 'Expected 2 module dependencies with preprocessing, got 0')
+            end if
+            return
+        end if
+
+        ! Test with some macros defined - should find active dependencies
+        call cpp_config%new([string_t('SOME_FEATURE'), string_t('SIMPLE_MACRO')])
+        cpp_config%name = "cpp"
+        
+        f_source = parse_f_source(temp_file, error, preprocess=cpp_config)
+        if (allocated(error)) return
+        
+        if (.not.('some_module' .in. f_source%modules_used)) then ! some_module
+            call test_failed(error, 'Expected "some_module" dependency with SOME_FEATURE and SIMPLE_MACRO defined')            
+            return
+        end if    
+        if (.not.('other_module' .in. f_source%modules_used)) then ! other_module
+            call test_failed(error, 'Expected "other_module" dependency with SOME_FEATURE and SIMPLE_MACRO defined')            
+            return
+        end if   
+        if (.not.('third_module' .in. f_source%modules_used)) then ! third_module
+            call test_failed(error, 'Expected "third_module" dependency with SOME_FEATURE and SIMPLE_MACRO defined')            
+            return
+        end if     
+        if (.not.('fifth_module' .in. f_source%modules_used)) then ! fifth_module
+            call test_failed(error, 'Expected "fifth_module" dependency with SOME_FEATURE and SIMPLE_MACRO defined')            
+            return
+        end if         
+        
+        if (size(f_source%modules_used) /= 4) then ! all modules
+            call test_failed(error, 'Expected 4 module dependencies with SOME_FEATURE and SIMPLE_MACRO defined')
+            return
+        end if                          
+        
+        ! Test nested condition: define outer but not inner macro
+        call cpp_config%new([string_t('FIFTH_FEATURE')])  ! This makes #ifndef FIFTH_FEATURE inactive
+        cpp_config%name = "cpp"
+        
+        f_source = parse_f_source(temp_file, error, preprocess=cpp_config)
+        if (allocated(error)) return
+
+        if (size(f_source%modules_used) /= 1) then
+            if (size(f_source%modules_used) > 0) then
+                call test_failed(error, 'Expected 1 module dependency with FIFTH_FEATURE defined, got: ' // &
+                               f_source%modules_used(2)%s // ' (and maybe others)')
+            else
+                call test_failed(error, 'Expected 1 module dependency with FIFTH_FEATURE defined, got 0')
+            end if
+            return
+        end if
+        
+        ! Test nested condition: define both outer condition (negative) and inner (positive)
+        call cpp_config%new([string_t('NESTED_FEATURE')])  ! FIFTH_FEATURE not defined, NESTED_FEATURE defined
+        cpp_config%name = "cpp"
+        
+        f_source = parse_f_source(temp_file, error, preprocess=cpp_config)
+        if (allocated(error)) return
+
+        if (size(f_source%modules_used) /= 3) then
+            call test_failed(error, 'Expected 3 module dependencies with nested conditions active')
+            return
+        end if
+
+    end subroutine test_conditional_if_defined
 
 
 end module test_source_parsing

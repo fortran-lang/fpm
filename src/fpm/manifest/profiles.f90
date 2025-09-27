@@ -42,21 +42,24 @@
 !>```
 !>
 module fpm_manifest_profile
+    use fpm_manifest_feature, only: feature_config_t, new_feature, find_feature
     use fpm_error, only : error_t, syntax_error, fatal_error, fpm_stop
     use tomlf, only : toml_table, toml_key, toml_stat
     use fpm_toml, only : get_value, serializable_t, set_value, &
                          set_string, add_table
     use fpm_strings, only: lower
+    use fpm_manifest_platform, only: platform_config_t
     use fpm_environment, only: get_os_type, OS_UNKNOWN, OS_LINUX, OS_MACOS, OS_WINDOWS, &
-                             OS_CYGWIN, OS_SOLARIS, OS_FREEBSD, OS_OPENBSD, OS_NAME
+                             OS_CYGWIN, OS_SOLARIS, OS_FREEBSD, OS_OPENBSD, OS_NAME, OS_ALL, &
+                             validate_os_name, match_os_type
+    use fpm_compiler, only: compiler_enum, compiler_id_name, match_compiler_type, &
+                            validate_compiler_name
     use fpm_filesystem, only: join_path
     implicit none
-    public :: profile_config_t, new_profile, new_profiles, get_default_profiles, &
-            & info_profile, find_profile, DEFAULT_COMPILER
+    public :: profile_config_t, new_profile, new_profiles, find_profile, DEFAULT_COMPILER
 
     !> Name of the default compiler
-    character(len=*), parameter :: DEFAULT_COMPILER = 'gfortran'
-    integer, parameter :: OS_ALL = -1
+    character(len=*), parameter :: DEFAULT_COMPILER = 'gfortran'    
     character(len=:), allocatable :: path
 
     !> Type storing file name - file scope compiler flags pairs
@@ -77,34 +80,14 @@ module fpm_manifest_profile
 
     end type file_scope_flag
 
-    !> Configuration meta data for a profile
+    !> Configuration meta data for a profile (now based on features)
     type, extends(serializable_t) :: profile_config_t
-      !> Name of the profile
-      character(len=:), allocatable :: profile_name
+        
+      !> Profile feature - contains all profile configuration
+      type(feature_config_t) :: profile_feature
 
-      !> Name of the compiler
-      character(len=:), allocatable :: compiler
-
-      !> Value repesenting OS
-      integer :: os_type = OS_ALL
-
-      !> Fortran compiler flags
-      character(len=:), allocatable :: flags
-
-      !> C compiler flags
-      character(len=:), allocatable :: c_flags
-
-      !> C++ compiler flags
-      character(len=:), allocatable :: cxx_flags
-
-      !> Link time compiler flags
-      character(len=:), allocatable :: link_time_flags
-
-      !> File scope flags
+      !> File scope flags (maintained for backwards compatibility)
       type(file_scope_flag), allocatable :: file_scope_flags(:)
-
-      !> Is this profile one of the built-in ones?
-      logical :: is_built_in = .false.
 
       contains
 
@@ -116,11 +99,21 @@ module fpm_manifest_profile
         procedure :: dump_to_toml => profile_dump
         procedure :: load_from_toml => profile_load
 
+        !> Convenience accessors for backward compatibility
+        procedure :: profile_name => get_profile_name
+        procedure :: compiler => get_profile_compiler
+        procedure :: os_type => get_profile_os_type  
+        procedure :: flags => get_profile_flags
+        procedure :: c_flags => get_profile_c_flags
+        procedure :: cxx_flags => get_profile_cxx_flags
+        procedure :: link_time_flags => get_profile_link_time_flags
+        procedure :: is_built_in => get_profile_is_built_in
+
     end type profile_config_t
 
     contains
 
-      !> Construct a new profile configuration from a TOML data structure
+      !> Construct a new profile configuration from a TOML data structure  
       function new_profile(profile_name, compiler, os_type, flags, c_flags, cxx_flags, &
                            link_time_flags, file_scope_flags, is_built_in) &
                       & result(profile)
@@ -153,99 +146,45 @@ module fpm_manifest_profile
         logical, optional, intent(in) :: is_built_in
 
         type(profile_config_t) :: profile
+        integer(compiler_enum) :: compiler_id
 
-        profile%profile_name = profile_name
-        profile%compiler = compiler
-        profile%os_type = os_type
-        if (present(flags)) then
-          profile%flags = flags
+        ! Initialize the profile feature
+        profile%profile_feature%name = profile_name
+        profile%profile_feature%platform = platform_config_t(compiler, os_type)
+        if (present(is_built_in)) then
+           profile%profile_feature%default = is_built_in
         else
-          profile%flags = ""
+           profile%profile_feature%default = .false.
+        end if
+        
+        ! Set flags
+        if (present(flags)) then
+          profile%profile_feature%flags = flags
+        else
+          profile%profile_feature%flags = ""
         end if
         if (present(c_flags)) then
-          profile%c_flags = c_flags
+          profile%profile_feature%c_flags = c_flags
         else
-          profile%c_flags = ""
+          profile%profile_feature%c_flags = ""
         end if
         if (present(cxx_flags)) then
-          profile%cxx_flags = cxx_flags
+          profile%profile_feature%cxx_flags = cxx_flags
         else
-          profile%cxx_flags = ""
+          profile%profile_feature%cxx_flags = ""
         end if
         if (present(link_time_flags)) then
-          profile%link_time_flags = link_time_flags
+          profile%profile_feature%link_time_flags = link_time_flags
         else
-          profile%link_time_flags = ""
+          profile%profile_feature%link_time_flags = ""
         end if
+        
+        ! Set file scope flags (maintained for backward compatibility)
         if (present(file_scope_flags)) then
            profile%file_scope_flags = file_scope_flags
         end if
-        if (present(is_built_in)) then
-           profile%is_built_in = is_built_in
-        else
-           profile%is_built_in = .false.
-        end if
 
       end function new_profile
-
-      !> Check if compiler name is a valid compiler name
-      subroutine validate_compiler_name(compiler_name, is_valid)
-
-        !> Name of a compiler
-        character(len=:), allocatable, intent(in) :: compiler_name
-
-        !> Boolean value of whether compiler_name is valid or not
-        logical, intent(out) :: is_valid
-        select case(compiler_name)
-          case("gfortran", "ifort", "ifx", "pgfortran", "nvfortran", "flang", "caf", &
-                        & "f95", "lfortran", "lfc", "nagfor", "crayftn", "xlf90", "ftn95")
-            is_valid = .true.
-          case default
-            is_valid = .false.
-        end select
-      end subroutine validate_compiler_name
-
-      !> Check if os_name is a valid name of a supported OS
-      subroutine validate_os_name(os_name, is_valid)
-
-        !> Name of an operating system
-        character(len=:), allocatable, intent(in) :: os_name
-
-        !> Boolean value of whether os_name is valid or not
-        logical, intent(out) :: is_valid
-
-        select case (os_name)
-          case ("linux", "macos", "windows", "cygwin", "solaris", "freebsd", &
-                          & "openbsd", "unknown")
-            is_valid = .true.
-          case default
-            is_valid = .false.
-        end select
-
-      end subroutine validate_os_name
-
-      !> Match os_type enum to a lowercase string with name of OS
-      subroutine match_os_type(os_name, os_type)
-
-        !> Name of operating system
-        character(len=:), allocatable, intent(in) :: os_name
-
-        !> Enum representing type of OS
-        integer, intent(out) :: os_type
-
-        select case (os_name)
-          case ("linux");   os_type = OS_LINUX
-          case ("macos");   os_type = OS_MACOS
-          case ("windows"); os_type = OS_WINDOWS
-          case ("cygwin");  os_type = OS_CYGWIN
-          case ("solaris"); os_type = OS_SOLARIS
-          case ("freebsd"); os_type = OS_FREEBSD
-          case ("openbsd"); os_type = OS_OPENBSD
-          case ("all");     os_type = OS_ALL
-          case default;     os_type = OS_UNKNOWN
-        end select
-
-      end subroutine match_os_type
 
       !> Match lowercase string with name of OS to os_type enum
       function os_type_name(os_type)
@@ -517,7 +456,7 @@ module fpm_manifest_profile
               return
             end if
             call os_node%get_keys(key_list)
-            call match_os_type(os_name, os_type)
+            os_type = match_os_type(os_name)
             call get_flags(profile_name, compiler_name, os_type, key_list, os_node, profiles, profindex, .true.)
           else
             ! Not lowercase OS name
@@ -624,8 +563,8 @@ module fpm_manifest_profile
 
         path = ''
 
-        default_profiles = get_default_profiles(error)
-        if (allocated(error)) return
+        ! Default profiles are now features - no longer used
+        allocate(default_profiles(0))
         call table%get_keys(prof_list)
 
         if (size(prof_list) < 1) return
@@ -698,147 +637,23 @@ module fpm_manifest_profile
 
         ! Apply profiles with profile name 'all' to matching profiles
         do iprof = 1,size(profiles)
-          if (profiles(iprof)%profile_name.eq.'all') then
+          if (profiles(iprof)%profile_feature%name == 'all') then
             do profindex = 1,size(profiles)
-              if (.not.(profiles(profindex)%profile_name.eq.'all') &
-                      & .and.(profiles(profindex)%compiler.eq.profiles(iprof)%compiler) &
-                      & .and.(profiles(profindex)%os_type.eq.profiles(iprof)%os_type)) then
-                profiles(profindex)%flags=profiles(profindex)%flags// &
-                        & " "//profiles(iprof)%flags
-                profiles(profindex)%c_flags=profiles(profindex)%c_flags// &
-                        & " "//profiles(iprof)%c_flags
-                profiles(profindex)%cxx_flags=profiles(profindex)%cxx_flags// &
-                        & " "//profiles(iprof)%cxx_flags
-                profiles(profindex)%link_time_flags=profiles(profindex)%link_time_flags// &
-                        & " "//profiles(iprof)%link_time_flags
+              if (.not.(profiles(profindex)%profile_feature%name == 'all') &
+                      & .and.(profiles(profindex)%profile_feature%platform == profiles(iprof)%profile_feature%platform)) then
+                profiles(profindex)%profile_feature%flags = profiles(profindex)%profile_feature%flags // &
+                        & " " // profiles(iprof)%profile_feature%flags
+                profiles(profindex)%profile_feature%c_flags = profiles(profindex)%profile_feature%c_flags // &
+                        & " " // profiles(iprof)%profile_feature%c_flags
+                profiles(profindex)%profile_feature%cxx_flags = profiles(profindex)%profile_feature%cxx_flags // &
+                        & " " // profiles(iprof)%profile_feature%cxx_flags
+                profiles(profindex)%profile_feature%link_time_flags = profiles(profindex)%profile_feature%link_time_flags // &
+                        & " " // profiles(iprof)%profile_feature%link_time_flags
               end if
             end do
           end if
         end do
       end subroutine new_profiles
-
-      !> Construct an array of built-in profiles
-      function get_default_profiles(error) result(default_profiles)
-
-        !> Error handling
-        type(error_t), allocatable, intent(out) :: error
-
-        type(profile_config_t), allocatable :: default_profiles(:)
-
-        default_profiles = [ &
-              & new_profile('release', &
-                & 'caf', &
-                & OS_ALL, &
-                & flags=' -O3 -Wimplicit-interface -fPIC -fmax-errors=1 -funroll-loops', &
-                & is_built_in=.true.), &
-              & new_profile('release', &
-                & 'gfortran', &
-                & OS_ALL, &
-                & flags=' -O3 -Wimplicit-interface -fPIC -fmax-errors=1 -funroll-loops -fcoarray=single', &
-                & is_built_in=.true.), &
-              & new_profile('release', &
-                & 'f95', &
-                & OS_ALL, &
-                & flags=' -O3 -Wimplicit-interface -fPIC -fmax-errors=1 -ffast-math -funroll-loops', &
-                & is_built_in=.true.), &
-              & new_profile('release', &
-                & 'nvfortran', &
-                & OS_ALL, &
-                & flags = ' -Mbackslash', &
-                & is_built_in=.true.), &
-              & new_profile('release', &
-                & 'ifort', &
-                & OS_ALL, &
-                & flags = ' -fp-model precise -pc64 -align all -error-limit 1 -reentrancy&
-                          & threaded -nogen-interfaces -assume byterecl', &
-                & is_built_in=.true.), &
-              & new_profile('release', &
-                & 'ifort', &
-                & OS_WINDOWS, &
-                & flags = ' /fp:precise /align:all /error-limit:1 /reentrancy:threaded&
-                          & /nogen-interfaces /assume:byterecl', &
-                & is_built_in=.true.), &
-              & new_profile('release', &
-                & 'ifx', &
-                & OS_ALL, &
-                & flags = ' -fp-model=precise -pc64 -align all -error-limit 1 -reentrancy&
-                          & threaded -nogen-interfaces -assume byterecl', &
-                & is_built_in=.true.), &
-              & new_profile('release', &
-                & 'ifx', &
-                & OS_WINDOWS, &
-                & flags = ' /fp:precise /align:all /error-limit:1 /reentrancy:threaded&
-                          & /nogen-interfaces /assume:byterecl', &
-                & is_built_in=.true.), &
-              & new_profile('release', &
-                &'nagfor', &
-                & OS_ALL, &
-                & flags = ' -O4 -coarray=single -PIC', &
-                & is_built_in=.true.), &
-              & new_profile('release', &
-                &'lfortran', &
-                & OS_ALL, &
-                & flags = ' flag_lfortran_opt', &
-                & is_built_in=.true.), &
-              & new_profile('debug', &
-                & 'caf', &
-                & OS_ALL, &
-                & flags = ' -Wall -Wextra -Wimplicit-interface -Wno-external-argument-mismatch&
-                          & -fPIC -fmax-errors=1 -g -fcheck=bounds&
-                          & -fcheck=array-temps -fbacktrace', &
-                & is_built_in=.true.), &
-              & new_profile('debug', &
-                & 'gfortran', &
-                & OS_ALL, &
-                & flags = ' -Wall -Wextra -Wimplicit-interface -Wno-external-argument-mismatch&
-                          & -fPIC -fmax-errors=1 -g -fcheck=bounds&
-                          & -fcheck=array-temps -fbacktrace -fcoarray=single', &
-                & is_built_in=.true.), &
-              & new_profile('debug', &
-                & 'f95', &
-                & OS_ALL, &
-                & flags = ' -Wall -Wextra -Wimplicit-interface -Wno-external-argument-mismatch&
-                          & -fPIC -fmax-errors=1 -g -fcheck=bounds&
-                          & -fcheck=array-temps -Wno-maybe-uninitialized -Wno-uninitialized -fbacktrace', &
-                & is_built_in=.true.), &
-              & new_profile('debug', &
-                & 'nvfortran', &
-                & OS_ALL, &
-                & flags = ' -Minform=inform -Mbackslash -g -Mbounds -Mchkptr -Mchkstk -traceback', &
-                & is_built_in=.true.), &
-              & new_profile('debug', &
-                & 'ifort', &
-                & OS_ALL, &
-                & flags = ' -warn all -check all -error-limit 1 -O0 -g -assume byterecl -traceback', &
-                & is_built_in=.true.), &
-              & new_profile('debug', &
-                & 'ifort', &
-                & OS_WINDOWS, &
-                & flags = ' /warn:all /check:all /error-limit:1&
-                          & /Od /Z7 /assume:byterecl /traceback', &
-                & is_built_in=.true.), &
-              & new_profile('debug', &
-                & 'ifx', &
-                & OS_ALL, &
-                & flags = ' -warn all -check all -error-limit 1 -O0 -g -assume byterecl -traceback', &
-                & is_built_in=.true.), &
-              & new_profile('debug', &
-                & 'ifx', &
-                & OS_WINDOWS, &
-                & flags = ' /warn:all /check:all /error-limit:1 /Od /Z7 /assume:byterecl', &
-                & is_built_in=.true.), &
-              & new_profile('debug', &
-                & 'ifx', &
-                & OS_WINDOWS, &
-                & flags = ' /warn:all /check:all /error-limit:1 /Od /Z7 /assume:byterecl', &
-                & is_built_in=.true.), &
-              & new_profile('debug', &
-                & 'lfortran', &
-                & OS_ALL, &
-                & flags = '', &
-                & is_built_in=.true.) &
-              &]
-      end function get_default_profiles
 
       !> Write information on instance
       subroutine info(self, unit, verbosity)
@@ -862,75 +677,20 @@ module fpm_manifest_profile
         end if
 
         write(unit, fmt) "Profile"
-        if (allocated(self%profile_name)) then
-            write(unit, fmt) "- profile name", self%profile_name
+        if (allocated(self%profile_feature%name)) then
+            write(unit, fmt) "- profile name", self%profile_feature%name
         end if
+        
+        call self%profile_feature%platform%info(unit, verbosity)
 
-        if (allocated(self%compiler)) then
-            write(unit, fmt) "- compiler", self%compiler
-        end if
-
-        write(unit, fmt) "- os", os_type_name(self%os_type)
-
-        if (allocated(self%flags)) then
-            write(unit, fmt) "- compiler flags", self%flags
+        if (allocated(self%profile_feature%flags)) then
+            write(unit, fmt) "- compiler flags", self%profile_feature%flags
         end if
 
       end subroutine info
 
-      !> Print a representation of profile_config_t
-      function info_profile(profile) result(s)
-
-        !> Profile to be represented
-        type(profile_config_t), intent(in) :: profile
-
-        !> String representation of given profile
-        character(:), allocatable :: s
-
-        integer :: i
-
-        s = "profile_config_t("
-        s = s // 'profile_name="' // profile%profile_name // '"'
-        s = s // ', compiler="' // profile%compiler // '"'
-        s = s // ", os_type="
-        select case(profile%os_type)
-        case (OS_UNKNOWN)
-          s = s // "OS_UNKNOWN"
-        case (OS_LINUX)
-          s = s // "OS_LINUX"
-        case (OS_MACOS)
-          s = s // "OS_MACOS"
-        case (OS_WINDOWS)
-          s = s // "OS_WINDOWS"
-        case (OS_CYGWIN)
-          s = s // "OS_CYGWIN"
-        case (OS_SOLARIS)
-          s = s // "OS_SOLARIS"
-        case (OS_FREEBSD)
-          s = s // "OS_FREEBSD"
-        case (OS_OPENBSD)
-          s = s // "OS_OPENBSD"
-        case (OS_ALL)
-          s = s // "OS_ALL"
-        case default
-          s = s // "INVALID"
-        end select
-        if (allocated(profile%flags)) s = s // ', flags="' // profile%flags // '"'
-        if (allocated(profile%c_flags)) s = s // ', c_flags="' // profile%c_flags // '"'
-        if (allocated(profile%cxx_flags)) s = s // ', cxx_flags="' // profile%cxx_flags // '"'
-        if (allocated(profile%link_time_flags)) s = s // ', link_time_flags="' // profile%link_time_flags // '"'
-        if (allocated(profile%file_scope_flags)) then
-          do i=1,size(profile%file_scope_flags)
-            s = s // ', flags for '//profile%file_scope_flags(i)%file_name// &
-                    & ' ="' // profile%file_scope_flags(i)%flags // '"'
-          end do
-        end if
-        s = s // ")"
-
-      end function info_profile
-
       !> Look for profile with given configuration in array profiles
-      subroutine find_profile(profiles, profile_name, compiler, os_type, found_matching, chosen_profile)
+      subroutine find_profile(profiles, profile_name, target, found_matching, chosen_profile)
 
         !> Array of profiles
         type(profile_config_t), allocatable, intent(in) :: profiles(:)
@@ -938,11 +698,8 @@ module fpm_manifest_profile
         !> Name of profile
         character(:), allocatable, intent(in) :: profile_name
 
-        !> Name of compiler
-        character(:), allocatable, intent(in) :: compiler
-
-        !> Type of operating system (enum)
-        integer, intent(in) :: os_type
+        ! Target platform
+        type(platform_config_t), intent(in) :: target
 
         !> Boolean value containing true if matching profile was found
         logical, intent(out) :: found_matching
@@ -950,43 +707,29 @@ module fpm_manifest_profile
         !> Last matching profile in the profiles array
         type(profile_config_t), intent(out) :: chosen_profile
 
-        character(:), allocatable :: curr_profile_name
-        character(:), allocatable :: curr_compiler
-        integer :: curr_os
-        integer :: i, priority, curr_priority
+        integer :: i
 
         found_matching = .false.
         if (size(profiles) < 1) return
+        
+       
         ! Try to find profile with matching OS type
         do i=1,size(profiles)
-          curr_profile_name = profiles(i)%profile_name
-          curr_compiler = profiles(i)%compiler
-          curr_os = profiles(i)%os_type
-          if (curr_profile_name.eq.profile_name) then
-            if (curr_compiler.eq.compiler) then
-              if (curr_os.eq.os_type) then
+            
+          associate (feat => profiles(i)%profile_feature)  
+            
+          if (profiles(i)%profile_feature%name == profile_name) then
+            if (profiles(i)%profile_feature%platform%matches(target)) then
                 chosen_profile = profiles(i)
                 found_matching = .true.
-              end if
+                return
             end if
           end if
+          
+          endassociate
+          
         end do
-        ! Try to find profile with OS type 'all'
-        if (.not. found_matching) then
-          do i=1,size(profiles)
-            curr_profile_name = profiles(i)%profile_name
-            curr_compiler = profiles(i)%compiler
-            curr_os = profiles(i)%os_type
-            if (curr_profile_name.eq.profile_name) then
-              if (curr_compiler.eq.compiler) then
-                if (curr_os.eq.OS_ALL) then
-                  chosen_profile = profiles(i)
-                  found_matching = .true.
-                end if
-              end if
-            end if
-          end do
-        end if
+        
       end subroutine find_profile
 
 
@@ -1063,42 +806,18 @@ module fpm_manifest_profile
 
           select type (other=>that)
              type is (profile_config_t)
-                if (allocated(this%profile_name).neqv.allocated(other%profile_name)) return
-                if (allocated(this%profile_name)) then
-                    if (.not.(this%profile_name==other%profile_name)) return
-                endif
-                if (allocated(this%compiler).neqv.allocated(other%compiler)) return
-                if (allocated(this%compiler)) then
-                    if (.not.(this%compiler==other%compiler)) return
-                endif
-                if (this%os_type/=other%os_type) return
-                if (allocated(this%flags).neqv.allocated(other%flags)) return
-                if (allocated(this%flags)) then
-                    if (.not.(this%flags==other%flags)) return
-                endif
-                if (allocated(this%c_flags).neqv.allocated(other%c_flags)) return
-                if (allocated(this%c_flags)) then
-                    if (.not.(this%c_flags==other%c_flags)) return
-                endif
-                if (allocated(this%cxx_flags).neqv.allocated(other%cxx_flags)) return
-                if (allocated(this%cxx_flags)) then
-                    if (.not.(this%cxx_flags==other%cxx_flags)) return
-                endif
-                if (allocated(this%link_time_flags).neqv.allocated(other%link_time_flags)) return
-                if (allocated(this%link_time_flags)) then
-                    if (.not.(this%link_time_flags==other%link_time_flags)) return
-                endif
+                
+                ! Compare the underlying features
+                if (.not.(this%profile_feature==other%profile_feature)) return
 
+                ! Compare file scope flags (maintained for backward compatibility)
                 if (allocated(this%file_scope_flags).neqv.allocated(other%file_scope_flags)) return
                 if (allocated(this%file_scope_flags)) then
                     if (.not.size(this%file_scope_flags)==size(other%file_scope_flags)) return
                     do ii=1,size(this%file_scope_flags)
-                        print *, 'check ii-th file scope: ',ii
                        if (.not.this%file_scope_flags(ii)==other%file_scope_flags(ii)) return
                     end do
                 endif
-
-                if (this%is_built_in.neqv.other%is_built_in) return
 
              class default
                 ! Not the same type
@@ -1127,24 +846,13 @@ module fpm_manifest_profile
        type(toml_table), pointer :: ptr_deps, ptr
        character(len=30) :: unnamed
 
-       call set_string(table, "profile-name", self%profile_name, error)
+       ! Dump the underlying feature data
+       call self%profile_feature%dump_to_toml(table, error)
        if (allocated(error)) return
-       call set_string(table, "compiler", self%compiler, error)
-       if (allocated(error)) return
-       call set_string(table,"os-type",os_type_name(self%os_type), error, 'profile_config_t')
-       if (allocated(error)) return
-       call set_string(table, "flags", self%flags, error)
-       if (allocated(error)) return
-       call set_string(table, "c-flags", self%c_flags, error)
-       if (allocated(error)) return
-       call set_string(table, "cxx-flags", self%cxx_flags, error)
-       if (allocated(error)) return
-       call set_string(table, "link-time-flags", self%link_time_flags, error)
-       if (allocated(error)) return
-
+       
        if (allocated(self%file_scope_flags)) then
 
-           ! Create dependency table
+           ! Create file scope flags table
            call add_table(table, "file-scope-flags", ptr_deps)
            if (.not. associated(ptr_deps)) then
               call fatal_error(error, "profile_config_t cannot create file scope table ")
@@ -1172,9 +880,6 @@ module fpm_manifest_profile
 
        endif
 
-       call set_value(table, "is-built-in", self%is_built_in, error, 'profile_config_t')
-       if (allocated(error)) return
-
        1 format('UNNAMED_FILE_',i0)
 
      end subroutine profile_dump
@@ -1192,23 +897,17 @@ module fpm_manifest_profile
         type(error_t), allocatable, intent(out) :: error
 
         !> Local variables
-        character(len=:), allocatable :: flag
+        character(len=:), allocatable :: flag, compiler_name
         integer :: ii, jj
         type(toml_table), pointer :: ptr_dep, ptr
         type(toml_key), allocatable :: keys(:),dep_keys(:)
 
         call table%get_keys(keys)
 
-        call get_value(table, "profile-name", self%profile_name)
-        call get_value(table, "compiler", self%compiler)
-        call get_value(table,"os-type",flag)
-        call match_os_type(flag, self%os_type)
-        call get_value(table, "flags", self%flags)
-        call get_value(table, "c-flags", self%c_flags)
-        call get_value(table, "cxx-flags", self%cxx_flags)
-        call get_value(table, "link-time-flags", self%link_time_flags)
-        call get_value(table, "is-built-in", self%is_built_in, error, 'profile_config_t')
-        if (allocated(error)) return
+        ! Load into feature structure
+       ! Dump the underlying feature data
+       call self%profile_feature%load_from_toml(table, error)
+       if (allocated(error)) return
 
         if (allocated(self%file_scope_flags)) deallocate(self%file_scope_flags)
         sub_deps: do ii = 1, size(keys)
@@ -1222,7 +921,7 @@ module fpm_manifest_profile
                   return
                end if
 
-               !> Read all packages
+               !> Read all file scope flags
                call ptr%get_keys(dep_keys)
                allocate(self%file_scope_flags(size(dep_keys)))
 
@@ -1238,6 +937,64 @@ module fpm_manifest_profile
         end do sub_deps
 
      end subroutine profile_load
+
+      !> Convenience accessor procedures for backward compatibility
+
+      !> Get profile name
+      function get_profile_name(self) result(name)
+        class(profile_config_t), intent(in) :: self
+        character(len=:), allocatable :: name
+        name = self%profile_feature%name
+      end function get_profile_name
+
+      !> Get compiler name
+      function get_profile_compiler(self) result(compiler)
+        class(profile_config_t), intent(in) :: self
+        character(len=:), allocatable :: compiler
+        compiler = compiler_id_name(self%profile_feature%platform%compiler)
+      end function get_profile_compiler
+
+      !> Get OS type
+      function get_profile_os_type(self) result(os_type)
+        class(profile_config_t), intent(in) :: self
+        integer :: os_type
+        os_type = self%profile_feature%platform%os_type
+      end function get_profile_os_type
+
+      !> Get flags
+      function get_profile_flags(self) result(flags)
+        class(profile_config_t), intent(in) :: self
+        character(len=:), allocatable :: flags
+        flags = self%profile_feature%flags
+      end function get_profile_flags
+
+      !> Get C flags
+      function get_profile_c_flags(self) result(c_flags)
+        class(profile_config_t), intent(in) :: self
+        character(len=:), allocatable :: c_flags  
+        c_flags = self%profile_feature%c_flags
+      end function get_profile_c_flags
+
+      !> Get C++ flags
+      function get_profile_cxx_flags(self) result(cxx_flags)
+        class(profile_config_t), intent(in) :: self
+        character(len=:), allocatable :: cxx_flags
+        cxx_flags = self%profile_feature%cxx_flags
+      end function get_profile_cxx_flags
+
+      !> Get link time flags
+      function get_profile_link_time_flags(self) result(link_time_flags)
+        class(profile_config_t), intent(in) :: self
+        character(len=:), allocatable :: link_time_flags
+        link_time_flags = self%profile_feature%link_time_flags
+      end function get_profile_link_time_flags
+
+      !> Get is_built_in flag (maps to feature default flag)
+      function get_profile_is_built_in(self) result(is_built_in)
+        class(profile_config_t), intent(in) :: self
+        logical :: is_built_in
+        is_built_in = self%profile_feature%default
+      end function get_profile_is_built_in
 
 
 end module fpm_manifest_profile

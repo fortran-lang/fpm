@@ -38,17 +38,22 @@ module fpm_model
 use iso_fortran_env, only: int64
 use fpm_compiler, only: compiler_t, archiver_t, debug
 use fpm_dependency, only: dependency_tree_t
+use fpm_versioning, only: version_t, new_version
 use fpm_strings, only: string_t, str, len_trim, upper, operator(==)
 use tomlf, only: toml_table, toml_stat
 use fpm_toml, only: serializable_t, set_value, set_list, get_value, &
                     & get_list, add_table, toml_key, add_array, set_string
 use fpm_error, only: error_t, fatal_error
-use fpm_environment, only: OS_WINDOWS,OS_MACOS
+use fpm_environment, only: OS_WINDOWS,OS_MACOS, get_os_type, OS_UNKNOWN, OS_LINUX, OS_CYGWIN, &
+                              OS_SOLARIS, OS_FREEBSD, OS_OPENBSD, OS_ALL, validate_os_name, OS_NAME, &
+                              match_os_type
 use fpm_manifest_preprocess, only: preprocess_config_t
+use fpm_manifest_fortran, only: fortran_config_t
+use fpm_manifest_platform, only: platform_config_t
 implicit none
 
 private
-public :: fpm_model_t, srcfile_t, show_model, fortran_features_t, package_t
+public :: fpm_model_t, srcfile_t, show_model, fortran_config_t, package_t
 
 public :: FPM_UNIT_UNKNOWN, FPM_UNIT_PROGRAM, FPM_UNIT_MODULE, &
           FPM_UNIT_SUBMODULE, FPM_UNIT_SUBPROGRAM, FPM_UNIT_CSOURCE, &
@@ -84,27 +89,6 @@ integer, parameter :: FPM_SCOPE_APP = 3
 !> Module-use scope is library/dependency and test modules
 integer, parameter :: FPM_SCOPE_TEST = 4
 integer, parameter :: FPM_SCOPE_EXAMPLE = 5
-
-!> Enabled Fortran language features
-type, extends(serializable_t) :: fortran_features_t
-
-    !> Use default implicit typing
-    logical :: implicit_typing = .false.
-
-    !> Use implicit external interface
-    logical :: implicit_external = .false.
-
-    !> Form to use for all Fortran sources
-    character(:), allocatable :: source_form
-
-    contains
-
-        !> Serialization interface
-        procedure :: serializable_is_same => fft_is_same
-        procedure :: dump_to_toml   => fft_dump_to_toml
-        procedure :: load_from_toml => fft_load_from_toml
-
-end type fortran_features_t
 
 !> Type for describing a source file
 type, extends(serializable_t) :: srcfile_t
@@ -142,8 +126,8 @@ type, extends(serializable_t) :: srcfile_t
 
         !> Serialization interface
         procedure :: serializable_is_same => srcfile_is_same
-        procedure :: dump_to_toml   => srcfile_dump_to_toml
-        procedure :: load_from_toml => srcfile_load_from_toml
+        procedure :: dump_to_toml         => srcfile_dump_to_toml
+        procedure :: load_from_toml       => srcfile_load_from_toml
 
 end type srcfile_t
 
@@ -161,7 +145,7 @@ type, extends(serializable_t) :: package_t
     type(preprocess_config_t) :: preprocess
 
     !> Package version number.
-    character(:), allocatable :: version
+    type(version_t), allocatable :: version
 
     !> Module naming conventions
     logical :: enforce_module_names = .false.
@@ -170,7 +154,7 @@ type, extends(serializable_t) :: package_t
     type(string_t) :: module_prefix
 
     !> Language features
-    type(fortran_features_t) :: features
+    type(fortran_config_t) :: features
 
     contains
     
@@ -216,6 +200,9 @@ type, extends(serializable_t) :: fpm_model_t
     !> Base directory for build
     character(:), allocatable :: build_prefix
 
+    !> Build directory
+    character(:), allocatable :: build_dir
+
     !> Include directories
     type(string_t), allocatable :: include_dirs(:)
 
@@ -237,10 +224,16 @@ type, extends(serializable_t) :: fpm_model_t
     !> Prefix for all module names
     type(string_t) :: module_prefix
 
+    !> Target operating system
+    integer :: target_os = OS_ALL
+
     contains
     
         !> Get target link flags
         procedure :: get_package_libraries_link
+
+        !> Get target platform configuration
+        procedure :: target_platform
     
         !> Serialization interface
         procedure :: serializable_is_same => model_is_same
@@ -364,6 +357,7 @@ function info_model(model) result(s)
     s = s // ', cxx_compile_flags="' // model%cxx_compile_flags // '"'
     s = s // ', link_flags="' // model%link_flags // '"'
     s = s // ', build_prefix="' // model%build_prefix // '"'
+    s = s // ', build_dir="' // model%build_dir // '"'
     !    type(string_t), allocatable :: link_libraries(:)
     s = s // ", link_libraries=["
     do i = 1, size(model%link_libraries)
@@ -613,77 +607,6 @@ subroutine srcfile_load_from_toml(self, table, error)
 
 end subroutine srcfile_load_from_toml
 
-!> Check that two fortran feature objects are equal
-logical function fft_is_same(this,that)
-    class(fortran_features_t), intent(in) :: this
-    class(serializable_t), intent(in) :: that
-
-    fft_is_same = .false.
-
-    select type (other=>that)
-       type is (fortran_features_t)
-
-           if (.not.(this%implicit_typing.eqv.other%implicit_typing)) return
-           if (.not.(this%implicit_external.eqv.other%implicit_external)) return
-           if (allocated(this%source_form).neqv.allocated(other%source_form)) return
-           if (allocated(this%source_form)) then
-             if (.not.(this%source_form==other%source_form)) return
-           end if
-
-       class default
-          ! Not the same type
-          return
-    end select
-
-    !> All checks passed!
-    fft_is_same = .true.
-
-end function fft_is_same
-
-!> Dump fortran features to toml table
-subroutine fft_dump_to_toml(self, table, error)
-
-    !> Instance of the serializable object
-    class(fortran_features_t), intent(inout) :: self
-
-    !> Data structure
-    type(toml_table), intent(inout) :: table
-
-    !> Error handling
-    type(error_t), allocatable, intent(out) :: error
-
-    call set_value(table, "implicit-typing", self%implicit_typing, error, 'fortran_features_t')
-    if (allocated(error)) return
-    call set_value(table, "implicit-external", self%implicit_external, error, 'fortran_features_t')
-    if (allocated(error)) return
-    call set_string(table, "source-form", self%source_form, error, 'fortran_features_t')
-    if (allocated(error)) return
-
-end subroutine fft_dump_to_toml
-
-!> Read dependency from toml table (no checks made at this stage)
-subroutine fft_load_from_toml(self, table, error)
-
-    !> Instance of the serializable object
-    class(fortran_features_t), intent(inout) :: self
-
-    !> Data structure
-    type(toml_table), intent(inout) :: table
-
-    !> Error handling
-    type(error_t), allocatable, intent(out) :: error
-
-    integer :: ierr
-
-    call get_value(table, "implicit-typing", self%implicit_typing, error, 'fortran_features_t')
-    if (allocated(error)) return
-    call get_value(table, "implicit-external", self%implicit_external, error, 'fortran_features_t')
-    if (allocated(error)) return
-    ! Return unallocated value if not present
-    call get_value(table, "source-form", self%source_form)
-
-end subroutine fft_load_from_toml
-
 !> Check that two package objects are equal
 logical function package_is_same(this,that)
     class(package_t), intent(in) :: this
@@ -749,7 +672,9 @@ subroutine package_dump_to_toml(self, table, error)
     call set_string(table, "name", self%name, error, 'package_t')
     if (allocated(error)) return
 
-    call set_string(table, "version", self%version, error, 'package_t')
+    if (allocated(self%version)) then
+       call set_value(table, "version", self%version%s())
+    end if    
     if (allocated(error)) return
 
     call set_value(table, "module-naming", self%enforce_module_names, error, 'package_t')
@@ -808,9 +733,18 @@ subroutine package_load_from_toml(self, table, error)
     type(toml_key), allocatable :: keys(:),src_keys(:)
     type(toml_table), pointer :: ptr_sources,ptr,ptr_fortran,ptr_preprocess
     type(error_t), allocatable :: new_error
+    character(len=:), allocatable :: version
 
     call get_value(table, "name", self%name)
-    call get_value(table, "version", self%version)
+    call get_value(table, "version", version)
+    if (allocated(version)) then
+        if (.not.allocated(self%version)) allocate(self%version)
+        call new_version(self%version, version, error)
+        if (allocated(error)) then
+            error%message = 'package_t: version error from TOML table - '//error%message
+            return
+        endif
+    end if       
 
     call get_value(table, "module-naming", self%enforce_module_names, error, 'package_t')
     if (allocated(error)) return
@@ -919,6 +853,10 @@ logical function model_is_same(this,that)
            if (allocated(this%build_prefix)) then
              if (.not.(this%build_prefix==other%build_prefix)) return
            end if
+           if (allocated(this%build_dir).neqv.allocated(other%build_dir)) return
+           if (allocated(this%build_dir)) then
+             if (.not.(this%build_dir==other%build_dir)) return
+           end if
            if (allocated(this%include_dirs).neqv.allocated(other%include_dirs)) return
            if (allocated(this%include_dirs)) then
              if (.not.(this%include_dirs==other%include_dirs)) return
@@ -935,6 +873,7 @@ logical function model_is_same(this,that)
            if (.not.(this%include_tests.eqv.other%include_tests)) return
            if (.not.(this%enforce_module_names.eqv.other%enforce_module_names)) return
            if (.not.(this%module_prefix==other%module_prefix)) return
+           if (.not.(this%target_os==other%target_os)) return
 
        class default
           ! Not the same type
@@ -985,6 +924,8 @@ subroutine model_dump_to_toml(self, table, error)
     if (allocated(error)) return
     call set_string(table, "build-prefix", self%build_prefix, error, 'fpm_model_t')
     if (allocated(error)) return
+    call set_string(table, "build-dir", self%build_dir, error, 'fpm_model_t')
+    if (allocated(error)) return
     call set_list(table, "include-dirs", self%include_dirs, error)
     if (allocated(error)) return
     call set_list(table, "link-libraries", self%link_libraries, error)
@@ -997,6 +938,10 @@ subroutine model_dump_to_toml(self, table, error)
     call set_value(table, "module-naming", self%enforce_module_names, error, 'fpm_model_t')
     if (allocated(error)) return
     call set_string(table, "module-prefix", self%module_prefix, error, 'fpm_model_t')
+    if (allocated(error)) return
+    
+    ! Serialize target OS as string
+    call set_string(table, "target-os", OS_NAME(self%target_os), error, 'fpm_model_t')
     if (allocated(error)) return
 
     call add_table(table, "deps", ptr, error, 'fpm_model_t')
@@ -1054,7 +999,9 @@ subroutine model_load_from_toml(self, table, error)
     type(toml_key), allocatable :: keys(:),pkg_keys(:)
     integer :: ierr, ii, jj
     type(toml_table), pointer :: ptr,ptr_pkg
-
+    character(:), allocatable :: os_string
+    logical :: is_valid
+        
     call table%get_keys(keys)
 
     call get_value(table, "package-name", self%package_name)
@@ -1063,6 +1010,7 @@ subroutine model_load_from_toml(self, table, error)
     call get_value(table, "cxx-flags", self%cxx_compile_flags)
     call get_value(table, "link-flags", self%link_flags)
     call get_value(table, "build-prefix", self%build_prefix)
+    call get_value(table, "build-dir", self%build_dir)
 
     if (allocated(self%packages)) deallocate(self%packages)
     sub_deps: do ii = 1, size(keys)
@@ -1140,7 +1088,34 @@ subroutine model_load_from_toml(self, table, error)
     if (allocated(error)) return
     call get_value(table, "module-prefix", self%module_prefix%s)
 
+    ! Load target OS from string and validate
+    call get_value(table, "target-os", os_string)
+    if (allocated(os_string)) then
+        ! Validate and convert OS string to integer
+        call validate_os_name(os_string, is_valid)
+        if (.not. is_valid) then
+            call fatal_error(error, "Invalid target OS: " // os_string)
+            return
+        end if
+        
+        self%target_os = match_os_type(os_string) 
+
+    else
+        ! Default to ALL OS if not specified
+        self%target_os = OS_ALL
+    end if
+
 end subroutine model_load_from_toml
+
+!> Get target platform configuration for the current model
+function target_platform(self) result(target)
+    class(fpm_model_t), intent(in) :: self
+    type(platform_config_t) :: target
+    
+    ! Initialize platform with compiler and target OS
+    target = platform_config_t(self%compiler%id, self%target_os)
+    
+end function target_platform
 
 function get_package_libraries_link(model, package_name, prefix, exclude_self, dep_IDs, error) result(r)
     class(fpm_model_t), intent(in) :: model
@@ -1196,7 +1171,10 @@ function get_package_libraries_link(model, package_name, prefix, exclude_self, d
         ndep = size(sorted_package_IDs)
     end if
     
-    package_deps = [(string_t(model%deps%dep(sorted_package_IDs(i))%name),i=1,ndep)]
+    allocate(package_deps(ndep))
+    do i=1,ndep
+        package_deps(i) = string_t(model%deps%dep(sorted_package_IDs(i))%name)
+    end do
     
     r = model%compiler%enumerate_libraries(prefix, package_deps)
     

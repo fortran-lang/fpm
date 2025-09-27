@@ -30,11 +30,13 @@ use fpm_model
 use fpm_compiler, only : compiler_t
 use fpm_environment, only: get_os_type, OS_WINDOWS, OS_MACOS, library_filename
 use fpm_filesystem, only: dirname, join_path, canon_path
-use fpm_strings, only: string_t, operator(.in.), string_cat, fnv_1a, resize, lower, str_ends_with
-use fpm_compiler, only: get_macros
+use fpm_strings, only: string_t, operator(.in.), string_cat, fnv_1a, resize, lower, str_ends_with, &
+    add_strings
+use fpm_compiler, only: get_macros, is_cxx_gnu_based
 use fpm_sources, only: get_exe_name_with_suffix
 use fpm_manifest_library, only: library_config_t
 use fpm_manifest_preprocess, only: preprocess_config_t
+use fpm_versioning, only: version_t, new_version
 implicit none
 
 private
@@ -122,7 +124,7 @@ type build_target_t
     logical :: skip = .false.
 
     !> Language features
-    type(fortran_features_t) :: features
+    type(fortran_config_t) :: features
 
     !> Targets in the same schedule group are guaranteed to be independent
     integer :: schedule = -1
@@ -134,7 +136,7 @@ type build_target_t
     type(string_t), allocatable :: macros(:)
 
     !> Version number
-    character(:), allocatable :: version
+    type(version_t), allocatable :: version
     
     contains
     
@@ -223,7 +225,7 @@ subroutine info(self, unit, verbosity)
     end if
 
     if (allocated(self%version)) then
-        write(unit, fmt) "- version", self%version
+        write(unit, fmt) "- version", self%version%s()
     end if
 
     if (allocated(self%macros)) then
@@ -315,8 +317,8 @@ subroutine build_target_list(targets,model,library)
 
     integer :: i, j, k, n_source, exe_type
     character(:), allocatable :: exe_dir, compile_flags, lib_name
-    logical :: with_lib, monolithic, shared_lib, static_lib
-
+    logical :: with_lib, monolithic, shared_lib, static_lib, clang_cxx_backend_macos
+    
     ! Initialize targets
     allocate(targets(0))
 
@@ -325,6 +327,12 @@ subroutine build_target_list(targets,model,library)
                       j=1,size(model%packages))])
 
     if (n_source < 1) return
+    
+    if (get_os_type()==OS_MACOS) then 
+        clang_cxx_backend_macos = .not. is_cxx_gnu_based(model%compiler)
+    else
+        clang_cxx_backend_macos = .false.
+    endif
 
     with_lib = any(model%packages%has_library())
     
@@ -354,12 +362,22 @@ subroutine build_target_list(targets,model,library)
         ! Individual package libraries are built. 
         ! Create as many targets as the packages in the dependency tree
         do j=1,size(model%packages)
-                        
-            lib_name = library_filename(model%packages(j)%name,shared_lib,.false.,get_os_type())
             
-            call add_target(targets,package=model%packages(j)%name, &
-                            type=merge(FPM_TARGET_SHARED,FPM_TARGET_ARCHIVE,shared_lib), &
-                            output_name=lib_name)
+            ! Create static library target if requested
+            if (static_lib) then
+                lib_name = library_filename(model%packages(j)%name,.false.,.false.,get_os_type())
+                call add_target(targets,package=model%packages(j)%name, &
+                                type=FPM_TARGET_ARCHIVE, &
+                                output_name=lib_name)
+            end if
+            
+            ! Create shared library target if requested  
+            if (shared_lib) then
+                lib_name = library_filename(model%packages(j)%name,.true.,.false.,get_os_type())
+                call add_target(targets,package=model%packages(j)%name, &
+                                type=FPM_TARGET_SHARED, &
+                                output_name=lib_name)
+            end if
         end do
         
     endif
@@ -383,12 +401,21 @@ subroutine build_target_list(targets,model,library)
                                 output_name = get_object_name(sources(i)), &
                                 features    = model%packages(j)%features, &
                                 preprocess  = model%packages(j)%preprocess, &
-                                version = model%packages(j)%version)
+                                version     = model%packages(j)%version)
 
 
                     if (with_lib .and. sources(i)%unit_scope == FPM_SCOPE_LIB) then
-                        ! Archive depends on object
-                        call add_dependency(targets(merge(1,j,monolithic))%ptr, targets(size(targets))%ptr)
+                        ! Library targets depend on object
+                        if (monolithic) then
+                            call add_dependency(targets(1)%ptr, targets(size(targets))%ptr)
+                        elseif (static_lib .and. shared_lib) then
+                            ! Both types: static at (2*j-1), shared at (2*j)
+                            call add_dependency(targets(2*j-1)%ptr, targets(size(targets))%ptr)
+                            call add_dependency(targets(2*j)%ptr, targets(size(targets))%ptr)
+                        else
+                            ! Single type: package j at index j
+                            call add_dependency(targets(j)%ptr, targets(size(targets))%ptr)
+                        end if
                     end if
 
                 case (FPM_UNIT_CPPSOURCE)
@@ -400,17 +427,28 @@ subroutine build_target_list(targets,model,library)
                                 version = model%packages(j)%version)
 
                     if (with_lib .and. sources(i)%unit_scope == FPM_SCOPE_LIB) then
-                        ! Archive depends on object
-                        call add_dependency(targets(merge(1,j,monolithic))%ptr, targets(size(targets))%ptr)
+                        ! Library targets depend on object
+                        if (monolithic) then
+                            call add_dependency(targets(1)%ptr, targets(size(targets))%ptr)
+                        elseif (static_lib .and. shared_lib) then
+                            ! Both types: static at (2*j-1), shared at (2*j)
+                            call add_dependency(targets(2*j-1)%ptr, targets(size(targets))%ptr)
+                            call add_dependency(targets(2*j)%ptr, targets(size(targets))%ptr)
+                        else
+                            ! Single type: package j at index j
+                            call add_dependency(targets(j)%ptr, targets(size(targets))%ptr)
+                        end if
                     end if
 
                     !> Add stdc++ as a linker flag. If not already there.
                     if (.not. ("stdc++" .in. model%link_libraries)) then
-
-                        if (get_os_type() == OS_MACOS) then
-                            model%link_libraries = [model%link_libraries, string_t("c++")]
+                        
+                        if (clang_cxx_backend_macos) then
+                            ! On macOS with non-GNU C++ compiler (e.g., Clang), use "c++"
+                            call add_strings(model%link_libraries, string_t("c++"))
                         else
-                            model%link_libraries = [model%link_libraries, string_t("stdc++")]
+                            ! For GNU C++ compiler or non-macOS systems, use "stdc++"
+                            call add_strings(model%link_libraries, string_t("stdc++"))
                         end if
 
                     end if
@@ -427,10 +465,10 @@ subroutine build_target_list(targets,model,library)
 
                     call add_target(targets,package=model%packages(j)%name,type = exe_type,&
                                 output_name = get_object_name(sources(i)), &
-                                source = sources(i), &
-                                features = model%packages(j)%features, &
-                                preprocess = model%packages(j)%preprocess &
-                                )
+                                source      = sources(i), &
+                                features    = model%packages(j)%features, &
+                                preprocess  = model%packages(j)%preprocess, &
+                                version     = model%packages(j)%version)
 
                     if (sources(i)%unit_scope == FPM_SCOPE_APP) then
 
@@ -468,9 +506,19 @@ subroutine build_target_list(targets,model,library)
 
                     if (with_lib) then
                         ! Executable depends on library file(s)
-                        do k=1,merge(1,size(model%packages),monolithic)
-                           call add_dependency(target, targets(k)%ptr)
-                        end do
+                        if (monolithic) then
+                            call add_dependency(target, targets(1)%ptr)
+                        elseif (static_lib .and. shared_lib) then
+                            ! Both types: depend on static libraries (2*k-1) for all packages
+                            do k=1,size(model%packages)
+                               call add_dependency(target, targets(2*k-1)%ptr)
+                            end do
+                        else
+                            ! Single type: depend on library for each package
+                            do k=1,size(model%packages)
+                               call add_dependency(target, targets(k)%ptr)
+                            end do
+                        end if
                     end if
 
                     endassociate
@@ -569,9 +617,9 @@ type(build_target_ptr) function new_target(package, type, output_name, source, l
     character(*), intent(in) :: output_name
     type(srcfile_t), intent(in), optional :: source
     type(string_t), intent(in), optional :: link_libraries(:)
-    type(fortran_features_t), intent(in), optional :: features
+    type(fortran_config_t), intent(in), optional :: features
     type(preprocess_config_t), intent(in), optional :: preprocess
-    character(*), intent(in), optional :: version
+    type(version_t), intent(in), optional :: version
     character(*), intent(in), optional :: output_dir
 
     allocate(new_target%ptr)
@@ -587,7 +635,8 @@ type(build_target_ptr) function new_target(package, type, output_name, source, l
         if (present(preprocess)) then
             if (allocated(preprocess%macros)) target%macros = preprocess%macros
         endif
-        if (present(version)) target%version = version
+        if (present(version)) allocate(target%version, source = version)
+            
         allocate(target%dependencies(0))
         
         call target%set_output_dir(output_dir)
@@ -605,9 +654,9 @@ subroutine add_new_target(targets, package, type, output_name, source, link_libr
     character(*), intent(in) :: output_name
     type(srcfile_t), intent(in), optional :: source
     type(string_t), intent(in), optional :: link_libraries(:)
-    type(fortran_features_t), intent(in), optional :: features
+    type(fortran_config_t), intent(in), optional :: features
     type(preprocess_config_t), intent(in), optional :: preprocess
-    character(*), intent(in), optional :: version
+    type(version_t), intent(in), optional :: version
     character(*), intent(in), optional :: output_dir
 
     type(build_target_ptr) :: added
@@ -633,7 +682,7 @@ subroutine add_old_targets(targets, add_targets)
     ! Check for duplicate outputs
     do j=1,size(add_targets)
         associate(added=>add_targets(j)%ptr)
-
+            
         do i=1,size(targets)
 
             if (targets(i)%ptr%output_name == added%output_name) then
@@ -664,9 +713,18 @@ end subroutine add_old_target
 subroutine add_dependency(target, dependency)
     type(build_target_t), intent(inout) :: target
     type(build_target_t) , intent(in), target :: dependency
-
+    
+    integer :: i
+    
+    ! Ensure no duplicate dependencies: it may happen if we loop over two library targets that 
+    ! contain the same objects
+    do i=1,size(target%dependencies)
+        if (target%dependencies(i)%ptr%output_name == dependency%output_name) return
+    end do
+    if (dependency%output_name==target%output_name) return
+    
     target%dependencies = [target%dependencies, build_target_ptr(dependency)]
-
+    
 end subroutine add_dependency
 
 
@@ -960,7 +1018,7 @@ subroutine prune_build_targets(targets, root_package, prune_unused_objects)
 
                 if (.not.(target%source%modules_provided(j)%s .in. modules_used)) then
 
-                    modules_used = [modules_used, target%source%modules_provided(j)]
+                    call add_strings(modules_used, target%source%modules_provided(j))
 
                 end if
 
@@ -1058,7 +1116,7 @@ subroutine resolve_target_linking(targets, model, library, error)
             if (.not.allocated(target%compile_flags)) allocate(character(len=0) :: target%compile_flags)
 
             target%compile_flags = target%compile_flags//' '
-
+            
             select case (target%target_type)
                case (FPM_TARGET_C_OBJECT)
                    target%compile_flags = target%compile_flags//model%c_compile_flags
@@ -1110,6 +1168,11 @@ subroutine resolve_target_linking(targets, model, library, error)
 
                     ! Build link flags
                     target%link_flags = string_cat(target%link_objects, " ")
+                    
+                    ! Add global link flags (including metapackage flags like OpenMP)
+                    if (allocated(model%link_flags)) then
+                        target%link_flags = model%link_flags//" "//target%link_flags
+                    endif
                     
                     target%link_flags = target%link_flags // shared_lib_paths
 
@@ -1169,7 +1232,8 @@ subroutine resolve_target_linking(targets, model, library, error)
                         has_self_lib = .false.
                         find_self: do j=1,size(targets)
                             associate(target_loop=>targets(j)%ptr)
-                                if (any(target_loop%target_type==[FPM_TARGET_SHARED,FPM_TARGET_ARCHIVE]) &
+                                if ((target_loop%target_type==FPM_TARGET_ARCHIVE .or. &
+                                    (target_loop%target_type==FPM_TARGET_SHARED .and. .not.static)) &
                                     .and. target_loop%package_name==target%package_name) then 
                                     has_self_lib = .true.
                                     exit find_self
@@ -1184,10 +1248,11 @@ subroutine resolve_target_linking(targets, model, library, error)
                                                                             exclude_self=.not.has_self_lib)   
                                                                             
                         
-                        ! On macOS, add room for 2 install_name_tool paths
-                        target%link_flags = target%link_flags // model%compiler%get_headerpad_flags()
                         
                     end if
+
+                    ! On macOS, add room for 2 install_name_tool paths (always needed for executables)
+                    target%link_flags = target%link_flags // model%compiler%get_headerpad_flags()
 
                     if (allocated(target%link_libraries)) then
                         if (size(target%link_libraries) > 0) then
@@ -1238,7 +1303,7 @@ contains
 
                 ! Add dependency object file to link object list
                 temp_str%s = dep%output_file
-                link_objects = [link_objects, temp_str]
+                call add_strings(link_objects, temp_str)
                 
                 ! For executable objects, also need to include non-library
                 !  dependencies from dependencies (recurse)
@@ -1267,7 +1332,7 @@ subroutine add_include_build_dirs(model, targets)
             if (target%target_type /= FPM_TARGET_OBJECT) cycle
             if (target%output_dir .in. build_dirs) cycle
             temp%s = target%output_dir
-            build_dirs = [build_dirs, temp]
+            call add_strings(build_dirs, temp)
         end associate
     end do
 
@@ -1299,7 +1364,7 @@ subroutine get_library_dirs(model, targets, shared_lib_dirs)
             if (all(target%target_type /= [FPM_TARGET_SHARED,FPM_TARGET_ARCHIVE])) cycle
             if (target%output_dir .in. shared_lib_dirs) cycle
             temp = string_t(target%output_dir)
-            shared_lib_dirs = [shared_lib_dirs, temp]
+            call add_strings(shared_lib_dirs, temp)
         end associate
     end do
     
@@ -1412,7 +1477,7 @@ end subroutine filter_modules
 
 function get_feature_flags(compiler, features) result(flags)
     type(compiler_t), intent(in) :: compiler
-    type(fortran_features_t), intent(in) :: features
+    type(fortran_config_t), intent(in) :: features
     character(:), allocatable :: flags
 
     flags = ""
@@ -1463,8 +1528,8 @@ subroutine library_targets_to_deps(model, targets, target_ID)
     integer, allocatable, intent(out)        :: target_ID(:)
 
     integer :: it, ip, n
-
-    n = size(model%deps%dep)
+    
+    n = model%deps%ndep
     allocate(target_ID(n), source=0)
 
     do it = 1, size(targets)

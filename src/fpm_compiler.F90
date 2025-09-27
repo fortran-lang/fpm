@@ -10,7 +10,7 @@
 ! Intel oneAPI      ifx        icx     -module         -I            -qopenmp   X
 ! PGI               pgfortran  pgcc    -module         -I            -mp        X
 ! NVIDIA            nvfortran  nvc     -module         -I            -mp        X
-! LLVM flang        flang      clang   -module         -I            -mp        X
+! LLVM flang        flang      clang   -module-dir     -I            -fopenmp   X
 ! LFortran          lfortran   ---     -J              -I            --openmp   X
 ! Lahey/Futjitsu    lfc        ?       -M              -I            -openmp    ?
 ! NAG               nagfor     ?       -mdir           -I            -openmp    x
@@ -41,20 +41,23 @@ use fpm_environment, only: &
 use fpm_filesystem, only: join_path, basename, get_temp_filename, delete_file, unix_path, &
     & getline, run
 use fpm_strings, only: split, string_cat, string_t, str_ends_with, str_begins_with_str, &
-    & string_array_contains
-use fpm_manifest, only : package_config_t
-use fpm_error, only: error_t, fatal_error
+    & string_array_contains, lower, add_strings
+use fpm_error, only: error_t, fatal_error, fpm_stop
 use tomlf, only: toml_table
 use fpm_toml, only: serializable_t, set_string, set_value, toml_stat, get_value
 use fpm_compile_commands, only: compile_command_t, compile_command_table_t
+use fpm_versioning, only: version_t
 use shlex_module, only: sh_split => split, ms_split, quote => ms_quote
 implicit none
 public :: compiler_t, new_compiler, archiver_t, new_archiver, get_macros
 public :: append_clean_flags, append_clean_flags_array
 public :: debug
+public :: id_gcc,id_all
+public :: match_compiler_type, compiler_id_name, validate_compiler_name, is_cxx_gnu_based
 
 enum, bind(C)
     enumerator :: &
+        id_all = -1, &
         id_unknown, &
         id_gcc, &
         id_f95, &
@@ -68,8 +71,8 @@ enum, bind(C)
         id_pgi, &
         id_nvhpc, &
         id_nag, &
+        id_flang_classic, &
         id_flang, &
-        id_flang_new, &
         id_f18, &
         id_ibmxl, &
         id_cray, &
@@ -138,6 +141,12 @@ contains
     procedure :: check_flags_supported
     procedure :: with_xdp
     procedure :: with_qp
+    !> C feature support
+    procedure :: check_c_source_runs
+    procedure :: check_c_flags_supported
+    !> C++ feature support
+    procedure :: check_cxx_source_runs
+    procedure :: check_cxx_flags_supported
     !> Return compiler name
     procedure :: name => compiler_name
 
@@ -178,7 +187,7 @@ character(*), parameter :: &
     flag_gnu_opt = " -O3 -funroll-loops", &
     flag_gnu_debug = " -g", &
     flag_gnu_pic = " -fPIC", &
-    flag_gnu_warn = " -Wall -Wextra -Wno-external-argument-mismatch", &
+    flag_gnu_warn = " -Wall -Wextra -Wno-external-argument-mismatch", & ! do not check interfaces due to gcc 15.0-15.1 bug
     flag_gnu_check = " -fcheck=bounds -fcheck=array-temps", &
     flag_gnu_limit = " -fmax-errors=1", &
     flag_gnu_external = " -Wimplicit-interface", &
@@ -266,7 +275,13 @@ character(*), parameter :: &
     flag_cray_free_form = " -ffree"
 
 character(*), parameter :: &
-    flag_flang_new_openmp = " -fopenmp"
+    flag_flang_openmp = " -fopenmp", &
+    flag_flang_debug = " -g", &
+    flag_flang_opt = " -O3", &
+    flag_flang_pic = " -fPIC", &
+    flag_flang_free_form = " -ffree-form", &
+    flag_flang_fixed_form = " -ffixed-form", &
+    flag_flang_no_implicit_typing = " -fimplicit-none"
 
 contains
 
@@ -287,10 +302,17 @@ function get_default_flags(self, release) result(flags)
     ! Append position-independent code (PIC) flag, that is necessary 
     ! building shared libraries
     select case (self%id)
-    case (id_gcc, id_f95, id_caf, id_flang, id_flang_new, id_f18, id_lfortran, &
+    case (id_gcc, id_f95, id_caf, id_flang_classic, id_f18, id_lfortran, &
           id_intel_classic_nix, id_intel_classic_mac, id_intel_llvm_nix, &
           id_pgi, id_nvhpc, id_nag, id_cray, id_ibmxl)
         pic_flag = " -fPIC"
+    case (id_flang)
+        ! LLVM Flang doesn't support -fPIC on Windows MSVC target
+        if (get_os_type() == OS_WINDOWS) then
+            pic_flag = ""
+        else
+            pic_flag = " -fPIC"
+        end if
     case (id_intel_classic_windows, id_intel_llvm_windows)
         pic_flag = ""  ! Windows does not use -fPIC
     case default
@@ -398,6 +420,11 @@ subroutine get_release_compile_flags(id, flags)
         flags = &
             flag_lfortran_opt
 
+    case(id_flang)
+        flags = &
+            flag_flang_opt//&
+            flag_flang_pic
+
     end select
 end subroutine get_release_compile_flags
 
@@ -493,6 +520,12 @@ subroutine get_debug_compile_flags(id, flags)
 
     case(id_lfortran)
         flags = ""
+
+    case(id_flang)
+        flags = &
+            flag_flang_debug//&
+            flag_flang_pic
+
     end select
 end subroutine get_debug_compile_flags
 
@@ -505,7 +538,7 @@ pure subroutine set_cpp_preprocessor_flags(id, flags)
     select case(id)
     case default
         flag_cpp_preprocessor = ""
-    case(id_caf, id_gcc, id_f95, id_nvhpc)
+    case(id_caf, id_gcc, id_f95, id_nvhpc, id_flang)
         flag_cpp_preprocessor = "-cpp"
     case(id_intel_classic_windows, id_intel_llvm_windows)
         flag_cpp_preprocessor = "/fpp"
@@ -523,7 +556,7 @@ end subroutine set_cpp_preprocessor_flags
 !> return them as defined flags.
 function get_macros(id, macros_list, version) result(macros)
     integer(compiler_enum), intent(in) :: id
-    character(len=:), allocatable, intent(in) :: version
+    type(version_t), optional, intent(in) :: version
     type(string_t), allocatable, intent(in) :: macros_list(:)
 
     character(len=:), allocatable :: macros
@@ -556,6 +589,7 @@ function get_macros(id, macros_list, version) result(macros)
         !> Split the macro name and value.
         call split(macros_list(i)%s, valued_macros, delimiters="=")
 
+        !> Replace {version} placeholder with the actual version string
         if (size(valued_macros) > 1) then
             !> Check if the value of macro starts with '{' character.
             if (str_begins_with_str(trim(valued_macros(size(valued_macros))), "{")) then
@@ -567,8 +601,17 @@ function get_macros(id, macros_list, version) result(macros)
                     if (index(valued_macros(size(valued_macros)), "version") /= 0) then
 
                         !> These conditions are placed in order to ensure proper spacing between the macros.
-                        macros = macros//macro_definition_symbol//trim(valued_macros(1))//'='//version
-                        cycle
+                        if (present(version)) then 
+                           
+                           macros = macros//macro_definition_symbol//trim(valued_macros(1))//'='//version%s()
+                           cycle
+                        
+                        else
+                            
+                           call fpm_stop(1,'Internal error: cannot expand {version} macro in '//macros_list(i)%s)
+                        
+                        endif
+                        
                     end if
                 end if
             end if
@@ -590,7 +633,7 @@ function get_include_flag(self, path) result(flags)
         flags = "-I "//path
 
     case(id_caf, id_gcc, id_f95, id_cray, id_nvhpc, id_pgi, &
-        & id_flang, id_flang_new, id_f18, &
+        & id_flang_classic, id_flang, id_f18, &
         & id_intel_classic_nix, id_intel_classic_mac, &
         & id_intel_llvm_nix, id_lahey, id_nag, id_ibmxl, &
         & id_lfortran)
@@ -614,10 +657,10 @@ function get_module_flag(self, path) result(flags)
     case(id_caf, id_gcc, id_f95, id_cray, id_lfortran)
         flags = "-J "//path
 
-    case(id_nvhpc, id_pgi, id_flang)
+    case(id_nvhpc, id_pgi, id_flang_classic)
         flags = "-module "//path
 
-    case(id_flang_new, id_f18)
+    case(id_flang, id_f18)
         flags = "-module-dir "//path
 
     case(id_intel_classic_nix, id_intel_classic_mac, &
@@ -648,7 +691,7 @@ function get_shared_flag(self) result(shared_flag)
     select case (self%id)
     case default
         shared_flag = "-shared"
-    case (id_gcc, id_f95, id_flang, id_flang_new, id_lfortran)
+    case (id_gcc, id_f95, id_flang, id_flang_classic, id_lfortran)
         shared_flag = "-shared"
     case (id_intel_classic_nix, id_intel_llvm_nix, id_pgi, id_nvhpc)
         shared_flag = "-shared"
@@ -683,6 +726,9 @@ function get_feature_flag(self, feature) result(flags)
        case(id_cray)
            flags = flag_cray_no_implicit_typing
 
+       case(id_flang)
+           flags = flag_flang_no_implicit_typing
+
        end select
 
     case("implicit-typing")
@@ -710,11 +756,12 @@ function get_feature_flag(self, feature) result(flags)
        end select
 
     case("free-form")
+
        select case(self%id)
        case(id_caf, id_gcc, id_f95)
            flags = flag_gnu_free_form
 
-       case(id_pgi, id_nvhpc, id_flang)
+       case(id_pgi, id_nvhpc, id_flang_classic)
            flags = flag_pgi_free_form
 
        case(id_nag)
@@ -730,6 +777,9 @@ function get_feature_flag(self, feature) result(flags)
        case(id_cray)
            flags = flag_cray_free_form
 
+       case(id_flang)
+           flags = flag_flang_free_form
+
        end select
 
     case("fixed-form")
@@ -737,7 +787,7 @@ function get_feature_flag(self, feature) result(flags)
        case(id_caf, id_gcc, id_f95)
            flags = flag_gnu_fixed_form
 
-       case(id_pgi, id_nvhpc, id_flang)
+       case(id_pgi, id_nvhpc, id_flang_classic)
            flags = flag_pgi_fixed_form
 
        case(id_nag)
@@ -755,6 +805,9 @@ function get_feature_flag(self, feature) result(flags)
 
        case(id_lfortran)
            flags = flag_lfortran_fixed_form
+
+       case(id_flang)
+           flags = flag_flang_fixed_form
 
        end select
 
@@ -825,7 +878,7 @@ subroutine get_default_c_compiler(f_compiler, c_compiler)
     case(id_intel_llvm_nix,id_intel_llvm_windows)
         c_compiler = 'icx'
 
-    case(id_flang, id_flang_new, id_f18)
+    case(id_flang_classic, id_flang, id_f18)
         c_compiler='clang'
 
     case(id_ibmxl)
@@ -860,7 +913,7 @@ subroutine get_default_cxx_compiler(f_compiler, cxx_compiler)
     case(id_intel_llvm_nix,id_intel_llvm_windows)
         cxx_compiler = 'icpx'
 
-    case(id_flang, id_flang_new, id_f18)
+    case(id_flang_classic, id_flang, id_f18)
         cxx_compiler='clang++'
 
     case(id_ibmxl)
@@ -878,6 +931,47 @@ subroutine get_default_cxx_compiler(f_compiler, cxx_compiler)
     end select
 
 end subroutine get_default_cxx_compiler
+
+!> Check if C++ compiler is GNU-based by checking its version output
+function is_cxx_gnu_based(self) result(is_gnu)
+    class(compiler_t), intent(in) :: self
+    logical :: is_gnu
+    character(len=:), allocatable :: output_file, version_output
+    integer :: stat, io
+
+    is_gnu = .false.
+    
+    if (.not.allocated(self%cxx)) return
+    if (len_trim(self%cxx)<=0) return
+
+    ! Get temporary file for compiler version output
+    output_file = get_temp_filename()
+
+    ! Run compiler with --version to get version info
+    call run(self%cxx//" --version > "//output_file//" 2>&1", &
+             echo=.false., exitstat=stat)
+
+    if (stat == 0) then
+        ! Read the version output
+        open(file=output_file, newunit=io, iostat=stat)
+        if (stat == 0) then
+            call getline(io, version_output, stat)
+            close(io, iostat=stat)
+
+            ! Check if output contains GNU indicators
+            if (allocated(version_output)) then
+                is_gnu = index(version_output, 'gcc') > 0 .or. &
+                         index(version_output, 'GCC') > 0 .or. &
+                         index(version_output, 'GNU') > 0 .or. &
+                         index(version_output, 'Free Software Foundation') > 0
+            end if
+        end if
+    end if
+
+    ! Clean up temporary file
+    call run("rm -f "//output_file, echo=.false., exitstat=stat)
+
+end function is_cxx_gnu_based
 
 
 function get_compiler_id(compiler) result(id)
@@ -905,17 +999,17 @@ function get_compiler_id(compiler) result(id)
                command = trim(full_command_parts(1))
             endif
             if (allocated(command)) then
-                id = get_id(command)
+                id = match_compiler_type(command)
                 if (id /= id_unknown) return
             end if
         end if
     end if
 
-    id = get_id(compiler)
+    id = match_compiler_type(compiler)
 
 end function get_compiler_id
 
-function get_id(compiler) result(id)
+function match_compiler_type(compiler) result(id)
     character(len=*), intent(in) :: compiler
     integer(kind=compiler_enum) :: id
 
@@ -973,18 +1067,18 @@ function get_id(compiler) result(id)
         return
     end if
 
-    if (check_compiler(compiler, "flang-new")) then
-        id = id_flang_new
+    if (check_compiler(compiler, "flang-classic")) then
+        id = id_flang_classic
+        return
+    end if
+
+    if (check_compiler(compiler, "flang-new") .or. check_compiler(compiler, "flang")) then
+        id = id_flang
         return
     end if
 
     if (check_compiler(compiler, "f18")) then
         id = id_f18
-        return
-    end if
-
-    if (check_compiler(compiler, "flang")) then
-        id = id_flang
         return
     end if
 
@@ -1008,9 +1102,41 @@ function get_id(compiler) result(id)
         return
     end if
 
+
+    if (check_compiler(compiler, "all")) then
+        id = id_all
+        return
+    end if
+
     id = id_unknown
 
-end function get_id
+end function match_compiler_type
+
+!> Check if compiler name is a valid compiler name
+pure elemental subroutine validate_compiler_name(compiler_name, is_valid)
+
+    !> Name of a compiler
+    character(len=*), intent(in) :: compiler_name
+
+    !> Boolean value of whether compiler_name is valid or not
+    logical, intent(out) :: is_valid
+    
+    character(:), allocatable :: lname
+    
+    lname = lower(compiler_name)
+    
+    select case (lname)
+      case("gfortran", "ifort", "ifx", "pgfortran", &
+           "nvfortran", "flang", "caf", &
+           "f95", "lfortran", "lfc", "nagfor",&
+           "crayftn", "xlf90", "ftn95", "all")
+        is_valid = .true.
+      case default
+        is_valid = .false.
+    end select
+    
+end subroutine validate_compiler_name
+
 
 function check_compiler(compiler, expected) result(match)
     character(len=*), intent(in) :: compiler
@@ -1714,30 +1840,38 @@ pure function compiler_name(self) result(name)
    class(compiler_t), intent(in) :: self
    !> Representation as string
    character(len=:), allocatable :: name
+   name = compiler_id_name(self%id)
+end function compiler_name
 
-   select case (self%id)
-       case(id_gcc); name = "gfortran"
-       case(id_f95); name = "f95"
-       case(id_caf); name = "caf"
+!> Convert compiler enum to name (reverse of match_compiler_type)
+pure function compiler_id_name(id) result(name)
+   integer(compiler_enum), intent(in) :: id
+   character(len=:), allocatable :: name
+
+   select case (id)
+       case(id_gcc);                   name = "gfortran"
+       case(id_f95);                   name = "f95"
+       case(id_caf);                   name = "caf"
        case(id_intel_classic_nix);     name = "ifort"
        case(id_intel_classic_mac);     name = "ifort"
        case(id_intel_classic_windows); name = "ifort"
-       case(id_intel_llvm_nix);     name = "ifx"
-       case(id_intel_llvm_windows); name = "ifx"
-       case(id_intel_llvm_unknown); name = "ifx"
-       case(id_pgi);       name = "pgfortran"
-       case(id_nvhpc);     name = "nvfortran"
-       case(id_nag);       name = "nagfor"
-       case(id_flang);     name = "flang"
-       case(id_flang_new); name = "flang-new"
-       case(id_f18);       name = "f18"
-       case(id_ibmxl);     name = "xlf90"
-       case(id_cray);      name = "crayftn"
-       case(id_lahey);     name = "lfc"
-       case(id_lfortran);  name = "lFortran"
-       case default;       name = "invalid/unknown"
+       case(id_intel_llvm_nix);        name = "ifx"
+       case(id_intel_llvm_windows);    name = "ifx"
+       case(id_intel_llvm_unknown);    name = "ifx"
+       case(id_pgi);                   name = "pgfortran"
+       case(id_nvhpc);                 name = "nvfortran"
+       case(id_nag);                   name = "nagfor"
+       case(id_flang_classic);         name = "flang-classic"
+       case(id_flang);                 name = "flang"
+       case(id_f18);                   name = "f18"
+       case(id_ibmxl);                 name = "xlf90"
+       case(id_cray);                  name = "crayftn"
+       case(id_lahey);                 name = "lfc"
+       case(id_lfortran);              name = "lfortran"
+       case (id_all);                  name = "all"
+       case default;                   name = "invalid/unknown"
    end select
-end function compiler_name
+end function compiler_id_name
 
 !> Run a single-source Fortran program using the current compiler
 !> Compile a Fortran object
@@ -1806,6 +1940,146 @@ logical function check_fortran_source_runs(self, input, compile_flags, link_flag
 
 end function check_fortran_source_runs
 
+!> Check if the given C source code compiles, links, and runs successfully
+logical function check_c_source_runs(self, input, compile_flags, link_flags) result(success)
+    !> Instance of the compiler object
+    class(compiler_t), intent(in) :: self
+    !> C program source
+    character(len=*), intent(in) :: input
+    !> Optional build and link flags
+    character(len=*), optional, intent(in) :: compile_flags, link_flags
+    integer :: stat,unit
+    character(:), allocatable :: source,object,logf,exe,flags,ldflags
+    
+    success = .false.
+    
+    !> Create temporary source file
+    exe    = get_temp_filename()
+    source = exe//'.c'
+    object = exe//'.o'
+    logf   = exe//'.log'
+    
+    open(newunit=unit, file=source, action='readwrite', iostat=stat)
+    if (stat/=0) return
+    
+    !> Write contents
+    write(unit,'(a)') input
+    close(unit)
+    
+    !> Get flags
+    flags    = ""
+    ldflags  = ""
+    if (present(compile_flags)) flags = flags//" "//compile_flags
+    if (present(link_flags)) ldflags = ldflags//" "//link_flags
+    
+    !> Compile
+    call self%compile_c(source,object,flags,logf,stat,dry_run=.false.)
+    if (stat/=0) return
+    
+    !> Link using C compiler for pure C programs
+    call run(self%cc//" "//ldflags//" "//object//" -o "//exe, &
+              echo=self%echo, verbose=self%verbose, redirect=logf, exitstat=stat)
+    if (stat/=0) return
+    
+    !> Run
+    call run(exe//" > "//logf//" 2>&1",echo=.false.,exitstat=stat)
+    success = (stat == 0)
+    
+    !> Delete temporary files
+    open(newunit=unit, file=source, action='readwrite', iostat=stat)
+    close(unit,status='delete')
+    open(newunit=unit, file=object, action='readwrite', iostat=stat)
+    close(unit,status='delete')
+    open(newunit=unit, file=logf, action='readwrite', iostat=stat)
+    close(unit,status='delete')
+    open(newunit=unit, file=exe, action='readwrite', iostat=stat)
+    close(unit,status='delete')
+    
+end function check_c_source_runs
+
+!> Check if the given C++ source code compiles, links, and runs successfully
+logical function check_cxx_source_runs(self, input, compile_flags, link_flags) result(success)
+    !> Instance of the compiler object
+    class(compiler_t), intent(in) :: self
+    !> C++ program source
+    character(len=*), intent(in) :: input
+    !> Optional build and link flags
+    character(len=*), optional, intent(in) :: compile_flags, link_flags
+    integer :: stat,unit
+    character(:), allocatable :: source,object,logf,exe,flags,ldflags
+    
+    success = .false.
+    
+    !> Create temporary source file
+    exe    = get_temp_filename()
+    source = exe//'.cpp'
+    object = exe//'.o'
+    logf   = exe//'.log'
+    
+    open(newunit=unit, file=source, action='readwrite', iostat=stat)
+    if (stat/=0) return
+    
+    !> Write contents
+    write(unit,'(a)') input
+    close(unit)
+    
+    !> Get flags
+    flags    = ""
+    ldflags  = ""
+    if (present(compile_flags)) flags = flags//" "//compile_flags
+    if (present(link_flags)) ldflags = ldflags//" "//link_flags
+    
+    !> Compile
+    call self%compile_cpp(source,object,flags,logf,stat,dry_run=.false.)
+    if (stat/=0) return
+    
+    !> Link using C++ compiler for pure C++ programs
+    call run(self%cxx//" "//ldflags//" "//object//" -o "//exe, &
+              echo=self%echo, verbose=self%verbose, redirect=logf, exitstat=stat)
+    if (stat/=0) return
+    
+    !> Run
+    call run(exe//" > "//logf//" 2>&1",echo=.false.,exitstat=stat)
+    success = (stat == 0)
+    
+    !> Delete temporary files
+    open(newunit=unit, file=source, action='readwrite', iostat=stat)
+    close(unit,status='delete')
+    open(newunit=unit, file=object, action='readwrite', iostat=stat)
+    close(unit,status='delete')
+    open(newunit=unit, file=logf, action='readwrite', iostat=stat)
+    close(unit,status='delete')
+    open(newunit=unit, file=exe, action='readwrite', iostat=stat)
+    close(unit,status='delete')
+    
+end function check_cxx_source_runs
+
+!> Check if the given C compile and/or link flags are accepted by the C compiler
+logical function check_c_flags_supported(self, compile_flags, link_flags)
+    class(compiler_t), intent(in) :: self
+    character(len=*), optional, intent(in) :: compile_flags, link_flags
+    
+    ! Minimal C program that always compiles
+    character(len=*), parameter :: hello_world_c = &
+        "#include <stdio.h>" // new_line('a') // &
+        "int main() { printf(""Hello, World!""); return 0; }"
+    
+    check_c_flags_supported = self%check_c_source_runs(hello_world_c, compile_flags, link_flags)
+end function check_c_flags_supported
+
+!> Check if the given C++ compile and/or link flags are accepted by the C++ compiler
+logical function check_cxx_flags_supported(self, compile_flags, link_flags)
+    class(compiler_t), intent(in) :: self
+    character(len=*), optional, intent(in) :: compile_flags, link_flags
+    
+    ! Minimal C++ program that always compiles
+    character(len=*), parameter :: hello_world_cxx = &
+        "#include <cstdio>" // new_line('a') // &
+        "int main() { printf(""Hello, World!""); return 0; }"
+    
+    check_cxx_flags_supported = self%check_cxx_source_runs(hello_world_cxx, compile_flags, link_flags)
+end function check_cxx_flags_supported
+
 !> Check if the given compile and/or link flags are accepted by the compiler
 logical function check_flags_supported(self, compile_flags, link_flags)
     class(compiler_t), intent(in) :: self
@@ -1868,7 +2142,7 @@ subroutine append_clean_flags_array(flags_array, new_flags_array)
         if (trim(new_flags_array(i)%s) == "-I") cycle
         if (trim(new_flags_array(i)%s) == "-J") cycle
         if (trim(new_flags_array(i)%s) == "-M") cycle
-        flags_array = [flags_array, new_flags_array(i)]
+        call add_strings(flags_array, new_flags_array(i))
     end do
 end subroutine append_clean_flags_array
 

@@ -164,6 +164,11 @@ pushd program_with_module
 "$fpm" run --target Program_with_module
 popd
 
+pushd program_with_cpp_guarded_module
+"$fpm" build
+"$fpm" run 
+popd
+
 pushd link_executable
 "$fpm" build
 "$fpm" run --target gomp_test
@@ -226,7 +231,7 @@ pushd fpm_test_exe_issues
 popd
 
 pushd cpp_files
-"$fpm" test
+"$fpm" test --verbose 
 popd
 
 # Test Fortran features
@@ -343,6 +348,31 @@ pushd static_app_only
 "$fpm" test || EXIT_CODE=$?
 test $EXIT_CODE -eq 0
 popd
+
+# Test custom module directory
+pushd custom_module_dir
+"$fpm" build
+rm -rf ./test_custom_install
+"$fpm" install --prefix ./test_custom_install
+# Verify modules are installed in custom directory
+test -f ./test_custom_install/custom_modules/greeting.mod
+test -f ./test_custom_install/custom_modules/math_utils.mod
+# Verify library is still installed normally
+test -f ./test_custom_install/lib/libcustom-module-dir.a
+# Clean up
+rm -rf ./test_custom_install
+popd
+
+# Test both shared and static library types
+pushd both_lib_types
+"$fpm" build
+"$fpm" install --prefix=.
+# Check that exactly 2 libboth_lib_types library files were installed
+test $(ls lib/libboth_lib_types* | wc -l) -eq 2
+popd
+
+# Test custom build directory functionality 
+bash "../ci/test_custom_build_dir.sh" "$fpm" hello_world
 
 # Cleanup
 rm -rf ./*/build

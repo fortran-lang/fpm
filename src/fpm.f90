@@ -8,8 +8,8 @@ use fpm_command_line, only: fpm_build_settings, fpm_new_settings, &
                       fpm_clean_settings
 use fpm_dependency, only : new_dependency_tree
 use fpm_filesystem, only: is_dir, join_path, list_files, exists, &
-                   basename, filewrite, mkdir, run, os_delete_dir
-use fpm_model, only: fpm_model_t, srcfile_t, show_model, fortran_features_t, &
+                   basename, filewrite, mkdir, run, os_delete_dir, delete_file
+use fpm_model, only: fpm_model_t, srcfile_t, show_model, &
                     FPM_SCOPE_UNKNOWN, FPM_SCOPE_LIB, FPM_SCOPE_DEP, &
                     FPM_SCOPE_APP, FPM_SCOPE_EXAMPLE, FPM_SCOPE_TEST
 use fpm_compiler, only: new_compiler, new_archiver, set_cpp_preprocessor_flags
@@ -17,8 +17,9 @@ use fpm_compiler, only: new_compiler, new_archiver, set_cpp_preprocessor_flags
 
 use fpm_sources, only: add_executable_sources, add_sources_from_dir
 use fpm_targets, only: targets_from_sources, build_target_t, build_target_ptr, &
-                        FPM_TARGET_EXECUTABLE, get_library_dirs
+                        FPM_TARGET_EXECUTABLE, get_library_dirs, filter_executable_targets
 use fpm_manifest, only : get_package_data, package_config_t
+use fpm_manifest_platform, only: platform_config_t
 use fpm_meta, only : resolve_metapackages
 use fpm_error, only : error_t, fatal_error, fpm_stop
 use fpm_toml, only: name_is_json
@@ -37,26 +38,33 @@ public :: build_model, check_modules_for_duplicates
 contains
 
 !> Constructs a valid fpm model from command line settings and the toml manifest.
-subroutine build_model(model, settings, package, error)
+subroutine build_model(model, settings, package_config, error)
     type(fpm_model_t), intent(out) :: model
     class(fpm_build_settings), intent(inout) :: settings
-    type(package_config_t), intent(inout), target :: package
+    type(package_config_t), intent(inout), target :: package_config
     type(error_t), allocatable, intent(out) :: error
 
     integer :: i, j
-    type(package_config_t), target  :: dependency
+    type(package_config_t), allocatable, target  :: package, dependency_config, dependency
     type(package_config_t), pointer :: manifest
+    type(platform_config_t), allocatable, target :: target_platform
     character(len=:), allocatable :: file_name, lib_dir
     logical :: has_cpp
-    logical :: duplicates_found
+    logical :: duplicates_found, auto_exe, auto_example, auto_test
     type(string_t) :: include_dir
+    
+    ! Large variables -> safer on heap
+    allocate(package,dependency_config,dependency,target_platform)
 
-    model%package_name = package%name
+    model%package_name = package_config%name
+
+    ! Set target OS to current OS (may be extended for cross-compilation in the future)
+    model%target_os = get_os_type()
 
     allocate(model%include_dirs(0))
     allocate(model%link_libraries(0))
     allocate(model%external_modules(0))
-
+    
     call new_compiler(model%compiler, settings%compiler, settings%c_compiler, &
         & settings%cxx_compiler, echo=settings%verbose, verbose=settings%verbose)
     call new_archiver(model%archiver, settings%archiver, &
@@ -67,20 +75,30 @@ subroutine build_model(model, settings, package, error)
             "<WARN>", "Unknown compiler", model%compiler%fc, "requested!", &
             "Defaults for this compiler might be incorrect"
     end if
-
+    
+    ! Extract the target platform for this build
+    target_platform = model%target_platform()
+    
     call new_compiler_flags(model,settings)
-    model%build_prefix         = join_path("build", basename(model%compiler%fc))
-    model%include_tests        = settings%build_tests
-    model%enforce_module_names = package%build%module_naming
-    model%module_prefix        = package%build%module_prefix
-
+    model%build_dir            = settings%build_dir
+    model%build_prefix         = join_path(settings%build_dir, basename(model%compiler%fc))
+    model%include_tests        = settings%build_tests    
+    
+    ! Extract the current package configuration request
+    package = package_config%export_config(target_platform)    
+    
     ! Resolve meta-dependencies into the package and the model
     call resolve_metapackages(model,package,settings,error)
     if (allocated(error)) return
     
+    if (allocated(package%build)) then 
+        model%enforce_module_names = package%build%module_naming
+        model%module_prefix        = package%build%module_prefix
+    endif      
+    
     ! Create dependencies
-    call new_dependency_tree(model%deps, cache=join_path("build", "cache.toml"), &
-    & path_to_config=settings%path_to_config)
+    call new_dependency_tree(model%deps, cache=join_path(settings%build_dir, "cache.toml"), &
+    & path_to_config=settings%path_to_config, build_dir=settings%build_dir)
 
     ! Build and resolve model dependencies
     call model%deps%add(package, error)
@@ -90,14 +108,14 @@ subroutine build_model(model, settings, package, error)
     call model%deps%update(error)
     if (allocated(error)) return
 
-    ! build/ directory should now exist
-    if (.not.exists("build/.gitignore")) then
-      call filewrite(join_path("build", ".gitignore"),["*"])
+    ! build directory should now exist
+    if (.not.exists(join_path(settings%build_dir, ".gitignore"))) then
+      call filewrite(join_path(settings%build_dir, ".gitignore"),["*"])
     end if
 
     allocate(model%packages(model%deps%ndep))
-
     has_cpp = .false.
+
     do i = 1, model%deps%ndep
         associate(dep => model%deps%dep(i))
             file_name = join_path(dep%proj_dir, "fpm.toml")
@@ -108,19 +126,20 @@ subroutine build_model(model, settings, package, error)
                 manifest => package
             else
                 
-                call get_package_data(dependency, file_name, error, apply_defaults=.true.)
-                if (allocated(error)) exit                
+                ! Extract this dependency config
+                call get_package_data(dependency_config, file_name, error, apply_defaults=.true.)
+                if (allocated(error)) exit          
+                
+                ! Adapt it to the current profile/platform
+                dependency = dependency_config%export_config(target_platform)
                 
                 manifest => dependency
             end if            
             
-            model%packages(i)%name = manifest%name
-            associate(features => model%packages(i)%features)
-                features%implicit_typing = manifest%fortran%implicit_typing
-                features%implicit_external = manifest%fortran%implicit_external
-                features%source_form = manifest%fortran%source_form
-            end associate
-            model%packages(i)%version = package%version%s()
+
+            model%packages(i)%name     = manifest%name
+            model%packages(i)%features = manifest%fortran
+            model%packages(i)%version  = manifest%version
 
             !> Add this dependency's manifest macros
             if (allocated(manifest%preprocess)) then
@@ -146,7 +165,8 @@ subroutine build_model(model, settings, package, error)
                     lib_dir = join_path(dep%proj_dir, manifest%library%source_dir)
                     if (is_dir(lib_dir)) then
                         call add_sources_from_dir(model%packages(i)%sources, lib_dir, FPM_SCOPE_LIB, &
-                            with_f_ext=model%packages(i)%preprocess%suffixes, error=error)
+                            with_f_ext=model%packages(i)%preprocess%suffixes, error=error, &
+                            preprocess=model%packages(i)%preprocess)
                         if (allocated(error)) exit
                     end if
                 end if
@@ -161,18 +181,22 @@ subroutine build_model(model, settings, package, error)
                 end if
 
             end if
+            
+            if (allocated(manifest%build)) then 
 
-            if (allocated(manifest%build%link)) then
-                model%link_libraries = [model%link_libraries, manifest%build%link]
-            end if
+                if (allocated(manifest%build%link)) then
+                    model%link_libraries = [model%link_libraries, manifest%build%link]
+                end if
 
-            if (allocated(manifest%build%external_modules)) then
-                model%external_modules = [model%external_modules, manifest%build%external_modules]
-            end if
+                if (allocated(manifest%build%external_modules)) then
+                    model%external_modules = [model%external_modules, manifest%build%external_modules]
+                end if
 
-            ! Copy naming conventions from this dependency's manifest
-            model%packages(i)%enforce_module_names = manifest%build%module_naming
-            model%packages(i)%module_prefix        = manifest%build%module_prefix
+                ! Copy naming conventions from this dependency's manifest
+                model%packages(i)%enforce_module_names = manifest%build%module_naming
+                model%packages(i)%module_prefix        = manifest%build%module_prefix
+            
+            endif
 
         end associate
     end do
@@ -182,30 +206,43 @@ subroutine build_model(model, settings, package, error)
     if (has_cpp) call set_cpp_preprocessor_flags(model%compiler%id, model%fortran_compile_flags)
 
     ! Add sources from executable directories
-    if (is_dir('app') .and. package%build%auto_executables) then
+    
+    if (allocated(package%build)) then 
+        auto_exe = package%build%auto_executables
+        auto_example = package%build%auto_examples
+        auto_test = package%build%auto_tests
+    else
+        auto_exe = .true.
+        auto_example = .true.
+        auto_test = .true.
+    endif
+    
+    if (is_dir('app') .and. auto_exe) then
         call add_sources_from_dir(model%packages(1)%sources,'app', FPM_SCOPE_APP, &
                                    with_executables=.true., with_f_ext=model%packages(1)%preprocess%suffixes,&
-                                   error=error)
+                                   error=error,preprocess=model%packages(1)%preprocess)
 
         if (allocated(error)) then
             return
         end if
 
     end if
-    if (is_dir('example') .and. package%build%auto_examples) then
+    if (is_dir('example') .and. auto_example) then
         call add_sources_from_dir(model%packages(1)%sources,'example', FPM_SCOPE_EXAMPLE, &
                                   with_executables=.true., &
-                                  with_f_ext=model%packages(1)%preprocess%suffixes,error=error)
+                                  with_f_ext=model%packages(1)%preprocess%suffixes,error=error,&
+                                  preprocess=model%packages(1)%preprocess)
 
         if (allocated(error)) then
             return
         end if
 
     end if
-    if (is_dir('test') .and. package%build%auto_tests) then
+    if (is_dir('test') .and. auto_test) then
         call add_sources_from_dir(model%packages(1)%sources,'test', FPM_SCOPE_TEST, &
                                   with_executables=.true., &
-                                  with_f_ext=model%packages(1)%preprocess%suffixes,error=error)
+                                  with_f_ext=model%packages(1)%preprocess%suffixes,error=error,&
+                                  preprocess=model%packages(1)%preprocess)
 
         if (allocated(error)) then
             return
@@ -214,9 +251,9 @@ subroutine build_model(model, settings, package, error)
     end if
     if (allocated(package%executable)) then
         call add_executable_sources(model%packages(1)%sources, package%executable, FPM_SCOPE_APP, &
-                                     auto_discover=package%build%auto_executables, &
+                                     auto_discover=auto_exe, &
                                      with_f_ext=model%packages(1)%preprocess%suffixes, &
-                                     error=error)
+                                     error=error,preprocess=model%packages(1)%preprocess)
 
         if (allocated(error)) then
             return
@@ -225,9 +262,9 @@ subroutine build_model(model, settings, package, error)
     end if
     if (allocated(package%example)) then
         call add_executable_sources(model%packages(1)%sources, package%example, FPM_SCOPE_EXAMPLE, &
-                                     auto_discover=package%build%auto_examples, &
+                                     auto_discover=auto_example, &
                                      with_f_ext=model%packages(1)%preprocess%suffixes, &
-                                     error=error)
+                                     error=error,preprocess=model%packages(1)%preprocess)
 
         if (allocated(error)) then
             return
@@ -236,9 +273,9 @@ subroutine build_model(model, settings, package, error)
     end if
     if (allocated(package%test)) then
         call add_executable_sources(model%packages(1)%sources, package%test, FPM_SCOPE_TEST, &
-                                     auto_discover=package%build%auto_tests, &
+                                     auto_discover=auto_test, &
                                      with_f_ext=model%packages(1)%preprocess%suffixes, &
-                                     error=error)
+                                     error=error,preprocess=model%packages(1)%preprocess)
 
         if (allocated(error)) then
             return
@@ -438,12 +475,15 @@ end subroutine check_module_names
 subroutine cmd_build(settings)
 type(fpm_build_settings), intent(inout) :: settings
 
-type(package_config_t) :: package
-type(fpm_model_t) :: model
+type(package_config_t), allocatable :: package
+type(fpm_model_t), allocatable :: model
 type(build_target_ptr), allocatable :: targets(:)
 type(error_t), allocatable :: error
 
 integer :: i
+
+! Large variables -> safer on heap
+allocate(package, model)
 
 call get_package_data(package, "fpm.toml", error, apply_defaults=.true.)
 if (allocated(error)) then
@@ -486,8 +526,8 @@ subroutine cmd_run(settings,test)
     integer :: i, j, col_width
     logical :: found(size(settings%name))
     type(error_t), allocatable :: error
-    type(package_config_t) :: package
-    type(fpm_model_t) :: model
+    type(package_config_t), allocatable :: package
+    type(fpm_model_t), allocatable :: model
     type(build_target_ptr), allocatable :: targets(:)
     type(string_t) :: exe_cmd
     type(string_t), allocatable :: executables(:)
@@ -496,6 +536,9 @@ subroutine cmd_run(settings,test)
     integer :: run_scope,firsterror
     integer, allocatable :: stat(:),target_ID(:)
     character(len=:),allocatable :: line,run_cmd,library_path
+    
+    ! Large variables -> safer on heap
+    allocate(package,model)
 
     call get_package_data(package, "fpm.toml", error, apply_defaults=.true.)
     if (allocated(error)) then
@@ -692,11 +735,79 @@ subroutine delete_skip(is_unix)
     end do
 end subroutine delete_skip
 
+!> Delete targets of a specific scope with given description
+subroutine delete_targets_by_scope(targets, scope, scope_name, deleted_any)
+    type(build_target_ptr), intent(in) :: targets(:)
+    integer, intent(in) :: scope
+    character(len=*), intent(in) :: scope_name
+    logical, intent(inout) :: deleted_any
+
+    type(string_t), allocatable :: scope_targets(:)
+    integer :: i
+
+    call filter_executable_targets(targets, scope, scope_targets)
+    if (size(scope_targets) > 0) then
+        do i = 1, size(scope_targets)
+            if (exists(scope_targets(i)%s)) then
+                write(stdout, '(A,A,A,A)') "<INFO> Deleted ", scope_name, " target: ", basename(scope_targets(i)%s)
+                call delete_file(scope_targets(i)%s)
+                deleted_any = .true.
+            end if
+        end do
+    end if
+end subroutine delete_targets_by_scope
+
+!> Delete build artifacts for specific target types (test, apps, examples)
+subroutine delete_targets(settings, error)
+    class(fpm_clean_settings), intent(inout) :: settings
+    type(error_t), allocatable, intent(out) :: error
+
+    type(package_config_t), allocatable :: package
+    type(fpm_model_t), allocatable :: model
+    type(build_target_ptr), allocatable :: targets(:)
+    logical :: deleted_any
+    
+    ! Large variables -> safer on heap
+    allocate(package,model)
+
+    ! Get package configuration
+    call get_package_data(package, "fpm.toml", error, apply_defaults=.true.)
+    if (allocated(error)) return
+    
+    ! Build the model to understand targets
+    call build_model(model, settings, package, error)
+    if (allocated(error)) return
+
+    ! Get the exact targets
+    call targets_from_sources(targets, model, settings%prune, package%library, error)
+    if (allocated(error)) return
+
+    deleted_any = .false.
+
+    ! Delete targets by scope using the original approach
+    if (settings%clean_test) then
+        call delete_targets_by_scope(targets, FPM_SCOPE_TEST, "test", deleted_any)
+    end if
+
+    if (settings%clean_apps) then
+        call delete_targets_by_scope(targets, FPM_SCOPE_APP, "app", deleted_any)
+    end if
+
+    if (settings%clean_examples) then
+        call delete_targets_by_scope(targets, FPM_SCOPE_EXAMPLE, "example", deleted_any)
+    end if
+
+    if (.not. deleted_any) then
+        write(stdout, '(A)') "No matching build targets found to delete."
+    end if
+
+end subroutine delete_targets
+
 !> Delete the build directory including or excluding dependencies. Can be used
 !> to clear the registry cache.
 subroutine cmd_clean(settings)
     !> Settings for the clean command.
-    class(fpm_clean_settings), intent(in) :: settings
+    class(fpm_clean_settings), intent(inout) :: settings
 
     character :: user_response
     type(fpm_global_settings) :: global_settings
@@ -708,6 +819,20 @@ subroutine cmd_clean(settings)
         if (allocated(error)) return
 
         call os_delete_dir(os_is_unix(), global_settings%registry_settings%cache_path)
+    end if
+
+    ! Handle target-specific cleaning
+    if (any([settings%clean_test, settings%clean_apps, settings%clean_examples])) then
+        if (.not. is_dir('build')) then
+            write (stdout, '(A)') "fpm: No build directory found."
+            return
+        end if
+        call delete_targets(settings, error)
+        if (allocated(error)) then
+            write(stderr, '(A)') 'Error: ' // error%message
+            return
+        end if
+        return
     end if
 
     if (is_dir('build')) then
@@ -886,8 +1011,5 @@ subroutine restore_library_path(saved_path, error)
     if (.not.success) call fatal_error(error, "Cannot restore library path: "//saved_path)
 
 end subroutine restore_library_path
-
-
-
 
 end module fpm
