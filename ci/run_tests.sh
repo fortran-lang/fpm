@@ -240,8 +240,7 @@ export FPM_CFLAGS="-g -O0 -fno-omit-frame-pointer"
 export FPM_LDFLAGS="-g"
 
 # Now run tests under LLDB
-fpm test \
-  --runner "lldb -o 'run' -o 'bt all' -o 'thread list' -o 'image list' -o 'quit' --"
+"$fpm" test --runner "lldb -o 'run' -o 'bt all' -o 'thread list' -o 'image list' -o 'quit' --"
 
 popd
 
