@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-set -ex
+set -exo pipefail
 
 # Test script for FPM features functionality
 # Usage: ./test_features.sh [fpm_executable]
@@ -20,21 +20,21 @@ echo "=== Testing features_demo package ==="
 pushd "features_demo"
 echo "Test 1: Basic debug feature"
 rm -rf build
-"$fpm" run --features debug | tee output.txt
+"$fpm" run --features debug > output.txt
 grep -q "DEBUG mode enabled" output.txt || { echo "ERROR: DEBUG mode not enabled"; exit 1; }
 echo "✓ Debug feature works"
 
 # Test 2: Profile usage - development profile (includes debug)
-echo "Test 2: Development profile (debug feature)"  
+echo "Test 2: Development profile (debug feature)"
 rm -rf build
-"$fpm" run --profile development --target features_demo | tee output.txt
+"$fpm" run --profile development --target features_demo > output.txt
 grep -q "DEBUG mode enabled" output.txt || { echo "ERROR: DEBUG mode not enabled in development profile"; exit 1; }
 echo "✓ Development profile works"
 
 # Test 3: Multiple features
 echo "Test 3: Multiple features (debug + openmp)"
-rm -rf build  
-"$fpm" run --features debug,openmp --target features_demo | tee output.txt
+rm -rf build
+"$fpm" run --features debug,openmp --target features_demo > output.txt
 grep -q "DEBUG mode enabled" output.txt || { echo "ERROR: DEBUG mode not enabled with multiple features"; exit 1; }
 grep -q "OpenMP support enabled" output.txt || { echo "ERROR: OpenMP not enabled with multiple features"; exit 1; }
 echo "✓ Multiple features work"
@@ -42,7 +42,7 @@ echo "✓ Multiple features work"
 # Test 4: Feature-specific executable (debug_demo only available with debug feature)
 echo "Test 4: Feature-specific executable"
 rm -rf build
-"$fpm" run --features debug --target debug_demo | tee output.txt
+"$fpm" run --features debug --target debug_demo > output.txt
 grep -q "Debug Demo Program" output.txt || { echo "ERROR: Debug Demo Program not found"; exit 1; }
 grep -q "Debug mode: ON" output.txt || { echo "ERROR: Debug mode not ON in debug_demo"; exit 1; }
 echo "✓ Feature-specific executable works"
@@ -50,7 +50,7 @@ echo "✓ Feature-specific executable works"
 # Test 5: Profile with multiple features - production profile (release + openmp)
 echo "Test 5: Production profile (release + openmp)"
 rm -rf build
-"$fpm" run --profile production --target features_demo | tee output.txt
+"$fpm" run --profile production --target features_demo > output.txt
 grep -q "RELEASE mode enabled" output.txt || { echo "ERROR: RELEASE mode not enabled in production profile"; exit 1; }
 grep -q "OpenMP support enabled" output.txt || { echo "ERROR: OpenMP not enabled in production profile"; exit 1; }
 # Should NOT have debug
@@ -62,8 +62,8 @@ echo "✓ Production profile works"
 
 # Test 6: No features - baseline behavior
 echo "Test 6: No features (baseline)"
-rm -rf build  
-"$fpm" run --target features_demo | tee output.txt
+rm -rf build
+"$fpm" run --target features_demo > output.txt
 # Should have neither DEBUG nor RELEASE without explicit features
 if grep -q "DEBUG mode enabled" output.txt; then
     echo "ERROR: DEBUG mode should not be enabled in baseline"
@@ -127,7 +127,7 @@ rm -rf build
 # Test 11: Debug dependency feature
 echo "Test 11: Debug dependency feature"
 rm -rf build
-"$fpm" run --features with_feat_debug | tee output.txt
+"$fpm" run --features with_feat_debug > output.txt
 grep -q "WITH_DEBUG_DEPENDENCY" output.txt || { echo "ERROR: WITH_DEBUG_DEPENDENCY not found"; exit 1; }
 grep -q "DEBUG mode enabled" output.txt || { echo "ERROR: DEBUG mode not enabled in dependency test"; exit 1; }
 echo "✓ Debug dependency feature works"
@@ -135,7 +135,7 @@ echo "✓ Debug dependency feature works"
 # Test 12: Release dependency feature
 echo "Test 12: Release dependency feature"
 rm -rf build
-"$fpm" run --features with_feat_release | tee output.txt
+"$fpm" run --features with_feat_release > output.txt
 grep -q "WITH_RELEASE_DEPENDENCY" output.txt || { echo "ERROR: WITH_RELEASE_DEPENDENCY not found"; exit 1; }
 grep -q "RELEASE mode enabled" output.txt || { echo "ERROR: RELEASE mode not enabled in dependency test"; exit 1; }
 echo "✓ Release dependency feature works"
@@ -143,7 +143,7 @@ echo "✓ Release dependency feature works"
 # Test 13: Multi dependency feature
 echo "Test 13: Multi dependency feature"
 rm -rf build
-"$fpm" run --features with_feat_multi | tee output.txt
+"$fpm" run --features with_feat_multi > output.txt
 grep -q "WITH_MULTI_DEPENDENCY" output.txt || { echo "ERROR: WITH_MULTI_DEPENDENCY not found"; exit 1; }
 grep -q "DEBUG mode enabled" output.txt || { echo "ERROR: DEBUG mode not enabled in multi dependency test"; exit 1; }
 grep -q "MPI support enabled" output.txt || { echo "ERROR: MPI support not enabled in multi dependency test"; exit 1; }
@@ -152,7 +152,7 @@ echo "✓ Multi dependency feature works"
 # Test 14: Profile with dependency features
 echo "Test 14: Debug dependency profile"
 rm -rf build
-"$fpm" run --profile debug_dep | tee output.txt
+"$fpm" run --profile debug_dep > output.txt
 grep -q "WITH_DEBUG_DEPENDENCY" output.txt || { echo "ERROR: WITH_DEBUG_DEPENDENCY not found in profile test"; exit 1; }
 grep -q "DEBUG mode enabled" output.txt || { echo "ERROR: DEBUG mode not enabled in dependency profile test"; exit 1; }
 echo "✓ Debug dependency profile works"
@@ -169,7 +169,7 @@ pushd "features_per_compiler"
 # Test 15: Development profile (debug + verbose)
 echo "Test 15: Features per compiler - development profile"
 rm -rf build
-if "$fpm" run --profile development | tee output.txt; then
+if "$fpm" run --profile development > output.txt; then
     echo "✓ Exit code 0 (success) as expected"
 else
     echo "ERROR: Expected exit code 0 but got non-zero exit code"
@@ -189,7 +189,7 @@ echo "✓ Development profile works"
 # Test 16: Production profile (release + fast)
 echo "Test 16: Features per compiler - production profile"
 rm -rf build
-if "$fpm" run --profile production | tee output.txt; then
+if "$fpm" run --profile production > output.txt; then
     echo "✓ Exit code 0 (success) as expected"
 else
     echo "ERROR: Expected exit code 0 but got non-zero exit code"
@@ -213,7 +213,7 @@ echo "✓ Production profile works"
 # Test 17: Testing profile (debug + strict)
 echo "Test 17: Features per compiler - testing profile"
 rm -rf build
-if "$fpm" run --profile testing | tee output.txt; then
+if "$fpm" run --profile testing > output.txt; then
     echo "✓ Exit code 0 (success) as expected"
 else
     echo "ERROR: Expected exit code 0 but got non-zero exit code"
@@ -232,7 +232,7 @@ echo "✓ Testing profile works"
 # Test 18: Individual features - debug only
 echo "Test 18: Features per compiler - debug feature only"
 rm -rf build
-if "$fpm" run --features debug | tee output.txt; then
+if "$fpm" run --features debug > output.txt; then
     echo "✓ Exit code 0 (success) as expected"
 else
     echo "ERROR: Expected exit code 0 but got non-zero exit code"
@@ -251,7 +251,7 @@ echo "✓ Debug feature works"
 # Test 19: Individual features - release only
 echo "Test 19: Features per compiler - release feature only"
 rm -rf build
-if "$fpm" run --features release | tee output.txt; then
+if "$fpm" run --features release > output.txt; then
     echo "✓ Exit code 0 (success) as expected"
 else
     echo "ERROR: Expected exit code 0 but got non-zero exit code"
@@ -270,7 +270,7 @@ echo "✓ Release feature works"
 # Test 20: No profile/features - baseline
 echo "Test 20: Features per compiler - baseline (no profile)"
 rm -rf build
-if "$fpm" run | tee output.txt; then
+if "$fpm" run > output.txt; then
     echo "✓ Exit code 0 (success) as expected"
 else
     echo "ERROR: Expected exit code 0 but got non-zero exit code"
