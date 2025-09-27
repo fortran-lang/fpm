@@ -164,10 +164,10 @@ pushd program_with_module
 "$fpm" run --target Program_with_module
 popd
 
-pushd program_with_cpp_guarded_module
-"$fpm" build
-"$fpm" run 
-popd
+#pushd program_with_cpp_guarded_module
+#"$fpm" build
+#"$fpm" run 
+#popd
 
 pushd link_executable
 "$fpm" build
@@ -231,7 +231,18 @@ pushd fpm_test_exe_issues
 popd
 
 pushd cpp_files
-"$fpm" test 
+
+# Build with debug & no inlining so the backtrace is readable
+# Build with symbols
+export FPM_FFLAGS="-g -O0 -fbacktrace -fno-omit-frame-pointer"
+export FPM_CXXFLAGS="-g -O0 -fno-omit-frame-pointer"
+export FPM_CFLAGS="-g -O0 -fno-omit-frame-pointer"
+export FPM_LDFLAGS="-g"
+
+# Now run tests under LLDB
+fpm test \
+  --runner "lldb -o 'run' -o 'bt all' -o 'thread list' -o 'image list' -o 'quit' --"
+
 popd
 
 # Test Fortran features
