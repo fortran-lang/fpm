@@ -2,8 +2,7 @@ program main
   use iso_fortran_env, only: compiler_options
   implicit none
 
-  character(len=:), allocatable :: options_str
-  character(len=20) :: detected_compiler
+  character(len=:), allocatable :: options_str,detected_compiler
   logical :: debug_active, release_active, verbose_active, fast_active, strict_active
   logical :: all_checks_passed
   integer :: failed_checks
