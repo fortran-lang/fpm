@@ -169,14 +169,17 @@ pushd "features_per_compiler"
 # Test 15: Development profile (debug + verbose)
 echo "Test 15: Features per compiler - development profile"
 rm -rf build
-if "$fpm" run --profile development > output.txt; then
+if "$fpm" run --profile development > output.txt 2>&1; then
     echo "✓ Exit code 0 (success) as expected"
 else
     echo "ERROR: Expected exit code 0 but got non-zero exit code"
+    echo "=== Program output ==="
+    cat output.txt
+    echo "======================"
     exit 1
 fi
 grep -q "Features Per Compiler Demo" output.txt || { echo "ERROR: Features Per Compiler Demo not found"; exit 1; }
-grep -q "✓ DEBUG: -g flag found" output.txt || { echo "ERROR: Debug feature not detected"; exit 1; }
+grep -q "✓ DEBUG: debug flags found" output.txt || { echo "ERROR: Debug feature not detected"; exit 1; }
 grep -q "✓ VERBOSE: -v flag found" output.txt || { echo "ERROR: Verbose feature not detected"; exit 1; }
 grep -q "✓ All compiler flag checks PASSED" output.txt || { echo "ERROR: Expected all checks to pass"; exit 1; }
 # Check compiler-specific flags (will depend on detected compiler)
@@ -189,10 +192,13 @@ echo "✓ Development profile works"
 # Test 16: Production profile (release + fast)
 echo "Test 16: Features per compiler - production profile"
 rm -rf build
-if "$fpm" run --profile production > output.txt; then
+if "$fpm" run --profile production > output.txt 2>&1; then
     echo "✓ Exit code 0 (success) as expected"
 else
     echo "ERROR: Expected exit code 0 but got non-zero exit code"
+    echo "=== Program output ==="
+    cat output.txt
+    echo "======================"
     exit 1
 fi
 grep -q "Features Per Compiler Demo" output.txt || { echo "ERROR: Features Per Compiler Demo not found"; exit 1; }
@@ -213,14 +219,17 @@ echo "✓ Production profile works"
 # Test 17: Testing profile (debug + strict)
 echo "Test 17: Features per compiler - testing profile"
 rm -rf build
-if "$fpm" run --profile testing > output.txt; then
+if "$fpm" run --profile testing > output.txt 2>&1; then
     echo "✓ Exit code 0 (success) as expected"
 else
     echo "ERROR: Expected exit code 0 but got non-zero exit code"
+    echo "=== Program output ==="
+    cat output.txt
+    echo "======================"
     exit 1
 fi
 grep -q "Features Per Compiler Demo" output.txt || { echo "ERROR: Features Per Compiler Demo not found"; exit 1; }
-grep -q "✓ DEBUG: -g flag found" output.txt || { echo "ERROR: Debug feature not detected"; exit 1; }
+grep -q "✓ DEBUG: debug flags found" output.txt || { echo "ERROR: Debug feature not detected"; exit 1; }
 grep -q "✓ STRICT: standard compliance flags found" output.txt || { echo "ERROR: Strict feature not detected"; exit 1; }
 grep -q "✓ All compiler flag checks PASSED" output.txt || { echo "ERROR: Expected all checks to pass"; exit 1; }
 # Check compiler-specific flags (will depend on detected compiler)
@@ -232,14 +241,17 @@ echo "✓ Testing profile works"
 # Test 18: Individual features - debug only
 echo "Test 18: Features per compiler - debug feature only"
 rm -rf build
-if "$fpm" run --features debug > output.txt; then
+if "$fpm" run --features debug > output.txt 2>&1; then
     echo "✓ Exit code 0 (success) as expected"
 else
     echo "ERROR: Expected exit code 0 but got non-zero exit code"
+    echo "=== Program output ==="
+    cat output.txt
+    echo "======================"
     exit 1
 fi
 grep -q "Features Per Compiler Demo" output.txt || { echo "ERROR: Features Per Compiler Demo not found"; exit 1; }
-grep -q "✓ DEBUG: -g flag found" output.txt || { echo "ERROR: Debug feature not detected"; exit 1; }
+grep -q "✓ DEBUG: debug flags found" output.txt || { echo "ERROR: Debug feature not detected"; exit 1; }
 grep -q "✓ All compiler flag checks PASSED" output.txt || { echo "ERROR: Expected all checks to pass"; exit 1; }
 # Should NOT have release or fast flags
 if grep -q "✓ RELEASE: -O flags found" output.txt; then
@@ -251,17 +263,20 @@ echo "✓ Debug feature works"
 # Test 19: Individual features - release only
 echo "Test 19: Features per compiler - release feature only"
 rm -rf build
-if "$fpm" run --features release > output.txt; then
+if "$fpm" run --features release > output.txt 2>&1; then
     echo "✓ Exit code 0 (success) as expected"
 else
     echo "ERROR: Expected exit code 0 but got non-zero exit code"
+    echo "=== Program output ==="
+    cat output.txt
+    echo "======================"
     exit 1
 fi
 grep -q "Features Per Compiler Demo" output.txt || { echo "ERROR: Features Per Compiler Demo not found"; exit 1; }
 grep -q "✓ RELEASE: -O flags found" output.txt || { echo "ERROR: Release feature not detected"; exit 1; }
 grep -q "✓ All compiler flag checks PASSED" output.txt || { echo "ERROR: Expected all checks to pass"; exit 1; }
 # Should NOT have debug flags
-if grep -q "✓ DEBUG: -g flag found" output.txt; then
+if grep -q "✓ DEBUG: debug flags found" output.txt; then
     echo "ERROR: Debug flags should not be present with release only"
     exit 1
 fi
@@ -270,16 +285,19 @@ echo "✓ Release feature works"
 # Test 20: No profile/features - baseline
 echo "Test 20: Features per compiler - baseline (no profile)"
 rm -rf build
-if "$fpm" run > output.txt; then
+if "$fpm" run > output.txt 2>&1; then
     echo "✓ Exit code 0 (success) as expected"
 else
     echo "ERROR: Expected exit code 0 but got non-zero exit code"
+    echo "=== Program output ==="
+    cat output.txt
+    echo "======================"
     exit 1
 fi
 grep -q "Features Per Compiler Demo" output.txt || { echo "ERROR: Features Per Compiler Demo not found"; exit 1; }
 grep -q "✓ All compiler flag checks PASSED" output.txt || { echo "ERROR: Expected all checks to pass"; exit 1; }
 # Should NOT have any feature flags in baseline
-if grep -q "✓ DEBUG: -g flag found" output.txt; then
+if grep -q "✓ DEBUG: debug flags found" output.txt; then
     echo "ERROR: Debug flags should not be present in baseline"
     exit 1
 fi

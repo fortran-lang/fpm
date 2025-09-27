@@ -25,15 +25,15 @@ program main
   print '(a)', ''
 
   ! Check for feature flags
-  debug_active   = index(options_str, '-g') > 0
+  debug_active   = index(options_str, ' -g ') > 0 
   release_active = index(options_str, '-O3') > 0
   verbose_active = index(options_str, ' -v') > 0 .or. index(options_str, ' -v ') > 0
-  fast_active    = index(options_str, 'fast') > 0 
+  fast_active    = index(options_str, 'fast') > 0
   strict_active  = index(options_str, '-std=f2018') > 0 .or. index(options_str, '-stand f18') > 0
 
   ! Display active features
   print '(a)', 'Active features detected:'
-  if (debug_active) print '(a)', '  ✓ DEBUG: -g flag found'
+  if (debug_active) print '(a)', '  ✓ DEBUG: debug flags found'
   if (release_active) print '(a)', '  ✓ RELEASE: -O flags found'
   if (verbose_active) print '(a)', '  ✓ VERBOSE: -v flag found'
   if (fast_active) print '(a)', '  ✓ FAST: fast optimization flags found'
