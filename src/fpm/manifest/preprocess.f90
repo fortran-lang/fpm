@@ -12,7 +12,7 @@
 
 module fpm_manifest_preprocess
    use fpm_error, only : error_t, syntax_error
-   use fpm_strings, only : string_t, operator(==)
+   use fpm_strings, only : string_t, operator(==), add_strings
    use tomlf, only : toml_table, toml_key, toml_stat
    use fpm_toml, only : get_value, get_list, serializable_t, set_value, set_list, &
                         set_string
@@ -326,31 +326,16 @@ contains
         if (.not.allocated(this%name)) this%name = that%name
 
         ! Add macros
-        if (allocated(that%macros)) then
-            if (allocated(this%macros)) then
-                this%macros = [this%macros, that%macros]
-            else
-                allocate(this%macros, source = that%macros)
-            end if
-        endif
-
+        if (allocated(that%macros)) &
+        call add_strings(this%macros, that%macros)
+            
         ! Add suffixes
-        if (allocated(that%suffixes)) then
-            if (allocated(this%suffixes)) then
-                this%suffixes = [this%suffixes, that%suffixes]
-            else
-                allocate(this%suffixes, source = that%suffixes)
-            end if
-        endif
+        if (allocated(that%suffixes)) &
+        call add_strings(this%suffixes, that%suffixes)
 
         ! Add directories
-        if (allocated(that%directories)) then
-            if (allocated(this%directories)) then
-                this%directories = [this%directories, that%directories]
-            else
-                allocate(this%directories, source = that%directories)
-            end if
-        endif
+        if (allocated(that%directories)) &
+        call add_strings(this%directories, that%directories)
 
     end subroutine add_config
 

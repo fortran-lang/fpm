@@ -45,7 +45,7 @@ module fpm_meta_util
                 current_lib = string_t(libs(i)%s(3:))
                 if (len_trim(current_lib%s) == 0) cycle
                 this%has_link_libraries = .true.
-                this%link_libs = [this%link_libs, current_lib]
+                call add_strings(this%link_libs, current_lib)
             else ! -L and others: concatenate
                 this%has_link_flags = .true.
                 this%link_flags = string_t(trim(this%link_flags%s)//' '//libs(i)%s)
@@ -68,7 +68,7 @@ module fpm_meta_util
                 current_include_dir = string_t(flags(i)%s(len(include_flag)+1:))
                 if (len_trim(current_include_dir%s) == 0) cycle
                 this%has_include_dirs = .true.
-                this%incl_dirs = [this%incl_dirs, current_include_dir]
+                call add_strings(this%incl_dirs, current_include_dir)
             else
                 this%has_build_flags = .true.
                 this%flags = string_t(trim(this%flags%s)//' '//flags(i)%s)

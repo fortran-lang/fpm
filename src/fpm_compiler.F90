@@ -41,7 +41,7 @@ use fpm_environment, only: &
 use fpm_filesystem, only: join_path, basename, get_temp_filename, delete_file, unix_path, &
     & getline, run
 use fpm_strings, only: split, string_cat, string_t, str_ends_with, str_begins_with_str, &
-    & string_array_contains, lower
+    & string_array_contains, lower, add_strings
 use fpm_error, only: error_t, fatal_error, fpm_stop
 use tomlf, only: toml_table
 use fpm_toml, only: serializable_t, set_string, set_value, toml_stat, get_value
@@ -53,7 +53,7 @@ public :: compiler_t, new_compiler, archiver_t, new_archiver, get_macros
 public :: append_clean_flags, append_clean_flags_array
 public :: debug
 public :: id_gcc,id_all
-public :: match_compiler_type, compiler_id_name, validate_compiler_name
+public :: match_compiler_type, compiler_id_name, validate_compiler_name, is_cxx_gnu_based
 
 enum, bind(C)
     enumerator :: &
@@ -931,6 +931,43 @@ subroutine get_default_cxx_compiler(f_compiler, cxx_compiler)
     end select
 
 end subroutine get_default_cxx_compiler
+
+!> Check if C++ compiler is GNU-based by checking its version output
+function is_cxx_gnu_based(cxx_compiler) result(is_gnu)
+    character(len=*), intent(in) :: cxx_compiler
+    logical :: is_gnu
+    character(len=:), allocatable :: output_file, version_output
+    integer :: stat, io
+
+    is_gnu = .false.
+
+    ! Get temporary file for compiler version output
+    output_file = get_temp_filename()
+
+    ! Run compiler with --version to get version info
+    call run(cxx_compiler//" --version > "//output_file//" 2>&1", &
+             echo=.false., exitstat=stat)
+
+    if (stat == 0) then
+        ! Read the version output
+        open(file=output_file, newunit=io, iostat=stat)
+        if (stat == 0) then
+            call getline(io, version_output, stat)
+            close(io, iostat=stat)
+
+            ! Check if output contains GNU indicators
+            if (allocated(version_output)) then
+                is_gnu = index(version_output, 'gcc') > 0 .or. &
+                         index(version_output, 'GCC') > 0 .or. &
+                         index(version_output, 'GNU') > 0 .or. &
+                         index(version_output, 'Free Software Foundation') > 0
+            end if
+    end if
+
+    ! Clean up temporary file
+    call run("rm -f "//output_file, echo=.false., exitstat=stat)
+
+end function is_cxx_gnu_based
 
 
 function get_compiler_id(compiler) result(id)
@@ -2101,7 +2138,7 @@ subroutine append_clean_flags_array(flags_array, new_flags_array)
         if (trim(new_flags_array(i)%s) == "-I") cycle
         if (trim(new_flags_array(i)%s) == "-J") cycle
         if (trim(new_flags_array(i)%s) == "-M") cycle
-        flags_array = [flags_array, new_flags_array(i)]
+        call add_strings(flags_array, new_flags_array(i))
     end do
 end subroutine append_clean_flags_array
 
