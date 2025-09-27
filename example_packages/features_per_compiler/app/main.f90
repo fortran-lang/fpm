@@ -8,7 +8,7 @@ program main
   integer :: failed_checks
 
   ! Get compiler flags used to build this file
-  options_str = compiler_options()
+  allocate(options_str, source=compiler_options())
 
   ! Display compiler information
   print '(a)', '================================='
@@ -17,7 +17,7 @@ program main
   print '(a)', ''
 
   ! Detect compiler type using the function
-  detected_compiler = compiled_with()
+  allocate(detected_compiler, source=compiled_with())
 
   print '(2a)', 'Detected compiler: ', detected_compiler
   print '(a)', ''
@@ -97,7 +97,7 @@ contains
     character(len=:), allocatable :: msg
     character(len=:), allocatable :: version_str
 
-    version_str = compiler_version()
+    allocate(version_str, source=compiler_version())
 
     if (index(version_str, 'GCC') > 0) then
       msg = 'gfortran'
