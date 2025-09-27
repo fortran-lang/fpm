@@ -231,7 +231,7 @@ pushd fpm_test_exe_issues
 popd
 
 pushd cpp_files
-"$fpm" test
+"$fpm" test --verbose 
 popd
 
 # Test Fortran features
