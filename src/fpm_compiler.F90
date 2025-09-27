@@ -962,6 +962,7 @@ function is_cxx_gnu_based(cxx_compiler) result(is_gnu)
                          index(version_output, 'GNU') > 0 .or. &
                          index(version_output, 'Free Software Foundation') > 0
             end if
+        end if
     end if
 
     ! Clean up temporary file
