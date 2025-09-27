@@ -7,7 +7,8 @@ module fpm_filesystem
                                OS_UNKNOWN, OS_LINUX, OS_MACOS, OS_WINDOWS, &
                                OS_CYGWIN, OS_SOLARIS, OS_FREEBSD, OS_OPENBSD
     use fpm_environment, only: separator, get_env, os_is_unix
-    use fpm_strings, only: f_string, replace, string_t, split, split_lines_first_last, dilate, str_begins_with_str
+    use fpm_strings, only: f_string, replace, string_t, split, split_lines_first_last, dilate, add_strings, &
+        str_begins_with_str
     use iso_c_binding, only: c_char, c_ptr, c_int, c_null_char, c_associated, c_f_pointer
     use fpm_error, only : fpm_stop, error_t, fatal_error
     implicit none
@@ -443,7 +444,7 @@ recursive subroutine list_files(dir, files, recurse)
             i = i + 1
 
             if (i > N_MAX) then
-                files = [files, files_tmp]
+                call add_strings(files, files_tmp)
                 i = 1
             end if
 
@@ -459,7 +460,7 @@ recursive subroutine list_files(dir, files, recurse)
     end if
 
     if (i > 0) then
-        files = [files, files_tmp(1:i)]
+        call add_strings(files, files_tmp(1:i))
     end if
 
     if (present(recurse)) then
@@ -470,11 +471,11 @@ recursive subroutine list_files(dir, files, recurse)
             do i=1,size(files)
                 if (c_is_dir(files(i)%s//c_null_char) /= 0) then
                     call list_files(files(i)%s, dir_files, recurse=.true.)
-                    sub_dir_files = [sub_dir_files, dir_files]
+                    call add_strings(sub_dir_files, dir_files)
                 end if
             end do
 
-            files = [files, sub_dir_files]
+            call add_strings(files, sub_dir_files)
         end if
     end if
 end subroutine list_files
@@ -531,12 +532,12 @@ recursive subroutine list_files(dir, files, recurse)
                 if (is_dir(files(i)%s)) then
 
                     call list_files(files(i)%s, dir_files, recurse=.true.)
-                    sub_dir_files = [sub_dir_files, dir_files]
+                    call add_strings(sub_dir_files, dir_files)
 
                 end if
             end do
 
-            files = [files, sub_dir_files]
+            call add_strings(files, sub_dir_files)
 
         end if
     end if
