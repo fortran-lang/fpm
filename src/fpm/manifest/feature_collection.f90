@@ -1160,10 +1160,12 @@ module fpm_manifest_feature_collection
         if (allocated(error)) return
         
         print *, 'extract for target: flags=',feature%flags
+        print *, 'extract for target: link=',feature%link_time_flags
         
         ! Merge the extracted feature into the package
         call merge_feature_configs(package, feature, error)
         print *, 'merged for target: flags=',package%flags
+        print *, 'merged for target: link=',package%link_time_flags
         if (allocated(error)) return
         
     end subroutine merge_into_package
