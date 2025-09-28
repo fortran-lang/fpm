@@ -170,7 +170,7 @@ contains
     end if
 
     if (fast_on) then
-      if (.not. check_flag(options, '-fast', 'Fast', '-ffast')) failed_count = failed_count + 1
+      if (.not. check_flag(options, '-fp-model', 'Fast', 'fast')) failed_count = failed_count + 1
     end if
 
     if (strict_on) then
@@ -198,7 +198,7 @@ contains
     end if
 
     if (fast_on) then
-      if (.not. check_flag(options, '-fast', 'Fast', '-ffast')) failed_count = failed_count + 1
+      if (.not. check_flag(options, '-fp-model', 'Fast', 'fast')) failed_count = failed_count + 1
     end if
 
     if (strict_on) then
