@@ -1159,8 +1159,11 @@ module fpm_manifest_feature_collection
         feature = self%extract_for_target(target, error)
         if (allocated(error)) return
         
+        print *, 'extract for target: flags=',feature%flags
+        
         ! Merge the extracted feature into the package
         call merge_feature_configs(package, feature, error)
+        print *, 'merged for target: flags=',package%flags
         if (allocated(error)) return
         
     end subroutine merge_into_package
