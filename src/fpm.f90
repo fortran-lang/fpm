@@ -12,7 +12,9 @@ use fpm_filesystem, only: is_dir, join_path, list_files, exists, &
 use fpm_model, only: fpm_model_t, srcfile_t, show_model, &
                     FPM_SCOPE_UNKNOWN, FPM_SCOPE_LIB, FPM_SCOPE_DEP, &
                     FPM_SCOPE_APP, FPM_SCOPE_EXAMPLE, FPM_SCOPE_TEST
-use fpm_compiler, only: new_compiler, new_archiver, set_cpp_preprocessor_flags
+use fpm_compiler, only: new_compiler, new_archiver, set_cpp_preprocessor_flags, &
+                        id_intel_classic_nix,id_intel_classic_mac,id_intel_llvm_nix, &
+                        id_intel_llvm_unknown
 
 
 use fpm_sources, only: add_executable_sources, add_sources_from_dir
@@ -335,28 +337,46 @@ subroutine new_compiler_flags(model, settings, package)
     type(fpm_build_settings), intent(in) :: settings
     type(package_config_t), intent(in) :: package
 
-    logical :: release_profile, debug_profile
+    logical :: release_request, debug_request, need_defaults
+    character(len=:), allocatable :: fallback
     
-    release_profile = .false.
-      debug_profile = .false.
-    if (allocated(settings%profile)) release_profile = settings%profile == "release"
-    if (allocated(settings%profile))   debug_profile = settings%profile == "debug"
-
-    ! Debug./Release profile requested but not defined: 
-    ! fallback to backward-compatible behavior
-    if (     (release_profile .and. package%find_profile("release")==0) &
-        .or. (debug_profile .and. package%find_profile("debug")==0) ) then 
+    ! Default: "debug" if not requested
+    release_request = .false.
+    debug_request   = .not.allocated(settings%profile)
+    if (allocated(settings%profile)) release_request = settings%profile == "release"
+    if (allocated(settings%profile)) debug_request   = settings%profile == "debug"    
+    
+    need_defaults = release_request .or. debug_request
+    
+    ! Backward-compatible: if debug/release requested, but a user-defined profile is not defined,
+    ! apply fpm compiler defaults
+    if (need_defaults) then 
         
-        model%fortran_compile_flags = assemble_flags(settings%flag,package%flags,&
-                                                     model%compiler%get_default_flags(release_profile))
-        
-        
-    else
-        
-        model%fortran_compile_flags = assemble_flags(settings%flag, package%flags)
+        need_defaults   =      (release_request .and. package%find_profile("release")<=0) &
+                          .or. (debug_request .and. package%find_profile("debug")<=0)
         
     end if
     
+    ! Fix: Always include compiler default flags for Intel ifx -fPIC issue
+    if (need_defaults) then 
+        
+        fallback = model%compiler%get_default_flags(release_request)
+        
+    elseif (any(model%compiler%id==[id_intel_classic_mac, &
+                                    id_intel_classic_nix, &
+                                    id_intel_llvm_nix, &
+                                    id_intel_llvm_unknown])) then
+
+        ! Intel compilers need -fPIC for shared libraries (except Windows)
+        fallback = " -fPIC"
+        
+    else
+        
+        if (allocated(fallback)) deallocate(fallback) ! trigger .not.present
+        
+    endif
+        
+    model%fortran_compile_flags = assemble_flags(settings%flag,    package%flags, fallback)
     model%c_compile_flags       = assemble_flags(settings%cflag,   package%c_flags)
     model%cxx_compile_flags     = assemble_flags(settings%cxxflag, package%cxx_flags)
     model%link_flags            = assemble_flags(settings%ldflag,  package%link_time_flags)

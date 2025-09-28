@@ -1076,7 +1076,7 @@ end subroutine prune_build_targets
 subroutine resolve_target_linking(targets, model, library, error)
     type(build_target_ptr), intent(inout), target :: targets(:)
     type(fpm_model_t), intent(in) :: model
-    type(library_config_t), intent(in), optional :: library    
+    type(library_config_t), intent(in), optional :: library
     type(error_t), allocatable, intent(out) :: error
 
     integer :: i,j
@@ -1085,7 +1085,9 @@ subroutine resolve_target_linking(targets, model, library, error)
     character(:), allocatable :: global_link_flags, local_link_flags
     character(:), allocatable :: global_include_flags, shared_lib_paths
 
+
     if (size(targets) == 0) return
+
 
     global_link_flags = ""
     if (allocated(model%link_libraries)) then
@@ -1116,13 +1118,14 @@ subroutine resolve_target_linking(targets, model, library, error)
 
         associate(target => targets(i)%ptr)
 
+
             ! If the main program is a C/C++ one, some compilers require additional linking flags, see
             ! https://stackoverflow.com/questions/36221612/p3dfft-compilation-ifort-compiler-error-multiple-definiton-of-main
             ! In this case, compile_flags were already allocated
             if (.not.allocated(target%compile_flags)) allocate(character(len=0) :: target%compile_flags)
 
             target%compile_flags = target%compile_flags//' '
-            
+
             select case (target%target_type)
                case (FPM_TARGET_C_OBJECT)
                    target%compile_flags = target%compile_flags//model%c_compile_flags
@@ -1141,7 +1144,8 @@ subroutine resolve_target_linking(targets, model, library, error)
             if (len(global_include_flags) > 0) then
                 target%compile_flags = target%compile_flags//global_include_flags
             end if
-            
+
+
             call target%set_output_dir(get_output_dir(model%build_prefix, target%compile_flags))
             
         end associate

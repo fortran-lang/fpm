@@ -317,7 +317,7 @@ popd
 
 # Test shared library dependencies
 pushd shared_lib
-"$fpm" build || EXIT_CODE=$?
+"$fpm" build --verbose || EXIT_CODE=$?
 test $EXIT_CODE -eq 0
 popd
 
