@@ -15,7 +15,7 @@ module fpm_manifest_platform
         OS_WINDOWS, OS_LINUX, OS_MACOS
     use fpm_compiler,   only : compiler_enum, compiler_id_name, match_compiler_type, id_all, &
         id_unknown, validate_compiler_name, id_intel_classic_nix, id_intel_classic_mac, &
-        id_intel_classic_windows, id_intel_llvm_nix, id_intel_llvm_windows
+        id_intel_classic_windows, id_intel_llvm_nix, id_intel_llvm_windows, id_intel_llvm_unknown
     use fpm_strings,    only : lower
     implicit none
     private
