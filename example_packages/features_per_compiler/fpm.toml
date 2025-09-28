@@ -35,8 +35,8 @@ debug.preprocess.cpp.macros = "DEBUG"
 # Release feature with base optimization, then per-compiler extensions
 release.flags = "-O3"  # Base optimization for ALL compilers (applied first)
 release.gfortran.flags = "-march=native -funroll-loops"
-release.ifort.flags = "-xHost -unroll"     # Unix/Linux/macOS Intel
-release.ifx.flags = "-xHost -unroll"       # Intel oneAPI
+release.ifort.flags = "-unroll"     # Unix/Linux/macOS Intel
+release.ifx.flags = "-unroll"       # Intel oneAPI
 
 # Verbose feature for enhanced diagnostics (applies to all compilers)
 verbose.flags = "-v"

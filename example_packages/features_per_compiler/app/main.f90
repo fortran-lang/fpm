@@ -166,7 +166,6 @@ contains
     end if
 
     if (release_on) then
-      if (.not. check_flag(options, '-xHost', 'Release', '-xHost')) failed_count = failed_count + 1
       if (.not. check_flag(options, '-unroll', 'Release', '-unroll')) failed_count = failed_count + 1
     end if
 
@@ -195,7 +194,6 @@ contains
     end if
 
     if (release_on) then
-      if (.not. check_flag(options, '-xHost', 'Release', '-xHost')) failed_count = failed_count + 1
       if (.not. check_flag(options, '-unroll', 'Release', '-unroll')) failed_count = failed_count + 1
     end if
 
