@@ -44,8 +44,8 @@ verbose.flags = "-v"
 # Fast feature with base optimization, then per-compiler extensions
 fast.flags = "-O3"  # Base fast optimization for ALL compilers (applied first)
 fast.gfortran.flags = "-Ofast -ffast-math"
-fast.ifort.flags = "-fast"
-fast.ifx.flags = "-fast"
+fast.ifort.flags = "-fp-model fast"
+fast.ifx.flags = "-fp-model fast"
 
 # Strict feature with base standard compliance, then per-compiler extensions
 strict.flags = "-std=f2018"  # Base standard compliance for ALL compilers (applied first)
