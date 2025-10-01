@@ -62,7 +62,7 @@ jobs:
 
     - name: Setup Fortran compiler
       uses: fortran-lang/setup-fortran@v1.7.0
-      id: setup-fortran
+      id: setup-fortran 
       with:
         compiler: ${{ matrix.toolchain.compiler }}
         version: ${{ matrix.toolchain.version }}
@@ -263,6 +263,20 @@ jobs:
         unzip EnVar-Plugin.zip -d EnVar_plugin
       env:
         envar_download: "https://github.com/GsNSIS/EnVar/releases/download/v0.3.1/EnVar-Plugin.zip"
+
+    - name: Install NSIS
+      run: choco install nsis -y
+      shell: pwsh
+
+    - name: Add NSIS to PATH 
+      shell: pwsh
+      run: |
+        $dirs = @(
+          "${env:ProgramFiles(x86)}\NSIS",
+          "${env:ProgramFiles}\NSIS"
+        ) | Where-Object { $_ -and (Test-Path $_) }
+        if (-not $dirs) { throw "NSIS not found under Program Files." }
+        $dirs | ForEach-Object { $_ | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append }
 
     - name: Generate installer
       run: |
