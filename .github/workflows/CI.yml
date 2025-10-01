@@ -264,9 +264,16 @@ jobs:
       env:
         envar_download: "https://github.com/GsNSIS/EnVar/releases/download/v0.3.1/EnVar-Plugin.zip"
 
-    - name: Install NSIS (Chocolatey)
-      run: choco install nsis -y        
-        
+    - name: Install NSIS
+      run: choco install nsis -y
+      shell: pwsh
+
+    - name: Refresh PATH (Chocolatey)
+      shell: pwsh
+      run: |
+        Import-Module "$env:ChocolateyInstall\helpers\chocolateyProfile.psm1"
+        refreshenv
+
     - name: Generate installer
       run: |
         cd ./ci
