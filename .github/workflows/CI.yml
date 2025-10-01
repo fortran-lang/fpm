@@ -268,11 +268,15 @@ jobs:
       run: choco install nsis -y
       shell: pwsh
 
-    - name: Refresh PATH (Chocolatey)
+    - name: Add NSIS to PATH 
       shell: pwsh
       run: |
-        Import-Module "$env:ChocolateyInstall\helpers\chocolateyProfile.psm1"
-        refreshenv
+        $dirs = @(
+          "${env:ProgramFiles(x86)}\NSIS",
+          "${env:ProgramFiles}\NSIS"
+        ) | Where-Object { $_ -and (Test-Path $_) }
+        if (-not $dirs) { throw "NSIS not found under Program Files." }
+        $dirs | ForEach-Object { $_ | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append }
 
     - name: Generate installer
       run: |
