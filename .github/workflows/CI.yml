@@ -62,7 +62,7 @@ jobs:
 
     - name: Setup Fortran compiler
       uses: fortran-lang/setup-fortran@v1.7.0
-      id: setup-fortran
+      id: setup-fortran 
       with:
         compiler: ${{ matrix.toolchain.compiler }}
         version: ${{ matrix.toolchain.version }}
