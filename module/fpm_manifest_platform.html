@@ -199,11 +199,11 @@ selector, and implements the standard serialization interface
             <li class="list-group-item">
               <ul class="list-inline">
                   <li class="list-inline-item"><a href='fpm_strings.html'>fpm_strings</a></li>
-                  <li class="list-inline-item"><a href='fpm_toml.html'>fpm_toml</a></li>
                   <li class="list-inline-item"><a href='https://toml-f.github.io/toml-f'>tomlf</a></li>
                   <li class="list-inline-item"><a href='fpm_environment.html'>fpm_environment</a></li>
                   <li class="list-inline-item"><a href='fpm_compiler.html'>fpm_compiler</a></li>
                   <li class="list-inline-item"><a href='fpm_error.html'>fpm_error</a></li>
+                  <li class="list-inline-item"><a href='fpm_toml.html'>fpm_toml</a></li>
               </ul>
             </li>
         </ul>
@@ -246,7 +246,7 @@ Automatically selects correct Intel compiler version based on OS</p>
     <tbody>
         <tr>
             <td>
-              <span class="anchor" id="variable-compiler~17"></span>
+              <span class="anchor" id="variable-compiler~19"></span>
               character(len=*),
             </td>
 <td>intent(in)</td>
@@ -261,7 +261,7 @@ Automatically selects correct Intel compiler version based on OS</p>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-os_type~12"></span>
+              <span class="anchor" id="variable-os_type~11"></span>
               integer,
             </td>
 <td>intent(in)</td>
@@ -305,7 +305,7 @@ Automatically selects correct Intel compiler version based on OS</p>
     <tbody>
         <tr>
             <td>
-              <span class="anchor" id="variable-compiler_id~4"></span>
+              <span class="anchor" id="variable-compiler_id~2"></span>
               integer(kind=compiler_enum),
             </td>
 <td>intent(in)</td>
@@ -320,7 +320,7 @@ Automatically selects correct Intel compiler version based on OS</p>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-os_type~13"></span>
+              <span class="anchor" id="variable-os_type~12"></span>
               integer,
             </td>
 <td>intent(in)</td>
@@ -377,7 +377,7 @@ Automatically selects correct Intel compiler version based on OS</p>
     <tbody>
         <tr>
             <td>
-              <span class="anchor" id="variable-compiler~16"></span>
+              <span class="anchor" id="variable-compiler~18"></span>
               integer(kind=compiler_enum),
             </td>
               <td>public</td>
@@ -394,7 +394,7 @@ Automatically selects correct Intel compiler version based on OS</p>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-os_type~11"></span>
+              <span class="anchor" id="variable-os_type~10"></span>
               integer,
             </td>
               <td>public</td>
@@ -465,37 +465,37 @@ Automatically selects correct Intel compiler version based on OS</p></td>
               </tr>
               <tr>
                 <td>  procedure, public ::
-  <strong><a href='../type/platform_config_t.html#boundprocedure-compiler_name~9'>compiler_name</a></strong> => platform_compiler_name</td>
+  <strong><a href='../type/platform_config_t.html#boundprocedure-compiler_name~10'>compiler_name</a></strong> => platform_compiler_name</td>
                   <td><p>Get compiler name as string</p></td>
               </tr>
               <tr>
                 <td>  generic, public ::
-  <strong><a href='../type/platform_config_t.html#boundprocedure-dump~21'>dump</a></strong> => <a href='/home/runner/work/fpm/fpm/fpm-doc/type/srcfile_t.html#boundprocedure-dump_to_toml~18'>dump_to_toml</a>, dump_to_file, dump_to_unit</td>
+  <strong><a href='../type/platform_config_t.html#boundprocedure-dump~20'>dump</a></strong> => <a href='/home/runner/work/fpm/fpm/fpm-doc/type/srcfile_t.html#boundprocedure-dump_to_toml~4'>dump_to_toml</a>, dump_to_file, dump_to_unit</td>
                   <td></td>
               </tr>
               <tr>
                 <td>  procedure, public ::
-  <strong><a href='../type/platform_config_t.html#boundprocedure-dump_to_toml~17'>dump_to_toml</a></strong></td>
+  <strong><a href='../type/platform_config_t.html#boundprocedure-dump_to_toml~16'>dump_to_toml</a></strong></td>
                   <td></td>
               </tr>
               <tr>
                 <td>  procedure, public ::
-  <strong><a href='../type/platform_config_t.html#boundprocedure-info~8'>info</a></strong></td>
+  <strong><a href='../type/platform_config_t.html#boundprocedure-info~10'>info</a></strong></td>
                   <td><p>Print information</p></td>
               </tr>
               <tr>
                 <td>  procedure, public ::
-  <strong><a href='../type/platform_config_t.html#boundprocedure-is_valid~8'>is_valid</a></strong> => platform_is_valid</td>
+  <strong><a href='../type/platform_config_t.html#boundprocedure-is_valid~10'>is_valid</a></strong> => platform_is_valid</td>
                   <td><p>Validation</p></td>
               </tr>
               <tr>
                 <td>  generic, public ::
-  <strong><a href='../type/platform_config_t.html#boundprocedure-load~18'>load</a></strong> => <a href='/home/runner/work/fpm/fpm/fpm-doc/type/srcfile_t.html#boundprocedure-load_from_toml~18'>load_from_toml</a>, load_from_file, load_from_unit</td>
+  <strong><a href='../type/platform_config_t.html#boundprocedure-load~17'>load</a></strong> => <a href='/home/runner/work/fpm/fpm/fpm-doc/type/srcfile_t.html#boundprocedure-load_from_toml~4'>load_from_toml</a>, load_from_file, load_from_unit</td>
                   <td></td>
               </tr>
               <tr>
                 <td>  procedure, public ::
-  <strong><a href='../type/platform_config_t.html#boundprocedure-load_from_toml~17'>load_from_toml</a></strong></td>
+  <strong><a href='../type/platform_config_t.html#boundprocedure-load_from_toml~16'>load_from_toml</a></strong></td>
                   <td></td>
               </tr>
               <tr>
@@ -505,22 +505,22 @@ Automatically selects correct Intel compiler version based on OS</p></td>
               </tr>
               <tr>
                 <td>  procedure, public ::
-  <strong><a href='../type/platform_config_t.html#boundprocedure-name~31'>name</a></strong> => platform_config_name</td>
+  <strong><a href='../type/platform_config_t.html#boundprocedure-name~40'>name</a></strong> => platform_config_name</td>
                   <td><p>Get configuration name as it appears in the manifest</p></td>
               </tr>
               <tr>
                 <td>  generic, public ::
-  <strong><a href='../type/platform_config_t.html#boundprocedure-operator%28%3D%3D%29~19'>operator(==)</a></strong> => <a href='/home/runner/work/fpm/fpm/fpm-doc/type/srcfile_t.html#boundprocedure-serializable_is_same~18'>serializable_is_same</a></td>
+  <strong><a href='../type/platform_config_t.html#boundprocedure-operator%28%3D%3D%29~18'>operator(==)</a></strong> => <a href='/home/runner/work/fpm/fpm/fpm-doc/type/srcfile_t.html#boundprocedure-serializable_is_same~4'>serializable_is_same</a></td>
                   <td></td>
               </tr>
               <tr>
                 <td>  procedure, public ::
-  <strong><a href='../type/platform_config_t.html#boundprocedure-os_name~3'>os_name</a></strong> => platform_os_name</td>
+  <strong><a href='../type/platform_config_t.html#boundprocedure-os_name~6'>os_name</a></strong> => platform_os_name</td>
                   <td><p>Get OS name as string  </p></td>
               </tr>
               <tr>
                 <td>  procedure, public ::
-  <strong><a href='../type/platform_config_t.html#boundprocedure-serializable_is_same~17'>serializable_is_same</a></strong> => platform_is_same</td>
+  <strong><a href='../type/platform_config_t.html#boundprocedure-serializable_is_same~16'>serializable_is_same</a></strong> => platform_is_same</td>
                   <td></td>
               </tr>
               <tr>
@@ -558,7 +558,7 @@ Automatically selects correct Intel compiler version based on OS</p></td>
     <tbody>
         <tr>
             <td>
-              <span class="anchor" id="variable-key~4"></span>
+              <span class="anchor" id="variable-key~15"></span>
               character(len=*),
             </td>
 <td>intent(in)</td>
@@ -607,7 +607,7 @@ Automatically selects correct Intel compiler version based on OS</p></td>
             <p class="text-end">
               Documentation generated by
               <a href="https://github.com/Fortran-FOSS-Programmers/ford">FORD</a>
- on 2025-09-27 14:57 +0000             </p>
+ on 2025-10-01 14:29 +0000             </p>
           </div>
         </div>
         <br>
