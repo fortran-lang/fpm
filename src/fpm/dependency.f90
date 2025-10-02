@@ -96,7 +96,7 @@ module fpm_dependency
     logical :: update = .false.
     !> Dependency was loaded from a cache
     logical :: cached = .false.
-    !> Package dependencies of this node 
+    !> Internal: package dependencies of this node 
     type(string_t), allocatable :: package_dep(:)    
   contains
 

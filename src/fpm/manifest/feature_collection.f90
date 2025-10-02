@@ -24,7 +24,8 @@ module fpm_manifest_feature_collection
     private
     
     public :: new_collections, get_default_features, &
-              get_default_features_as_features, default_debug_feature, default_release_feature
+              default_debug_feature, default_release_feature, &
+              add_default_features, collection_from_feature
     
     !> Feature configuration data
     type, public, extends(serializable_t) :: feature_collection_t
@@ -44,8 +45,15 @@ module fpm_manifest_feature_collection
             procedure :: push_variant
             procedure :: extract_for_target
             procedure :: check => check_collection
+            procedure :: merge_into_package
+            procedure :: has_cpp
 
     end type feature_collection_t
+
+    !> Interface for feature_collection_t constructor
+    interface feature_collection_t
+        module procedure collection_from_feature
+    end interface feature_collection_t
 
     contains
     
@@ -301,7 +309,17 @@ module fpm_manifest_feature_collection
                 ! Check if this key is an OS name
                 os_type = match_os_type(keys(i)%key)
                 if (os_type /= OS_UNKNOWN) then
-                    ! This is an OS constraint - get subtable and recurse
+                    ! This is an OS constraint 
+                    
+                    ! Check for chained OS commands (e.g., feature.windows.linux)
+                    if (constraint%os_type /= OS_ALL) then
+                        call fatal_error(error, "Cannot chain OS constraints: '" // &
+                                        constraint%os_name() // "." // keys(i)%key // &
+                                        "' - OS was already specified")
+                        return
+                    end if                    
+                    
+                    ! Get subtable and recurse
                     call get_value(table, keys(i)%key, subtable, stat=stat)
                     if (stat == toml_stat%success) then
                         platform = platform_config_t(constraint%compiler,os_type)
@@ -315,6 +333,15 @@ module fpm_manifest_feature_collection
                 ! Check if this key is a compiler name  
                 compiler_type = match_compiler_type(keys(i)%key)
                 if (compiler_type /= id_unknown) then
+                    
+                    ! Check for chained compiler commands (e.g., feature.gfortran.ifort)
+                    if (constraint%compiler /= id_all) then
+                        call fatal_error(error, "Cannot chain compiler constraints: '" // &
+                                        constraint%compiler_name() // "." // keys(i)%key // &
+                                        "' - compiler was already specified")
+                        return
+                    end if                    
+                    
                     ! This is a compiler constraint - get subtable and recurse
                     call get_value(table, keys(i)%key, subtable, stat=stat)
                     if (stat == toml_stat%success) then
@@ -430,11 +457,21 @@ module fpm_manifest_feature_collection
         end if
 
         ! ADDITIVE: Array properties - append source to target
-        call merge_executable_arrays(target%executable, source%executable)
-        call merge_dependency_arrays(target%dependency, source%dependency)
-        call merge_dependency_arrays(target%dev_dependency, source%dev_dependency)
-        call merge_example_arrays(target%example, source%example)
-        call merge_test_arrays(target%test, source%test) 
+        call merge_executable_arrays(target%executable, source%executable, error)
+        if (allocated(error)) return
+        
+        call merge_dependency_arrays(target%dependency, source%dependency, error)
+        if (allocated(error)) return
+        
+        call merge_dependency_arrays(target%dev_dependency, source%dev_dependency, error)
+        if (allocated(error)) return
+        
+        call merge_example_arrays(target%example, source%example, error)
+        if (allocated(error)) return
+        
+        call merge_test_arrays(target%test, source%test, error)
+        if (allocated(error)) return
+        
         call merge_preprocess_arrays(target%preprocess, source%preprocess)
         call merge_string_arrays(target%requires_features, source%requires_features)
 
@@ -443,18 +480,35 @@ module fpm_manifest_feature_collection
 
     end subroutine merge_feature_configs
 
-    !> Merge executable arrays by appending source to target
-    subroutine merge_executable_arrays(target, source)        
+    !> Merge executable arrays by appending source to target, checking for duplicates
+    subroutine merge_executable_arrays(target, source, error)        
         type(executable_config_t), allocatable, intent(inout) :: target(:)
         type(executable_config_t), allocatable, intent(in) :: source(:)
+        type(error_t), allocatable, intent(out) :: error
         
         type(executable_config_t), allocatable :: temp(:)
-        integer :: target_size, source_size
+        integer :: target_size, source_size, i, j
         
         if (.not. allocated(source)) return
         
         source_size = size(source)
         if (source_size == 0) return
+        
+        ! Check for duplicates between source and target
+        if (allocated(target)) then
+            target_size = size(target)
+            do i = 1, source_size
+                do j = 1, target_size
+                    if (allocated(source(i)%name) .and. allocated(target(j)%name)) then
+                        if (source(i)%name == target(j)%name) then
+                            call fatal_error(error, "Duplicate executable '"//source(i)%name//"' found. " // &
+                                           "Multiple definitions of the same executable are not currently allowed.")
+                            return
+                        end if
+                    end if
+                end do
+            end do
+        end if
         
         if (.not. allocated(target)) then
             allocate(target(source_size), source=source)
@@ -468,18 +522,35 @@ module fpm_manifest_feature_collection
         
     end subroutine merge_executable_arrays
 
-    !> Merge dependency arrays by appending source to target  
-    subroutine merge_dependency_arrays(target, source)        
+    !> Merge dependency arrays by appending source to target, checking for duplicates
+    subroutine merge_dependency_arrays(target, source, error)        
         type(dependency_config_t), allocatable, intent(inout) :: target(:)
         type(dependency_config_t), allocatable, intent(in) :: source(:)
+        type(error_t), allocatable, intent(out) :: error
         
         type(dependency_config_t), allocatable :: temp(:)
-        integer :: target_size, source_size
+        integer :: target_size, source_size, i, j
         
         if (.not. allocated(source)) return
         
         source_size = size(source)
         if (source_size == 0) return
+        
+        ! Check for duplicates between source and target
+        if (allocated(target)) then
+            target_size = size(target)
+            do i = 1, source_size
+                do j = 1, target_size
+                    if (allocated(source(i)%name) .and. allocated(target(j)%name)) then
+                        if (source(i)%name == target(j)%name) then
+                            call fatal_error(error, "Duplicate dependency '"//source(i)%name//"' found. " // &
+                                           "Multiple definitions of the same dependency are not currently allowed.")
+                            return
+                        end if
+                    end if
+                end do
+            end do
+        end if
         
         if (.not. allocated(target)) then
             allocate(target(source_size), source=source)
@@ -507,18 +578,35 @@ module fpm_manifest_feature_collection
         end if
     end subroutine merge_string_additive
 
-    !> Merge example arrays by appending source to target
-    subroutine merge_example_arrays(target, source)        
+    !> Merge example arrays by appending source to target, checking for duplicates
+    subroutine merge_example_arrays(target, source, error)        
         type(example_config_t), allocatable, intent(inout) :: target(:)
         type(example_config_t), allocatable, intent(in) :: source(:)
+        type(error_t), allocatable, intent(out) :: error
         
         type(example_config_t), allocatable :: temp(:)
-        integer :: target_size, source_size
+        integer :: target_size, source_size, i, j
         
         if (.not. allocated(source)) return
         
         source_size = size(source)
         if (source_size == 0) return
+        
+        ! Check for duplicates between source and target
+        if (allocated(target)) then
+            target_size = size(target)
+            do i = 1, source_size
+                do j = 1, target_size
+                    if (allocated(source(i)%name) .and. allocated(target(j)%name)) then
+                        if (source(i)%name == target(j)%name) then
+                            call fatal_error(error, "Duplicate example '"//source(i)%name//"' found. " // &
+                                           "Multiple definitions of the same example are not currently allowed.")
+                            return
+                        end if
+                    end if
+                end do
+            end do
+        end if
         
         if (.not. allocated(target)) then
             allocate(target(source_size), source=source)
@@ -531,18 +619,35 @@ module fpm_manifest_feature_collection
         end if
     end subroutine merge_example_arrays
 
-    !> Merge test arrays by appending source to target  
-    subroutine merge_test_arrays(target, source)        
+    !> Merge test arrays by appending source to target, checking for duplicates
+    subroutine merge_test_arrays(target, source, error)        
         type(test_config_t), allocatable, intent(inout) :: target(:)
         type(test_config_t), allocatable, intent(in) :: source(:)
+        type(error_t), allocatable, intent(out) :: error
         
         type(test_config_t), allocatable :: temp(:)
-        integer :: target_size, source_size
+        integer :: target_size, source_size, i, j
         
         if (.not. allocated(source)) return
         
         source_size = size(source)
         if (source_size == 0) return
+        
+        ! Check for duplicates between source and target
+        if (allocated(target)) then
+            target_size = size(target)
+            do i = 1, source_size
+                do j = 1, target_size
+                    if (allocated(source(i)%name) .and. allocated(target(j)%name)) then
+                        if (source(i)%name == target(j)%name) then
+                            call fatal_error(error, "Duplicate test '"//source(i)%name//"' found. " // &
+                                           "Multiple definitions of the same test are not currently allowed.")
+                            return
+                        end if
+                    end if
+                end do
+            end do
+        end if
         
         if (.not. allocated(target)) then
             allocate(target(source_size))
@@ -556,13 +661,15 @@ module fpm_manifest_feature_collection
         end if
     end subroutine merge_test_arrays
 
-    !> Merge preprocess arrays by appending source to target
+    !> Merge preprocess arrays by merging configurations for same preprocessor names
+    !> and appending new ones
     subroutine merge_preprocess_arrays(target, source)        
         type(preprocess_config_t), allocatable, intent(inout) :: target(:)
         type(preprocess_config_t), allocatable, intent(in) :: source(:)
         
         type(preprocess_config_t), allocatable :: temp(:)
-        integer :: target_size, source_size
+        integer :: target_size, source_size, i, j, new_count
+        integer, allocatable :: source_to_target_map(:)  ! Maps source index to target index (0 = new)
         
         if (.not. allocated(source)) return
         
@@ -570,16 +677,70 @@ module fpm_manifest_feature_collection
         if (source_size == 0) return
         
         if (.not. allocated(target)) then
-            allocate(target(source_size))
-            target = source
-        else
-            target_size = size(target)
-            allocate(temp(target_size + source_size))
+            allocate(target(source_size), source=source)
+            return
+        end if
+        
+        target_size = size(target)
+        
+        ! Create mapping arrays in a single pass
+        allocate(source_to_target_map(source_size), source=0)
+        
+        ! Single loop to build the mapping
+        do i = 1, source_size
+            if (allocated(source(i)%name)) then
+                do j = 1, target_size
+                    if (allocated(target(j)%name)) then
+                        if (target(j)%name == source(i)%name) then
+                            source_to_target_map(i) = j
+                            exit
+                        end if
+                    end if
+                end do
+            end if
+        end do
+        
+        ! Merge overlapping configurations
+        do i = 1, source_size
+            j = source_to_target_map(i)
+            if (j==0) cycle ! new config
+            call merge_preprocessor_config(target(j), source(i))
+        end do
+        
+        ! Count and add new preprocessors
+        new_count = count(source_to_target_map==0)
+        if (new_count > 0) then
+            allocate(temp(target_size + new_count))
             temp(1:target_size) = target
-            temp(target_size+1:target_size+source_size) = source
+            
+            ! Add new preprocessors in a single pass
+            j = target_size
+            do i = 1, source_size
+                if (source_to_target_map(i)==0) then
+                    j = j + 1
+                    temp(j) = source(i)
+                end if
+            end do
+            
             call move_alloc(temp, target)
         end if
     end subroutine merge_preprocess_arrays
+    
+    !> Helper to merge two preprocessor configurations with the same name
+    subroutine merge_preprocessor_config(target, source)
+        type(preprocess_config_t), intent(inout) :: target
+        type(preprocess_config_t), intent(in) :: source
+        
+        ! Merge suffixes arrays
+        call merge_string_arrays(target%suffixes, source%suffixes)
+        
+        ! Merge directories arrays  
+        call merge_string_arrays(target%directories, source%directories)
+        
+        ! Merge macros arrays
+        call merge_string_arrays(target%macros, source%macros)
+        
+    end subroutine merge_preprocessor_config
 
     !> Merge string arrays by appending source to target
     subroutine merge_string_arrays(target, source)
@@ -614,6 +775,7 @@ module fpm_manifest_feature_collection
         ! OR logic: if either requests a metapackage, turn it on
         if (source%on) then
             target%on = .true.
+            target%name = source%name
             ! Use source version if target doesn't have one
             if (allocated(source%version) .and. .not. allocated(target%version)) then
                 target%version = source%version
@@ -747,52 +909,6 @@ module fpm_manifest_feature_collection
         collections(2) = default_release_feature()
         
     end subroutine get_default_features
-
-    !> Convert feature collections to individual features (for backward compatibility)
-    subroutine get_default_features_as_features(features, error)
-        
-        !> Features array to populate (backward compatible)
-        type(feature_config_t), allocatable, intent(out) :: features(:)
-        
-        !> Error handling
-        type(error_t), allocatable, intent(out) :: error
-        
-        type(feature_collection_t), allocatable :: collections(:)
-        integer :: total_features, ifeature, icol, ivar
-        
-        ! Get the feature collections
-        call get_default_features(collections, error)
-        if (allocated(error)) return
-        
-        ! Count total features needed
-        total_features = 0
-        do icol = 1, size(collections)
-            total_features = total_features + 1  ! base feature
-            if (allocated(collections(icol)%variants)) then
-                total_features = total_features + size(collections(icol)%variants)
-            end if
-        end do
-        
-        ! Allocate features array
-        allocate(features(total_features))
-        
-        ! Copy features from collections
-        ifeature = 1
-        do icol = 1, size(collections)
-            ! Add base feature
-            features(ifeature) = collections(icol)%base
-            ifeature = ifeature + 1
-            
-            ! Add variants
-            if (allocated(collections(icol)%variants)) then
-                do ivar = 1, size(collections(icol)%variants)
-                    features(ifeature) = collections(icol)%variants(ivar)
-                    ifeature = ifeature + 1
-                end do
-            end if
-        end do
-        
-    end subroutine get_default_features_as_features
 
     !> Helper to create a feature variant
     function default_variant(name, compiler_id, os_type, flags) result(feature)
@@ -1026,16 +1142,42 @@ module fpm_manifest_feature_collection
             target%library = source%library
         end if
     end subroutine simulate_merge
-
-    !> Extract a merged feature configuration for the given target platform
-    function extract_for_target(self, target) result(feature)
+    
+    !> Merge a feature configuration into an existing global package
+    subroutine merge_into_package(self, package, target, error)
         class(feature_collection_t), intent(in) :: self
+        
+        class(feature_config_t), intent(inout) :: package
+        
         type(platform_config_t), intent(in) :: target
+        
+        type(error_t), allocatable, intent(out) :: error
+        
         type(feature_config_t) :: feature
         
-        integer :: i
-        type(error_t), allocatable :: error
+        ! Extract the feature configuration for the target platform
+        feature = self%extract_for_target(target, error)
+        if (allocated(error)) return
         
+        print *, 'extract for target: flags=',feature%flags
+        print *, 'extract for target: link=',feature%link_time_flags
+        
+        ! Merge the extracted feature into the package
+        call merge_feature_configs(package, feature, error)
+        print *, 'merged for target: flags=',package%flags
+        print *, 'merged for target: link=',package%link_time_flags
+        if (allocated(error)) return
+        
+    end subroutine merge_into_package
+
+    !> Extract a merged feature configuration for the given target platform
+    type(feature_config_t) function extract_for_target(self, target, error) result(feature)
+        class(feature_collection_t), intent(in) :: self
+        type(platform_config_t), intent(in) :: target
+        type(error_t), allocatable, intent(out) :: error
+        
+        integer :: i
+                
         ! Start with base feature as foundation
         feature = self%base
         
@@ -1045,14 +1187,118 @@ module fpm_manifest_feature_collection
                 if (self%variants(i)%platform%matches(target)) then
                     ! Merge this variant into the feature
                     call merge_feature_configs(feature, self%variants(i), error)
-                    if (allocated(error)) then
-                        ! If merge fails, just continue with what we have
-                        deallocate(error)
-                    end if
+                    if (allocated(error)) return
                 end if
             end do
         end if
         
     end function extract_for_target
+
+    !> Add default features to existing features array if they don't already exist
+    subroutine add_default_features(features, error)
+
+        !> Instance of the feature collections array (will be resized)
+        type(feature_collection_t), allocatable, intent(inout) :: features(:)
+
+        !> Error handling
+        type(error_t), allocatable, intent(out) :: error
+
+        type(feature_collection_t), allocatable :: temp_features(:)
+        type(feature_collection_t), allocatable :: default_features(:)
+        logical :: debug_exists, release_exists
+        integer :: i, current_size, new_size
+
+        ! Get default features
+        call get_default_features(default_features, error)
+        if (allocated(error)) return
+
+        ! Check if debug and release features already exist
+        debug_exists = .false.
+        release_exists = .false.
+
+        if (allocated(features)) then
+            do i = 1, size(features)
+                if (allocated(features(i)%base%name)) then
+                    if (features(i)%base%name == "debug") debug_exists = .true.
+                    if (features(i)%base%name == "release") release_exists = .true.
+                end if
+            end do
+            current_size = size(features)
+        else
+            current_size = 0
+        end if
+
+        ! Calculate how many features to add
+        new_size = current_size
+        if (.not. debug_exists) new_size = new_size + 1
+        if (.not. release_exists) new_size = new_size + 1
+
+        ! If nothing to add, return
+        if (new_size == current_size) return
+
+        ! Create new array with existing + missing defaults
+        allocate(temp_features(new_size))
+
+        ! Copy existing features
+        if (current_size > 0) then
+            temp_features(1:current_size) = features(1:current_size)
+        end if
+
+        ! Add missing defaults
+        i = current_size
+        if (.not. debug_exists) then
+            i = i + 1
+            temp_features(i) = default_features(1)  ! debug feature
+        end if
+        if (.not. release_exists) then
+            i = i + 1
+            temp_features(i) = default_features(2)  ! release feature
+        end if
+
+        ! Replace the features array
+        call move_alloc(temp_features, features)
+
+    end subroutine add_default_features
+
+
+    !> Create a feature collection from a single feature_config_t
+    !> The feature becomes the base configuration for all OS/compiler combinations
+    type(feature_collection_t) function collection_from_feature(self) result(collection)
+        
+        !> Feature configuration to convert
+        class(feature_config_t), intent(in) :: self
+        
+        ! Copy the feature into the base configuration
+        collection%base = self
+        
+        ! Set platform to all OS and all compilers for the base
+        collection%base%platform%os_type = OS_ALL
+        collection%base%platform%compiler = id_all
+        
+        ! Copy the name if available
+        if (allocated(self%name)) collection%base%name = self%name
+        
+        ! No variants initially - just the base configuration
+        ! (variants can be added later if needed)
+        
+    end function collection_from_feature
+    
+      
+    !> Check if there is a CPP preprocessor configuration
+    elemental logical function has_cpp(self) 
+        class(feature_collection_t), intent(in) :: self
+          
+        integer :: i
+          
+        has_cpp = self%base%has_cpp()
+        if (has_cpp) return
+        if (.not.allocated(self%variants)) return
+          
+        do i=1,size(self%variants)
+            has_cpp = self%variants(i)%has_cpp()
+            if (has_cpp) return
+        end do
+          
+    end function has_cpp    
     
 end module fpm_manifest_feature_collection

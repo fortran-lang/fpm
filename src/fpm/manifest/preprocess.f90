@@ -340,7 +340,7 @@ contains
     end subroutine add_config
 
     ! Check cpp
-    logical function is_cpp(this)
+    elemental logical function is_cpp(this)
        class(preprocess_config_t), intent(in) :: this
        is_cpp = .false.
        if (allocated(this%name)) is_cpp = this%name == "cpp"

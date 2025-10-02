@@ -18,6 +18,7 @@ implicit none
 
 ! assuming no name over 15 characters to make output have shorter lines
 character(len=15),allocatable        :: name(:),act_name(:)  ; namelist/act_cli/act_name
+character(len=15),allocatable        :: features(:),act_features(:) ; namelist/act_cli/act_features
 integer,parameter                    :: max_names=10
 
 character(len=:),allocatable         :: command
@@ -40,7 +41,7 @@ character(len=:), allocatable        :: token, act_token     ; namelist/act_cli/
 
 character(len=:), allocatable        :: profile,act_profile  ; namelist/act_cli/act_profile
 character(len=:), allocatable        :: args,act_args        ; namelist/act_cli/act_args
-namelist/expected/cmd,cstat,estat,w_e,w_t,c_s,c_a,c_t,c_apps,c_ex,reg_c,name,profile,args,show_v,show_u_d,dry_run,token
+namelist/expected/cmd,cstat,estat,w_e,w_t,c_s,c_a,c_t,c_apps,c_ex,reg_c,name,features,profile,args,show_v,show_u_d,dry_run,token
 integer                              :: lun
 logical,allocatable                  :: tally(:)
 logical,allocatable                  :: subtally(:)
@@ -71,10 +72,13 @@ character(len=*),parameter           :: tests(*)= [ character(len=256) :: &
 'CMD="test proj1 p2 project3 --profile debug",                     NAME="proj1","p2","project3",profile="debug",', &
 'CMD="test proj1 p2 project3 --profile release",                   NAME="proj1","p2","project3",profile="release",', &
 'CMD="test proj1 p2 project3 --profile release -- arg1 -x ""and a long one""", &
-   &NAME="proj1","p2","project3",profile="release" ARGS="""arg1"" ""-x"" ""and a long one""",                         ', &
+   &NAME="proj1","p2","project3",profile="release",ARGS="""arg1"" ""-x"" ""and a long one""",                         ', &
 
-'CMD="build",                                                      NAME=, profile="",ARGS="",', &
-'CMD="build --profile release",                                    NAME=, profile="release",ARGS="",', &
+'CMD="build",                                                      NAME=, profile="",features=,ARGS="",', &
+'CMD="build --profile release",                                    NAME=, profile="release",features=,ARGS="",', &
+'CMD="build --features debug,mpi",                                 NAME=, profile="",features="debug","mpi",ARGS="",', &
+'CMD="build --features single_feature",                            NAME=, profile="",features="single_feature",ARGS="",', &
+'CMD="test --features debug,openmp",                               NAME=, profile="",features="debug","openmp",ARGS="",', &
 
 'CMD="clean",                                                      NAME=, ARGS="",', &
 'CMD="clean --skip",                                        C_S=T, NAME=, ARGS="",', &
@@ -115,6 +119,8 @@ if(command_argument_count()==0)then  ! assume if called with no arguments to do 
       endif
       ! blank out name group EXPECTED
       name=[(repeat(' ',len(name)),i=1,max_names)] ! the words on the command line sans the subcommand name
+      if(.not.allocated(features)) allocate(character(len=15) :: features(max_names))
+      features=[(repeat(' ',15),i=1,max_names)] ! the features on the command line
       profile=''                     ! --profile PROF
       w_e=.false.                    ! --app
       w_t=.false.                    ! --test
@@ -139,6 +145,8 @@ if(command_argument_count()==0)then  ! assume if called with no arguments to do 
           if(estat==0)then
              open(file='_test_cli',newunit=lun,delim='quote')
              act_name=[(repeat(' ',len(act_name)),i=1,max_names)]
+             if(.not.allocated(act_features)) allocate(character(len=15) :: act_features(max_names))
+             act_features=[(repeat(' ',15),i=1,max_names)]
              act_profile=''
              act_w_e=.false.
              act_w_t=.false.
@@ -158,6 +166,7 @@ if(command_argument_count()==0)then  ! assume if called with no arguments to do 
              ! compare results to expected values
              subtally=[logical ::]
              call test_test('NAME',all(act_name==name))
+             call test_test('FEATURES',all(act_features==features))
              call test_test('PROFILE',act_profile==profile)
              call test_test('SKIP',act_c_s.eqv.c_s)
              call test_test('ALL',act_c_a.eqv.c_a)
@@ -250,6 +259,8 @@ class(fpm_cmd_settings), allocatable :: cmd_settings
 call get_command_line_settings(cmd_settings)
 
 allocate (character(len=len(name)) :: act_name(0) )
+allocate(character(len=15) :: act_features(max_names))
+act_features=[(repeat(' ',15),i=1,max_names)]
 act_args=''
 act_w_e=.false.
 act_w_t=.false.
@@ -268,13 +279,28 @@ type is (fpm_new_settings)
     act_w_t=settings%with_test
     act_name=[trim(settings%name)]
 type is (fpm_build_settings)
-    act_profile=settings%profile
+    if (allocated(settings%profile)) act_profile=settings%profile
+    if (allocated(settings%features)) then
+        do i = 1, min(size(settings%features),size(act_features))
+            act_features(i) = settings%features(i)%s
+        end do
+    end if
 type is (fpm_run_settings)
-    act_profile=settings%profile
+    if (allocated(settings%profile)) act_profile=settings%profile
+    if (allocated(settings%features)) then
+        do i = 1, min(size(settings%features),size(act_features))
+            act_features(i) = settings%features(i)%s
+        end do
+    end if
     act_name=settings%name
     if (allocated(settings%args)) act_args=settings%args
 type is (fpm_test_settings)
-    act_profile=settings%profile
+    if (allocated(settings%profile)) act_profile=settings%profile
+    if (allocated(settings%features)) then
+        do i = 1, min(size(settings%features),size(act_features))
+            act_features(i) = settings%features(i)%s
+        end do
+    end if
     act_name=settings%name
     if (allocated(settings%args)) act_args=settings%args
 type is (fpm_clean_settings)

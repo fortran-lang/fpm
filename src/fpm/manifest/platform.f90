@@ -15,7 +15,7 @@ module fpm_manifest_platform
         OS_WINDOWS, OS_LINUX, OS_MACOS
     use fpm_compiler,   only : compiler_enum, compiler_id_name, match_compiler_type, id_all, &
         id_unknown, validate_compiler_name, id_intel_classic_nix, id_intel_classic_mac, &
-        id_intel_classic_windows, id_intel_llvm_nix, id_intel_llvm_windows
+        id_intel_classic_windows, id_intel_llvm_nix, id_intel_llvm_windows, id_intel_llvm_unknown
     use fpm_strings,    only : lower
     implicit none
     private
@@ -26,7 +26,7 @@ module fpm_manifest_platform
     !> Shortcuts for the Intel OS variants
     integer(compiler_enum), parameter :: &
         id_intel_classic(*) = [id_intel_classic_mac,id_intel_classic_nix,id_intel_classic_windows], &
-        id_intel_llvm   (*) = [id_intel_llvm_nix,id_intel_llvm_windows]
+        id_intel_llvm   (*) = [id_intel_llvm_nix,id_intel_llvm_windows,id_intel_llvm_unknown]
         
     !> Serializable platform configuration (compiler + OS only)
     type, extends(serializable_t) :: platform_config_t
@@ -251,10 +251,13 @@ contains
         type(platform_config_t),  intent(in) :: target
 
         logical :: compiler_ok, os_ok
+        
+        
 
         ! Check that both platforms are valid
         if (.not. self%is_valid() .or. .not. target%is_valid()) then
             ok = .false.
+            print *, 'compare platform ',self%name(),' with target ',target%name(),': ok=',ok
             return
         end if
         
@@ -264,6 +267,8 @@ contains
         ! Basic matching
         ok = compiler_ok .and. os_ok
         
+        if (.not.ok) print *, 'compare platform ',self%name(),' with target ',target%name(),': ok=',ok
+        
         if (.not. ok) return
 
         ! Additional validation: Intel compilers must have compatible OS
@@ -272,6 +277,8 @@ contains
             ok = compiler_os_compatible(self%compiler, self%os_type) .and. &
                  compiler_os_compatible(target%compiler, target%os_type)
         end if
+        
+        print *, 'compare platform ',self%name(),' with target ',target%name(),': ok=',ok
         
     end function platform_is_suitable
 

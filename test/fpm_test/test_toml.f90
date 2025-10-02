@@ -17,10 +17,10 @@ module test_toml
     use fpm_manifest_library, only: library_config_t
     use fpm_manifest_executable, only: executable_config_t
     use fpm_manifest_preprocess, only: preprocess_config_t
-    use fpm_manifest_profile, only: file_scope_flag
     use fpm_manifest_platform, only: platform_config_t
     use fpm_manifest_metapackages, only: metapackage_config_t
     use fpm_manifest_feature_collection, only: feature_collection_t
+    use fpm_manifest_profile, only: profile_config_t
     use fpm_environment, only: OS_ALL, OS_LINUX, OS_MACOS
     use fpm_versioning, only: new_version
     use fpm_strings, only: string_t, operator(==), split
@@ -38,7 +38,6 @@ module test_toml
     character, parameter :: NL = new_line('a')
 
 contains
-
 
     !> Collect all exported unit tests
     subroutine collect_toml(testsuite)
@@ -64,7 +63,6 @@ contains
            & new_unittest("serialize-library-config", library_config_roundtrip), &
            & new_unittest("serialize-executable-config", executable_config_roundtrip), &
            & new_unittest("serialize-preprocess-config", preprocess_config_roundtrip), &
-           & new_unittest("serialize-file-scope-flag", file_scope_flag_roundtrip), &
            & new_unittest("serialize-string-array", string_array_roundtrip), &
            & new_unittest("serialize-fortran-features", fft_roundtrip), &
            & new_unittest("serialize-fortran-invalid", fft_invalid, should_fail=.true.), &
@@ -78,7 +76,8 @@ contains
            & new_unittest("serialize-model", fpm_model_roundtrip), &
            & new_unittest("serialize-model-invalid", fpm_model_invalid, should_fail=.true.), &
            & new_unittest("serialize-metapackage-config", metapackage_config_roundtrip), &
-           & new_unittest("serialize-feature-collection", feature_collection_roundtrip)]
+           & new_unittest("serialize-feature-collection", feature_collection_roundtrip), &
+           & new_unittest("serialize-profile-config", profile_config_roundtrip)]
 
 
     end subroutine collect_toml
@@ -1288,23 +1287,6 @@ contains
 
     end subroutine preprocess_config_roundtrip
 
-    subroutine file_scope_flag_roundtrip(error)
-
-        !> Error handling
-        type(error_t), allocatable, intent(out) :: error
-
-        type(file_scope_flag) :: ff
-
-        call ff%test_serialization('file_scope_flag: empty', error)
-        if (allocated(error)) return
-
-        ff%file_name = "preprocessor config"
-        ff%flags = "-1 -f -2 -g"
-
-        call ff%test_serialization('file_scope_flag: non-empty', error)
-
-    end subroutine file_scope_flag_roundtrip
-
     !> Test a metapackage configuration
     subroutine metapackage_config_roundtrip(error)
 
@@ -1349,6 +1331,24 @@ contains
         call fc%test_serialization('feature_collection: base + 2 variants', error)
         
     end subroutine feature_collection_roundtrip
+
+    subroutine profile_config_roundtrip(error)
+        type(error_t), allocatable, intent(out) :: error
+        type(profile_config_t) :: profile
+
+        ! Set up a profile with features
+        profile%name = "development"
+        
+        ! Allocate and populate features array
+        allocate(profile%features(3))
+        profile%features(1)%s = "debug"
+        profile%features(2)%s = "testing"  
+        profile%features(3)%s = "verbose"
+
+        ! Round-trip via the generic serialization tester
+        call profile%test_serialization('profile_config_t: development profile', error)
+        
+    end subroutine profile_config_roundtrip
 
 
 end module test_toml

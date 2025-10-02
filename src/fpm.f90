@@ -12,7 +12,9 @@ use fpm_filesystem, only: is_dir, join_path, list_files, exists, &
 use fpm_model, only: fpm_model_t, srcfile_t, show_model, &
                     FPM_SCOPE_UNKNOWN, FPM_SCOPE_LIB, FPM_SCOPE_DEP, &
                     FPM_SCOPE_APP, FPM_SCOPE_EXAMPLE, FPM_SCOPE_TEST
-use fpm_compiler, only: new_compiler, new_archiver, set_cpp_preprocessor_flags
+use fpm_compiler, only: new_compiler, new_archiver, set_cpp_preprocessor_flags, &
+                        id_intel_classic_nix,id_intel_classic_mac,id_intel_llvm_nix, &
+                        id_intel_llvm_unknown
 
 
 use fpm_sources, only: add_executable_sources, add_sources_from_dir
@@ -33,7 +35,7 @@ use fpm_settings, only: fpm_global_settings, get_global_settings
 implicit none
 private
 public :: cmd_build, cmd_run, cmd_clean
-public :: build_model, check_modules_for_duplicates
+public :: build_model, check_modules_for_duplicates, new_compiler_flags
 
 contains
 
@@ -78,14 +80,17 @@ subroutine build_model(model, settings, package_config, error)
     
     ! Extract the target platform for this build
     target_platform = model%target_platform()
-    
-    call new_compiler_flags(model,settings)
+
     model%build_dir            = settings%build_dir
     model%build_prefix         = join_path(settings%build_dir, basename(model%compiler%fc))
-    model%include_tests        = settings%build_tests    
-    
+    model%include_tests        = settings%build_tests
+
     ! Extract the current package configuration request
-    package = package_config%export_config(target_platform)    
+    package = package_config%export_config(target_platform,settings%features,settings%profile,error)
+    if (allocated(error)) return
+
+    ! Initialize compiler flags using the feature-enabled package configuration
+    call new_compiler_flags(model, settings, package)  
     
     ! Resolve meta-dependencies into the package and the model
     call resolve_metapackages(model,package,settings,error)
@@ -114,7 +119,11 @@ subroutine build_model(model, settings, package_config, error)
     end if
 
     allocate(model%packages(model%deps%ndep))
-    has_cpp = .false.
+    
+    ! The current configuration may not have preprocessing, but some of its features may. 
+    ! This means there will be directives that need to be considered even if not currently 
+    ! active. Turn preprocessing on even in this case
+    has_cpp = package_config%has_cpp() .or. package%has_cpp()
 
     do i = 1, model%deps%ndep
         associate(dep => model%deps%dep(i))
@@ -131,7 +140,9 @@ subroutine build_model(model, settings, package_config, error)
                 if (allocated(error)) exit          
                 
                 ! Adapt it to the current profile/platform
-                dependency = dependency_config%export_config(target_platform)
+                dependency = dependency_config%export_config(target_platform, &
+                                                             dep%features,error=error)
+                if (allocated(error)) exit
                 
                 manifest => dependency
             end if            
@@ -307,31 +318,68 @@ subroutine build_model(model, settings, package_config, error)
     end if
 end subroutine build_model
 
-!> Initialize model compiler flags
-subroutine new_compiler_flags(model,settings)
+!> Helper: safely get string from either CLI or package, with fallback
+pure function assemble_flags(cli_flag, package_flag, fallback) result(flags)
+    character(len=*), optional, intent(in) :: cli_flag, package_flag, fallback
+    character(len=:), allocatable :: flags
+    
+    allocate(character(len=0) :: flags)
+
+    if (present(cli_flag))     flags = flags // ' ' // trim(cli_flag)
+    if (present(package_flag)) flags = flags // ' ' // trim(package_flag)
+    if (present(fallback))     flags = flags // ' ' // trim(fallback)
+
+end function assemble_flags
+
+!> Initialize model compiler flags from CLI settings and package configuration
+subroutine new_compiler_flags(model, settings, package)
     type(fpm_model_t), intent(inout) :: model
     type(fpm_build_settings), intent(in) :: settings
+    type(package_config_t), intent(in) :: package
 
-    character(len=:), allocatable :: flags, cflags, cxxflags, ldflags
-
-    if (settings%flag == '') then
-        flags = model%compiler%get_default_flags(settings%profile == "release")
-    else
-        flags = settings%flag
-        select case(settings%profile)
-        case("release", "debug")
-            flags = flags // model%compiler%get_default_flags(settings%profile == "release")
-        end select
+    logical :: release_request, debug_request, need_defaults
+    character(len=:), allocatable :: fallback
+    
+    ! Default: "debug" if not requested
+    release_request = .false.
+    debug_request   = .not.allocated(settings%profile)
+    if (allocated(settings%profile)) release_request = settings%profile == "release"
+    if (allocated(settings%profile)) debug_request   = settings%profile == "debug"    
+    
+    need_defaults = release_request .or. debug_request
+    
+    ! Backward-compatible: if debug/release requested, but a user-defined profile is not defined,
+    ! apply fpm compiler defaults
+    if (need_defaults) then 
+        
+        need_defaults   =      (release_request .and. package%find_profile("release")<=0) &
+                          .or. (debug_request .and. package%find_profile("debug")<=0)
+        
     end if
+    
+    ! Fix: Always include compiler default flags for Intel ifx -fPIC issue
+    if (need_defaults) then 
+        
+        fallback = model%compiler%get_default_flags(release_request)
+        
+    elseif (any(model%compiler%id==[id_intel_classic_mac, &
+                                    id_intel_classic_nix, &
+                                    id_intel_llvm_nix, &
+                                    id_intel_llvm_unknown])) then
 
-    cflags   = trim(settings%cflag)
-    cxxflags = trim(settings%cxxflag)
-    ldflags  = trim(settings%ldflag)
-
-    model%fortran_compile_flags = flags
-    model%c_compile_flags       = cflags
-    model%cxx_compile_flags     = cxxflags
-    model%link_flags            = ldflags
+        ! Intel compilers need -fPIC for shared libraries (except Windows)
+        fallback = " -fPIC"
+        
+    else
+        
+        if (allocated(fallback)) deallocate(fallback) ! trigger .not.present
+        
+    endif
+        
+    model%fortran_compile_flags = assemble_flags(settings%flag,    package%flags, fallback)
+    model%c_compile_flags       = assemble_flags(settings%cflag,   package%c_flags)
+    model%cxx_compile_flags     = assemble_flags(settings%cxxflag, package%cxx_flags)
+    model%link_flags            = assemble_flags(settings%ldflag,  package%link_time_flags)
 
 end subroutine new_compiler_flags
 

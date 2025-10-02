@@ -29,12 +29,12 @@ jobs:
           - {compiler: gcc, version: 13}
           - {compiler: gcc, version: 14}
           - {compiler: gcc, version: 15}
-          - {compiler: intel, version: 2025.1}
+          - {compiler: intel, version: 2025.2}
         exclude:
           - os: macos-13  # No Intel on MacOS anymore since 2024
-            toolchain: {compiler: intel, version: '2025.1'}
+            toolchain: {compiler: intel, version: '2025.2'}
           - os: windows-latest  # Doesn't pass build and tests yet
-            toolchain: {compiler: intel, version: '2025.1'}
+            toolchain: {compiler: intel, version: '2025.2'}
           - os: windows-latest  # gcc 14 not available on Windows yet
             toolchain: {compiler: gcc, version: 14}
           - os: windows-latest  # gcc 15 not available on Windows yet
