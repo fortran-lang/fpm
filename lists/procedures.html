@@ -602,16 +602,16 @@ Returns an error if the variable did not exist in the first place</p><a href="..
                  <td><p>Extract dirname from path</p></td>
                </tr>
 			   <tr>
-                 <td><a href='../proc/dump_to_toml.html'>dump_to_toml</a></td>
-                 <td><a href='../module/fpm_compiler.html'>fpm_compiler</a></td>
-                 <td>Subroutine</td>
-                 <td><p>Dump dependency to toml table</p><a href="../proc/dump_to_toml.html" class="pull-right"><emph>Read more&hellip;</emph></a></td>
-               </tr>
-			   <tr>
-                 <td><a href='../proc/dump_to_toml~3.html'>dump_to_toml</a></td>
+                 <td><a href='../proc/dump_to_toml~6.html'>dump_to_toml</a></td>
                  <td><a href='../module/fpm_git.html'>fpm_git</a></td>
                  <td>Subroutine</td>
                  <td><p>Dump dependency to toml table</p></td>
+               </tr>
+			   <tr>
+                 <td><a href='../proc/dump_to_toml~7.html'>dump_to_toml</a></td>
+                 <td><a href='../module/fpm_compiler.html'>fpm_compiler</a></td>
+                 <td>Subroutine</td>
+                 <td><p>Dump dependency to toml table</p><a href="../proc/dump_to_toml~7.html" class="pull-right"><emph>Read more&hellip;</emph></a></td>
                </tr>
 			   <tr>
                  <td><a href='../proc/enumerate_libraries.html'>enumerate_libraries</a></td>
@@ -1120,7 +1120,7 @@ All checks passed!</p></td>
    contain wildcard characters.</p><a href="../proc/glob.html" class="pull-right"><emph>Read more&hellip;</emph></a></td>
                </tr>
 			   <tr>
-                 <td><a href='../proc/handle_error~2.html'>handle_error</a></td>
+                 <td><a href='../proc/handle_error~4.html'>handle_error</a></td>
                  <td><a href='../program/main.html'>main</a></td>
                  <td>Subroutine</td>
                  <td></td>
@@ -1157,15 +1157,15 @@ All checks passed!</p></td>
                </tr>
 			   <tr>
                  <td><a href='../proc/info~2.html'>info</a></td>
-                 <td><a href='../module/fpm_git.html'>fpm_git</a></td>
-                 <td>Subroutine</td>
-                 <td><p>Show information on git target</p></td>
-               </tr>
-			   <tr>
-                 <td><a href='../proc/info~9.html'>info</a></td>
                  <td><a href='../module/fpm_manifest_profile.html'>fpm_manifest_profile</a></td>
                  <td>Subroutine</td>
                  <td><p>Write information on instance</p></td>
+               </tr>
+			   <tr>
+                 <td><a href='../proc/info~8.html'>info</a></td>
+                 <td><a href='../module/fpm_git.html'>fpm_git</a></td>
+                 <td>Subroutine</td>
+                 <td><p>Show information on git target</p></td>
                </tr>
 			   <tr>
                  <td><a href='../proc/init_blas.html'>init_blas</a></td>
@@ -1354,16 +1354,16 @@ Cleanup</p><a href="../proc/init_stdlib.html" class="pull-right"><emph>Read more
                  <td><p>Get file &amp; directory names in directory <code>dir</code> using iso_c_binding.</p><a href="../proc/list_files.html" class="pull-right"><emph>Read more&hellip;</emph></a></td>
                </tr>
 			   <tr>
-                 <td><a href='../proc/load_from_toml.html'>load_from_toml</a></td>
+                 <td><a href='../proc/load_from_toml~6.html'>load_from_toml</a></td>
+                 <td><a href='../module/fpm_git.html'>fpm_git</a></td>
+                 <td>Subroutine</td>
+                 <td><p>Read dependency from toml table (no checks made at this stage)</p><a href="../proc/load_from_toml~6.html" class="pull-right"><emph>Read more&hellip;</emph></a></td>
+               </tr>
+			   <tr>
+                 <td><a href='../proc/load_from_toml~7.html'>load_from_toml</a></td>
                  <td><a href='../module/fpm_compiler.html'>fpm_compiler</a></td>
                  <td>Subroutine</td>
                  <td><p>Read dependency from toml table (no checks made at this stage)</p></td>
-               </tr>
-			   <tr>
-                 <td><a href='../proc/load_from_toml~3.html'>load_from_toml</a></td>
-                 <td><a href='../module/fpm_git.html'>fpm_git</a></td>
-                 <td>Subroutine</td>
-                 <td><p>Read dependency from toml table (no checks made at this stage)</p><a href="../proc/load_from_toml~3.html" class="pull-right"><emph>Read more&hellip;</emph></a></td>
                </tr>
 			   <tr>
                  <td><a href='../proc/lower.html'>lower</a></td>
@@ -1762,13 +1762,13 @@ gfortran does not look into by default)</p></td>
                </tr>
 			   <tr>
                  <td><a href='../interface/resize~2.html'>resize</a></td>
-                 <td><a href='../module/fpm_strings.html'>fpm_strings</a></td>
+                 <td><a href='../module/fpm_manifest_dependency.html'>fpm_manifest_dependency</a></td>
                  <td>Interface</td>
                  <td></td>
                </tr>
 			   <tr>
                  <td><a href='../interface/resize~3.html'>resize</a></td>
-                 <td><a href='../module/fpm_manifest_dependency.html'>fpm_manifest_dependency</a></td>
+                 <td><a href='../module/fpm_strings.html'>fpm_strings</a></td>
                  <td>Interface</td>
                  <td></td>
                </tr>
@@ -2046,7 +2046,7 @@ in case of errors.</p></td>
             <p class="text-end">
               Documentation generated by
               <a href="https://github.com/Fortran-FOSS-Programmers/ford">FORD</a>
- on 2025-10-01 14:36 +0000             </p>
+ on 2025-10-02 08:23 +0000             </p>
           </div>
         </div>
         <br>
