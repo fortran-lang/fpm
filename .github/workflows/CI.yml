@@ -210,6 +210,7 @@ jobs:
     - uses: actions/checkout@v5
 
     - name: Download Artifacts
+      id: download_windows_artifacts
       uses: actions/download-artifact@v5
       with:
         path: ${{ github.workspace }}
@@ -243,7 +244,25 @@ jobs:
     - name: Fetch Windows executable
       shell: msys2 {0}
       run: |
-        cp fpm-*/fpm-*-windows-*-gcc-${{ matrix.gcc_v }}.exe ./ci/fpm.exe
+        set -e
+        download_path='${{ steps.download_windows_artifacts.outputs.download-path }}'
+        download_path=${download_path%%$'\n'*}
+        if [ -z "$download_path" ]; then
+          echo "download-artifact did not report a download path" >&2
+          exit 1
+        fi
+        if command -v cygpath >/dev/null 2>&1; then
+          posix_path=$(cygpath -u "$download_path")
+        else
+          posix_path="$download_path"
+        fi
+        exe_path=$(find "$posix_path" -maxdepth 2 -type f -name "fpm-*-windows-*-gcc-${{ matrix.gcc_v }}.exe" | head -n 1)
+        if [ -z "$exe_path" ]; then
+          echo "Windows executable not found under $posix_path" >&2
+          ls -al "$posix_path" || true
+          exit 1
+        fi
+        cp "$exe_path" ./ci/fpm.exe
 
     - name: Fetch Git for Windows
       shell: msys2 {0}
