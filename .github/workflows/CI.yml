@@ -21,7 +21,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-latest, macos-13, windows-latest]
+        os: [ubuntu-latest, macos-14, windows-latest]
         toolchain:
           - {compiler: gcc, version: 10}
           - {compiler: gcc, version: 11}
@@ -31,7 +31,7 @@ jobs:
           - {compiler: gcc, version: 15}
           - {compiler: intel, version: 2025.1}
         exclude:
-          - os: macos-13  # No Intel on MacOS anymore since 2024
+          - os: macos-14  # No Intel on MacOS anymore since 2024
             toolchain: {compiler: intel, version: '2025.1'}
           - os: windows-latest  # Doesn't pass build and tests yet
             toolchain: {compiler: intel, version: '2025.1'}
@@ -45,14 +45,14 @@ jobs:
           - os: ubuntu-latest
             os-arch: linux-x86_64
             release-flags: --flag '--static -g -fbacktrace -O3'
-          - os: macos-13
+          - os: macos-14
             os-arch: macos-x86_64
             release-flags: --flag '-g -fbacktrace -O3'
           - os: windows-latest
             os-arch: windows-x86_64
             release-flags: --flag '--static -g -fbacktrace -O3'
             exe: .exe
-          - os: macos-13
+          - os: macos-14
             toolchain: {compiler: gcc, version: 15}
             release-flags: --flag '-g -fbacktrace -Og -fcheck=all,no-recursion -Wno-external-argument-mismatch'
 
@@ -71,23 +71,30 @@ jobs:
     - name: Install fpm
       uses: fortran-lang/setup-fpm@v7
       with:
-        fpm-version: 'v0.8.0'
+        fpm-version: 'v0.12.0'
 
-    # Backport gfortran shared libraries to version 10 folder. This is necessary because the macOS release of fpm
-    # 0.10.0 used for bootstrapping has these paths hardcoded in the executable.
+    # Backport gfortran shared libraries to gcc@12 folder. This is necessary because the macOS x86_64 release
+    # of fpm v0.12.0 used for bootstrapping was built with gcc@12 and has these paths hardcoded in the executable.
+    # On ARM64 it runs under Rosetta 2 and needs /usr/local paths.
     - name: MacOS patch libgfortran
-      if: contains(matrix.os, 'macos') && !contains(matrix.toolchain.version, '10')
+      if: contains(matrix.os, 'macos')
       run: |
         which gfortran-${{ matrix.toolchain.version }}
         which gfortran
-        mkdir /usr/local/opt/gcc@10
-        mkdir /usr/local/opt/gcc@10/lib
-        mkdir /usr/local/opt/gcc@10/lib/gcc
-        mkdir /usr/local/opt/gcc@10/lib/gcc/10
-        mkdir /usr/local/lib/gcc/10
-        ln -fs /usr/local/opt/gcc@${{ matrix.toolchain.version }}/lib/gcc/${{ matrix.toolchain.version }}/libquadmath.0.dylib /usr/local/opt/gcc@10/lib/gcc/10/libquadmath.0.dylib
-        ln -fs /usr/local/opt/gcc@${{ matrix.toolchain.version }}/lib/gcc/${{ matrix.toolchain.version }}/libgfortran.5.dylib /usr/local/opt/gcc@10/lib/gcc/10/libgfortran.5.dylib
-        ln -fs /usr/local/lib/gcc/${{ matrix.toolchain.version }}/libgcc_s.1.dylib /usr/local/lib/gcc/10/libgcc_s.1.dylib
+        BREW_PREFIX=$(brew --prefix)
+        mkdir -p ${BREW_PREFIX}/opt/gcc@12/lib/gcc/12
+        mkdir -p ${BREW_PREFIX}/lib/gcc/12
+        ln -fs ${BREW_PREFIX}/opt/gcc@${{ matrix.toolchain.version }}/lib/gcc/${{ matrix.toolchain.version }}/libquadmath.0.dylib ${BREW_PREFIX}/opt/gcc@12/lib/gcc/12/libquadmath.0.dylib
+        ln -fs ${BREW_PREFIX}/opt/gcc@${{ matrix.toolchain.version }}/lib/gcc/${{ matrix.toolchain.version }}/libgfortran.5.dylib ${BREW_PREFIX}/opt/gcc@12/lib/gcc/12/libgfortran.5.dylib
+        ln -fs ${BREW_PREFIX}/lib/gcc/${{ matrix.toolchain.version }}/libgcc_s.1.dylib ${BREW_PREFIX}/lib/gcc/12/libgcc_s.1.dylib
+        # For ARM64 (Apple Silicon): create /usr/local symlinks for x86_64 bootstrap binary running under Rosetta 2
+        if [ "${BREW_PREFIX}" != "/usr/local" ]; then
+          sudo mkdir -p /usr/local/opt/gcc@12/lib/gcc/12
+          sudo mkdir -p /usr/local/lib/gcc/12
+          sudo ln -fs ${BREW_PREFIX}/opt/gcc@${{ matrix.toolchain.version }}/lib/gcc/${{ matrix.toolchain.version }}/libquadmath.0.dylib /usr/local/opt/gcc@12/lib/gcc/12/libquadmath.0.dylib
+          sudo ln -fs ${BREW_PREFIX}/opt/gcc@${{ matrix.toolchain.version }}/lib/gcc/${{ matrix.toolchain.version }}/libgfortran.5.dylib /usr/local/opt/gcc@12/lib/gcc/12/libgfortran.5.dylib
+          sudo ln -fs ${BREW_PREFIX}/lib/gcc/${{ matrix.toolchain.version }}/libgcc_s.1.dylib /usr/local/lib/gcc/12/libgcc_s.1.dylib
+        fi
 
     # gcc and g++ will point to clang/clang++: use versioned alias for fpm
     - name: MacOS patch C and C++ compilers
