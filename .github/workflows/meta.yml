@@ -39,10 +39,10 @@ jobs:
           - os: ubuntu-latest
             mpi: mpich
             release-flags: --flag ' -Wno-external-argument-mismatch'
-          - os: macos-13
+          - os: macos-14
             mpi: openmpi
             release-flags: --flag ' -Wno-external-argument-mismatch'
-          - os: macos-13
+          - os: macos-14
             mpi: mpich
             release-flags: --flag ' -Wno-external-argument-mismatch'
           - os: ubuntu-latest
