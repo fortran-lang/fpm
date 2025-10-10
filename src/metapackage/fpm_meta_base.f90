@@ -91,6 +91,7 @@ module fpm_meta_base
         if (allocated(this%link_libs)) deallocate(this%link_libs)
         if (allocated(this%incl_dirs)) deallocate(this%incl_dirs)
         if (allocated(this%external_modules)) deallocate(this%external_modules)
+        if (allocated(this%dependency)) deallocate(this%dependency) 
     end subroutine destroy
 
     !> Resolve metapackage dependencies into the command line settings
