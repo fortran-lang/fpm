@@ -319,7 +319,7 @@
             <a class="list-group-item" href="../module/fpm_compiler.html#proc-compile_fortran">compile_fortran</a>
             <a class="list-group-item" href="../module/fpm_compiler.html#proc-compiler_dump">compiler_dump</a>
             <a class="list-group-item" href="../module/fpm_compiler.html#proc-compiler_load">compiler_load</a>
-            <a class="list-group-item" href="../module/fpm_compiler.html#proc-dump_to_toml~4">dump_to_toml</a>
+            <a class="list-group-item" href="../module/fpm_compiler.html#proc-dump_to_toml~5">dump_to_toml</a>
             <a class="list-group-item" href="../module/fpm_compiler.html#proc-get_debug_compile_flags">get_debug_compile_flags</a>
             <a class="list-group-item" href="../module/fpm_compiler.html#proc-get_default_c_compiler">get_default_c_compiler</a>
             <a class="list-group-item" href="../module/fpm_compiler.html#proc-get_default_cxx_compiler">get_default_cxx_compiler</a>
@@ -327,7 +327,7 @@
             <a class="list-group-item" href="../module/fpm_compiler.html#proc-get_release_compile_flags">get_release_compile_flags</a>
             <a class="list-group-item" href="../module/fpm_compiler.html#proc-link_executable">link_executable</a>
             <a class="list-group-item" href="../module/fpm_compiler.html#proc-link_shared">link_shared</a>
-            <a class="list-group-item" href="../module/fpm_compiler.html#proc-load_from_toml~4">load_from_toml</a>
+            <a class="list-group-item" href="../module/fpm_compiler.html#proc-load_from_toml~5">load_from_toml</a>
             <a class="list-group-item" href="../module/fpm_compiler.html#proc-make_archive">make_archive</a>
             <a class="list-group-item" href="../module/fpm_compiler.html#proc-new_archiver">new_archiver</a>
             <a class="list-group-item" href="../module/fpm_compiler.html#proc-new_compiler">new_compiler</a>
@@ -361,16 +361,16 @@
         <ul class="list-group list-group-flush">
             <li class="list-group-item">
               <ul class="list-inline">
+                  <li class="list-inline-item"><a href='http://fortranwiki.org/fortran/show/iso_fortran_env'>iso_fortran_env</a></li>
+                  <li class="list-inline-item"><a href='fpm_error.html'>fpm_error</a></li>
+                  <li class="list-inline-item"><a href='fpm_strings.html'>fpm_strings</a></li>
+                  <li class="list-inline-item">shlex_module</li>
                   <li class="list-inline-item"><a href='https://toml-f.github.io/toml-f'>tomlf</a></li>
+                  <li class="list-inline-item"><a href='fpm_toml.html'>fpm_toml</a></li>
+                  <li class="list-inline-item"><a href='fpm_versioning.html'>fpm_versioning</a></li>
+                  <li class="list-inline-item"><a href='fpm_filesystem.html'>fpm_filesystem</a></li>
                   <li class="list-inline-item"><a href='fpm_compile_commands.html'>fpm_compile_commands</a></li>
                   <li class="list-inline-item"><a href='fpm_environment.html'>fpm_environment</a></li>
-                  <li class="list-inline-item"><a href='fpm_toml.html'>fpm_toml</a></li>
-                  <li class="list-inline-item"><a href='fpm_error.html'>fpm_error</a></li>
-                  <li class="list-inline-item">shlex_module</li>
-                  <li class="list-inline-item"><a href='http://fortranwiki.org/fortran/show/iso_fortran_env'>iso_fortran_env</a></li>
-                  <li class="list-inline-item"><a href='fpm_filesystem.html'>fpm_filesystem</a></li>
-                  <li class="list-inline-item"><a href='fpm_versioning.html'>fpm_versioning</a></li>
-                  <li class="list-inline-item"><a href='fpm_strings.html'>fpm_strings</a></li>
               </ul>
             </li>
         </ul>
@@ -1943,7 +1943,7 @@ parameter
     <tbody>
         <tr>
             <td>
-              <span class="anchor" id="variable-self~63"></span>
+              <span class="anchor" id="variable-self~146"></span>
               type(<a href='../type/compiler_t.html'>compiler_t</a>),
             </td>
 <td>intent(in)</td>
@@ -1987,7 +1987,7 @@ parameter
     <tbody>
         <tr>
             <td>
-              <span class="anchor" id="variable-self~64"></span>
+              <span class="anchor" id="variable-self~147"></span>
               type(<a href='../type/archiver_t.html'>archiver_t</a>),
             </td>
 <td>intent(in)</td>
@@ -2061,7 +2061,7 @@ parameter
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-echo~5"></span>
+              <span class="anchor" id="variable-echo~3"></span>
               logical,
             </td>
               <td>public</td>
@@ -2095,7 +2095,7 @@ parameter
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-verbose~5"></span>
+              <span class="anchor" id="variable-verbose~10"></span>
               logical,
             </td>
               <td>public</td>
@@ -2121,22 +2121,22 @@ parameter
           <tbody>
               <tr>
                 <td>  generic, public ::
-  <strong><a href='../type/archiver_t.html#boundprocedure-dump~14'>dump</a></strong> => <a href='/home/runner/work/fpm/fpm/fpm-doc/type/srcfile_t.html#boundprocedure-dump_to_toml~5'>dump_to_toml</a>, dump_to_file, dump_to_unit</td>
+  <strong><a href='../type/archiver_t.html#boundprocedure-dump~20'>dump</a></strong> => <a href='/home/runner/work/fpm/fpm/fpm-doc/type/srcfile_t.html#boundprocedure-dump_to_toml~13'>dump_to_toml</a>, dump_to_file, dump_to_unit</td>
                   <td></td>
               </tr>
               <tr>
                 <td>  procedure, public ::
-  <strong><a href='../type/archiver_t.html#boundprocedure-dump_to_toml~11'>dump_to_toml</a></strong></td>
+  <strong><a href='../type/archiver_t.html#boundprocedure-dump_to_toml~17'>dump_to_toml</a></strong></td>
                   <td></td>
               </tr>
               <tr>
                 <td>  generic, public ::
-  <strong><a href='../type/archiver_t.html#boundprocedure-load~11'>load</a></strong> => <a href='/home/runner/work/fpm/fpm/fpm-doc/type/srcfile_t.html#boundprocedure-load_from_toml~5'>load_from_toml</a>, load_from_file, load_from_unit</td>
+  <strong><a href='../type/archiver_t.html#boundprocedure-load~17'>load</a></strong> => <a href='/home/runner/work/fpm/fpm/fpm-doc/type/srcfile_t.html#boundprocedure-load_from_toml~13'>load_from_toml</a>, load_from_file, load_from_unit</td>
                   <td></td>
               </tr>
               <tr>
                 <td>  procedure, public ::
-  <strong><a href='../type/archiver_t.html#boundprocedure-load_from_toml~11'>load_from_toml</a></strong></td>
+  <strong><a href='../type/archiver_t.html#boundprocedure-load_from_toml~17'>load_from_toml</a></strong></td>
                   <td></td>
               </tr>
               <tr>
@@ -2146,12 +2146,12 @@ parameter
               </tr>
               <tr>
                 <td>  generic, public ::
-  <strong><a href='../type/archiver_t.html#boundprocedure-operator%28%3D%3D%29~12'>operator(==)</a></strong> => <a href='/home/runner/work/fpm/fpm/fpm-doc/type/srcfile_t.html#boundprocedure-serializable_is_same~5'>serializable_is_same</a></td>
+  <strong><a href='../type/archiver_t.html#boundprocedure-operator%28%3D%3D%29~18'>operator(==)</a></strong> => <a href='/home/runner/work/fpm/fpm/fpm-doc/type/srcfile_t.html#boundprocedure-serializable_is_same~13'>serializable_is_same</a></td>
                   <td></td>
               </tr>
               <tr>
                 <td>  procedure, public ::
-  <strong><a href='../type/archiver_t.html#boundprocedure-serializable_is_same~11'>serializable_is_same</a></strong> => <a href='/home/runner/work/fpm/fpm/fpm-doc/proc/ar_is_same.html'>ar_is_same</a></td>
+  <strong><a href='../type/archiver_t.html#boundprocedure-serializable_is_same~17'>serializable_is_same</a></strong> => <a href='/home/runner/work/fpm/fpm/fpm-doc/proc/ar_is_same.html'>ar_is_same</a></td>
                   <td><p>Serialization interface</p></td>
               </tr>
               <tr>
@@ -2223,7 +2223,7 @@ parameter
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-echo~4"></span>
+              <span class="anchor" id="variable-echo~2"></span>
               logical,
             </td>
               <td>public</td>
@@ -2257,7 +2257,7 @@ parameter
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-id~2"></span>
+              <span class="anchor" id="variable-id~8"></span>
               integer(kind=compiler_enum),
             </td>
               <td>public</td>
@@ -2274,7 +2274,7 @@ parameter
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-verbose~4"></span>
+              <span class="anchor" id="variable-verbose~9"></span>
               logical,
             </td>
               <td>public</td>
@@ -2345,12 +2345,12 @@ parameter
               </tr>
               <tr>
                 <td>  generic, public ::
-  <strong><a href='../type/compiler_t.html#boundprocedure-dump~15'>dump</a></strong> => <a href='/home/runner/work/fpm/fpm/fpm-doc/type/srcfile_t.html#boundprocedure-dump_to_toml~5'>dump_to_toml</a>, dump_to_file, dump_to_unit</td>
+  <strong><a href='../type/compiler_t.html#boundprocedure-dump~21'>dump</a></strong> => <a href='/home/runner/work/fpm/fpm/fpm-doc/type/srcfile_t.html#boundprocedure-dump_to_toml~13'>dump_to_toml</a>, dump_to_file, dump_to_unit</td>
                   <td></td>
               </tr>
               <tr>
                 <td>  procedure, public ::
-  <strong><a href='../type/compiler_t.html#boundprocedure-dump_to_toml~10'>dump_to_toml</a></strong> => <a href='/home/runner/work/fpm/fpm/fpm-doc/proc/compiler_dump.html'>compiler_dump</a></td>
+  <strong><a href='../type/compiler_t.html#boundprocedure-dump_to_toml~16'>dump_to_toml</a></strong> => <a href='/home/runner/work/fpm/fpm/fpm-doc/proc/compiler_dump.html'>compiler_dump</a></td>
                   <td></td>
               </tr>
               <tr>
@@ -2415,7 +2415,7 @@ parameter
               </tr>
               <tr>
                 <td>  procedure, public ::
-  <strong><a href='../type/compiler_t.html#boundprocedure-link~3'>link</a></strong> => <a href='/home/runner/work/fpm/fpm/fpm-doc/proc/link_executable.html'>link_executable</a></td>
+  <strong><a href='../type/compiler_t.html#boundprocedure-link'>link</a></strong> => <a href='/home/runner/work/fpm/fpm/fpm-doc/proc/link_executable.html'>link_executable</a></td>
                   <td><p>Link executable</p></td>
               </tr>
               <tr>
@@ -2425,27 +2425,27 @@ parameter
               </tr>
               <tr>
                 <td>  generic, public ::
-  <strong><a href='../type/compiler_t.html#boundprocedure-load~12'>load</a></strong> => <a href='/home/runner/work/fpm/fpm/fpm-doc/type/srcfile_t.html#boundprocedure-load_from_toml~5'>load_from_toml</a>, load_from_file, load_from_unit</td>
+  <strong><a href='../type/compiler_t.html#boundprocedure-load~18'>load</a></strong> => <a href='/home/runner/work/fpm/fpm/fpm-doc/type/srcfile_t.html#boundprocedure-load_from_toml~13'>load_from_toml</a>, load_from_file, load_from_unit</td>
                   <td></td>
               </tr>
               <tr>
                 <td>  procedure, public ::
-  <strong><a href='../type/compiler_t.html#boundprocedure-load_from_toml~10'>load_from_toml</a></strong> => <a href='/home/runner/work/fpm/fpm/fpm-doc/proc/compiler_load.html'>compiler_load</a></td>
+  <strong><a href='../type/compiler_t.html#boundprocedure-load_from_toml~16'>load_from_toml</a></strong> => <a href='/home/runner/work/fpm/fpm/fpm-doc/proc/compiler_load.html'>compiler_load</a></td>
                   <td></td>
               </tr>
               <tr>
                 <td>  procedure, public ::
-  <strong><a href='../type/compiler_t.html#boundprocedure-name~22'>name</a></strong> => <a href='/home/runner/work/fpm/fpm/fpm-doc/proc/compiler_name.html'>compiler_name</a></td>
+  <strong><a href='../type/compiler_t.html#boundprocedure-name~34'>name</a></strong> => <a href='/home/runner/work/fpm/fpm/fpm-doc/proc/compiler_name.html'>compiler_name</a></td>
                   <td><p>Return compiler name</p></td>
               </tr>
               <tr>
                 <td>  generic, public ::
-  <strong><a href='../type/compiler_t.html#boundprocedure-operator%28%3D%3D%29~13'>operator(==)</a></strong> => <a href='/home/runner/work/fpm/fpm/fpm-doc/type/srcfile_t.html#boundprocedure-serializable_is_same~5'>serializable_is_same</a></td>
+  <strong><a href='../type/compiler_t.html#boundprocedure-operator%28%3D%3D%29~19'>operator(==)</a></strong> => <a href='/home/runner/work/fpm/fpm/fpm-doc/type/srcfile_t.html#boundprocedure-serializable_is_same~13'>serializable_is_same</a></td>
                   <td></td>
               </tr>
               <tr>
                 <td>  procedure, public ::
-  <strong><a href='../type/compiler_t.html#boundprocedure-serializable_is_same~10'>serializable_is_same</a></strong> => <a href='/home/runner/work/fpm/fpm/fpm-doc/proc/compiler_is_same.html'>compiler_is_same</a></td>
+  <strong><a href='../type/compiler_t.html#boundprocedure-serializable_is_same~16'>serializable_is_same</a></strong> => <a href='/home/runner/work/fpm/fpm/fpm-doc/proc/compiler_is_same.html'>compiler_is_same</a></td>
                   <td><p>Serialization interface</p></td>
               </tr>
               <tr>
@@ -2494,7 +2494,7 @@ All checks passed!</p>
     <tbody>
         <tr>
             <td>
-              <span class="anchor" id="variable-this~11"></span>
+              <span class="anchor" id="variable-this~24"></span>
               class(<a href='../type/archiver_t.html'>archiver_t</a>),
             </td>
 <td>intent(in)</td>
@@ -2509,7 +2509,7 @@ All checks passed!</p>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-that~10"></span>
+              <span class="anchor" id="variable-that~19"></span>
               class(<a href='../type/serializable_t.html'>serializable_t</a>),
             </td>
 <td>intent(in)</td>
@@ -2554,7 +2554,7 @@ All checks passed!</p>
     <tbody>
         <tr>
             <td>
-              <span class="anchor" id="variable-self~73"></span>
+              <span class="anchor" id="variable-self~156"></span>
               class(<a href='../type/compiler_t.html'>compiler_t</a>),
             </td>
 <td>intent(in)</td>
@@ -2636,7 +2636,7 @@ Delete temporary files</p>
     <tbody>
         <tr>
             <td>
-              <span class="anchor" id="variable-self~71"></span>
+              <span class="anchor" id="variable-self~154"></span>
               class(<a href='../type/compiler_t.html'>compiler_t</a>),
             </td>
 <td>intent(in)</td>
@@ -2651,7 +2651,7 @@ Delete temporary files</p>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-input~5"></span>
+              <span class="anchor" id="variable-input~7"></span>
               character(len=*),
             </td>
 <td>intent(in)</td>
@@ -2726,7 +2726,7 @@ Delete temporary files</p>
     <tbody>
         <tr>
             <td>
-              <span class="anchor" id="variable-compiler~6"></span>
+              <span class="anchor" id="variable-compiler~26"></span>
               character(len=*),
             </td>
 <td>intent(in)</td>
@@ -2786,7 +2786,7 @@ Delete temporary files</p>
     <tbody>
         <tr>
             <td>
-              <span class="anchor" id="variable-self~74"></span>
+              <span class="anchor" id="variable-self~157"></span>
               class(<a href='../type/compiler_t.html'>compiler_t</a>),
             </td>
 <td>intent(in)</td>
@@ -2868,7 +2868,7 @@ Delete temporary files</p>
     <tbody>
         <tr>
             <td>
-              <span class="anchor" id="variable-self~72"></span>
+              <span class="anchor" id="variable-self~155"></span>
               class(<a href='../type/compiler_t.html'>compiler_t</a>),
             </td>
 <td>intent(in)</td>
@@ -2883,7 +2883,7 @@ Delete temporary files</p>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-input~6"></span>
+              <span class="anchor" id="variable-input~8"></span>
               character(len=*),
             </td>
 <td>intent(in)</td>
@@ -2958,7 +2958,7 @@ Delete temporary files</p>
     <tbody>
         <tr>
             <td>
-              <span class="anchor" id="variable-self~75"></span>
+              <span class="anchor" id="variable-self~158"></span>
               class(<a href='../type/compiler_t.html'>compiler_t</a>),
             </td>
 <td>intent(in)</td>
@@ -3040,7 +3040,7 @@ Run and retrieve exit code</p><a href="../proc/check_fortran_source_runs.html" c
     <tbody>
         <tr>
             <td>
-              <span class="anchor" id="variable-self~70"></span>
+              <span class="anchor" id="variable-self~153"></span>
               class(<a href='../type/compiler_t.html'>compiler_t</a>),
             </td>
 <td>intent(in)</td>
@@ -3055,7 +3055,7 @@ Run and retrieve exit code</p><a href="../proc/check_fortran_source_runs.html" c
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-input~4"></span>
+              <span class="anchor" id="variable-input~6"></span>
               character(len=*),
             </td>
 <td>intent(in)</td>
@@ -3130,7 +3130,7 @@ Run and retrieve exit code</p><a href="../proc/check_fortran_source_runs.html" c
     <tbody>
         <tr>
             <td>
-              <span class="anchor" id="variable-id~11"></span>
+              <span class="anchor" id="variable-id~17"></span>
               integer(kind=compiler_enum),
             </td>
 <td>intent(in)</td>
@@ -3176,7 +3176,7 @@ All checks passed!</p>
     <tbody>
         <tr>
             <td>
-              <span class="anchor" id="variable-this~12"></span>
+              <span class="anchor" id="variable-this~25"></span>
               class(<a href='../type/compiler_t.html'>compiler_t</a>),
             </td>
 <td>intent(in)</td>
@@ -3191,7 +3191,7 @@ All checks passed!</p>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-that~11"></span>
+              <span class="anchor" id="variable-that~20"></span>
               class(<a href='../type/serializable_t.html'>serializable_t</a>),
             </td>
 <td>intent(in)</td>
@@ -3236,7 +3236,7 @@ All checks passed!</p>
     <tbody>
         <tr>
             <td>
-              <span class="anchor" id="variable-self~69"></span>
+              <span class="anchor" id="variable-self~152"></span>
               class(<a href='../type/compiler_t.html'>compiler_t</a>),
             </td>
 <td>intent(in)</td>
@@ -3281,7 +3281,7 @@ All checks passed!</p>
     <tbody>
         <tr>
             <td>
-              <span class="anchor" id="variable-self~64"></span>
+              <span class="anchor" id="variable-self~147"></span>
               type(<a href='../type/archiver_t.html'>archiver_t</a>),
             </td>
 <td>intent(in)</td>
@@ -3326,7 +3326,7 @@ All checks passed!</p>
     <tbody>
         <tr>
             <td>
-              <span class="anchor" id="variable-self~63"></span>
+              <span class="anchor" id="variable-self~146"></span>
               type(<a href='../type/compiler_t.html'>compiler_t</a>),
             </td>
 <td>intent(in)</td>
@@ -3371,7 +3371,7 @@ All checks passed!</p>
     <tbody>
         <tr>
             <td>
-              <span class="anchor" id="variable-self~51"></span>
+              <span class="anchor" id="variable-self~134"></span>
               class(<a href='../type/compiler_t.html'>compiler_t</a>),
             </td>
 <td>intent(in)</td>
@@ -3386,7 +3386,7 @@ All checks passed!</p>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-prefix~4"></span>
+              <span class="anchor" id="variable-prefix~6"></span>
               character(len=*),
             </td>
 <td>intent(in)</td>
@@ -3401,7 +3401,7 @@ All checks passed!</p>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-libs~2"></span>
+              <span class="anchor" id="variable-libs"></span>
               type(<a href='../type/string_t.html'>string_t</a>),
             </td>
 <td>intent(in)</td>
@@ -3446,7 +3446,7 @@ All checks passed!</p>
     <tbody>
         <tr>
             <td>
-              <span class="anchor" id="variable-compiler~4"></span>
+              <span class="anchor" id="variable-compiler~24"></span>
               character(len=*),
             </td>
 <td>intent(in)</td>
@@ -3491,7 +3491,7 @@ All checks passed!</p>
     <tbody>
         <tr>
             <td>
-              <span class="anchor" id="variable-self~41"></span>
+              <span class="anchor" id="variable-self~124"></span>
               class(<a href='../type/compiler_t.html'>compiler_t</a>),
             </td>
 <td>intent(in)</td>
@@ -3551,7 +3551,7 @@ All checks passed!</p>
     <tbody>
         <tr>
             <td>
-              <span class="anchor" id="variable-self~52"></span>
+              <span class="anchor" id="variable-self~135"></span>
               class(<a href='../type/compiler_t.html'>compiler_t</a>),
             </td>
 <td>intent(in)</td>
@@ -3566,7 +3566,7 @@ All checks passed!</p>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-target_dir"></span>
+              <span class="anchor" id="variable-target_dir~3"></span>
               character(len=*),
             </td>
 <td>intent(in)</td>
@@ -3626,7 +3626,7 @@ All checks passed!</p>
     <tbody>
         <tr>
             <td>
-              <span class="anchor" id="variable-self~45"></span>
+              <span class="anchor" id="variable-self~128"></span>
               class(<a href='../type/compiler_t.html'>compiler_t</a>),
             </td>
 <td>intent(in)</td>
@@ -3641,7 +3641,7 @@ All checks passed!</p>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-feature"></span>
+              <span class="anchor" id="variable-feature~3"></span>
               character(len=*),
             </td>
 <td>intent(in)</td>
@@ -3686,7 +3686,7 @@ All checks passed!</p>
     <tbody>
         <tr>
             <td>
-              <span class="anchor" id="variable-self~54"></span>
+              <span class="anchor" id="variable-self~137"></span>
               class(<a href='../type/compiler_t.html'>compiler_t</a>),
             </td>
 <td>intent(in)</td>
@@ -3731,7 +3731,7 @@ All checks passed!</p>
     <tbody>
         <tr>
             <td>
-              <span class="anchor" id="variable-self~42"></span>
+              <span class="anchor" id="variable-self~125"></span>
               class(<a href='../type/compiler_t.html'>compiler_t</a>),
             </td>
 <td>intent(in)</td>
@@ -3746,7 +3746,7 @@ All checks passed!</p>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-path~12"></span>
+              <span class="anchor" id="variable-path~5"></span>
               character(len=*),
             </td>
 <td>intent(in)</td>
@@ -3791,7 +3791,7 @@ All checks passed!</p>
     <tbody>
         <tr>
             <td>
-              <span class="anchor" id="variable-self~53"></span>
+              <span class="anchor" id="variable-self~136"></span>
               class(<a href='../type/compiler_t.html'>compiler_t</a>),
             </td>
 <td>intent(in)</td>
@@ -3806,7 +3806,7 @@ All checks passed!</p>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-target_dir~2"></span>
+              <span class="anchor" id="variable-target_dir~4"></span>
               character(len=*),
             </td>
 <td>intent(in)</td>
@@ -3870,7 +3870,7 @@ Split the macro name and value.</p><a href="../proc/get_macros.html" class="pull
     <tbody>
         <tr>
             <td>
-              <span class="anchor" id="variable-id~6"></span>
+              <span class="anchor" id="variable-id~12"></span>
               integer(kind=compiler_enum),
             </td>
 <td>intent(in)</td>
@@ -3900,7 +3900,7 @@ Split the macro name and value.</p><a href="../proc/get_macros.html" class="pull
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-version~5"></span>
+              <span class="anchor" id="variable-version~14"></span>
               type(<a href='../type/version_t.html'>version_t</a>),
             </td>
 <td>intent(in),</td>
@@ -3945,7 +3945,7 @@ Split the macro name and value.</p><a href="../proc/get_macros.html" class="pull
     <tbody>
         <tr>
             <td>
-              <span class="anchor" id="variable-self~43"></span>
+              <span class="anchor" id="variable-self~126"></span>
               class(<a href='../type/compiler_t.html'>compiler_t</a>),
             </td>
 <td>intent(in)</td>
@@ -3960,7 +3960,7 @@ Split the macro name and value.</p><a href="../proc/get_macros.html" class="pull
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-path~13"></span>
+              <span class="anchor" id="variable-path~6"></span>
               character(len=*),
             </td>
 <td>intent(in)</td>
@@ -4005,7 +4005,7 @@ Split the macro name and value.</p><a href="../proc/get_macros.html" class="pull
     <tbody>
         <tr>
             <td>
-              <span class="anchor" id="variable-self~44"></span>
+              <span class="anchor" id="variable-self~127"></span>
               class(<a href='../type/compiler_t.html'>compiler_t</a>),
             </td>
 <td>intent(in)</td>
@@ -4050,7 +4050,7 @@ Split the macro name and value.</p><a href="../proc/get_macros.html" class="pull
     <tbody>
         <tr>
             <td>
-              <span class="anchor" id="variable-self~47"></span>
+              <span class="anchor" id="variable-self~130"></span>
               class(<a href='../type/compiler_t.html'>compiler_t</a>),
             </td>
 <td>intent(in)</td>
@@ -4095,7 +4095,7 @@ Split the macro name and value.</p><a href="../proc/get_macros.html" class="pull
     <tbody>
         <tr>
             <td>
-              <span class="anchor" id="variable-self~50"></span>
+              <span class="anchor" id="variable-self~133"></span>
               class(<a href='../type/compiler_t.html'>compiler_t</a>),
             </td>
 <td>intent(in)</td>
@@ -4140,7 +4140,7 @@ Split the macro name and value.</p><a href="../proc/get_macros.html" class="pull
     <tbody>
         <tr>
             <td>
-              <span class="anchor" id="variable-self~49"></span>
+              <span class="anchor" id="variable-self~132"></span>
               class(<a href='../type/compiler_t.html'>compiler_t</a>),
             </td>
 <td>intent(in)</td>
@@ -4185,7 +4185,7 @@ Split the macro name and value.</p><a href="../proc/get_macros.html" class="pull
     <tbody>
         <tr>
             <td>
-              <span class="anchor" id="variable-self~48"></span>
+              <span class="anchor" id="variable-self~131"></span>
               class(<a href='../type/compiler_t.html'>compiler_t</a>),
             </td>
 <td>intent(in)</td>
@@ -4230,7 +4230,7 @@ Split the macro name and value.</p><a href="../proc/get_macros.html" class="pull
     <tbody>
         <tr>
             <td>
-              <span class="anchor" id="variable-compiler~5"></span>
+              <span class="anchor" id="variable-compiler~25"></span>
               character(len=*),
             </td>
 <td>intent(in)</td>
@@ -4275,7 +4275,7 @@ Split the macro name and value.</p><a href="../proc/get_macros.html" class="pull
     <tbody>
         <tr>
             <td>
-              <span class="anchor" id="variable-self~76"></span>
+              <span class="anchor" id="variable-self~159"></span>
               class(<a href='../type/compiler_t.html'>compiler_t</a>),
             </td>
 <td>intent(in)</td>
@@ -4320,7 +4320,7 @@ Split the macro name and value.</p><a href="../proc/get_macros.html" class="pull
     <tbody>
         <tr>
             <td>
-              <span class="anchor" id="variable-self~77"></span>
+              <span class="anchor" id="variable-self~160"></span>
               class(<a href='../type/compiler_t.html'>compiler_t</a>),
             </td>
 <td>intent(in)</td>
@@ -4370,7 +4370,7 @@ Split the macro name and value.</p><a href="../proc/get_macros.html" class="pull
     <tbody>
         <tr>
             <td>
-              <span class="anchor" id="variable-flags~15"></span>
+              <span class="anchor" id="variable-flags~22"></span>
               character(len=:),
             </td>
 <td>intent(inout),</td>
@@ -4480,7 +4480,7 @@ Split the macro name and value.</p><a href="../proc/get_macros.html" class="pull
     <tbody>
         <tr>
             <td>
-              <span class="anchor" id="variable-self~58"></span>
+              <span class="anchor" id="variable-self~141"></span>
               class(<a href='../type/compiler_t.html'>compiler_t</a>),
             </td>
 <td>intent(in)</td>
@@ -4495,7 +4495,7 @@ Split the macro name and value.</p><a href="../proc/get_macros.html" class="pull
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-input~2"></span>
+              <span class="anchor" id="variable-input~4"></span>
               character(len=*),
             </td>
 <td>intent(in)</td>
@@ -4525,7 +4525,7 @@ Split the macro name and value.</p><a href="../proc/get_macros.html" class="pull
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-args~4"></span>
+              <span class="anchor" id="variable-args~5"></span>
               character(len=*),
             </td>
 <td>intent(in)</td>
@@ -4555,7 +4555,7 @@ Split the macro name and value.</p><a href="../proc/get_macros.html" class="pull
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-stat~21"></span>
+              <span class="anchor" id="variable-stat~30"></span>
               integer,
             </td>
 <td>intent(out)</td>
@@ -4570,7 +4570,7 @@ Split the macro name and value.</p><a href="../proc/get_macros.html" class="pull
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-table~49"></span>
+              <span class="anchor" id="variable-table~73"></span>
               type(<a href='../type/compile_command_table_t.html'>compile_command_table_t</a>),
             </td>
 <td>intent(inout),</td>
@@ -4625,7 +4625,7 @@ Split the macro name and value.</p><a href="../proc/get_macros.html" class="pull
     <tbody>
         <tr>
             <td>
-              <span class="anchor" id="variable-self~59"></span>
+              <span class="anchor" id="variable-self~142"></span>
               class(<a href='../type/compiler_t.html'>compiler_t</a>),
             </td>
 <td>intent(in)</td>
@@ -4640,7 +4640,7 @@ Split the macro name and value.</p><a href="../proc/get_macros.html" class="pull
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-input~3"></span>
+              <span class="anchor" id="variable-input~5"></span>
               character(len=*),
             </td>
 <td>intent(in)</td>
@@ -4670,7 +4670,7 @@ Split the macro name and value.</p><a href="../proc/get_macros.html" class="pull
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-args~5"></span>
+              <span class="anchor" id="variable-args~6"></span>
               character(len=*),
             </td>
 <td>intent(in)</td>
@@ -4700,7 +4700,7 @@ Split the macro name and value.</p><a href="../proc/get_macros.html" class="pull
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-stat~22"></span>
+              <span class="anchor" id="variable-stat~31"></span>
               integer,
             </td>
 <td>intent(out)</td>
@@ -4715,7 +4715,7 @@ Split the macro name and value.</p><a href="../proc/get_macros.html" class="pull
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-table~50"></span>
+              <span class="anchor" id="variable-table~74"></span>
               type(<a href='../type/compile_command_table_t.html'>compile_command_table_t</a>),
             </td>
 <td>intent(inout),</td>
@@ -4770,7 +4770,7 @@ Split the macro name and value.</p><a href="../proc/get_macros.html" class="pull
     <tbody>
         <tr>
             <td>
-              <span class="anchor" id="variable-self~57"></span>
+              <span class="anchor" id="variable-self~140"></span>
               class(<a href='../type/compiler_t.html'>compiler_t</a>),
             </td>
 <td>intent(in)</td>
@@ -4785,7 +4785,7 @@ Split the macro name and value.</p><a href="../proc/get_macros.html" class="pull
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-input"></span>
+              <span class="anchor" id="variable-input~3"></span>
               character(len=*),
             </td>
 <td>intent(in)</td>
@@ -4815,7 +4815,7 @@ Split the macro name and value.</p><a href="../proc/get_macros.html" class="pull
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-args~3"></span>
+              <span class="anchor" id="variable-args~4"></span>
               character(len=*),
             </td>
 <td>intent(in)</td>
@@ -4845,7 +4845,7 @@ Split the macro name and value.</p><a href="../proc/get_macros.html" class="pull
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-stat~20"></span>
+              <span class="anchor" id="variable-stat~29"></span>
               integer,
             </td>
 <td>intent(out)</td>
@@ -4860,7 +4860,7 @@ Split the macro name and value.</p><a href="../proc/get_macros.html" class="pull
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-table~48"></span>
+              <span class="anchor" id="variable-table~72"></span>
               type(<a href='../type/compile_command_table_t.html'>compile_command_table_t</a>),
             </td>
 <td>intent(inout),</td>
@@ -4915,7 +4915,7 @@ Split the macro name and value.</p><a href="../proc/get_macros.html" class="pull
     <tbody>
         <tr>
             <td>
-              <span class="anchor" id="variable-self~67"></span>
+              <span class="anchor" id="variable-self~150"></span>
               class(<a href='../type/compiler_t.html'>compiler_t</a>),
             </td>
 <td>intent(inout)</td>
@@ -4930,7 +4930,7 @@ Split the macro name and value.</p><a href="../proc/get_macros.html" class="pull
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-table~53"></span>
+              <span class="anchor" id="variable-table~77"></span>
               type(toml_table),
             </td>
 <td>intent(inout)</td>
@@ -4945,7 +4945,7 @@ Split the macro name and value.</p><a href="../proc/get_macros.html" class="pull
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-error~69"></span>
+              <span class="anchor" id="variable-error~143"></span>
               type(<a href='../type/error_t.html'>error_t</a>),
             </td>
 <td>intent(out),</td>
@@ -4985,7 +4985,7 @@ Split the macro name and value.</p><a href="../proc/get_macros.html" class="pull
     <tbody>
         <tr>
             <td>
-              <span class="anchor" id="variable-self~68"></span>
+              <span class="anchor" id="variable-self~151"></span>
               class(<a href='../type/compiler_t.html'>compiler_t</a>),
             </td>
 <td>intent(inout)</td>
@@ -5000,7 +5000,7 @@ Split the macro name and value.</p><a href="../proc/get_macros.html" class="pull
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-table~54"></span>
+              <span class="anchor" id="variable-table~78"></span>
               type(toml_table),
             </td>
 <td>intent(inout)</td>
@@ -5015,7 +5015,7 @@ Split the macro name and value.</p><a href="../proc/get_macros.html" class="pull
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-error~70"></span>
+              <span class="anchor" id="variable-error~144"></span>
               type(<a href='../type/error_t.html'>error_t</a>),
             </td>
 <td>intent(out),</td>
@@ -5036,11 +5036,11 @@ Split the macro name and value.</p><a href="../proc/get_macros.html" class="pull
   </div>
 
               <div class="card">
-    <div class="card-header codesum"><span class="anchor" id="proc-dump_to_toml~4"></span> <h3>public  subroutine <a href='../proc/dump_to_toml~4.html'>dump_to_toml</a>(self, table, error)  
+    <div class="card-header codesum"><span class="anchor" id="proc-dump_to_toml~5"></span> <h3>public  subroutine <a href='../proc/dump_to_toml~5.html'>dump_to_toml</a>(self, table, error)  
 </h3></div>
     <div class="card-body">
           
-  <p>Dump dependency to toml table</p><a href="../proc/dump_to_toml~4.html" class="pull-right"><emph>Read more&hellip;</emph></a>
+  <p>Dump dependency to toml table</p><a href="../proc/dump_to_toml~5.html" class="pull-right"><emph>Read more&hellip;</emph></a>
 
   <h4>Arguments</h4>
       <table class="table table-striped varlist">
@@ -5055,7 +5055,7 @@ Split the macro name and value.</p><a href="../proc/get_macros.html" class="pull
     <tbody>
         <tr>
             <td>
-              <span class="anchor" id="variable-self~65"></span>
+              <span class="anchor" id="variable-self~148"></span>
               class(<a href='../type/archiver_t.html'>archiver_t</a>),
             </td>
 <td>intent(inout)</td>
@@ -5070,7 +5070,7 @@ Split the macro name and value.</p><a href="../proc/get_macros.html" class="pull
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-table~51"></span>
+              <span class="anchor" id="variable-table~75"></span>
               type(toml_table),
             </td>
 <td>intent(inout)</td>
@@ -5085,7 +5085,7 @@ Split the macro name and value.</p><a href="../proc/get_macros.html" class="pull
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-error~67"></span>
+              <span class="anchor" id="variable-error~141"></span>
               type(<a href='../type/error_t.html'>error_t</a>),
             </td>
 <td>intent(out),</td>
@@ -5125,7 +5125,7 @@ Split the macro name and value.</p><a href="../proc/get_macros.html" class="pull
     <tbody>
         <tr>
             <td>
-              <span class="anchor" id="variable-id~4"></span>
+              <span class="anchor" id="variable-id~10"></span>
               integer(kind=compiler_enum),
             </td>
 <td>intent(in)</td>
@@ -5140,7 +5140,7 @@ Split the macro name and value.</p><a href="../proc/get_macros.html" class="pull
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-flags~4"></span>
+              <span class="anchor" id="variable-flags~11"></span>
               character(len=:),
             </td>
 <td>intent(out),</td>
@@ -5290,7 +5290,7 @@ Split the macro name and value.</p><a href="../proc/get_macros.html" class="pull
     <tbody>
         <tr>
             <td>
-              <span class="anchor" id="variable-self~46"></span>
+              <span class="anchor" id="variable-self~129"></span>
               class(<a href='../type/compiler_t.html'>compiler_t</a>),
             </td>
 <td>intent(in)</td>
@@ -5305,7 +5305,7 @@ Split the macro name and value.</p><a href="../proc/get_macros.html" class="pull
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-language"></span>
+              <span class="anchor" id="variable-language~4"></span>
               character(len=*),
             </td>
 <td>intent(in)</td>
@@ -5320,7 +5320,7 @@ Split the macro name and value.</p><a href="../proc/get_macros.html" class="pull
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-flags~9"></span>
+              <span class="anchor" id="variable-flags~16"></span>
               character(len=:),
             </td>
 <td>intent(out),</td>
@@ -5360,7 +5360,7 @@ Split the macro name and value.</p><a href="../proc/get_macros.html" class="pull
     <tbody>
         <tr>
             <td>
-              <span class="anchor" id="variable-id~3"></span>
+              <span class="anchor" id="variable-id~9"></span>
               integer(kind=compiler_enum),
             </td>
 <td>intent(in)</td>
@@ -5375,7 +5375,7 @@ Split the macro name and value.</p><a href="../proc/get_macros.html" class="pull
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-flags~3"></span>
+              <span class="anchor" id="variable-flags~10"></span>
               character(len=:),
             </td>
 <td>intent(out),</td>
@@ -5415,7 +5415,7 @@ Split the macro name and value.</p><a href="../proc/get_macros.html" class="pull
     <tbody>
         <tr>
             <td>
-              <span class="anchor" id="variable-self~60"></span>
+              <span class="anchor" id="variable-self~143"></span>
               class(<a href='../type/compiler_t.html'>compiler_t</a>),
             </td>
 <td>intent(in)</td>
@@ -5445,7 +5445,7 @@ Split the macro name and value.</p><a href="../proc/get_macros.html" class="pull
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-args~6"></span>
+              <span class="anchor" id="variable-args~7"></span>
               character(len=*),
             </td>
 <td>intent(in)</td>
@@ -5475,7 +5475,7 @@ Split the macro name and value.</p><a href="../proc/get_macros.html" class="pull
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-stat~23"></span>
+              <span class="anchor" id="variable-stat~32"></span>
               integer,
             </td>
 <td>intent(out)</td>
@@ -5530,7 +5530,7 @@ Split the macro name and value.</p><a href="../proc/get_macros.html" class="pull
     <tbody>
         <tr>
             <td>
-              <span class="anchor" id="variable-self~61"></span>
+              <span class="anchor" id="variable-self~144"></span>
               class(<a href='../type/compiler_t.html'>compiler_t</a>),
             </td>
 <td>intent(in)</td>
@@ -5560,7 +5560,7 @@ Split the macro name and value.</p><a href="../proc/get_macros.html" class="pull
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-args~7"></span>
+              <span class="anchor" id="variable-args~8"></span>
               character(len=*),
             </td>
 <td>intent(in)</td>
@@ -5590,7 +5590,7 @@ Split the macro name and value.</p><a href="../proc/get_macros.html" class="pull
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-stat~24"></span>
+              <span class="anchor" id="variable-stat~33"></span>
               integer,
             </td>
 <td>intent(out)</td>
@@ -5626,7 +5626,7 @@ Split the macro name and value.</p><a href="../proc/get_macros.html" class="pull
   </div>
 
               <div class="card">
-    <div class="card-header codesum"><span class="anchor" id="proc-load_from_toml~4"></span> <h3>public  subroutine <a href='../proc/load_from_toml~4.html'>load_from_toml</a>(self, table, error)  
+    <div class="card-header codesum"><span class="anchor" id="proc-load_from_toml~5"></span> <h3>public  subroutine <a href='../proc/load_from_toml~5.html'>load_from_toml</a>(self, table, error)  
 </h3></div>
     <div class="card-body">
           
@@ -5645,7 +5645,7 @@ Split the macro name and value.</p><a href="../proc/get_macros.html" class="pull
     <tbody>
         <tr>
             <td>
-              <span class="anchor" id="variable-self~66"></span>
+              <span class="anchor" id="variable-self~149"></span>
               class(<a href='../type/archiver_t.html'>archiver_t</a>),
             </td>
 <td>intent(inout)</td>
@@ -5660,7 +5660,7 @@ Split the macro name and value.</p><a href="../proc/get_macros.html" class="pull
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-table~52"></span>
+              <span class="anchor" id="variable-table~76"></span>
               type(toml_table),
             </td>
 <td>intent(inout)</td>
@@ -5675,7 +5675,7 @@ Split the macro name and value.</p><a href="../proc/get_macros.html" class="pull
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-error~68"></span>
+              <span class="anchor" id="variable-error~142"></span>
               type(<a href='../type/error_t.html'>error_t</a>),
             </td>
 <td>intent(out),</td>
@@ -5715,7 +5715,7 @@ Split the macro name and value.</p><a href="../proc/get_macros.html" class="pull
     <tbody>
         <tr>
             <td>
-              <span class="anchor" id="variable-self~62"></span>
+              <span class="anchor" id="variable-self~145"></span>
               class(<a href='../type/archiver_t.html'>archiver_t</a>),
             </td>
 <td>intent(in)</td>
@@ -5745,7 +5745,7 @@ Split the macro name and value.</p><a href="../proc/get_macros.html" class="pull
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-args~8"></span>
+              <span class="anchor" id="variable-args~9"></span>
               type(<a href='../type/string_t.html'>string_t</a>),
             </td>
 <td>intent(in)</td>
@@ -5775,7 +5775,7 @@ Split the macro name and value.</p><a href="../proc/get_macros.html" class="pull
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-stat~25"></span>
+              <span class="anchor" id="variable-stat~34"></span>
               integer,
             </td>
 <td>intent(out)</td>
@@ -5830,7 +5830,7 @@ Split the macro name and value.</p><a href="../proc/get_macros.html" class="pull
     <tbody>
         <tr>
             <td>
-              <span class="anchor" id="variable-self~56"></span>
+              <span class="anchor" id="variable-self~139"></span>
               type(<a href='../type/archiver_t.html'>archiver_t</a>),
             </td>
 <td>intent(out)</td>
@@ -5860,7 +5860,7 @@ Split the macro name and value.</p><a href="../proc/get_macros.html" class="pull
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-echo~7"></span>
+              <span class="anchor" id="variable-echo~5"></span>
               logical,
             </td>
 <td>intent(in)</td>
@@ -5875,7 +5875,7 @@ Split the macro name and value.</p><a href="../proc/get_macros.html" class="pull
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-verbose~7"></span>
+              <span class="anchor" id="variable-verbose~12"></span>
               logical,
             </td>
 <td>intent(in)</td>
@@ -5915,7 +5915,7 @@ Split the macro name and value.</p><a href="../proc/get_macros.html" class="pull
     <tbody>
         <tr>
             <td>
-              <span class="anchor" id="variable-self~55"></span>
+              <span class="anchor" id="variable-self~138"></span>
               type(<a href='../type/compiler_t.html'>compiler_t</a>),
             </td>
 <td>intent(out)</td>
@@ -5975,7 +5975,7 @@ Split the macro name and value.</p><a href="../proc/get_macros.html" class="pull
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-echo~6"></span>
+              <span class="anchor" id="variable-echo~4"></span>
               logical,
             </td>
 <td>intent(in)</td>
@@ -5990,7 +5990,7 @@ Split the macro name and value.</p><a href="../proc/get_macros.html" class="pull
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-verbose~6"></span>
+              <span class="anchor" id="variable-verbose~11"></span>
               logical,
             </td>
 <td>intent(in)</td>
@@ -6030,7 +6030,7 @@ Split the macro name and value.</p><a href="../proc/get_macros.html" class="pull
     <tbody>
         <tr>
             <td>
-              <span class="anchor" id="variable-id~5"></span>
+              <span class="anchor" id="variable-id~11"></span>
               integer(kind=compiler_enum),
             </td>
 <td>intent(in)</td>
@@ -6045,7 +6045,7 @@ Split the macro name and value.</p><a href="../proc/get_macros.html" class="pull
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-flags~5"></span>
+              <span class="anchor" id="variable-flags~12"></span>
               character(len=:),
             </td>
 <td>intent(inout),</td>
@@ -6085,7 +6085,7 @@ Split the macro name and value.</p><a href="../proc/get_macros.html" class="pull
     <tbody>
         <tr>
             <td>
-              <span class="anchor" id="variable-flags~16"></span>
+              <span class="anchor" id="variable-flags~23"></span>
               character(len=*),
             </td>
 <td>intent(in)</td>
@@ -6140,7 +6140,7 @@ Split the macro name and value.</p><a href="../proc/get_macros.html" class="pull
     <tbody>
         <tr>
             <td>
-              <span class="anchor" id="variable-compiler_name"></span>
+              <span class="anchor" id="variable-compiler_name~9"></span>
               character(len=*),
             </td>
 <td>intent(in)</td>
@@ -6155,7 +6155,7 @@ Split the macro name and value.</p><a href="../proc/get_macros.html" class="pull
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-is_valid~3"></span>
+              <span class="anchor" id="variable-is_valid~10"></span>
               logical,
             </td>
 <td>intent(out)</td>
@@ -6198,7 +6198,7 @@ in case of errors.</p>
     <tbody>
         <tr>
             <td>
-              <span class="anchor" id="variable-name~23"></span>
+              <span class="anchor" id="variable-name~35"></span>
               character(len=*),
             </td>
 <td>intent(in)</td>
@@ -6256,7 +6256,7 @@ in case of errors.</p>
             <p class="text-end">
               Documentation generated by
               <a href="https://github.com/Fortran-FOSS-Programmers/ford">FORD</a>
- on 2025-10-02 08:23 +0000             </p>
+ on 2025-10-11 09:28 +0000             </p>
           </div>
         </div>
         <br>
