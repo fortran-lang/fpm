@@ -69,12 +69,13 @@ jobs:
 
     # Phase 1: Bootstrap fpm with existing version
     - name: Install fpm
-      uses: fortran-lang/setup-fpm@v7
+      uses: fortran-lang/setup-fpm@v8
       with:
         fpm-version: 'v0.12.0'
 
-    # Backport gfortran shared libraries to gcc@12 folder. This is necessary because the macOS x86_64 release
-    # of fpm v0.12.0 used for bootstrapping was built with gcc@12 and has these paths hardcoded in the executable.
+    # Backport gfortran shared libraries to the paths expected by the bootstrap fpm binary.
+    # The macOS x86_64 release used for bootstrapping has hardcoded library paths from the gcc version
+    # it was built with. Query those paths using otool and create symlinks to the current gcc version.
     # On ARM64 it runs under Rosetta 2 and needs /usr/local paths.
     - name: MacOS patch libgfortran
       if: contains(matrix.os, 'macos')
@@ -82,12 +83,40 @@ jobs:
         which gfortran-${{ matrix.toolchain.version }}
         which gfortran
         BREW_PREFIX=$(brew --prefix)
-        # x86_64 bootstrap binary expects gcc@12 libraries at /usr/local (runs natively on x86_64, under Rosetta 2 on ARM64)
-        sudo mkdir -p /usr/local/opt/gcc@12/lib/gcc/12
-        sudo mkdir -p /usr/local/lib/gcc/12
-        sudo ln -fs ${BREW_PREFIX}/opt/gcc@${{ matrix.toolchain.version }}/lib/gcc/${{ matrix.toolchain.version }}/libquadmath.0.dylib /usr/local/opt/gcc@12/lib/gcc/12/libquadmath.0.dylib
-        sudo ln -fs ${BREW_PREFIX}/opt/gcc@${{ matrix.toolchain.version }}/lib/gcc/${{ matrix.toolchain.version }}/libgfortran.5.dylib /usr/local/opt/gcc@12/lib/gcc/12/libgfortran.5.dylib
-        sudo ln -fs ${BREW_PREFIX}/lib/gcc/${{ matrix.toolchain.version }}/libgcc_s.1.dylib /usr/local/lib/gcc/12/libgcc_s.1.dylib
+
+        # Query the actual library paths that fpm expects
+        echo "Checking library dependencies of fpm bootstrap binary..."
+        otool -L $(which fpm)
+
+        # Extract the expected libgfortran path and create the target directory
+        LIBGFORTRAN_PATH=$(otool -L $(which fpm) | grep libgfortran | awk '{print $1}' | head -n 1)
+        if [ -n "$LIBGFORTRAN_PATH" ]; then
+          TARGET_DIR=$(dirname "$LIBGFORTRAN_PATH")
+          echo "Creating directory: $TARGET_DIR"
+          sudo mkdir -p "$TARGET_DIR"
+          echo "Linking libgfortran from ${BREW_PREFIX}/opt/gcc@${{ matrix.toolchain.version }}/lib/gcc/${{ matrix.toolchain.version }}/libgfortran.5.dylib to $LIBGFORTRAN_PATH"
+          sudo ln -fs ${BREW_PREFIX}/opt/gcc@${{ matrix.toolchain.version }}/lib/gcc/${{ matrix.toolchain.version }}/libgfortran.5.dylib "$LIBGFORTRAN_PATH"
+        fi
+
+        # Extract the expected libquadmath path and create the target directory
+        LIBQUADMATH_PATH=$(otool -L $(which fpm) | grep libquadmath | awk '{print $1}' | head -n 1)
+        if [ -n "$LIBQUADMATH_PATH" ]; then
+          TARGET_DIR=$(dirname "$LIBQUADMATH_PATH")
+          echo "Creating directory: $TARGET_DIR"
+          sudo mkdir -p "$TARGET_DIR"
+          echo "Linking libquadmath from ${BREW_PREFIX}/opt/gcc@${{ matrix.toolchain.version }}/lib/gcc/${{ matrix.toolchain.version }}/libquadmath.0.dylib to $LIBQUADMATH_PATH"
+          sudo ln -fs ${BREW_PREFIX}/opt/gcc@${{ matrix.toolchain.version }}/lib/gcc/${{ matrix.toolchain.version }}/libquadmath.0.dylib "$LIBQUADMATH_PATH"
+        fi
+
+        # Extract the expected libgcc_s path and create the target directory
+        LIBGCC_PATH=$(otool -L $(which fpm) | grep libgcc_s | awk '{print $1}' | head -n 1)
+        if [ -n "$LIBGCC_PATH" ]; then
+          TARGET_DIR=$(dirname "$LIBGCC_PATH")
+          echo "Creating directory: $TARGET_DIR"
+          sudo mkdir -p "$TARGET_DIR"
+          echo "Linking libgcc_s from ${BREW_PREFIX}/lib/gcc/${{ matrix.toolchain.version }}/libgcc_s.1.dylib to $LIBGCC_PATH"
+          sudo ln -fs ${BREW_PREFIX}/lib/gcc/${{ matrix.toolchain.version }}/libgcc_s.1.dylib "$LIBGCC_PATH"
+        fi
 
     # gcc and g++ will point to clang/clang++: use versioned alias for fpm
     - name: MacOS patch C and C++ compilers
