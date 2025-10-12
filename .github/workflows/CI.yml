@@ -33,6 +33,8 @@ jobs:
         exclude:
           - os: macos-14  # No Intel on MacOS anymore since 2024
             toolchain: {compiler: intel, version: '2025.1'}
+          - os: macos-14  # gcc@10 not available on macos-14 (ARM64)
+            toolchain: {compiler: gcc, version: 10}
           - os: windows-latest  # Doesn't pass build and tests yet
             toolchain: {compiler: intel, version: '2025.1'}
           - os: windows-latest  # gcc 14 not available on Windows yet
@@ -75,7 +77,7 @@ jobs:
 
     # Backport gfortran shared libraries to the paths expected by the bootstrap fpm binary.
     # The macOS x86_64 release used for bootstrapping has hardcoded library paths from the gcc version
-    # it was built with. Query those paths using otool and create symlinks to the current gcc version.
+    # it was built with. If the versions match, skip this step. Otherwise, create symlinks.
     # On ARM64 it runs under Rosetta 2 and needs /usr/local paths.
     - name: MacOS patch libgfortran
       if: contains(matrix.os, 'macos')
@@ -88,34 +90,69 @@ jobs:
         echo "Checking library dependencies of fpm bootstrap binary..."
         otool -L $(which fpm)
 
-        # Extract the expected libgfortran path and create the target directory
+        # Extract the gcc version from the bootstrap binary's library paths
+        BOOTSTRAP_GCC_VERSION=$(otool -L $(which fpm) | grep -o 'gcc@[0-9]\+' | head -n 1 | cut -d@ -f2)
+        if [ -z "$BOOTSTRAP_GCC_VERSION" ]; then
+          # Try alternative pattern: /lib/gcc/13/ -> extract 13
+          BOOTSTRAP_GCC_VERSION=$(otool -L $(which fpm) | grep libgfortran | grep -o '/lib/gcc/[0-9]\+/' | grep -o '[0-9]\+' | head -n 1)
+        fi
+
+        echo "Bootstrap fpm built with gcc@$BOOTSTRAP_GCC_VERSION"
+        echo "Current toolchain: gcc@${{ matrix.toolchain.version }}"
+
+        if [ "$BOOTSTRAP_GCC_VERSION" == "${{ matrix.toolchain.version }}" ]; then
+          echo "✓ Bootstrap gcc version matches current toolchain - no patching needed"
+          exit 0
+        fi
+
+        echo "⚠ Version mismatch detected - creating compatibility symlinks..."
+
+        # Find the actual Cellar path by following the symlink
+        if [ -L "${BREW_PREFIX}/opt/gcc@${{ matrix.toolchain.version }}" ]; then
+          GCC_CELLAR_PATH=$(cd -P "${BREW_PREFIX}/opt/gcc@${{ matrix.toolchain.version }}" && pwd)
+        else
+          GCC_CELLAR_PATH="${BREW_PREFIX}/Cellar/gcc@${{ matrix.toolchain.version }}"/*
+        fi
+        echo "GCC Cellar path: $GCC_CELLAR_PATH"
+
+        # Find the actual library files
+        CURRENT_GFORTRAN=$(find "$GCC_CELLAR_PATH"/lib/gcc/${{ matrix.toolchain.version }} -name "libgfortran.*.dylib" 2>/dev/null | head -n 1)
+        CURRENT_QUADMATH=$(find "$GCC_CELLAR_PATH"/lib/gcc/${{ matrix.toolchain.version }} -name "libquadmath.*.dylib" 2>/dev/null | head -n 1)
+        CURRENT_GCC_S=$(find "$GCC_CELLAR_PATH"/lib/gcc/${{ matrix.toolchain.version }} -name "libgcc_s.*.dylib" 2>/dev/null | head -n 1)
+
+        echo "Current gcc@${{ matrix.toolchain.version }} libraries:"
+        echo "  libgfortran: $CURRENT_GFORTRAN"
+        echo "  libquadmath: $CURRENT_QUADMATH"
+        echo "  libgcc_s: $CURRENT_GCC_S"
+
+        # Extract the expected libgfortran path and create symlink
         LIBGFORTRAN_PATH=$(otool -L $(which fpm) | grep libgfortran | awk '{print $1}' | head -n 1)
-        if [ -n "$LIBGFORTRAN_PATH" ]; then
+        if [ -n "$LIBGFORTRAN_PATH" ] && [ -n "$CURRENT_GFORTRAN" ]; then
           TARGET_DIR=$(dirname "$LIBGFORTRAN_PATH")
           echo "Creating directory: $TARGET_DIR"
           sudo mkdir -p "$TARGET_DIR"
-          echo "Linking libgfortran from ${BREW_PREFIX}/opt/gcc@${{ matrix.toolchain.version }}/lib/gcc/${{ matrix.toolchain.version }}/libgfortran.5.dylib to $LIBGFORTRAN_PATH"
-          sudo ln -fs ${BREW_PREFIX}/opt/gcc@${{ matrix.toolchain.version }}/lib/gcc/${{ matrix.toolchain.version }}/libgfortran.5.dylib "$LIBGFORTRAN_PATH"
+          echo "Linking $CURRENT_GFORTRAN to $LIBGFORTRAN_PATH"
+          sudo ln -fs "$CURRENT_GFORTRAN" "$LIBGFORTRAN_PATH"
         fi
 
-        # Extract the expected libquadmath path and create the target directory
+        # Extract the expected libquadmath path and create symlink
         LIBQUADMATH_PATH=$(otool -L $(which fpm) | grep libquadmath | awk '{print $1}' | head -n 1)
-        if [ -n "$LIBQUADMATH_PATH" ]; then
+        if [ -n "$LIBQUADMATH_PATH" ] && [ -n "$CURRENT_QUADMATH" ]; then
           TARGET_DIR=$(dirname "$LIBQUADMATH_PATH")
           echo "Creating directory: $TARGET_DIR"
           sudo mkdir -p "$TARGET_DIR"
-          echo "Linking libquadmath from ${BREW_PREFIX}/opt/gcc@${{ matrix.toolchain.version }}/lib/gcc/${{ matrix.toolchain.version }}/libquadmath.0.dylib to $LIBQUADMATH_PATH"
-          sudo ln -fs ${BREW_PREFIX}/opt/gcc@${{ matrix.toolchain.version }}/lib/gcc/${{ matrix.toolchain.version }}/libquadmath.0.dylib "$LIBQUADMATH_PATH"
+          echo "Linking $CURRENT_QUADMATH to $LIBQUADMATH_PATH"
+          sudo ln -fs "$CURRENT_QUADMATH" "$LIBQUADMATH_PATH"
         fi
 
-        # Extract the expected libgcc_s path and create the target directory
+        # Extract the expected libgcc_s path and create symlink
         LIBGCC_PATH=$(otool -L $(which fpm) | grep libgcc_s | awk '{print $1}' | head -n 1)
-        if [ -n "$LIBGCC_PATH" ]; then
+        if [ -n "$LIBGCC_PATH" ] && [ -n "$CURRENT_GCC_S" ]; then
           TARGET_DIR=$(dirname "$LIBGCC_PATH")
           echo "Creating directory: $TARGET_DIR"
           sudo mkdir -p "$TARGET_DIR"
-          echo "Linking libgcc_s from ${BREW_PREFIX}/lib/gcc/${{ matrix.toolchain.version }}/libgcc_s.1.dylib to $LIBGCC_PATH"
-          sudo ln -fs ${BREW_PREFIX}/lib/gcc/${{ matrix.toolchain.version }}/libgcc_s.1.dylib "$LIBGCC_PATH"
+          echo "Linking $CURRENT_GCC_S to $LIBGCC_PATH"
+          sudo ln -fs "$CURRENT_GCC_S" "$LIBGCC_PATH"
         fi
 
     # gcc and g++ will point to clang/clang++: use versioned alias for fpm
