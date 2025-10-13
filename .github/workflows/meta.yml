@@ -39,10 +39,10 @@ jobs:
           - os: ubuntu-latest
             mpi: mpich
             release-flags: --flag ' -Wno-external-argument-mismatch'
-          - os: macos-13
+          - os: macos-14
             mpi: openmpi
             release-flags: --flag ' -Wno-external-argument-mismatch'
-          - os: macos-13
+          - os: macos-14
             mpi: mpich
             release-flags: --flag ' -Wno-external-argument-mismatch'
           - os: ubuntu-latest
@@ -208,7 +208,8 @@ jobs:
         # Only install gcc if not already available
         which gfortran-${{ env.GCC_V }} || brew install gcc@${{ env.GCC_V }}
         which gfortran-${{ env.GCC_V }}
-        which gfortran || ln -s /usr/local/bin/gfortran-${{ env.GCC_V }} /usr/local/bin/gfortran
+        BREW_PREFIX=$(brew --prefix)
+        which gfortran || ln -s ${BREW_PREFIX}/bin/gfortran-${{ env.GCC_V }} ${BREW_PREFIX}/bin/gfortran
 
     - name: (macOS) Install homebrew MPICH
       if: contains(matrix.mpi,'mpich') && contains(matrix.os,'macos')
@@ -231,26 +232,91 @@ jobs:
         brew install netcdf
         brew install netcdf-fortran
 
-    - name: (macOS) Patch gfortran paths
-      if: contains(matrix.os,'macos')
-      run: |        
-        # Backport gfortran shared libraries to version 10 folder. This is necessary because all macOS releases of fpm
-        # have these paths hardcoded in the executable (no PIC?). Current bootstrap version 0.8.0 has gcc-10
-        mkdir /usr/local/opt/gcc@10
-        mkdir /usr/local/opt/gcc@10/lib
-        mkdir /usr/local/opt/gcc@10/lib/gcc
-        mkdir /usr/local/opt/gcc@10/lib/gcc/10
-        mkdir /usr/local/lib/gcc/10
-        ln -fs /usr/local/opt/gcc@${{ env.GCC_V }}/lib/gcc/${{ env.GCC_V }}/libquadmath.0.dylib /usr/local/opt/gcc@10/lib/gcc/10/libquadmath.0.dylib
-        ln -fs /usr/local/opt/gcc@${{ env.GCC_V }}/lib/gcc/${{ env.GCC_V }}/libgfortran.5.dylib /usr/local/opt/gcc@10/lib/gcc/10/libgfortran.5.dylib
-        # Newer gcc versions use libgcc_s.1.1.dylib
-        ln -fs /usr/local/lib/gcc/${{ env.GCC_V }}/libgcc_s.1.dylib /usr/local/lib/gcc/10/libgcc_s.1.dylib || ln -fs /usr/local/lib/gcc/${{ env.GCC_V }}/libgcc_s.1.1.dylib /usr/local/lib/gcc/10/libgcc_s.1.dylib
-       
     # Phase 1: Bootstrap fpm with existing version
     - name: Install fpm
-      uses: fortran-lang/setup-fpm@v7
+      uses: fortran-lang/setup-fpm@v8
       with:
-        fpm-version: 'v0.8.0'       
+        fpm-version: 'v0.12.0'
+
+    # Backport gfortran shared libraries to the paths expected by the bootstrap fpm binary.
+    # The macOS x86_64 release used for bootstrapping has hardcoded library paths from the gcc version
+    # it was built with. If the versions match, skip this step. Otherwise, create symlinks.
+    # On ARM64 it runs under Rosetta 2 and needs /usr/local paths.
+    - name: MacOS patch libgfortran
+      if: contains(matrix.os, 'macos')
+      run: |
+        which gfortran-${{ env.GCC_V }}
+        which gfortran || true
+        BREW_PREFIX=$(brew --prefix)
+
+        # Query the actual library paths that fpm expects
+        echo "Checking library dependencies of fpm bootstrap binary..."
+        otool -L $(which fpm)
+
+        # Extract the gcc version from the bootstrap binary's library paths
+        BOOTSTRAP_GCC_VERSION=$(otool -L $(which fpm) | grep -o 'gcc@[0-9]\+' | head -n 1 | cut -d@ -f2)
+        if [ -z "$BOOTSTRAP_GCC_VERSION" ]; then
+          # Try alternative pattern: /lib/gcc/13/ -> extract 13
+          BOOTSTRAP_GCC_VERSION=$(otool -L $(which fpm) | grep libgfortran | grep -o '/lib/gcc/[0-9]\+/' | grep -o '[0-9]\+' | head -n 1)
+        fi
+
+        echo "Bootstrap fpm built with gcc@$BOOTSTRAP_GCC_VERSION"
+        echo "Current toolchain: gcc@${{ env.GCC_V }}"
+
+        if [ "$BOOTSTRAP_GCC_VERSION" == "${{ env.GCC_V }}" ]; then
+          echo "✓ Bootstrap gcc version matches current toolchain - no patching needed"
+          exit 0
+        fi
+
+        echo "⚠ Version mismatch detected - creating compatibility symlinks..."
+
+        # Find the actual Cellar path by following the symlink
+        if [ -L "${BREW_PREFIX}/opt/gcc@${{ env.GCC_V }}" ]; then
+          GCC_CELLAR_PATH=$(cd -P "${BREW_PREFIX}/opt/gcc@${{ env.GCC_V }}" && pwd)
+        else
+          GCC_CELLAR_PATH="${BREW_PREFIX}/Cellar/gcc@${{ env.GCC_V }}"/*
+        fi
+        echo "GCC Cellar path: $GCC_CELLAR_PATH"
+
+        # Find the actual library files
+        CURRENT_GFORTRAN=$(find "$GCC_CELLAR_PATH"/lib/gcc/${{ env.GCC_V }} -name "libgfortran.*.dylib" 2>/dev/null | head -n 1)
+        CURRENT_QUADMATH=$(find "$GCC_CELLAR_PATH"/lib/gcc/${{ env.GCC_V }} -name "libquadmath.*.dylib" 2>/dev/null | head -n 1)
+        CURRENT_GCC_S=$(find "$GCC_CELLAR_PATH"/lib/gcc/${{ env.GCC_V }} -name "libgcc_s.*.dylib" 2>/dev/null | head -n 1)
+
+        echo "Current gcc@${{ env.GCC_V }} libraries:"
+        echo "  libgfortran: $CURRENT_GFORTRAN"
+        echo "  libquadmath: $CURRENT_QUADMATH"
+        echo "  libgcc_s: $CURRENT_GCC_S"
+
+        # Extract the expected libgfortran path and create symlink
+        LIBGFORTRAN_PATH=$(otool -L $(which fpm) | grep libgfortran | awk '{print $1}' | head -n 1)
+        if [ -n "$LIBGFORTRAN_PATH" ] && [ -n "$CURRENT_GFORTRAN" ]; then
+          TARGET_DIR=$(dirname "$LIBGFORTRAN_PATH")
+          echo "Creating directory: $TARGET_DIR"
+          sudo mkdir -p "$TARGET_DIR"
+          echo "Linking $CURRENT_GFORTRAN to $LIBGFORTRAN_PATH"
+          sudo ln -fs "$CURRENT_GFORTRAN" "$LIBGFORTRAN_PATH"
+        fi
+
+        # Extract the expected libquadmath path and create symlink
+        LIBQUADMATH_PATH=$(otool -L $(which fpm) | grep libquadmath | awk '{print $1}' | head -n 1)
+        if [ -n "$LIBQUADMATH_PATH" ] && [ -n "$CURRENT_QUADMATH" ]; then
+          TARGET_DIR=$(dirname "$LIBQUADMATH_PATH")
+          echo "Creating directory: $TARGET_DIR"
+          sudo mkdir -p "$TARGET_DIR"
+          echo "Linking $CURRENT_QUADMATH to $LIBQUADMATH_PATH"
+          sudo ln -fs "$CURRENT_QUADMATH" "$LIBQUADMATH_PATH"
+        fi
+
+        # Extract the expected libgcc_s path and create symlink
+        LIBGCC_PATH=$(otool -L $(which fpm) | grep libgcc_s | awk '{print $1}' | head -n 1)
+        if [ -n "$LIBGCC_PATH" ] && [ -n "$CURRENT_GCC_S" ]; then
+          TARGET_DIR=$(dirname "$LIBGCC_PATH")
+          echo "Creating directory: $TARGET_DIR"
+          sudo mkdir -p "$TARGET_DIR"
+          echo "Linking $CURRENT_GCC_S to $LIBGCC_PATH"
+          sudo ln -fs "$CURRENT_GCC_S" "$LIBGCC_PATH"
+        fi       
         
     - name: Remove fpm from path
       shell: bash
