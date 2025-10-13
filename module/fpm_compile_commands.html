@@ -215,14 +215,14 @@
         <ul class="list-group list-group-flush">
             <li class="list-group-item">
               <ul class="list-inline">
-                  <li class="list-inline-item">jonquil</li>
-                  <li class="list-inline-item"><a href='fpm_error.html'>fpm_error</a></li>
-                  <li class="list-inline-item"><a href='fpm_strings.html'>fpm_strings</a></li>
                   <li class="list-inline-item"><a href='fpm_os.html'>fpm_os</a></li>
+                  <li class="list-inline-item">jonquil</li>
+                  <li class="list-inline-item"><a href='fpm_strings.html'>fpm_strings</a></li>
                   <li class="list-inline-item">shlex_module</li>
-                  <li class="list-inline-item"><a href='https://toml-f.github.io/toml-f'>tomlf</a></li>
-                  <li class="list-inline-item"><a href='fpm_toml.html'>fpm_toml</a></li>
                   <li class="list-inline-item"><a href='fpm_environment.html'>fpm_environment</a></li>
+                  <li class="list-inline-item"><a href='fpm_toml.html'>fpm_toml</a></li>
+                  <li class="list-inline-item"><a href='https://toml-f.github.io/toml-f'>tomlf</a></li>
+                  <li class="list-inline-item"><a href='fpm_error.html'>fpm_error</a></li>
               </ul>
             </li>
         </ul>
@@ -265,7 +265,7 @@
     <tbody>
         <tr>
             <td>
-              <span class="anchor" id="variable-directory~2"></span>
+              <span class="anchor" id="variable-directory~3"></span>
               character(len=*),
             </td>
 <td>intent(in)</td>
@@ -295,7 +295,7 @@
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-file~2"></span>
+              <span class="anchor" id="variable-file~7"></span>
               character(len=*),
             </td>
 <td>intent(in)</td>
@@ -369,7 +369,7 @@
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-directory"></span>
+              <span class="anchor" id="variable-directory~2"></span>
               type(<a href='../type/string_t.html'>string_t</a>),
             </td>
               <td>public</td>
@@ -386,7 +386,7 @@
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-file"></span>
+              <span class="anchor" id="variable-file~6"></span>
               type(<a href='../type/string_t.html'>string_t</a>),
             </td>
               <td>public</td>
@@ -429,37 +429,37 @@
           <tbody>
               <tr>
                 <td>  procedure, public ::
-  <strong><a href='../type/compile_command_t.html#boundprocedure-destroy'>destroy</a></strong> => <a href='/home/runner/work/fpm/fpm/fpm-doc/proc/compile_command_destroy.html'>compile_command_destroy</a></td>
+  <strong><a href='../type/compile_command_t.html#boundprocedure-destroy~3'>destroy</a></strong> => <a href='/home/runner/work/fpm/fpm/fpm-doc/proc/compile_command_destroy.html'>compile_command_destroy</a></td>
                   <td><p>Operation</p></td>
               </tr>
               <tr>
                 <td>  generic, public ::
-  <strong><a href='../type/compile_command_t.html#boundprocedure-dump~5'>dump</a></strong> => <a href='/home/runner/work/fpm/fpm/fpm-doc/type/srcfile_t.html#boundprocedure-dump_to_toml~13'>dump_to_toml</a>, dump_to_file, dump_to_unit</td>
+  <strong><a href='../type/compile_command_t.html#boundprocedure-dump~17'>dump</a></strong> => <a href='/home/runner/work/fpm/fpm/fpm-doc/type/srcfile_t.html#boundprocedure-dump_to_toml~3'>dump_to_toml</a>, dump_to_file, dump_to_unit</td>
                   <td></td>
               </tr>
               <tr>
                 <td>  procedure, public ::
-  <strong><a href='../type/compile_command_t.html#boundprocedure-dump_to_toml'>dump_to_toml</a></strong> => <a href='/home/runner/work/fpm/fpm/fpm-doc/proc/compile_command_dump_toml.html'>compile_command_dump_toml</a></td>
+  <strong><a href='../type/compile_command_t.html#boundprocedure-dump_to_toml~13'>dump_to_toml</a></strong> => <a href='/home/runner/work/fpm/fpm/fpm-doc/proc/compile_command_dump_toml.html'>compile_command_dump_toml</a></td>
                   <td></td>
               </tr>
               <tr>
                 <td>  generic, public ::
-  <strong><a href='../type/compile_command_t.html#boundprocedure-load~2'>load</a></strong> => <a href='/home/runner/work/fpm/fpm/fpm-doc/type/srcfile_t.html#boundprocedure-load_from_toml~13'>load_from_toml</a>, load_from_file, load_from_unit</td>
+  <strong><a href='../type/compile_command_t.html#boundprocedure-load~14'>load</a></strong> => <a href='/home/runner/work/fpm/fpm/fpm-doc/type/srcfile_t.html#boundprocedure-load_from_toml~3'>load_from_toml</a>, load_from_file, load_from_unit</td>
                   <td></td>
               </tr>
               <tr>
                 <td>  procedure, public ::
-  <strong><a href='../type/compile_command_t.html#boundprocedure-load_from_toml'>load_from_toml</a></strong> => <a href='/home/runner/work/fpm/fpm/fpm-doc/proc/compile_command_load_toml.html'>compile_command_load_toml</a></td>
+  <strong><a href='../type/compile_command_t.html#boundprocedure-load_from_toml~13'>load_from_toml</a></strong> => <a href='/home/runner/work/fpm/fpm/fpm-doc/proc/compile_command_load_toml.html'>compile_command_load_toml</a></td>
                   <td></td>
               </tr>
               <tr>
                 <td>  generic, public ::
-  <strong><a href='../type/compile_command_t.html#boundprocedure-operator%28%3D%3D%29~3'>operator(==)</a></strong> => <a href='/home/runner/work/fpm/fpm/fpm-doc/type/srcfile_t.html#boundprocedure-serializable_is_same~13'>serializable_is_same</a></td>
+  <strong><a href='../type/compile_command_t.html#boundprocedure-operator%28%3D%3D%29~15'>operator(==)</a></strong> => <a href='/home/runner/work/fpm/fpm/fpm-doc/type/srcfile_t.html#boundprocedure-serializable_is_same~3'>serializable_is_same</a></td>
                   <td></td>
               </tr>
               <tr>
                 <td>  procedure, public ::
-  <strong><a href='../type/compile_command_t.html#boundprocedure-serializable_is_same'>serializable_is_same</a></strong> => <a href='/home/runner/work/fpm/fpm/fpm-doc/proc/compile_command_is_same.html'>compile_command_is_same</a></td>
+  <strong><a href='../type/compile_command_t.html#boundprocedure-serializable_is_same~13'>serializable_is_same</a></strong> => <a href='/home/runner/work/fpm/fpm/fpm-doc/proc/compile_command_is_same.html'>compile_command_is_same</a></td>
                   <td><p>Serialization interface</p></td>
               </tr>
               <tr>
@@ -497,7 +497,7 @@
     <tbody>
         <tr>
             <td>
-              <span class="anchor" id="variable-command"></span>
+              <span class="anchor" id="variable-command~15"></span>
               type(<a href='../type/compile_command_t.html'>compile_command_t</a>),
             </td>
               <td>public,</td>
@@ -523,32 +523,32 @@
           <tbody>
               <tr>
                 <td>  procedure, public ::
-  <strong><a href='../type/compile_command_table_t.html#boundprocedure-destroy~2'>destroy</a></strong> => <a href='/home/runner/work/fpm/fpm/fpm-doc/proc/cct_destroy.html'>cct_destroy</a></td>
+  <strong><a href='../type/compile_command_table_t.html#boundprocedure-destroy~4'>destroy</a></strong> => <a href='/home/runner/work/fpm/fpm/fpm-doc/proc/cct_destroy.html'>cct_destroy</a></td>
                   <td><p>Operation</p></td>
               </tr>
               <tr>
                 <td>  generic, public ::
-  <strong><a href='../type/compile_command_table_t.html#boundprocedure-dump~6'>dump</a></strong> => <a href='/home/runner/work/fpm/fpm/fpm-doc/type/srcfile_t.html#boundprocedure-dump_to_toml~13'>dump_to_toml</a>, dump_to_file, dump_to_unit</td>
+  <strong><a href='../type/compile_command_table_t.html#boundprocedure-dump~18'>dump</a></strong> => <a href='/home/runner/work/fpm/fpm/fpm-doc/type/srcfile_t.html#boundprocedure-dump_to_toml~3'>dump_to_toml</a>, dump_to_file, dump_to_unit</td>
                   <td></td>
               </tr>
               <tr>
                 <td>  procedure, public ::
-  <strong><a href='../type/compile_command_table_t.html#boundprocedure-dump_to_toml~2'>dump_to_toml</a></strong> => <a href='/home/runner/work/fpm/fpm/fpm-doc/proc/cct_dump_toml.html'>cct_dump_toml</a></td>
+  <strong><a href='../type/compile_command_table_t.html#boundprocedure-dump_to_toml~14'>dump_to_toml</a></strong> => <a href='/home/runner/work/fpm/fpm/fpm-doc/proc/cct_dump_toml.html'>cct_dump_toml</a></td>
                   <td></td>
               </tr>
               <tr>
                 <td>  generic, public ::
-  <strong><a href='../type/compile_command_table_t.html#boundprocedure-load~3'>load</a></strong> => <a href='/home/runner/work/fpm/fpm/fpm-doc/type/srcfile_t.html#boundprocedure-load_from_toml~13'>load_from_toml</a>, load_from_file, load_from_unit</td>
+  <strong><a href='../type/compile_command_table_t.html#boundprocedure-load~15'>load</a></strong> => <a href='/home/runner/work/fpm/fpm/fpm-doc/type/srcfile_t.html#boundprocedure-load_from_toml~3'>load_from_toml</a>, load_from_file, load_from_unit</td>
                   <td></td>
               </tr>
               <tr>
                 <td>  procedure, public ::
-  <strong><a href='../type/compile_command_table_t.html#boundprocedure-load_from_toml~2'>load_from_toml</a></strong> => <a href='/home/runner/work/fpm/fpm/fpm-doc/proc/cct_load_toml.html'>cct_load_toml</a></td>
+  <strong><a href='../type/compile_command_table_t.html#boundprocedure-load_from_toml~14'>load_from_toml</a></strong> => <a href='/home/runner/work/fpm/fpm/fpm-doc/proc/cct_load_toml.html'>cct_load_toml</a></td>
                   <td></td>
               </tr>
               <tr>
                 <td>  generic, public ::
-  <strong><a href='../type/compile_command_table_t.html#boundprocedure-operator%28%3D%3D%29~4'>operator(==)</a></strong> => <a href='/home/runner/work/fpm/fpm/fpm-doc/type/srcfile_t.html#boundprocedure-serializable_is_same~13'>serializable_is_same</a></td>
+  <strong><a href='../type/compile_command_table_t.html#boundprocedure-operator%28%3D%3D%29~16'>operator(==)</a></strong> => <a href='/home/runner/work/fpm/fpm/fpm-doc/type/srcfile_t.html#boundprocedure-serializable_is_same~3'>serializable_is_same</a></td>
                   <td></td>
               </tr>
               <tr>
@@ -558,7 +558,7 @@
               </tr>
               <tr>
                 <td>  procedure, public ::
-  <strong><a href='../type/compile_command_table_t.html#boundprocedure-serializable_is_same~2'>serializable_is_same</a></strong> => <a href='/home/runner/work/fpm/fpm/fpm-doc/proc/cct_is_same.html'>cct_is_same</a></td>
+  <strong><a href='../type/compile_command_table_t.html#boundprocedure-serializable_is_same~14'>serializable_is_same</a></strong> => <a href='/home/runner/work/fpm/fpm/fpm-doc/proc/cct_is_same.html'>cct_is_same</a></td>
                   <td><p>Serialization interface</p></td>
               </tr>
               <tr>
@@ -602,7 +602,7 @@ All checks passed!</p>
     <tbody>
         <tr>
             <td>
-              <span class="anchor" id="variable-this~2"></span>
+              <span class="anchor" id="variable-this~31"></span>
               class(<a href='../type/compile_command_table_t.html'>compile_command_table_t</a>),
             </td>
 <td>intent(in)</td>
@@ -617,7 +617,7 @@ All checks passed!</p>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-that~2"></span>
+              <span class="anchor" id="variable-that~17"></span>
               class(<a href='../type/serializable_t.html'>serializable_t</a>),
             </td>
 <td>intent(in)</td>
@@ -662,7 +662,7 @@ All checks passed!</p>
     <tbody>
         <tr>
             <td>
-              <span class="anchor" id="variable-directory~2"></span>
+              <span class="anchor" id="variable-directory~3"></span>
               character(len=*),
             </td>
 <td>intent(in)</td>
@@ -692,7 +692,7 @@ All checks passed!</p>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-file~2"></span>
+              <span class="anchor" id="variable-file~7"></span>
               character(len=*),
             </td>
 <td>intent(in)</td>
@@ -738,7 +738,7 @@ All checks passed!</p>
     <tbody>
         <tr>
             <td>
-              <span class="anchor" id="variable-this"></span>
+              <span class="anchor" id="variable-this~30"></span>
               class(<a href='../type/compile_command_t.html'>compile_command_t</a>),
             </td>
 <td>intent(in)</td>
@@ -753,7 +753,7 @@ All checks passed!</p>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-that"></span>
+              <span class="anchor" id="variable-that~16"></span>
               class(<a href='../type/serializable_t.html'>serializable_t</a>),
             </td>
 <td>intent(in)</td>
@@ -803,7 +803,7 @@ All checks passed!</p>
     <tbody>
         <tr>
             <td>
-              <span class="anchor" id="variable-self~6"></span>
+              <span class="anchor" id="variable-self~122"></span>
               class(<a href='../type/compile_command_table_t.html'>compile_command_table_t</a>),
             </td>
 <td>intent(inout)</td>
@@ -843,7 +843,7 @@ All checks passed!</p>
     <tbody>
         <tr>
             <td>
-              <span class="anchor" id="variable-self~4"></span>
+              <span class="anchor" id="variable-self~120"></span>
               class(<a href='../type/compile_command_table_t.html'>compile_command_table_t</a>),
             </td>
 <td>intent(inout)</td>
@@ -858,7 +858,7 @@ All checks passed!</p>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-array"></span>
+              <span class="anchor" id="variable-array~3"></span>
               type(toml_array),
             </td>
 <td>intent(inout)</td>
@@ -873,7 +873,7 @@ All checks passed!</p>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-error~3"></span>
+              <span class="anchor" id="variable-error~140"></span>
               type(<a href='../type/error_t.html'>error_t</a>),
             </td>
 <td>intent(out),</td>
@@ -913,7 +913,7 @@ All checks passed!</p>
     <tbody>
         <tr>
             <td>
-              <span class="anchor" id="variable-self~9"></span>
+              <span class="anchor" id="variable-self~125"></span>
               class(<a href='../type/compile_command_table_t.html'>compile_command_table_t</a>),
             </td>
 <td>intent(inout)</td>
@@ -928,7 +928,7 @@ All checks passed!</p>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-table~3"></span>
+              <span class="anchor" id="variable-table~68"></span>
               type(toml_table),
             </td>
 <td>intent(inout)</td>
@@ -943,7 +943,7 @@ All checks passed!</p>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-error~7"></span>
+              <span class="anchor" id="variable-error~144"></span>
               type(<a href='../type/error_t.html'>error_t</a>),
             </td>
 <td>intent(out),</td>
@@ -983,7 +983,7 @@ All checks passed!</p>
     <tbody>
         <tr>
             <td>
-              <span class="anchor" id="variable-self~10"></span>
+              <span class="anchor" id="variable-self~126"></span>
               class(<a href='../type/compile_command_table_t.html'>compile_command_table_t</a>),
             </td>
 <td>intent(inout)</td>
@@ -998,7 +998,7 @@ All checks passed!</p>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-table~4"></span>
+              <span class="anchor" id="variable-table~69"></span>
               type(toml_table),
             </td>
 <td>intent(inout)</td>
@@ -1013,7 +1013,7 @@ All checks passed!</p>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-error~8"></span>
+              <span class="anchor" id="variable-error~145"></span>
               type(<a href='../type/error_t.html'>error_t</a>),
             </td>
 <td>intent(out),</td>
@@ -1053,7 +1053,7 @@ All checks passed!</p>
     <tbody>
         <tr>
             <td>
-              <span class="anchor" id="variable-self~7"></span>
+              <span class="anchor" id="variable-self~123"></span>
               class(<a href='../type/compile_command_table_t.html'>compile_command_table_t</a>),
             </td>
 <td>intent(inout)</td>
@@ -1068,7 +1068,7 @@ All checks passed!</p>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-command~2"></span>
+              <span class="anchor" id="variable-command~16"></span>
               character(len=*),
             </td>
 <td>intent(in)</td>
@@ -1083,7 +1083,7 @@ All checks passed!</p>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-target_os"></span>
+              <span class="anchor" id="variable-target_os~2"></span>
               integer,
             </td>
 <td>intent(in)</td>
@@ -1098,7 +1098,7 @@ All checks passed!</p>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-error~5"></span>
+              <span class="anchor" id="variable-error~142"></span>
               type(<a href='../type/error_t.html'>error_t</a>),
             </td>
 <td>intent(out),</td>
@@ -1138,7 +1138,7 @@ All checks passed!</p>
     <tbody>
         <tr>
             <td>
-              <span class="anchor" id="variable-self~8"></span>
+              <span class="anchor" id="variable-self~124"></span>
               class(<a href='../type/compile_command_table_t.html'>compile_command_table_t</a>),
             </td>
 <td>intent(inout)</td>
@@ -1153,7 +1153,7 @@ All checks passed!</p>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-command~3"></span>
+              <span class="anchor" id="variable-command~17"></span>
               type(<a href='../type/compile_command_t.html'>compile_command_t</a>),
             </td>
 <td>intent(in)</td>
@@ -1168,7 +1168,7 @@ All checks passed!</p>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-error~6"></span>
+              <span class="anchor" id="variable-error~143"></span>
               type(<a href='../type/error_t.html'>error_t</a>),
             </td>
 <td>intent(out),</td>
@@ -1209,7 +1209,7 @@ create a custom json here.</p>
     <tbody>
         <tr>
             <td>
-              <span class="anchor" id="variable-self~5"></span>
+              <span class="anchor" id="variable-self~121"></span>
               class(<a href='../type/compile_command_table_t.html'>compile_command_table_t</a>),
             </td>
 <td>intent(inout)</td>
@@ -1224,7 +1224,7 @@ create a custom json here.</p>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-filename"></span>
+              <span class="anchor" id="variable-filename~10"></span>
               character(len=*),
             </td>
 <td>intent(in)</td>
@@ -1239,7 +1239,7 @@ create a custom json here.</p>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-error~4"></span>
+              <span class="anchor" id="variable-error~141"></span>
               type(<a href='../type/error_t.html'>error_t</a>),
             </td>
 <td>intent(out),</td>
@@ -1279,7 +1279,7 @@ create a custom json here.</p>
     <tbody>
         <tr>
             <td>
-              <span class="anchor" id="variable-self"></span>
+              <span class="anchor" id="variable-self~117"></span>
               class(<a href='../type/compile_command_t.html'>compile_command_t</a>),
             </td>
 <td>intent(inout)</td>
@@ -1319,7 +1319,7 @@ create a custom json here.</p>
     <tbody>
         <tr>
             <td>
-              <span class="anchor" id="variable-self~2"></span>
+              <span class="anchor" id="variable-self~118"></span>
               class(<a href='../type/compile_command_t.html'>compile_command_t</a>),
             </td>
 <td>intent(inout)</td>
@@ -1334,7 +1334,7 @@ create a custom json here.</p>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-table"></span>
+              <span class="anchor" id="variable-table~66"></span>
               type(toml_table),
             </td>
 <td>intent(inout)</td>
@@ -1349,7 +1349,7 @@ create a custom json here.</p>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-error"></span>
+              <span class="anchor" id="variable-error~138"></span>
               type(<a href='../type/error_t.html'>error_t</a>),
             </td>
 <td>intent(out),</td>
@@ -1389,7 +1389,7 @@ create a custom json here.</p>
     <tbody>
         <tr>
             <td>
-              <span class="anchor" id="variable-self~3"></span>
+              <span class="anchor" id="variable-self~119"></span>
               class(<a href='../type/compile_command_t.html'>compile_command_t</a>),
             </td>
 <td>intent(inout)</td>
@@ -1404,7 +1404,7 @@ create a custom json here.</p>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-table~2"></span>
+              <span class="anchor" id="variable-table~67"></span>
               type(toml_table),
             </td>
 <td>intent(inout)</td>
@@ -1419,7 +1419,7 @@ create a custom json here.</p>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-error~2"></span>
+              <span class="anchor" id="variable-error~139"></span>
               type(<a href='../type/error_t.html'>error_t</a>),
             </td>
 <td>intent(out),</td>
@@ -1462,7 +1462,7 @@ create a custom json here.</p>
             <p class="text-end">
               Documentation generated by
               <a href="https://github.com/Fortran-FOSS-Programmers/ford">FORD</a>
- on 2025-10-11 09:28 +0000             </p>
+ on 2025-10-13 09:44 +0000             </p>
           </div>
         </div>
         <br>
