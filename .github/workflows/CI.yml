@@ -312,7 +312,7 @@ jobs:
       run: |
         set -e
         download_path='${{ steps.download_windows_artifacts.outputs.download-path }}'
-        download_path=${download_path%%$'\n'*}
+        download_path=$(printf '%s\n' "$download_path" | head -n1)
         if [ -z "$download_path" ]; then
           echo "download-artifact did not report a download path" >&2
           exit 1
