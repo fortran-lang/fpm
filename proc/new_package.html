@@ -92,7 +92,7 @@
 
             <li class="list-inline-item" id="statements"><i class="fa fa-list-ol"></i>
               <a data-bs-toggle="tooltip" data-bs-placement="bottom" data-bs-html="true"
-                 title=" 0.9% of total for procedures.">70 statements</a>
+                 title=" 1.0% of total for procedures.">76 statements</a>
             </li>
 
             <li class="list-inline-item" id="source-file">
@@ -179,7 +179,7 @@
     <tbody>
         <tr>
             <td>
-              <span class="anchor" id="variable-self~191"></span>
+              <span class="anchor" id="variable-self~106"></span>
               type(<a href='../type/package_config_t.html'>package_config_t</a>),
             </td>
 <td>intent(out)</td>
@@ -194,7 +194,7 @@
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-table~109"></span>
+              <span class="anchor" id="variable-table~43"></span>
               type(toml_table),
             </td>
 <td>intent(inout)</td>
@@ -209,7 +209,7 @@
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-root~14"></span>
+              <span class="anchor" id="variable-root~10"></span>
               character(len=*),
             </td>
 <td>intent(in),</td>
@@ -224,7 +224,7 @@
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-error~239"></span>
+              <span class="anchor" id="variable-error~99"></span>
               type(<a href='../type/error_t.html'>error_t</a>),
             </td>
 <td>intent(out),</td>
@@ -276,6 +276,9 @@
 <span class="w">        </span><span class="k">type</span><span class="p">(</span><span class="n">toml_array</span><span class="p">),</span><span class="w"> </span><span class="k">pointer</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">children</span>
 <span class="w">        </span><span class="kt">character</span><span class="p">(</span><span class="nb">len</span><span class="o">=</span><span class="p">:),</span><span class="w"> </span><span class="k">allocatable</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">version</span><span class="p">,</span><span class="w"> </span><span class="n">version_file</span>
 <span class="w">        </span><span class="kt">integer</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">ii</span><span class="p">,</span><span class="w"> </span><span class="n">nn</span><span class="p">,</span><span class="w"> </span><span class="nb">stat</span><span class="p">,</span><span class="w"> </span><span class="n">io</span>
+<span class="w">        </span>
+<span class="w">        </span><span class="c">! Ensure metapackage data is initialized although off</span>
+<span class="w">        </span><span class="k">call </span><span class="n">self</span><span class="p">%</span><span class="n">meta</span><span class="p">%</span><span class="n">reset</span><span class="p">()</span><span class="w">        </span>
 
 <span class="w">        </span><span class="k">call </span><span class="n">check</span><span class="p">(</span><span class="n">table</span><span class="p">,</span><span class="w"> </span><span class="n">error</span><span class="p">)</span>
 <span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="nb">allocated</span><span class="p">(</span><span class="n">error</span><span class="p">))</span><span class="w"> </span><span class="k">return</span>
@@ -337,7 +340,7 @@
 <span class="k">            call </span><span class="n">new_profiles</span><span class="p">(</span><span class="n">self</span><span class="p">%</span><span class="n">profiles</span><span class="p">,</span><span class="w"> </span><span class="n">child</span><span class="p">,</span><span class="w"> </span><span class="n">error</span><span class="p">)</span>
 <span class="w">            </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="nb">allocated</span><span class="p">(</span><span class="n">error</span><span class="p">))</span><span class="w"> </span><span class="k">return</span>
 <span class="k">        else</span>
-<span class="w">            </span><span class="c">! Leave profiles unallocated for now</span>
+<span class="w">            </span><span class="c">! No profiles defined - start with empty array</span>
 <span class="w">            </span><span class="k">allocate</span><span class="p">(</span><span class="n">self</span><span class="p">%</span><span class="n">profiles</span><span class="p">(</span><span class="mi">0</span><span class="p">))</span>
 <span class="w">        </span><span class="k">end if</span>
 
@@ -347,11 +350,21 @@
 <span class="w">            </span><span class="k">call </span><span class="n">new_collections</span><span class="p">(</span><span class="n">self</span><span class="p">%</span><span class="n">features</span><span class="p">,</span><span class="w"> </span><span class="n">child</span><span class="p">,</span><span class="w"> </span><span class="n">error</span><span class="p">)</span>
 <span class="w">            </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="nb">allocated</span><span class="p">(</span><span class="n">error</span><span class="p">))</span><span class="w"> </span><span class="k">return</span>
 <span class="k">        else</span>
-<span class="w">            </span><span class="c">! Initialize with default feature collections (debug and release)</span>
-<span class="w">            </span><span class="k">call </span><span class="n">get_default_features</span><span class="p">(</span><span class="n">self</span><span class="p">%</span><span class="n">features</span><span class="p">,</span><span class="w"> </span><span class="n">error</span><span class="p">)</span>
-<span class="w">            </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="nb">allocated</span><span class="p">(</span><span class="n">error</span><span class="p">))</span><span class="w"> </span><span class="k">return</span>
-<span class="k">        end if</span>
+<span class="w">            </span><span class="c">! No features defined - start with empty array</span>
+<span class="w">            </span><span class="k">allocate</span><span class="p">(</span><span class="n">self</span><span class="p">%</span><span class="n">features</span><span class="p">(</span><span class="mi">0</span><span class="p">))</span>
+<span class="w">        </span><span class="k">end if</span>
 
+<span class="w">        </span><span class="c">! Add default features and profiles if they don&#39;t already exist</span>
+<span class="w">        </span><span class="k">call </span><span class="n">add_default_features</span><span class="p">(</span><span class="n">self</span><span class="p">%</span><span class="n">features</span><span class="p">,</span><span class="w"> </span><span class="n">error</span><span class="p">)</span>
+<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="nb">allocated</span><span class="p">(</span><span class="n">error</span><span class="p">))</span><span class="w"> </span><span class="k">return</span>
+
+<span class="k">        call </span><span class="n">add_default_profiles</span><span class="p">(</span><span class="n">self</span><span class="p">%</span><span class="n">profiles</span><span class="p">,</span><span class="w"> </span><span class="n">error</span><span class="p">)</span>
+<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="nb">allocated</span><span class="p">(</span><span class="n">error</span><span class="p">))</span><span class="w"> </span><span class="k">return</span>
+
+<span class="w">        </span><span class="c">! Validate profiles after all features and profiles have been loaded</span>
+<span class="w">        </span><span class="k">call </span><span class="n">validate_profiles</span><span class="p">(</span><span class="n">self</span><span class="p">,</span><span class="w"> </span><span class="n">error</span><span class="p">)</span>
+<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="nb">allocated</span><span class="p">(</span><span class="n">error</span><span class="p">))</span><span class="w"> </span><span class="k">return</span>
+<span class="k">        </span>
 <span class="k">    end subroutine </span><span class="n">new_package</span>
 </pre></div>
 
@@ -376,7 +389,7 @@
             <p class="text-end">
               Documentation generated by
               <a href="https://github.com/Fortran-FOSS-Programmers/ford">FORD</a>
- on 2025-10-13 09:44 +0000             </p>
+ on 2025-10-14 10:22 +0000             </p>
           </div>
         </div>
         <br>

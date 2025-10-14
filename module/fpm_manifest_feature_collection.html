@@ -92,7 +92,7 @@
 
             <li class="list-inline-item" id="statements"><i class="fa fa-list-ol"></i>
               <a data-bs-toggle="tooltip" data-bs-placement="bottom" data-bs-html="true"
-                 title=" 3.9% of total for modules and submodules.">668 statements</a>
+                 title=" 4.7% of total for modules and submodules.">821 statements</a>
             </li>
 
             <li class="list-inline-item" id="source-file">
@@ -133,7 +133,18 @@
   
   
   
-  
+      <div class="card mb-4">
+      <a data-bs-toggle="collapse" href="#inters-0"
+         aria-expanded="false" aria-controls="inters-0">
+         <h4 class="card-header bg-primary text-white">Interfaces</h4>
+      </a>
+      <div id="inters-0" class="collapse">
+        <div class="list-group list-group-flush">
+            <a class="list-group-item" href="../module/fpm_manifest_feature_collection.html#interface-feature_collection_t">feature_collection_t</a>
+        </div>
+      </div>
+    </div>
+
   
       <div class="card mb-4">
       <a data-bs-toggle="collapse" href="#types-0"
@@ -154,6 +165,7 @@
       </a>
       <div id="funcs-0" class="collapse">
         <div class="list-group list-group-flush">
+            <a class="list-group-item" href="../module/fpm_manifest_feature_collection.html#proc-collection_from_feature">collection_from_feature</a>
             <a class="list-group-item" href="../module/fpm_manifest_feature_collection.html#proc-default_debug_feature">default_debug_feature</a>
             <a class="list-group-item" href="../module/fpm_manifest_feature_collection.html#proc-default_release_feature">default_release_feature</a>
         </div>
@@ -167,8 +179,8 @@
       </a>
       <div id="subs-0" class="collapse">
         <div class="list-group list-group-flush">
+            <a class="list-group-item" href="../module/fpm_manifest_feature_collection.html#proc-add_default_features">add_default_features</a>
             <a class="list-group-item" href="../module/fpm_manifest_feature_collection.html#proc-get_default_features">get_default_features</a>
-            <a class="list-group-item" href="../module/fpm_manifest_feature_collection.html#proc-get_default_features_as_features">get_default_features_as_features</a>
             <a class="list-group-item" href="../module/fpm_manifest_feature_collection.html#proc-new_collections">new_collections</a>
         </div>
       </div>
@@ -195,20 +207,20 @@
         <ul class="list-group list-group-flush">
             <li class="list-group-item">
               <ul class="list-inline">
+                  <li class="list-inline-item"><a href='fpm_manifest_metapackages.html'>fpm_manifest_metapackages</a></li>
+                  <li class="list-inline-item"><a href='fpm_strings.html'>fpm_strings</a></li>
+                  <li class="list-inline-item"><a href='fpm_manifest_executable.html'>fpm_manifest_executable</a></li>
+                  <li class="list-inline-item"><a href='fpm_toml.html'>fpm_toml</a></li>
+                  <li class="list-inline-item"><a href='fpm_manifest_feature.html'>fpm_manifest_feature</a></li>
+                  <li class="list-inline-item"><a href='fpm_manifest_test.html'>fpm_manifest_test</a></li>
+                  <li class="list-inline-item"><a href='fpm_manifest_preprocess.html'>fpm_manifest_preprocess</a></li>
+                  <li class="list-inline-item"><a href='https://toml-f.github.io/toml-f'>tomlf</a></li>
+                  <li class="list-inline-item"><a href='fpm_manifest_platform.html'>fpm_manifest_platform</a></li>
+                  <li class="list-inline-item"><a href='fpm_environment.html'>fpm_environment</a></li>
+                  <li class="list-inline-item"><a href='fpm_compiler.html'>fpm_compiler</a></li>
                   <li class="list-inline-item"><a href='fpm_manifest_example.html'>fpm_manifest_example</a></li>
                   <li class="list-inline-item"><a href='fpm_error.html'>fpm_error</a></li>
                   <li class="list-inline-item"><a href='fpm_manifest_dependency.html'>fpm_manifest_dependency</a></li>
-                  <li class="list-inline-item"><a href='fpm_manifest_metapackages.html'>fpm_manifest_metapackages</a></li>
-                  <li class="list-inline-item"><a href='fpm_compiler.html'>fpm_compiler</a></li>
-                  <li class="list-inline-item"><a href='fpm_manifest_preprocess.html'>fpm_manifest_preprocess</a></li>
-                  <li class="list-inline-item"><a href='fpm_manifest_executable.html'>fpm_manifest_executable</a></li>
-                  <li class="list-inline-item"><a href='fpm_manifest_platform.html'>fpm_manifest_platform</a></li>
-                  <li class="list-inline-item"><a href='fpm_manifest_test.html'>fpm_manifest_test</a></li>
-                  <li class="list-inline-item"><a href='fpm_strings.html'>fpm_strings</a></li>
-                  <li class="list-inline-item"><a href='fpm_environment.html'>fpm_environment</a></li>
-                  <li class="list-inline-item"><a href='https://toml-f.github.io/toml-f'>tomlf</a></li>
-                  <li class="list-inline-item"><a href='fpm_manifest_feature.html'>fpm_manifest_feature</a></li>
-                  <li class="list-inline-item"><a href='fpm_toml.html'>fpm_toml</a></li>
               </ul>
             </li>
         </ul>
@@ -221,6 +233,68 @@
 
 
 
+        <section>
+          <h2>Interfaces</h2>
+              <div class="card">
+    <div class="card-header bg-light codesum">
+      <span class="anchor" id="interface-feature_collection_t"></span>
+      <h3>public        interface <a href='../interface/feature_collection_t.html'>feature_collection_t</a> 
+      </h3>
+    </div>
+      <div class="card-body">
+        <p>Interface for feature_collection_t constructor</p>
+      </div>
+    <ul class="list-group">
+          <li class="list-group-item">
+                <h3>
+    public  function <a href='../proc/collection_from_feature.html'>collection_from_feature</a>(self) result(collection)  
+
+    </h3>
+    
+  <p>Create a feature collection from a single feature_config_t
+The feature becomes the base configuration for all OS/compiler combinations</p>
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-self~184"></span>
+              class(<a href='../type/feature_config_t.html'>feature_config_t</a>),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>self</strong></td>
+            <td>
+<p>Feature configuration to convert</p>
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+    <h4>
+    Return Value
+    <small>type(<a href='../type/feature_collection_t.html'>feature_collection_t</a>)</small>
+    </h4>
+    
+
+          </li>
+    </ul>
+  </div>
+
+        </section>
+        <br>
 
 
         <section>
@@ -286,6 +360,24 @@
   </table>
 
 
+        <h4>Constructor</h4>
+          <p>Interface for feature_collection_t constructor</p>
+        <table class="table table-striped varlist">
+          <tbody>
+                <tr>
+                  <td>
+                        public
+
+                    
+                    function
+                    <strong><a href='/home/runner/work/fpm/fpm/fpm-doc/proc/collection_from_feature.html'>collection_from_feature</a></strong>
+                    (self)
+                  </td>
+                  <td><p>Create a feature collection from a single feature_config_t
+The feature becomes the base configuration for all OS/compiler combinations</p></td>
+                </tr>
+          </tbody>
+        </table>
 
 
         <h4>Type-Bound Procedures</h4>
@@ -293,17 +385,17 @@
           <tbody>
               <tr>
                 <td>  procedure, public ::
-  <strong><a href='../type/feature_collection_t.html#boundprocedure-check'>check</a></strong> => check_collection</td>
+  <strong><a href='../type/feature_collection_t.html#boundprocedure-check~2'>check</a></strong> => check_collection</td>
                   <td></td>
               </tr>
               <tr>
                 <td>  generic, public ::
-  <strong><a href='../type/feature_collection_t.html#boundprocedure-dump~20'>dump</a></strong> => <a href='/home/runner/work/fpm/fpm/fpm-doc/type/srcfile_t.html#boundprocedure-dump_to_toml~3'>dump_to_toml</a>, dump_to_file, dump_to_unit</td>
+  <strong><a href='../type/feature_collection_t.html#boundprocedure-dump~25'>dump</a></strong> => <a href='/home/runner/work/fpm/fpm/fpm-doc/type/srcfile_t.html#boundprocedure-dump_to_toml~5'>dump_to_toml</a>, dump_to_file, dump_to_unit</td>
                   <td></td>
               </tr>
               <tr>
                 <td>  procedure, public ::
-  <strong><a href='../type/feature_collection_t.html#boundprocedure-dump_to_toml~15'>dump_to_toml</a></strong> => feature_collection_dump</td>
+  <strong><a href='../type/feature_collection_t.html#boundprocedure-dump_to_toml~20'>dump_to_toml</a></strong> => feature_collection_dump</td>
                   <td></td>
               </tr>
               <tr>
@@ -312,18 +404,28 @@
                   <td></td>
               </tr>
               <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/feature_collection_t.html#boundprocedure-has_cpp~6'>has_cpp</a></strong></td>
+                  <td></td>
+              </tr>
+              <tr>
                 <td>  generic, public ::
-  <strong><a href='../type/feature_collection_t.html#boundprocedure-load~17'>load</a></strong> => <a href='/home/runner/work/fpm/fpm/fpm-doc/type/srcfile_t.html#boundprocedure-load_from_toml~3'>load_from_toml</a>, load_from_file, load_from_unit</td>
+  <strong><a href='../type/feature_collection_t.html#boundprocedure-load~22'>load</a></strong> => <a href='/home/runner/work/fpm/fpm/fpm-doc/type/srcfile_t.html#boundprocedure-load_from_toml~5'>load_from_toml</a>, load_from_file, load_from_unit</td>
                   <td></td>
               </tr>
               <tr>
                 <td>  procedure, public ::
-  <strong><a href='../type/feature_collection_t.html#boundprocedure-load_from_toml~15'>load_from_toml</a></strong> => feature_collection_load</td>
+  <strong><a href='../type/feature_collection_t.html#boundprocedure-load_from_toml~20'>load_from_toml</a></strong> => feature_collection_load</td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/feature_collection_t.html#boundprocedure-merge_into_package'>merge_into_package</a></strong></td>
                   <td></td>
               </tr>
               <tr>
                 <td>  generic, public ::
-  <strong><a href='../type/feature_collection_t.html#boundprocedure-operator%28%3D%3D%29~18'>operator(==)</a></strong> => <a href='/home/runner/work/fpm/fpm/fpm-doc/type/srcfile_t.html#boundprocedure-serializable_is_same~3'>serializable_is_same</a></td>
+  <strong><a href='../type/feature_collection_t.html#boundprocedure-operator%28%3D%3D%29~23'>operator(==)</a></strong> => <a href='/home/runner/work/fpm/fpm/fpm-doc/type/srcfile_t.html#boundprocedure-serializable_is_same~5'>serializable_is_same</a></td>
                   <td></td>
               </tr>
               <tr>
@@ -333,7 +435,7 @@
               </tr>
               <tr>
                 <td>  procedure, public ::
-  <strong><a href='../type/feature_collection_t.html#boundprocedure-serializable_is_same~15'>serializable_is_same</a></strong> => feature_collection_same</td>
+  <strong><a href='../type/feature_collection_t.html#boundprocedure-serializable_is_same~20'>serializable_is_same</a></strong> => feature_collection_same</td>
                   <td></td>
               </tr>
               <tr>
@@ -351,6 +453,52 @@
 
         <section>
           <h2>Functions</h2>
+              <div class="card">
+    <div class="card-header codesum"><span class="anchor" id="proc-collection_from_feature"></span> <h3>public  function <a href='../proc/collection_from_feature.html'>collection_from_feature</a>(self) result(collection)  
+</h3></div>
+    <div class="card-body">
+          
+  <p>Create a feature collection from a single feature_config_t
+The feature becomes the base configuration for all OS/compiler combinations</p>
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-self~184"></span>
+              class(<a href='../type/feature_config_t.html'>feature_config_t</a>),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>self</strong></td>
+            <td>
+<p>Feature configuration to convert</p>
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+    <h4>
+    Return Value
+    <small>type(<a href='../type/feature_collection_t.html'>feature_collection_t</a>)</small>
+    </h4>
+    
+
+    </div>
+  </div>
+
               <div class="card">
     <div class="card-header codesum"><span class="anchor" id="proc-default_debug_feature"></span> <h3>public  function <a href='../proc/default_debug_feature.html'>default_debug_feature</a>() result(collection)  
 </h3></div>
@@ -393,6 +541,61 @@
         <section>
           <h2>Subroutines</h2>
               <div class="card">
+    <div class="card-header codesum"><span class="anchor" id="proc-add_default_features"></span> <h3>public  subroutine <a href='../proc/add_default_features.html'>add_default_features</a>(features, error)  
+</h3></div>
+    <div class="card-body">
+          
+  <p>Add default features to existing features array if they don&rsquo;t already exist</p>
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-features~12"></span>
+              type(<a href='../type/feature_collection_t.html'>feature_collection_t</a>),
+            </td>
+<td>intent(inout),</td>
+              <td></td>            <td>
+              allocatable
+            </td>
+            <td>::</td>
+            <td><strong>features</strong>(:)</td>
+            <td>
+<p>Instance of the feature collections array (will be resized)</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-error~224"></span>
+              type(<a href='../type/error_t.html'>error_t</a>),
+            </td>
+<td>intent(out),</td>
+              <td></td>            <td>
+              allocatable
+            </td>
+            <td>::</td>
+            <td><strong>error</strong></td>
+            <td>
+<p>Error handling</p>
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+
+    </div>
+  </div>
+
+              <div class="card">
     <div class="card-header codesum"><span class="anchor" id="proc-get_default_features"></span> <h3>public  subroutine <a href='../proc/get_default_features.html'>get_default_features</a>(collections, error)  
 </h3></div>
     <div class="card-body">
@@ -427,62 +630,7 @@
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-error~159"></span>
-              type(<a href='../type/error_t.html'>error_t</a>),
-            </td>
-<td>intent(out),</td>
-              <td></td>            <td>
-              allocatable
-            </td>
-            <td>::</td>
-            <td><strong>error</strong></td>
-            <td>
-<p>Error handling</p>
-            </td>
-        </tr>
-    </tbody>
-  </table>
-
-
-    </div>
-  </div>
-
-              <div class="card">
-    <div class="card-header codesum"><span class="anchor" id="proc-get_default_features_as_features"></span> <h3>public  subroutine <a href='../proc/get_default_features_as_features.html'>get_default_features_as_features</a>(features, error)  
-</h3></div>
-    <div class="card-body">
-          
-  <p>Convert feature collections to individual features (for backward compatibility)</p>
-
-  <h4>Arguments</h4>
-      <table class="table table-striped varlist">
-    <thead>
-      <tr>
-        <th scope="col">Type</th>
-<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
-        <th scope="col"></th>
-        <th scope="col">Name</th>
-        <th scope="col"></th>
-    </thead>
-    <tbody>
-        <tr>
-            <td>
-              <span class="anchor" id="variable-features~6"></span>
-              type(<a href='../type/feature_config_t.html'>feature_config_t</a>),
-            </td>
-<td>intent(out),</td>
-              <td></td>            <td>
-              allocatable
-            </td>
-            <td>::</td>
-            <td><strong>features</strong>(:)</td>
-            <td>
-<p>Features array to populate (backward compatible)</p>
-            </td>
-        </tr>
-        <tr>
-            <td>
-              <span class="anchor" id="variable-error~160"></span>
+              <span class="anchor" id="variable-error~217"></span>
               type(<a href='../type/error_t.html'>error_t</a>),
             </td>
 <td>intent(out),</td>
@@ -537,7 +685,7 @@
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-table~74"></span>
+              <span class="anchor" id="variable-table~90"></span>
               type(toml_table),
             </td>
 <td>intent(inout)</td>
@@ -552,7 +700,7 @@
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-error~155"></span>
+              <span class="anchor" id="variable-error~209"></span>
               type(<a href='../type/error_t.html'>error_t</a>),
             </td>
 <td>intent(out),</td>
@@ -595,7 +743,7 @@
             <p class="text-end">
               Documentation generated by
               <a href="https://github.com/Fortran-FOSS-Programmers/ford">FORD</a>
- on 2025-10-13 09:44 +0000             </p>
+ on 2025-10-14 10:22 +0000             </p>
           </div>
         </div>
         <br>

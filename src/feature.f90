@@ -100,7 +100,7 @@ module fpm_manifest_feature
         character(len=:), allocatable :: cxx_flags
         character(len=:), allocatable :: link_time_flags
         
-        !> Feature dependencies
+        !> Feature dependencies (not active yet)
         type(string_t), allocatable :: requires_features(:)
         
         !> Is this feature enabled by default
@@ -116,6 +116,9 @@ module fpm_manifest_feature
         
         !> Get manifest name
         procedure :: manifest_name
+        
+        !> Check if there is a cpp configuration
+        procedure :: has_cpp
 
         !> Serialization interface
         procedure :: serializable_is_same => feature_is_same
@@ -1193,5 +1196,21 @@ contains
           end if
           
       end function manifest_name
+      
+      !> Check if there is a CPP preprocessor configuration
+      elemental logical function has_cpp(self) 
+          class(feature_config_t), intent(in) :: self
+          
+          integer :: i
+          
+          has_cpp = .false.
+          if (.not.allocated(self%preprocess)) return
+          
+          do i=1,size(self%preprocess)
+              has_cpp = self%preprocess(i)%is_cpp()
+              if (has_cpp) return
+          end do
+          
+      end function has_cpp
 
 end module fpm_manifest_feature

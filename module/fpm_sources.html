@@ -92,7 +92,7 @@
 
             <li class="list-inline-item" id="statements"><i class="fa fa-list-ol"></i>
               <a data-bs-toggle="tooltip" data-bs-placement="bottom" data-bs-html="true"
-                 title=" 1.1% of total for modules and submodules.">183 statements</a>
+                 title=" 1.3% of total for modules and submodules.">225 statements</a>
             </li>
 
             <li class="list-inline-item" id="source-file">
@@ -133,7 +133,18 @@
   
   
   
-  
+      <div class="card mb-4">
+      <a data-bs-toggle="collapse" href="#inters-0"
+         aria-expanded="false" aria-controls="inters-0">
+         <h4 class="card-header bg-primary text-white">Interfaces</h4>
+      </a>
+      <div id="inters-0" class="collapse">
+        <div class="list-group list-group-flush">
+            <a class="list-group-item" href="../module/fpm_sources.html#interface-add_srcfile">add_srcfile</a>
+        </div>
+      </div>
+    </div>
+
   
   
       <div class="card mb-4">
@@ -184,13 +195,13 @@
         <ul class="list-group list-group-flush">
             <li class="list-group-item">
               <ul class="list-inline">
-                  <li class="list-inline-item"><a href='fpm_manifest_preprocess.html'>fpm_manifest_preprocess</a></li>
-                  <li class="list-inline-item"><a href='fpm_filesystem.html'>fpm_filesystem</a></li>
-                  <li class="list-inline-item"><a href='fpm_manifest_executable.html'>fpm_manifest_executable</a></li>
-                  <li class="list-inline-item"><a href='fpm_model.html'>fpm_model</a></li>
                   <li class="list-inline-item"><a href='fpm_strings.html'>fpm_strings</a></li>
+                  <li class="list-inline-item"><a href='fpm_manifest_executable.html'>fpm_manifest_executable</a></li>
                   <li class="list-inline-item"><a href='fpm_source_parsing.html'>fpm_source_parsing</a></li>
+                  <li class="list-inline-item"><a href='fpm_manifest_preprocess.html'>fpm_manifest_preprocess</a></li>
                   <li class="list-inline-item"><a href='fpm_environment.html'>fpm_environment</a></li>
+                  <li class="list-inline-item"><a href='fpm_model.html'>fpm_model</a></li>
+                  <li class="list-inline-item"><a href='fpm_filesystem.html'>fpm_filesystem</a></li>
                   <li class="list-inline-item"><a href='fpm_error.html'>fpm_error</a></li>
               </ul>
             </li>
@@ -204,6 +215,129 @@
 
 
 
+        <section>
+          <h2>Interfaces</h2>
+              <div class="card">
+    <div class="card-header bg-light codesum">
+      <span class="anchor" id="interface-add_srcfile"></span>
+      <h3>public        interface <a href='../interface/add_srcfile.html'>add_srcfile</a> 
+      </h3>
+    </div>
+      <div class="card-body">
+        <p>Add one or multiple source files to a source file array (gcc-15 bug workaround)</p>
+      </div>
+    <ul class="list-group">
+          <li class="list-group-item">
+                <h3>
+    private pure subroutine add_srcfile_one(list, new)  
+
+    </h3>
+  <p>Add one source file to a source file array with a loop (gcc-15 bug on array initializer)</p>
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-list~24"></span>
+              type(<a href='../type/srcfile_t.html'>srcfile_t</a>),
+            </td>
+<td>intent(inout),</td>
+              <td></td>            <td>
+              allocatable
+            </td>
+            <td>::</td>
+            <td><strong>list</strong>(:)</td>
+            <td>
+                
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-new~5"></span>
+              type(<a href='../type/srcfile_t.html'>srcfile_t</a>),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>new</strong></td>
+            <td>
+                
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+
+          </li>
+          <li class="list-group-item">
+                <h3>
+    private pure subroutine add_srcfile_many(list, new)  
+
+    </h3>
+  <p>Add multiple source files to a source file array with a loop (gcc-15 bug on array initializer)</p>
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-list~25"></span>
+              type(<a href='../type/srcfile_t.html'>srcfile_t</a>),
+            </td>
+<td>intent(inout),</td>
+              <td></td>            <td>
+              allocatable
+            </td>
+            <td>::</td>
+            <td><strong>list</strong>(:)</td>
+            <td>
+                
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-new~6"></span>
+              type(<a href='../type/srcfile_t.html'>srcfile_t</a>),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>new</strong>(:)</td>
+            <td>
+                
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+
+          </li>
+    </ul>
+  </div>
+
+        </section>
+        <br>
 
 
 
@@ -229,7 +363,7 @@
     <tbody>
         <tr>
             <td>
-              <span class="anchor" id="variable-source~7"></span>
+              <span class="anchor" id="variable-source~11"></span>
               type(<a href='../type/srcfile_t.html'>srcfile_t</a>),
             </td>
 <td>intent(in)</td>
@@ -297,7 +431,7 @@ Compare lowercase strings to allow auto-discovery of pre-processed extensions</p
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-executables"></span>
+              <span class="anchor" id="variable-executables~3"></span>
               class(<a href='../type/executable_config_t.html'>executable_config_t</a>),
             </td>
 <td>intent(in)</td>
@@ -312,7 +446,7 @@ Compare lowercase strings to allow auto-discovery of pre-processed extensions</p
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-scope~3"></span>
+              <span class="anchor" id="variable-scope~6"></span>
               integer,
             </td>
 <td>intent(in)</td>
@@ -357,7 +491,7 @@ Compare lowercase strings to allow auto-discovery of pre-processed extensions</p
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-error~38"></span>
+              <span class="anchor" id="variable-error~176"></span>
               type(<a href='../type/error_t.html'>error_t</a>),
             </td>
 <td>intent(out),</td>
@@ -372,7 +506,7 @@ Compare lowercase strings to allow auto-discovery of pre-processed extensions</p
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-preprocess~6"></span>
+              <span class="anchor" id="variable-preprocess~12"></span>
               type(<a href='../type/preprocess_config_t.html'>preprocess_config_t</a>),
             </td>
 <td>intent(in),</td>
@@ -427,7 +561,7 @@ Compare lowercase strings to allow auto-discovery of pre-processed extensions</p
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-directory"></span>
+              <span class="anchor" id="variable-directory~3"></span>
               character(len=*),
             </td>
 <td>intent(in)</td>
@@ -442,7 +576,7 @@ Compare lowercase strings to allow auto-discovery of pre-processed extensions</p
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-scope~2"></span>
+              <span class="anchor" id="variable-scope~5"></span>
               integer,
             </td>
 <td>intent(in)</td>
@@ -487,7 +621,7 @@ Compare lowercase strings to allow auto-discovery of pre-processed extensions</p
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-recurse"></span>
+              <span class="anchor" id="variable-recurse~2"></span>
               logical,
             </td>
 <td>intent(in),</td>
@@ -502,7 +636,7 @@ Compare lowercase strings to allow auto-discovery of pre-processed extensions</p
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-error~37"></span>
+              <span class="anchor" id="variable-error~175"></span>
               type(<a href='../type/error_t.html'>error_t</a>),
             </td>
 <td>intent(out),</td>
@@ -517,7 +651,7 @@ Compare lowercase strings to allow auto-discovery of pre-processed extensions</p
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-preprocess~5"></span>
+              <span class="anchor" id="variable-preprocess~11"></span>
               type(<a href='../type/preprocess_config_t.html'>preprocess_config_t</a>),
             </td>
 <td>intent(in),</td>
@@ -560,7 +694,7 @@ Compare lowercase strings to allow auto-discovery of pre-processed extensions</p
             <p class="text-end">
               Documentation generated by
               <a href="https://github.com/Fortran-FOSS-Programmers/ford">FORD</a>
- on 2025-10-13 09:44 +0000             </p>
+ on 2025-10-14 10:22 +0000             </p>
           </div>
         </div>
         <br>

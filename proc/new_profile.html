@@ -82,7 +82,7 @@
     <div class="container">
   <div class="row">
     <h1>new_profile
-      <small>Function</small>
+      <small>Subroutine</small>
       
     </h1>
       <div class="container p-2 mb-4 bg-light border rounded-3">
@@ -92,7 +92,7 @@
 
             <li class="list-inline-item" id="statements"><i class="fa fa-list-ol"></i>
               <a data-bs-toggle="tooltip" data-bs-placement="bottom" data-bs-html="true"
-                 title=" 0.5% of total for procedures.">43 statements</a>
+                 title=" 0.3% of total for procedures.">22 statements</a>
             </li>
 
             <li class="list-inline-item" id="source-file">
@@ -127,18 +127,7 @@
       <div id="sidebar">
       <h3>Contents</h3>
   
-      <div class="card mb-4">
-      <a data-bs-toggle="collapse" href="#vars-0"
-         aria-expanded="false" aria-controls="vars-0">
-         <h4 class="card-header bg-primary text-white">Variables</h4>
-      </a>
-      <div id="vars-0" class="collapse">
-        <div class="list-group list-group-flush">
-            <a class="list-group-item" href="../proc/new_profile.html#variable-compiler_id~3">compiler_id</a>
-        </div>
-      </div>
-    </div>
-
+  
   
   
   
@@ -170,11 +159,11 @@
     </div>
     
     <div class="col-md-9" id='text'>
-    <h2>public  function new_profile(profile_name, compiler, os_type, flags, c_flags, cxx_flags, link_time_flags, file_scope_flags, is_built_in) result(profile)  
+    <h2>public  subroutine new_profile(self, features_array, profile_name, error)  
 </h2>
     
 
-    <p>Construct a new profile configuration from a TOML data structure  </p>
+    <p>Construct a new profile configuration from a TOML array</p>
 
 
     <h3>Arguments</h3>
@@ -190,7 +179,37 @@
     <tbody>
         <tr>
             <td>
-              <span class="anchor" id="variable-profile_name~2"></span>
+              <span class="anchor" id="variable-self~128"></span>
+              type(<a href='../type/profile_config_t.html'>profile_config_t</a>),
+            </td>
+<td>intent(out)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>self</strong></td>
+            <td>
+                <p>Instance of the profile configuration</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-features_array"></span>
+              type(toml_array),
+            </td>
+<td>intent(inout)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>features_array</strong></td>
+            <td>
+                <p>TOML array containing the feature names</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-profile_name~3"></span>
               character(len=*),
             </td>
 <td>intent(in)</td>
@@ -205,171 +224,25 @@
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-compiler~31"></span>
-              character(len=*),
+              <span class="anchor" id="variable-error~130"></span>
+              type(<a href='../type/error_t.html'>error_t</a>),
             </td>
-<td>intent(in)</td>
+<td>intent(out),</td>
               <td></td>            <td>
-              
+              allocatable
             </td>
             <td>::</td>
-            <td><strong>compiler</strong></td>
+            <td><strong>error</strong></td>
             <td>
-                <p>Name of the compiler</p>
-            </td>
-        </tr>
-        <tr>
-            <td>
-              <span class="anchor" id="variable-os_type~7"></span>
-              integer,
-            </td>
-<td>intent(in)</td>
-              <td></td>            <td>
-              
-            </td>
-            <td>::</td>
-            <td><strong>os_type</strong></td>
-            <td>
-                <p>Type of the OS</p>
-            </td>
-        </tr>
-        <tr>
-            <td>
-              <span class="anchor" id="variable-flags~27"></span>
-              character(len=*),
-            </td>
-<td>intent(in),</td>
-              <td>optional</td>            <td>
-              
-            </td>
-            <td>::</td>
-            <td><strong>flags</strong></td>
-            <td>
-                <p>Fortran compiler flags</p>
-            </td>
-        </tr>
-        <tr>
-            <td>
-              <span class="anchor" id="variable-c_flags~2"></span>
-              character(len=*),
-            </td>
-<td>intent(in),</td>
-              <td>optional</td>            <td>
-              
-            </td>
-            <td>::</td>
-            <td><strong>c_flags</strong></td>
-            <td>
-                <p>C compiler flags</p>
-            </td>
-        </tr>
-        <tr>
-            <td>
-              <span class="anchor" id="variable-cxx_flags~2"></span>
-              character(len=*),
-            </td>
-<td>intent(in),</td>
-              <td>optional</td>            <td>
-              
-            </td>
-            <td>::</td>
-            <td><strong>cxx_flags</strong></td>
-            <td>
-                <p>C++ compiler flags</p>
-            </td>
-        </tr>
-        <tr>
-            <td>
-              <span class="anchor" id="variable-link_time_flags~2"></span>
-              character(len=*),
-            </td>
-<td>intent(in),</td>
-              <td>optional</td>            <td>
-              
-            </td>
-            <td>::</td>
-            <td><strong>link_time_flags</strong></td>
-            <td>
-                <p>Link time compiler flags</p>
-            </td>
-        </tr>
-        <tr>
-            <td>
-              <span class="anchor" id="variable-file_scope_flags~2"></span>
-              type(<a href='../type/file_scope_flag.html'>file_scope_flag</a>),
-            </td>
-<td>intent(in),</td>
-              <td>optional</td>            <td>
-              
-            </td>
-            <td>::</td>
-            <td><strong>file_scope_flags</strong>(:)</td>
-            <td>
-                <p>File scope flags</p>
-            </td>
-        </tr>
-        <tr>
-            <td>
-              <span class="anchor" id="variable-is_built_in~2"></span>
-              logical,
-            </td>
-<td>intent(in),</td>
-              <td>optional</td>            <td>
-              
-            </td>
-            <td>::</td>
-            <td><strong>is_built_in</strong></td>
-            <td>
-                <p>Is this profile one of the built-in ones?</p>
+                <p>Error handling</p>
             </td>
         </tr>
     </tbody>
   </table>
 
-      <h3>Return Value
-        <small>
-          <span class="anchor" id="variable-profile~2"></span>
-          type(<a href='../type/profile_config_t.html'>profile_config_t</a>)
-        </small>
-      </h3>
-      
     <br>
 
 
-    <section>    
-      <h2>Variables</h2>
-      <table class="table table-striped varlist">
-    <thead>
-      <tr>
-        <th scope="col">Type</th>
-<th scope="col">Visibility</th>        <th scope="col">Attributes</th>
-        <th scope="col"></th>
-        <th scope="col">Name</th>
-<th></th><th scope="col">Initial</th>        <th scope="col"></th>
-    </thead>
-    <tbody>
-        <tr>
-            <td>
-              <span class="anchor" id="variable-compiler_id~3"></span>
-              integer(kind=compiler_enum),
-            </td>
-              <td>public</td>
-            <td>
-              
-            </td>
-            <td>::</td>
-            <td><strong>compiler_id</strong></td>
-                <td></td>
-                <td></td>
-            <td>
-                
-            </td>
-        </tr>
-    </tbody>
-  </table>
-
-    </section>
-    <br>
     
     
 
@@ -381,77 +254,42 @@
     
     <section>
     <h2><span class="anchor" id="src"></span>Source Code</h2>
-    <div class="hl codehilite"><pre><span></span><span class="w">      </span><span class="k">function </span><span class="n">new_profile</span><span class="p">(</span><span class="n">profile_name</span><span class="p">,</span><span class="w"> </span><span class="n">compiler</span><span class="p">,</span><span class="w"> </span><span class="n">os_type</span><span class="p">,</span><span class="w"> </span><span class="n">flags</span><span class="p">,</span><span class="w"> </span><span class="n">c_flags</span><span class="p">,</span><span class="w"> </span><span class="n">cxx_flags</span><span class="p">,</span><span class="w"> </span><span class="p">&amp;</span>
-<span class="w">                           </span><span class="n">link_time_flags</span><span class="p">,</span><span class="w"> </span><span class="n">file_scope_flags</span><span class="p">,</span><span class="w"> </span><span class="n">is_built_in</span><span class="p">)</span><span class="w"> </span><span class="p">&amp;</span>
-<span class="w">                      </span><span class="p">&amp;</span><span class="w"> </span><span class="k">result</span><span class="p">(</span><span class="n">profile</span><span class="p">)</span>
+    <div class="hl codehilite"><pre><span></span><span class="w">    </span><span class="k">subroutine </span><span class="n">new_profile</span><span class="p">(</span><span class="n">self</span><span class="p">,</span><span class="w"> </span><span class="n">features_array</span><span class="p">,</span><span class="w"> </span><span class="n">profile_name</span><span class="p">,</span><span class="w"> </span><span class="n">error</span><span class="p">)</span>
+
+<span class="w">        </span><span class="c">!&gt; Instance of the profile configuration</span>
+<span class="w">        </span><span class="k">type</span><span class="p">(</span><span class="n">profile_config_t</span><span class="p">),</span><span class="w"> </span><span class="k">intent</span><span class="p">(</span><span class="n">out</span><span class="p">)</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">self</span>
+
+<span class="w">        </span><span class="c">!&gt; TOML array containing the feature names</span>
+<span class="w">        </span><span class="k">type</span><span class="p">(</span><span class="n">toml_array</span><span class="p">),</span><span class="w"> </span><span class="k">intent</span><span class="p">(</span><span class="n">inout</span><span class="p">)</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">features_array</span>
 
 <span class="w">        </span><span class="c">!&gt; Name of the profile</span>
 <span class="w">        </span><span class="kt">character</span><span class="p">(</span><span class="nb">len</span><span class="o">=*</span><span class="p">),</span><span class="w"> </span><span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">)</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">profile_name</span>
 
-<span class="w">        </span><span class="c">!&gt; Name of the compiler</span>
-<span class="w">        </span><span class="kt">character</span><span class="p">(</span><span class="nb">len</span><span class="o">=*</span><span class="p">),</span><span class="w"> </span><span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">)</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">compiler</span>
+<span class="w">        </span><span class="c">!&gt; Error handling</span>
+<span class="w">        </span><span class="k">type</span><span class="p">(</span><span class="n">error_t</span><span class="p">),</span><span class="w"> </span><span class="k">allocatable</span><span class="p">,</span><span class="w"> </span><span class="k">intent</span><span class="p">(</span><span class="n">out</span><span class="p">)</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">error</span>
 
-<span class="w">        </span><span class="c">!&gt; Type of the OS</span>
-<span class="w">        </span><span class="kt">integer</span><span class="p">,</span><span class="w"> </span><span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">)</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">os_type</span>
+<span class="w">        </span><span class="kt">integer</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">i</span><span class="p">,</span><span class="w"> </span><span class="nb">stat</span>
+<span class="nb">        </span><span class="kt">character</span><span class="p">(</span><span class="nb">len</span><span class="o">=</span><span class="p">:),</span><span class="w"> </span><span class="k">allocatable</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">feature_name</span>
 
-<span class="w">        </span><span class="c">!&gt; Fortran compiler flags</span>
-<span class="w">        </span><span class="kt">character</span><span class="p">(</span><span class="nb">len</span><span class="o">=*</span><span class="p">),</span><span class="w"> </span><span class="k">optional</span><span class="p">,</span><span class="w"> </span><span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">)</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">flags</span>
+<span class="w">        </span><span class="c">! Set profile name</span>
+<span class="w">        </span><span class="n">self</span><span class="p">%</span><span class="n">name</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">profile_name</span>
 
-<span class="w">        </span><span class="c">!&gt; C compiler flags</span>
-<span class="w">        </span><span class="kt">character</span><span class="p">(</span><span class="nb">len</span><span class="o">=*</span><span class="p">),</span><span class="w"> </span><span class="k">optional</span><span class="p">,</span><span class="w"> </span><span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">)</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">c_flags</span>
-
-<span class="w">        </span><span class="c">!&gt; C++ compiler flags</span>
-<span class="w">        </span><span class="kt">character</span><span class="p">(</span><span class="nb">len</span><span class="o">=*</span><span class="p">),</span><span class="w"> </span><span class="k">optional</span><span class="p">,</span><span class="w"> </span><span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">)</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">cxx_flags</span>
-
-<span class="w">        </span><span class="c">!&gt; Link time compiler flags</span>
-<span class="w">        </span><span class="kt">character</span><span class="p">(</span><span class="nb">len</span><span class="o">=*</span><span class="p">),</span><span class="w"> </span><span class="k">optional</span><span class="p">,</span><span class="w"> </span><span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">)</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">link_time_flags</span>
-
-<span class="w">        </span><span class="c">!&gt; File scope flags</span>
-<span class="w">        </span><span class="k">type</span><span class="p">(</span><span class="n">file_scope_flag</span><span class="p">),</span><span class="w"> </span><span class="k">optional</span><span class="p">,</span><span class="w"> </span><span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">)</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">file_scope_flags</span><span class="p">(:)</span>
-
-<span class="w">        </span><span class="c">!&gt; Is this profile one of the built-in ones?</span>
-<span class="w">        </span><span class="kt">logical</span><span class="p">,</span><span class="w"> </span><span class="k">optional</span><span class="p">,</span><span class="w"> </span><span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">)</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">is_built_in</span>
-
-<span class="w">        </span><span class="k">type</span><span class="p">(</span><span class="n">profile_config_t</span><span class="p">)</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">profile</span>
-<span class="w">        </span><span class="kt">integer</span><span class="p">(</span><span class="n">compiler_enum</span><span class="p">)</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">compiler_id</span>
-
-<span class="w">        </span><span class="c">! Initialize the profile feature</span>
-<span class="w">        </span><span class="n">profile</span><span class="p">%</span><span class="n">profile_feature</span><span class="p">%</span><span class="n">name</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">profile_name</span>
-<span class="w">        </span><span class="n">profile</span><span class="p">%</span><span class="n">profile_feature</span><span class="p">%</span><span class="n">platform</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">platform_config_t</span><span class="p">(</span><span class="n">compiler</span><span class="p">,</span><span class="w"> </span><span class="n">os_type</span><span class="p">)</span>
-<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="nb">present</span><span class="p">(</span><span class="n">is_built_in</span><span class="p">))</span><span class="w"> </span><span class="k">then</span>
-<span class="k">           </span><span class="n">profile</span><span class="p">%</span><span class="n">profile_feature</span><span class="p">%</span><span class="n">default</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">is_built_in</span>
-<span class="w">        </span><span class="k">else</span>
-<span class="k">           </span><span class="n">profile</span><span class="p">%</span><span class="n">profile_feature</span><span class="p">%</span><span class="n">default</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">.</span><span class="n">false</span><span class="p">.</span>
-<span class="w">        </span><span class="k">end if</span>
-<span class="w">        </span>
-<span class="w">        </span><span class="c">! Set flags</span>
-<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="nb">present</span><span class="p">(</span><span class="n">flags</span><span class="p">))</span><span class="w"> </span><span class="k">then</span>
-<span class="k">          </span><span class="n">profile</span><span class="p">%</span><span class="n">profile_feature</span><span class="p">%</span><span class="n">flags</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">flags</span>
-<span class="w">        </span><span class="k">else</span>
-<span class="k">          </span><span class="n">profile</span><span class="p">%</span><span class="n">profile_feature</span><span class="p">%</span><span class="n">flags</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;&quot;</span>
-<span class="w">        </span><span class="k">end if</span>
-<span class="k">        if</span><span class="w"> </span><span class="p">(</span><span class="nb">present</span><span class="p">(</span><span class="n">c_flags</span><span class="p">))</span><span class="w"> </span><span class="k">then</span>
-<span class="k">          </span><span class="n">profile</span><span class="p">%</span><span class="n">profile_feature</span><span class="p">%</span><span class="n">c_flags</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">c_flags</span>
-<span class="w">        </span><span class="k">else</span>
-<span class="k">          </span><span class="n">profile</span><span class="p">%</span><span class="n">profile_feature</span><span class="p">%</span><span class="n">c_flags</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;&quot;</span>
-<span class="w">        </span><span class="k">end if</span>
-<span class="k">        if</span><span class="w"> </span><span class="p">(</span><span class="nb">present</span><span class="p">(</span><span class="n">cxx_flags</span><span class="p">))</span><span class="w"> </span><span class="k">then</span>
-<span class="k">          </span><span class="n">profile</span><span class="p">%</span><span class="n">profile_feature</span><span class="p">%</span><span class="n">cxx_flags</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">cxx_flags</span>
-<span class="w">        </span><span class="k">else</span>
-<span class="k">          </span><span class="n">profile</span><span class="p">%</span><span class="n">profile_feature</span><span class="p">%</span><span class="n">cxx_flags</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;&quot;</span>
-<span class="w">        </span><span class="k">end if</span>
-<span class="k">        if</span><span class="w"> </span><span class="p">(</span><span class="nb">present</span><span class="p">(</span><span class="n">link_time_flags</span><span class="p">))</span><span class="w"> </span><span class="k">then</span>
-<span class="k">          </span><span class="n">profile</span><span class="p">%</span><span class="n">profile_feature</span><span class="p">%</span><span class="n">link_time_flags</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">link_time_flags</span>
-<span class="w">        </span><span class="k">else</span>
-<span class="k">          </span><span class="n">profile</span><span class="p">%</span><span class="n">profile_feature</span><span class="p">%</span><span class="n">link_time_flags</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;&quot;</span>
-<span class="w">        </span><span class="k">end if</span>
-<span class="w">        </span>
-<span class="w">        </span><span class="c">! Set file scope flags (maintained for backward compatibility)</span>
-<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="nb">present</span><span class="p">(</span><span class="n">file_scope_flags</span><span class="p">))</span><span class="w"> </span><span class="k">then</span>
-<span class="k">           </span><span class="n">profile</span><span class="p">%</span><span class="n">file_scope_flags</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">file_scope_flags</span>
+<span class="w">        </span><span class="c">! Get feature names from array</span>
+<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">features_array</span><span class="p">)</span><span class="w"> </span><span class="o">&gt;</span><span class="w"> </span><span class="mi">0</span><span class="p">)</span><span class="w"> </span><span class="k">then</span>
+<span class="k">            allocate</span><span class="p">(</span><span class="n">self</span><span class="p">%</span><span class="n">features</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">features_array</span><span class="p">)))</span>
+<span class="w">            </span><span class="k">do </span><span class="n">i</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="nb">len</span><span class="p">(</span><span class="n">features_array</span><span class="p">)</span>
+<span class="w">                </span><span class="k">call </span><span class="n">get_value</span><span class="p">(</span><span class="n">features_array</span><span class="p">,</span><span class="w"> </span><span class="n">i</span><span class="p">,</span><span class="w"> </span><span class="n">feature_name</span><span class="p">,</span><span class="w"> </span><span class="nb">stat</span><span class="o">=</span><span class="nb">stat</span><span class="p">)</span>
+<span class="w">                </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="nb">stat</span><span class="w"> </span><span class="o">/=</span><span class="w"> </span><span class="n">toml_stat</span><span class="p">%</span><span class="n">success</span><span class="p">)</span><span class="w"> </span><span class="k">then</span>
+<span class="k">                    call </span><span class="n">fatal_error</span><span class="p">(</span><span class="n">error</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;Failed to read feature name from profile &quot;</span><span class="w"> </span><span class="o">//</span><span class="w"> </span><span class="n">profile_name</span><span class="p">)</span>
+<span class="w">                    </span><span class="k">return</span>
+<span class="k">                end if</span>
+<span class="k">                </span><span class="n">self</span><span class="p">%</span><span class="n">features</span><span class="p">(</span><span class="n">i</span><span class="p">)%</span><span class="n">s</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">feature_name</span>
+<span class="w">            </span><span class="k">end do</span>
+<span class="k">        else</span>
+<span class="k">            allocate</span><span class="p">(</span><span class="n">self</span><span class="p">%</span><span class="n">features</span><span class="p">(</span><span class="mi">0</span><span class="p">))</span>
 <span class="w">        </span><span class="k">end if</span>
 
-<span class="k">      end function </span><span class="n">new_profile</span>
+<span class="k">    end subroutine </span><span class="n">new_profile</span>
 </pre></div>
 
     </section>
@@ -475,7 +313,7 @@
             <p class="text-end">
               Documentation generated by
               <a href="https://github.com/Fortran-FOSS-Programmers/ford">FORD</a>
- on 2025-10-13 09:44 +0000             </p>
+ on 2025-10-14 10:22 +0000             </p>
           </div>
         </div>
         <br>

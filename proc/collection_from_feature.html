@@ -10,7 +10,7 @@
     <meta name="author" content="fortran-lang/fpm contributors" >
     <link rel="icon" href="../favicon.png">
 
-    <title>get_profile_name &ndash; Fortran-lang/fpm</title>
+    <title>collection_from_feature &ndash; Fortran-lang/fpm</title>
 
     <!-- Bootstrap -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet"
@@ -81,7 +81,7 @@
 
     <div class="container">
   <div class="row">
-    <h1>get_profile_name
+    <h1>collection_from_feature
       <small>Function</small>
       
     </h1>
@@ -92,21 +92,21 @@
 
             <li class="list-inline-item" id="statements"><i class="fa fa-list-ol"></i>
               <a data-bs-toggle="tooltip" data-bs-placement="bottom" data-bs-html="true"
-                 title=" 0.1% of total for procedures.">5 statements</a>
+                 title=" 0.1% of total for procedures.">7 statements</a>
             </li>
 
             <li class="list-inline-item" id="source-file">
               <i class="fa fa-code"></i>
-              <a href="../src/profiles.f90"> Source File</a>
+              <a href="../src/feature_collection.f90"> Source File</a>
             </li>
         </ul>
       </div>
       <div class="col">
         <nav aria-label="breadcrumb">
           <ol class="breadcrumb justify-content-end mb-0">
-                <li class="breadcrumb-item"><a href='../sourcefile/profiles.f90.html'>profiles.f90</a></li>
-                <li class="breadcrumb-item"><a href='../module/fpm_manifest_profile.html'>fpm_manifest_profile</a></li>
-            <li class="breadcrumb-item active" aria-current="page">get_profile_name</li>
+                <li class="breadcrumb-item"><a href='../sourcefile/feature_collection.f90.html'>feature_collection.f90</a></li>
+                <li class="breadcrumb-item"><a href='../module/fpm_manifest_feature_collection.html'>fpm_manifest_feature_collection</a></li>
+            <li class="breadcrumb-item active" aria-current="page">collection_from_feature</li>
           </ol>
         </nav>
       </div>
@@ -149,7 +149,7 @@
     <div class="card card-primary">
       <div class="card-header text-left"><h3 class="card-title">Source Code</h3></div>
       <div class="list-group">
-        <a class="list-group-item" href="../proc/get_profile_name.html#src">get_profile_name</a>
+        <a class="list-group-item" href="../proc/collection_from_feature.html#src">collection_from_feature</a>
       </div>
     </div>
 
@@ -159,15 +159,13 @@
     </div>
     
     <div class="col-md-9" id='text'>
-    <h2>public  function get_profile_name(self) result(name)  
+    <h2>public  function collection_from_feature(self) result(collection)  
 </h2>
     
 
-    <p>Convenience accessor procedures for backward compatibility
-Get profile name</p>
+    <p>Create a feature collection from a single feature_config_t
+The feature becomes the base configuration for all OS/compiler combinations</p>
 
-    <h3>Type Bound</h3>
-    <p><a href='../type/profile_config_t.html'>profile_config_t</a></p>
 
     <h3>Arguments</h3>
         <table class="table table-striped varlist">
@@ -182,8 +180,8 @@ Get profile name</p>
     <tbody>
         <tr>
             <td>
-              <span class="anchor" id="variable-self~173"></span>
-              class(<a href='../type/profile_config_t.html'>profile_config_t</a>),
+              <span class="anchor" id="variable-self~184"></span>
+              class(<a href='../type/feature_config_t.html'>feature_config_t</a>),
             </td>
 <td>intent(in)</td>
               <td></td>            <td>
@@ -192,7 +190,7 @@ Get profile name</p>
             <td>::</td>
             <td><strong>self</strong></td>
             <td>
-                
+                <p>Feature configuration to convert</p>
             </td>
         </tr>
     </tbody>
@@ -200,8 +198,8 @@ Get profile name</p>
 
       <h3>Return Value
         <small>
-          <span class="anchor" id="variable-name~45"></span>
-          character(len=:), allocatable
+          <span class="anchor" id="variable-collection~5"></span>
+          type(<a href='../type/feature_collection_t.html'>feature_collection_t</a>)
         </small>
       </h3>
       
@@ -219,11 +217,25 @@ Get profile name</p>
     
     <section>
     <h2><span class="anchor" id="src"></span>Source Code</h2>
-    <div class="hl codehilite"><pre><span></span><span class="w">      </span><span class="k">function </span><span class="n">get_profile_name</span><span class="p">(</span><span class="n">self</span><span class="p">)</span><span class="w"> </span><span class="k">result</span><span class="p">(</span><span class="n">name</span><span class="p">)</span>
-<span class="w">        </span><span class="k">class</span><span class="p">(</span><span class="n">profile_config_t</span><span class="p">),</span><span class="w"> </span><span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">)</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">self</span>
-<span class="w">        </span><span class="kt">character</span><span class="p">(</span><span class="nb">len</span><span class="o">=</span><span class="p">:),</span><span class="w"> </span><span class="k">allocatable</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">name</span>
-<span class="w">        </span><span class="n">name</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">self</span><span class="p">%</span><span class="n">profile_feature</span><span class="p">%</span><span class="n">name</span>
-<span class="w">      </span><span class="k">end function </span><span class="n">get_profile_name</span>
+    <div class="hl codehilite"><pre><span></span><span class="w">    </span><span class="k">type</span><span class="p">(</span><span class="n">feature_collection_t</span><span class="p">)</span><span class="w"> </span><span class="k">function </span><span class="n">collection_from_feature</span><span class="p">(</span><span class="n">self</span><span class="p">)</span><span class="w"> </span><span class="k">result</span><span class="p">(</span><span class="n">collection</span><span class="p">)</span>
+<span class="w">        </span>
+<span class="w">        </span><span class="c">!&gt; Feature configuration to convert</span>
+<span class="w">        </span><span class="k">class</span><span class="p">(</span><span class="n">feature_config_t</span><span class="p">),</span><span class="w"> </span><span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">)</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">self</span>
+<span class="w">        </span>
+<span class="w">        </span><span class="c">! Copy the feature into the base configuration</span>
+<span class="w">        </span><span class="n">collection</span><span class="p">%</span><span class="n">base</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">self</span>
+<span class="w">        </span>
+<span class="w">        </span><span class="c">! Set platform to all OS and all compilers for the base</span>
+<span class="w">        </span><span class="n">collection</span><span class="p">%</span><span class="n">base</span><span class="p">%</span><span class="n">platform</span><span class="p">%</span><span class="n">os_type</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">OS_ALL</span>
+<span class="w">        </span><span class="n">collection</span><span class="p">%</span><span class="n">base</span><span class="p">%</span><span class="n">platform</span><span class="p">%</span><span class="n">compiler</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">id_all</span>
+<span class="w">        </span>
+<span class="w">        </span><span class="c">! Copy the name if available</span>
+<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="nb">allocated</span><span class="p">(</span><span class="n">self</span><span class="p">%</span><span class="n">name</span><span class="p">))</span><span class="w"> </span><span class="n">collection</span><span class="p">%</span><span class="n">base</span><span class="p">%</span><span class="n">name</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">self</span><span class="p">%</span><span class="n">name</span>
+<span class="w">        </span>
+<span class="w">        </span><span class="c">! No variants initially - just the base configuration</span>
+<span class="w">        </span><span class="c">! (variants can be added later if needed)</span>
+<span class="w">        </span>
+<span class="w">    </span><span class="k">end function </span><span class="n">collection_from_feature</span>
 </pre></div>
 
     </section>
@@ -247,7 +259,7 @@ Get profile name</p>
             <p class="text-end">
               Documentation generated by
               <a href="https://github.com/Fortran-FOSS-Programmers/ford">FORD</a>
- on 2025-10-13 09:44 +0000             </p>
+ on 2025-10-14 10:22 +0000             </p>
           </div>
         </div>
         <br>

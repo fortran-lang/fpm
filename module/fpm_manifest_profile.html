@@ -92,7 +92,7 @@
 
             <li class="list-inline-item" id="statements"><i class="fa fa-list-ol"></i>
               <a data-bs-toggle="tooltip" data-bs-placement="bottom" data-bs-html="true"
-                 title=" 3.6% of total for modules and submodules.">622 statements</a>
+                 title=" 1.1% of total for modules and submodules.">184 statements</a>
             </li>
 
             <li class="list-inline-item" id="source-file">
@@ -126,19 +126,7 @@
         <div id="sidebar">
       <h3>Contents</h3>
   
-      <div class="card mb-4">
-      <a data-bs-toggle="collapse" href="#vars-0"
-         aria-expanded="false" aria-controls="vars-0">
-         <h4 class="card-header bg-primary text-white">Variables</h4>
-      </a>
-      <div id="vars-0" class="collapse">
-        <div class="list-group list-group-flush">
-            <a class="list-group-item" href="../module/fpm_manifest_profile.html#variable-default_compiler">DEFAULT_COMPILER</a>
-            <a class="list-group-item" href="../module/fpm_manifest_profile.html#variable-path~31">path</a>
-        </div>
-      </div>
-    </div>
-
+  
   
   
   
@@ -154,35 +142,12 @@
       </a>
       <div id="types-0" class="collapse">
         <div class="list-group list-group-flush">
-            <a class="list-group-item" href="../module/fpm_manifest_profile.html#type-file_scope_flag">file_scope_flag</a>
             <a class="list-group-item" href="../module/fpm_manifest_profile.html#type-profile_config_t">profile_config_t</a>
         </div>
       </div>
     </div>
 
-      <div class="card mb-4">
-      <a data-bs-toggle="collapse" href="#funcs-0"
-         aria-expanded="false" aria-controls="funcs-0">
-         <h4 class="card-header bg-primary text-white">Functions</h4>
-      </a>
-      <div id="funcs-0" class="collapse">
-        <div class="list-group list-group-flush">
-            <a class="list-group-item" href="../module/fpm_manifest_profile.html#proc-file_scope_same">file_scope_same</a>
-            <a class="list-group-item" href="../module/fpm_manifest_profile.html#proc-get_profile_c_flags">get_profile_c_flags</a>
-            <a class="list-group-item" href="../module/fpm_manifest_profile.html#proc-get_profile_compiler">get_profile_compiler</a>
-            <a class="list-group-item" href="../module/fpm_manifest_profile.html#proc-get_profile_cxx_flags">get_profile_cxx_flags</a>
-            <a class="list-group-item" href="../module/fpm_manifest_profile.html#proc-get_profile_flags">get_profile_flags</a>
-            <a class="list-group-item" href="../module/fpm_manifest_profile.html#proc-get_profile_is_built_in">get_profile_is_built_in</a>
-            <a class="list-group-item" href="../module/fpm_manifest_profile.html#proc-get_profile_link_time_flags">get_profile_link_time_flags</a>
-            <a class="list-group-item" href="../module/fpm_manifest_profile.html#proc-get_profile_name">get_profile_name</a>
-            <a class="list-group-item" href="../module/fpm_manifest_profile.html#proc-get_profile_os_type">get_profile_os_type</a>
-            <a class="list-group-item" href="../module/fpm_manifest_profile.html#proc-new_profile">new_profile</a>
-            <a class="list-group-item" href="../module/fpm_manifest_profile.html#proc-os_type_name">os_type_name</a>
-            <a class="list-group-item" href="../module/fpm_manifest_profile.html#proc-profile_same">profile_same</a>
-        </div>
-      </div>
-    </div>
-
+  
       <div class="card mb-4">
       <a data-bs-toggle="collapse" href="#subs-0"
          aria-expanded="false" aria-controls="subs-0">
@@ -190,18 +155,10 @@
       </a>
       <div id="subs-0" class="collapse">
         <div class="list-group list-group-flush">
-            <a class="list-group-item" href="../module/fpm_manifest_profile.html#proc-file_scope_dump">file_scope_dump</a>
-            <a class="list-group-item" href="../module/fpm_manifest_profile.html#proc-file_scope_load">file_scope_load</a>
-            <a class="list-group-item" href="../module/fpm_manifest_profile.html#proc-find_profile">find_profile</a>
-            <a class="list-group-item" href="../module/fpm_manifest_profile.html#proc-get_flags">get_flags</a>
-            <a class="list-group-item" href="../module/fpm_manifest_profile.html#proc-info~12">info</a>
+            <a class="list-group-item" href="../module/fpm_manifest_profile.html#proc-add_default_profiles">add_default_profiles</a>
+            <a class="list-group-item" href="../module/fpm_manifest_profile.html#proc-get_default_profiles">get_default_profiles</a>
+            <a class="list-group-item" href="../module/fpm_manifest_profile.html#proc-new_profile">new_profile</a>
             <a class="list-group-item" href="../module/fpm_manifest_profile.html#proc-new_profiles">new_profiles</a>
-            <a class="list-group-item" href="../module/fpm_manifest_profile.html#proc-profile_dump">profile_dump</a>
-            <a class="list-group-item" href="../module/fpm_manifest_profile.html#proc-profile_load">profile_load</a>
-            <a class="list-group-item" href="../module/fpm_manifest_profile.html#proc-traverse_compilers">traverse_compilers</a>
-            <a class="list-group-item" href="../module/fpm_manifest_profile.html#proc-traverse_oss">traverse_oss</a>
-            <a class="list-group-item" href="../module/fpm_manifest_profile.html#proc-traverse_oss_for_size">traverse_oss_for_size</a>
-            <a class="list-group-item" href="../module/fpm_manifest_profile.html#proc-validate_profile_table">validate_profile_table</a>
         </div>
       </div>
     </div>
@@ -220,45 +177,16 @@
     </div>
 
     <div class="col-md-9" id='text'>
-      <p>Implementation of the meta data for compiler flag profiles.</p>
-<p>A profiles table can currently have the following subtables:
- Profile names - any string, if omitted, flags are appended to all matching profiles
- Compiler - any from the following list, omitting it yields an error</p>
-<ul>
-<li>&ldquo;gfortran&rdquo;</li>
-<li>&ldquo;ifort&rdquo;</li>
-<li>&ldquo;ifx&rdquo;</li>
-<li>&ldquo;pgfortran&rdquo;</li>
-<li>&ldquo;nvfortran&rdquo;</li>
-<li>&ldquo;flang&rdquo;</li>
-<li>&ldquo;caf&rdquo;</li>
-<li>&ldquo;f95&rdquo;</li>
-<li>&ldquo;lfortran&rdquo;</li>
-<li>&ldquo;lfc&rdquo;</li>
-<li>&ldquo;nagfor&rdquo;</li>
-<li>&ldquo;crayftn&rdquo;</li>
-<li>&ldquo;xlf90&rdquo;</li>
-<li>&ldquo;ftn95&rdquo;</li>
-</ul>
-<p>OS - any from the following list, if omitted, the profile is used if and only
- if there is no profile perfectly matching the current configuration</p>
-<ul>
-<li>&ldquo;linux&rdquo;</li>
-<li>&ldquo;macos&rdquo;</li>
-<li>&ldquo;windows&rdquo;</li>
-<li>&ldquo;cygwin&rdquo;</li>
-<li>&ldquo;solaris&rdquo;</li>
-<li>&ldquo;freebsd&rdquo;</li>
-<li>&ldquo;openbsd&rdquo;</li>
-<li>&ldquo;unknown&rdquo;</li>
-</ul>
-<p>Each of the subtables currently supports the following fields:</p>
-<div class="codehilite"><pre><span></span><code><span class="k">[profiles.debug.gfortran.linux]</span>
-<span class="w"> </span><span class="n">flags</span><span class="o">=</span><span class="s2">&quot;-Wall -g -Og&quot;</span>
-<span class="w"> </span><span class="n">c-flags</span><span class="o">=</span><span class="s2">&quot;-g O1&quot;</span>
-<span class="w"> </span><span class="n">cxx-flags</span><span class="o">=</span><span class="s2">&quot;-g O1&quot;</span>
-<span class="w"> </span><span class="n">link-time-flags</span><span class="o">=</span><span class="s2">&quot;-xlinkopt&quot;</span>
-<span class="w"> </span><span class="n">files</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;hello_world.f90&quot;</span><span class="p">=</span><span class="s2">&quot;-Wall -O3&quot;</span><span class="p">}</span>
+      <p>Implementation of the profiles configuration.</p>
+<p>A profile is a named collection of features that can be applied together.
+ Profiles provide a convenient way to group features for different use cases,
+ such as debug builds, release builds, or specific target configurations.</p>
+<p>A profile table has the following structure:</p>
+<div class="codehilite"><pre><span></span><code><span class="k">[profiles.debug]</span>
+<span class="n">features</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">[</span><span class="s2">&quot;debug-flags&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;development-tools&quot;</span><span class="p">]</span>
+
+<span class="k">[profiles.release]</span><span class="w">  </span>
+<span class="n">features</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">[</span><span class="s2">&quot;optimized&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;strip-symbols&quot;</span><span class="p">]</span>
 </code></pre></div>
 <br>          <div class="card mb-4">
       <h3 class="card-header card-title bg-light">Uses</h3>
@@ -266,15 +194,10 @@
         <ul class="list-group list-group-flush">
             <li class="list-group-item">
               <ul class="list-inline">
-                  <li class="list-inline-item"><a href='fpm_manifest_feature.html'>fpm_manifest_feature</a></li>
-                  <li class="list-inline-item"><a href='fpm_compiler.html'>fpm_compiler</a></li>
-                  <li class="list-inline-item"><a href='fpm_filesystem.html'>fpm_filesystem</a></li>
-                  <li class="list-inline-item"><a href='fpm_strings.html'>fpm_strings</a></li>
-                  <li class="list-inline-item"><a href='fpm_manifest_platform.html'>fpm_manifest_platform</a></li>
-                  <li class="list-inline-item"><a href='fpm_environment.html'>fpm_environment</a></li>
-                  <li class="list-inline-item"><a href='https://toml-f.github.io/toml-f'>tomlf</a></li>
                   <li class="list-inline-item"><a href='fpm_error.html'>fpm_error</a></li>
                   <li class="list-inline-item"><a href='fpm_toml.html'>fpm_toml</a></li>
+                  <li class="list-inline-item"><a href='fpm_strings.html'>fpm_strings</a></li>
+                  <li class="list-inline-item"><a href='https://toml-f.github.io/toml-f'>tomlf</a></li>
               </ul>
             </li>
         </ul>
@@ -285,169 +208,12 @@
       <br>
 
 
-        <section>
-          <h2>Variables</h2>
-            <table class="table table-striped varlist">
-    <thead>
-      <tr>
-        <th scope="col">Type</th>
-<th scope="col">Visibility</th>        <th scope="col">Attributes</th>
-        <th scope="col"></th>
-        <th scope="col">Name</th>
-<th></th><th scope="col">Initial</th>        <th scope="col"></th>
-    </thead>
-    <tbody>
-        <tr>
-            <td>
-              <span class="anchor" id="variable-default_compiler"></span>
-              character(len=*),
-            </td>
-              <td>public,</td>
-            <td>
-parameter               
-            </td>
-            <td>::</td>
-            <td><strong>DEFAULT_COMPILER</strong></td>
-<td> =</td>
-                <td>&#39;gfortran&#39;</td>
-            <td>
-                <p>Name of the default compiler</p>
-            </td>
-        </tr>
-        <tr>
-            <td>
-              <span class="anchor" id="variable-path~31"></span>
-              character(len=:),
-            </td>
-              <td>public,</td>
-            <td>
-              allocatable
-            </td>
-            <td>::</td>
-            <td><strong>path</strong></td>
-                <td></td>
-                <td></td>
-            <td>
-                
-            </td>
-        </tr>
-    </tbody>
-  </table>
-
-        </section>
-        <br>
 
 
 
 
         <section>
           <h2>Derived Types</h2>
-              <div class="card">
-    <div class="card-header codesum">
-      <span class="anchor" id="type-file_scope_flag"></span>
-      <h3>
-        type, public, extends(<a href='../type/serializable_t.html'>serializable_t</a>)&nbsp;::&nbsp;
-        <a href='../type/file_scope_flag.html'>file_scope_flag</a>
-        
-      </h3>
-    </div>
-    <div class="card-body">
-      <p>Type storing file name - file scope compiler flags pairs</p>
-
-        <h4>Components</h4>
-          <table class="table table-striped varlist">
-    <thead>
-      <tr>
-        <th scope="col">Type</th>
-<th scope="col">Visibility</th>        <th scope="col">Attributes</th>
-        <th scope="col"></th>
-        <th scope="col">Name</th>
-<th></th><th scope="col">Initial</th>        <th scope="col"></th>
-    </thead>
-    <tbody>
-        <tr>
-            <td>
-              <span class="anchor" id="variable-file_name~4"></span>
-              character(len=:),
-            </td>
-              <td>public,</td>
-            <td>
-              allocatable
-            </td>
-            <td>::</td>
-            <td><strong>file_name</strong></td>
-                <td></td>
-                <td></td>
-            <td>
-<p>Name of the file</p>
-            </td>
-        </tr>
-        <tr>
-            <td>
-              <span class="anchor" id="variable-flags~25"></span>
-              character(len=:),
-            </td>
-              <td>public,</td>
-            <td>
-              allocatable
-            </td>
-            <td>::</td>
-            <td><strong>flags</strong></td>
-                <td></td>
-                <td></td>
-            <td>
-<p>File scope flags</p>
-            </td>
-        </tr>
-    </tbody>
-  </table>
-
-
-
-
-        <h4>Type-Bound Procedures</h4>
-        <table class="table table-striped varlist">
-          <tbody>
-              <tr>
-                <td>  generic, public ::
-  <strong><a href='../type/file_scope_flag.html#boundprocedure-dump~24'>dump</a></strong> => <a href='/home/runner/work/fpm/fpm/fpm-doc/type/srcfile_t.html#boundprocedure-dump_to_toml~3'>dump_to_toml</a>, dump_to_file, dump_to_unit</td>
-                  <td></td>
-              </tr>
-              <tr>
-                <td>  procedure, public ::
-  <strong><a href='../type/file_scope_flag.html#boundprocedure-dump_to_toml~19'>dump_to_toml</a></strong> => <a href='/home/runner/work/fpm/fpm/fpm-doc/proc/file_scope_dump.html'>file_scope_dump</a></td>
-                  <td></td>
-              </tr>
-              <tr>
-                <td>  generic, public ::
-  <strong><a href='../type/file_scope_flag.html#boundprocedure-load~21'>load</a></strong> => <a href='/home/runner/work/fpm/fpm/fpm-doc/type/srcfile_t.html#boundprocedure-load_from_toml~3'>load_from_toml</a>, load_from_file, load_from_unit</td>
-                  <td></td>
-              </tr>
-              <tr>
-                <td>  procedure, public ::
-  <strong><a href='../type/file_scope_flag.html#boundprocedure-load_from_toml~19'>load_from_toml</a></strong> => <a href='/home/runner/work/fpm/fpm/fpm-doc/proc/file_scope_load.html'>file_scope_load</a></td>
-                  <td></td>
-              </tr>
-              <tr>
-                <td>  generic, public ::
-  <strong><a href='../type/file_scope_flag.html#boundprocedure-operator%28%3D%3D%29~22'>operator(==)</a></strong> => <a href='/home/runner/work/fpm/fpm/fpm-doc/type/srcfile_t.html#boundprocedure-serializable_is_same~3'>serializable_is_same</a></td>
-                  <td></td>
-              </tr>
-              <tr>
-                <td>  procedure, public ::
-  <strong><a href='../type/file_scope_flag.html#boundprocedure-serializable_is_same~19'>serializable_is_same</a></strong> => <a href='/home/runner/work/fpm/fpm/fpm-doc/proc/file_scope_same.html'>file_scope_same</a></td>
-                  <td><p>Serialization interface</p></td>
-              </tr>
-              <tr>
-                <td>  procedure, public, non_overridable ::
-  <strong><a href='../type/serializable_t.html#boundprocedure-test_serialization'>test_serialization</a></strong></td>
-                  <td><p>Test load/write roundtrip</p></td>
-              </tr>
-          </tbody>
-        </table>
-    </div>
-  </div>
-
               <div class="card">
     <div class="card-header codesum">
       <span class="anchor" id="type-profile_config_t"></span>
@@ -458,7 +224,7 @@ parameter
       </h3>
     </div>
     <div class="card-body">
-      <p>Configuration meta data for a profile (now based on features)</p>
+      <p>Configuration data for a profile</p>
 
         <h4>Components</h4>
           <table class="table table-striped varlist">
@@ -473,36 +239,36 @@ parameter
     <tbody>
         <tr>
             <td>
-              <span class="anchor" id="variable-file_scope_flags"></span>
-              type(<a href='../type/file_scope_flag.html'>file_scope_flag</a>),
+              <span class="anchor" id="variable-features~11"></span>
+              type(<a href='../type/string_t.html'>string_t</a>),
             </td>
               <td>public,</td>
             <td>
               allocatable
             </td>
             <td>::</td>
-            <td><strong>file_scope_flags</strong>(:)</td>
+            <td><strong>features</strong>(:)</td>
                 <td></td>
                 <td></td>
             <td>
-<p>File scope flags (maintained for backwards compatibility)</p>
+<p>List of features to apply</p>
             </td>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-profile_feature"></span>
-              type(<a href='../type/feature_config_t.html'>feature_config_t</a>),
+              <span class="anchor" id="variable-name~23"></span>
+              character(len=:),
             </td>
-              <td>public</td>
+              <td>public,</td>
             <td>
-              
+              allocatable
             </td>
             <td>::</td>
-            <td><strong>profile_feature</strong></td>
+            <td><strong>name</strong></td>
                 <td></td>
                 <td></td>
             <td>
-<p>Profile feature - contains all profile configuration</p>
+<p>Profile name</p>
             </td>
         </tr>
     </tbody>
@@ -515,78 +281,38 @@ parameter
         <table class="table table-striped varlist">
           <tbody>
               <tr>
-                <td>  procedure, public ::
-  <strong><a href='../type/profile_config_t.html#boundprocedure-c_flags'>c_flags</a></strong> => <a href='/home/runner/work/fpm/fpm/fpm-doc/proc/get_profile_c_flags.html'>get_profile_c_flags</a></td>
-                  <td></td>
-              </tr>
-              <tr>
-                <td>  procedure, public ::
-  <strong><a href='../type/profile_config_t.html#boundprocedure-compiler~30'>compiler</a></strong> => <a href='/home/runner/work/fpm/fpm/fpm-doc/proc/get_profile_compiler.html'>get_profile_compiler</a></td>
-                  <td></td>
-              </tr>
-              <tr>
-                <td>  procedure, public ::
-  <strong><a href='../type/profile_config_t.html#boundprocedure-cxx_flags'>cxx_flags</a></strong> => <a href='/home/runner/work/fpm/fpm/fpm-doc/proc/get_profile_cxx_flags.html'>get_profile_cxx_flags</a></td>
-                  <td></td>
-              </tr>
-              <tr>
                 <td>  generic, public ::
-  <strong><a href='../type/profile_config_t.html#boundprocedure-dump~25'>dump</a></strong> => <a href='/home/runner/work/fpm/fpm/fpm-doc/type/srcfile_t.html#boundprocedure-dump_to_toml~3'>dump_to_toml</a>, dump_to_file, dump_to_unit</td>
+  <strong><a href='../type/profile_config_t.html#boundprocedure-dump~20'>dump</a></strong> => <a href='/home/runner/work/fpm/fpm/fpm-doc/type/srcfile_t.html#boundprocedure-dump_to_toml~5'>dump_to_toml</a>, dump_to_file, dump_to_unit</td>
                   <td></td>
               </tr>
               <tr>
                 <td>  procedure, public ::
-  <strong><a href='../type/profile_config_t.html#boundprocedure-dump_to_toml~20'>dump_to_toml</a></strong> => <a href='/home/runner/work/fpm/fpm/fpm-doc/proc/profile_dump.html'>profile_dump</a></td>
+  <strong><a href='../type/profile_config_t.html#boundprocedure-dump_to_toml~15'>dump_to_toml</a></strong></td>
                   <td></td>
               </tr>
               <tr>
                 <td>  procedure, public ::
-  <strong><a href='../type/profile_config_t.html#boundprocedure-flags~26'>flags</a></strong> => <a href='/home/runner/work/fpm/fpm/fpm-doc/proc/get_profile_flags.html'>get_profile_flags</a></td>
-                  <td></td>
-              </tr>
-              <tr>
-                <td>  procedure, public ::
-  <strong><a href='../type/profile_config_t.html#boundprocedure-info~12'>info</a></strong></td>
+  <strong><a href='../type/profile_config_t.html#boundprocedure-info~8'>info</a></strong></td>
                   <td><p>Print information on this instance</p></td>
               </tr>
               <tr>
-                <td>  procedure, public ::
-  <strong><a href='../type/profile_config_t.html#boundprocedure-is_built_in'>is_built_in</a></strong> => <a href='/home/runner/work/fpm/fpm/fpm-doc/proc/get_profile_is_built_in.html'>get_profile_is_built_in</a></td>
+                <td>  generic, public ::
+  <strong><a href='../type/profile_config_t.html#boundprocedure-load~17'>load</a></strong> => <a href='/home/runner/work/fpm/fpm/fpm-doc/type/srcfile_t.html#boundprocedure-load_from_toml~5'>load_from_toml</a>, load_from_file, load_from_unit</td>
                   <td></td>
               </tr>
               <tr>
                 <td>  procedure, public ::
-  <strong><a href='../type/profile_config_t.html#boundprocedure-link_time_flags'>link_time_flags</a></strong> => <a href='/home/runner/work/fpm/fpm/fpm-doc/proc/get_profile_link_time_flags.html'>get_profile_link_time_flags</a></td>
+  <strong><a href='../type/profile_config_t.html#boundprocedure-load_from_toml~15'>load_from_toml</a></strong></td>
                   <td></td>
               </tr>
               <tr>
                 <td>  generic, public ::
-  <strong><a href='../type/profile_config_t.html#boundprocedure-load~22'>load</a></strong> => <a href='/home/runner/work/fpm/fpm/fpm-doc/type/srcfile_t.html#boundprocedure-load_from_toml~3'>load_from_toml</a>, load_from_file, load_from_unit</td>
+  <strong><a href='../type/profile_config_t.html#boundprocedure-operator%28%3D%3D%29~18'>operator(==)</a></strong> => <a href='/home/runner/work/fpm/fpm/fpm-doc/type/srcfile_t.html#boundprocedure-serializable_is_same~5'>serializable_is_same</a></td>
                   <td></td>
               </tr>
               <tr>
                 <td>  procedure, public ::
-  <strong><a href='../type/profile_config_t.html#boundprocedure-load_from_toml~20'>load_from_toml</a></strong> => <a href='/home/runner/work/fpm/fpm/fpm-doc/proc/profile_load.html'>profile_load</a></td>
-                  <td></td>
-              </tr>
-              <tr>
-                <td>  generic, public ::
-  <strong><a href='../type/profile_config_t.html#boundprocedure-operator%28%3D%3D%29~23'>operator(==)</a></strong> => <a href='/home/runner/work/fpm/fpm/fpm-doc/type/srcfile_t.html#boundprocedure-serializable_is_same~3'>serializable_is_same</a></td>
-                  <td></td>
-              </tr>
-              <tr>
-                <td>  procedure, public ::
-  <strong><a href='../type/profile_config_t.html#boundprocedure-os_type~6'>os_type</a></strong> => <a href='/home/runner/work/fpm/fpm/fpm-doc/proc/get_profile_os_type.html'>get_profile_os_type</a></td>
-                  <td></td>
-              </tr>
-              <tr>
-                <td>  procedure, public ::
-  <strong><a href='../type/profile_config_t.html#boundprocedure-profile_name'>profile_name</a></strong> => <a href='/home/runner/work/fpm/fpm/fpm-doc/proc/get_profile_name.html'>get_profile_name</a></td>
-                  <td><p>Convenience accessors for backward compatibility</p></td>
-              </tr>
-              <tr>
-                <td>  procedure, public ::
-  <strong><a href='../type/profile_config_t.html#boundprocedure-serializable_is_same~20'>serializable_is_same</a></strong> => <a href='/home/runner/work/fpm/fpm/fpm-doc/proc/profile_same.html'>profile_same</a></td>
+  <strong><a href='../type/profile_config_t.html#boundprocedure-serializable_is_same~15'>serializable_is_same</a></strong> => profile_is_same</td>
                   <td><p>Serialization interface</p></td>
               </tr>
               <tr>
@@ -602,14 +328,15 @@ parameter
         </section>
         <br>
 
+
         <section>
-          <h2>Functions</h2>
+          <h2>Subroutines</h2>
               <div class="card">
-    <div class="card-header codesum"><span class="anchor" id="proc-file_scope_same"></span> <h3>public  function <a href='../proc/file_scope_same.html'>file_scope_same</a>(this, that)  
+    <div class="card-header codesum"><span class="anchor" id="proc-add_default_profiles"></span> <h3>public  subroutine <a href='../proc/add_default_profiles.html'>add_default_profiles</a>(profiles, error)  
 </h3></div>
     <div class="card-body">
           
-  <p>All checks passed!</p>
+  <p>Add default profiles to existing profiles array if they don&rsquo;t already exist</p>
 
   <h4>Arguments</h4>
       <table class="table table-striped varlist">
@@ -624,52 +351,47 @@ parameter
     <tbody>
         <tr>
             <td>
-              <span class="anchor" id="variable-this~39"></span>
-              class(<a href='../type/file_scope_flag.html'>file_scope_flag</a>),
+              <span class="anchor" id="variable-profiles~4"></span>
+              type(<a href='../type/profile_config_t.html'>profile_config_t</a>),
             </td>
-<td>intent(in)</td>
+<td>intent(inout),</td>
               <td></td>            <td>
-              
+              allocatable
             </td>
             <td>::</td>
-            <td><strong>this</strong></td>
+            <td><strong>profiles</strong>(:)</td>
             <td>
-
+<p>Instance of the profile configuration array (will be resized)</p>
             </td>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-that~23"></span>
-              class(<a href='../type/serializable_t.html'>serializable_t</a>),
+              <span class="anchor" id="variable-error~135"></span>
+              type(<a href='../type/error_t.html'>error_t</a>),
             </td>
-<td>intent(in)</td>
+<td>intent(out),</td>
               <td></td>            <td>
-              
+              allocatable
             </td>
             <td>::</td>
-            <td><strong>that</strong></td>
+            <td><strong>error</strong></td>
             <td>
-
+<p>Error handling</p>
             </td>
         </tr>
     </tbody>
   </table>
 
-    <h4>
-    Return Value
-    <small>logical</small>
-    </h4>
-    
 
     </div>
   </div>
 
               <div class="card">
-    <div class="card-header codesum"><span class="anchor" id="proc-get_profile_c_flags"></span> <h3>public  function <a href='../proc/get_profile_c_flags.html'>get_profile_c_flags</a>(self) result(c_flags)  
+    <div class="card-header codesum"><span class="anchor" id="proc-get_default_profiles"></span> <h3>public  subroutine <a href='../proc/get_default_profiles.html'>get_default_profiles</a>(profiles, error)  
 </h3></div>
     <div class="card-body">
           
-  <p>Get C flags</p>
+  <p>Create default profiles with standard features</p>
 
   <h4>Arguments</h4>
       <table class="table table-striped varlist">
@@ -684,368 +406,92 @@ parameter
     <tbody>
         <tr>
             <td>
-              <span class="anchor" id="variable-self~177"></span>
-              class(<a href='../type/profile_config_t.html'>profile_config_t</a>),
+              <span class="anchor" id="variable-profiles~3"></span>
+              type(<a href='../type/profile_config_t.html'>profile_config_t</a>),
             </td>
-<td>intent(in)</td>
+<td>intent(out),</td>
+              <td></td>            <td>
+              allocatable
+            </td>
+            <td>::</td>
+            <td><strong>profiles</strong>(:)</td>
+            <td>
+<p>Instance of the profile configuration array</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-error~134"></span>
+              type(<a href='../type/error_t.html'>error_t</a>),
+            </td>
+<td>intent(out),</td>
+              <td></td>            <td>
+              allocatable
+            </td>
+            <td>::</td>
+            <td><strong>error</strong></td>
+            <td>
+<p>Error handling</p>
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+
+    </div>
+  </div>
+
+              <div class="card">
+    <div class="card-header codesum"><span class="anchor" id="proc-new_profile"></span> <h3>public  subroutine <a href='../proc/new_profile.html'>new_profile</a>(self, features_array, profile_name, error)  
+</h3></div>
+    <div class="card-body">
+          
+  <p>Construct a new profile configuration from a TOML array</p>
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-self~128"></span>
+              type(<a href='../type/profile_config_t.html'>profile_config_t</a>),
+            </td>
+<td>intent(out)</td>
               <td></td>            <td>
               
             </td>
             <td>::</td>
             <td><strong>self</strong></td>
             <td>
-
+<p>Instance of the profile configuration</p>
             </td>
         </tr>
-    </tbody>
-  </table>
-
-    <h4>
-    Return Value
-    <small>character(len=:), allocatable</small>
-    </h4>
-    
-
-    </div>
-  </div>
-
-              <div class="card">
-    <div class="card-header codesum"><span class="anchor" id="proc-get_profile_compiler"></span> <h3>public  function <a href='../proc/get_profile_compiler.html'>get_profile_compiler</a>(self) result(compiler)  
-</h3></div>
-    <div class="card-body">
-          
-  <p>Get compiler name</p>
-
-  <h4>Arguments</h4>
-      <table class="table table-striped varlist">
-    <thead>
-      <tr>
-        <th scope="col">Type</th>
-<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
-        <th scope="col"></th>
-        <th scope="col">Name</th>
-        <th scope="col"></th>
-    </thead>
-    <tbody>
         <tr>
             <td>
-              <span class="anchor" id="variable-self~174"></span>
-              class(<a href='../type/profile_config_t.html'>profile_config_t</a>),
+              <span class="anchor" id="variable-features_array"></span>
+              type(toml_array),
             </td>
-<td>intent(in)</td>
+<td>intent(inout)</td>
               <td></td>            <td>
               
             </td>
             <td>::</td>
-            <td><strong>self</strong></td>
+            <td><strong>features_array</strong></td>
             <td>
-
+<p>TOML array containing the feature names</p>
             </td>
         </tr>
-    </tbody>
-  </table>
-
-    <h4>
-    Return Value
-    <small>character(len=:), allocatable</small>
-    </h4>
-    
-
-    </div>
-  </div>
-
-              <div class="card">
-    <div class="card-header codesum"><span class="anchor" id="proc-get_profile_cxx_flags"></span> <h3>public  function <a href='../proc/get_profile_cxx_flags.html'>get_profile_cxx_flags</a>(self) result(cxx_flags)  
-</h3></div>
-    <div class="card-body">
-          
-  <p>Get C++ flags</p>
-
-  <h4>Arguments</h4>
-      <table class="table table-striped varlist">
-    <thead>
-      <tr>
-        <th scope="col">Type</th>
-<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
-        <th scope="col"></th>
-        <th scope="col">Name</th>
-        <th scope="col"></th>
-    </thead>
-    <tbody>
         <tr>
             <td>
-              <span class="anchor" id="variable-self~178"></span>
-              class(<a href='../type/profile_config_t.html'>profile_config_t</a>),
-            </td>
-<td>intent(in)</td>
-              <td></td>            <td>
-              
-            </td>
-            <td>::</td>
-            <td><strong>self</strong></td>
-            <td>
-
-            </td>
-        </tr>
-    </tbody>
-  </table>
-
-    <h4>
-    Return Value
-    <small>character(len=:), allocatable</small>
-    </h4>
-    
-
-    </div>
-  </div>
-
-              <div class="card">
-    <div class="card-header codesum"><span class="anchor" id="proc-get_profile_flags"></span> <h3>public  function <a href='../proc/get_profile_flags.html'>get_profile_flags</a>(self) result(flags)  
-</h3></div>
-    <div class="card-body">
-          
-  <p>Get flags</p>
-
-  <h4>Arguments</h4>
-      <table class="table table-striped varlist">
-    <thead>
-      <tr>
-        <th scope="col">Type</th>
-<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
-        <th scope="col"></th>
-        <th scope="col">Name</th>
-        <th scope="col"></th>
-    </thead>
-    <tbody>
-        <tr>
-            <td>
-              <span class="anchor" id="variable-self~176"></span>
-              class(<a href='../type/profile_config_t.html'>profile_config_t</a>),
-            </td>
-<td>intent(in)</td>
-              <td></td>            <td>
-              
-            </td>
-            <td>::</td>
-            <td><strong>self</strong></td>
-            <td>
-
-            </td>
-        </tr>
-    </tbody>
-  </table>
-
-    <h4>
-    Return Value
-    <small>character(len=:), allocatable</small>
-    </h4>
-    
-
-    </div>
-  </div>
-
-              <div class="card">
-    <div class="card-header codesum"><span class="anchor" id="proc-get_profile_is_built_in"></span> <h3>public  function <a href='../proc/get_profile_is_built_in.html'>get_profile_is_built_in</a>(self) result(is_built_in)  
-</h3></div>
-    <div class="card-body">
-          
-  <p>Get is_built_in flag (maps to feature default flag)</p>
-
-  <h4>Arguments</h4>
-      <table class="table table-striped varlist">
-    <thead>
-      <tr>
-        <th scope="col">Type</th>
-<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
-        <th scope="col"></th>
-        <th scope="col">Name</th>
-        <th scope="col"></th>
-    </thead>
-    <tbody>
-        <tr>
-            <td>
-              <span class="anchor" id="variable-self~180"></span>
-              class(<a href='../type/profile_config_t.html'>profile_config_t</a>),
-            </td>
-<td>intent(in)</td>
-              <td></td>            <td>
-              
-            </td>
-            <td>::</td>
-            <td><strong>self</strong></td>
-            <td>
-
-            </td>
-        </tr>
-    </tbody>
-  </table>
-
-    <h4>
-    Return Value
-    <small>logical</small>
-    </h4>
-    
-
-    </div>
-  </div>
-
-              <div class="card">
-    <div class="card-header codesum"><span class="anchor" id="proc-get_profile_link_time_flags"></span> <h3>public  function <a href='../proc/get_profile_link_time_flags.html'>get_profile_link_time_flags</a>(self) result(link_time_flags)  
-</h3></div>
-    <div class="card-body">
-          
-  <p>Get link time flags</p>
-
-  <h4>Arguments</h4>
-      <table class="table table-striped varlist">
-    <thead>
-      <tr>
-        <th scope="col">Type</th>
-<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
-        <th scope="col"></th>
-        <th scope="col">Name</th>
-        <th scope="col"></th>
-    </thead>
-    <tbody>
-        <tr>
-            <td>
-              <span class="anchor" id="variable-self~179"></span>
-              class(<a href='../type/profile_config_t.html'>profile_config_t</a>),
-            </td>
-<td>intent(in)</td>
-              <td></td>            <td>
-              
-            </td>
-            <td>::</td>
-            <td><strong>self</strong></td>
-            <td>
-
-            </td>
-        </tr>
-    </tbody>
-  </table>
-
-    <h4>
-    Return Value
-    <small>character(len=:), allocatable</small>
-    </h4>
-    
-
-    </div>
-  </div>
-
-              <div class="card">
-    <div class="card-header codesum"><span class="anchor" id="proc-get_profile_name"></span> <h3>public  function <a href='../proc/get_profile_name.html'>get_profile_name</a>(self) result(name)  
-</h3></div>
-    <div class="card-body">
-          
-  <p>Convenience accessor procedures for backward compatibility
-Get profile name</p>
-
-  <h4>Arguments</h4>
-      <table class="table table-striped varlist">
-    <thead>
-      <tr>
-        <th scope="col">Type</th>
-<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
-        <th scope="col"></th>
-        <th scope="col">Name</th>
-        <th scope="col"></th>
-    </thead>
-    <tbody>
-        <tr>
-            <td>
-              <span class="anchor" id="variable-self~173"></span>
-              class(<a href='../type/profile_config_t.html'>profile_config_t</a>),
-            </td>
-<td>intent(in)</td>
-              <td></td>            <td>
-              
-            </td>
-            <td>::</td>
-            <td><strong>self</strong></td>
-            <td>
-
-            </td>
-        </tr>
-    </tbody>
-  </table>
-
-    <h4>
-    Return Value
-    <small>character(len=:), allocatable</small>
-    </h4>
-    
-
-    </div>
-  </div>
-
-              <div class="card">
-    <div class="card-header codesum"><span class="anchor" id="proc-get_profile_os_type"></span> <h3>public  function <a href='../proc/get_profile_os_type.html'>get_profile_os_type</a>(self) result(os_type)  
-</h3></div>
-    <div class="card-body">
-          
-  <p>Get OS type</p>
-
-  <h4>Arguments</h4>
-      <table class="table table-striped varlist">
-    <thead>
-      <tr>
-        <th scope="col">Type</th>
-<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
-        <th scope="col"></th>
-        <th scope="col">Name</th>
-        <th scope="col"></th>
-    </thead>
-    <tbody>
-        <tr>
-            <td>
-              <span class="anchor" id="variable-self~175"></span>
-              class(<a href='../type/profile_config_t.html'>profile_config_t</a>),
-            </td>
-<td>intent(in)</td>
-              <td></td>            <td>
-              
-            </td>
-            <td>::</td>
-            <td><strong>self</strong></td>
-            <td>
-
-            </td>
-        </tr>
-    </tbody>
-  </table>
-
-    <h4>
-    Return Value
-    <small>integer</small>
-    </h4>
-    
-
-    </div>
-  </div>
-
-              <div class="card">
-    <div class="card-header codesum"><span class="anchor" id="proc-new_profile"></span> <h3>public  function <a href='../proc/new_profile.html'>new_profile</a>(profile_name, compiler, os_type, flags, c_flags, cxx_flags, link_time_flags, file_scope_flags, is_built_in) result(profile)  
-</h3></div>
-    <div class="card-body">
-          
-  <p>Construct a new profile configuration from a TOML data structure  </p>
-
-  <h4>Arguments</h4>
-      <table class="table table-striped varlist">
-    <thead>
-      <tr>
-        <th scope="col">Type</th>
-<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
-        <th scope="col"></th>
-        <th scope="col">Name</th>
-        <th scope="col"></th>
-    </thead>
-    <tbody>
-        <tr>
-            <td>
-              <span class="anchor" id="variable-profile_name~2"></span>
+              <span class="anchor" id="variable-profile_name~3"></span>
               character(len=*),
             </td>
 <td>intent(in)</td>
@@ -1060,297 +506,7 @@ Get profile name</p>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-compiler~31"></span>
-              character(len=*),
-            </td>
-<td>intent(in)</td>
-              <td></td>            <td>
-              
-            </td>
-            <td>::</td>
-            <td><strong>compiler</strong></td>
-            <td>
-<p>Name of the compiler</p>
-            </td>
-        </tr>
-        <tr>
-            <td>
-              <span class="anchor" id="variable-os_type~7"></span>
-              integer,
-            </td>
-<td>intent(in)</td>
-              <td></td>            <td>
-              
-            </td>
-            <td>::</td>
-            <td><strong>os_type</strong></td>
-            <td>
-<p>Type of the OS</p>
-            </td>
-        </tr>
-        <tr>
-            <td>
-              <span class="anchor" id="variable-flags~27"></span>
-              character(len=*),
-            </td>
-<td>intent(in),</td>
-              <td>optional</td>            <td>
-              
-            </td>
-            <td>::</td>
-            <td><strong>flags</strong></td>
-            <td>
-<p>Fortran compiler flags</p>
-            </td>
-        </tr>
-        <tr>
-            <td>
-              <span class="anchor" id="variable-c_flags~2"></span>
-              character(len=*),
-            </td>
-<td>intent(in),</td>
-              <td>optional</td>            <td>
-              
-            </td>
-            <td>::</td>
-            <td><strong>c_flags</strong></td>
-            <td>
-<p>C compiler flags</p>
-            </td>
-        </tr>
-        <tr>
-            <td>
-              <span class="anchor" id="variable-cxx_flags~2"></span>
-              character(len=*),
-            </td>
-<td>intent(in),</td>
-              <td>optional</td>            <td>
-              
-            </td>
-            <td>::</td>
-            <td><strong>cxx_flags</strong></td>
-            <td>
-<p>C++ compiler flags</p>
-            </td>
-        </tr>
-        <tr>
-            <td>
-              <span class="anchor" id="variable-link_time_flags~2"></span>
-              character(len=*),
-            </td>
-<td>intent(in),</td>
-              <td>optional</td>            <td>
-              
-            </td>
-            <td>::</td>
-            <td><strong>link_time_flags</strong></td>
-            <td>
-<p>Link time compiler flags</p>
-            </td>
-        </tr>
-        <tr>
-            <td>
-              <span class="anchor" id="variable-file_scope_flags~2"></span>
-              type(<a href='../type/file_scope_flag.html'>file_scope_flag</a>),
-            </td>
-<td>intent(in),</td>
-              <td>optional</td>            <td>
-              
-            </td>
-            <td>::</td>
-            <td><strong>file_scope_flags</strong>(:)</td>
-            <td>
-<p>File scope flags</p>
-            </td>
-        </tr>
-        <tr>
-            <td>
-              <span class="anchor" id="variable-is_built_in~2"></span>
-              logical,
-            </td>
-<td>intent(in),</td>
-              <td>optional</td>            <td>
-              
-            </td>
-            <td>::</td>
-            <td><strong>is_built_in</strong></td>
-            <td>
-<p>Is this profile one of the built-in ones?</p>
-            </td>
-        </tr>
-    </tbody>
-  </table>
-
-    <h4>
-    Return Value
-    <small>type(<a href='../type/profile_config_t.html'>profile_config_t</a>)</small>
-    </h4>
-    
-
-    </div>
-  </div>
-
-              <div class="card">
-    <div class="card-header codesum"><span class="anchor" id="proc-os_type_name"></span> <h3>public  function <a href='../proc/os_type_name.html'>os_type_name</a>(os_type)  
-</h3></div>
-    <div class="card-body">
-          
-  <p>Match lowercase string with name of OS to os_type enum</p>
-
-  <h4>Arguments</h4>
-      <table class="table table-striped varlist">
-    <thead>
-      <tr>
-        <th scope="col">Type</th>
-<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
-        <th scope="col"></th>
-        <th scope="col">Name</th>
-        <th scope="col"></th>
-    </thead>
-    <tbody>
-        <tr>
-            <td>
-              <span class="anchor" id="variable-os_type~8"></span>
-              integer,
-            </td>
-<td>intent(in)</td>
-              <td></td>            <td>
-              
-            </td>
-            <td>::</td>
-            <td><strong>os_type</strong></td>
-            <td>
-<p>Enum representing type of OS</p>
-            </td>
-        </tr>
-    </tbody>
-  </table>
-
-    <h4>
-    Return Value
-    <small>character(len=:), allocatable</small>
-    </h4>
-    <p>Name of operating system</p>
-
-    </div>
-  </div>
-
-              <div class="card">
-    <div class="card-header codesum"><span class="anchor" id="proc-profile_same"></span> <h3>public  function <a href='../proc/profile_same.html'>profile_same</a>(this, that)  
-</h3></div>
-    <div class="card-body">
-          
-  <p>All checks passed!</p>
-
-  <h4>Arguments</h4>
-      <table class="table table-striped varlist">
-    <thead>
-      <tr>
-        <th scope="col">Type</th>
-<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
-        <th scope="col"></th>
-        <th scope="col">Name</th>
-        <th scope="col"></th>
-    </thead>
-    <tbody>
-        <tr>
-            <td>
-              <span class="anchor" id="variable-this~40"></span>
-              class(<a href='../type/profile_config_t.html'>profile_config_t</a>),
-            </td>
-<td>intent(in)</td>
-              <td></td>            <td>
-              
-            </td>
-            <td>::</td>
-            <td><strong>this</strong></td>
-            <td>
-
-            </td>
-        </tr>
-        <tr>
-            <td>
-              <span class="anchor" id="variable-that~24"></span>
-              class(<a href='../type/serializable_t.html'>serializable_t</a>),
-            </td>
-<td>intent(in)</td>
-              <td></td>            <td>
-              
-            </td>
-            <td>::</td>
-            <td><strong>that</strong></td>
-            <td>
-
-            </td>
-        </tr>
-    </tbody>
-  </table>
-
-    <h4>
-    Return Value
-    <small>logical</small>
-    </h4>
-    
-
-    </div>
-  </div>
-
-        </section>
-        <br>
-
-        <section>
-          <h2>Subroutines</h2>
-              <div class="card">
-    <div class="card-header codesum"><span class="anchor" id="proc-file_scope_dump"></span> <h3>public  subroutine <a href='../proc/file_scope_dump.html'>file_scope_dump</a>(self, table, error)  
-</h3></div>
-    <div class="card-body">
-          
-  <p>Dump to toml table</p>
-
-  <h4>Arguments</h4>
-      <table class="table table-striped varlist">
-    <thead>
-      <tr>
-        <th scope="col">Type</th>
-<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
-        <th scope="col"></th>
-        <th scope="col">Name</th>
-        <th scope="col"></th>
-    </thead>
-    <tbody>
-        <tr>
-            <td>
-              <span class="anchor" id="variable-self~169"></span>
-              class(<a href='../type/file_scope_flag.html'>file_scope_flag</a>),
-            </td>
-<td>intent(inout)</td>
-              <td></td>            <td>
-              
-            </td>
-            <td>::</td>
-            <td><strong>self</strong></td>
-            <td>
-<p>Instance of the serializable object</p>
-            </td>
-        </tr>
-        <tr>
-            <td>
-              <span class="anchor" id="variable-table~95"></span>
-              type(toml_table),
-            </td>
-<td>intent(inout)</td>
-              <td></td>            <td>
-              
-            </td>
-            <td>::</td>
-            <td><strong>table</strong></td>
-            <td>
-<p>Data structure</p>
-            </td>
-        </tr>
-        <tr>
-            <td>
-              <span class="anchor" id="variable-error~214"></span>
+              <span class="anchor" id="variable-error~130"></span>
               type(<a href='../type/error_t.html'>error_t</a>),
             </td>
 <td>intent(out),</td>
@@ -1361,392 +517,6 @@ Get profile name</p>
             <td><strong>error</strong></td>
             <td>
 <p>Error handling</p>
-            </td>
-        </tr>
-    </tbody>
-  </table>
-
-
-    </div>
-  </div>
-
-              <div class="card">
-    <div class="card-header codesum"><span class="anchor" id="proc-file_scope_load"></span> <h3>public  subroutine <a href='../proc/file_scope_load.html'>file_scope_load</a>(self, table, error)  
-</h3></div>
-    <div class="card-body">
-          
-  <p>Read from toml table (no checks made at this stage)</p>
-
-  <h4>Arguments</h4>
-      <table class="table table-striped varlist">
-    <thead>
-      <tr>
-        <th scope="col">Type</th>
-<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
-        <th scope="col"></th>
-        <th scope="col">Name</th>
-        <th scope="col"></th>
-    </thead>
-    <tbody>
-        <tr>
-            <td>
-              <span class="anchor" id="variable-self~170"></span>
-              class(<a href='../type/file_scope_flag.html'>file_scope_flag</a>),
-            </td>
-<td>intent(inout)</td>
-              <td></td>            <td>
-              
-            </td>
-            <td>::</td>
-            <td><strong>self</strong></td>
-            <td>
-<p>Instance of the serializable object</p>
-            </td>
-        </tr>
-        <tr>
-            <td>
-              <span class="anchor" id="variable-table~96"></span>
-              type(toml_table),
-            </td>
-<td>intent(inout)</td>
-              <td></td>            <td>
-              
-            </td>
-            <td>::</td>
-            <td><strong>table</strong></td>
-            <td>
-<p>Data structure</p>
-            </td>
-        </tr>
-        <tr>
-            <td>
-              <span class="anchor" id="variable-error~215"></span>
-              type(<a href='../type/error_t.html'>error_t</a>),
-            </td>
-<td>intent(out),</td>
-              <td></td>            <td>
-              allocatable
-            </td>
-            <td>::</td>
-            <td><strong>error</strong></td>
-            <td>
-<p>Error handling</p>
-            </td>
-        </tr>
-    </tbody>
-  </table>
-
-
-    </div>
-  </div>
-
-              <div class="card">
-    <div class="card-header codesum"><span class="anchor" id="proc-find_profile"></span> <h3>public  subroutine <a href='../proc/find_profile.html'>find_profile</a>(profiles, profile_name, target, found_matching, chosen_profile)  
-</h3></div>
-    <div class="card-body">
-          
-  <p>Look for profile with given configuration in array profiles</p>
-
-  <h4>Arguments</h4>
-      <table class="table table-striped varlist">
-    <thead>
-      <tr>
-        <th scope="col">Type</th>
-<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
-        <th scope="col"></th>
-        <th scope="col">Name</th>
-        <th scope="col"></th>
-    </thead>
-    <tbody>
-        <tr>
-            <td>
-              <span class="anchor" id="variable-profiles~5"></span>
-              type(<a href='../type/profile_config_t.html'>profile_config_t</a>),
-            </td>
-<td>intent(in),</td>
-              <td></td>            <td>
-              allocatable
-            </td>
-            <td>::</td>
-            <td><strong>profiles</strong>(:)</td>
-            <td>
-<p>Array of profiles</p>
-            </td>
-        </tr>
-        <tr>
-            <td>
-              <span class="anchor" id="variable-profile_name~9"></span>
-              character(len=:),
-            </td>
-<td>intent(in),</td>
-              <td></td>            <td>
-              allocatable
-            </td>
-            <td>::</td>
-            <td><strong>profile_name</strong></td>
-            <td>
-<p>Name of profile</p>
-            </td>
-        </tr>
-        <tr>
-            <td>
-              <span class="anchor" id="variable-target~21"></span>
-              type(<a href='../type/platform_config_t.html'>platform_config_t</a>),
-            </td>
-<td>intent(in)</td>
-              <td></td>            <td>
-              
-            </td>
-            <td>::</td>
-            <td><strong>target</strong></td>
-            <td>
-
-            </td>
-        </tr>
-        <tr>
-            <td>
-              <span class="anchor" id="variable-found_matching"></span>
-              logical,
-            </td>
-<td>intent(out)</td>
-              <td></td>            <td>
-              
-            </td>
-            <td>::</td>
-            <td><strong>found_matching</strong></td>
-            <td>
-<p>Boolean value containing true if matching profile was found</p>
-            </td>
-        </tr>
-        <tr>
-            <td>
-              <span class="anchor" id="variable-chosen_profile"></span>
-              type(<a href='../type/profile_config_t.html'>profile_config_t</a>),
-            </td>
-<td>intent(out)</td>
-              <td></td>            <td>
-              
-            </td>
-            <td>::</td>
-            <td><strong>chosen_profile</strong></td>
-            <td>
-<p>Last matching profile in the profiles array</p>
-            </td>
-        </tr>
-    </tbody>
-  </table>
-
-
-    </div>
-  </div>
-
-              <div class="card">
-    <div class="card-header codesum"><span class="anchor" id="proc-get_flags"></span> <h3>public  subroutine <a href='../proc/get_flags.html'>get_flags</a>(profile_name, compiler_name, os_type, key_list, table, profiles, profindex, os_valid)  
-</h3></div>
-    <div class="card-body">
-          
-  <p>Look for flags, c-flags, link-time-flags key-val pairs
-and files table in a given table and create new profiles</p>
-
-  <h4>Arguments</h4>
-      <table class="table table-striped varlist">
-    <thead>
-      <tr>
-        <th scope="col">Type</th>
-<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
-        <th scope="col"></th>
-        <th scope="col">Name</th>
-        <th scope="col"></th>
-    </thead>
-    <tbody>
-        <tr>
-            <td>
-              <span class="anchor" id="variable-profile_name~4"></span>
-              character(len=:),
-            </td>
-<td>intent(in),</td>
-              <td></td>            <td>
-              allocatable
-            </td>
-            <td>::</td>
-            <td><strong>profile_name</strong></td>
-            <td>
-<p>Name of profile</p>
-            </td>
-        </tr>
-        <tr>
-            <td>
-              <span class="anchor" id="variable-compiler_name~3"></span>
-              character(len=:),
-            </td>
-<td>intent(in),</td>
-              <td></td>            <td>
-              allocatable
-            </td>
-            <td>::</td>
-            <td><strong>compiler_name</strong></td>
-            <td>
-<p>Name of compiler</p>
-            </td>
-        </tr>
-        <tr>
-            <td>
-              <span class="anchor" id="variable-os_type~9"></span>
-              integer,
-            </td>
-<td>intent(in)</td>
-              <td></td>            <td>
-              
-            </td>
-            <td>::</td>
-            <td><strong>os_type</strong></td>
-            <td>
-<p>OS type</p>
-            </td>
-        </tr>
-        <tr>
-            <td>
-              <span class="anchor" id="variable-key_list~2"></span>
-              type(toml_key),
-            </td>
-<td>intent(in),</td>
-              <td></td>            <td>
-              allocatable
-            </td>
-            <td>::</td>
-            <td><strong>key_list</strong>(:)</td>
-            <td>
-<p>List of keys in the table</p>
-            </td>
-        </tr>
-        <tr>
-            <td>
-              <span class="anchor" id="variable-table~90"></span>
-              type(toml_table),
-            </td>
-<td>intent(in),</td>
-              <td></td>            <td>
-              pointer
-            </td>
-            <td>::</td>
-            <td><strong>table</strong></td>
-            <td>
-<p>Table containing OS tables</p>
-            </td>
-        </tr>
-        <tr>
-            <td>
-              <span class="anchor" id="variable-profiles"></span>
-              type(<a href='../type/profile_config_t.html'>profile_config_t</a>),
-            </td>
-<td>intent(inout),</td>
-              <td></td>            <td>
-              allocatable
-            </td>
-            <td>::</td>
-            <td><strong>profiles</strong>(:)</td>
-            <td>
-<p>List of profiles</p>
-            </td>
-        </tr>
-        <tr>
-            <td>
-              <span class="anchor" id="variable-profindex"></span>
-              integer,
-            </td>
-<td>intent(inout)</td>
-              <td></td>            <td>
-              
-            </td>
-            <td>::</td>
-            <td><strong>profindex</strong></td>
-            <td>
-<p>Index in the list of profiles</p>
-            </td>
-        </tr>
-        <tr>
-            <td>
-              <span class="anchor" id="variable-os_valid~2"></span>
-              logical,
-            </td>
-<td>intent(in)</td>
-              <td></td>            <td>
-              
-            </td>
-            <td>::</td>
-            <td><strong>os_valid</strong></td>
-            <td>
-<p>Was called with valid operating system</p>
-            </td>
-        </tr>
-    </tbody>
-  </table>
-
-
-    </div>
-  </div>
-
-              <div class="card">
-    <div class="card-header codesum"><span class="anchor" id="proc-info~12"></span> <h3>public  subroutine <a href='../proc/info~12.html'>info</a>(self, unit, verbosity)  
-</h3></div>
-    <div class="card-body">
-          
-  <p>Write information on instance</p>
-
-  <h4>Arguments</h4>
-      <table class="table table-striped varlist">
-    <thead>
-      <tr>
-        <th scope="col">Type</th>
-<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
-        <th scope="col"></th>
-        <th scope="col">Name</th>
-        <th scope="col"></th>
-    </thead>
-    <tbody>
-        <tr>
-            <td>
-              <span class="anchor" id="variable-self~168"></span>
-              class(<a href='../type/profile_config_t.html'>profile_config_t</a>),
-            </td>
-<td>intent(in)</td>
-              <td></td>            <td>
-              
-            </td>
-            <td>::</td>
-            <td><strong>self</strong></td>
-            <td>
-<p>Instance of the profile configuration</p>
-            </td>
-        </tr>
-        <tr>
-            <td>
-              <span class="anchor" id="variable-unit~35"></span>
-              integer,
-            </td>
-<td>intent(in)</td>
-              <td></td>            <td>
-              
-            </td>
-            <td>::</td>
-            <td><strong>unit</strong></td>
-            <td>
-<p>Unit for IO</p>
-            </td>
-        </tr>
-        <tr>
-            <td>
-              <span class="anchor" id="variable-verbosity~19"></span>
-              integer,
-            </td>
-<td>intent(in),</td>
-              <td>optional</td>            <td>
-              
-            </td>
-            <td>::</td>
-            <td><strong>verbosity</strong></td>
-            <td>
-<p>Verbosity of the printout</p>
             </td>
         </tr>
     </tbody>
@@ -1776,7 +546,7 @@ and files table in a given table and create new profiles</p>
     <tbody>
         <tr>
             <td>
-              <span class="anchor" id="variable-profiles~4"></span>
+              <span class="anchor" id="variable-profiles~2"></span>
               type(<a href='../type/profile_config_t.html'>profile_config_t</a>),
             </td>
 <td>intent(out),</td>
@@ -1786,17 +556,17 @@ and files table in a given table and create new profiles</p>
             <td>::</td>
             <td><strong>profiles</strong>(:)</td>
             <td>
-<p>Instance of the dependency configuration</p>
+<p>Instance of the profile configuration array</p>
             </td>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-table~94"></span>
+              <span class="anchor" id="variable-table~53"></span>
               type(toml_table),
             </td>
-<td>intent(inout),</td>
+<td>intent(inout)</td>
               <td></td>            <td>
-              target
+              
             </td>
             <td>::</td>
             <td><strong>table</strong></td>
@@ -1806,7 +576,7 @@ and files table in a given table and create new profiles</p>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-error~213"></span>
+              <span class="anchor" id="variable-error~131"></span>
               type(<a href='../type/error_t.html'>error_t</a>),
             </td>
 <td>intent(out),</td>
@@ -1817,636 +587,6 @@ and files table in a given table and create new profiles</p>
             <td><strong>error</strong></td>
             <td>
 <p>Error handling</p>
-            </td>
-        </tr>
-    </tbody>
-  </table>
-
-
-    </div>
-  </div>
-
-              <div class="card">
-    <div class="card-header codesum"><span class="anchor" id="proc-profile_dump"></span> <h3>public  subroutine <a href='../proc/profile_dump.html'>profile_dump</a>(self, table, error)  
-</h3></div>
-    <div class="card-body">
-          
-  <p>Dump to toml table</p><a href="../proc/profile_dump.html" class="pull-right"><emph>Read more&hellip;</emph></a>
-
-  <h4>Arguments</h4>
-      <table class="table table-striped varlist">
-    <thead>
-      <tr>
-        <th scope="col">Type</th>
-<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
-        <th scope="col"></th>
-        <th scope="col">Name</th>
-        <th scope="col"></th>
-    </thead>
-    <tbody>
-        <tr>
-            <td>
-              <span class="anchor" id="variable-self~171"></span>
-              class(<a href='../type/profile_config_t.html'>profile_config_t</a>),
-            </td>
-<td>intent(inout)</td>
-              <td></td>            <td>
-              
-            </td>
-            <td>::</td>
-            <td><strong>self</strong></td>
-            <td>
-<p>Instance of the serializable object</p>
-            </td>
-        </tr>
-        <tr>
-            <td>
-              <span class="anchor" id="variable-table~97"></span>
-              type(toml_table),
-            </td>
-<td>intent(inout)</td>
-              <td></td>            <td>
-              
-            </td>
-            <td>::</td>
-            <td><strong>table</strong></td>
-            <td>
-<p>Data structure</p>
-            </td>
-        </tr>
-        <tr>
-            <td>
-              <span class="anchor" id="variable-error~216"></span>
-              type(<a href='../type/error_t.html'>error_t</a>),
-            </td>
-<td>intent(out),</td>
-              <td></td>            <td>
-              allocatable
-            </td>
-            <td>::</td>
-            <td><strong>error</strong></td>
-            <td>
-<p>Error handling</p>
-            </td>
-        </tr>
-    </tbody>
-  </table>
-
-
-    </div>
-  </div>
-
-              <div class="card">
-    <div class="card-header codesum"><span class="anchor" id="proc-profile_load"></span> <h3>public  subroutine <a href='../proc/profile_load.html'>profile_load</a>(self, table, error)  
-</h3></div>
-    <div class="card-body">
-          
-  <p>Read from toml table (no checks made at this stage)</p><a href="../proc/profile_load.html" class="pull-right"><emph>Read more&hellip;</emph></a>
-
-  <h4>Arguments</h4>
-      <table class="table table-striped varlist">
-    <thead>
-      <tr>
-        <th scope="col">Type</th>
-<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
-        <th scope="col"></th>
-        <th scope="col">Name</th>
-        <th scope="col"></th>
-    </thead>
-    <tbody>
-        <tr>
-            <td>
-              <span class="anchor" id="variable-self~172"></span>
-              class(<a href='../type/profile_config_t.html'>profile_config_t</a>),
-            </td>
-<td>intent(inout)</td>
-              <td></td>            <td>
-              
-            </td>
-            <td>::</td>
-            <td><strong>self</strong></td>
-            <td>
-<p>Instance of the serializable object</p>
-            </td>
-        </tr>
-        <tr>
-            <td>
-              <span class="anchor" id="variable-table~98"></span>
-              type(toml_table),
-            </td>
-<td>intent(inout)</td>
-              <td></td>            <td>
-              
-            </td>
-            <td>::</td>
-            <td><strong>table</strong></td>
-            <td>
-<p>Data structure</p>
-            </td>
-        </tr>
-        <tr>
-            <td>
-              <span class="anchor" id="variable-error~217"></span>
-              type(<a href='../type/error_t.html'>error_t</a>),
-            </td>
-<td>intent(out),</td>
-              <td></td>            <td>
-              allocatable
-            </td>
-            <td>::</td>
-            <td><strong>error</strong></td>
-            <td>
-<p>Error handling</p>
-            </td>
-        </tr>
-    </tbody>
-  </table>
-
-
-    </div>
-  </div>
-
-              <div class="card">
-    <div class="card-header codesum"><span class="anchor" id="proc-traverse_compilers"></span> <h3>public  subroutine <a href='../proc/traverse_compilers.html'>traverse_compilers</a>(profile_name, comp_list, table, error, profiles_size, profiles, profindex)  
-</h3></div>
-    <div class="card-body">
-          
-  <p>Traverse compiler tables</p>
-
-  <h4>Arguments</h4>
-      <table class="table table-striped varlist">
-    <thead>
-      <tr>
-        <th scope="col">Type</th>
-<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
-        <th scope="col"></th>
-        <th scope="col">Name</th>
-        <th scope="col"></th>
-    </thead>
-    <tbody>
-        <tr>
-            <td>
-              <span class="anchor" id="variable-profile_name~7"></span>
-              character(len=:),
-            </td>
-<td>intent(in),</td>
-              <td></td>            <td>
-              allocatable
-            </td>
-            <td>::</td>
-            <td><strong>profile_name</strong></td>
-            <td>
-<p>Name of profile</p>
-            </td>
-        </tr>
-        <tr>
-            <td>
-              <span class="anchor" id="variable-comp_list"></span>
-              type(toml_key),
-            </td>
-<td>intent(in),</td>
-              <td></td>            <td>
-              allocatable
-            </td>
-            <td>::</td>
-            <td><strong>comp_list</strong>(:)</td>
-            <td>
-<p>List of OSs in table with profile name given</p>
-            </td>
-        </tr>
-        <tr>
-            <td>
-              <span class="anchor" id="variable-table~93"></span>
-              type(toml_table),
-            </td>
-<td>intent(in),</td>
-              <td></td>            <td>
-              pointer
-            </td>
-            <td>::</td>
-            <td><strong>table</strong></td>
-            <td>
-<p>Table containing compiler tables</p>
-            </td>
-        </tr>
-        <tr>
-            <td>
-              <span class="anchor" id="variable-error~212"></span>
-              type(<a href='../type/error_t.html'>error_t</a>),
-            </td>
-<td>intent(out),</td>
-              <td></td>            <td>
-              allocatable
-            </td>
-            <td>::</td>
-            <td><strong>error</strong></td>
-            <td>
-<p>Error handling</p>
-            </td>
-        </tr>
-        <tr>
-            <td>
-              <span class="anchor" id="variable-profiles_size~2"></span>
-              integer,
-            </td>
-<td>intent(inout),</td>
-              <td>optional</td>            <td>
-              
-            </td>
-            <td>::</td>
-            <td><strong>profiles_size</strong></td>
-            <td>
-<p>Number of profiles in list of profiles</p>
-            </td>
-        </tr>
-        <tr>
-            <td>
-              <span class="anchor" id="variable-profiles~3"></span>
-              type(<a href='../type/profile_config_t.html'>profile_config_t</a>),
-            </td>
-<td>intent(inout),</td>
-              <td>optional,</td>            <td>
-              allocatable
-            </td>
-            <td>::</td>
-            <td><strong>profiles</strong>(:)</td>
-            <td>
-<p>List of profiles</p>
-            </td>
-        </tr>
-        <tr>
-            <td>
-              <span class="anchor" id="variable-profindex~3"></span>
-              integer,
-            </td>
-<td>intent(inout),</td>
-              <td>optional</td>            <td>
-              
-            </td>
-            <td>::</td>
-            <td><strong>profindex</strong></td>
-            <td>
-<p>Index in the list of profiles</p>
-            </td>
-        </tr>
-    </tbody>
-  </table>
-
-
-    </div>
-  </div>
-
-              <div class="card">
-    <div class="card-header codesum"><span class="anchor" id="proc-traverse_oss"></span> <h3>public  subroutine <a href='../proc/traverse_oss.html'>traverse_oss</a>(profile_name, compiler_name, os_list, table, profiles, profindex, error)  
-</h3></div>
-    <div class="card-body">
-          
-  <p>Traverse operating system tables to obtain profiles</p>
-
-  <h4>Arguments</h4>
-      <table class="table table-striped varlist">
-    <thead>
-      <tr>
-        <th scope="col">Type</th>
-<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
-        <th scope="col"></th>
-        <th scope="col">Name</th>
-        <th scope="col"></th>
-    </thead>
-    <tbody>
-        <tr>
-            <td>
-              <span class="anchor" id="variable-profile_name~6"></span>
-              character(len=:),
-            </td>
-<td>intent(in),</td>
-              <td></td>            <td>
-              allocatable
-            </td>
-            <td>::</td>
-            <td><strong>profile_name</strong></td>
-            <td>
-<p>Name of profile</p>
-            </td>
-        </tr>
-        <tr>
-            <td>
-              <span class="anchor" id="variable-compiler_name~5"></span>
-              character(len=:),
-            </td>
-<td>intent(in),</td>
-              <td></td>            <td>
-              allocatable
-            </td>
-            <td>::</td>
-            <td><strong>compiler_name</strong></td>
-            <td>
-<p>Name of compiler</p>
-            </td>
-        </tr>
-        <tr>
-            <td>
-              <span class="anchor" id="variable-os_list~2"></span>
-              type(toml_key),
-            </td>
-<td>intent(in),</td>
-              <td></td>            <td>
-              allocatable
-            </td>
-            <td>::</td>
-            <td><strong>os_list</strong>(:)</td>
-            <td>
-<p>List of OSs in table with profile name and compiler name given</p>
-            </td>
-        </tr>
-        <tr>
-            <td>
-              <span class="anchor" id="variable-table~92"></span>
-              type(toml_table),
-            </td>
-<td>intent(in),</td>
-              <td></td>            <td>
-              pointer
-            </td>
-            <td>::</td>
-            <td><strong>table</strong></td>
-            <td>
-<p>Table containing OS tables</p>
-            </td>
-        </tr>
-        <tr>
-            <td>
-              <span class="anchor" id="variable-profiles~2"></span>
-              type(<a href='../type/profile_config_t.html'>profile_config_t</a>),
-            </td>
-<td>intent(inout),</td>
-              <td></td>            <td>
-              allocatable
-            </td>
-            <td>::</td>
-            <td><strong>profiles</strong>(:)</td>
-            <td>
-<p>List of profiles</p>
-            </td>
-        </tr>
-        <tr>
-            <td>
-              <span class="anchor" id="variable-profindex~2"></span>
-              integer,
-            </td>
-<td>intent(inout)</td>
-              <td></td>            <td>
-              
-            </td>
-            <td>::</td>
-            <td><strong>profindex</strong></td>
-            <td>
-<p>Index in the list of profiles</p>
-            </td>
-        </tr>
-        <tr>
-            <td>
-              <span class="anchor" id="variable-error~211"></span>
-              type(<a href='../type/error_t.html'>error_t</a>),
-            </td>
-<td>intent(out),</td>
-              <td></td>            <td>
-              allocatable
-            </td>
-            <td>::</td>
-            <td><strong>error</strong></td>
-            <td>
-<p>Error handling</p>
-            </td>
-        </tr>
-    </tbody>
-  </table>
-
-
-    </div>
-  </div>
-
-              <div class="card">
-    <div class="card-header codesum"><span class="anchor" id="proc-traverse_oss_for_size"></span> <h3>public  subroutine <a href='../proc/traverse_oss_for_size.html'>traverse_oss_for_size</a>(profile_name, compiler_name, os_list, table, profiles_size, error)  
-</h3></div>
-    <div class="card-body">
-          
-  <p>Traverse operating system tables to obtain number of profiles</p>
-
-  <h4>Arguments</h4>
-      <table class="table table-striped varlist">
-    <thead>
-      <tr>
-        <th scope="col">Type</th>
-<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
-        <th scope="col"></th>
-        <th scope="col">Name</th>
-        <th scope="col"></th>
-    </thead>
-    <tbody>
-        <tr>
-            <td>
-              <span class="anchor" id="variable-profile_name~5"></span>
-              character(len=:),
-            </td>
-<td>intent(in),</td>
-              <td></td>            <td>
-              allocatable
-            </td>
-            <td>::</td>
-            <td><strong>profile_name</strong></td>
-            <td>
-<p>Name of profile</p>
-            </td>
-        </tr>
-        <tr>
-            <td>
-              <span class="anchor" id="variable-compiler_name~4"></span>
-              character(len=:),
-            </td>
-<td>intent(in),</td>
-              <td></td>            <td>
-              allocatable
-            </td>
-            <td>::</td>
-            <td><strong>compiler_name</strong></td>
-            <td>
-<p>Name of compiler</p>
-            </td>
-        </tr>
-        <tr>
-            <td>
-              <span class="anchor" id="variable-os_list"></span>
-              type(toml_key),
-            </td>
-<td>intent(in),</td>
-              <td></td>            <td>
-              allocatable
-            </td>
-            <td>::</td>
-            <td><strong>os_list</strong>(:)</td>
-            <td>
-<p>List of OSs in table with profile name and compiler name given</p>
-            </td>
-        </tr>
-        <tr>
-            <td>
-              <span class="anchor" id="variable-table~91"></span>
-              type(toml_table),
-            </td>
-<td>intent(in),</td>
-              <td></td>            <td>
-              pointer
-            </td>
-            <td>::</td>
-            <td><strong>table</strong></td>
-            <td>
-<p>Table containing OS tables</p>
-            </td>
-        </tr>
-        <tr>
-            <td>
-              <span class="anchor" id="variable-profiles_size"></span>
-              integer,
-            </td>
-<td>intent(inout)</td>
-              <td></td>            <td>
-              
-            </td>
-            <td>::</td>
-            <td><strong>profiles_size</strong></td>
-            <td>
-<p>Number of profiles in list of profiles</p>
-            </td>
-        </tr>
-        <tr>
-            <td>
-              <span class="anchor" id="variable-error~210"></span>
-              type(<a href='../type/error_t.html'>error_t</a>),
-            </td>
-<td>intent(out),</td>
-              <td></td>            <td>
-              allocatable
-            </td>
-            <td>::</td>
-            <td><strong>error</strong></td>
-            <td>
-<p>Error handling</p>
-            </td>
-        </tr>
-    </tbody>
-  </table>
-
-
-    </div>
-  </div>
-
-              <div class="card">
-    <div class="card-header codesum"><span class="anchor" id="proc-validate_profile_table"></span> <h3>public  subroutine <a href='../proc/validate_profile_table.html'>validate_profile_table</a>(profile_name, compiler_name, key_list, table, error, os_valid)  
-</h3></div>
-    <div class="card-body">
-          
-  
-
-  <h4>Arguments</h4>
-      <table class="table table-striped varlist">
-    <thead>
-      <tr>
-        <th scope="col">Type</th>
-<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
-        <th scope="col"></th>
-        <th scope="col">Name</th>
-        <th scope="col"></th>
-    </thead>
-    <tbody>
-        <tr>
-            <td>
-              <span class="anchor" id="variable-profile_name~3"></span>
-              character(len=:),
-            </td>
-<td>intent(in),</td>
-              <td></td>            <td>
-              allocatable
-            </td>
-            <td>::</td>
-            <td><strong>profile_name</strong></td>
-            <td>
-<p>Name of profile</p>
-            </td>
-        </tr>
-        <tr>
-            <td>
-              <span class="anchor" id="variable-compiler_name~2"></span>
-              character(len=:),
-            </td>
-<td>intent(in),</td>
-              <td></td>            <td>
-              allocatable
-            </td>
-            <td>::</td>
-            <td><strong>compiler_name</strong></td>
-            <td>
-<p>Name of compiler</p>
-            </td>
-        </tr>
-        <tr>
-            <td>
-              <span class="anchor" id="variable-key_list"></span>
-              type(toml_key),
-            </td>
-<td>intent(in),</td>
-              <td></td>            <td>
-              allocatable
-            </td>
-            <td>::</td>
-            <td><strong>key_list</strong>(:)</td>
-            <td>
-<p>List of keys in the table</p>
-            </td>
-        </tr>
-        <tr>
-            <td>
-              <span class="anchor" id="variable-table~89"></span>
-              type(toml_table),
-            </td>
-<td>intent(in),</td>
-              <td></td>            <td>
-              pointer
-            </td>
-            <td>::</td>
-            <td><strong>table</strong></td>
-            <td>
-<p>Table containing OS tables</p>
-            </td>
-        </tr>
-        <tr>
-            <td>
-              <span class="anchor" id="variable-error~209"></span>
-              type(<a href='../type/error_t.html'>error_t</a>),
-            </td>
-<td>intent(out),</td>
-              <td></td>            <td>
-              allocatable
-            </td>
-            <td>::</td>
-            <td><strong>error</strong></td>
-            <td>
-<p>Error handling</p>
-            </td>
-        </tr>
-        <tr>
-            <td>
-              <span class="anchor" id="variable-os_valid"></span>
-              logical,
-            </td>
-<td>intent(in)</td>
-              <td></td>            <td>
-              
-            </td>
-            <td>::</td>
-            <td><strong>os_valid</strong></td>
-            <td>
-<p>Was called with valid operating system</p>
             </td>
         </tr>
     </tbody>
@@ -2479,7 +619,7 @@ and files table in a given table and create new profiles</p>
             <p class="text-end">
               Documentation generated by
               <a href="https://github.com/Fortran-FOSS-Programmers/ford">FORD</a>
- on 2025-10-13 09:44 +0000             </p>
+ on 2025-10-14 10:22 +0000             </p>
           </div>
         </div>
         <br>

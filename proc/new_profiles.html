@@ -92,7 +92,7 @@
 
             <li class="list-inline-item" id="statements"><i class="fa fa-list-ol"></i>
               <a data-bs-toggle="tooltip" data-bs-placement="bottom" data-bs-html="true"
-                 title=" 1.1% of total for procedures.">90 statements</a>
+                 title=" 0.3% of total for procedures.">23 statements</a>
             </li>
 
             <li class="list-inline-item" id="source-file">
@@ -127,29 +127,7 @@
       <div id="sidebar">
       <h3>Contents</h3>
   
-      <div class="card mb-4">
-      <a data-bs-toggle="collapse" href="#vars-0"
-         aria-expanded="false" aria-controls="vars-0">
-         <h4 class="card-header bg-primary text-white">Variables</h4>
-      </a>
-      <div id="vars-0" class="collapse">
-        <div class="list-group list-group-flush">
-            <a class="list-group-item" href="../proc/new_profiles.html#variable-comp_list~2">comp_list</a>
-            <a class="list-group-item" href="../proc/new_profiles.html#variable-compiler_name~7">compiler_name</a>
-            <a class="list-group-item" href="../proc/new_profiles.html#variable-default_profiles">default_profiles</a>
-            <a class="list-group-item" href="../proc/new_profiles.html#variable-iprof">iprof</a>
-            <a class="list-group-item" href="../proc/new_profiles.html#variable-is_valid~9">is_valid</a>
-            <a class="list-group-item" href="../proc/new_profiles.html#variable-os_list~4">os_list</a>
-            <a class="list-group-item" href="../proc/new_profiles.html#variable-prof_list">prof_list</a>
-            <a class="list-group-item" href="../proc/new_profiles.html#variable-prof_node">prof_node</a>
-            <a class="list-group-item" href="../proc/new_profiles.html#variable-profile_name~8">profile_name</a>
-            <a class="list-group-item" href="../proc/new_profiles.html#variable-profiles_size~3">profiles_size</a>
-            <a class="list-group-item" href="../proc/new_profiles.html#variable-profindex~4">profindex</a>
-            <a class="list-group-item" href="../proc/new_profiles.html#variable-stat~65">stat</a>
-        </div>
-      </div>
-    </div>
-
+  
   
   
   
@@ -201,7 +179,7 @@
     <tbody>
         <tr>
             <td>
-              <span class="anchor" id="variable-profiles~4"></span>
+              <span class="anchor" id="variable-profiles~2"></span>
               type(<a href='../type/profile_config_t.html'>profile_config_t</a>),
             </td>
 <td>intent(out),</td>
@@ -211,17 +189,17 @@
             <td>::</td>
             <td><strong>profiles</strong>(:)</td>
             <td>
-                <p>Instance of the dependency configuration</p>
+                <p>Instance of the profile configuration array</p>
             </td>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-table~94"></span>
+              <span class="anchor" id="variable-table~53"></span>
               type(toml_table),
             </td>
-<td>intent(inout),</td>
+<td>intent(inout)</td>
               <td></td>            <td>
-              target
+              
             </td>
             <td>::</td>
             <td><strong>table</strong></td>
@@ -231,7 +209,7 @@
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-error~213"></span>
+              <span class="anchor" id="variable-error~131"></span>
               type(<a href='../type/error_t.html'>error_t</a>),
             </td>
 <td>intent(out),</td>
@@ -250,227 +228,6 @@
     <br>
 
 
-    <section>    
-      <h2>Variables</h2>
-      <table class="table table-striped varlist">
-    <thead>
-      <tr>
-        <th scope="col">Type</th>
-<th scope="col">Visibility</th>        <th scope="col">Attributes</th>
-        <th scope="col"></th>
-        <th scope="col">Name</th>
-<th></th><th scope="col">Initial</th>        <th scope="col"></th>
-    </thead>
-    <tbody>
-        <tr>
-            <td>
-              <span class="anchor" id="variable-comp_list~2"></span>
-              type(toml_key),
-            </td>
-              <td>public,</td>
-            <td>
-              allocatable
-            </td>
-            <td>::</td>
-            <td><strong>comp_list</strong>(:)</td>
-                <td></td>
-                <td></td>
-            <td>
-                
-            </td>
-        </tr>
-        <tr>
-            <td>
-              <span class="anchor" id="variable-compiler_name~7"></span>
-              character(len=:),
-            </td>
-              <td>public,</td>
-            <td>
-              allocatable
-            </td>
-            <td>::</td>
-            <td><strong>compiler_name</strong></td>
-                <td></td>
-                <td></td>
-            <td>
-                
-            </td>
-        </tr>
-        <tr>
-            <td>
-              <span class="anchor" id="variable-default_profiles"></span>
-              type(<a href='../type/profile_config_t.html'>profile_config_t</a>),
-            </td>
-              <td>public,</td>
-            <td>
-              allocatable
-            </td>
-            <td>::</td>
-            <td><strong>default_profiles</strong>(:)</td>
-                <td></td>
-                <td></td>
-            <td>
-                
-            </td>
-        </tr>
-        <tr>
-            <td>
-              <span class="anchor" id="variable-iprof"></span>
-              integer,
-            </td>
-              <td>public</td>
-            <td>
-              
-            </td>
-            <td>::</td>
-            <td><strong>iprof</strong></td>
-                <td></td>
-                <td></td>
-            <td>
-                
-            </td>
-        </tr>
-        <tr>
-            <td>
-              <span class="anchor" id="variable-is_valid~9"></span>
-              logical,
-            </td>
-              <td>public</td>
-            <td>
-              
-            </td>
-            <td>::</td>
-            <td><strong>is_valid</strong></td>
-                <td></td>
-                <td></td>
-            <td>
-                
-            </td>
-        </tr>
-        <tr>
-            <td>
-              <span class="anchor" id="variable-os_list~4"></span>
-              type(toml_key),
-            </td>
-              <td>public,</td>
-            <td>
-              allocatable
-            </td>
-            <td>::</td>
-            <td><strong>os_list</strong>(:)</td>
-                <td></td>
-                <td></td>
-            <td>
-                
-            </td>
-        </tr>
-        <tr>
-            <td>
-              <span class="anchor" id="variable-prof_list"></span>
-              type(toml_key),
-            </td>
-              <td>public,</td>
-            <td>
-              allocatable
-            </td>
-            <td>::</td>
-            <td><strong>prof_list</strong>(:)</td>
-                <td></td>
-                <td></td>
-            <td>
-                
-            </td>
-        </tr>
-        <tr>
-            <td>
-              <span class="anchor" id="variable-prof_node"></span>
-              type(toml_table),
-            </td>
-              <td>public,</td>
-            <td>
-              pointer
-            </td>
-            <td>::</td>
-            <td><strong>prof_node</strong></td>
-                <td></td>
-                <td></td>
-            <td>
-                
-            </td>
-        </tr>
-        <tr>
-            <td>
-              <span class="anchor" id="variable-profile_name~8"></span>
-              character(len=:),
-            </td>
-              <td>public,</td>
-            <td>
-              allocatable
-            </td>
-            <td>::</td>
-            <td><strong>profile_name</strong></td>
-                <td></td>
-                <td></td>
-            <td>
-                
-            </td>
-        </tr>
-        <tr>
-            <td>
-              <span class="anchor" id="variable-profiles_size~3"></span>
-              integer,
-            </td>
-              <td>public</td>
-            <td>
-              
-            </td>
-            <td>::</td>
-            <td><strong>profiles_size</strong></td>
-                <td></td>
-                <td></td>
-            <td>
-                
-            </td>
-        </tr>
-        <tr>
-            <td>
-              <span class="anchor" id="variable-profindex~4"></span>
-              integer,
-            </td>
-              <td>public</td>
-            <td>
-              
-            </td>
-            <td>::</td>
-            <td><strong>profindex</strong></td>
-                <td></td>
-                <td></td>
-            <td>
-                
-            </td>
-        </tr>
-        <tr>
-            <td>
-              <span class="anchor" id="variable-stat~65"></span>
-              integer,
-            </td>
-              <td>public</td>
-            <td>
-              
-            </td>
-            <td>::</td>
-            <td><strong>stat</strong></td>
-                <td></td>
-                <td></td>
-            <td>
-                
-            </td>
-        </tr>
-    </tbody>
-  </table>
-
-    </section>
-    <br>
     
     
 
@@ -482,119 +239,41 @@
     
     <section>
     <h2><span class="anchor" id="src"></span>Source Code</h2>
-    <div class="hl codehilite"><pre><span></span><span class="w">      </span><span class="k">subroutine </span><span class="n">new_profiles</span><span class="p">(</span><span class="n">profiles</span><span class="p">,</span><span class="w"> </span><span class="n">table</span><span class="p">,</span><span class="w"> </span><span class="n">error</span><span class="p">)</span>
+    <div class="hl codehilite"><pre><span></span><span class="w">    </span><span class="k">subroutine </span><span class="n">new_profiles</span><span class="p">(</span><span class="n">profiles</span><span class="p">,</span><span class="w"> </span><span class="n">table</span><span class="p">,</span><span class="w"> </span><span class="n">error</span><span class="p">)</span>
 
-<span class="w">        </span><span class="c">!&gt; Instance of the dependency configuration</span>
+<span class="w">        </span><span class="c">!&gt; Instance of the profile configuration array</span>
 <span class="w">        </span><span class="k">type</span><span class="p">(</span><span class="n">profile_config_t</span><span class="p">),</span><span class="w"> </span><span class="k">allocatable</span><span class="p">,</span><span class="w"> </span><span class="k">intent</span><span class="p">(</span><span class="n">out</span><span class="p">)</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">profiles</span><span class="p">(:)</span>
 
 <span class="w">        </span><span class="c">!&gt; Instance of the TOML data structure</span>
-<span class="w">        </span><span class="k">type</span><span class="p">(</span><span class="n">toml_table</span><span class="p">),</span><span class="w"> </span><span class="k">target</span><span class="p">,</span><span class="w"> </span><span class="k">intent</span><span class="p">(</span><span class="n">inout</span><span class="p">)</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">table</span>
+<span class="w">        </span><span class="k">type</span><span class="p">(</span><span class="n">toml_table</span><span class="p">),</span><span class="w"> </span><span class="k">intent</span><span class="p">(</span><span class="n">inout</span><span class="p">)</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">table</span>
 
 <span class="w">        </span><span class="c">!&gt; Error handling</span>
 <span class="w">        </span><span class="k">type</span><span class="p">(</span><span class="n">error_t</span><span class="p">),</span><span class="w"> </span><span class="k">allocatable</span><span class="p">,</span><span class="w"> </span><span class="k">intent</span><span class="p">(</span><span class="n">out</span><span class="p">)</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">error</span>
 
-<span class="w">        </span><span class="k">type</span><span class="p">(</span><span class="n">toml_table</span><span class="p">),</span><span class="w"> </span><span class="k">pointer</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">prof_node</span>
-<span class="w">        </span><span class="k">type</span><span class="p">(</span><span class="n">toml_key</span><span class="p">),</span><span class="w"> </span><span class="k">allocatable</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">prof_list</span><span class="p">(:)</span>
-<span class="w">        </span><span class="k">type</span><span class="p">(</span><span class="n">toml_key</span><span class="p">),</span><span class="w"> </span><span class="k">allocatable</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">comp_list</span><span class="p">(:)</span>
-<span class="w">        </span><span class="k">type</span><span class="p">(</span><span class="n">toml_key</span><span class="p">),</span><span class="w"> </span><span class="k">allocatable</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">os_list</span><span class="p">(:)</span>
-<span class="w">        </span><span class="kt">character</span><span class="p">(</span><span class="nb">len</span><span class="o">=</span><span class="p">:),</span><span class="w"> </span><span class="k">allocatable</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">profile_name</span><span class="p">,</span><span class="w"> </span><span class="n">compiler_name</span>
-<span class="w">        </span><span class="kt">integer</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">profiles_size</span><span class="p">,</span><span class="w"> </span><span class="n">iprof</span><span class="p">,</span><span class="w"> </span><span class="nb">stat</span><span class="p">,</span><span class="w"> </span><span class="n">profindex</span>
-<span class="w">        </span><span class="kt">logical</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">is_valid</span>
-<span class="w">        </span><span class="k">type</span><span class="p">(</span><span class="n">profile_config_t</span><span class="p">),</span><span class="w"> </span><span class="k">allocatable</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">default_profiles</span><span class="p">(:)</span>
+<span class="w">        </span><span class="k">type</span><span class="p">(</span><span class="n">toml_array</span><span class="p">),</span><span class="w"> </span><span class="k">pointer</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">array_node</span>
+<span class="w">        </span><span class="k">type</span><span class="p">(</span><span class="n">toml_key</span><span class="p">),</span><span class="w"> </span><span class="k">allocatable</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">list</span><span class="p">(:)</span>
+<span class="w">        </span><span class="kt">integer</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">iprofile</span><span class="p">,</span><span class="w"> </span><span class="nb">stat</span>
 
-<span class="w">        </span><span class="n">path</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">&#39;&#39;</span>
+<span class="nb">        </span><span class="k">call </span><span class="n">table</span><span class="p">%</span><span class="n">get_keys</span><span class="p">(</span><span class="n">list</span><span class="p">)</span>
 
-<span class="w">        </span><span class="c">! Default profiles are now features - no longer used</span>
-<span class="w">        </span><span class="k">allocate</span><span class="p">(</span><span class="n">default_profiles</span><span class="p">(</span><span class="mi">0</span><span class="p">))</span>
-<span class="w">        </span><span class="k">call </span><span class="n">table</span><span class="p">%</span><span class="n">get_keys</span><span class="p">(</span><span class="n">prof_list</span><span class="p">)</span>
+<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">size</span><span class="p">(</span><span class="n">list</span><span class="p">)</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="mi">1</span><span class="p">)</span><span class="w"> </span><span class="k">then</span>
+<span class="k">            allocate</span><span class="p">(</span><span class="n">profiles</span><span class="p">(</span><span class="mi">0</span><span class="p">))</span>
+<span class="w">            </span><span class="k">return</span>
+<span class="k">        end if</span>
 
-<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">size</span><span class="p">(</span><span class="n">prof_list</span><span class="p">)</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="mi">1</span><span class="p">)</span><span class="w"> </span><span class="k">return</span>
+<span class="k">        allocate</span><span class="p">(</span><span class="n">profiles</span><span class="p">(</span><span class="n">size</span><span class="p">(</span><span class="n">list</span><span class="p">)))</span>
 
-<span class="k">        </span><span class="n">profiles_size</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span>
-
-<span class="w">        </span><span class="k">do </span><span class="n">iprof</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="n">size</span><span class="p">(</span><span class="n">prof_list</span><span class="p">)</span>
-<span class="w">          </span><span class="n">profile_name</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">prof_list</span><span class="p">(</span><span class="n">iprof</span><span class="p">)%</span><span class="n">key</span>
-<span class="w">          </span><span class="k">call </span><span class="n">validate_compiler_name</span><span class="p">(</span><span class="n">profile_name</span><span class="p">,</span><span class="w"> </span><span class="n">is_valid</span><span class="p">)</span>
-<span class="w">          </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">is_valid</span><span class="p">)</span><span class="w"> </span><span class="k">then</span>
-<span class="k">            </span><span class="n">profile_name</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;all&quot;</span>
-<span class="w">            </span><span class="n">comp_list</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">prof_list</span><span class="p">(</span><span class="n">iprof</span><span class="p">:</span><span class="n">iprof</span><span class="p">)</span>
-<span class="w">            </span><span class="n">prof_node</span><span class="o">=&gt;</span><span class="n">table</span>
-<span class="w">            </span><span class="k">call </span><span class="n">traverse_compilers</span><span class="p">(</span><span class="n">profile_name</span><span class="p">,</span><span class="w"> </span><span class="n">comp_list</span><span class="p">,</span><span class="w"> </span><span class="n">prof_node</span><span class="p">,</span><span class="w"> </span><span class="n">error</span><span class="p">,</span><span class="w"> </span><span class="n">profiles_size</span><span class="o">=</span><span class="n">profiles_size</span><span class="p">)</span>
-<span class="w">            </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="nb">allocated</span><span class="p">(</span><span class="n">error</span><span class="p">))</span><span class="w"> </span><span class="k">return</span>
-<span class="k">          else</span>
-<span class="k">            call </span><span class="n">validate_os_name</span><span class="p">(</span><span class="n">profile_name</span><span class="p">,</span><span class="w"> </span><span class="n">is_valid</span><span class="p">)</span>
-<span class="w">            </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">is_valid</span><span class="p">)</span><span class="w"> </span><span class="k">then</span>
-<span class="k">              </span><span class="n">os_list</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">prof_list</span><span class="p">(</span><span class="n">iprof</span><span class="p">:</span><span class="n">iprof</span><span class="p">)</span>
-<span class="w">              </span><span class="n">profile_name</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">&#39;all&#39;</span>
-<span class="w">              </span><span class="n">compiler_name</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">DEFAULT_COMPILER</span>
-<span class="w">              </span><span class="k">call </span><span class="n">traverse_oss_for_size</span><span class="p">(</span><span class="n">profile_name</span><span class="p">,</span><span class="w"> </span><span class="n">compiler_name</span><span class="p">,</span><span class="w"> </span><span class="n">os_list</span><span class="p">,</span><span class="w"> </span><span class="n">table</span><span class="p">,</span><span class="w"> </span><span class="n">profiles_size</span><span class="p">,</span><span class="w"> </span><span class="n">error</span><span class="p">)</span>
-<span class="w">              </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="nb">allocated</span><span class="p">(</span><span class="n">error</span><span class="p">))</span><span class="w"> </span><span class="k">return</span>
-<span class="k">            else</span>
-<span class="k">              call </span><span class="n">get_value</span><span class="p">(</span><span class="n">table</span><span class="p">,</span><span class="w"> </span><span class="n">profile_name</span><span class="p">,</span><span class="w"> </span><span class="n">prof_node</span><span class="p">,</span><span class="w"> </span><span class="nb">stat</span><span class="o">=</span><span class="nb">stat</span><span class="p">)</span>
-<span class="w">              </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="nb">stat</span><span class="w"> </span><span class="o">/=</span><span class="w"> </span><span class="n">toml_stat</span><span class="p">%</span><span class="n">success</span><span class="p">)</span><span class="w"> </span><span class="k">then</span>
-<span class="k">                call </span><span class="n">syntax_error</span><span class="p">(</span><span class="n">error</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;Profile &quot;</span><span class="o">//</span><span class="n">prof_list</span><span class="p">(</span><span class="n">iprof</span><span class="p">)%</span><span class="n">key</span><span class="o">//</span><span class="s2">&quot; must be a table entry&quot;</span><span class="p">)</span>
+<span class="w">        </span><span class="k">do </span><span class="n">iprofile</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="n">size</span><span class="p">(</span><span class="n">list</span><span class="p">)</span>
+<span class="w">            </span><span class="k">call </span><span class="n">get_value</span><span class="p">(</span><span class="n">table</span><span class="p">,</span><span class="w"> </span><span class="n">list</span><span class="p">(</span><span class="n">iprofile</span><span class="p">)%</span><span class="n">key</span><span class="p">,</span><span class="w"> </span><span class="n">array_node</span><span class="p">,</span><span class="w"> </span><span class="nb">stat</span><span class="o">=</span><span class="nb">stat</span><span class="p">)</span>
+<span class="w">            </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="nb">stat</span><span class="w"> </span><span class="o">/=</span><span class="w"> </span><span class="n">toml_stat</span><span class="p">%</span><span class="n">success</span><span class="p">)</span><span class="w"> </span><span class="k">then</span>
+<span class="k">                call </span><span class="n">fatal_error</span><span class="p">(</span><span class="n">error</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;Profile &quot;</span><span class="o">//</span><span class="n">list</span><span class="p">(</span><span class="n">iprofile</span><span class="p">)%</span><span class="n">key</span><span class="o">//</span><span class="s2">&quot; must be an array of feature names&quot;</span><span class="p">)</span>
 <span class="w">                </span><span class="k">exit</span>
-<span class="k">              end if</span>
-<span class="k">              call </span><span class="n">prof_node</span><span class="p">%</span><span class="n">get_keys</span><span class="p">(</span><span class="n">comp_list</span><span class="p">)</span>
-<span class="w">              </span><span class="k">call </span><span class="n">traverse_compilers</span><span class="p">(</span><span class="n">profile_name</span><span class="p">,</span><span class="w"> </span><span class="n">comp_list</span><span class="p">,</span><span class="w"> </span><span class="n">prof_node</span><span class="p">,</span><span class="w"> </span><span class="n">error</span><span class="p">,</span><span class="w"> </span><span class="n">profiles_size</span><span class="o">=</span><span class="n">profiles_size</span><span class="p">)</span>
-<span class="w">              </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="nb">allocated</span><span class="p">(</span><span class="n">error</span><span class="p">))</span><span class="w"> </span><span class="k">return</span>
 <span class="k">            end if</span>
-<span class="k">          end if</span>
+<span class="k">            call </span><span class="n">new_profile</span><span class="p">(</span><span class="n">profiles</span><span class="p">(</span><span class="n">iprofile</span><span class="p">),</span><span class="w"> </span><span class="n">array_node</span><span class="p">,</span><span class="w"> </span><span class="n">list</span><span class="p">(</span><span class="n">iprofile</span><span class="p">)%</span><span class="n">key</span><span class="p">,</span><span class="w"> </span><span class="n">error</span><span class="p">)</span>
+<span class="w">            </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="nb">allocated</span><span class="p">(</span><span class="n">error</span><span class="p">))</span><span class="w"> </span><span class="k">exit</span>
 <span class="k">        end do</span>
 
-<span class="k">        </span><span class="n">profiles_size</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">profiles_size</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">size</span><span class="p">(</span><span class="n">default_profiles</span><span class="p">)</span>
-<span class="w">        </span><span class="k">allocate</span><span class="p">(</span><span class="n">profiles</span><span class="p">(</span><span class="n">profiles_size</span><span class="p">))</span>
-
-<span class="w">        </span><span class="k">do </span><span class="n">profindex</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="n">size</span><span class="p">(</span><span class="n">default_profiles</span><span class="p">)</span>
-<span class="w">          </span><span class="n">profiles</span><span class="p">(</span><span class="n">profindex</span><span class="p">)</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">default_profiles</span><span class="p">(</span><span class="n">profindex</span><span class="p">)</span>
-<span class="w">        </span><span class="k">end do</span>
-
-<span class="k">        do </span><span class="n">iprof</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="n">size</span><span class="p">(</span><span class="n">prof_list</span><span class="p">)</span>
-<span class="w">          </span><span class="n">profile_name</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">prof_list</span><span class="p">(</span><span class="n">iprof</span><span class="p">)%</span><span class="n">key</span>
-<span class="w">          </span><span class="k">call </span><span class="n">validate_compiler_name</span><span class="p">(</span><span class="n">profile_name</span><span class="p">,</span><span class="w"> </span><span class="n">is_valid</span><span class="p">)</span>
-<span class="w">          </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">is_valid</span><span class="p">)</span><span class="w"> </span><span class="k">then</span>
-<span class="k">            </span><span class="n">profile_name</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;all&quot;</span>
-<span class="w">            </span><span class="n">comp_list</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">prof_list</span><span class="p">(</span><span class="n">iprof</span><span class="p">:</span><span class="n">iprof</span><span class="p">)</span>
-<span class="w">            </span><span class="n">prof_node</span><span class="o">=&gt;</span><span class="n">table</span>
-<span class="w">            </span><span class="k">call </span><span class="n">traverse_compilers</span><span class="p">(</span><span class="n">profile_name</span><span class="p">,</span><span class="w"> </span><span class="n">comp_list</span><span class="p">,</span><span class="w"> </span><span class="n">prof_node</span><span class="p">,</span><span class="w"> </span><span class="n">error</span><span class="p">,</span><span class="w"> </span><span class="n">profiles</span><span class="o">=</span><span class="n">profiles</span><span class="p">,</span><span class="w"> </span><span class="n">profindex</span><span class="o">=</span><span class="n">profindex</span><span class="p">)</span>
-<span class="w">            </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="nb">allocated</span><span class="p">(</span><span class="n">error</span><span class="p">))</span><span class="w"> </span><span class="k">return</span>
-<span class="k">          else</span>
-<span class="k">            call </span><span class="n">validate_os_name</span><span class="p">(</span><span class="n">profile_name</span><span class="p">,</span><span class="w"> </span><span class="n">is_valid</span><span class="p">)</span>
-<span class="w">            </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">is_valid</span><span class="p">)</span><span class="w"> </span><span class="k">then</span>
-<span class="k">              </span><span class="n">os_list</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">prof_list</span><span class="p">(</span><span class="n">iprof</span><span class="p">:</span><span class="n">iprof</span><span class="p">)</span>
-<span class="w">              </span><span class="n">profile_name</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">&#39;all&#39;</span>
-<span class="w">              </span><span class="n">compiler_name</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">DEFAULT_COMPILER</span>
-<span class="w">              </span><span class="n">prof_node</span><span class="o">=&gt;</span><span class="n">table</span>
-<span class="w">              </span><span class="k">call </span><span class="n">traverse_oss</span><span class="p">(</span><span class="n">profile_name</span><span class="p">,</span><span class="w"> </span><span class="n">compiler_name</span><span class="p">,</span><span class="w"> </span><span class="n">os_list</span><span class="p">,</span><span class="w"> </span><span class="n">prof_node</span><span class="p">,</span><span class="w"> </span><span class="n">profiles</span><span class="p">,</span><span class="w"> </span><span class="n">profindex</span><span class="p">,</span><span class="w"> </span><span class="n">error</span><span class="p">)</span>
-<span class="w">              </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="nb">allocated</span><span class="p">(</span><span class="n">error</span><span class="p">))</span><span class="w"> </span><span class="k">return</span>
-<span class="k">            else</span>
-<span class="k">              call </span><span class="n">get_value</span><span class="p">(</span><span class="n">table</span><span class="p">,</span><span class="w"> </span><span class="n">profile_name</span><span class="p">,</span><span class="w"> </span><span class="n">prof_node</span><span class="p">,</span><span class="w"> </span><span class="nb">stat</span><span class="o">=</span><span class="nb">stat</span><span class="p">)</span>
-<span class="w">              </span><span class="k">call </span><span class="n">prof_node</span><span class="p">%</span><span class="n">get_keys</span><span class="p">(</span><span class="n">comp_list</span><span class="p">)</span>
-<span class="w">              </span><span class="k">call </span><span class="n">traverse_compilers</span><span class="p">(</span><span class="n">profile_name</span><span class="p">,</span><span class="w"> </span><span class="n">comp_list</span><span class="p">,</span><span class="w"> </span><span class="n">prof_node</span><span class="p">,</span><span class="w"> </span><span class="n">error</span><span class="p">,</span><span class="w"> </span><span class="n">profiles</span><span class="o">=</span><span class="n">profiles</span><span class="p">,</span><span class="w"> </span><span class="n">profindex</span><span class="o">=</span><span class="n">profindex</span><span class="p">)</span>
-<span class="w">              </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="nb">allocated</span><span class="p">(</span><span class="n">error</span><span class="p">))</span><span class="w"> </span><span class="k">return</span>
-<span class="k">            end if</span>
-<span class="k">          end if</span>
-<span class="k">        end do</span>
-
-<span class="w">        </span><span class="c">! Apply profiles with profile name &#39;all&#39; to matching profiles</span>
-<span class="w">        </span><span class="k">do </span><span class="n">iprof</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="n">size</span><span class="p">(</span><span class="n">profiles</span><span class="p">)</span>
-<span class="w">          </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">profiles</span><span class="p">(</span><span class="n">iprof</span><span class="p">)%</span><span class="n">profile_feature</span><span class="p">%</span><span class="n">name</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="s1">&#39;all&#39;</span><span class="p">)</span><span class="w"> </span><span class="k">then</span>
-<span class="k">            do </span><span class="n">profindex</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="n">size</span><span class="p">(</span><span class="n">profiles</span><span class="p">)</span>
-<span class="w">              </span><span class="k">if</span><span class="w"> </span><span class="p">(.</span><span class="nb">not</span><span class="p">.(</span><span class="n">profiles</span><span class="p">(</span><span class="n">profindex</span><span class="p">)%</span><span class="n">profile_feature</span><span class="p">%</span><span class="n">name</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="s1">&#39;all&#39;</span><span class="p">)</span><span class="w"> </span><span class="p">&amp;</span>
-<span class="w">                      </span><span class="p">&amp;</span><span class="w"> </span><span class="p">.</span><span class="nb">and</span><span class="p">.(</span><span class="n">profiles</span><span class="p">(</span><span class="n">profindex</span><span class="p">)%</span><span class="n">profile_feature</span><span class="p">%</span><span class="n">platform</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="n">profiles</span><span class="p">(</span><span class="n">iprof</span><span class="p">)%</span><span class="n">profile_feature</span><span class="p">%</span><span class="n">platform</span><span class="p">))</span><span class="w"> </span><span class="k">then</span>
-<span class="k">                </span><span class="n">profiles</span><span class="p">(</span><span class="n">profindex</span><span class="p">)%</span><span class="n">profile_feature</span><span class="p">%</span><span class="n">flags</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">profiles</span><span class="p">(</span><span class="n">profindex</span><span class="p">)%</span><span class="n">profile_feature</span><span class="p">%</span><span class="n">flags</span><span class="w"> </span><span class="o">//</span><span class="w"> </span><span class="p">&amp;</span>
-<span class="w">                        </span><span class="p">&amp;</span><span class="w"> </span><span class="s2">&quot; &quot;</span><span class="w"> </span><span class="o">//</span><span class="w"> </span><span class="n">profiles</span><span class="p">(</span><span class="n">iprof</span><span class="p">)%</span><span class="n">profile_feature</span><span class="p">%</span><span class="n">flags</span>
-<span class="w">                </span><span class="n">profiles</span><span class="p">(</span><span class="n">profindex</span><span class="p">)%</span><span class="n">profile_feature</span><span class="p">%</span><span class="n">c_flags</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">profiles</span><span class="p">(</span><span class="n">profindex</span><span class="p">)%</span><span class="n">profile_feature</span><span class="p">%</span><span class="n">c_flags</span><span class="w"> </span><span class="o">//</span><span class="w"> </span><span class="p">&amp;</span>
-<span class="w">                        </span><span class="p">&amp;</span><span class="w"> </span><span class="s2">&quot; &quot;</span><span class="w"> </span><span class="o">//</span><span class="w"> </span><span class="n">profiles</span><span class="p">(</span><span class="n">iprof</span><span class="p">)%</span><span class="n">profile_feature</span><span class="p">%</span><span class="n">c_flags</span>
-<span class="w">                </span><span class="n">profiles</span><span class="p">(</span><span class="n">profindex</span><span class="p">)%</span><span class="n">profile_feature</span><span class="p">%</span><span class="n">cxx_flags</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">profiles</span><span class="p">(</span><span class="n">profindex</span><span class="p">)%</span><span class="n">profile_feature</span><span class="p">%</span><span class="n">cxx_flags</span><span class="w"> </span><span class="o">//</span><span class="w"> </span><span class="p">&amp;</span>
-<span class="w">                        </span><span class="p">&amp;</span><span class="w"> </span><span class="s2">&quot; &quot;</span><span class="w"> </span><span class="o">//</span><span class="w"> </span><span class="n">profiles</span><span class="p">(</span><span class="n">iprof</span><span class="p">)%</span><span class="n">profile_feature</span><span class="p">%</span><span class="n">cxx_flags</span>
-<span class="w">                </span><span class="n">profiles</span><span class="p">(</span><span class="n">profindex</span><span class="p">)%</span><span class="n">profile_feature</span><span class="p">%</span><span class="n">link_time_flags</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">profiles</span><span class="p">(</span><span class="n">profindex</span><span class="p">)%</span><span class="n">profile_feature</span><span class="p">%</span><span class="n">link_time_flags</span><span class="w"> </span><span class="o">//</span><span class="w"> </span><span class="p">&amp;</span>
-<span class="w">                        </span><span class="p">&amp;</span><span class="w"> </span><span class="s2">&quot; &quot;</span><span class="w"> </span><span class="o">//</span><span class="w"> </span><span class="n">profiles</span><span class="p">(</span><span class="n">iprof</span><span class="p">)%</span><span class="n">profile_feature</span><span class="p">%</span><span class="n">link_time_flags</span>
-<span class="w">              </span><span class="k">end if</span>
-<span class="k">            end do</span>
-<span class="k">          end if</span>
-<span class="k">        end do</span>
-<span class="k">      end subroutine </span><span class="n">new_profiles</span>
+<span class="k">    end subroutine </span><span class="n">new_profiles</span>
 </pre></div>
 
     </section>
@@ -618,7 +297,7 @@
             <p class="text-end">
               Documentation generated by
               <a href="https://github.com/Fortran-FOSS-Programmers/ford">FORD</a>
- on 2025-10-13 09:44 +0000             </p>
+ on 2025-10-14 10:22 +0000             </p>
           </div>
         </div>
         <br>

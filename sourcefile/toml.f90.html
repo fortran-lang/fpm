@@ -92,7 +92,7 @@
 
             <li class="list-inline-item" id="statements"><i class="fa fa-list-ol"></i>
               <a data-bs-toggle="tooltip" data-bs-placement="bottom" data-bs-html="true"
-                 title=" 2.6% of total for source files.">456 statements</a>
+                 title=" 2.6% of total for source files.">457 statements</a>
             </li>
 
             <li class="list-inline-item" id="source-file">
@@ -994,38 +994,41 @@
 <a id="ln-821" name="ln-821" href="#ln-821"></a><span class="k">            end if</span>
 <a id="ln-822" name="ln-822" href="#ln-822"></a>
 <a id="ln-823" name="ln-823" href="#ln-823"></a><span class="w">            </span><span class="c">! Check if value can be mapped or else (wrong type) show error message with the error location.</span>
-<a id="ln-824" name="ln-824" href="#ln-824"></a><span class="w">            </span><span class="c">! Right now, it can only be mapped to a string or to a child node, but this can be extended in the future.</span>
-<a id="ln-825" name="ln-825" href="#ln-825"></a><span class="w">            </span><span class="k">call </span><span class="n">get_value</span><span class="p">(</span><span class="n">table</span><span class="p">,</span><span class="w"> </span><span class="n">keys</span><span class="p">(</span><span class="n">ikey</span><span class="p">)%</span><span class="n">key</span><span class="p">,</span><span class="w"> </span><span class="k">value</span><span class="p">)</span>
-<a id="ln-826" name="ln-826" href="#ln-826"></a><span class="w">            </span><span class="k">if</span><span class="w"> </span><span class="p">(.</span><span class="nb">not</span><span class="p">.</span><span class="w"> </span><span class="nb">allocated</span><span class="p">(</span><span class="k">value</span><span class="p">))</span><span class="w"> </span><span class="k">then</span>
-<a id="ln-827" name="ln-827" href="#ln-827"></a>
-<a id="ln-828" name="ln-828" href="#ln-828"></a><span class="w">                </span><span class="c">! If value is not a string, check if it is a child node</span>
-<a id="ln-829" name="ln-829" href="#ln-829"></a><span class="w">                </span><span class="k">call </span><span class="n">get_value</span><span class="p">(</span><span class="n">table</span><span class="p">,</span><span class="w"> </span><span class="n">keys</span><span class="p">(</span><span class="n">ikey</span><span class="p">)%</span><span class="n">key</span><span class="p">,</span><span class="w"> </span><span class="n">child</span><span class="p">)</span>
+<a id="ln-824" name="ln-824" href="#ln-824"></a><span class="w">            </span><span class="c">! Right now, it can only be mapped to a string or to a list or a child node, but this can be </span>
+<a id="ln-825" name="ln-825" href="#ln-825"></a><span class="w">            </span><span class="c">! extended in the future.</span>
+<a id="ln-826" name="ln-826" href="#ln-826"></a><span class="w">            </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">has_list</span><span class="p">(</span><span class="n">table</span><span class="p">,</span><span class="w"> </span><span class="n">keys</span><span class="p">(</span><span class="n">ikey</span><span class="p">)%</span><span class="n">key</span><span class="p">))</span><span class="w"> </span><span class="k">cycle</span>
+<a id="ln-827" name="ln-827" href="#ln-827"></a><span class="k">            </span>
+<a id="ln-828" name="ln-828" href="#ln-828"></a><span class="k">            call </span><span class="n">get_value</span><span class="p">(</span><span class="n">table</span><span class="p">,</span><span class="w"> </span><span class="n">keys</span><span class="p">(</span><span class="n">ikey</span><span class="p">)%</span><span class="n">key</span><span class="p">,</span><span class="w"> </span><span class="k">value</span><span class="p">)</span>
+<a id="ln-829" name="ln-829" href="#ln-829"></a><span class="w">            </span><span class="k">if</span><span class="w"> </span><span class="p">(.</span><span class="nb">not</span><span class="p">.</span><span class="w"> </span><span class="nb">allocated</span><span class="p">(</span><span class="k">value</span><span class="p">))</span><span class="w"> </span><span class="k">then</span>
 <a id="ln-830" name="ln-830" href="#ln-830"></a>
-<a id="ln-831" name="ln-831" href="#ln-831"></a><span class="w">                </span><span class="k">if</span><span class="w"> </span><span class="p">(.</span><span class="nb">not</span><span class="p">.</span><span class="nb">associated</span><span class="p">(</span><span class="n">child</span><span class="p">))</span><span class="w"> </span><span class="k">then</span>
-<a id="ln-832" name="ln-832" href="#ln-832"></a><span class="k">                    allocate</span><span class="w"> </span><span class="p">(</span><span class="n">error</span><span class="p">)</span>
-<a id="ln-833" name="ln-833" href="#ln-833"></a><span class="w">                    </span><span class="n">error</span><span class="p">%</span><span class="n">message</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;&#39;&quot;</span><span class="o">//</span><span class="n">name</span><span class="o">//</span><span class="s2">&quot;&#39; has an invalid &#39;&quot;</span><span class="o">//</span><span class="n">keys</span><span class="p">(</span><span class="n">ikey</span><span class="p">)%</span><span class="n">key</span><span class="o">//</span><span class="s2">&quot;&#39; entry.&quot;</span>
-<a id="ln-834" name="ln-834" href="#ln-834"></a><span class="w">                    </span><span class="k">return</span>
-<a id="ln-835" name="ln-835" href="#ln-835"></a><span class="k">                endif</span>
-<a id="ln-836" name="ln-836" href="#ln-836"></a><span class="k">            end if</span>
-<a id="ln-837" name="ln-837" href="#ln-837"></a><span class="k">        end do</span>
-<a id="ln-838" name="ln-838" href="#ln-838"></a>
-<a id="ln-839" name="ln-839" href="#ln-839"></a><span class="k">    end subroutine </span><span class="n">check_keys</span>
-<a id="ln-840" name="ln-840" href="#ln-840"></a>
-<a id="ln-841" name="ln-841" href="#ln-841"></a><span class="w">    </span><span class="c">!&gt; Choose between JSON or TOML based on a file name</span>
-<a id="ln-842" name="ln-842" href="#ln-842"></a><span class="w">    </span><span class="kt">logical </span><span class="k">function </span><span class="n">name_is_json</span><span class="p">(</span><span class="n">filename</span><span class="p">)</span>
-<a id="ln-843" name="ln-843" href="#ln-843"></a><span class="w">        </span><span class="kt">character</span><span class="p">(</span><span class="o">*</span><span class="p">),</span><span class="w"> </span><span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">)</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">filename</span>
-<a id="ln-844" name="ln-844" href="#ln-844"></a>
-<a id="ln-845" name="ln-845" href="#ln-845"></a><span class="w">        </span><span class="kt">character</span><span class="p">(</span><span class="o">*</span><span class="p">),</span><span class="w"> </span><span class="k">parameter</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">json_identifier</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;.json&quot;</span>
-<a id="ln-846" name="ln-846" href="#ln-846"></a>
-<a id="ln-847" name="ln-847" href="#ln-847"></a><span class="w">        </span><span class="n">name_is_json</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">.</span><span class="n">false</span><span class="p">.</span>
-<a id="ln-848" name="ln-848" href="#ln-848"></a>
-<a id="ln-849" name="ln-849" href="#ln-849"></a><span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="nb">len_trim</span><span class="p">(</span><span class="n">filename</span><span class="p">)</span><span class="o">&lt;</span><span class="nb">len</span><span class="p">(</span><span class="n">json_identifier</span><span class="p">))</span><span class="w"> </span><span class="k">return</span>
-<a id="ln-850" name="ln-850" href="#ln-850"></a>
-<a id="ln-851" name="ln-851" href="#ln-851"></a><span class="k">        </span><span class="n">name_is_json</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">str_ends_with</span><span class="p">(</span><span class="n">lower</span><span class="p">(</span><span class="n">filename</span><span class="p">),</span><span class="n">json_identifier</span><span class="p">)</span>
-<a id="ln-852" name="ln-852" href="#ln-852"></a>
-<a id="ln-853" name="ln-853" href="#ln-853"></a><span class="w">    </span><span class="k">end function </span><span class="n">name_is_json</span>
-<a id="ln-854" name="ln-854" href="#ln-854"></a>
-<a id="ln-855" name="ln-855" href="#ln-855"></a><span class="k">end module </span><span class="n">fpm_toml</span>
+<a id="ln-831" name="ln-831" href="#ln-831"></a><span class="w">                </span><span class="c">! If value is not a string, check if it is a child node</span>
+<a id="ln-832" name="ln-832" href="#ln-832"></a><span class="w">                </span><span class="k">call </span><span class="n">get_value</span><span class="p">(</span><span class="n">table</span><span class="p">,</span><span class="w"> </span><span class="n">keys</span><span class="p">(</span><span class="n">ikey</span><span class="p">)%</span><span class="n">key</span><span class="p">,</span><span class="w"> </span><span class="n">child</span><span class="p">)</span>
+<a id="ln-833" name="ln-833" href="#ln-833"></a>
+<a id="ln-834" name="ln-834" href="#ln-834"></a><span class="w">                </span><span class="k">if</span><span class="w"> </span><span class="p">(.</span><span class="nb">not</span><span class="p">.</span><span class="nb">associated</span><span class="p">(</span><span class="n">child</span><span class="p">))</span><span class="w"> </span><span class="k">then</span>
+<a id="ln-835" name="ln-835" href="#ln-835"></a><span class="k">                    allocate</span><span class="w"> </span><span class="p">(</span><span class="n">error</span><span class="p">)</span>
+<a id="ln-836" name="ln-836" href="#ln-836"></a><span class="w">                    </span><span class="n">error</span><span class="p">%</span><span class="n">message</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;&#39;&quot;</span><span class="o">//</span><span class="n">name</span><span class="o">//</span><span class="s2">&quot;&#39; has an invalid &#39;&quot;</span><span class="o">//</span><span class="n">keys</span><span class="p">(</span><span class="n">ikey</span><span class="p">)%</span><span class="n">key</span><span class="o">//</span><span class="s2">&quot;&#39; entry.&quot;</span>
+<a id="ln-837" name="ln-837" href="#ln-837"></a><span class="w">                    </span><span class="k">return</span>
+<a id="ln-838" name="ln-838" href="#ln-838"></a><span class="k">                endif</span>
+<a id="ln-839" name="ln-839" href="#ln-839"></a><span class="k">            end if</span>
+<a id="ln-840" name="ln-840" href="#ln-840"></a><span class="k">        end do</span>
+<a id="ln-841" name="ln-841" href="#ln-841"></a>
+<a id="ln-842" name="ln-842" href="#ln-842"></a><span class="k">    end subroutine </span><span class="n">check_keys</span>
+<a id="ln-843" name="ln-843" href="#ln-843"></a>
+<a id="ln-844" name="ln-844" href="#ln-844"></a><span class="w">    </span><span class="c">!&gt; Choose between JSON or TOML based on a file name</span>
+<a id="ln-845" name="ln-845" href="#ln-845"></a><span class="w">    </span><span class="kt">logical </span><span class="k">function </span><span class="n">name_is_json</span><span class="p">(</span><span class="n">filename</span><span class="p">)</span>
+<a id="ln-846" name="ln-846" href="#ln-846"></a><span class="w">        </span><span class="kt">character</span><span class="p">(</span><span class="o">*</span><span class="p">),</span><span class="w"> </span><span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">)</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">filename</span>
+<a id="ln-847" name="ln-847" href="#ln-847"></a>
+<a id="ln-848" name="ln-848" href="#ln-848"></a><span class="w">        </span><span class="kt">character</span><span class="p">(</span><span class="o">*</span><span class="p">),</span><span class="w"> </span><span class="k">parameter</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">json_identifier</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;.json&quot;</span>
+<a id="ln-849" name="ln-849" href="#ln-849"></a>
+<a id="ln-850" name="ln-850" href="#ln-850"></a><span class="w">        </span><span class="n">name_is_json</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">.</span><span class="n">false</span><span class="p">.</span>
+<a id="ln-851" name="ln-851" href="#ln-851"></a>
+<a id="ln-852" name="ln-852" href="#ln-852"></a><span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="nb">len_trim</span><span class="p">(</span><span class="n">filename</span><span class="p">)</span><span class="o">&lt;</span><span class="nb">len</span><span class="p">(</span><span class="n">json_identifier</span><span class="p">))</span><span class="w"> </span><span class="k">return</span>
+<a id="ln-853" name="ln-853" href="#ln-853"></a>
+<a id="ln-854" name="ln-854" href="#ln-854"></a><span class="k">        </span><span class="n">name_is_json</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">str_ends_with</span><span class="p">(</span><span class="n">lower</span><span class="p">(</span><span class="n">filename</span><span class="p">),</span><span class="n">json_identifier</span><span class="p">)</span>
+<a id="ln-855" name="ln-855" href="#ln-855"></a>
+<a id="ln-856" name="ln-856" href="#ln-856"></a><span class="w">    </span><span class="k">end function </span><span class="n">name_is_json</span>
+<a id="ln-857" name="ln-857" href="#ln-857"></a>
+<a id="ln-858" name="ln-858" href="#ln-858"></a><span class="k">end module </span><span class="n">fpm_toml</span>
 </pre></div>
 
       </section>
@@ -1047,7 +1050,7 @@
             <p class="text-end">
               Documentation generated by
               <a href="https://github.com/Fortran-FOSS-Programmers/ford">FORD</a>
- on 2025-10-13 09:44 +0000             </p>
+ on 2025-10-14 10:22 +0000             </p>
           </div>
         </div>
         <br>

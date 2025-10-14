@@ -58,6 +58,12 @@ module fpm_compile_commands
     interface compile_command_t
         module procedure cct_new
     end interface compile_command_t
+
+    !> Add compile commands to array (gcc-15 bug workaround)
+    interface add_compile_command
+        module procedure add_compile_command_one
+        module procedure add_compile_command_many
+    end interface add_compile_command
     
     contains
     
@@ -330,7 +336,7 @@ module fpm_compile_commands
         type(error_t), allocatable, intent(out) :: error    
         
         if (allocated(self%command)) then         
-           self%command = [self%command, command]
+           call add_compile_command(self%command, command)
         else
            allocate(self%command(1), source=command) 
         end if        
@@ -442,6 +448,57 @@ module fpm_compile_commands
         !> All checks passed!
         cct_is_same = .true.
 
-    end function cct_is_same        
-    
+    end function cct_is_same
+
+    !> Add one compile command to array with a loop (gcc-15 bug on array initializer)
+    pure subroutine add_compile_command_one(list,new)
+        type(compile_command_t), allocatable, intent(inout) :: list(:)
+        type(compile_command_t), intent(in) :: new
+
+        integer :: i,n
+        type(compile_command_t), allocatable :: tmp(:)
+
+        if (allocated(list)) then
+           n = size(list)
+        else
+           n = 0
+        end if
+
+        allocate(tmp(n+1))
+        do i=1,n
+           tmp(i) = list(i)
+        end do
+        tmp(n+1) = new
+        call move_alloc(from=tmp,to=list)
+
+    end subroutine add_compile_command_one
+
+    !> Add multiple compile commands to array with a loop (gcc-15 bug on array initializer)
+    pure subroutine add_compile_command_many(list,new)
+        type(compile_command_t), allocatable, intent(inout) :: list(:)
+        type(compile_command_t), intent(in) :: new(:)
+
+        integer :: i,n,add
+        type(compile_command_t), allocatable :: tmp(:)
+
+        if (allocated(list)) then
+           n = size(list)
+        else
+           n = 0
+        end if
+
+        add = size(new)
+        if (add == 0) return
+
+        allocate(tmp(n+add))
+        do i=1,n
+           tmp(i) = list(i)
+        end do
+        do i=1,add
+           tmp(n+i) = new(i)
+        end do
+        call move_alloc(from=tmp,to=list)
+
+    end subroutine add_compile_command_many
+
 end module fpm_compile_commands

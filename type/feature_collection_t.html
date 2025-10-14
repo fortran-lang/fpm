@@ -92,7 +92,7 @@
 
             <li class="list-inline-item" id="statements"><i class="fa fa-list-ol"></i>
               <a data-bs-toggle="tooltip" data-bs-placement="bottom" data-bs-html="true"
-                 title="<p> 1.6% of total for derived types.</p>Including implementation: 202 statements,  3.0% of total for derived types.">11 statements</a>
+                 title="<p> 2.4% of total for derived types.</p>Including implementation: 227 statements,  3.3% of total for derived types.">16 statements</a>
             </li>
 
             <li class="list-inline-item" id="source-file">
@@ -141,7 +141,18 @@
     </div>
 
   
-  
+      <div class="card mb-4">
+      <a data-bs-toggle="collapse" href="#cons-0"
+         aria-expanded="false" aria-controls="cons-0">
+         <h4 class="card-header bg-primary text-white">Constructor</h4>
+      </a>
+      <div id="cons-0" class="collapse">
+        <div class="list-group list-group-flush">
+            <a class="list-group-item" href="../type/feature_collection_t.html#interface-feature_collection_t">feature_collection_t</a>
+        </div>
+      </div>
+    </div>
+
   
   
   
@@ -162,15 +173,17 @@
       </a>
       <div id="boundprocs-0" class="collapse">
         <div class="list-group list-group-flush">
-            <a class="list-group-item" href="../type/feature_collection_t.html#boundprocedure-check">check</a>
-            <a class="list-group-item" href="../type/feature_collection_t.html#boundprocedure-dump~20">dump</a>
-            <a class="list-group-item" href="../type/feature_collection_t.html#boundprocedure-dump_to_toml~15">dump_to_toml</a>
+            <a class="list-group-item" href="../type/feature_collection_t.html#boundprocedure-check~2">check</a>
+            <a class="list-group-item" href="../type/feature_collection_t.html#boundprocedure-dump~25">dump</a>
+            <a class="list-group-item" href="../type/feature_collection_t.html#boundprocedure-dump_to_toml~20">dump_to_toml</a>
             <a class="list-group-item" href="../type/feature_collection_t.html#boundprocedure-extract_for_target">extract_for_target</a>
-            <a class="list-group-item" href="../type/feature_collection_t.html#boundprocedure-load~17">load</a>
-            <a class="list-group-item" href="../type/feature_collection_t.html#boundprocedure-load_from_toml~15">load_from_toml</a>
-            <a class="list-group-item" href="../type/feature_collection_t.html#boundprocedure-operator%28%3D%3D%29~18">operator(==)</a>
+            <a class="list-group-item" href="../type/feature_collection_t.html#boundprocedure-has_cpp~6">has_cpp</a>
+            <a class="list-group-item" href="../type/feature_collection_t.html#boundprocedure-load~22">load</a>
+            <a class="list-group-item" href="../type/feature_collection_t.html#boundprocedure-load_from_toml~20">load_from_toml</a>
+            <a class="list-group-item" href="../type/feature_collection_t.html#boundprocedure-merge_into_package">merge_into_package</a>
+            <a class="list-group-item" href="../type/feature_collection_t.html#boundprocedure-operator%28%3D%3D%29~23">operator(==)</a>
             <a class="list-group-item" href="../type/feature_collection_t.html#boundprocedure-push_variant">push_variant</a>
-            <a class="list-group-item" href="../type/feature_collection_t.html#boundprocedure-serializable_is_same~15">serializable_is_same</a>
+            <a class="list-group-item" href="../type/feature_collection_t.html#boundprocedure-serializable_is_same~20">serializable_is_same</a>
             <a class="list-group-item" href="../type/feature_collection_t.html#boundprocedure-test_serialization">test_serialization</a>
         </div>
       </div>
@@ -248,6 +261,68 @@
     </section>
     <br>
     
+      <section>
+        <h2>Constructor</h2>
+            <div class="card">
+    <div class="card-header bg-light codesum">
+      <span class="anchor" id="interface-feature_collection_t"></span>
+      <h3>public        interface <a href='../interface/feature_collection_t.html'>feature_collection_t</a> 
+      </h3>
+    </div>
+      <div class="card-body">
+        <p>Interface for feature_collection_t constructor</p>
+      </div>
+    <ul class="list-group">
+          <li class="list-group-item">
+                <h3>
+    public  function <a href='../proc/collection_from_feature.html'>collection_from_feature</a>(self) result(collection)  
+
+    </h3>
+    
+  <p>Create a feature collection from a single feature_config_t
+The feature becomes the base configuration for all OS/compiler combinations</p>
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-self~184"></span>
+              class(<a href='feature_config_t.html'>feature_config_t</a>),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>self</strong></td>
+            <td>
+<p>Feature configuration to convert</p>
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+    <h4>
+    Return Value
+    <small>type(<a href='feature_collection_t.html'>feature_collection_t</a>)</small>
+    </h4>
+    
+
+          </li>
+    </ul>
+  </div>
+
+      </section>
+      <br>
 
 
       <section>
@@ -255,7 +330,7 @@
           <div class="row">
               <div class="card mt-3">
     <div class="card-header codesum">
-      <span class="anchor" id="boundprocedure-check"></span>
+      <span class="anchor" id="boundprocedure-check~2"></span>
       <h3>
           procedure, public ::
   <strong>check</strong> => check_collection
@@ -327,10 +402,10 @@ Implements standardized feature hierarchy validation:
           <div class="row">
               <div class="card mt-3">
     <div class="card-header codesum">
-      <span class="anchor" id="boundprocedure-dump~20"></span>
+      <span class="anchor" id="boundprocedure-dump~25"></span>
       <h3>
           generic, public ::
-  <strong>dump</strong> => <a href='/home/runner/work/fpm/fpm/fpm-doc/type/srcfile_t.html#boundprocedure-dump_to_toml~3'>dump_to_toml</a>, dump_to_file, dump_to_unit
+  <strong>dump</strong> => <a href='/home/runner/work/fpm/fpm/fpm-doc/type/srcfile_t.html#boundprocedure-dump_to_toml~5'>dump_to_toml</a>, dump_to_file, dump_to_unit
         
       </h3>
     </div>
@@ -576,7 +651,7 @@ Implements standardized feature hierarchy validation:
           <div class="row">
               <div class="card mt-3">
     <div class="card-header codesum">
-      <span class="anchor" id="boundprocedure-dump_to_toml~15"></span>
+      <span class="anchor" id="boundprocedure-dump_to_toml~20"></span>
       <h3>
           procedure, public ::
   <strong>dump_to_toml</strong> => feature_collection_dump
@@ -669,7 +744,7 @@ Implements standardized feature hierarchy validation:
       <ul class="list-group">
           <li class="list-group-item">
                     <h3>
-    private  function extract_for_target(self, target) result(feature)  
+    private  function extract_for_target(self, target, error) result(feature)  
 </h3>
 
   <p>Extract a merged feature configuration for the given target platform</p>
@@ -715,6 +790,21 @@ Implements standardized feature hierarchy validation:
                 
             </td>
         </tr>
+        <tr>
+            <td>
+              <span class="anchor" ></span>
+              type(<a href='error_t.html'>error_t</a>),
+            </td>
+<td>intent(out),</td>
+              <td></td>            <td>
+              allocatable
+            </td>
+            <td>::</td>
+            <td><strong>error</strong></td>
+            <td>
+                
+            </td>
+        </tr>
     </tbody>
   </table>
 
@@ -732,10 +822,68 @@ Implements standardized feature hierarchy validation:
           <div class="row">
               <div class="card mt-3">
     <div class="card-header codesum">
-      <span class="anchor" id="boundprocedure-load~17"></span>
+      <span class="anchor" id="boundprocedure-has_cpp~6"></span>
+      <h3>
+          procedure, public ::
+  <strong>has_cpp</strong>
+        
+      </h3>
+    </div>
+      <ul class="list-group">
+          <li class="list-group-item">
+                    <h3>
+    private elemental function has_cpp(self)  
+</h3>
+
+  <p>Check if there is a CPP preprocessor configuration</p>
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" ></span>
+              class(<a href='feature_collection_t.html'>feature_collection_t</a>),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>self</strong></td>
+            <td>
+                
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+    <h4>
+    Return Value
+    <small>logical</small>
+    </h4>
+    
+
+          </li>
+      </ul>
+  </div>
+
+          </div>
+          <div class="row">
+              <div class="card mt-3">
+    <div class="card-header codesum">
+      <span class="anchor" id="boundprocedure-load~22"></span>
       <h3>
           generic, public ::
-  <strong>load</strong> => <a href='/home/runner/work/fpm/fpm/fpm-doc/type/srcfile_t.html#boundprocedure-load_from_toml~3'>load_from_toml</a>, load_from_file, load_from_unit
+  <strong>load</strong> => <a href='/home/runner/work/fpm/fpm/fpm-doc/type/srcfile_t.html#boundprocedure-load_from_toml~5'>load_from_toml</a>, load_from_file, load_from_unit
         
       </h3>
     </div>
@@ -985,7 +1133,7 @@ Read object from TOML table</p>
           <div class="row">
               <div class="card mt-3">
     <div class="card-header codesum">
-      <span class="anchor" id="boundprocedure-load_from_toml~15"></span>
+      <span class="anchor" id="boundprocedure-load_from_toml~20"></span>
       <h3>
           procedure, public ::
   <strong>load_from_toml</strong> => feature_collection_load
@@ -1068,10 +1216,108 @@ Read object from TOML table</p>
           <div class="row">
               <div class="card mt-3">
     <div class="card-header codesum">
-      <span class="anchor" id="boundprocedure-operator%28%3D%3D%29~18"></span>
+      <span class="anchor" id="boundprocedure-merge_into_package"></span>
+      <h3>
+          procedure, public ::
+  <strong>merge_into_package</strong>
+        
+      </h3>
+    </div>
+      <ul class="list-group">
+          <li class="list-group-item">
+                    <h3>
+    private  subroutine merge_into_package(self, package, target, error)  
+</h3>
+
+  <p>Merge a feature configuration into an existing global package</p>
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" ></span>
+              class(<a href='feature_collection_t.html'>feature_collection_t</a>),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>self</strong></td>
+            <td>
+                
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" ></span>
+              class(<a href='feature_config_t.html'>feature_config_t</a>),
+            </td>
+<td>intent(inout)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>package</strong></td>
+            <td>
+                
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" ></span>
+              type(<a href='platform_config_t.html'>platform_config_t</a>),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>target</strong></td>
+            <td>
+                
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" ></span>
+              type(<a href='error_t.html'>error_t</a>),
+            </td>
+<td>intent(out),</td>
+              <td></td>            <td>
+              allocatable
+            </td>
+            <td>::</td>
+            <td><strong>error</strong></td>
+            <td>
+                
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+
+          </li>
+      </ul>
+  </div>
+
+          </div>
+          <div class="row">
+              <div class="card mt-3">
+    <div class="card-header codesum">
+      <span class="anchor" id="boundprocedure-operator%28%3D%3D%29~23"></span>
       <h3>
           generic, public ::
-  <strong>operator(==)</strong> => <a href='/home/runner/work/fpm/fpm/fpm-doc/type/srcfile_t.html#boundprocedure-serializable_is_same~3'>serializable_is_same</a>
+  <strong>operator(==)</strong> => <a href='/home/runner/work/fpm/fpm/fpm-doc/type/srcfile_t.html#boundprocedure-serializable_is_same~5'>serializable_is_same</a>
         
       </h3>
     </div>
@@ -1210,7 +1456,7 @@ All checks passed!</p>
           <div class="row">
               <div class="card mt-3">
     <div class="card-header codesum">
-      <span class="anchor" id="boundprocedure-serializable_is_same~15"></span>
+      <span class="anchor" id="boundprocedure-serializable_is_same~20"></span>
       <h3>
           procedure, public ::
   <strong>serializable_is_same</strong> => feature_collection_same
@@ -1391,6 +1637,8 @@ Check same</p>
 <span class="w">            </span><span class="k">procedure</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">push_variant</span>
 <span class="w">            </span><span class="k">procedure</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">extract_for_target</span>
 <span class="w">            </span><span class="k">procedure</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">check</span><span class="w"> </span><span class="o">=&gt;</span><span class="w"> </span><span class="n">check_collection</span>
+<span class="w">            </span><span class="k">procedure</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">merge_into_package</span>
+<span class="w">            </span><span class="k">procedure</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">has_cpp</span>
 
 <span class="w">    </span><span class="k">end type </span><span class="n">feature_collection_t</span>
 </pre></div>
@@ -1415,7 +1663,7 @@ Check same</p>
             <p class="text-end">
               Documentation generated by
               <a href="https://github.com/Fortran-FOSS-Programmers/ford">FORD</a>
- on 2025-10-13 09:44 +0000             </p>
+ on 2025-10-14 10:22 +0000             </p>
           </div>
         </div>
         <br>

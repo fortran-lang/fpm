@@ -92,7 +92,7 @@
 
             <li class="list-inline-item" id="statements"><i class="fa fa-list-ol"></i>
               <a data-bs-toggle="tooltip" data-bs-placement="bottom" data-bs-html="true"
-                 title=" 2.1% of total for procedures.">167 statements</a>
+                 title=" 2.3% of total for procedures.">169 statements</a>
             </li>
 
             <li class="list-inline-item" id="source-file">
@@ -181,7 +181,7 @@ Add this dependency&rsquo;s package-level macros</p>
     <tbody>
         <tr>
             <td>
-              <span class="anchor" id="variable-model~19"></span>
+              <span class="anchor" id="variable-model"></span>
               type(<a href='../type/fpm_model_t.html'>fpm_model_t</a>),
             </td>
 <td>intent(out)</td>
@@ -196,7 +196,7 @@ Add this dependency&rsquo;s package-level macros</p>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-settings~10"></span>
+              <span class="anchor" id="variable-settings"></span>
               class(<a href='../type/fpm_build_settings.html'>fpm_build_settings</a>),
             </td>
 <td>intent(inout)</td>
@@ -226,7 +226,7 @@ Add this dependency&rsquo;s package-level macros</p>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-error~227"></span>
+              <span class="anchor" id="variable-error~2"></span>
               type(<a href='../type/error_t.html'>error_t</a>),
             </td>
 <td>intent(out),</td>
@@ -296,14 +296,17 @@ Add this dependency&rsquo;s package-level macros</p>
 <span class="w">    </span>
 <span class="w">    </span><span class="c">! Extract the target platform for this build</span>
 <span class="w">    </span><span class="n">target_platform</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">model</span><span class="p">%</span><span class="n">target_platform</span><span class="p">()</span>
-<span class="w">    </span>
-<span class="w">    </span><span class="k">call </span><span class="n">new_compiler_flags</span><span class="p">(</span><span class="n">model</span><span class="p">,</span><span class="n">settings</span><span class="p">)</span>
+
 <span class="w">    </span><span class="n">model</span><span class="p">%</span><span class="n">build_dir</span><span class="w">            </span><span class="o">=</span><span class="w"> </span><span class="n">settings</span><span class="p">%</span><span class="n">build_dir</span>
 <span class="w">    </span><span class="n">model</span><span class="p">%</span><span class="n">build_prefix</span><span class="w">         </span><span class="o">=</span><span class="w"> </span><span class="n">join_path</span><span class="p">(</span><span class="n">settings</span><span class="p">%</span><span class="n">build_dir</span><span class="p">,</span><span class="w"> </span><span class="n">basename</span><span class="p">(</span><span class="n">model</span><span class="p">%</span><span class="n">compiler</span><span class="p">%</span><span class="n">fc</span><span class="p">))</span>
-<span class="w">    </span><span class="n">model</span><span class="p">%</span><span class="n">include_tests</span><span class="w">        </span><span class="o">=</span><span class="w"> </span><span class="n">settings</span><span class="p">%</span><span class="n">build_tests</span><span class="w">    </span>
-<span class="w">    </span>
+<span class="w">    </span><span class="n">model</span><span class="p">%</span><span class="n">include_tests</span><span class="w">        </span><span class="o">=</span><span class="w"> </span><span class="n">settings</span><span class="p">%</span><span class="n">build_tests</span>
+
 <span class="w">    </span><span class="c">! Extract the current package configuration request</span>
-<span class="w">    </span><span class="n">package</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">package_config</span><span class="p">%</span><span class="n">export_config</span><span class="p">(</span><span class="n">target_platform</span><span class="p">)</span><span class="w">    </span>
+<span class="w">    </span><span class="n">package</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">package_config</span><span class="p">%</span><span class="n">export_config</span><span class="p">(</span><span class="n">target_platform</span><span class="p">,</span><span class="n">settings</span><span class="p">%</span><span class="n">features</span><span class="p">,</span><span class="n">settings</span><span class="p">%</span><span class="n">profile</span><span class="p">,</span><span class="n">error</span><span class="p">)</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="nb">allocated</span><span class="p">(</span><span class="n">error</span><span class="p">))</span><span class="w"> </span><span class="k">return</span>
+
+<span class="w">    </span><span class="c">! Initialize compiler flags using the feature-enabled package configuration</span>
+<span class="w">    </span><span class="k">call </span><span class="n">new_compiler_flags</span><span class="p">(</span><span class="n">model</span><span class="p">,</span><span class="w"> </span><span class="n">settings</span><span class="p">,</span><span class="w"> </span><span class="n">package</span><span class="p">)</span><span class="w">  </span>
 <span class="w">    </span>
 <span class="w">    </span><span class="c">! Resolve meta-dependencies into the package and the model</span>
 <span class="w">    </span><span class="k">call </span><span class="n">resolve_metapackages</span><span class="p">(</span><span class="n">model</span><span class="p">,</span><span class="n">package</span><span class="p">,</span><span class="n">settings</span><span class="p">,</span><span class="n">error</span><span class="p">)</span>
@@ -332,7 +335,11 @@ Add this dependency&rsquo;s package-level macros</p>
 <span class="w">    </span><span class="k">end if</span>
 
 <span class="k">    allocate</span><span class="p">(</span><span class="n">model</span><span class="p">%</span><span class="n">packages</span><span class="p">(</span><span class="n">model</span><span class="p">%</span><span class="n">deps</span><span class="p">%</span><span class="n">ndep</span><span class="p">))</span>
-<span class="w">    </span><span class="n">has_cpp</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">.</span><span class="n">false</span><span class="p">.</span>
+<span class="w">    </span>
+<span class="w">    </span><span class="c">! The current configuration may not have preprocessing, but some of its features may. </span>
+<span class="w">    </span><span class="c">! This means there will be directives that need to be considered even if not currently </span>
+<span class="w">    </span><span class="c">! active. Turn preprocessing on even in this case</span>
+<span class="w">    </span><span class="n">has_cpp</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">package_config</span><span class="p">%</span><span class="n">has_cpp</span><span class="p">()</span><span class="w"> </span><span class="p">.</span><span class="nb">or</span><span class="p">.</span><span class="w"> </span><span class="n">package</span><span class="p">%</span><span class="n">has_cpp</span><span class="p">()</span>
 
 <span class="w">    </span><span class="k">do </span><span class="n">i</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="n">model</span><span class="p">%</span><span class="n">deps</span><span class="p">%</span><span class="n">ndep</span>
 <span class="w">        </span><span class="k">associate</span><span class="p">(</span><span class="n">dep</span><span class="w"> </span><span class="o">=&gt;</span><span class="w"> </span><span class="n">model</span><span class="p">%</span><span class="n">deps</span><span class="p">%</span><span class="n">dep</span><span class="p">(</span><span class="n">i</span><span class="p">))</span>
@@ -349,9 +356,11 @@ Add this dependency&rsquo;s package-level macros</p>
 <span class="w">                </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="nb">allocated</span><span class="p">(</span><span class="n">error</span><span class="p">))</span><span class="w"> </span><span class="k">exit</span><span class="w">          </span>
 <span class="w">                </span>
 <span class="w">                </span><span class="c">! Adapt it to the current profile/platform</span>
-<span class="w">                </span><span class="n">dependency</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">dependency_config</span><span class="p">%</span><span class="n">export_config</span><span class="p">(</span><span class="n">target_platform</span><span class="p">)</span>
-<span class="w">                </span>
-<span class="w">                </span><span class="n">manifest</span><span class="w"> </span><span class="o">=&gt;</span><span class="w"> </span><span class="n">dependency</span>
+<span class="w">                </span><span class="n">dependency</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">dependency_config</span><span class="p">%</span><span class="n">export_config</span><span class="p">(</span><span class="n">target_platform</span><span class="p">,</span><span class="w"> </span><span class="p">&amp;</span>
+<span class="w">                                                             </span><span class="n">dep</span><span class="p">%</span><span class="n">features</span><span class="p">,</span><span class="n">error</span><span class="o">=</span><span class="n">error</span><span class="p">)</span>
+<span class="w">                </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="nb">allocated</span><span class="p">(</span><span class="n">error</span><span class="p">))</span><span class="w"> </span><span class="k">exit</span>
+<span class="k">                </span>
+<span class="k">                </span><span class="n">manifest</span><span class="w"> </span><span class="o">=&gt;</span><span class="w"> </span><span class="n">dependency</span>
 <span class="w">            </span><span class="k">end if            </span>
 <span class="k">            </span>
 
@@ -547,7 +556,7 @@ Add this dependency&rsquo;s package-level macros</p>
             <p class="text-end">
               Documentation generated by
               <a href="https://github.com/Fortran-FOSS-Programmers/ford">FORD</a>
- on 2025-10-13 09:44 +0000             </p>
+ on 2025-10-14 10:22 +0000             </p>
           </div>
         </div>
         <br>

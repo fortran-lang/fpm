@@ -92,7 +92,7 @@
 
             <li class="list-inline-item" id="statements"><i class="fa fa-list-ol"></i>
               <a data-bs-toggle="tooltip" data-bs-placement="bottom" data-bs-html="true"
-                 title=" 3.9% of total for procedures.">303 statements</a>
+                 title=" 4.0% of total for procedures.">303 statements</a>
             </li>
 
             <li class="list-inline-item" id="source-file">
@@ -180,7 +180,7 @@
     <tbody>
         <tr>
             <td>
-              <span class="anchor" id="variable-cmd_settings"></span>
+              <span class="anchor" id="variable-cmd_settings~2"></span>
               class(<a href='../type/fpm_cmd_settings.html'>fpm_cmd_settings</a>),
             </td>
 <td>intent(out),</td>
@@ -224,9 +224,10 @@
 <span class="w">            </span><span class="p">&amp;</span><span class="w"> </span><span class="n">c_compiler</span><span class="p">,</span><span class="w"> </span><span class="n">cxx_compiler</span><span class="p">,</span><span class="w"> </span><span class="n">archiver</span><span class="p">,</span><span class="w"> </span><span class="n">version_s</span><span class="p">,</span><span class="w"> </span><span class="n">token_s</span><span class="p">,</span><span class="w"> </span><span class="n">config_file</span>
 
 <span class="w">        </span><span class="kt">character</span><span class="p">(</span><span class="nb">len</span><span class="o">=*</span><span class="p">),</span><span class="w"> </span><span class="k">parameter</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">fc_env</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;FC&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">cc_env</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;CC&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">ar_env</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;AR&quot;</span><span class="p">,</span><span class="w"> </span><span class="p">&amp;</span>
-<span class="w">            </span><span class="p">&amp;</span><span class="w"> </span><span class="n">fflags_env</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;FFLAGS&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">cflags_env</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;CFLAGS&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">cxxflags_env</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;CXXFLAGS&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">ldflags_env</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;LDFLAGS&quot;</span><span class="p">,</span><span class="w"> </span><span class="p">&amp;</span>
-<span class="w">            </span><span class="p">&amp;</span><span class="w"> </span><span class="n">fc_default</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;gfortran&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">cc_default</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot; &quot;</span><span class="p">,</span><span class="w"> </span><span class="n">ar_default</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot; &quot;</span><span class="p">,</span><span class="w"> </span><span class="n">flags_default</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot; &quot;</span><span class="p">,</span><span class="w"> </span><span class="p">&amp;</span>
-<span class="w">            </span><span class="p">&amp;</span><span class="w"> </span><span class="n">cxx_env</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;CXX&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">cxx_default</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot; &quot;</span><span class="p">,</span><span class="w"> </span><span class="n">build_dir_env</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;BUILD_DIR&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">build_dir_default</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;build&quot;</span>
+<span class="w">            </span><span class="p">&amp;</span><span class="w"> </span><span class="n">fflags_env</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;FFLAGS&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">cflags_env</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;CFLAGS&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">cxxflags_env</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;CXXFLAGS&quot;</span><span class="p">,</span><span class="w"> </span><span class="p">&amp;</span>
+<span class="w">            </span><span class="p">&amp;</span><span class="w"> </span><span class="n">ldflags_env</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;LDFLAGS&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">fc_default</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;gfortran&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">cc_default</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot; &quot;</span><span class="p">,</span><span class="w"> </span><span class="n">ar_default</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot; &quot;</span><span class="p">,</span><span class="w"> </span><span class="p">&amp;</span>
+<span class="w">            </span><span class="p">&amp;</span><span class="w"> </span><span class="n">flags_default</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot; &quot;</span><span class="p">,</span><span class="w"> </span><span class="n">cxx_env</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;CXX&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">cxx_default</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot; &quot;</span><span class="p">,</span><span class="w"> </span><span class="n">build_dir_env</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;BUILD_DIR&quot;</span><span class="p">,</span><span class="w"> </span><span class="p">&amp;</span>
+<span class="w">            </span><span class="p">&amp;</span><span class="w"> </span><span class="n">build_dir_default</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;build&quot;</span>
 <span class="w">        </span><span class="k">type</span><span class="p">(</span><span class="n">error_t</span><span class="p">),</span><span class="w"> </span><span class="k">allocatable</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">error</span>
 
 <span class="w">        </span><span class="k">call </span><span class="n">set_help</span><span class="p">()</span>
@@ -272,6 +273,7 @@
 
 <span class="w">        </span><span class="n">compiler_args</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">&amp;</span>
 <span class="w">          </span><span class="s1">&#39; --profile &quot; &quot;&#39;</span><span class="w"> </span><span class="o">//</span><span class="w"> </span><span class="p">&amp;</span>
+<span class="w">          </span><span class="s1">&#39; --features &quot; &quot;&#39;</span><span class="w"> </span><span class="o">//</span><span class="w"> </span><span class="p">&amp;</span>
 <span class="w">          </span><span class="s1">&#39; --no-prune F&#39;</span><span class="w"> </span><span class="o">//</span><span class="w"> </span><span class="p">&amp;</span>
 <span class="w">          </span><span class="s1">&#39; --compiler &quot;&#39;</span><span class="o">//</span><span class="n">get_fpm_env</span><span class="p">(</span><span class="n">fc_env</span><span class="p">,</span><span class="w"> </span><span class="n">fc_default</span><span class="p">)</span><span class="o">//</span><span class="s1">&#39;&quot;&#39;</span><span class="w"> </span><span class="o">//</span><span class="w"> </span><span class="p">&amp;</span>
 <span class="w">          </span><span class="s1">&#39; --c-compiler &quot;&#39;</span><span class="o">//</span><span class="n">get_fpm_env</span><span class="p">(</span><span class="n">cc_env</span><span class="p">,</span><span class="w"> </span><span class="n">cc_default</span><span class="p">)</span><span class="o">//</span><span class="s1">&#39;&quot;&#39;</span><span class="w"> </span><span class="o">//</span><span class="w"> </span><span class="p">&amp;</span>
@@ -381,14 +383,16 @@
 <span class="k">                   </span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;.&#39;</span>
 <span class="w">                </span><span class="k">else</span>
 <span class="k">                   write</span><span class="p">(</span><span class="n">stderr</span><span class="p">,</span><span class="s1">&#39;(*(7x,g0,/))&#39;</span><span class="p">)</span><span class="w"> </span><span class="p">&amp;</span>
-<span class="w">                   </span><span class="p">&amp;</span><span class="w"> </span><span class="s1">&#39;&lt;USAGE&gt; fpm new NAME [[--lib|--src] [--app] [--test] [--example]]|[--full|--bare] [--backfill]&#39;</span>
+<span class="w">                   </span><span class="p">&amp;</span><span class="w"> </span><span class="s1">&#39;&lt;USAGE&gt; fpm new NAME [[--lib|--src] [--app] [--test] &#39;</span><span class="o">//</span><span class="p">&amp;</span>
+<span class="w">                   </span><span class="p">&amp;</span><span class="w"> </span><span class="s1">&#39; [--example]]|[--full|--bare] [--backfill]&#39;</span>
 <span class="w">                   </span><span class="k">call </span><span class="n">fpm_stop</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="s1">&#39;directory name required&#39;</span><span class="p">)</span>
 <span class="w">                </span><span class="k">endif</span>
 <span class="k">            case</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span>
 <span class="w">                </span><span class="n">name</span><span class="o">=</span><span class="nb">trim</span><span class="p">(</span><span class="n">unnamed</span><span class="p">(</span><span class="mi">2</span><span class="p">))</span>
 <span class="w">            </span><span class="k">case </span><span class="n">default</span>
 <span class="w">                </span><span class="k">write</span><span class="p">(</span><span class="n">stderr</span><span class="p">,</span><span class="s1">&#39;(7x,g0)&#39;</span><span class="p">)</span><span class="w"> </span><span class="p">&amp;</span>
-<span class="w">                </span><span class="p">&amp;</span><span class="w"> </span><span class="s1">&#39;&lt;USAGE&gt; fpm new NAME [[--lib|--src] [--app] [--test] [--example]]| [--full|--bare] [--backfill]&#39;</span>
+<span class="w">                </span><span class="p">&amp;</span><span class="w"> </span><span class="s1">&#39;&lt;USAGE&gt; fpm new NAME [[--lib|--src] [--app] [--test] [--example]] &#39;</span><span class="o">//</span><span class="p">&amp;</span>
+<span class="w">                </span><span class="p">&amp;</span><span class="w"> </span><span class="s1">&#39;| [--full|--bare] [--backfill]&#39;</span>
 <span class="w">                </span><span class="k">call </span><span class="n">fpm_stop</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span><span class="s1">&#39;only one directory name allowed&#39;</span><span class="p">)</span>
 <span class="w">            </span><span class="k">end select</span>
 <span class="w">            </span><span class="c">!*! canon_path is not converting &quot;.&quot;, etc.</span>
@@ -647,7 +651,8 @@
 <span class="w">                </span><span class="k">end if</span>
 
 <span class="k">                if</span><span class="w"> </span><span class="p">(</span><span class="n">target_specific</span><span class="w"> </span><span class="p">.</span><span class="nb">and</span><span class="p">.</span><span class="w"> </span><span class="nb">any</span><span class="p">([</span><span class="n">skip</span><span class="p">,</span><span class="w"> </span><span class="n">clean_all</span><span class="p">]))</span><span class="w"> </span><span class="k">then</span>
-<span class="k">                    call </span><span class="n">fpm_stop</span><span class="p">(</span><span class="mi">6</span><span class="p">,</span><span class="w"> </span><span class="s1">&#39;Cannot combine target-specific flags (--test, --apps, --examples) with --skip or --all.&#39;</span><span class="p">)</span>
+<span class="k">                    call </span><span class="n">fpm_stop</span><span class="p">(</span><span class="mi">6</span><span class="p">,</span><span class="w"> </span><span class="s1">&#39;Cannot combine target-specific flags (--test, --apps, &#39;</span><span class="o">//</span><span class="p">&amp;</span>
+<span class="w">                                     </span><span class="s1">&#39;--examples) with --skip or --all.&#39;</span><span class="p">)</span>
 <span class="w">                </span><span class="k">end if</span>
 
 <span class="k">                allocate</span><span class="p">(</span><span class="n">fpm_clean_settings</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">cmd_settings</span><span class="p">)</span>
@@ -755,7 +760,7 @@
             <p class="text-end">
               Documentation generated by
               <a href="https://github.com/Fortran-FOSS-Programmers/ford">FORD</a>
- on 2025-10-13 09:44 +0000             </p>
+ on 2025-10-14 10:22 +0000             </p>
           </div>
         </div>
         <br>
