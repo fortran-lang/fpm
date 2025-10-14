@@ -39,7 +39,18 @@ contains
             & new_unittest("feature-extract-dependencies-examples", test_feature_extract_dependencies_examples), &
             & new_unittest("feature-extract-build-configs", test_feature_extract_build_configs), &
             & new_unittest("feature-extract-test-configs", test_feature_extract_test_configs), &
-            & new_unittest("feature-extract-example-configs", test_feature_extract_example_configs) &
+            & new_unittest("feature-extract-example-configs", test_feature_extract_example_configs), &
+            & new_unittest("dependency-feature-propagation", test_dependency_feature_propagation), &
+            & new_unittest("dependency-features-specification", test_dependency_features_specification), &
+            & new_unittest("feature-chained-os-commands", test_feature_chained_os_commands, should_fail=.true.), &
+            & new_unittest("feature-chained-compiler-commands", &
+            &              test_feature_chained_compiler_commands, should_fail=.true.), &
+            & new_unittest("feature-complex-chain-compiler-os-compiler", &
+            &              test_feature_complex_chain_compiler_os_compiler, should_fail=.true.), &
+            & new_unittest("feature-complex-chain-os-compiler-os", &
+            &              test_feature_complex_chain_os_compiler_os, should_fail=.true.), &
+            & new_unittest("feature-mixed-valid-chains", test_feature_mixed_valid_chains), &
+            & new_unittest("feature-compiler-flags-integration", test_feature_compiler_flags_integration) &
             & ]
 
     end subroutine collect_features
@@ -271,7 +282,8 @@ contains
                 ! Test extraction for gfortran on linux
                 target_platform%compiler = id_gcc
                 target_platform%os_type = OS_LINUX
-                extracted_feature = package%features(i)%extract_for_target(target_platform)
+                extracted_feature = package%features(i)%extract_for_target(target_platform, error=error)
+                if (allocated(error)) return
                 
                 ! Should have both base and gfortran-specific flags
                 if (.not. allocated(extracted_feature%flags)) then
@@ -288,7 +300,8 @@ contains
                 
                 ! Test extraction for ifort
                 target_platform%compiler = id_intel_classic_nix
-                extracted_feature = package%features(i)%extract_for_target(target_platform)
+                extracted_feature = package%features(i)%extract_for_target(target_platform, error=error)
+                if (allocated(error)) return
                 
                 if (.not. allocated(extracted_feature%flags)) then
                     call test_failed(error, "Extracted ifort feature missing flags")
@@ -352,7 +365,7 @@ contains
             & 'debug.linux.flags = "-DLINUX"', &
             & 'debug.windows.ifort.flags = "/DEBUG:FULL"', &
             & 'release.flags = "-O3"', &
-            & 'release.gfortran.flags = "-march=native"'
+            & 'release.gfortran.flags = "-mtune=generic -funroll-loops"'
         close(unit)
                 
         call get_package_data(package, temp_file, error)
@@ -458,7 +471,8 @@ contains
                 ! Test extraction for gfortran on linux (should get all three flags)
                 target_platform%compiler = id_gcc
                 target_platform%os_type = OS_LINUX
-                extracted_feature = package%features(i)%extract_for_target(target_platform)
+                extracted_feature = package%features(i)%extract_for_target(target_platform, error=error)
+                if (allocated(error)) return
                 
                 ! Should have flags from base, gfortran, and linux variants
                 if (.not. allocated(extracted_feature%flags)) then
@@ -530,7 +544,8 @@ contains
                 ! Test extraction for gfortran on linux (should get all three metapackages)
                 target_platform%compiler = id_gcc
                 target_platform%os_type = OS_LINUX
-                extracted_feature = package%features(i)%extract_for_target(target_platform)
+                extracted_feature = package%features(i)%extract_for_target(target_platform, error=error)
+                if (allocated(error)) return
                 
                 if (.not. package%features(i)%base%meta%openmp%on) then
                     call test_failed(error, "Missing base openmp metapackage")
@@ -604,7 +619,8 @@ contains
         do i = 1, size(package%features)
             if (package%features(i)%base%name == "debug") then
                 target_platform = platform_config_t(id_gcc, OS_LINUX)
-                extracted_feature = package%features(i)%extract_for_target(target_platform)
+                extracted_feature = package%features(i)%extract_for_target(target_platform, error=error)
+                if (allocated(error)) return
                 
                 ! Check flags are combined correctly
                 if (.not. allocated(extracted_feature%flags)) then
@@ -688,7 +704,8 @@ contains
         do i = 1, size(package%features)
             if (package%features(i)%base%name == "debug") then
                 target_platform = platform_config_t("ifort", OS_WINDOWS)
-                extracted_feature = package%features(i)%extract_for_target(target_platform)
+                extracted_feature = package%features(i)%extract_for_target(target_platform, error=error)
+                if (allocated(error)) return
                 
                 ! Check flags: should have base + ifort + windows (but NOT linux)
                 if (.not. allocated(extracted_feature%flags)) then
@@ -781,7 +798,8 @@ contains
         do i = 1, size(package%features)
             if (package%features(i)%base%name == "testing") then
                 target_platform = platform_config_t(id_gcc, OS_MACOS)
-                extracted_feature = package%features(i)%extract_for_target(target_platform)
+                extracted_feature = package%features(i)%extract_for_target(target_platform, error=error)
+                if (allocated(error)) return
                 
                 ! Check that all dependencies are combined (base + gfortran + macos)
                 if (.not. allocated(extracted_feature%dependency)) then
@@ -870,7 +888,8 @@ contains
         do i = 1, size(package%features)
             if (package%features(i)%base%name == "optimization") then
                 target_platform = platform_config_t(id_intel_classic_nix, OS_LINUX)
-                extracted_feature = package%features(i)%extract_for_target(target_platform)
+                extracted_feature = package%features(i)%extract_for_target(target_platform, error=error)
+                if (allocated(error)) return
                 
                 ! Check that build config is present
                 if (.not. allocated(extracted_feature%build)) then
@@ -952,7 +971,8 @@ contains
         do i = 1, size(package%features)
             if (package%features(i)%base%name == "testing") then
                 target_platform = platform_config_t(id_gcc, OS_WINDOWS)
-                extracted_feature = package%features(i)%extract_for_target(target_platform)
+                extracted_feature = package%features(i)%extract_for_target(target_platform, error=error)
+                if (allocated(error)) return
                 
                 ! Check that all test configs are combined (base + gfortran + windows + gfortran.windows)
                 if (.not. allocated(extracted_feature%test) .or. size(extracted_feature%test) < 4) then
@@ -1045,7 +1065,8 @@ contains
         do i = 1, size(package%features)
             if (package%features(i)%base%name == "showcase") then
                 target_platform = platform_config_t(id_intel_llvm_nix, OS_MACOS)
-                extracted_feature = package%features(i)%extract_for_target(target_platform)
+                extracted_feature = package%features(i)%extract_for_target(target_platform, error=error)
+                if (allocated(error)) return
                 
                 ! Check that all example configs are combined (base + ifx + macos + ifx.macos)
                 if (.not. allocated(extracted_feature%example) .or. size(extracted_feature%example) < 4) then
@@ -1096,5 +1117,495 @@ contains
         call test_failed(error, "showcase collection not found")
                         
     end subroutine test_feature_extract_example_configs
+
+    !> Test that dependency features are correctly propagated and applied
+    subroutine test_dependency_feature_propagation(error)
+        !> Error handling
+        type(error_t), allocatable, intent(out) :: error
+
+        type(package_config_t) :: dependency_config, exported_config
+        character(:), allocatable :: temp_file
+        integer :: unit
+        type(platform_config_t) :: target_platform
+        type(string_t), allocatable :: test_features(:)
+
+        allocate(temp_file, source=get_temp_filename())
+
+        ! Create a dependency manifest with features
+        open(file=temp_file, newunit=unit)
+        write(unit, '(a)') &
+            & 'name = "test-dependency"', &
+            & 'version = "0.1.0"', &
+            & '[features]', &
+            & 'debug.flags = "-g -DDEBUG"', &
+            & 'debug.gfortran.flags = "-fcheck=bounds"', &
+            & 'mpi.flags = "-DUSE_MPI"', &
+            & 'mpi.dependencies.mpi = "*"', &
+            & '[[features.debug.executable]]', &
+            & 'name = "debug_tool"', &
+            & 'source-dir = "debug_tools"'
+        close(unit)
+
+        ! Load the dependency configuration
+        call get_package_data(dependency_config, temp_file, error)
+        if (allocated(error)) return
+
+        ! Simulate dependency requesting specific features (like dep%features from build_model)
+        allocate(test_features(2))
+        test_features(1)%s = "debug" 
+        test_features(2)%s = "mpi"
+
+        ! Test export_config with these features (mimics line 132-133 in fpm.f90)
+        target_platform = platform_config_t(id_gcc, OS_LINUX)
+        exported_config = dependency_config%export_config(target_platform, test_features, error=error)
+        if (allocated(error)) return
+
+        ! Verify that debug feature flags were applied
+        if (.not. allocated(exported_config%flags)) then
+            call test_failed(error, "Dependency export_config missing flags from debug feature")
+            return
+        end if
+
+        if (index(exported_config%flags, "-g") == 0 .or. &
+            index(exported_config%flags, "-DDEBUG") == 0) then
+            call test_failed(error, "Dependency missing debug flags: got '" // exported_config%flags // "'")
+            return
+        end if
+
+        if (index(exported_config%flags, "-fcheck=bounds") == 0) then
+            call test_failed(error, "Dependency missing gfortran-specific debug flags")
+            return
+        end if
+
+        ! Verify that mpi feature flags were applied  
+        if (index(exported_config%flags, "-DUSE_MPI") == 0) then
+            call test_failed(error, "Dependency missing mpi flags")
+            return
+        end if
+
+        ! Verify that mpi metapackage was enabled
+        if (.not. exported_config%meta%mpi%on) then
+            call test_failed(error, "Dependency mpi metapackage not enabled")
+            return
+        end if
+
+        ! Verify that debug executable was included
+        if (.not. allocated(exported_config%executable)) then
+            call test_failed(error, "Dependency debug executable not included")
+            return  
+        end if
+
+        if (size(exported_config%executable) < 1) then
+            call test_failed(error, "Dependency should have debug executable")
+            return
+        end if
+
+        if (exported_config%executable(1)%name /= "debug_tool") then
+            call test_failed(error, "Dependency debug executable has wrong name")
+            return
+        end if
+
+    end subroutine test_dependency_feature_propagation
+
+    !> Test that main package can specify features for its dependencies
+    subroutine test_dependency_features_specification(error)
+        !> Error handling
+        type(error_t), allocatable, intent(out) :: error
+
+        type(package_config_t) :: main_package
+        character(:), allocatable :: temp_file
+        integer :: unit, i
+        logical :: found_tomlf_dep
+
+        allocate(temp_file, source=get_temp_filename())
+
+        ! Create a main package manifest that specifies features for dependencies
+        open(file=temp_file, newunit=unit)
+        write(unit, '(a)') &
+            & 'name = "main-package"', &
+            & 'version = "0.1.0"', &
+            & '[dependencies]', &
+            & '"dep-a" = { path = "../dep-a", features = ["openmp", "json"] }', &
+            & '"dep-b" = { path = "../dep-b", features = ["debug"] }'
+        close(unit)
+
+        ! Load the main package configuration
+        call get_package_data(main_package, temp_file, error)
+        if (allocated(error)) return
+
+        ! Verify dependencies were parsed correctly
+        if (.not. allocated(main_package%dependency)) then
+            call test_failed(error, "Main package dependencies not allocated")
+            return
+        end if
+
+        if (size(main_package%dependency) /= 2) then
+            call test_failed(error, "Expected 2 dependencies, got " // & 
+                           char(size(main_package%dependency) + ichar('0')))
+            return
+        end if
+
+        ! Find and verify dep-a dependency with features
+        found_tomlf_dep = .false.
+        do i = 1, size(main_package%dependency)
+            if (main_package%dependency(i)%name == "dep-a") then
+                found_tomlf_dep = .true.
+
+                ! Verify path configuration exists
+                if (.not. allocated(main_package%dependency(i)%path)) then
+                    call test_failed(error, "dep-a dependency missing path configuration")
+                    return
+                end if
+
+                ! Path gets canonicalized, so just check it ends with the relative path
+                if (index(main_package%dependency(i)%path, "dep-a") == 0) then
+                    call test_failed(error, "dep-a dependency path should contain 'dep-a', got: '" // &
+                                          main_package%dependency(i)%path // "'")
+                    return
+                end if
+
+                ! Verify features array - this is the key test
+                if (.not. allocated(main_package%dependency(i)%features)) then
+                    call test_failed(error, "dep-a dependency features not allocated")
+                    return
+                end if
+
+                if (size(main_package%dependency(i)%features) /= 2) then
+                    call test_failed(error, "dep-a dependency should have 2 features")
+                    return
+                end if
+
+                if (main_package%dependency(i)%features(1)%s /= "openmp" .or. &
+                    main_package%dependency(i)%features(2)%s /= "json") then
+                    call test_failed(error, "dep-a dependency has wrong feature names")
+                    return
+                end if
+                exit
+            end if
+        end do
+
+        if (.not. found_tomlf_dep) then
+            call test_failed(error, "dep-a dependency not found")
+            return
+        end if
+
+        ! Verify dep-b dependency has features
+        do i = 1, size(main_package%dependency)
+            if (main_package%dependency(i)%name == "dep-b") then
+                if (.not. allocated(main_package%dependency(i)%features)) then
+                    call test_failed(error, "dep-b dependency features not allocated")
+                    return
+                end if
+
+                if (size(main_package%dependency(i)%features) /= 1) then
+                    call test_failed(error, "dep-b dependency should have 1 feature")
+                    return
+                end if
+
+                if (main_package%dependency(i)%features(1)%s /= "debug") then
+                    call test_failed(error, "dep-b dependency has wrong feature name")
+                    return
+                end if
+                exit
+            end if
+        end do
+
+    end subroutine test_dependency_features_specification
+
+    !> Test that chained OS commands are rejected (should fail)
+    subroutine test_feature_chained_os_commands(error)
+        !> Error handling
+        type(error_t), allocatable, intent(out) :: error
+
+        type(package_config_t) :: package
+        character(:), allocatable :: temp_file
+        integer :: unit
+
+        allocate(temp_file, source=get_temp_filename())
+
+        open(file=temp_file, newunit=unit)
+        write(unit, '(a)') &
+            & 'name = "chained-os-test"', &
+            & 'version = "0.1.0"', &
+            & '[features]', &
+            & 'myfeature.windows.linux.flags = "-invalid"'  ! Chained OS: windows.linux
+        close(unit)
+                
+        call get_package_data(package, temp_file, error)
+        
+        ! This should fail due to chained OS commands
+                        
+    end subroutine test_feature_chained_os_commands
+
+    !> Test that chained compiler commands are rejected (should fail)  
+    subroutine test_feature_chained_compiler_commands(error)
+        !> Error handling
+        type(error_t), allocatable, intent(out) :: error
+
+        type(package_config_t) :: package
+        character(:), allocatable :: temp_file
+        integer :: unit
+
+        allocate(temp_file, source=get_temp_filename())
+
+        open(file=temp_file, newunit=unit)
+        write(unit, '(a)') &
+            & 'name = "chained-compiler-test"', &
+            & 'version = "0.1.0"', &
+            & '[features]', &
+            & 'myfeature.gfortran.ifort.flags = "-invalid"'  ! Chained compiler: gfortran.ifort
+        close(unit)
+                
+        call get_package_data(package, temp_file, error)
+        
+        ! This should fail due to chained compiler commands
+                        
+    end subroutine test_feature_chained_compiler_commands
+
+    !> Test complex chaining: compiler.os.compiler (should fail)
+    subroutine test_feature_complex_chain_compiler_os_compiler(error)
+        !> Error handling
+        type(error_t), allocatable, intent(out) :: error
+
+        type(package_config_t) :: package
+        character(:), allocatable :: temp_file
+        integer :: unit
+
+        allocate(temp_file, source=get_temp_filename())
+
+        open(file=temp_file, newunit=unit)
+        write(unit, '(a)') &
+            & 'name = "complex-chain-test"', &
+            & 'version = "0.1.0"', &
+            & '[features]', &
+            & 'myfeature.gfortran.windows.ifort.flags = "-invalid"'  ! gfortran.windows.ifort chain
+        close(unit)
+                
+        call get_package_data(package, temp_file, error)
+        
+        ! This should fail due to chained compiler constraints: gfortran -> windows (OK) -> ifort (ERROR)
+                        
+    end subroutine test_feature_complex_chain_compiler_os_compiler
+
+    !> Test complex chaining: os.compiler.os (should fail)
+    subroutine test_feature_complex_chain_os_compiler_os(error)
+        !> Error handling
+        type(error_t), allocatable, intent(out) :: error
+
+        type(package_config_t) :: package
+        character(:), allocatable :: temp_file
+        integer :: unit
+
+        allocate(temp_file, source=get_temp_filename())
+
+        open(file=temp_file, newunit=unit)
+        write(unit, '(a)') &
+            & 'name = "complex-chain-test2"', &
+            & 'version = "0.1.0"', &
+            & '[features]', &
+            & 'myfeature.windows.ifx.macos.flags = "-invalid"'  ! windows.ifx.macos chain
+        close(unit)
+                
+        call get_package_data(package, temp_file, error)
+        
+        ! This should fail due to chained OS constraints: windows -> ifx (OK) -> macos (ERROR)
+                        
+    end subroutine test_feature_complex_chain_os_compiler_os
+
+    !> Test mixed valid chains (should pass)
+    subroutine test_feature_mixed_valid_chains(error)
+        !> Error handling
+        type(error_t), allocatable, intent(out) :: error
+
+        type(package_config_t) :: package
+        character(:), allocatable :: temp_file
+        integer :: unit
+        integer :: i
+
+        allocate(temp_file, source=get_temp_filename())
+
+        open(file=temp_file, newunit=unit)
+        write(unit, '(a)') &
+            & 'name = "valid-chains-test"', &
+            & 'version = "0.1.0"', &
+            & '[features]', &
+            & 'debug.flags = "-g"', &  ! Base feature (all OS, all compilers)
+            & 'debug.gfortran.flags = "-Wall"', &  ! Compiler-specific (gfortran, all OS)
+            & 'debug.windows.flags = "-DWINDOWS"', &  ! OS-specific (all compilers, Windows)
+            & 'debug.gfortran.windows.flags = "-fbacktrace"', &  ! Target-specific (gfortran + Windows)
+            & 'debug.linux.ifort.flags = "-check all"', &  ! Target-specific (Linux + ifort)
+            & 'release.ifx.macos.flags = "-O3"'  ! Another valid target-specific (ifx + macOS)
+        close(unit)
+                
+        call get_package_data(package, temp_file, error)
+        if (allocated(error)) return
+        
+        ! Verify that valid chains are accepted and collections created
+        if (.not. allocated(package%features)) then
+            call test_failed(error, "No feature collections found for valid chains test")
+            return
+        end if
+        
+        ! Should have debug and release features
+        if (size(package%features) < 2) then
+            call test_failed(error, "Expected at least 2 feature collections for valid chains")
+            return
+        end if
+        
+        ! Check that debug feature has multiple variants
+        do i = 1, size(package%features)
+            if (package%features(i)%base%name == "debug") then
+                if (.not. allocated(package%features(i)%variants)) then
+                    call test_failed(error, "Debug collection should have variants for valid chains")
+                    return
+                end if
+                
+                ! Should have multiple variants: gfortran, windows, gfortran.windows, linux.ifort
+                if (size(package%features(i)%variants) < 4) then
+                    call test_failed(error, "Debug collection should have at least 4 variants for valid chains")
+                    return
+                end if
+                exit
+            end if
+        end do
+                        
+    end subroutine test_feature_mixed_valid_chains
+
+    !> Test integration of feature compiler flags with new_compiler_flags
+    subroutine test_feature_compiler_flags_integration(error)
+        use fpm, only: new_compiler_flags
+        use fpm_model, only: fpm_model_t
+        use fpm_command_line, only: fpm_build_settings
+        use fpm_compiler, only: new_compiler, id_gcc
+
+        !> Error handling
+        type(error_t), allocatable, intent(out) :: error
+
+        type(package_config_t) :: package_config,package
+        type(fpm_model_t) :: model
+        type(fpm_build_settings) :: settings
+        type(platform_config_t) :: target_platform
+        character(:), allocatable :: temp_file
+        integer :: unit
+
+        allocate(temp_file, source=get_temp_filename())
+
+        ! Create a test package with feature-based compiler flags
+        open(newunit=unit, file=temp_file, status='unknown')
+        write(unit, '(a)') 'name = "test_flags"'
+        write(unit, '(a)') 'version = "0.1.0"'
+        write(unit, '(a)') ''
+        write(unit, '(a)') '[library]'
+        write(unit, '(a)') 'source-dir = "src"'
+        write(unit, '(a)') ''
+        write(unit, '(a)') '[features]'
+        write(unit, '(a)') 'debug.gfortran.flags = "-g -Wall -fcheck=bounds"'
+        write(unit, '(a)') 'debug.flags = "-g"'
+        write(unit, '(a)') 'release.gfortran.flags = "-O3 -mtune=generic -funroll-loops"'
+        write(unit, '(a)') 'release.flags = "-O2"'
+        write(unit, '(a)') ''
+        write(unit, '(a)') '[profiles]'
+        write(unit, '(a)') 'development = ["debug"]'
+        write(unit, '(a)') 'production = ["release"]'
+        close(unit)
+
+        ! Set up build settings without CLI flags
+        settings%flag = ""
+        settings%cflag = ""
+        settings%cxxflag = ""
+        settings%ldflag = ""
+
+        ! Load the package configuration
+        call get_package_data(package_config, temp_file, error, apply_defaults=.true.)
+        if (allocated(error)) return
+
+        ! 1) Choose first desired target platform: gfortran on Linux with development profile
+        target_platform = platform_config_t(id_gcc, OS_LINUX)
+        settings%profile = "development"  ! This should activate debug features
+
+        ! Extract the current package configuration request
+        package = package_config%export_config(target_platform, profile=settings%profile, error=error)
+        if (allocated(error)) return
+
+        ! Set up model with mock compiler
+        call new_compiler(model%compiler, "gfortran", "gcc", "g++", echo=.false., verbose=.false.)
+
+        ! Test that package flags are used when no CLI flags provided
+        call new_compiler_flags(model, settings, package)
+
+        ! 2) Ensure flags are picked from gfortran platform (should include both base debug and gfortran-specific)
+        if (.not. allocated(model%fortran_compile_flags)) then
+            call test_failed(error, "Expected fortran_compile_flags to be allocated for gfortran")
+            return
+        end if
+
+        if (index(model%fortran_compile_flags, "-g") == 0) then
+            call test_failed(error, "Expected debug flags to contain '-g' for gfortran platform")
+            return
+        end if
+
+        if (index(model%fortran_compile_flags, "-Wall") == 0) then
+            call test_failed(error, "Expected gfortran-specific flags to contain '-Wall'")
+            return
+        end if
+
+        if (index(model%fortran_compile_flags, "-fcheck=bounds") == 0) then
+            call test_failed(error, "Expected gfortran-specific flags to contain '-fcheck=bounds'")
+            return
+        end if
+
+        ! 3) Choose another target platform: gfortran on Linux with production profile
+        settings%profile = "production"  ! This should activate release features
+
+        ! Extract the new package configuration request
+        package = package_config%export_config(target_platform, profile=settings%profile, error=error)
+        if (allocated(error)) return
+
+        ! Reset flags and test production profile
+        call new_compiler_flags(model, settings, package)
+
+        ! 4) Ensure flags are picked from the release platform (should include release flags)
+        if (.not. allocated(model%fortran_compile_flags)) then
+            call test_failed(error, "Expected fortran_compile_flags to be allocated for release")
+            return
+        end if
+
+        if (index(model%fortran_compile_flags, "-O3") == 0) then
+            call test_failed(error, "Expected release gfortran flags to contain '-O3'")
+            return
+        end if
+
+        if (index(model%fortran_compile_flags, "-mtune") == 0) then
+            call test_failed(error, "Expected release gfortran flags to contain '-mtune'")
+            return
+        end if
+
+        if (index(model%fortran_compile_flags, "-funroll-loops") == 0) then
+            call test_failed(error, "Expected release gfortran flags to contain '-funroll-loops'")
+            return
+        end if
+
+        if (index(model%fortran_compile_flags, "-O2") == 0) then
+            call test_failed(error, "Expected base release flags to contain '-O2'")
+            return
+        end if
+
+        ! Test CLI flags still override package flags
+        settings%flag = "-O1 -DCUSTOM"
+        call new_compiler_flags(model, settings, package)
+
+        if (index(model%fortran_compile_flags, "-O1") == 0) then
+            call test_failed(error, "Expected CLI flags to be used when provided")
+            return
+        end if
+
+        if (index(model%fortran_compile_flags, "-DCUSTOM") == 0) then
+            call test_failed(error, "Expected CLI flags to contain custom flags")
+            return
+        end if
+
+        ! Clean up - file was already closed after writing
+
+    end subroutine test_feature_compiler_flags_integration
 
 end module test_features

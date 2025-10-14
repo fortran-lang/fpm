@@ -38,12 +38,14 @@ contains
             & new_unittest("dependency-invalid-git", test_dependency_invalid_git, should_fail=.true.), &
             & new_unittest("dependency-no-namespace", test_dependency_no_namespace, should_fail=.true.), &
             & new_unittest("dependency-redundant-v", test_dependency_redundant_v, should_fail=.true.), &
+            & new_unittest("dependency-features-present", test_dependency_features_present), &
+            & new_unittest("dependency-features-absent",  test_dependency_features_absent),  &
+            & new_unittest("dependency-features-empty",   test_dependency_features_empty),   &
             & new_unittest("dependency-wrongkey", test_dependency_wrongkey, should_fail=.true.), &
             & new_unittest("dependencies-empty", test_dependencies_empty), &
             & new_unittest("dependencies-typeerror", test_dependencies_typeerror, should_fail=.true.), &
-            ! FROZEN: Profile tests disabled during transition to feature-based architecture
-            ! & new_unittest("profiles", test_profiles), &
-            ! & new_unittest("profiles-keyvalue-table", test_profiles_keyvalue_table, should_fail=.true.), &
+            & new_unittest("profiles", test_profiles), &
+            & new_unittest("profiles-invalid", test_profiles_invalid, should_fail=.true.), &
             & new_unittest("executable-empty", test_executable_empty, should_fail=.true.), &
             & new_unittest("executable-typeerror", test_executable_typeerror, should_fail=.true.), &
             & new_unittest("executable-noname", test_executable_noname, should_fail=.true.), &
@@ -81,7 +83,8 @@ contains
             & new_unittest("preprocessors-empty", test_preprocessors_empty, should_fail=.true.), &
             & new_unittest("macro-parsing", test_macro_parsing, should_fail=.false.), &
             & new_unittest("macro-parsing-dependency", &
-            &              test_macro_parsing_dependency, should_fail=.false.) &
+            &              test_macro_parsing_dependency, should_fail=.false.), &
+            & new_unittest("features-demo-serialization", test_features_demo_serialization) &
             & ]
 
     end subroutine collect_manifest
@@ -535,10 +538,7 @@ contains
 
     end subroutine test_dependencies_typeerror
 
-    !> FROZEN TEST: Include a table of profiles in toml, check whether they are parsed correctly and stored in package
-    !> NOTE: This test is frozen during transition to feature-based architecture.
-    !>       Profiles are now empty arrays, functionality moved to features.
-    !>       Will be replaced with feature-based tests in future.
+    !> Test profile parsing and storage in package
     subroutine test_profiles(error)
 
         !> Error handling
@@ -547,24 +547,18 @@ contains
         type(package_config_t) :: package
         character(len=*), parameter :: manifest = 'fpm-profiles.toml'
         integer :: unit
-        character(:), allocatable :: profile_name
-        logical :: profile_found
-        type(platform_config_t) :: target
-        type(profile_config_t) :: chosen_profile
 
         open(file=manifest, newunit=unit)
         write(unit, '(a)') &
             & 'name = "example"', &
-            & '[profiles.release.gfortran.linux]', &
-            & 'flags = "1" #release.gfortran.linux', &
-            & '[profiles.release.gfortran]', &
-            & 'flags = "2" #release.gfortran.all', &
-            & '[profiles.gfortran.linux]', &
-            & 'flags = "3" #all.gfortran.linux', &
-            & '[profiles.gfortran]', &
-            & 'flags = "4" #all.gfortran.all', &
-            & '[profiles.release.ifort]', &
-            & 'flags = "5" #release.ifort.all'
+            & '[profiles]', &
+            & 'development = ["debug", "testing"]', &
+            & 'release = ["optimized"]', &
+            & 'full-test = ["debug", "testing", "benchmarks"]', &
+            & '[features]', &
+            & 'testing.flags = " -g"', &            
+            & 'optimized.flags = " -O2"', &            
+            & 'benchmarks.flags = " -O3"'
         close(unit)
 
         call get_package_data(package, manifest, error)
@@ -574,68 +568,39 @@ contains
 
         if (allocated(error)) return
 
-!        profile_name = 'release'
-!        compiler = 'gfortran'
-!        
-!        call find_profile(package%profiles, profile_name, compiler, 1, profile_found, chosen_profile)
-!        if (.not.(chosen_profile%flags().eq.'1 3')) then
-!            call test_failed(error, "Failed to append flags from profiles named 'all'")
-!            return
-!        end if
-!
-!        call chosen_profile%test_serialization('profile serialization: '//profile_name//' '//compiler,error)
-!        if (allocated(error)) return
-!
-!        profile_name = 'release'
-!        compiler = 'gfortran'
-!        call find_profile(package%profiles, profile_name, compiler, 3, profile_found, chosen_profile)
-!        if (.not.(chosen_profile%flags().eq.'2 4')) then
-!            call test_failed(error, "Failed to choose profile with OS 'all'")
-!            return
-!        end if
-!
-!        call chosen_profile%test_serialization('profile serialization: '//profile_name//' '//compiler,error)
-!        if (allocated(error)) return
-!
-!        profile_name = 'publish'
-!        compiler = 'gfortran'
-!        call find_profile(package%profiles, profile_name, compiler, 1, profile_found, chosen_profile)
-!        if (profile_found) then
-!            call test_failed(error, "Profile named "//profile_name//" should not exist")
-!            return
-!        end if
-!
-!        call chosen_profile%test_serialization('profile serialization: '//profile_name//' '//compiler,error)
-!        if (allocated(error)) return
-!
-!        profile_name = 'debug'
-!        compiler = 'ifort'
-!        call find_profile(package%profiles, profile_name, compiler, 3, profile_found, chosen_profile)
-!        if (.not.(chosen_profile%flags().eq.&
-!            ' /warn:all /check:all /error-limit:1 /Od /Z7 /assume:byterecl /traceback')) then
-!            call test_failed(error, "Failed to load built-in profile "//profile_name)
-!            return
-!        end if
-!
-!        call chosen_profile%test_serialization('profile serialization: '//profile_name//' '//compiler,error)
-!        if (allocated(error)) return
-!
-!        profile_name = 'release'
-!        compiler = 'ifort'
-!        call find_profile(package%profiles, profile_name, compiler, 1, profile_found, chosen_profile)
-!        if (.not.(chosen_profile%flags().eq.'5')) then
-!            call test_failed(error, "Failed to overwrite built-in profile")
-!            return
-!        end if
+        ! Check that profiles were parsed correctly
+        if (.not. allocated(package%profiles)) then
+            call test_failed(error, "No profiles found in package")
+            return
+        end if
 
-!        call chosen_profile%test_serialization('profile serialization: '//profile_name//' '//compiler,error)
-!        if (allocated(error)) return
+        ! debug, release, development, full-test
+        if (size(package%profiles) /= 4) then
+            call test_failed(error, "Unexpected number of profiles, should be 4")
+            return
+        end if
+
+        ! Check development profile
+        if (package%profiles(1)%name /= "development") then
+            call test_failed(error, "Expected profile name 'development', got '" // package%profiles(1)%name // "'")
+            return
+        end if
+
+        if (size(package%profiles(1)%features) /= 2) then
+            call test_failed(error, "Unexpected number of features, should be 2")
+            return
+        end if
+
+        if (package%profiles(1)%features(1)%s /= "debug" .or. &
+            package%profiles(1)%features(2)%s /= "testing") then
+            call test_failed(error, "Incorrect features in development profile")
+            return
+        end if
 
     end subroutine test_profiles
 
-    !> FROZEN TEST: 'flags' is a key-value entry, test should fail as it is defined as a table
-    !> NOTE: This test is frozen during transition to feature-based architecture.
-    subroutine test_profiles_keyvalue_table(error)
+    !> Test invalid profile configuration should fail
+    subroutine test_profiles_invalid(error)
 
         !> Error handling
         type(error_t), allocatable, intent(out) :: error
@@ -647,14 +612,15 @@ contains
         open(file=manifest, newunit=unit)
         write(unit, '(a)') &
             & 'name = "example"', &
-            & '[profiles.linux.flags]'
+            & '[profiles]', &
+            & 'development = "not_an_array"'
         close(unit)
 
         call get_package_data(package, manifest, error)
 
         open(file=manifest, newunit=unit)
         close(unit, status='delete')
-    end subroutine test_profiles_keyvalue_table
+    end subroutine test_profiles_invalid
 
     !> Executables cannot be created from empty tables
     subroutine test_executable_empty(error)
@@ -1596,5 +1562,251 @@ contains
         end if
 
     end subroutine test_macro_parsing_dependency
+
+    !> Ensure dependency "features" array is correctly parsed when present
+    subroutine test_dependency_features_present(error)
+        !> Error handling
+        type(error_t), allocatable, intent(out) :: error
+
+        type(package_config_t) :: package
+        character(:), allocatable :: temp_file
+        integer :: unit, i, idx_dep0, idx_dep1, idx_dep2
+
+        allocate(temp_file, source=get_temp_filename())
+
+        open(file=temp_file, newunit=unit)
+        write(unit, '(a)') &
+            & 'name = "example"', &
+            & 'version = "0.1.0"', &
+            & '[dependencies]', &
+            & '"dep0" = { path = "local/dep0", features = ["featA", "featB"] }', &
+            & '"dep1" = { git = "https://example.com/repo.git", tag = "v1.2.3", features = ["only"] }', &
+            & '"dep2" = { path = "other/dep2" }'
+        close(unit)
+
+        call get_package_data(package, temp_file, error)
+        if (allocated(error)) return
+
+        if (.not.allocated(package%dependency)) then
+            call test_failed(error, 'No dependencies parsed from manifest')
+            return
+        end if
+
+        idx_dep0 = 0; idx_dep1 = 0; idx_dep2 = 0
+        do i = 1, size(package%dependency)
+            select case (package%dependency(i)%name)
+            case ('dep0'); idx_dep0 = i
+            case ('dep1'); idx_dep1 = i
+            case ('dep2'); idx_dep2 = i
+            end select
+        end do
+
+        if (idx_dep0 == 0 .or. idx_dep1 == 0 .or. idx_dep2 == 0) then
+            call test_failed(error, 'Expected dependencies dep0/dep1/dep2 not found')
+            return
+        end if
+
+        ! dep0: features = ["featA","featB"]
+        if (.not.allocated(package%dependency(idx_dep0)%features)) then
+            call test_failed(error, 'dep0 features not allocated')
+            return
+        end if
+        if (size(package%dependency(idx_dep0)%features) /= 2) then
+            call test_failed(error, 'dep0 features size /= 2')
+            return
+        end if
+        if (package%dependency(idx_dep0)%features(1)%s /= 'featA' .or. &
+            & package%dependency(idx_dep0)%features(2)%s /= 'featB') then
+            call test_failed(error, 'dep0 features values mismatch')
+            return
+        end if
+
+        ! dep1: features = ["only"]
+        if (.not.allocated(package%dependency(idx_dep1)%features)) then
+            call test_failed(error, 'dep1 features not allocated')
+            return
+        end if
+        if (size(package%dependency(idx_dep1)%features) /= 1) then
+            call test_failed(error, 'dep1 features size /= 1')
+            return
+        end if
+        if (package%dependency(idx_dep1)%features(1)%s /= 'only') then
+            call test_failed(error, 'dep1 features value mismatch')
+            return
+        end if
+
+        ! dep2: no features key -> should be NOT allocated
+        if (allocated(package%dependency(idx_dep2)%features)) then
+            call test_failed(error, 'dep2 features should be unallocated when key is absent')
+            return
+        end if
+    end subroutine test_dependency_features_present
+
+
+    !> Ensure a dependency without "features" key is accepted (no allocation)
+    subroutine test_dependency_features_absent(error)
+        !> Error handling
+        type(error_t), allocatable, intent(out) :: error
+
+        type(package_config_t) :: package
+        character(:), allocatable :: temp_file
+        integer :: unit, i
+
+        allocate(temp_file, source=get_temp_filename())
+
+        open(file=temp_file, newunit=unit)
+        write(unit, '(a)') &
+            & 'name = "example"', &
+            & '[dependencies]', &
+            & '"a" = { path = "a" }', &
+            & '"b" = { git = "https://example.org/b.git", branch = "main" }'
+        close(unit)
+
+        call get_package_data(package, temp_file, error)
+        if (allocated(error)) return
+
+        if (.not.allocated(package%dependency)) then
+            call test_failed(error, 'No dependencies parsed from manifest')
+            return
+        end if
+
+        do i = 1, size(package%dependency)
+            if (allocated(package%dependency(i)%features)) then
+                call test_failed(error, 'features should be unallocated when not specified')
+                return
+            end if
+        end do
+    end subroutine test_dependency_features_absent
+
+
+    !> Accept an explicit empty "features = []" list
+    subroutine test_dependency_features_empty(error)
+        !> Error handling
+        type(error_t), allocatable, intent(out) :: error
+
+        type(package_config_t) :: package
+        character(:), allocatable :: temp_file
+        integer :: unit, i, idx
+
+        allocate(temp_file, source=get_temp_filename())
+
+        open(file=temp_file, newunit=unit)
+        write(unit, '(a)') &
+            & 'name = "example"', &
+            & '[dependencies]', &
+            & '"empty" = { path = "local/empty", features = [] }'
+        close(unit)
+
+        call get_package_data(package, temp_file, error)
+        if (allocated(error)) return
+
+        idx = -1
+        if (.not.allocated(package%dependency)) then
+            call test_failed(error, 'No dependencies parsed from manifest')
+            return
+        end if
+
+        do i = 1, size(package%dependency)
+            if (package%dependency(i)%name == 'empty') then
+                idx = i
+                exit
+            end if
+        end do
+
+        if (idx < 1) then
+            call test_failed(error, 'Dependency "empty" not found')
+            return
+        end if
+
+        if (.not.allocated(package%dependency(idx)%features)) then
+            call test_failed(error, 'features should be allocated (size=0) for empty list')
+            return
+        end if
+        if (size(package%dependency(idx)%features) /= 0) then
+            call test_failed(error, 'features size should be zero for empty list')
+            return
+        end if
+    end subroutine test_dependency_features_empty
+
+    !> Test features demo manifest serialization (from example_packages/features_demo/fpm.toml)
+    subroutine test_features_demo_serialization(error)
+        !> Error handling
+        type(error_t), allocatable, intent(out) :: error
+
+        type(package_config_t) :: package
+        character(:), allocatable :: temp_file
+        integer :: unit
+
+        allocate(temp_file, source=get_temp_filename())
+
+        open(file=temp_file, newunit=unit)
+        write(unit, '(a)') &
+            & 'name = "features_demo"', &
+            & 'version = "0.1.0"', &
+            & 'license = "MIT"', &
+            & 'description = "Demo package for FPM features functionality"', &
+            & '', &
+            & '[[executable]]', &
+            & 'name = "features_demo"', &
+            & 'source-dir = "app"', &
+            & 'main = "main.f90"', &
+            & '', &
+            & '[features]', &
+            & '# Base debug feature', &
+            & 'debug.flags = "-g"', &
+            & 'debug.preprocess.cpp.macros = "DEBUG"', &
+            & '', &
+            & '# Release feature', &
+            & 'release.flags = "-O3"', &
+            & 'release.preprocess.cpp.macros = "RELEASE"', &
+            & '', &
+            & '# Compiler-specific features', &
+            & 'debug.gfortran.flags = "-Wall -fcheck=bounds"', &
+            & 'release.gfortran.flags = "-mtune=generic -funroll-loops"', &
+            & '', &
+            & '# Platform-specific features', &
+            & 'linux.preprocess.cpp.macros = "LINUX_BUILD"', &
+            & '', &
+            & '# Parallel features', &
+            & 'mpi.preprocess.cpp.macros = "USE_MPI"', &
+            & 'mpi.dependencies.mpi = "*"', &
+            & 'openmp.preprocess.cpp.macros = "USE_OPENMP"', &
+            & 'openmp.dependencies.openmp = "*"', &
+            & '', &
+            & '[profiles]', &
+            & 'development = ["debug"]', &
+            & 'production = ["release", "openmp"]'
+        close(unit)
+
+        call get_package_data(package, temp_file, error)
+        if (allocated(error)) return
+
+        ! Verify basic package structure
+        if (package%name /= "features_demo") then
+            call test_failed(error, "Package name should be 'features_demo'")
+            return
+        end if
+
+        if (.not. allocated(package%features)) then
+            call test_failed(error, "Features should be allocated")
+            return
+        end if
+
+        if (.not. allocated(package%profiles)) then
+            call test_failed(error, "Profiles should be allocated") 
+            return
+        end if
+
+        if (.not. allocated(package%executable)) then
+            call test_failed(error, "Executables should be allocated")
+            return
+        end if
+
+        ! Test package serialization roundtrip
+        call package%test_serialization('test_features_demo_serialization', error)
+        if (allocated(error)) return
+
+    end subroutine test_features_demo_serialization
+
 
 end module test_manifest

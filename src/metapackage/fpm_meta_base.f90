@@ -69,6 +69,12 @@ module fpm_meta_base
 
     end type metapackage_t
 
+    !> Add dependencies to array (gcc-15 bug workaround)
+    interface add_dependency_config
+        module procedure add_dependency_config_one
+        module procedure add_dependency_config_many
+    end interface add_dependency_config
+
     contains
 
     elemental subroutine destroy(this)
@@ -162,7 +168,7 @@ module fpm_meta_base
         ! as they may change if built upstream
         if (self%has_dependencies) then
             if (allocated(package%dev_dependency)) then
-               package%dev_dependency = [package%dev_dependency,self%dependency]
+               call add_dependency_config(package%dev_dependency,self%dependency)
             else
                package%dev_dependency = self%dependency
             end if
@@ -234,5 +240,56 @@ module fpm_meta_base
         end function dn
 
     end subroutine resolve_package_config
+
+    !> Add one dependency to array with a loop (gcc-15 bug on array initializer)
+    pure subroutine add_dependency_config_one(list,new)
+        type(dependency_config_t), allocatable, intent(inout) :: list(:)
+        type(dependency_config_t), intent(in) :: new
+
+        integer :: i,n
+        type(dependency_config_t), allocatable :: tmp(:)
+
+        if (allocated(list)) then
+           n = size(list)
+        else
+           n = 0
+        end if
+
+        allocate(tmp(n+1))
+        do i=1,n
+           tmp(i) = list(i)
+        end do
+        tmp(n+1) = new
+        call move_alloc(from=tmp,to=list)
+
+    end subroutine add_dependency_config_one
+
+    !> Add multiple dependencies to array with a loop (gcc-15 bug on array initializer)
+    pure subroutine add_dependency_config_many(list,new)
+        type(dependency_config_t), allocatable, intent(inout) :: list(:)
+        type(dependency_config_t), intent(in) :: new(:)
+
+        integer :: i,n,add
+        type(dependency_config_t), allocatable :: tmp(:)
+
+        if (allocated(list)) then
+           n = size(list)
+        else
+           n = 0
+        end if
+
+        add = size(new)
+        if (add == 0) return
+
+        allocate(tmp(n+add))
+        do i=1,n
+           tmp(i) = list(i)
+        end do
+        do i=1,add
+           tmp(n+i) = new(i)
+        end do
+        call move_alloc(from=tmp,to=list)
+
+    end subroutine add_dependency_config_many
 
 end module fpm_meta_base

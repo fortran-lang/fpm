@@ -8,7 +8,7 @@ use fpm_error, only: error_t
 use fpm_model, only: srcfile_t, FPM_UNIT_PROGRAM
 use fpm_filesystem, only: basename, canon_path, dirname, join_path, list_files, is_hidden_file
 use fpm_environment, only: get_os_type,OS_WINDOWS
-use fpm_strings, only: lower, str_ends_with, string_t, operator(.in.)
+use fpm_strings, only: lower, str_ends_with, string_t, operator(.in.), add_strings
 use fpm_source_parsing, only: parse_f_source, parse_c_source
 use fpm_manifest_executable, only: executable_config_t
 use fpm_manifest_preprocess, only: preprocess_config_t
@@ -16,11 +16,17 @@ implicit none
 
 private
 public :: add_sources_from_dir, add_executable_sources
-public :: get_exe_name_with_suffix
+public :: get_exe_name_with_suffix, add_srcfile
 
 character(4), parameter :: fortran_suffixes(2) = [".f90", &
                                                   ".f  "]
 character(4), parameter :: c_suffixes(4) = [".c  ", ".h  ", ".cpp", ".hpp"]
+
+!> Add one or multiple source files to a source file array (gcc-15 bug workaround)
+interface add_srcfile
+    module procedure add_srcfile_one
+    module procedure add_srcfile_many
+end interface add_srcfile
 
 contains
 
@@ -159,7 +165,7 @@ subroutine add_sources_from_dir(sources,directory,scope,with_executables,with_f_
     if (.not.allocated(sources)) then
         sources = pack(dir_sources,.not.exclude_source)
     else
-        sources = [sources, pack(dir_sources,.not.exclude_source)]
+        call add_srcfile(sources, pack(dir_sources,.not.exclude_source))
     end if
 
 end subroutine add_sources_from_dir
@@ -239,7 +245,7 @@ subroutine add_executable_sources(sources,executables,scope,auto_discover,with_f
         if (.not.allocated(sources)) then
             sources = [exe_source]
         else
-            sources = [sources, exe_source]
+            call add_srcfile(sources, exe_source)
         end if
 
     end do exe_loop
@@ -274,7 +280,7 @@ subroutine get_executable_source_dirs(exe_dirs,executables)
     if (.not.allocated(exe_dirs)) then
         exe_dirs = dirs_temp(1:n)
     else
-        exe_dirs = [exe_dirs,dirs_temp(1:n)]
+        call add_strings(exe_dirs,dirs_temp(1:n))
     end if
 
 end subroutine get_executable_source_dirs
@@ -295,5 +301,56 @@ function get_exe_name_with_suffix(source) result(suffixed)
     endif
 
 end function get_exe_name_with_suffix
+
+!> Add one source file to a source file array with a loop (gcc-15 bug on array initializer)
+pure subroutine add_srcfile_one(list,new)
+    type(srcfile_t), allocatable, intent(inout) :: list(:)
+    type(srcfile_t), intent(in) :: new
+
+    integer :: i,n
+    type(srcfile_t), allocatable :: tmp(:)
+
+    if (allocated(list)) then
+       n = size(list)
+    else
+       n = 0
+    end if
+
+    allocate(tmp(n+1))
+    do i=1,n
+       tmp(i) = list(i)
+    end do
+    tmp(n+1) = new
+    call move_alloc(from=tmp,to=list)
+
+end subroutine add_srcfile_one
+
+!> Add multiple source files to a source file array with a loop (gcc-15 bug on array initializer)
+pure subroutine add_srcfile_many(list,new)
+    type(srcfile_t), allocatable, intent(inout) :: list(:)
+    type(srcfile_t), intent(in) :: new(:)
+
+    integer :: i,n,add
+    type(srcfile_t), allocatable :: tmp(:)
+
+    if (allocated(list)) then
+       n = size(list)
+    else
+       n = 0
+    end if
+
+    add = size(new)
+    if (add == 0) return
+
+    allocate(tmp(n+add))
+    do i=1,n
+       tmp(i) = list(i)
+    end do
+    do i=1,add
+       tmp(n+i) = new(i)
+    end do
+    call move_alloc(from=tmp,to=list)
+
+end subroutine add_srcfile_many
 
 end module fpm_sources

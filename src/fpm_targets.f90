@@ -47,7 +47,7 @@ public FPM_TARGET_UNKNOWN,  FPM_TARGET_EXECUTABLE, &
        FPM_TARGET_SHARED,   FPM_TARGET_NAME
 public build_target_t, build_target_ptr
 public targets_from_sources, resolve_module_dependencies
-public add_target, new_target, add_dependency, get_library_dirs
+public add_target, new_target, add_dependency, get_library_dirs, add_target_ptr
 public filter_library_targets, filter_executable_targets, filter_modules
 
 
@@ -155,6 +155,12 @@ interface add_target
     module procedure add_old_target
     module procedure add_old_targets
 end interface
+
+!> Add one or multiple build target pointers to array (gcc-15 bug workaround)
+interface add_target_ptr
+    module procedure add_target_ptr_one
+    module procedure add_target_ptr_many
+end interface add_target_ptr
 
 contains
 
@@ -699,7 +705,7 @@ subroutine add_old_targets(targets, add_targets)
         endassociate
     end do
     
-    targets = [targets, add_targets ]
+    call add_target_ptr(targets, add_targets)
 
 end subroutine add_old_targets
 
@@ -723,7 +729,7 @@ subroutine add_dependency(target, dependency)
     end do
     if (dependency%output_name==target%output_name) return
     
-    target%dependencies = [target%dependencies, build_target_ptr(dependency)]
+    call add_target_ptr(target%dependencies, build_target_ptr(dependency))
     
 end subroutine add_dependency
 
@@ -1070,7 +1076,7 @@ end subroutine prune_build_targets
 subroutine resolve_target_linking(targets, model, library, error)
     type(build_target_ptr), intent(inout), target :: targets(:)
     type(fpm_model_t), intent(in) :: model
-    type(library_config_t), intent(in), optional :: library    
+    type(library_config_t), intent(in), optional :: library
     type(error_t), allocatable, intent(out) :: error
 
     integer :: i,j
@@ -1079,7 +1085,9 @@ subroutine resolve_target_linking(targets, model, library, error)
     character(:), allocatable :: global_link_flags, local_link_flags
     character(:), allocatable :: global_include_flags, shared_lib_paths
 
+
     if (size(targets) == 0) return
+
 
     global_link_flags = ""
     if (allocated(model%link_libraries)) then
@@ -1110,13 +1118,14 @@ subroutine resolve_target_linking(targets, model, library, error)
 
         associate(target => targets(i)%ptr)
 
+
             ! If the main program is a C/C++ one, some compilers require additional linking flags, see
             ! https://stackoverflow.com/questions/36221612/p3dfft-compilation-ifort-compiler-error-multiple-definiton-of-main
             ! In this case, compile_flags were already allocated
             if (.not.allocated(target%compile_flags)) allocate(character(len=0) :: target%compile_flags)
 
             target%compile_flags = target%compile_flags//' '
-            
+
             select case (target%target_type)
                case (FPM_TARGET_C_OBJECT)
                    target%compile_flags = target%compile_flags//model%c_compile_flags
@@ -1135,7 +1144,8 @@ subroutine resolve_target_linking(targets, model, library, error)
             if (len(global_include_flags) > 0) then
                 target%compile_flags = target%compile_flags//global_include_flags
             end if
-            
+
+
             call target%set_output_dir(get_output_dir(model%build_prefix, target%compile_flags))
             
         end associate
@@ -1247,12 +1257,12 @@ subroutine resolve_target_linking(targets, model, library, error)
                                                                             error=error, &
                                                                             exclude_self=.not.has_self_lib)   
                                                                             
-                        
-                        
                     end if
+                    
+                    ! On macOS, add room for 2 install_name_tool paths
+                    target%link_flags = target%link_flags // model%compiler%get_headerpad_flags()
 
                     ! On macOS, add room for 2 install_name_tool paths (always needed for executables)
-                    target%link_flags = target%link_flags // model%compiler%get_headerpad_flags()
 
                     if (allocated(target%link_libraries)) then
                         if (size(target%link_libraries) > 0) then
@@ -1544,5 +1554,56 @@ subroutine library_targets_to_deps(model, targets, target_ID)
     end do
 
 end subroutine library_targets_to_deps
+
+!> Add one build target pointer to array with a loop (gcc-15 bug on array initializer)
+subroutine add_target_ptr_one(list,new)
+    type(build_target_ptr), allocatable, intent(inout) :: list(:)
+    type(build_target_ptr), intent(in) :: new
+
+    integer :: i,n
+    type(build_target_ptr), allocatable :: tmp(:)
+
+    if (allocated(list)) then
+       n = size(list)
+    else
+       n = 0
+    end if
+
+    allocate(tmp(n+1))
+    do i=1,n
+       tmp(i) = list(i)
+    end do
+    tmp(n+1) = new
+    call move_alloc(from=tmp,to=list)
+
+end subroutine add_target_ptr_one
+
+!> Add multiple build target pointers to array with a loop (gcc-15 bug on array initializer)
+subroutine add_target_ptr_many(list,new)
+    type(build_target_ptr), allocatable, intent(inout) :: list(:)
+    type(build_target_ptr), intent(in) :: new(:)
+
+    integer :: i,n,add
+    type(build_target_ptr), allocatable :: tmp(:)
+
+    if (allocated(list)) then
+       n = size(list)
+    else
+       n = 0
+    end if
+
+    add = size(new)
+    if (add == 0) return
+
+    allocate(tmp(n+add))
+    do i=1,n
+       tmp(i) = list(i)
+    end do
+    do i=1,add
+       tmp(n+i) = new(i)
+    end do
+    call move_alloc(from=tmp,to=list)
+
+end subroutine add_target_ptr_many
 
 end module fpm_targets

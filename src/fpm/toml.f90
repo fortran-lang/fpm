@@ -821,7 +821,10 @@ contains
             end if
 
             ! Check if value can be mapped or else (wrong type) show error message with the error location.
-            ! Right now, it can only be mapped to a string or to a child node, but this can be extended in the future.
+            ! Right now, it can only be mapped to a string or to a list or a child node, but this can be 
+            ! extended in the future.
+            if (has_list(table, keys(ikey)%key)) cycle
+            
             call get_value(table, keys(ikey)%key, value)
             if (.not. allocated(value)) then
 

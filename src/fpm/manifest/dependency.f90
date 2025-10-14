@@ -28,7 +28,7 @@ module fpm_manifest_dependency
         & git_target_revision, git_target_default, git_matches_manifest
     use tomlf, only: toml_table, toml_key, toml_stat
     use fpm_toml, only: get_value, check_keys, serializable_t, add_table, &
-        & set_value, set_string
+        & set_value, set_string, get_list, set_list
     use fpm_filesystem, only: windows_path, join_path
     use fpm_environment, only: get_os_type, OS_WINDOWS
     use fpm_manifest_metapackages, only: metapackage_config_t, is_meta_package, new_meta_config, &
@@ -62,6 +62,9 @@ module fpm_manifest_dependency
 
         !> Requested macros for the dependency
         type(preprocess_config_t), allocatable :: preprocess(:)
+        
+        !> Requested features for the dependency
+        type(string_t), allocatable :: features(:)
 
         !> Git descriptor
         type(git_target_t), allocatable :: git
@@ -128,6 +131,10 @@ contains
             call new_preprocessors(self%preprocess, child, error)
             if (allocated(error)) return
         endif
+        
+        !> Get optional features list
+        call get_list(table, "features", self%features, error)
+        if (allocated(error)) return
 
         call get_value(table, "path", uri)
         if (allocated(uri)) then
@@ -176,6 +183,7 @@ contains
         type(error_t), allocatable, intent(out) :: error
 
         character(len=:), allocatable :: name
+        type(string_t), allocatable :: string_list(:)
         type(toml_key), allocatable :: list(:)
         type(toml_table), pointer :: child
 
@@ -188,7 +196,8 @@ contains
               "tag", &
               "branch", &
               "rev", &
-              "preprocess" &
+              "preprocess", &
+              "features" &
             & ]
 
         call table%get_key(name)
@@ -243,7 +252,7 @@ contains
             end if
 
         end if
-
+        
     end subroutine check
 
     !> Construct new dependency array from a TOML data structure
@@ -341,7 +350,7 @@ contains
         !> Verbosity of the printout
         integer, intent(in), optional :: verbosity
 
-        integer :: pr
+        integer :: pr, ilink
         character(len=*), parameter :: fmt = '("#", 1x, a, t30, a)'
 
         if (present(verbosity)) then
@@ -364,6 +373,13 @@ contains
             write (unit, fmt) "- kind", "local"
             write (unit, fmt) "- path", self%path
         end if
+
+       if (allocated(self%features)) then
+          write(unit, fmt) " - features"
+          do ilink = 1, size(self%features)
+             write(unit, fmt) "   - " // self%features(ilink)%s
+          end do
+       end if
 
     end subroutine info
 
@@ -401,6 +417,7 @@ contains
         if (allocated(self%namespace)) deallocate(self%namespace)
         if (allocated(self%requested_version)) deallocate(self%requested_version)
         if (allocated(self%git)) deallocate(self%git)
+        if (allocated(self%features)) deallocate(self%features)
 
     end subroutine dependency_destroy
 
@@ -430,6 +447,10 @@ contains
               if (allocated(this%requested_version)) then
                 if (.not.(this%requested_version==other%requested_version)) return
               endif
+              if (allocated(this%features).neqv.allocated(other%features)) return
+              if (allocated(this%features)) then
+                if (.not.(this%features==other%features)) return
+              endif              
 
               if ((allocated(this%git).neqv.allocated(other%git))) return
               if (allocated(this%git)) then
@@ -471,6 +492,8 @@ contains
              call set_string(table, "requested_version", self%requested_version%s(), error, 'dependency_config_t')
              if (allocated(error)) return
         endif
+       call set_list(table, "features", self%features, error)
+       if (allocated(error)) return        
 
         if (allocated(self%git)) then
             call add_table(table, "git", ptr, error)
@@ -513,6 +536,8 @@ contains
                 return
             endif
         end if
+        call get_list(table, "features", self%features, error)
+        if (allocated(error)) return        
 
         call table%get_keys(list)
         add_git: do ii = 1, size(list)
