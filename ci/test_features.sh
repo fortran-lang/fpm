@@ -207,11 +207,8 @@ grep -q "✓ FAST: fast optimization flags found" output.txt || { echo "ERROR: F
 grep -q "✓ All compiler flag checks PASSED" output.txt || { echo "ERROR: Expected all checks to pass"; exit 1; }
 # Check compiler-specific flags (will depend on detected compiler)
 if grep -q "Detected compiler: gfortran" output.txt; then
-    # Check for either -march=native or -mcpu (Apple Silicon uses -mcpu)
-    if ! (grep -q "✓ Release: -march=native found" output.txt || grep -q "✓ Release: -mcpu found" output.txt); then
-        echo "ERROR: gfortran release architecture flag (-march=native or -mcpu) not found"
-        exit 1
-    fi
+    # Check for -mtune flag (portable tuning flag)
+    grep -q "✓ Release: -mtune found" output.txt || { echo "ERROR: gfortran release flag -mtune not found"; exit 1; }
     grep -q "✓ Fast: -ffast-math found" output.txt || { echo "ERROR: gfortran fast flag -ffast-math not found"; exit 1; }
 fi
 echo "✓ Production profile works"

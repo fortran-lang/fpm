@@ -365,7 +365,7 @@ contains
             & 'debug.linux.flags = "-DLINUX"', &
             & 'debug.windows.ifort.flags = "/DEBUG:FULL"', &
             & 'release.flags = "-O3"', &
-            & 'release.gfortran.flags = "-march=native"'
+            & 'release.gfortran.flags = "-mtune=generic -funroll-loops"'
         close(unit)
                 
         call get_package_data(package, temp_file, error)
@@ -1501,7 +1501,7 @@ contains
         write(unit, '(a)') '[features]'
         write(unit, '(a)') 'debug.gfortran.flags = "-g -Wall -fcheck=bounds"'
         write(unit, '(a)') 'debug.flags = "-g"'
-        write(unit, '(a)') 'release.gfortran.flags = "-O3 -march=native"'
+        write(unit, '(a)') 'release.gfortran.flags = "-O3 -mtune=generic -funroll-loops"'
         write(unit, '(a)') 'release.flags = "-O2"'
         write(unit, '(a)') ''
         write(unit, '(a)') '[profiles]'
@@ -1575,8 +1575,13 @@ contains
             return
         end if
 
-        if (index(model%fortran_compile_flags, "-march=native") == 0) then
-            call test_failed(error, "Expected release gfortran flags to contain '-march=native'")
+        if (index(model%fortran_compile_flags, "-mtune") == 0) then
+            call test_failed(error, "Expected release gfortran flags to contain '-mtune'")
+            return
+        end if
+
+        if (index(model%fortran_compile_flags, "-funroll-loops") == 0) then
+            call test_failed(error, "Expected release gfortran flags to contain '-funroll-loops'")
             return
         end if
 

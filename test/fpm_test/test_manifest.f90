@@ -1762,7 +1762,7 @@ contains
             & '', &
             & '# Compiler-specific features', &
             & 'debug.gfortran.flags = "-Wall -fcheck=bounds"', &
-            & 'release.gfortran.flags = "-march=native"', &
+            & 'release.gfortran.flags = "-mtune=generic -funroll-loops"', &
             & '', &
             & '# Platform-specific features', &
             & 'linux.preprocess.cpp.macros = "LINUX_BUILD"', &

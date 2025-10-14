@@ -126,17 +126,8 @@ contains
     end if
 
     if (release_on) then
-      ! Check for either -march or -mcpu (Apple Silicon uses -mcpu; -match=native may be re-resolved by gcc)
-      if (.not. (index(options, '-march') > 0 .or. index(options, '-mcpu') > 0)) then
-        print '(a)', '  ✗ Release: neither -march=native nor -mcpu found'
-        failed_count = failed_count + 1
-      else
-        if (index(options, '-march=native') > 0) then
-          print '(a)', '  ✓ Release: -march found'
-        else
-          print '(a)', '  ✓ Release: -mcpu found'
-        end if
-      end if
+      ! Check for -mtune flag (portable tuning flag that works on all platforms)
+      if (.not. check_flag(options, '-mtune', 'Release', '-mtune')) failed_count = failed_count + 1
       if (.not. check_flag(options, '-funroll-loops', 'Release', '-funroll-loops')) failed_count = failed_count + 1
     end if
 

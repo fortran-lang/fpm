@@ -30,7 +30,7 @@ linux_specific.preprocess.cpp.macros = ["WITH_DEMO","LINUX_FEATURES"]
 
 # Feature combining compiler and dependency features
 gfortran_optimized.gfortran.dependencies.features_demo = { path = "../features_demo", features = ["release", "gfortran"] }
-gfortran_optimized.gfortran.flags = "-O3 -march=native"
+gfortran_optimized.gfortran.flags = "-O3 -mtune=generic -funroll-loops"
 gfortran_optimized.preprocess.cpp.macros = ["WITH_DEMO"]
 
 
