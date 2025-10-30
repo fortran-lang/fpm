@@ -51,6 +51,9 @@ contains
                            test_invalid_submodule, should_fail=.true.), &
             & new_unittest("use-statement",test_use_statement), &
             & new_unittest("conditional-compilation", test_conditional_compilation), &
+            & new_unittest("conditional-compilation-elif", test_conditional_compilation_elif), &
+            & new_unittest("conditional-compilation-elif-else", test_conditional_compilation_elif_else), &
+            & new_unittest("conditional-compilation_ifdef_else", test_conditional_compilation_ifdef_else), &
             & new_unittest("conditional-if-defined", test_conditional_if_defined) &
             ]
 
@@ -1310,6 +1313,153 @@ contains
             'module test_mod', &
             '#ifdef SOME_FEATURE', &
             '  use nonexistent_module', &
+            '#endif', &
+            '  implicit none', &
+            'contains', &
+            '  subroutine test_sub()', &
+            '    print *, "test"', &
+            '  end subroutine', &
+            'end module test_mod'
+        close(unit)
+
+        ! Parse without preprocessing - should detect the use statement
+        f_source = parse_f_source(temp_file, error)
+        if (allocated(error)) return
+
+        if (size(f_source%modules_used) /= 1) then
+            call test_failed(error, 'Expected 1 module dependency without preprocessing, got different count')
+            return
+        end if
+
+        if (f_source%modules_used(1)%s /= 'nonexistent_module') then
+            call test_failed(error, 'Expected nonexistent_module, got: '//f_source%modules_used(1)%s)
+            return
+        end if
+
+        ! Test 2: With preprocessing enabled, should skip dependencies from #ifdef blocks
+        call cpp_config%new([string_t::])
+        cpp_config%name = "cpp"
+
+        f_source = parse_f_source(temp_file, error, preprocess=cpp_config)
+        if (allocated(error)) return
+
+        if (size(f_source%modules_used) /= 0) then
+            call test_failed(error, 'Expected 0 module dependencies with preprocessing, got some dependencies')
+            return
+        end if
+
+        if (f_source%unit_type /= FPM_UNIT_MODULE) then
+            call test_failed(error, 'Expected module unit type')
+            return
+        end if
+
+        if (size(f_source%modules_provided) /= 1) then
+            call test_failed(error, 'Expected 1 provided module')
+            return
+        end if
+
+        if (f_source%modules_provided(1)%s /= 'test_mod') then
+            call test_failed(error, 'Expected test_mod, got: '//f_source%modules_provided(1)%s)
+            return
+        end if
+
+    end subroutine test_conditional_compilation
+    !> Test conditional compilation parsing with CPP preprocessing
+    subroutine test_conditional_compilation_elif(error)
+
+        !> Error handling
+        type(error_t), allocatable, intent(out) :: error
+
+        type(srcfile_t) :: f_source
+        character(:), allocatable :: temp_file
+        integer :: unit
+        type(preprocess_config_t) :: cpp_config
+
+        ! Test 1: Without preprocessing, should include dependencies from #ifdef blocks
+        temp_file = get_temp_filename()
+
+        open(file=temp_file, newunit=unit)
+        write(unit, '(a)') &
+            'module test_mod', &
+            '#ifdef SOME_FEATURE', &
+            '  use nonexistent_module', &
+            '#elif defined(ANOTHER_FEATURE)', &
+            ' use another_nonexistent_module', &
+            '#endif', &
+            '  implicit none', &
+            'contains', &
+            '  subroutine test_sub()', &
+            '    print *, "test"', &
+            '  end subroutine', &
+            'end module test_mod'
+        close(unit)
+
+        ! Parse without preprocessing - should detect the use statement
+        f_source = parse_f_source(temp_file, error)
+        if (allocated(error)) return
+
+        if (size(f_source%modules_used) /= 2) then
+            call test_failed(error, 'Expected 2 module dependency without preprocessing, got different count')
+            return
+        end if
+
+        if (f_source%modules_used(1)%s /= 'nonexistent_module') then
+            call test_failed(error, 'Expected nonexistent_module, got: '//f_source%modules_used(1)%s)
+            return
+        end if
+
+        if (f_source%modules_used(2)%s /= 'another_nonexistent_module') then
+            call test_failed(error, 'Expected another_nonexistent_module, got: '//f_source%modules_used(2)%s)
+            return
+        end if
+
+        ! Test 2: With preprocessing enabled, should skip dependencies from #ifdef blocks
+        call cpp_config%new([string_t::])
+        cpp_config%name = "cpp"
+
+        f_source = parse_f_source(temp_file, error, preprocess=cpp_config)
+        if (allocated(error)) return
+
+        if (size(f_source%modules_used) /= 0) then
+            call test_failed(error, 'Expected 0 module dependencies with preprocessing, got some dependencies')
+            return
+        end if
+
+        if (f_source%unit_type /= FPM_UNIT_MODULE) then
+            call test_failed(error, 'Expected module unit type')
+            return
+        end if
+
+        if (size(f_source%modules_provided) /= 1) then
+            call test_failed(error, 'Expected 1 provided module')
+            return
+        end if
+
+        if (f_source%modules_provided(1)%s /= 'test_mod') then
+            call test_failed(error, 'Expected test_mod, got: '//f_source%modules_provided(1)%s)
+            return
+        end if
+
+    end subroutine test_conditional_compilation_elif
+    !> Test conditional compilation parsing with CPP preprocessing
+    subroutine test_conditional_compilation_elif_else(error)
+
+        !> Error handling
+        type(error_t), allocatable, intent(out) :: error
+
+        type(srcfile_t) :: f_source
+        character(:), allocatable :: temp_file
+        integer :: unit
+        type(preprocess_config_t) :: cpp_config
+
+        ! Test 1: Without preprocessing, should include dependencies from #ifdef blocks
+        temp_file = get_temp_filename()
+
+        open(file=temp_file, newunit=unit)
+        write(unit, '(a)') &
+            'module test_mod', &
+            '#ifdef SOME_FEATURE', &
+            '  use nonexistent_module', &
             '#elif defined(ANOTHER_FEATURE)', &
             ' use another_nonexistent_module', &
             '#else',&
@@ -1334,6 +1484,14 @@ contains
 
         if (f_source%modules_used(1)%s /= 'nonexistent_module') then
             call test_failed(error, 'Expected nonexistent_module, got: '//f_source%modules_used(1)%s)
+            return
+        end if
+        if (f_source%modules_used(2)%s /= 'another_nonexistent_module') then
+            call test_failed(error, 'Expected another_nonexistent_module, got: '//f_source%modules_used(2)%s)
+            return
+        end if
+        if (f_source%modules_used(3)%s /= 'a_third_module') then
+            call test_failed(error, 'Expected a_third_module, got: '//f_source%modules_used(3)%s)
             return
         end if
 
@@ -1364,7 +1522,84 @@ contains
             return
         end if
 
-    end subroutine test_conditional_compilation
+    end subroutine test_conditional_compilation_elif_else
+
+   subroutine test_conditional_compilation_ifdef_else(error)
+
+        !> Error handling
+        type(error_t), allocatable, intent(out) :: error
+
+        type(srcfile_t) :: f_source
+        character(:), allocatable :: temp_file
+        integer :: unit
+        type(preprocess_config_t) :: cpp_config
+
+        ! Test 1: Without preprocessing, should include dependencies from #ifdef blocks
+        temp_file = get_temp_filename()
+
+        open(file=temp_file, newunit=unit)
+        write(unit, '(a)') &
+            'module test_mod', &
+            '#ifdef SOME_FEATURE', &
+            '  use nonexistent_module', &
+            '#else',&
+            ' use a_second_module',&
+            '#endif', &
+            '  implicit none', &
+            'contains', &
+            '  subroutine test_sub()', &
+            '    print *, "test"', &
+            '  end subroutine', &
+            'end module test_mod'
+        close(unit)
+
+        ! Parse without preprocessing - should detect the use statement
+        f_source = parse_f_source(temp_file, error)
+        if (allocated(error)) return
+
+        if (size(f_source%modules_used) /= 2) then
+            call test_failed(error, 'Expected 2 module dependency without preprocessing, got different count')
+            return
+        end if
+
+        if (f_source%modules_used(1)%s /= 'nonexistent_module') then
+            call test_failed(error, 'Expected nonexistent_module, got: '//f_source%modules_used(1)%s)
+            return
+        end if
+
+        if (f_source%modules_used(2)%s /= 'a_second_module') then
+            call test_failed(error, 'Expected a_second_module, got: '//f_source%modules_used(2)%s)
+            return
+        end if
+
+        ! Test 2: With preprocessing enabled, should skip dependencies from #ifdef blocks
+        call cpp_config%new([string_t::])
+        cpp_config%name = "cpp"
+
+        f_source = parse_f_source(temp_file, error, preprocess=cpp_config)
+        if (allocated(error)) return
+
+        if (size(f_source%modules_used) /= 1) then
+            call test_failed(error, 'Expected 1 module dependencies with preprocessing, got some dependencies')
+            return
+        end if
+
+        if (f_source%unit_type /= FPM_UNIT_MODULE) then
+            call test_failed(error, 'Expected module unit type')
+            return
+        end if
+
+        if (size(f_source%modules_provided) /= 1) then
+            call test_failed(error, 'Expected 1 provided module')
+            return
+        end if
+
+        if (f_source%modules_provided(1)%s /= 'test_mod') then
+            call test_failed(error, 'Expected test_mod, got: '//f_source%modules_provided(1)%s)
+            return
+        end if
+
+    end subroutine test_conditional_compilation_ifdef_else
 
     !> Test conditional compilation parsing with #if defined() syntax
     subroutine test_conditional_if_defined(error)
