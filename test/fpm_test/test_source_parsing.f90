@@ -1310,6 +1310,10 @@ contains
             'module test_mod', &
             '#ifdef SOME_FEATURE', &
             '  use nonexistent_module', &
+            '#elif defined(ANOTHER_FEATURE)', &
+            ' use another_nonexistent_module', &
+            '#else',&
+            ' use a_third_module',&
             '#endif', &
             '  implicit none', &
             'contains', &
@@ -1323,8 +1327,8 @@ contains
         f_source = parse_f_source(temp_file, error)
         if (allocated(error)) return
 
-        if (size(f_source%modules_used) /= 1) then
-            call test_failed(error, 'Expected 1 module dependency without preprocessing, got different count')
+        if (size(f_source%modules_used) /= 3) then
+            call test_failed(error, 'Expected 3 module dependency without preprocessing, got different count')
             return
         end if
 
@@ -1340,8 +1344,8 @@ contains
         f_source = parse_f_source(temp_file, error, preprocess=cpp_config)
         if (allocated(error)) return
 
-        if (size(f_source%modules_used) /= 0) then
-            call test_failed(error, 'Expected 0 module dependencies with preprocessing, got some dependencies')
+        if (size(f_source%modules_used) /= 1) then
+            call test_failed(error, 'Expected 1 module dependencies with preprocessing, got some dependencies')
             return
         end if
 
