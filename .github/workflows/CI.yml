@@ -279,7 +279,7 @@ jobs:
 
     - name: Download Artifacts
       id: download_windows_artifacts
-      uses: actions/download-artifact@v5
+      uses: actions/download-artifact@v6
       with:
         path: ${{ github.workspace }}
         pattern: fpm-*-windows-*-gcc-${{ matrix.gcc_v }}.exe
@@ -396,7 +396,7 @@ jobs:
       if: ${{ github.event_name == 'push' }}
 
     - name: Download Artifacts
-      uses: actions/download-artifact@v5
+      uses: actions/download-artifact@v6
       with:
         path: fpm-cd-artifacts
         pattern: 'fpm-*-gcc-12*'
