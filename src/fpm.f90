@@ -89,6 +89,16 @@ subroutine build_model(model, settings, package_config, error)
     package = package_config%export_config(target_platform,settings%features,settings%profile,error)
     if (allocated(error)) return
 
+    ! Print enabled features/profile in verbose mode
+    if (settings%verbose) then
+        if (allocated(settings%features) .and. size(settings%features) > 0) then
+            print *, '+ features: [', string_cat(settings%features,','), ']'
+        end if
+        if (allocated(settings%profile)) then
+            print *, '+ profile: ', settings%profile
+        end if
+    end if
+
     ! Initialize compiler flags using the feature-enabled package configuration
     call new_compiler_flags(model, settings, package)  
     
