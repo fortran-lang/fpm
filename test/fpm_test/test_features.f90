@@ -1157,7 +1157,7 @@ contains
 
         ! Test export_config with these features (mimics line 132-133 in fpm.f90)
         target_platform = platform_config_t(id_gcc, OS_LINUX)
-        exported_config = dependency_config%export_config(target_platform, test_features, error=error)
+        exported_config = dependency_config%export_config(target_platform, test_features, verbose=.false., error=error)
         if (allocated(error)) return
 
         ! Verify that debug feature flags were applied
@@ -1524,7 +1524,7 @@ contains
         settings%profile = "development"  ! This should activate debug features
 
         ! Extract the current package configuration request
-        package = package_config%export_config(target_platform, profile=settings%profile, error=error)
+        package = package_config%export_config(target_platform, profile=settings%profile, verbose=.false., error=error)
         if (allocated(error)) return
 
         ! Set up model with mock compiler
@@ -1558,7 +1558,7 @@ contains
         settings%profile = "production"  ! This should activate release features
 
         ! Extract the new package configuration request
-        package = package_config%export_config(target_platform, profile=settings%profile, error=error)
+        package = package_config%export_config(target_platform, profile=settings%profile, verbose=.false., error=error)
         if (allocated(error)) return
 
         ! Reset flags and test production profile
