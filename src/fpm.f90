@@ -92,8 +92,8 @@ subroutine build_model(model, settings, package_config, error)
 
     ! Print enabled features/profile in verbose mode
     if (settings%verbose) then
-        if (allocated(settings%features) .and. size(settings%features) > 0) then
-            print *, '+ features: [', string_cat(settings%features,','), ']'
+        if (allocated(settings%features)) then  
+            if (size(settings%features)>0) print *, '+ features: [', string_cat(settings%features,','),']'
         end if
         if (allocated(settings%profile)) then
             print *, '+ profile: ', settings%profile
