@@ -191,6 +191,33 @@ subroutine parse_cpp_condition(lower_line, line, preprocess, is_active, macro_na
             macro_name = trim(adjustl(line(start_pos:end_pos)))
             is_active = macro_in_list(macro_name, preprocess%macros)
         end if
+    elseif (index(lower_line, '#elif') == 1) then
+        ! #elif defined(MACRO) or #elif !defined(MACRO)
+        if (index(lower_line, 'defined(') > 0) then
+            start_pos = index(lower_line, 'defined(') + 8
+            end_pos   = index(lower_line(start_pos:), ')') - 1
+
+            start_pos = start_pos + heading_blanks
+            end_pos   = end_pos + heading_blanks
+
+            if (end_pos > 0) then
+                macro_name = line(start_pos:start_pos + end_pos - 1)
+                if (index(lower_line, '!defined(') > 0) then
+                    is_active = .not. macro_in_list(macro_name, preprocess%macros)
+                else
+                    is_active = macro_in_list(macro_name, preprocess%macros)
+                end if
+            else
+                is_active = .false.
+                macro_name = ""
+            end if
+        else
+            ! simple form: #elif MACRO
+            start_pos = 6 + heading_blanks  ! skip "#elif "
+            end_pos   = len_trim(lower_line) + heading_blanks
+            macro_name = trim(adjustl(line(start_pos:end_pos)))
+            is_active = macro_in_list(macro_name, preprocess%macros)
+        end if
     else
         is_active = .false.
     end if
