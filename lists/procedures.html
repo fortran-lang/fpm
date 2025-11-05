@@ -118,7 +118,7 @@
                  <td><p>Add default profiles to existing profiles array if they don&rsquo;t already exist</p></td>
                </tr>
 			   <tr>
-                 <td><a href='../proc/add_dependency~2.html'>add_dependency</a></td>
+                 <td><a href='../proc/add_dependency.html'>add_dependency</a></td>
                  <td><a href='../module/fpm_targets.html'>fpm_targets</a></td>
                  <td>Subroutine</td>
                  <td><p>Add pointer to dependeny in target%dependencies</p></td>
@@ -651,16 +651,16 @@ Returns an error if the variable did not exist in the first place</p><a href="..
                  <td><p>Extract dirname from path</p></td>
                </tr>
 			   <tr>
-                 <td><a href='../proc/dump_to_toml~4.html'>dump_to_toml</a></td>
-                 <td><a href='../module/fpm_compiler.html'>fpm_compiler</a></td>
-                 <td>Subroutine</td>
-                 <td><p>Dump dependency to toml table</p><a href="../proc/dump_to_toml~4.html" class="pull-right"><emph>Read more&hellip;</emph></a></td>
-               </tr>
-			   <tr>
-                 <td><a href='../proc/dump_to_toml~9.html'>dump_to_toml</a></td>
+                 <td><a href='../proc/dump_to_toml~10.html'>dump_to_toml</a></td>
                  <td><a href='../module/fpm_git.html'>fpm_git</a></td>
                  <td>Subroutine</td>
                  <td><p>Dump dependency to toml table</p></td>
+               </tr>
+			   <tr>
+                 <td><a href='../proc/dump_to_toml~11.html'>dump_to_toml</a></td>
+                 <td><a href='../module/fpm_compiler.html'>fpm_compiler</a></td>
+                 <td>Subroutine</td>
+                 <td><p>Dump dependency to toml table</p><a href="../proc/dump_to_toml~11.html" class="pull-right"><emph>Read more&hellip;</emph></a></td>
                </tr>
 			   <tr>
                  <td><a href='../proc/enumerate_libraries.html'>enumerate_libraries</a></td>
@@ -748,7 +748,7 @@ single characters terminated with a C_NULL_CHAR character</p></td>
                  <td></td>
                </tr>
 			   <tr>
-                 <td><a href='../proc/find_feature.html'>find_feature</a></td>
+                 <td><a href='../proc/find_feature~2.html'>find_feature</a></td>
                  <td><a href='../module/fpm_manifest_feature.html'>fpm_manifest_feature</a></td>
                  <td>Subroutine</td>
                  <td><p>Find matching feature configuration (similar to find_profile)</p></td>
@@ -1095,7 +1095,7 @@ All checks passed!</p></td>
    contain wildcard characters.</p><a href="../proc/glob.html" class="pull-right"><emph>Read more&hellip;</emph></a></td>
                </tr>
 			   <tr>
-                 <td><a href='../proc/handle_error.html'>handle_error</a></td>
+                 <td><a href='../proc/handle_error~3.html'>handle_error</a></td>
                  <td><a href='../program/main.html'>main</a></td>
                  <td>Subroutine</td>
                  <td></td>
@@ -1131,7 +1131,7 @@ All checks passed!</p></td>
 3) If longer, package name must be followed by default separator plus at least one char</p><a href="../proc/has_valid_standard_prefix.html" class="pull-right"><emph>Read more&hellip;</emph></a></td>
                </tr>
 			   <tr>
-                 <td><a href='../proc/info~11.html'>info</a></td>
+                 <td><a href='../proc/info~13.html'>info</a></td>
                  <td><a href='../module/fpm_git.html'>fpm_git</a></td>
                  <td>Subroutine</td>
                  <td><p>Show information on git target</p></td>
@@ -1329,16 +1329,16 @@ Cleanup</p><a href="../proc/init_stdlib.html" class="pull-right"><emph>Read more
                  <td><p>Get file &amp; directory names in directory <code>dir</code> using iso_c_binding.</p><a href="../proc/list_files.html" class="pull-right"><emph>Read more&hellip;</emph></a></td>
                </tr>
 			   <tr>
-                 <td><a href='../proc/load_from_toml~4.html'>load_from_toml</a></td>
+                 <td><a href='../proc/load_from_toml~10.html'>load_from_toml</a></td>
+                 <td><a href='../module/fpm_git.html'>fpm_git</a></td>
+                 <td>Subroutine</td>
+                 <td><p>Read dependency from toml table (no checks made at this stage)</p><a href="../proc/load_from_toml~10.html" class="pull-right"><emph>Read more&hellip;</emph></a></td>
+               </tr>
+			   <tr>
+                 <td><a href='../proc/load_from_toml~11.html'>load_from_toml</a></td>
                  <td><a href='../module/fpm_compiler.html'>fpm_compiler</a></td>
                  <td>Subroutine</td>
                  <td><p>Read dependency from toml table (no checks made at this stage)</p></td>
-               </tr>
-			   <tr>
-                 <td><a href='../proc/load_from_toml~9.html'>load_from_toml</a></td>
-                 <td><a href='../module/fpm_git.html'>fpm_git</a></td>
-                 <td>Subroutine</td>
-                 <td><p>Read dependency from toml table (no checks made at this stage)</p><a href="../proc/load_from_toml~9.html" class="pull-right"><emph>Read more&hellip;</emph></a></td>
                </tr>
 			   <tr>
                  <td><a href='../proc/lower.html'>lower</a></td>
@@ -1350,7 +1350,9 @@ Cleanup</p><a href="../proc/init_stdlib.html" class="pull-right"><emph>Read more
                  <td><a href='../proc/make_archive.html'>make_archive</a></td>
                  <td><a href='../module/fpm_compiler.html'>fpm_compiler</a></td>
                  <td>Subroutine</td>
-                 <td><p>Create an archive</p><a href="../proc/make_archive.html" class="pull-right"><emph>Read more&hellip;</emph></a></td>
+                 <td><p>Create an archive
+This may be related to a bug in Mingw64-openmp and is expected to be resolved in the future,
+see issue #707, #708 and #808.</p></td>
                </tr>
 			   <tr>
                  <td><a href='../proc/manifest_has_changed.html'>manifest_has_changed</a></td>
@@ -1713,21 +1715,21 @@ gfortran does not look into by default)</p></td>
                </tr>
 			   <tr>
                  <td><a href='../interface/resize.html'>resize</a></td>
-                 <td><a href='../module/fpm_dependency.html'>fpm_dependency</a></td>
-                 <td>Interface</td>
-                 <td><p>Overloaded reallocation interface</p></td>
-               </tr>
-			   <tr>
-                 <td><a href='../interface/resize~2.html'>resize</a></td>
                  <td><a href='../module/fpm_manifest_dependency.html'>fpm_manifest_dependency</a></td>
                  <td>Interface</td>
                  <td></td>
                </tr>
 			   <tr>
-                 <td><a href='../interface/resize~3.html'>resize</a></td>
+                 <td><a href='../interface/resize~2.html'>resize</a></td>
                  <td><a href='../module/fpm_strings.html'>fpm_strings</a></td>
                  <td>Interface</td>
                  <td></td>
+               </tr>
+			   <tr>
+                 <td><a href='../interface/resize~3.html'>resize</a></td>
+                 <td><a href='../module/fpm_dependency.html'>fpm_dependency</a></td>
+                 <td>Interface</td>
+                 <td><p>Overloaded reallocation interface</p></td>
                </tr>
 			   <tr>
                  <td><a href='../interface/resolve_metapackages.html'>resolve_metapackages</a></td>
@@ -1979,7 +1981,7 @@ in case of errors.</p></td>
             <p class="text-end">
               Documentation generated by
               <a href="https://github.com/Fortran-FOSS-Programmers/ford">FORD</a>
- on 2025-10-14 10:22 +0000             </p>
+ on 2025-11-05 09:45 +0000             </p>
           </div>
         </div>
         <br>
