@@ -257,7 +257,6 @@ contains
         ! Check that both platforms are valid
         if (.not. self%is_valid() .or. .not. target%is_valid()) then
             ok = .false.
-            print *, 'compare platform ',self%name(),' with target ',target%name(),': ok=',ok
             return
         end if
         
@@ -267,8 +266,6 @@ contains
         ! Basic matching
         ok = compiler_ok .and. os_ok
         
-        if (.not.ok) print *, 'compare platform ',self%name(),' with target ',target%name(),': ok=',ok
-        
         if (.not. ok) return
 
         ! Additional validation: Intel compilers must have compatible OS
@@ -277,8 +274,6 @@ contains
             ok = compiler_os_compatible(self%compiler, self%os_type) .and. &
                  compiler_os_compatible(target%compiler, target%os_type)
         end if
-        
-        print *, 'compare platform ',self%name(),' with target ',target%name(),': ok=',ok
         
     end function platform_is_suitable
 

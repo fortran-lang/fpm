@@ -480,7 +480,6 @@ contains
            end do
        end if
 
-       1 format('UNNAMED_',a,'_',i0)
        2 format('PROFILE_',i0)
 
      end subroutine dump_to_toml
@@ -560,20 +559,23 @@ contains
      end subroutine load_from_toml
 
     !> Export package configuration for a given (OS+compiler) platform
-    type(package_config_t) function export_config(self, platform, features, profile, error) result(cfg)
-        
-        !> Instance of the package configuration  
+    type(package_config_t) function export_config(self, platform, features, profile, verbose, error) result(cfg)
+
+        !> Instance of the package configuration
         class(package_config_t), intent(in), target :: self
-        
+
         !> Target platform
         type(platform_config_t), intent(in) :: platform
-        
+
         !> Optional list of features to apply (cannot be used with profile)
         type(string_t), optional, intent(in), target :: features(:)
-        
+
         !> Optional profile name to apply (cannot be used with features)
         character(len=*), optional, intent(in) :: profile
-        
+
+        !> Verbose output flag
+        logical, optional, intent(in) :: verbose
+
         !> Error handling
         type(error_t), allocatable, intent(out) :: error
         
@@ -604,21 +606,28 @@ contains
             nullify(want_features)
         endif
             
-        apply_features: if (associated(want_features)) then 
+        apply_features: if (associated(want_features)) then
             do i=1,size(want_features)
-                
+
                 ! Find feature
                 idx = self%find_feature(want_features(i)%s)
-                if (idx<=0) then 
+                if (idx<=0) then
                     call fatal_error(error, "Cannot find feature "//want_features(i)%s//&
                                             " in package "//self%name)
                     return
                 end if
-                
+
+                ! Print feature collection info if verbose
+                if (present(verbose)) then
+                    if (verbose) then
+                        call print_feature_collection(self%features(idx), platform)
+                    end if
+                end if
+
                 ! Add it to the current configuration
                 call self%features(idx)%merge_into_package(cfg, platform, error)
                 if (allocated(error)) return
-                
+
             end do
         end if apply_features
         
@@ -752,20 +761,96 @@ contains
     end subroutine validate_profiles
 
     !> Check if there is a CPP preprocessor configuration
-    elemental logical function has_cpp(self) 
+    elemental logical function has_cpp(self)
         class(package_config_t), intent(in) :: self
-          
+
         integer :: i
-         
+
         has_cpp = self%feature_config_t%has_cpp()
         if (has_cpp) return
         if (.not.allocated(self%features)) return
-          
+
         do i=1,size(self%features)
             has_cpp = self%features(i)%has_cpp()
             if (has_cpp) return
         end do
-          
+
     end function has_cpp
+
+    !> Print feature collection information in verbose mode
+    subroutine print_feature_collection(collection, platform)
+        use, intrinsic :: iso_fortran_env, only: stdout => output_unit
+        use fpm_compiler, only: compiler_name
+        use fpm_environment, only: os_name
+        use fpm_strings, only: string_cat
+        type(feature_collection_t), intent(in) :: collection
+        type(platform_config_t), intent(in) :: platform
+
+        type(feature_config_t) :: extracted
+        type(error_t), allocatable :: error_tmp
+        integer :: i, j, n_macros
+
+        ! Extract the feature configuration for the target platform
+        extracted = collection%extract_for_target(platform, error_tmp)
+        if (allocated(error_tmp)) return
+
+        ! Print header with feature name
+        if (allocated(extracted%name)) then
+            print *, '+ feature collection: ', trim(extracted%name)
+        end if
+
+        ! Print platform information
+        print *, '+   platform: ', platform%compiler_name(), ' on ', platform%os_name()
+
+        ! Print flags
+        if (allocated(extracted%flags)) then
+            print *, '+   flags: ', trim(extracted%flags)
+        end if
+        if (allocated(extracted%c_flags)) then
+            print *, '+   c-flags: ', trim(extracted%c_flags)
+        end if
+        if (allocated(extracted%cxx_flags)) then
+            print *, '+   cxx-flags: ', trim(extracted%cxx_flags)
+        end if
+        if (allocated(extracted%link_time_flags)) then
+            print *, '+   link-flags: ', trim(extracted%link_time_flags)
+        end if
+
+        ! Print preprocessor macros
+        if (allocated(extracted%preprocess)) then
+            n_macros = 0
+            do i = 1, size(extracted%preprocess)
+                if (allocated(extracted%preprocess(i)%macros)) then
+                    n_macros = n_macros + size(extracted%preprocess(i)%macros)
+                end if
+            end do
+
+            if (n_macros > 0) then
+                print *, '+   cpp-macros: yes (', n_macros, ' defined)'
+                do i = 1, size(extracted%preprocess)
+                    if (allocated(extracted%preprocess(i)%macros)) then
+                        do j = 1, size(extracted%preprocess(i)%macros)
+                            print *, '+     - ', trim(extracted%preprocess(i)%macros(j)%s)
+                        end do
+                    end if
+                end do
+            else
+                print *, '+   cpp-macros: no'
+            end if
+        else
+            print *, '+   cpp-macros: no'
+        end if
+
+        ! Print description if available
+        if (allocated(extracted%description)) then
+            print *, '+   description: ', trim(extracted%description)
+        end if
+
+        ! Print number of variants in collection
+        if (allocated(collection%variants)) then
+            print *, '+   variants: ', size(collection%variants)
+        end if
+
+    end subroutine print_feature_collection
 
 end module fpm_manifest_package

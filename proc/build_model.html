@@ -92,7 +92,7 @@
 
             <li class="list-inline-item" id="statements"><i class="fa fa-list-ol"></i>
               <a data-bs-toggle="tooltip" data-bs-placement="bottom" data-bs-html="true"
-                 title=" 2.3% of total for procedures.">169 statements</a>
+                 title=" 2.4% of total for procedures.">177 statements</a>
             </li>
 
             <li class="list-inline-item" id="source-file">
@@ -181,7 +181,7 @@ Add this dependency&rsquo;s package-level macros</p>
     <tbody>
         <tr>
             <td>
-              <span class="anchor" id="variable-model~13"></span>
+              <span class="anchor" id="variable-model~11"></span>
               type(<a href='../type/fpm_model_t.html'>fpm_model_t</a>),
             </td>
 <td>intent(out)</td>
@@ -196,7 +196,7 @@ Add this dependency&rsquo;s package-level macros</p>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-settings~9"></span>
+              <span class="anchor" id="variable-settings~7"></span>
               class(<a href='../type/fpm_build_settings.html'>fpm_build_settings</a>),
             </td>
 <td>intent(inout)</td>
@@ -226,7 +226,7 @@ Add this dependency&rsquo;s package-level macros</p>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-error~193"></span>
+              <span class="anchor" id="variable-error~203"></span>
               type(<a href='../type/error_t.html'>error_t</a>),
             </td>
 <td>intent(out),</td>
@@ -302,8 +302,19 @@ Add this dependency&rsquo;s package-level macros</p>
 <span class="w">    </span><span class="n">model</span><span class="p">%</span><span class="n">include_tests</span><span class="w">        </span><span class="o">=</span><span class="w"> </span><span class="n">settings</span><span class="p">%</span><span class="n">build_tests</span>
 
 <span class="w">    </span><span class="c">! Extract the current package configuration request</span>
-<span class="w">    </span><span class="n">package</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">package_config</span><span class="p">%</span><span class="n">export_config</span><span class="p">(</span><span class="n">target_platform</span><span class="p">,</span><span class="n">settings</span><span class="p">%</span><span class="n">features</span><span class="p">,</span><span class="n">settings</span><span class="p">%</span><span class="n">profile</span><span class="p">,</span><span class="n">error</span><span class="p">)</span>
+<span class="w">    </span><span class="n">package</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">package_config</span><span class="p">%</span><span class="n">export_config</span><span class="p">(</span><span class="n">target_platform</span><span class="p">,</span><span class="n">settings</span><span class="p">%</span><span class="n">features</span><span class="p">,</span><span class="n">settings</span><span class="p">%</span><span class="n">profile</span><span class="p">,</span><span class="w"> </span><span class="p">&amp;</span>
+<span class="w">                                           </span><span class="n">settings</span><span class="p">%</span><span class="n">verbose</span><span class="p">,</span><span class="n">error</span><span class="p">)</span>
 <span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="nb">allocated</span><span class="p">(</span><span class="n">error</span><span class="p">))</span><span class="w"> </span><span class="k">return</span>
+
+<span class="w">    </span><span class="c">! Print enabled features/profile in verbose mode</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">settings</span><span class="p">%</span><span class="n">verbose</span><span class="p">)</span><span class="w"> </span><span class="k">then</span>
+<span class="k">        if</span><span class="w"> </span><span class="p">(</span><span class="nb">allocated</span><span class="p">(</span><span class="n">settings</span><span class="p">%</span><span class="n">features</span><span class="p">))</span><span class="w"> </span><span class="k">then  </span>
+<span class="k">            if</span><span class="w"> </span><span class="p">(</span><span class="n">size</span><span class="p">(</span><span class="n">settings</span><span class="p">%</span><span class="n">features</span><span class="p">)</span><span class="o">&gt;</span><span class="mi">0</span><span class="p">)</span><span class="w"> </span><span class="k">print</span><span class="w"> </span><span class="o">*</span><span class="p">,</span><span class="w"> </span><span class="s1">&#39;+ features: [&#39;</span><span class="p">,</span><span class="w"> </span><span class="n">string_cat</span><span class="p">(</span><span class="n">settings</span><span class="p">%</span><span class="n">features</span><span class="p">,</span><span class="s1">&#39;,&#39;</span><span class="p">),</span><span class="s1">&#39;]&#39;</span>
+<span class="w">        </span><span class="k">end if</span>
+<span class="k">        if</span><span class="w"> </span><span class="p">(</span><span class="nb">allocated</span><span class="p">(</span><span class="n">settings</span><span class="p">%</span><span class="n">profile</span><span class="p">))</span><span class="w"> </span><span class="k">then</span>
+<span class="k">            print</span><span class="w"> </span><span class="o">*</span><span class="p">,</span><span class="w"> </span><span class="s1">&#39;+ profile: &#39;</span><span class="p">,</span><span class="w"> </span><span class="n">settings</span><span class="p">%</span><span class="n">profile</span>
+<span class="w">        </span><span class="k">end if</span>
+<span class="k">    end if</span>
 
 <span class="w">    </span><span class="c">! Initialize compiler flags using the feature-enabled package configuration</span>
 <span class="w">    </span><span class="k">call </span><span class="n">new_compiler_flags</span><span class="p">(</span><span class="n">model</span><span class="p">,</span><span class="w"> </span><span class="n">settings</span><span class="p">,</span><span class="w"> </span><span class="n">package</span><span class="p">)</span><span class="w">  </span>
@@ -357,7 +368,7 @@ Add this dependency&rsquo;s package-level macros</p>
 <span class="w">                </span>
 <span class="w">                </span><span class="c">! Adapt it to the current profile/platform</span>
 <span class="w">                </span><span class="n">dependency</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">dependency_config</span><span class="p">%</span><span class="n">export_config</span><span class="p">(</span><span class="n">target_platform</span><span class="p">,</span><span class="w"> </span><span class="p">&amp;</span>
-<span class="w">                                                             </span><span class="n">dep</span><span class="p">%</span><span class="n">features</span><span class="p">,</span><span class="n">error</span><span class="o">=</span><span class="n">error</span><span class="p">)</span>
+<span class="w">                                                             </span><span class="n">dep</span><span class="p">%</span><span class="n">features</span><span class="p">,</span><span class="n">verbose</span><span class="o">=</span><span class="p">.</span><span class="n">false</span><span class="p">.,</span><span class="n">error</span><span class="o">=</span><span class="n">error</span><span class="p">)</span>
 <span class="w">                </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="nb">allocated</span><span class="p">(</span><span class="n">error</span><span class="p">))</span><span class="w"> </span><span class="k">exit</span>
 <span class="k">                </span>
 <span class="k">                </span><span class="n">manifest</span><span class="w"> </span><span class="o">=&gt;</span><span class="w"> </span><span class="n">dependency</span>
@@ -556,7 +567,7 @@ Add this dependency&rsquo;s package-level macros</p>
             <p class="text-end">
               Documentation generated by
               <a href="https://github.com/Fortran-FOSS-Programmers/ford">FORD</a>
- on 2025-11-05 09:45 +0000             </p>
+ on 2025-11-07 17:00 +0000             </p>
           </div>
         </div>
         <br>
