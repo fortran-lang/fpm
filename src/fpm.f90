@@ -86,8 +86,19 @@ subroutine build_model(model, settings, package_config, error)
     model%include_tests        = settings%build_tests
 
     ! Extract the current package configuration request
-    package = package_config%export_config(target_platform,settings%features,settings%profile,error)
+    package = package_config%export_config(target_platform,settings%features,settings%profile, &
+                                           settings%verbose,error)
     if (allocated(error)) return
+
+    ! Print enabled features/profile in verbose mode
+    if (settings%verbose) then
+        if (allocated(settings%features)) then  
+            if (size(settings%features)>0) print *, '+ features: [', string_cat(settings%features,','),']'
+        end if
+        if (allocated(settings%profile)) then
+            print *, '+ profile: ', settings%profile
+        end if
+    end if
 
     ! Initialize compiler flags using the feature-enabled package configuration
     call new_compiler_flags(model, settings, package)  
@@ -141,7 +152,7 @@ subroutine build_model(model, settings, package_config, error)
                 
                 ! Adapt it to the current profile/platform
                 dependency = dependency_config%export_config(target_platform, &
-                                                             dep%features,error=error)
+                                                             dep%features,verbose=.false.,error=error)
                 if (allocated(error)) exit
                 
                 manifest => dependency
