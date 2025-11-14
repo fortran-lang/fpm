@@ -923,6 +923,15 @@ module fpm_manifest_feature_collection
         feature%platform%compiler = compiler_id
         feature%platform%os_type = os_type
         feature%default = .true.  ! These are built-in features
+        
+        ! FFLAGS
+        ! Default flags for debug
+        ! The argument flags is no more need
+        ! It is kept for backward compatibility
+        call get_debug_compile_flags(compiler_id, feature%flags)
+
+        ! test if release is requested
+        if (name == "release") call get_release_compile_flags(compiler_id, feature%flags)
     end function default_variant
 
 
