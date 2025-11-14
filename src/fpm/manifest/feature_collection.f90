@@ -925,9 +925,10 @@ module fpm_manifest_feature_collection
         feature%default = .true.  ! These are built-in features
         
         ! FFLAGS
-        ! Default flags for debug
-        ! The argument flags is no more need
-        ! It is kept for backward compatibility
+        ! The argument flags is no more needed but it is kept for backward compatibility
+        ! flags are hard-coded in default_release/debug_feature
+        ! It might better to be pulled from default compile flags defined in fpm_compiler.F90
+        ! TODO: Validate this change
         call get_debug_compile_flags(compiler_id, feature%flags)
 
         ! test if release is requested
@@ -936,6 +937,7 @@ module fpm_manifest_feature_collection
         ! CFLAGS
         ! Equivalent function of get_debug/release_compile_flags must be implemented in fpm_compiler.F90
         ! Hot fix: hard-coded c_flags=-fPIC (especially needed for shared library) 
+        ! TODO: Validate this change
         feature%c_flags = "-fPIC"
 
     end function default_variant
