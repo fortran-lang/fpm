@@ -922,7 +922,6 @@ module fpm_manifest_feature_collection
         feature%name = name
         feature%platform%compiler = compiler_id
         feature%platform%os_type = os_type
-        feature%flags = flags
         feature%default = .true.  ! These are built-in features
     end function default_variant
 
