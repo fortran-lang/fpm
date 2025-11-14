@@ -932,6 +932,12 @@ module fpm_manifest_feature_collection
 
         ! test if release is requested
         if (name == "release") call get_release_compile_flags(compiler_id, feature%flags)
+
+        ! CFLAGS
+        ! Equivalent function of get_debug/release_compile_flags must be implemented in fpm_compiler.F90
+        ! Hot fix: hard-coded c_flags=-fPIC (especially needed for shared library) 
+        feature%c_flags = "-fPIC"
+
     end function default_variant
 
 
