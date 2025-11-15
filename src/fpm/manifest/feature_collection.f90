@@ -939,33 +939,32 @@ module fpm_manifest_feature_collection
     end subroutine get_default_features
 
     !> Helper to create a feature variant
-    function default_variant(name, compiler_id, os_type, flags) result(feature)
+    function default_variant(name, compiler_id, os_type, flags, c_flags, cxx_flags) result(feature)
         character(len=*), intent(in) :: name
         integer(compiler_enum), intent(in) :: compiler_id
         integer, intent(in) :: os_type
-        character(len=*), intent(in) :: flags
+        character(len=*), optional, intent(in) :: flags
+        character(len=*), optional, intent(in) :: c_flags
+        character(len=*), optional, intent(in) :: cxx_flags
         type(feature_config_t) :: feature
 
         feature%name = name
         feature%platform%compiler = compiler_id
         feature%platform%os_type = os_type
         feature%default = .true.  ! These are built-in features
+        feature%flags = ""
+        feature%c_flags = ""
+        feature%cxx_flags = ""
         
-        ! FFLAGS
-        ! The argument flags is no more needed but it is kept for backward compatibility
-        ! flags are hard-coded in default_release/debug_feature
-        ! It might better to be pulled from default compile flags defined in fpm_compiler.F90
-        ! TODO: Validate this change
-        call get_debug_compile_flags(compiler_id, feature%flags)
-
-        ! test if release is requested
-        if (name == "release") call get_release_compile_flags(compiler_id, feature%flags)
-
-        ! CFLAGS
-        ! Equivalent function of get_debug/release_compile_flags must be implemented in fpm_compiler.F90
-        ! Hot fix: hard-coded c_flags=-fPIC (especially needed for shared library) 
-        ! TODO: Validate this change
-        feature%c_flags = "-fPIC"
+        if (present(flags)) then
+            feature%flags = flags
+        end if
+        if (present(c_flags)) then
+            feature%c_flags = c_flags
+        end if
+        if (present(cxx_flags)) then
+            feature%cxx_flags = cxx_flags
+        end if
 
     end function default_variant
 
