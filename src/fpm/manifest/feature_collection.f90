@@ -869,20 +869,30 @@ module fpm_manifest_feature_collection
         
         ! Add release variants for different compilers
         call collection%push_variant(default_variant('release', id_caf, OS_ALL, &
-            ' -O3 -Wimplicit-interface -fPIC -fmax-errors=1 -funroll-loops'))
+            ' -O3 -Wimplicit-interface -fPIC -fmax-errors=1 -funroll-loops', &
+            ' -fPIC', &
+            ' -fPIC'))
             
         call collection%push_variant(default_variant('release', id_gcc, OS_ALL, &
-            ' -O3 -Wimplicit-interface -fPIC -fmax-errors=1 -funroll-loops -fcoarray=single'))
+            ' -O3 -Wimplicit-interface -fPIC -fmax-errors=1 -funroll-loops -fcoarray=single', &
+            ' -O3 -fPIC -fmax-errors=1 -funroll-loops', &
+            ' -O3 -fPIC -fmax-errors=1 -funroll-loops'))
             
         call collection%push_variant(default_variant('release', id_f95, OS_ALL, &
-            ' -O3 -Wimplicit-interface -fPIC -fmax-errors=1 -ffast-math -funroll-loops'))
+            ' -O3 -Wimplicit-interface -fPIC -fmax-errors=1 -ffast-math -funroll-loops', &
+            ' -fPIC', &
+            ' -fPIC'))
             
         call collection%push_variant(default_variant('release', id_nvhpc, OS_ALL, &
-            ' -Mbackslash'))
+            ' -Mbackslash', &
+            ' -fPIC', &
+            ' -fPIC'))
             
         call collection%push_variant(default_variant('release', id_intel_classic_nix, OS_LINUX, &
             ' -fp-model precise -pc64 -align all -error-limit 1 -reentrancy&
-            & threaded -nogen-interfaces -assume byterecl'))
+            & threaded -nogen-interfaces -assume byterecl', &
+            ' -fPIC', &
+            ' -fPIC'))
             
         call collection%push_variant(default_variant('release', id_intel_classic_windows, &
             OS_WINDOWS, ' /fp:precise /align:all /error-limit:1 /reentrancy:threaded&
@@ -890,17 +900,23 @@ module fpm_manifest_feature_collection
             
         call collection%push_variant(default_variant('release', id_intel_llvm_nix, &
             OS_LINUX, ' -fp-model=precise -pc64 -align all -error-limit 1 -reentrancy threaded&
-            & -nogen-interfaces -assume byterecl'))
+            & -nogen-interfaces -assume byterecl', &
+            ' -fPIC', &
+            ' -fPIC'))
             
         call collection%push_variant(default_variant('release', id_intel_llvm_nix, &
             OS_WINDOWS, ' /fp:precise /align:all /error-limit:1 /reentrancy:threaded&
             & /nogen-interfaces /assume:byterecl'))
-            
+        
         call collection%push_variant(default_variant('release', id_nag, OS_ALL, &
-            ' -O4 -coarray=single -PIC'))
+            ' -O4 -coarray=single -PIC', &
+            ' -fPIC', &
+            ' -fPIC'))
             
         call collection%push_variant(default_variant('release', id_lfortran, OS_ALL, &
-            ' flag_lfortran_opt'))
+            ' flag_lfortran_opt', &
+            ' -fPIC', &
+            ' -fPIC'))
             
     end function default_release_feature
 
