@@ -813,35 +813,47 @@ module fpm_manifest_feature_collection
         call collection%push_variant(default_variant('debug', id_caf, OS_ALL, &
             ' -Wall -Wextra -Wimplicit-interface -Wno-external-argument-mismatch&
             & -fPIC -fmax-errors=1 -g -fcheck=bounds&
-            & -fcheck=array-temps -fbacktrace'))
+            & -fcheck=array-temps -fbacktrace', &
+            ' -fPIC', &
+            ' -fPIC'))
             
         call collection%push_variant(default_variant('debug', id_gcc, OS_ALL, &
             ' -Wall -Wextra -Wimplicit-interface -Wno-external-argument-mismatch&
             & -fPIC -fmax-errors=1 -g -fcheck=bounds&
-            & -fcheck=array-temps -fbacktrace -fcoarray=single'))
+            & -fcheck=array-temps -fbacktrace -fcoarray=single', &
+            ' -Wall -Wextra -fPIC -fmax-errors=1 -g', &
+            ' -Wall -Wextra -fPIC -fmax-errors=1 -g'))
             
         call collection%push_variant(default_variant('debug', id_f95, OS_ALL, &
             ' -Wall -Wextra -Wimplicit-interface -Wno-external-argument-mismatch&
             & -fPIC -fmax-errors=1 -g -fcheck=bounds&
-            & -fcheck=array-temps -Wno-maybe-uninitialized -Wno-uninitialized -fbacktrace'))
+            & -fcheck=array-temps -Wno-maybe-uninitialized -Wno-uninitialized -fbacktrace', &
+            ' -fPIC', &
+            ' -fPIC'))
             
         call collection%push_variant(default_variant('debug', id_nvhpc, OS_ALL, &
-            ' -Minform=inform -Mbackslash -g -Mbounds -Mchkptr -Mchkstk -traceback'))
+            ' -Minform=inform -Mbackslash -g -Mbounds -Mchkptr -Mchkstk -traceback', &
+            ' -fPIC', &
+            ' -fPIC'))
             
         call collection%push_variant(default_variant('debug', id_intel_classic_nix, OS_ALL, &
-            ' -warn all -check all -error-limit 1 -O0 -g -assume byterecl -traceback'))
+            ' -warn all -check all -error-limit 1 -O0 -g -assume byterecl -traceback', &
+            ' -fPIC', &
+            ' -fPIC'))
             
         call collection%push_variant(default_variant('debug', id_intel_classic_nix, OS_WINDOWS, &
             ' /warn:all /check:all /error-limit:1&
             & /Od /Z7 /assume:byterecl /traceback'))
             
         call collection%push_variant(default_variant('debug', id_intel_llvm_nix, OS_ALL, &
-            ' -warn all -check all -error-limit 1 -O0 -g -assume byterecl -traceback'))
+            ' -warn all -check all -error-limit 1 -O0 -g -assume byterecl -traceback', &
+            ' -fPIC', &
+            ' -fPIC'))
             
         call collection%push_variant(default_variant('debug', id_intel_llvm_nix, OS_WINDOWS, &
             ' /warn:all /check:all /error-limit:1 /Od /Z7 /assume:byterecl'))
             
-        call collection%push_variant(default_variant('debug', id_lfortran, OS_ALL, ''))
+        call collection%push_variant(default_variant('debug', id_lfortran, OS_ALL, '', ' -fPIC', ' -fPIC'))
             
     end function default_debug_feature
 
