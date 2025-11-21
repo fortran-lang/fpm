@@ -11,6 +11,7 @@
 ! PGI               pgfortran  pgcc    -module         -I            -mp        X
 ! NVIDIA            nvfortran  nvc     -module         -I            -mp        X
 ! LLVM flang        flang      clang   -module-dir     -I            -fopenmp   X
+! AMD flang         amdflang   amdclang -module-dir    -I            -fopenmp   X
 ! LFortran          lfortran   ---     -J              -I            --openmp   X
 ! Lahey/Futjitsu    lfc        ?       -M              -I            -openmp    ?
 ! NAG               nagfor     ?       -mdir           -I            -openmp    x
@@ -73,6 +74,7 @@ enum, bind(C)
         id_nag, &
         id_flang_classic, &
         id_flang, &
+        id_amdflang, &
         id_f18, &
         id_ibmxl, &
         id_cray, &
@@ -302,7 +304,7 @@ function get_default_flags(self, release) result(flags)
     ! Append position-independent code (PIC) flag, that is necessary 
     ! building shared libraries
     select case (self%id)
-    case (id_gcc, id_f95, id_caf, id_flang_classic, id_f18, id_lfortran, &
+    case (id_gcc, id_f95, id_caf, id_flang_classic, id_amdflang, id_f18, id_lfortran, &
           id_intel_classic_nix, id_intel_classic_mac, id_intel_llvm_nix, &
           id_intel_llvm_unknown, id_pgi, id_nvhpc, id_nag, id_cray, id_ibmxl)
         pic_flag = " -fPIC"
@@ -423,6 +425,11 @@ subroutine get_release_compile_flags(id, flags)
     case(id_flang)
         flags = &
             flag_flang_opt//&
+
+            flag_flang_pic
+    case(id_amdflang)
+        flags = &
+            flag_flang_opt//&
             flag_flang_pic
 
     end select
@@ -526,6 +533,11 @@ subroutine get_debug_compile_flags(id, flags)
             flag_flang_debug//&
             flag_flang_pic
 
+    case(id_amdflang)
+        flags = &
+            flag_flang_debug//&
+            flag_flang_pic
+
     end select
 end subroutine get_debug_compile_flags
 
@@ -538,7 +550,7 @@ pure subroutine set_cpp_preprocessor_flags(id, flags)
     select case(id)
     case default
         flag_cpp_preprocessor = ""
-    case(id_caf, id_gcc, id_f95, id_nvhpc, id_flang)
+    case(id_caf, id_gcc, id_f95, id_nvhpc, id_flang, id_amdflang)
         flag_cpp_preprocessor = "-cpp"
     case(id_intel_classic_windows, id_intel_llvm_windows)
         flag_cpp_preprocessor = "/fpp"
@@ -633,7 +645,7 @@ function get_include_flag(self, path) result(flags)
         flags = "-I "//path
 
     case(id_caf, id_gcc, id_f95, id_cray, id_nvhpc, id_pgi, &
-        & id_flang_classic, id_flang, id_f18, &
+        & id_flang_classic, id_flang, id_amdflang, id_f18, &
         & id_intel_classic_nix, id_intel_classic_mac, &
         & id_intel_llvm_nix, id_lahey, id_nag, id_ibmxl, &
         & id_lfortran)
@@ -660,7 +672,7 @@ function get_module_flag(self, path) result(flags)
     case(id_nvhpc, id_pgi, id_flang_classic)
         flags = "-module "//path
 
-    case(id_flang, id_f18)
+    case(id_flang, id_f18, id_amdflang)
         flags = "-module-dir "//path
 
     case(id_intel_classic_nix, id_intel_classic_mac, &
@@ -691,7 +703,7 @@ function get_shared_flag(self) result(shared_flag)
     select case (self%id)
     case default
         shared_flag = "-shared"
-    case (id_gcc, id_f95, id_flang, id_flang_classic, id_lfortran)
+    case (id_gcc, id_f95, id_flang, id_amdflang, id_flang_classic, id_lfortran)
         shared_flag = "-shared"
     case (id_intel_classic_nix, id_intel_llvm_nix, id_pgi, id_nvhpc)
         shared_flag = "-shared"
@@ -727,6 +739,9 @@ function get_feature_flag(self, feature) result(flags)
            flags = flag_cray_no_implicit_typing
 
        case(id_flang)
+           flags = flag_flang_no_implicit_typing
+
+       case(id_amdflang)
            flags = flag_flang_no_implicit_typing
 
        end select
@@ -780,6 +795,9 @@ function get_feature_flag(self, feature) result(flags)
        case(id_flang)
            flags = flag_flang_free_form
 
+       case(id_amdflang)
+           flags = flag_flang_free_form
+
        end select
 
     case("fixed-form")
@@ -807,6 +825,9 @@ function get_feature_flag(self, feature) result(flags)
            flags = flag_lfortran_fixed_form
 
        case(id_flang)
+           flags = flag_flang_fixed_form
+
+       case(id_amdflang)
            flags = flag_flang_fixed_form
 
        end select
@@ -878,7 +899,7 @@ subroutine get_default_c_compiler(f_compiler, c_compiler)
     case(id_intel_llvm_nix,id_intel_llvm_windows)
         c_compiler = 'icx'
 
-    case(id_flang_classic, id_flang, id_f18)
+    case(id_flang_classic, id_flang, id_f18 )
         c_compiler='clang'
 
     case(id_ibmxl)
@@ -889,6 +910,9 @@ subroutine get_default_c_compiler(f_compiler, c_compiler)
 
     case(id_gcc)
         c_compiler = 'gcc'
+
+    case(id_amdflang)
+        c_compiler = 'amdclang'
 
     case default
         ! Fall-back to using Fortran compiler
@@ -915,6 +939,9 @@ subroutine get_default_cxx_compiler(f_compiler, cxx_compiler)
 
     case(id_flang_classic, id_flang, id_f18)
         cxx_compiler='clang++'
+
+    case(id_amdflang)
+        cxx_compiler='amdclang++'
 
     case(id_ibmxl)
         cxx_compiler='xlc++'
@@ -1077,6 +1104,11 @@ function match_compiler_type(compiler) result(id)
         return
     end if
 
+    if (check_compiler(compiler, "amdflang")) then
+        id = id_amdflang
+        return
+    end if
+
     if (check_compiler(compiler, "f18")) then
         id = id_f18
         return
@@ -1127,7 +1159,7 @@ pure elemental subroutine validate_compiler_name(compiler_name, is_valid)
     
     select case (lname)
       case("gfortran", "ifort", "ifx", "pgfortran", &
-           "nvfortran", "flang", "caf", &
+           "nvfortran", "flang", "amdflang", "caf", &
            "f95", "lfortran", "lfc", "nagfor",&
            "crayftn", "xlf90", "ftn95", "all")
         is_valid = .true.
@@ -1863,6 +1895,7 @@ pure function compiler_id_name(id) result(name)
        case(id_nag);                   name = "nagfor"
        case(id_flang_classic);         name = "flang-classic"
        case(id_flang);                 name = "flang"
+       case(id_amdflang);              name = "amdflang"
        case(id_f18);                   name = "f18"
        case(id_ibmxl);                 name = "xlf90"
        case(id_cray);                  name = "crayftn"
