@@ -210,25 +210,25 @@
         <ul class="list-group list-group-flush">
             <li class="list-group-item">
               <ul class="list-inline">
+                  <li class="list-inline-item"><a href='fpm_manifest_dependency.html'>fpm_manifest_dependency</a></li>
+                  <li class="list-inline-item"><a href='fpm_strings.html'>fpm_strings</a></li>
                   <li class="list-inline-item"><a href='fpm_manifest_preprocess.html'>fpm_manifest_preprocess</a></li>
+                  <li class="list-inline-item"><a href='fpm_manifest_feature_collection.html'>fpm_manifest_feature_collection</a></li>
+                  <li class="list-inline-item"><a href='fpm_filesystem.html'>fpm_filesystem</a></li>
+                  <li class="list-inline-item"><a href='fpm_manifest_library.html'>fpm_manifest_library</a></li>
+                  <li class="list-inline-item"><a href='fpm_manifest_executable.html'>fpm_manifest_executable</a></li>
+                  <li class="list-inline-item"><a href='fpm_manifest_install.html'>fpm_manifest_install</a></li>
+                  <li class="list-inline-item"><a href='fpm_manifest_platform.html'>fpm_manifest_platform</a></li>
+                  <li class="list-inline-item"><a href='fpm_error.html'>fpm_error</a></li>
+                  <li class="list-inline-item"><a href='fpm_toml.html'>fpm_toml</a></li>
                   <li class="list-inline-item"><a href='fpm_versioning.html'>fpm_versioning</a></li>
-                  <li class="list-inline-item"><a href='fpm_manifest_example.html'>fpm_manifest_example</a></li>
+                  <li class="list-inline-item"><a href='fpm_manifest_test.html'>fpm_manifest_test</a></li>
+                  <li class="list-inline-item"><a href='fpm_manifest_build.html'>fpm_manifest_build</a></li>
+                  <li class="list-inline-item"><a href='fpm_manifest_feature.html'>fpm_manifest_feature</a></li>
                   <li class="list-inline-item"><a href='fpm_manifest_fortran.html'>fpm_manifest_fortran</a></li>
                   <li class="list-inline-item"><a href='fpm_manifest_profile.html'>fpm_manifest_profile</a></li>
-                  <li class="list-inline-item"><a href='fpm_manifest_build.html'>fpm_manifest_build</a></li>
-                  <li class="list-inline-item"><a href='fpm_manifest_install.html'>fpm_manifest_install</a></li>
-                  <li class="list-inline-item"><a href='fpm_manifest_executable.html'>fpm_manifest_executable</a></li>
-                  <li class="list-inline-item"><a href='fpm_manifest_dependency.html'>fpm_manifest_dependency</a></li>
-                  <li class="list-inline-item"><a href='fpm_manifest_test.html'>fpm_manifest_test</a></li>
-                  <li class="list-inline-item"><a href='fpm_manifest_feature.html'>fpm_manifest_feature</a></li>
-                  <li class="list-inline-item"><a href='fpm_manifest_platform.html'>fpm_manifest_platform</a></li>
-                  <li class="list-inline-item"><a href='fpm_manifest_feature_collection.html'>fpm_manifest_feature_collection</a></li>
-                  <li class="list-inline-item"><a href='fpm_manifest_library.html'>fpm_manifest_library</a></li>
-                  <li class="list-inline-item"><a href='fpm_strings.html'>fpm_strings</a></li>
-                  <li class="list-inline-item"><a href='fpm_toml.html'>fpm_toml</a></li>
-                  <li class="list-inline-item"><a href='fpm_filesystem.html'>fpm_filesystem</a></li>
-                  <li class="list-inline-item"><a href='fpm_error.html'>fpm_error</a></li>
                   <li class="list-inline-item"><a href='https://toml-f.github.io/toml-f'>tomlf</a></li>
+                  <li class="list-inline-item"><a href='fpm_manifest_example.html'>fpm_manifest_example</a></li>
               </ul>
             </li>
         </ul>
@@ -360,7 +360,7 @@ flags, c_flags, cxx_flags, link_time_flags, requires_features(:)</p>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-default~3"></span>
+              <span class="anchor" id="variable-default"></span>
               logical,
             </td>
               <td>public</td>
@@ -377,7 +377,7 @@ flags, c_flags, cxx_flags, link_time_flags, requires_features(:)</p>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-dependency~13"></span>
+              <span class="anchor" id="variable-dependency"></span>
               type(<a href='../type/dependency_config_t.html'>dependency_config_t</a>),
             </td>
               <td>public,</td>
@@ -428,7 +428,7 @@ flags, c_flags, cxx_flags, link_time_flags, requires_features(:)</p>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-example~2"></span>
+              <span class="anchor" id="variable-example"></span>
               type(<a href='../type/example_config_t.html'>example_config_t</a>),
             </td>
               <td>public,</td>
@@ -445,7 +445,7 @@ flags, c_flags, cxx_flags, link_time_flags, requires_features(:)</p>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-executable~2"></span>
+              <span class="anchor" id="variable-executable"></span>
               type(<a href='../type/executable_config_t.html'>executable_config_t</a>),
             </td>
               <td>public,</td>
@@ -462,7 +462,7 @@ flags, c_flags, cxx_flags, link_time_flags, requires_features(:)</p>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-features"></span>
+              <span class="anchor" id="variable-features~4"></span>
               type(<a href='../type/feature_collection_t.html'>feature_collection_t</a>),
             </td>
               <td>public,</td>
@@ -479,7 +479,7 @@ flags, c_flags, cxx_flags, link_time_flags, requires_features(:)</p>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-flags~26"></span>
+              <span class="anchor" id="variable-flags"></span>
               character(len=:),
             </td>
               <td>public,</td>
@@ -496,7 +496,7 @@ flags, c_flags, cxx_flags, link_time_flags, requires_features(:)</p>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-fortran~2"></span>
+              <span class="anchor" id="variable-fortran"></span>
               type(<a href='../type/fortran_config_t.html'>fortran_config_t</a>),
             </td>
               <td>public,</td>
@@ -513,7 +513,7 @@ flags, c_flags, cxx_flags, link_time_flags, requires_features(:)</p>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-install~2"></span>
+              <span class="anchor" id="variable-install"></span>
               type(<a href='../type/install_config_t.html'>install_config_t</a>),
             </td>
               <td>public,</td>
@@ -530,7 +530,7 @@ flags, c_flags, cxx_flags, link_time_flags, requires_features(:)</p>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-library~6"></span>
+              <span class="anchor" id="variable-library"></span>
               type(<a href='../type/library_config_t.html'>library_config_t</a>),
             </td>
               <td>public,</td>
@@ -598,7 +598,7 @@ flags, c_flags, cxx_flags, link_time_flags, requires_features(:)</p>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-meta~5"></span>
+              <span class="anchor" id="variable-meta"></span>
               type(<a href='../type/metapackage_config_t.html'>metapackage_config_t</a>),
             </td>
               <td>public</td>
@@ -615,7 +615,7 @@ flags, c_flags, cxx_flags, link_time_flags, requires_features(:)</p>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-name~52"></span>
+              <span class="anchor" id="variable-name"></span>
               character(len=:),
             </td>
               <td>public,</td>
@@ -632,7 +632,7 @@ flags, c_flags, cxx_flags, link_time_flags, requires_features(:)</p>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-platform~4"></span>
+              <span class="anchor" id="variable-platform"></span>
               type(<a href='../type/platform_config_t.html'>platform_config_t</a>),
             </td>
               <td>public</td>
@@ -649,7 +649,7 @@ flags, c_flags, cxx_flags, link_time_flags, requires_features(:)</p>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-preprocess~13"></span>
+              <span class="anchor" id="variable-preprocess"></span>
               type(<a href='../type/preprocess_config_t.html'>preprocess_config_t</a>),
             </td>
               <td>public,</td>
@@ -666,7 +666,7 @@ flags, c_flags, cxx_flags, link_time_flags, requires_features(:)</p>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-profiles"></span>
+              <span class="anchor" id="variable-profiles~4"></span>
               type(<a href='../type/profile_config_t.html'>profile_config_t</a>),
             </td>
               <td>public,</td>
@@ -700,7 +700,7 @@ flags, c_flags, cxx_flags, link_time_flags, requires_features(:)</p>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-test~4"></span>
+              <span class="anchor" id="variable-test"></span>
               type(<a href='../type/test_config_t.html'>test_config_t</a>),
             </td>
               <td>public,</td>
@@ -717,7 +717,7 @@ flags, c_flags, cxx_flags, link_time_flags, requires_features(:)</p>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-version~11"></span>
+              <span class="anchor" id="variable-version~2"></span>
               type(<a href='../type/version_t.html'>version_t</a>),
             </td>
               <td>public</td>
@@ -743,17 +743,17 @@ flags, c_flags, cxx_flags, link_time_flags, requires_features(:)</p>
           <tbody>
               <tr>
                 <td>  procedure, public, nopass ::
-  <strong><a href='../type/feature_config_t.html#boundprocedure-check~2'>check</a></strong></td>
+  <strong><a href='../type/feature_config_t.html#boundprocedure-check'>check</a></strong></td>
                   <td><p>Check validity of the TOML table</p></td>
               </tr>
               <tr>
                 <td>  generic, public ::
-  <strong><a href='../type/package_config_t.html#boundprocedure-dump~15'>dump</a></strong> => <a href='/home/runner/work/fpm/fpm/fpm-doc/type/srcfile_t.html#boundprocedure-dump_to_toml~19'>dump_to_toml</a>, dump_to_file, dump_to_unit</td>
+  <strong><a href='../type/package_config_t.html#boundprocedure-dump~16'>dump</a></strong> => <a href='/home/runner/work/fpm/fpm/fpm-doc/type/srcfile_t.html#boundprocedure-dump_to_toml~23'>dump_to_toml</a>, dump_to_file, dump_to_unit</td>
                   <td></td>
               </tr>
               <tr>
                 <td>  procedure, public ::
-  <strong><a href='../type/package_config_t.html#boundprocedure-dump_to_toml~10'>dump_to_toml</a></strong></td>
+  <strong><a href='../type/package_config_t.html#boundprocedure-dump_to_toml~11'>dump_to_toml</a></strong></td>
                   <td></td>
               </tr>
               <tr>
@@ -773,22 +773,22 @@ flags, c_flags, cxx_flags, link_time_flags, requires_features(:)</p>
               </tr>
               <tr>
                 <td>  procedure, public ::
-  <strong><a href='../type/package_config_t.html#boundprocedure-has_cpp'>has_cpp</a></strong></td>
+  <strong><a href='../type/package_config_t.html#boundprocedure-has_cpp~4'>has_cpp</a></strong></td>
                   <td><p>Check if any features has a cpp configuration</p></td>
               </tr>
               <tr>
                 <td>  procedure, public ::
-  <strong><a href='../type/package_config_t.html#boundprocedure-info~5'>info</a></strong></td>
+  <strong><a href='../type/package_config_t.html#boundprocedure-info~8'>info</a></strong></td>
                   <td><p>Print information on this instance</p></td>
               </tr>
               <tr>
                 <td>  generic, public ::
-  <strong><a href='../type/package_config_t.html#boundprocedure-load~12'>load</a></strong> => <a href='/home/runner/work/fpm/fpm/fpm-doc/type/srcfile_t.html#boundprocedure-load_from_toml~19'>load_from_toml</a>, load_from_file, load_from_unit</td>
+  <strong><a href='../type/package_config_t.html#boundprocedure-load~13'>load</a></strong> => <a href='/home/runner/work/fpm/fpm/fpm-doc/type/srcfile_t.html#boundprocedure-load_from_toml~23'>load_from_toml</a>, load_from_file, load_from_unit</td>
                   <td></td>
               </tr>
               <tr>
                 <td>  procedure, public ::
-  <strong><a href='../type/package_config_t.html#boundprocedure-load_from_toml~10'>load_from_toml</a></strong></td>
+  <strong><a href='../type/package_config_t.html#boundprocedure-load_from_toml~11'>load_from_toml</a></strong></td>
                   <td></td>
               </tr>
               <tr>
@@ -798,12 +798,12 @@ flags, c_flags, cxx_flags, link_time_flags, requires_features(:)</p>
               </tr>
               <tr>
                 <td>  generic, public ::
-  <strong><a href='../type/package_config_t.html#boundprocedure-operator%28%3D%3D%29~13'>operator(==)</a></strong> => <a href='/home/runner/work/fpm/fpm/fpm-doc/type/srcfile_t.html#boundprocedure-serializable_is_same~19'>serializable_is_same</a></td>
+  <strong><a href='../type/package_config_t.html#boundprocedure-operator%28%3D%3D%29~14'>operator(==)</a></strong> => <a href='/home/runner/work/fpm/fpm/fpm-doc/type/srcfile_t.html#boundprocedure-serializable_is_same~23'>serializable_is_same</a></td>
                   <td></td>
               </tr>
               <tr>
                 <td>  procedure, public ::
-  <strong><a href='../type/package_config_t.html#boundprocedure-serializable_is_same~10'>serializable_is_same</a></strong> => manifest_is_same</td>
+  <strong><a href='../type/package_config_t.html#boundprocedure-serializable_is_same~11'>serializable_is_same</a></strong> => manifest_is_same</td>
                   <td><p>Serialization interface</p></td>
               </tr>
               <tr>
@@ -842,7 +842,7 @@ flags, c_flags, cxx_flags, link_time_flags, requires_features(:)</p>
     <tbody>
         <tr>
             <td>
-              <span class="anchor" id="variable-self~108"></span>
+              <span class="anchor" id="variable-self~61"></span>
               type(<a href='../type/package_config_t.html'>package_config_t</a>),
             </td>
 <td>intent(out)</td>
@@ -857,7 +857,7 @@ flags, c_flags, cxx_flags, link_time_flags, requires_features(:)</p>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-table~35"></span>
+              <span class="anchor" id="variable-table~37"></span>
               type(toml_table),
             </td>
 <td>intent(inout)</td>
@@ -872,7 +872,7 @@ flags, c_flags, cxx_flags, link_time_flags, requires_features(:)</p>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-root~7"></span>
+              <span class="anchor" id="variable-root~4"></span>
               character(len=*),
             </td>
 <td>intent(in),</td>
@@ -887,7 +887,7 @@ flags, c_flags, cxx_flags, link_time_flags, requires_features(:)</p>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-error~81"></span>
+              <span class="anchor" id="variable-error~63"></span>
               type(<a href='../type/error_t.html'>error_t</a>),
             </td>
 <td>intent(out),</td>

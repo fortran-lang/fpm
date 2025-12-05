@@ -224,16 +224,16 @@
         <ul class="list-group list-group-flush">
             <li class="list-group-item">
               <ul class="list-inline">
-                  <li class="list-inline-item"><a href='fpm_git.html'>fpm_git</a></li>
-                  <li class="list-inline-item"><a href='fpm_strings.html'>fpm_strings</a></li>
-                  <li class="list-inline-item"><a href='fpm_toml.html'>fpm_toml</a></li>
-                  <li class="list-inline-item"><a href='fpm_versioning.html'>fpm_versioning</a></li>
-                  <li class="list-inline-item"><a href='fpm_manifest_preprocess.html'>fpm_manifest_preprocess</a></li>
-                  <li class="list-inline-item"><a href='fpm_filesystem.html'>fpm_filesystem</a></li>
                   <li class="list-inline-item"><a href='fpm_error.html'>fpm_error</a></li>
-                  <li class="list-inline-item"><a href='https://toml-f.github.io/toml-f'>tomlf</a></li>
-                  <li class="list-inline-item"><a href='fpm_environment.html'>fpm_environment</a></li>
+                  <li class="list-inline-item"><a href='fpm_toml.html'>fpm_toml</a></li>
                   <li class="list-inline-item"><a href='fpm_manifest_metapackages.html'>fpm_manifest_metapackages</a></li>
+                  <li class="list-inline-item"><a href='fpm_versioning.html'>fpm_versioning</a></li>
+                  <li class="list-inline-item"><a href='fpm_filesystem.html'>fpm_filesystem</a></li>
+                  <li class="list-inline-item"><a href='fpm_git.html'>fpm_git</a></li>
+                  <li class="list-inline-item"><a href='fpm_environment.html'>fpm_environment</a></li>
+                  <li class="list-inline-item"><a href='fpm_strings.html'>fpm_strings</a></li>
+                  <li class="list-inline-item"><a href='https://toml-f.github.io/toml-f'>tomlf</a></li>
+                  <li class="list-inline-item"><a href='fpm_manifest_preprocess.html'>fpm_manifest_preprocess</a></li>
               </ul>
             </li>
         </ul>
@@ -275,7 +275,7 @@
     <tbody>
         <tr>
             <td>
-              <span class="anchor" id="variable-var~13"></span>
+              <span class="anchor" id="variable-var~12"></span>
               type(<a href='../type/dependency_config_t.html'>dependency_config_t</a>),
             </td>
 <td>intent(inout),</td>
@@ -290,7 +290,7 @@
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-n~36"></span>
+              <span class="anchor" id="variable-n~30"></span>
               integer,
             </td>
 <td>intent(in),</td>
@@ -342,7 +342,7 @@
     <tbody>
         <tr>
             <td>
-              <span class="anchor" id="variable-features~9"></span>
+              <span class="anchor" id="variable-features~6"></span>
               type(<a href='../type/string_t.html'>string_t</a>),
             </td>
               <td>public,</td>
@@ -412,7 +412,7 @@ Required for dependencies that are obtained via the official registry.</p>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-path~30"></span>
+              <span class="anchor" id="variable-path~6"></span>
               character(len=:),
             </td>
               <td>public,</td>
@@ -429,7 +429,7 @@ Required for dependencies that are obtained via the official registry.</p>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-preprocess~10"></span>
+              <span class="anchor" id="variable-preprocess~9"></span>
               type(<a href='../type/preprocess_config_t.html'>preprocess_config_t</a>),
             </td>
               <td>public,</td>
@@ -478,37 +478,37 @@ The latest version is used if not specified.</p>
               </tr>
               <tr>
                 <td>  generic, public ::
-  <strong><a href='../type/dependency_config_t.html#boundprocedure-dump~23'>dump</a></strong> => <a href='/home/runner/work/fpm/fpm/fpm-doc/type/srcfile_t.html#boundprocedure-dump_to_toml~19'>dump_to_toml</a>, dump_to_file, dump_to_unit</td>
+  <strong><a href='../type/dependency_config_t.html#boundprocedure-dump~24'>dump</a></strong> => <a href='/home/runner/work/fpm/fpm/fpm-doc/type/srcfile_t.html#boundprocedure-dump_to_toml~23'>dump_to_toml</a>, dump_to_file, dump_to_unit</td>
                   <td></td>
               </tr>
               <tr>
                 <td>  procedure, public ::
-  <strong><a href='../type/dependency_config_t.html#boundprocedure-dump_to_toml~18'>dump_to_toml</a></strong></td>
+  <strong><a href='../type/dependency_config_t.html#boundprocedure-dump_to_toml~20'>dump_to_toml</a></strong></td>
                   <td></td>
               </tr>
               <tr>
                 <td>  procedure, public ::
-  <strong><a href='../type/dependency_config_t.html#boundprocedure-info~11'>info</a></strong></td>
+  <strong><a href='../type/dependency_config_t.html#boundprocedure-info~12'>info</a></strong></td>
                   <td><p>Print information on this instance</p></td>
               </tr>
               <tr>
                 <td>  generic, public ::
-  <strong><a href='../type/dependency_config_t.html#boundprocedure-load~20'>load</a></strong> => <a href='/home/runner/work/fpm/fpm/fpm-doc/type/srcfile_t.html#boundprocedure-load_from_toml~19'>load_from_toml</a>, load_from_file, load_from_unit</td>
+  <strong><a href='../type/dependency_config_t.html#boundprocedure-load~21'>load</a></strong> => <a href='/home/runner/work/fpm/fpm/fpm-doc/type/srcfile_t.html#boundprocedure-load_from_toml~23'>load_from_toml</a>, load_from_file, load_from_unit</td>
                   <td></td>
               </tr>
               <tr>
                 <td>  procedure, public ::
-  <strong><a href='../type/dependency_config_t.html#boundprocedure-load_from_toml~18'>load_from_toml</a></strong></td>
+  <strong><a href='../type/dependency_config_t.html#boundprocedure-load_from_toml~20'>load_from_toml</a></strong></td>
                   <td></td>
               </tr>
               <tr>
                 <td>  generic, public ::
-  <strong><a href='../type/dependency_config_t.html#boundprocedure-operator%28%3D%3D%29~21'>operator(==)</a></strong> => <a href='/home/runner/work/fpm/fpm/fpm-doc/type/srcfile_t.html#boundprocedure-serializable_is_same~19'>serializable_is_same</a></td>
+  <strong><a href='../type/dependency_config_t.html#boundprocedure-operator%28%3D%3D%29~22'>operator(==)</a></strong> => <a href='/home/runner/work/fpm/fpm/fpm-doc/type/srcfile_t.html#boundprocedure-serializable_is_same~23'>serializable_is_same</a></td>
                   <td></td>
               </tr>
               <tr>
                 <td>  procedure, public ::
-  <strong><a href='../type/dependency_config_t.html#boundprocedure-serializable_is_same~18'>serializable_is_same</a></strong> => dependency_is_same</td>
+  <strong><a href='../type/dependency_config_t.html#boundprocedure-serializable_is_same~20'>serializable_is_same</a></strong> => dependency_is_same</td>
                   <td><p>Serialization interface</p></td>
               </tr>
               <tr>
@@ -546,7 +546,7 @@ The latest version is used if not specified.</p>
     <tbody>
         <tr>
             <td>
-              <span class="anchor" id="variable-cached~4"></span>
+              <span class="anchor" id="variable-cached~5"></span>
               class(<a href='../type/dependency_config_t.html'>dependency_config_t</a>),
             </td>
 <td>intent(in)</td>
@@ -561,7 +561,7 @@ The latest version is used if not specified.</p>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-manifest~6"></span>
+              <span class="anchor" id="variable-manifest~7"></span>
               class(<a href='../type/dependency_config_t.html'>dependency_config_t</a>),
             </td>
 <td>intent(in)</td>
@@ -591,7 +591,7 @@ The latest version is used if not specified.</p>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-iunit~4"></span>
+              <span class="anchor" id="variable-iunit~5"></span>
               integer,
             </td>
 <td>intent(in)</td>
@@ -641,7 +641,7 @@ The latest version is used if not specified.</p>
     <tbody>
         <tr>
             <td>
-              <span class="anchor" id="variable-self~180"></span>
+              <span class="anchor" id="variable-self~171"></span>
               class(<a href='../type/dependency_config_t.html'>dependency_config_t</a>),
             </td>
 <td>intent(inout)</td>
@@ -681,7 +681,7 @@ The latest version is used if not specified.</p>
     <tbody>
         <tr>
             <td>
-              <span class="anchor" id="variable-deps~2"></span>
+              <span class="anchor" id="variable-deps~3"></span>
               type(<a href='../type/dependency_config_t.html'>dependency_config_t</a>),
             </td>
 <td>intent(out),</td>
@@ -696,7 +696,7 @@ The latest version is used if not specified.</p>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-table~90"></span>
+              <span class="anchor" id="variable-table~92"></span>
               type(toml_table),
             </td>
 <td>intent(inout)</td>
@@ -711,7 +711,7 @@ The latest version is used if not specified.</p>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-root~11"></span>
+              <span class="anchor" id="variable-root~14"></span>
               character(len=*),
             </td>
 <td>intent(in),</td>
@@ -726,7 +726,7 @@ The latest version is used if not specified.</p>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-meta~4"></span>
+              <span class="anchor" id="variable-meta~5"></span>
               type(<a href='../type/metapackage_config_t.html'>metapackage_config_t</a>),
             </td>
 <td>intent(out),</td>
@@ -741,7 +741,7 @@ The latest version is used if not specified.</p>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-error~196"></span>
+              <span class="anchor" id="variable-error~166"></span>
               type(<a href='../type/error_t.html'>error_t</a>),
             </td>
 <td>intent(out),</td>
@@ -781,7 +781,7 @@ The latest version is used if not specified.</p>
     <tbody>
         <tr>
             <td>
-              <span class="anchor" id="variable-self~178"></span>
+              <span class="anchor" id="variable-self~169"></span>
               type(<a href='../type/dependency_config_t.html'>dependency_config_t</a>),
             </td>
 <td>intent(out)</td>
@@ -796,7 +796,7 @@ The latest version is used if not specified.</p>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-table~88"></span>
+              <span class="anchor" id="variable-table~90"></span>
               type(toml_table),
             </td>
 <td>intent(inout)</td>
@@ -811,7 +811,7 @@ The latest version is used if not specified.</p>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-root~10"></span>
+              <span class="anchor" id="variable-root~13"></span>
               character(len=*),
             </td>
 <td>intent(in),</td>
@@ -826,7 +826,7 @@ The latest version is used if not specified.</p>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-error~194"></span>
+              <span class="anchor" id="variable-error~164"></span>
               type(<a href='../type/error_t.html'>error_t</a>),
             </td>
 <td>intent(out),</td>
