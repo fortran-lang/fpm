@@ -62,7 +62,7 @@ jobs:
 
     steps:
     - name: Checkout code
-      uses: actions/checkout@v5
+      uses: actions/checkout@v6
 
     - name: Setup Fortran compiler
       uses: fortran-lang/setup-fortran@v1.8.0
@@ -275,7 +275,7 @@ jobs:
         gcc_v: [11,12,13]
 
     steps:
-    - uses: actions/checkout@v5
+    - uses: actions/checkout@v6
 
     - name: Download Artifacts
       id: download_windows_artifacts
@@ -392,7 +392,7 @@ jobs:
       env:
         DEPLOY_BRANCH: ${{ secrets.DEPLOY_BRANCH && contains(github.ref, secrets.DEPLOY_BRANCH) && 1 || 0 }}
 
-    - uses: actions/checkout@v5
+    - uses: actions/checkout@v6
       if: ${{ github.event_name == 'push' }}
 
     - name: Download Artifacts
