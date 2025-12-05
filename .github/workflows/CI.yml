@@ -65,7 +65,7 @@ jobs:
       uses: actions/checkout@v5
 
     - name: Setup Fortran compiler
-      uses: fortran-lang/setup-fortran@v1.7.0
+      uses: fortran-lang/setup-fortran@v1.8.0
       id: setup-fortran 
       with:
         compiler: ${{ matrix.toolchain.compiler }}
