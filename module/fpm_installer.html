@@ -185,10 +185,10 @@ to any directory within the prefix.</p>
             <li class="list-group-item">
               <ul class="list-inline">
                   <li class="list-inline-item"><a href='http://fortranwiki.org/fortran/show/iso_fortran_env'>iso_fortran_env</a></li>
-                  <li class="list-inline-item"><a href='fpm_error.html'>fpm_error</a></li>
-                  <li class="list-inline-item"><a href='fpm_filesystem.html'>fpm_filesystem</a></li>
                   <li class="list-inline-item"><a href='fpm_environment.html'>fpm_environment</a></li>
                   <li class="list-inline-item"><a href='fpm_targets.html'>fpm_targets</a></li>
+                  <li class="list-inline-item"><a href='fpm_error.html'>fpm_error</a></li>
+                  <li class="list-inline-item"><a href='fpm_filesystem.html'>fpm_filesystem</a></li>
               </ul>
             </li>
         </ul>
@@ -230,7 +230,7 @@ to any directory within the prefix.</p>
     <tbody>
         <tr>
             <td>
-              <span class="anchor" id="variable-bindir~2"></span>
+              <span class="anchor" id="variable-bindir"></span>
               character(len=:),
             </td>
               <td>public,</td>
@@ -247,7 +247,7 @@ to any directory within the prefix.</p>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-copy~2"></span>
+              <span class="anchor" id="variable-copy"></span>
               character(len=:),
             </td>
               <td>public,</td>
@@ -264,7 +264,7 @@ to any directory within the prefix.</p>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-includedir~2"></span>
+              <span class="anchor" id="variable-includedir"></span>
               character(len=:),
             </td>
               <td>public,</td>
@@ -281,7 +281,7 @@ to any directory within the prefix.</p>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-libdir~5"></span>
+              <span class="anchor" id="variable-libdir~2"></span>
               character(len=:),
             </td>
               <td>public,</td>
@@ -332,7 +332,7 @@ to any directory within the prefix.</p>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-os~5"></span>
+              <span class="anchor" id="variable-os"></span>
               integer,
             </td>
               <td>public</td>
@@ -349,7 +349,7 @@ to any directory within the prefix.</p>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-prefix~5"></span>
+              <span class="anchor" id="variable-prefix~2"></span>
               character(len=:),
             </td>
               <td>public,</td>
@@ -366,7 +366,7 @@ to any directory within the prefix.</p>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-testdir~2"></span>
+              <span class="anchor" id="variable-testdir"></span>
               character(len=:),
             </td>
               <td>public,</td>
@@ -383,7 +383,7 @@ to any directory within the prefix.</p>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-unit~37"></span>
+              <span class="anchor" id="variable-unit~5"></span>
               integer,
             </td>
               <td>public</td>
@@ -400,7 +400,7 @@ to any directory within the prefix.</p>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-verbosity~21"></span>
+              <span class="anchor" id="variable-verbosity~4"></span>
               integer,
             </td>
               <td>public</td>
@@ -426,7 +426,7 @@ to any directory within the prefix.</p>
           <tbody>
               <tr>
                 <td>  procedure, public ::
-  <strong><a href='../type/installer_t.html#boundprocedure-install~2'>install</a></strong></td>
+  <strong><a href='../type/installer_t.html#boundprocedure-install'>install</a></strong></td>
                   <td><p>Install a generic file into a subdirectory in the installation prefix</p></td>
               </tr>
               <tr>
@@ -500,7 +500,7 @@ to any directory within the prefix.</p>
     <tbody>
         <tr>
             <td>
-              <span class="anchor" id="variable-self~187"></span>
+              <span class="anchor" id="variable-self~37"></span>
               type(<a href='../type/installer_t.html'>installer_t</a>),
             </td>
 <td>intent(out)</td>
@@ -515,7 +515,7 @@ to any directory within the prefix.</p>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-prefix~6"></span>
+              <span class="anchor" id="variable-prefix~3"></span>
               character(len=*),
             </td>
 <td>intent(in),</td>
@@ -530,7 +530,7 @@ to any directory within the prefix.</p>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-bindir~3"></span>
+              <span class="anchor" id="variable-bindir~2"></span>
               character(len=*),
             </td>
 <td>intent(in),</td>
@@ -545,7 +545,7 @@ to any directory within the prefix.</p>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-libdir~6"></span>
+              <span class="anchor" id="variable-libdir~3"></span>
               character(len=*),
             </td>
 <td>intent(in),</td>
@@ -560,7 +560,7 @@ to any directory within the prefix.</p>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-includedir~3"></span>
+              <span class="anchor" id="variable-includedir~2"></span>
               character(len=*),
             </td>
 <td>intent(in),</td>
@@ -590,7 +590,7 @@ to any directory within the prefix.</p>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-testdir~3"></span>
+              <span class="anchor" id="variable-testdir~2"></span>
               character(len=*),
             </td>
 <td>intent(in),</td>
@@ -605,7 +605,7 @@ to any directory within the prefix.</p>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-verbosity~22"></span>
+              <span class="anchor" id="variable-verbosity~5"></span>
               integer,
             </td>
 <td>intent(in),</td>
@@ -620,7 +620,7 @@ to any directory within the prefix.</p>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-copy~3"></span>
+              <span class="anchor" id="variable-copy~2"></span>
               character(len=*),
             </td>
 <td>intent(in),</td>
@@ -678,7 +678,7 @@ to any directory within the prefix.</p>
             <p class="text-end">
               Documentation generated by
               <a href="https://github.com/Fortran-FOSS-Programmers/ford">FORD</a>
- on 2025-12-05 10:15 +0000             </p>
+ on 2025-12-06 08:58 +0000             </p>
           </div>
         </div>
         <br>
