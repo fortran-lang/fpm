@@ -813,35 +813,47 @@ module fpm_manifest_feature_collection
         call collection%push_variant(default_variant('debug', id_caf, OS_ALL, &
             ' -Wall -Wextra -Wimplicit-interface -Wno-external-argument-mismatch&
             & -fPIC -fmax-errors=1 -g -fcheck=bounds&
-            & -fcheck=array-temps -fbacktrace'))
+            & -fcheck=array-temps -fbacktrace', &
+            ' -fPIC', &
+            ' -fPIC'))
             
         call collection%push_variant(default_variant('debug', id_gcc, OS_ALL, &
             ' -Wall -Wextra -Wimplicit-interface -Wno-external-argument-mismatch&
             & -fPIC -fmax-errors=1 -g -fcheck=bounds&
-            & -fcheck=array-temps -fbacktrace -fcoarray=single'))
+            & -fcheck=array-temps -fbacktrace -fcoarray=single', &
+            ' -Wall -Wextra -fPIC -fmax-errors=1 -g', &
+            ' -Wall -Wextra -fPIC -fmax-errors=1 -g'))
             
         call collection%push_variant(default_variant('debug', id_f95, OS_ALL, &
             ' -Wall -Wextra -Wimplicit-interface -Wno-external-argument-mismatch&
             & -fPIC -fmax-errors=1 -g -fcheck=bounds&
-            & -fcheck=array-temps -Wno-maybe-uninitialized -Wno-uninitialized -fbacktrace'))
+            & -fcheck=array-temps -Wno-maybe-uninitialized -Wno-uninitialized -fbacktrace', &
+            ' -fPIC', &
+            ' -fPIC'))
             
         call collection%push_variant(default_variant('debug', id_nvhpc, OS_ALL, &
-            ' -Minform=inform -Mbackslash -g -Mbounds -Mchkptr -Mchkstk -traceback'))
+            ' -Minform=inform -Mbackslash -g -Mbounds -Mchkptr -Mchkstk -traceback', &
+            ' -fPIC', &
+            ' -fPIC'))
             
         call collection%push_variant(default_variant('debug', id_intel_classic_nix, OS_ALL, &
-            ' -warn all -check all -error-limit 1 -O0 -g -assume byterecl -traceback'))
+            ' -warn all -check all -error-limit 1 -O0 -g -assume byterecl -traceback', &
+            ' -fPIC', &
+            ' -fPIC'))
             
         call collection%push_variant(default_variant('debug', id_intel_classic_nix, OS_WINDOWS, &
             ' /warn:all /check:all /error-limit:1&
             & /Od /Z7 /assume:byterecl /traceback'))
             
         call collection%push_variant(default_variant('debug', id_intel_llvm_nix, OS_ALL, &
-            ' -warn all -check all -error-limit 1 -O0 -g -assume byterecl -traceback'))
+            ' -warn all -check all -error-limit 1 -O0 -g -assume byterecl -traceback', &
+            ' -fPIC', &
+            ' -fPIC'))
             
         call collection%push_variant(default_variant('debug', id_intel_llvm_nix, OS_WINDOWS, &
             ' /warn:all /check:all /error-limit:1 /Od /Z7 /assume:byterecl'))
             
-        call collection%push_variant(default_variant('debug', id_lfortran, OS_ALL, ''))
+        call collection%push_variant(default_variant('debug', id_lfortran, OS_ALL, '', ' -fPIC', ' -fPIC'))
             
     end function default_debug_feature
 
@@ -857,20 +869,30 @@ module fpm_manifest_feature_collection
         
         ! Add release variants for different compilers
         call collection%push_variant(default_variant('release', id_caf, OS_ALL, &
-            ' -O3 -Wimplicit-interface -fPIC -fmax-errors=1 -funroll-loops'))
+            ' -O3 -Wimplicit-interface -fPIC -fmax-errors=1 -funroll-loops', &
+            ' -fPIC', &
+            ' -fPIC'))
             
         call collection%push_variant(default_variant('release', id_gcc, OS_ALL, &
-            ' -O3 -Wimplicit-interface -fPIC -fmax-errors=1 -funroll-loops -fcoarray=single'))
+            ' -O3 -Wimplicit-interface -fPIC -fmax-errors=1 -funroll-loops -fcoarray=single', &
+            ' -O3 -fPIC -fmax-errors=1 -funroll-loops', &
+            ' -O3 -fPIC -fmax-errors=1 -funroll-loops'))
             
         call collection%push_variant(default_variant('release', id_f95, OS_ALL, &
-            ' -O3 -Wimplicit-interface -fPIC -fmax-errors=1 -ffast-math -funroll-loops'))
+            ' -O3 -Wimplicit-interface -fPIC -fmax-errors=1 -ffast-math -funroll-loops', &
+            ' -fPIC', &
+            ' -fPIC'))
             
         call collection%push_variant(default_variant('release', id_nvhpc, OS_ALL, &
-            ' -Mbackslash'))
+            ' -Mbackslash', &
+            ' -fPIC', &
+            ' -fPIC'))
             
         call collection%push_variant(default_variant('release', id_intel_classic_nix, OS_LINUX, &
             ' -fp-model precise -pc64 -align all -error-limit 1 -reentrancy&
-            & threaded -nogen-interfaces -assume byterecl'))
+            & threaded -nogen-interfaces -assume byterecl', &
+            ' -fPIC', &
+            ' -fPIC'))
             
         call collection%push_variant(default_variant('release', id_intel_classic_windows, &
             OS_WINDOWS, ' /fp:precise /align:all /error-limit:1 /reentrancy:threaded&
@@ -878,17 +900,23 @@ module fpm_manifest_feature_collection
             
         call collection%push_variant(default_variant('release', id_intel_llvm_nix, &
             OS_LINUX, ' -fp-model=precise -pc64 -align all -error-limit 1 -reentrancy threaded&
-            & -nogen-interfaces -assume byterecl'))
+            & -nogen-interfaces -assume byterecl', &
+            ' -fPIC', &
+            ' -fPIC'))
             
         call collection%push_variant(default_variant('release', id_intel_llvm_nix, &
             OS_WINDOWS, ' /fp:precise /align:all /error-limit:1 /reentrancy:threaded&
             & /nogen-interfaces /assume:byterecl'))
-            
+        
         call collection%push_variant(default_variant('release', id_nag, OS_ALL, &
-            ' -O4 -coarray=single -PIC'))
+            ' -O4 -coarray=single -PIC', &
+            ' -fPIC', &
+            ' -fPIC'))
             
         call collection%push_variant(default_variant('release', id_lfortran, OS_ALL, &
-            ' flag_lfortran_opt'))
+            ' flag_lfortran_opt', &
+            ' -fPIC', &
+            ' -fPIC'))
             
     end function default_release_feature
 
@@ -911,18 +939,33 @@ module fpm_manifest_feature_collection
     end subroutine get_default_features
 
     !> Helper to create a feature variant
-    function default_variant(name, compiler_id, os_type, flags) result(feature)
+    function default_variant(name, compiler_id, os_type, flags, c_flags, cxx_flags) result(feature)
         character(len=*), intent(in) :: name
         integer(compiler_enum), intent(in) :: compiler_id
         integer, intent(in) :: os_type
-        character(len=*), intent(in) :: flags
+        character(len=*), optional, intent(in) :: flags
+        character(len=*), optional, intent(in) :: c_flags
+        character(len=*), optional, intent(in) :: cxx_flags
         type(feature_config_t) :: feature
 
         feature%name = name
         feature%platform%compiler = compiler_id
         feature%platform%os_type = os_type
-        feature%flags = flags
         feature%default = .true.  ! These are built-in features
+        feature%flags = ""
+        feature%c_flags = ""
+        feature%cxx_flags = ""
+        
+        if (present(flags)) then
+            feature%flags = flags
+        end if
+        if (present(c_flags)) then
+            feature%c_flags = c_flags
+        end if
+        if (present(cxx_flags)) then
+            feature%cxx_flags = cxx_flags
+        end if
+
     end function default_variant
 
 
