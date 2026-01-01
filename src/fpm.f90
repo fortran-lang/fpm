@@ -63,6 +63,10 @@ subroutine build_model(model, settings, package_config, error)
     ! Set target OS to current OS (may be extended for cross-compilation in the future)
     model%target_os = get_os_type()
 
+    if (allocated(package_config%fortran_standard)) then
+        model%fortran_standard = package_config%fortran_standard
+    end if
+
     allocate(model%include_dirs(0))
     allocate(model%link_libraries(0))
     allocate(model%external_modules(0))
@@ -391,6 +395,14 @@ subroutine new_compiler_flags(model, settings, package)
     model%c_compile_flags       = assemble_flags(settings%cflag,   package%c_flags)
     model%cxx_compile_flags     = assemble_flags(settings%cxxflag, package%cxx_flags)
     model%link_flags            = assemble_flags(settings%ldflag,  package%link_time_flags)
+
+    if (allocated(package%fortran_standard)) then
+        ! Check if the compiler name contains "gfortran"
+        if (index(model%compiler%fc, "gfortran") > 0) then
+             model%fortran_compile_flags = model%fortran_compile_flags // &
+                                           " -std=f" // package%fortran_standard
+        end if
+    end if
 
 end subroutine new_compiler_flags
 
