@@ -335,14 +335,17 @@ function parse_define_directive(line) result(macro)
 
     ! Extract macro name and optional value
     ! Format: #define NAME or #define NAME VALUE
+    ! Note: bounds checks are short-circuited to avoid out-of-bounds access (issue #1222)
     start_pos = 8
-    do while (start_pos <= len(line) .and. line(start_pos:start_pos) == ' ')
+    do while (start_pos <= len(line))
+        if (line(start_pos:start_pos) /= ' ') exit
         start_pos = start_pos + 1
     end do
 
     ! Find end of macro name (space or end of line)
     end_pos = start_pos
-    do while (end_pos <= len(line) .and. line(end_pos:end_pos) /= ' ')
+    do while (end_pos <= len(line))
+        if (line(end_pos:end_pos) == ' ') exit
         end_pos = end_pos + 1
     end do
     end_pos = end_pos - 1
@@ -353,7 +356,8 @@ function parse_define_directive(line) result(macro)
 
     ! Check for value after the name
     start_pos = end_pos + 1
-    do while (start_pos <= len(line) .and. line(start_pos:start_pos) == ' ')
+    do while (start_pos <= len(line))
+        if (line(start_pos:start_pos) /= ' ') exit
         start_pos = start_pos + 1
     end do
 
