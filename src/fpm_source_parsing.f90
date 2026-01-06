@@ -248,51 +248,38 @@ subroutine parse_if_condition(lower_line, line, offset, heading_blanks, preproce
 
 end subroutine parse_if_condition
 
-!> Append lines to a dynamic string array
-subroutine append_lines(array, new_lines)
+!> Replace a single line with a chunk of lines (in-place)
+!> Replaces array(at_line) with chunk(:)
+pure subroutine insert_lines(array, chunk, at_line)
     type(string_t), allocatable, intent(inout) :: array(:)
-    type(string_t), intent(in) :: new_lines(:)
+    type(string_t), intent(in) :: chunk(:)
+    integer, intent(in) :: at_line
 
-    type(string_t), allocatable :: temp(:)
-    integer :: n, m
-
-    if (.not. allocated(array)) then
-        array = new_lines
-        return
-    end if
+    type(string_t), allocatable :: new_array(:)
+    integer :: n, m, new_size
 
     n = size(array)
-    m = size(new_lines)
-    if (m == 0) return
+    m = size(chunk)
 
-    allocate(temp(n + m))
-    temp(1:n) = array
-    temp(n+1:n+m) = new_lines
-    call move_alloc(temp, array)
+    ! Bounds check: at_line must be in valid range [1, n]
+    if (at_line < 1 .or. at_line > n) return
 
-end subroutine append_lines
+    new_size = n - 1 + m  ! Remove 1 line, add m lines
 
-!> Append a single line to a dynamic string array
-subroutine append_line(array, new_line)
-    type(string_t), allocatable, intent(inout) :: array(:)
-    type(string_t), intent(in) :: new_line
+    allocate(new_array(new_size))
 
-    type(string_t), allocatable :: temp(:)
-    integer :: n
+    ! Copy lines before at_line
+    if (at_line > 1) new_array(1:at_line-1) = array(1:at_line-1)
 
-    if (.not. allocated(array)) then
-        allocate(array(1))
-        array(1) = new_line
-        return
-    end if
+    ! Insert chunk
+    if (m > 0) new_array(at_line:at_line+m-1) = chunk
 
-    n = size(array)
-    allocate(temp(n + 1))
-    temp(1:n) = array
-    temp(n + 1) = new_line
-    call move_alloc(temp, array)
+    ! Copy lines after at_line
+    if (at_line < n) new_array(at_line+m:new_size) = array(at_line+1:n)
 
-end subroutine append_line
+    call move_alloc(new_array, array)
+
+end subroutine insert_lines
 
 !> Read source file lines with include files embedded inline
 !> Replaces both CPP `#include "file"` and Fortran `include "file"` with file contents
@@ -301,13 +288,13 @@ function read_lines_with_includes(filename) result(lines)
     character(*), intent(in) :: filename
     type(string_t), allocatable :: lines(:)
 
-    type(string_t), allocatable :: file_lines(:), include_lines(:)
+    type(string_t), allocatable :: include_lines(:)
     character(:), allocatable :: include_name, include_path, source_dir, pkg_dir
     integer :: i
     logical :: found_include
 
-    file_lines = read_lines_expanded(filename)
-    if (.not. allocated(file_lines) .or. size(file_lines) == 0) then
+    lines = read_lines_expanded(filename)
+    if (.not. allocated(lines) .or. size(lines) == 0) then
         allocate(lines(0))
         return
     end if
@@ -315,25 +302,20 @@ function read_lines_with_includes(filename) result(lines)
     source_dir = parent_dir(filename)
     pkg_dir = parent_dir(source_dir)
 
-    ! Single pass: build result with includes embedded dynamically
-    do i = 1, size(file_lines)
-        call is_include_line(file_lines(i)%s, found_include, include_name)
+    ! Process in reverse order so indices don't shift for unprocessed lines
+    do i = size(lines), 1, -1
+        call is_include_line(lines(i)%s, found_include, include_name)
 
         if (found_include) then
             include_path = find_include_file(include_name, source_dir, pkg_dir)
             if (len_trim(include_path) > 0) then
                 include_lines = read_lines(include_path)
                 if (allocated(include_lines) .and. size(include_lines) > 0) then
-                    call append_lines(lines, include_lines)
-                    cycle
+                    call insert_lines(lines, include_lines, i)
                 end if
             end if
         end if
-
-        call append_line(lines, file_lines(i))
     end do
-
-    if (.not. allocated(lines)) allocate(lines(0))
 
 end function read_lines_with_includes
 
