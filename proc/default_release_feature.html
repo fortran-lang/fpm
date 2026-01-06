@@ -201,20 +201,30 @@
 <span class="w">        </span>
 <span class="w">        </span><span class="c">! Add release variants for different compilers</span>
 <span class="w">        </span><span class="k">call </span><span class="n">collection</span><span class="p">%</span><span class="n">push_variant</span><span class="p">(</span><span class="n">default_variant</span><span class="p">(</span><span class="s1">&#39;release&#39;</span><span class="p">,</span><span class="w"> </span><span class="n">id_caf</span><span class="p">,</span><span class="w"> </span><span class="n">OS_ALL</span><span class="p">,</span><span class="w"> </span><span class="p">&amp;</span>
-<span class="w">            </span><span class="s1">&#39; -O3 -Wimplicit-interface -fPIC -fmax-errors=1 -funroll-loops&#39;</span><span class="p">))</span>
+<span class="w">            </span><span class="s1">&#39; -O3 -Wimplicit-interface -fPIC -fmax-errors=1 -funroll-loops&#39;</span><span class="p">,</span><span class="w"> </span><span class="p">&amp;</span>
+<span class="w">            </span><span class="s1">&#39; -fPIC&#39;</span><span class="p">,</span><span class="w"> </span><span class="p">&amp;</span>
+<span class="w">            </span><span class="s1">&#39; -fPIC&#39;</span><span class="p">))</span>
 <span class="w">            </span>
 <span class="w">        </span><span class="k">call </span><span class="n">collection</span><span class="p">%</span><span class="n">push_variant</span><span class="p">(</span><span class="n">default_variant</span><span class="p">(</span><span class="s1">&#39;release&#39;</span><span class="p">,</span><span class="w"> </span><span class="n">id_gcc</span><span class="p">,</span><span class="w"> </span><span class="n">OS_ALL</span><span class="p">,</span><span class="w"> </span><span class="p">&amp;</span>
-<span class="w">            </span><span class="s1">&#39; -O3 -Wimplicit-interface -fPIC -fmax-errors=1 -funroll-loops -fcoarray=single&#39;</span><span class="p">))</span>
+<span class="w">            </span><span class="s1">&#39; -O3 -Wimplicit-interface -fPIC -fmax-errors=1 -funroll-loops -fcoarray=single&#39;</span><span class="p">,</span><span class="w"> </span><span class="p">&amp;</span>
+<span class="w">            </span><span class="s1">&#39; -O3 -fPIC -fmax-errors=1 -funroll-loops&#39;</span><span class="p">,</span><span class="w"> </span><span class="p">&amp;</span>
+<span class="w">            </span><span class="s1">&#39; -O3 -fPIC -fmax-errors=1 -funroll-loops&#39;</span><span class="p">))</span>
 <span class="w">            </span>
 <span class="w">        </span><span class="k">call </span><span class="n">collection</span><span class="p">%</span><span class="n">push_variant</span><span class="p">(</span><span class="n">default_variant</span><span class="p">(</span><span class="s1">&#39;release&#39;</span><span class="p">,</span><span class="w"> </span><span class="n">id_f95</span><span class="p">,</span><span class="w"> </span><span class="n">OS_ALL</span><span class="p">,</span><span class="w"> </span><span class="p">&amp;</span>
-<span class="w">            </span><span class="s1">&#39; -O3 -Wimplicit-interface -fPIC -fmax-errors=1 -ffast-math -funroll-loops&#39;</span><span class="p">))</span>
+<span class="w">            </span><span class="s1">&#39; -O3 -Wimplicit-interface -fPIC -fmax-errors=1 -ffast-math -funroll-loops&#39;</span><span class="p">,</span><span class="w"> </span><span class="p">&amp;</span>
+<span class="w">            </span><span class="s1">&#39; -fPIC&#39;</span><span class="p">,</span><span class="w"> </span><span class="p">&amp;</span>
+<span class="w">            </span><span class="s1">&#39; -fPIC&#39;</span><span class="p">))</span>
 <span class="w">            </span>
 <span class="w">        </span><span class="k">call </span><span class="n">collection</span><span class="p">%</span><span class="n">push_variant</span><span class="p">(</span><span class="n">default_variant</span><span class="p">(</span><span class="s1">&#39;release&#39;</span><span class="p">,</span><span class="w"> </span><span class="n">id_nvhpc</span><span class="p">,</span><span class="w"> </span><span class="n">OS_ALL</span><span class="p">,</span><span class="w"> </span><span class="p">&amp;</span>
-<span class="w">            </span><span class="s1">&#39; -Mbackslash&#39;</span><span class="p">))</span>
+<span class="w">            </span><span class="s1">&#39; -Mbackslash&#39;</span><span class="p">,</span><span class="w"> </span><span class="p">&amp;</span>
+<span class="w">            </span><span class="s1">&#39; -fPIC&#39;</span><span class="p">,</span><span class="w"> </span><span class="p">&amp;</span>
+<span class="w">            </span><span class="s1">&#39; -fPIC&#39;</span><span class="p">))</span>
 <span class="w">            </span>
 <span class="w">        </span><span class="k">call </span><span class="n">collection</span><span class="p">%</span><span class="n">push_variant</span><span class="p">(</span><span class="n">default_variant</span><span class="p">(</span><span class="s1">&#39;release&#39;</span><span class="p">,</span><span class="w"> </span><span class="n">id_intel_classic_nix</span><span class="p">,</span><span class="w"> </span><span class="n">OS_LINUX</span><span class="p">,</span><span class="w"> </span><span class="p">&amp;</span>
 <span class="w">            </span><span class="s1">&#39; -fp-model precise -pc64 -align all -error-limit 1 -reentrancy&amp;</span>
-<span class="s1">            &amp; threaded -nogen-interfaces -assume byterecl&#39;</span><span class="p">))</span>
+<span class="s1">            &amp; threaded -nogen-interfaces -assume byterecl&#39;</span><span class="p">,</span><span class="w"> </span><span class="p">&amp;</span>
+<span class="w">            </span><span class="s1">&#39; -fPIC&#39;</span><span class="p">,</span><span class="w"> </span><span class="p">&amp;</span>
+<span class="w">            </span><span class="s1">&#39; -fPIC&#39;</span><span class="p">))</span>
 <span class="w">            </span>
 <span class="w">        </span><span class="k">call </span><span class="n">collection</span><span class="p">%</span><span class="n">push_variant</span><span class="p">(</span><span class="n">default_variant</span><span class="p">(</span><span class="s1">&#39;release&#39;</span><span class="p">,</span><span class="w"> </span><span class="n">id_intel_classic_windows</span><span class="p">,</span><span class="w"> </span><span class="p">&amp;</span>
 <span class="w">            </span><span class="n">OS_WINDOWS</span><span class="p">,</span><span class="w"> </span><span class="s1">&#39; /fp:precise /align:all /error-limit:1 /reentrancy:threaded&amp;</span>
@@ -222,17 +232,23 @@
 <span class="w">            </span>
 <span class="w">        </span><span class="k">call </span><span class="n">collection</span><span class="p">%</span><span class="n">push_variant</span><span class="p">(</span><span class="n">default_variant</span><span class="p">(</span><span class="s1">&#39;release&#39;</span><span class="p">,</span><span class="w"> </span><span class="n">id_intel_llvm_nix</span><span class="p">,</span><span class="w"> </span><span class="p">&amp;</span>
 <span class="w">            </span><span class="n">OS_LINUX</span><span class="p">,</span><span class="w"> </span><span class="s1">&#39; -fp-model=precise -pc64 -align all -error-limit 1 -reentrancy threaded&amp;</span>
-<span class="s1">            &amp; -nogen-interfaces -assume byterecl&#39;</span><span class="p">))</span>
+<span class="s1">            &amp; -nogen-interfaces -assume byterecl&#39;</span><span class="p">,</span><span class="w"> </span><span class="p">&amp;</span>
+<span class="w">            </span><span class="s1">&#39; -fPIC&#39;</span><span class="p">,</span><span class="w"> </span><span class="p">&amp;</span>
+<span class="w">            </span><span class="s1">&#39; -fPIC&#39;</span><span class="p">))</span>
 <span class="w">            </span>
 <span class="w">        </span><span class="k">call </span><span class="n">collection</span><span class="p">%</span><span class="n">push_variant</span><span class="p">(</span><span class="n">default_variant</span><span class="p">(</span><span class="s1">&#39;release&#39;</span><span class="p">,</span><span class="w"> </span><span class="n">id_intel_llvm_nix</span><span class="p">,</span><span class="w"> </span><span class="p">&amp;</span>
 <span class="w">            </span><span class="n">OS_WINDOWS</span><span class="p">,</span><span class="w"> </span><span class="s1">&#39; /fp:precise /align:all /error-limit:1 /reentrancy:threaded&amp;</span>
 <span class="s1">            &amp; /nogen-interfaces /assume:byterecl&#39;</span><span class="p">))</span>
-<span class="w">            </span>
+<span class="w">        </span>
 <span class="w">        </span><span class="k">call </span><span class="n">collection</span><span class="p">%</span><span class="n">push_variant</span><span class="p">(</span><span class="n">default_variant</span><span class="p">(</span><span class="s1">&#39;release&#39;</span><span class="p">,</span><span class="w"> </span><span class="n">id_nag</span><span class="p">,</span><span class="w"> </span><span class="n">OS_ALL</span><span class="p">,</span><span class="w"> </span><span class="p">&amp;</span>
-<span class="w">            </span><span class="s1">&#39; -O4 -coarray=single -PIC&#39;</span><span class="p">))</span>
+<span class="w">            </span><span class="s1">&#39; -O4 -coarray=single -PIC&#39;</span><span class="p">,</span><span class="w"> </span><span class="p">&amp;</span>
+<span class="w">            </span><span class="s1">&#39; -fPIC&#39;</span><span class="p">,</span><span class="w"> </span><span class="p">&amp;</span>
+<span class="w">            </span><span class="s1">&#39; -fPIC&#39;</span><span class="p">))</span>
 <span class="w">            </span>
 <span class="w">        </span><span class="k">call </span><span class="n">collection</span><span class="p">%</span><span class="n">push_variant</span><span class="p">(</span><span class="n">default_variant</span><span class="p">(</span><span class="s1">&#39;release&#39;</span><span class="p">,</span><span class="w"> </span><span class="n">id_lfortran</span><span class="p">,</span><span class="w"> </span><span class="n">OS_ALL</span><span class="p">,</span><span class="w"> </span><span class="p">&amp;</span>
-<span class="w">            </span><span class="s1">&#39; flag_lfortran_opt&#39;</span><span class="p">))</span>
+<span class="w">            </span><span class="s1">&#39; flag_lfortran_opt&#39;</span><span class="p">,</span><span class="w"> </span><span class="p">&amp;</span>
+<span class="w">            </span><span class="s1">&#39; -fPIC&#39;</span><span class="p">,</span><span class="w"> </span><span class="p">&amp;</span>
+<span class="w">            </span><span class="s1">&#39; -fPIC&#39;</span><span class="p">))</span>
 <span class="w">            </span>
 <span class="w">    </span><span class="k">end function </span><span class="n">default_release_feature</span>
 </pre></div>
@@ -258,7 +274,7 @@
             <p class="text-end">
               Documentation generated by
               <a href="https://github.com/Fortran-FOSS-Programmers/ford">FORD</a>
- on 2026-01-05 19:58 +0000             </p>
+ on 2026-01-06 07:46 +0000             </p>
           </div>
         </div>
         <br>

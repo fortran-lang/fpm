@@ -244,17 +244,17 @@
             <li class="list-group-item">
               <ul class="list-inline">
                   <li class="list-inline-item"><a href='http://fortranwiki.org/fortran/show/iso_fortran_env'>iso_fortran_env</a></li>
-                  <li class="list-inline-item"><a href='fpm_manifest_platform.html'>fpm_manifest_platform</a></li>
-                  <li class="list-inline-item"><a href='fpm_strings.html'>fpm_strings</a></li>
-                  <li class="list-inline-item"><a href='https://toml-f.github.io/toml-f'>tomlf</a></li>
-                  <li class="list-inline-item"><a href='fpm_error.html'>fpm_error</a></li>
-                  <li class="list-inline-item"><a href='fpm_toml.html'>fpm_toml</a></li>
-                  <li class="list-inline-item"><a href='fpm_manifest_preprocess.html'>fpm_manifest_preprocess</a></li>
-                  <li class="list-inline-item"><a href='fpm_compiler.html'>fpm_compiler</a></li>
-                  <li class="list-inline-item"><a href='fpm_manifest_fortran.html'>fpm_manifest_fortran</a></li>
-                  <li class="list-inline-item"><a href='fpm_versioning.html'>fpm_versioning</a></li>
-                  <li class="list-inline-item"><a href='fpm_dependency.html'>fpm_dependency</a></li>
                   <li class="list-inline-item"><a href='fpm_environment.html'>fpm_environment</a></li>
+                  <li class="list-inline-item"><a href='https://toml-f.github.io/toml-f'>tomlf</a></li>
+                  <li class="list-inline-item"><a href='fpm_toml.html'>fpm_toml</a></li>
+                  <li class="list-inline-item"><a href='fpm_compiler.html'>fpm_compiler</a></li>
+                  <li class="list-inline-item"><a href='fpm_error.html'>fpm_error</a></li>
+                  <li class="list-inline-item"><a href='fpm_manifest_platform.html'>fpm_manifest_platform</a></li>
+                  <li class="list-inline-item"><a href='fpm_dependency.html'>fpm_dependency</a></li>
+                  <li class="list-inline-item"><a href='fpm_manifest_fortran.html'>fpm_manifest_fortran</a></li>
+                  <li class="list-inline-item"><a href='fpm_strings.html'>fpm_strings</a></li>
+                  <li class="list-inline-item"><a href='fpm_manifest_preprocess.html'>fpm_manifest_preprocess</a></li>
+                  <li class="list-inline-item"><a href='fpm_versioning.html'>fpm_versioning</a></li>
               </ul>
             </li>
         </ul>
@@ -569,7 +569,7 @@ parameter
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-build_dir~4"></span>
+              <span class="anchor" id="variable-build_dir~6"></span>
               character(len=:),
             </td>
               <td>public,</td>
@@ -654,7 +654,7 @@ parameter
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-deps~2"></span>
+              <span class="anchor" id="variable-deps~4"></span>
               type(<a href='../type/dependency_tree_t.html'>dependency_tree_t</a>),
             </td>
               <td>public</td>
@@ -688,7 +688,7 @@ parameter
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-external_modules~4"></span>
+              <span class="anchor" id="variable-external_modules~3"></span>
               type(<a href='../type/string_t.html'>string_t</a>),
             </td>
               <td>public,</td>
@@ -790,7 +790,7 @@ parameter
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-module_prefix~4"></span>
+              <span class="anchor" id="variable-module_prefix~3"></span>
               type(<a href='../type/string_t.html'>string_t</a>),
             </td>
               <td>public</td>
@@ -807,7 +807,7 @@ parameter
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-package_name~8"></span>
+              <span class="anchor" id="variable-package_name~4"></span>
               character(len=:),
             </td>
               <td>public,</td>
@@ -841,7 +841,7 @@ parameter
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-target_os~4"></span>
+              <span class="anchor" id="variable-target_os~2"></span>
               integer,
             </td>
               <td>public</td>
@@ -867,12 +867,12 @@ parameter
           <tbody>
               <tr>
                 <td>  generic, public ::
-  <strong><a href='../type/fpm_model_t.html#boundprocedure-dump~22'>dump</a></strong> => <a href='/home/runner/work/fpm/fpm/fpm-doc/type/srcfile_t.html#boundprocedure-dump_to_toml~18'>dump_to_toml</a>, dump_to_file, dump_to_unit</td>
+  <strong><a href='../type/fpm_model_t.html#boundprocedure-dump~20'>dump</a></strong> => <a href='/home/runner/work/fpm/fpm/fpm-doc/type/srcfile_t.html#boundprocedure-dump_to_toml~15'>dump_to_toml</a>, dump_to_file, dump_to_unit</td>
                   <td></td>
               </tr>
               <tr>
                 <td>  procedure, public ::
-  <strong><a href='../type/fpm_model_t.html#boundprocedure-dump_to_toml~20'>dump_to_toml</a></strong> => model_dump_to_toml</td>
+  <strong><a href='../type/fpm_model_t.html#boundprocedure-dump_to_toml~17'>dump_to_toml</a></strong> => model_dump_to_toml</td>
                   <td></td>
               </tr>
               <tr>
@@ -882,27 +882,27 @@ parameter
               </tr>
               <tr>
                 <td>  generic, public ::
-  <strong><a href='../type/fpm_model_t.html#boundprocedure-load~19'>load</a></strong> => <a href='/home/runner/work/fpm/fpm/fpm-doc/type/srcfile_t.html#boundprocedure-load_from_toml~18'>load_from_toml</a>, load_from_file, load_from_unit</td>
+  <strong><a href='../type/fpm_model_t.html#boundprocedure-load~17'>load</a></strong> => <a href='/home/runner/work/fpm/fpm/fpm-doc/type/srcfile_t.html#boundprocedure-load_from_toml~15'>load_from_toml</a>, load_from_file, load_from_unit</td>
                   <td></td>
               </tr>
               <tr>
                 <td>  procedure, public ::
-  <strong><a href='../type/fpm_model_t.html#boundprocedure-load_from_toml~20'>load_from_toml</a></strong> => model_load_from_toml</td>
+  <strong><a href='../type/fpm_model_t.html#boundprocedure-load_from_toml~17'>load_from_toml</a></strong> => model_load_from_toml</td>
                   <td></td>
               </tr>
               <tr>
                 <td>  generic, public ::
-  <strong><a href='../type/fpm_model_t.html#boundprocedure-operator%28%3D%3D%29~20'>operator(==)</a></strong> => <a href='/home/runner/work/fpm/fpm/fpm-doc/type/srcfile_t.html#boundprocedure-serializable_is_same~18'>serializable_is_same</a></td>
+  <strong><a href='../type/fpm_model_t.html#boundprocedure-operator%28%3D%3D%29~18'>operator(==)</a></strong> => <a href='/home/runner/work/fpm/fpm/fpm-doc/type/srcfile_t.html#boundprocedure-serializable_is_same~15'>serializable_is_same</a></td>
                   <td></td>
               </tr>
               <tr>
                 <td>  procedure, public ::
-  <strong><a href='../type/fpm_model_t.html#boundprocedure-serializable_is_same~20'>serializable_is_same</a></strong> => model_is_same</td>
+  <strong><a href='../type/fpm_model_t.html#boundprocedure-serializable_is_same~17'>serializable_is_same</a></strong> => model_is_same</td>
                   <td><p>Serialization interface</p></td>
               </tr>
               <tr>
                 <td>  procedure, public ::
-  <strong><a href='../type/fpm_model_t.html#boundprocedure-target_platform~2'>target_platform</a></strong></td>
+  <strong><a href='../type/fpm_model_t.html#boundprocedure-target_platform'>target_platform</a></strong></td>
                   <td><p>Get target platform configuration</p></td>
               </tr>
               <tr>
@@ -974,7 +974,7 @@ parameter
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-module_prefix~3"></span>
+              <span class="anchor" id="variable-module_prefix~2"></span>
               type(<a href='../type/string_t.html'>string_t</a>),
             </td>
               <td>public</td>
@@ -991,7 +991,7 @@ parameter
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-name~43"></span>
+              <span class="anchor" id="variable-name~36"></span>
               character(len=:),
             </td>
               <td>public,</td>
@@ -1008,7 +1008,7 @@ parameter
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-preprocess~11"></span>
+              <span class="anchor" id="variable-preprocess~13"></span>
               type(<a href='../type/preprocess_config_t.html'>preprocess_config_t</a>),
             </td>
               <td>public</td>
@@ -1042,7 +1042,7 @@ parameter
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-version~19"></span>
+              <span class="anchor" id="variable-version~12"></span>
               type(<a href='../type/version_t.html'>version_t</a>),
             </td>
               <td>public,</td>
@@ -1068,12 +1068,12 @@ parameter
           <tbody>
               <tr>
                 <td>  generic, public ::
-  <strong><a href='../type/package_t.html#boundprocedure-dump~23'>dump</a></strong> => <a href='/home/runner/work/fpm/fpm/fpm-doc/type/srcfile_t.html#boundprocedure-dump_to_toml~18'>dump_to_toml</a>, dump_to_file, dump_to_unit</td>
+  <strong><a href='../type/package_t.html#boundprocedure-dump~21'>dump</a></strong> => <a href='/home/runner/work/fpm/fpm/fpm-doc/type/srcfile_t.html#boundprocedure-dump_to_toml~15'>dump_to_toml</a>, dump_to_file, dump_to_unit</td>
                   <td></td>
               </tr>
               <tr>
                 <td>  procedure, public ::
-  <strong><a href='../type/package_t.html#boundprocedure-dump_to_toml~19'>dump_to_toml</a></strong> => package_dump_to_toml</td>
+  <strong><a href='../type/package_t.html#boundprocedure-dump_to_toml~16'>dump_to_toml</a></strong> => package_dump_to_toml</td>
                   <td></td>
               </tr>
               <tr>
@@ -1083,22 +1083,22 @@ parameter
               </tr>
               <tr>
                 <td>  generic, public ::
-  <strong><a href='../type/package_t.html#boundprocedure-load~20'>load</a></strong> => <a href='/home/runner/work/fpm/fpm/fpm-doc/type/srcfile_t.html#boundprocedure-load_from_toml~18'>load_from_toml</a>, load_from_file, load_from_unit</td>
+  <strong><a href='../type/package_t.html#boundprocedure-load~18'>load</a></strong> => <a href='/home/runner/work/fpm/fpm/fpm-doc/type/srcfile_t.html#boundprocedure-load_from_toml~15'>load_from_toml</a>, load_from_file, load_from_unit</td>
                   <td></td>
               </tr>
               <tr>
                 <td>  procedure, public ::
-  <strong><a href='../type/package_t.html#boundprocedure-load_from_toml~19'>load_from_toml</a></strong> => package_load_from_toml</td>
+  <strong><a href='../type/package_t.html#boundprocedure-load_from_toml~16'>load_from_toml</a></strong> => package_load_from_toml</td>
                   <td></td>
               </tr>
               <tr>
                 <td>  generic, public ::
-  <strong><a href='../type/package_t.html#boundprocedure-operator%28%3D%3D%29~21'>operator(==)</a></strong> => <a href='/home/runner/work/fpm/fpm/fpm-doc/type/srcfile_t.html#boundprocedure-serializable_is_same~18'>serializable_is_same</a></td>
+  <strong><a href='../type/package_t.html#boundprocedure-operator%28%3D%3D%29~19'>operator(==)</a></strong> => <a href='/home/runner/work/fpm/fpm/fpm-doc/type/srcfile_t.html#boundprocedure-serializable_is_same~15'>serializable_is_same</a></td>
                   <td></td>
               </tr>
               <tr>
                 <td>  procedure, public ::
-  <strong><a href='../type/package_t.html#boundprocedure-serializable_is_same~19'>serializable_is_same</a></strong> => package_is_same</td>
+  <strong><a href='../type/package_t.html#boundprocedure-serializable_is_same~16'>serializable_is_same</a></strong> => package_is_same</td>
                   <td><p>Serialization interface</p></td>
               </tr>
               <tr>
@@ -1170,7 +1170,7 @@ parameter
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-file_name~2"></span>
+              <span class="anchor" id="variable-file_name~3"></span>
               character(len=:),
             </td>
               <td>public,</td>
@@ -1315,32 +1315,32 @@ parameter
           <tbody>
               <tr>
                 <td>  generic, public ::
-  <strong><a href='../type/srcfile_t.html#boundprocedure-dump~24'>dump</a></strong> => <a href='/home/runner/work/fpm/fpm/fpm-doc/type/srcfile_t.html#boundprocedure-dump_to_toml~18'>dump_to_toml</a>, dump_to_file, dump_to_unit</td>
+  <strong><a href='../type/srcfile_t.html#boundprocedure-dump~22'>dump</a></strong> => <a href='/home/runner/work/fpm/fpm/fpm-doc/type/srcfile_t.html#boundprocedure-dump_to_toml~15'>dump_to_toml</a>, dump_to_file, dump_to_unit</td>
                   <td></td>
               </tr>
               <tr>
                 <td>  procedure, public ::
-  <strong><a href='../type/srcfile_t.html#boundprocedure-dump_to_toml~18'>dump_to_toml</a></strong> => srcfile_dump_to_toml</td>
+  <strong><a href='../type/srcfile_t.html#boundprocedure-dump_to_toml~15'>dump_to_toml</a></strong> => srcfile_dump_to_toml</td>
                   <td></td>
               </tr>
               <tr>
                 <td>  generic, public ::
-  <strong><a href='../type/srcfile_t.html#boundprocedure-load~21'>load</a></strong> => <a href='/home/runner/work/fpm/fpm/fpm-doc/type/srcfile_t.html#boundprocedure-load_from_toml~18'>load_from_toml</a>, load_from_file, load_from_unit</td>
+  <strong><a href='../type/srcfile_t.html#boundprocedure-load~19'>load</a></strong> => <a href='/home/runner/work/fpm/fpm/fpm-doc/type/srcfile_t.html#boundprocedure-load_from_toml~15'>load_from_toml</a>, load_from_file, load_from_unit</td>
                   <td></td>
               </tr>
               <tr>
                 <td>  procedure, public ::
-  <strong><a href='../type/srcfile_t.html#boundprocedure-load_from_toml~18'>load_from_toml</a></strong> => srcfile_load_from_toml</td>
+  <strong><a href='../type/srcfile_t.html#boundprocedure-load_from_toml~15'>load_from_toml</a></strong> => srcfile_load_from_toml</td>
                   <td></td>
               </tr>
               <tr>
                 <td>  generic, public ::
-  <strong><a href='../type/srcfile_t.html#boundprocedure-operator%28%3D%3D%29~22'>operator(==)</a></strong> => <a href='/home/runner/work/fpm/fpm/fpm-doc/type/srcfile_t.html#boundprocedure-serializable_is_same~18'>serializable_is_same</a></td>
+  <strong><a href='../type/srcfile_t.html#boundprocedure-operator%28%3D%3D%29~20'>operator(==)</a></strong> => <a href='/home/runner/work/fpm/fpm/fpm-doc/type/srcfile_t.html#boundprocedure-serializable_is_same~15'>serializable_is_same</a></td>
                   <td></td>
               </tr>
               <tr>
                 <td>  procedure, public ::
-  <strong><a href='../type/srcfile_t.html#boundprocedure-serializable_is_same~18'>serializable_is_same</a></strong> => srcfile_is_same</td>
+  <strong><a href='../type/srcfile_t.html#boundprocedure-serializable_is_same~15'>serializable_is_same</a></strong> => srcfile_is_same</td>
                   <td><p>Serialization interface</p></td>
               </tr>
               <tr>
@@ -1473,7 +1473,7 @@ parameter
     <tbody>
         <tr>
             <td>
-              <span class="anchor" id="variable-model~21"></span>
+              <span class="anchor" id="variable-model~16"></span>
               type(<a href='../type/fpm_model_t.html'>fpm_model_t</a>),
             </td>
 <td>intent(in)</td>
@@ -1516,7 +1516,7 @@ parameter
             <p class="text-end">
               Documentation generated by
               <a href="https://github.com/Fortran-FOSS-Programmers/ford">FORD</a>
- on 2026-01-05 19:58 +0000             </p>
+ on 2026-01-06 07:46 +0000             </p>
           </div>
         </div>
         <br>
