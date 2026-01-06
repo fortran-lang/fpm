@@ -19,10 +19,11 @@
 !>
 module fpm_meta
     use fpm_compiler, only: compiler_t
-    use fpm_manifest, only: package_config_t
+    use fpm_manifest, only: package_config_t, get_package_data
     use fpm_model, only: fpm_model_t
     use fpm_command_line, only: fpm_cmd_settings, fpm_build_settings, fpm_run_settings
     use fpm_error, only: error_t, syntax_error, fatal_error
+    use fpm_filesystem, only: join_path
 
     use fpm_meta_base, only: metapackage_t, destroy
     use fpm_meta_openmp, only: init_openmp
@@ -32,7 +33,7 @@ module fpm_meta
     use fpm_meta_hdf5, only: init_hdf5
     use fpm_meta_netcdf, only: init_netcdf
     use fpm_meta_blas, only: init_blas
-    use fpm_manifest_metapackages, only: metapackage_request_t
+    use fpm_manifest_metapackages, only: metapackage_request_t, metapackage_config_t
 
     use shlex_module, only: shlex_split => split
     use regex_module, only: regex
@@ -112,31 +113,52 @@ module fpm_meta
         type(package_config_t), intent(inout) :: package
         class(fpm_build_settings), intent(inout) :: settings
         type(error_t), allocatable, intent(out) :: error
-        
-        integer :: m
+
+        integer :: i
         type(metapackage_t) :: meta
         type(metapackage_request_t), allocatable :: requested(:)
+        type(metapackage_config_t) :: all_meta
+        type(package_config_t) :: dep_pkg
+        character(len=:), allocatable :: manifest_path
 
         ! Dependencies are added to the package config, so they're properly resolved
         ! into the dependency tree later.
         ! Flags are added to the model (whose compiler needs to be already initialized)
         if (model%compiler%is_unknown()) &
         write(stdout,'(a)') '<WARNING> compiler not initialized: metapackages may not be available'
-        
-        ! Get all requested metapackages
-        requested = package%meta%get_requests()
-        if (size(requested)<1) return
-        
-        do m=1,size(requested)
-            
-            call init_from_request(meta,requested(m),model%compiler,requested,error)
+
+        ! Build merged metapackage config from main package and all dependencies
+        ! Start with the main package's metapackage requests
+        all_meta = package%meta
+
+        ! Merge metapackage requests from all dependencies (if dependency tree exists)
+        ! Skip index 1 (the main package itself)
+        if (allocated(model%deps%dep)) then
+            do i = 2, model%deps%ndep
+                if (.not. allocated(model%deps%dep(i)%proj_dir)) cycle
+
+                manifest_path = join_path(model%deps%dep(i)%proj_dir, "fpm.toml")
+                call get_package_data(dep_pkg, manifest_path, error)
+                if (allocated(error)) return
+
+                call all_meta%merge(dep_pkg%meta)
+            end do
+        end if
+
+        ! Get all requested metapackages (including those from dependencies)
+        requested = all_meta%get_requests()
+        if (size(requested) < 1) return
+
+        do i = 1, size(requested)
+
+            call init_from_request(meta, requested(i), model%compiler, requested, error)
             if (allocated(error)) return
-            
-            call add_metapackage_model(model,package,settings,meta,error)
+
+            call add_metapackage_model(model, package, settings, meta, error)
             if (allocated(error)) return
-            
+
         end do
-        
+
     end subroutine resolve_metapackage_model
 
 end module fpm_meta

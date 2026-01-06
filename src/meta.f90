@@ -65,9 +65,12 @@ module fpm_manifest_metapackages
         type(metapackage_request_t) :: blas
         
         contains
-        
+
            procedure :: get_requests
-           
+
+           !> Merge another config into this one (for propagating dependency metapackages)
+           procedure :: merge => meta_config_merge
+
            ! Cleanup configuration; assert package names
            final     :: meta_config_final
            procedure :: reset => meta_config_reset
@@ -75,7 +78,7 @@ module fpm_manifest_metapackages
            procedure :: serializable_is_same => meta_config_same
            procedure :: dump_to_toml        => meta_config_dump
            procedure :: load_from_toml      => meta_config_load
-           
+
     end type metapackage_config_t
 
 
@@ -266,6 +269,36 @@ contains
         end subroutine add_if_active
         
     end function get_requests
+
+    !> Merge another metapackage configuration into this one
+    !> This is used to propagate metapackage requests from dependencies to the main package
+    subroutine meta_config_merge(self, other)
+        class(metapackage_config_t), intent(inout) :: self
+        type(metapackage_config_t), intent(in) :: other
+
+        ! Merge each metapackage request: if 'other' has it on, enable it in self
+        call merge_request(self%openmp, other%openmp)
+        call merge_request(self%stdlib, other%stdlib)
+        call merge_request(self%minpack, other%minpack)
+        call merge_request(self%mpi, other%mpi)
+        call merge_request(self%hdf5, other%hdf5)
+        call merge_request(self%netcdf, other%netcdf)
+        call merge_request(self%blas, other%blas)
+
+    contains
+
+        subroutine merge_request(self_req, other_req)
+            type(metapackage_request_t), intent(inout) :: self_req
+            type(metapackage_request_t), intent(in) :: other_req
+
+            ! If other request is on and self is off, copy the request
+            if (other_req%on .and. .not. self_req%on) then
+                self_req%on = .true.
+                if (allocated(other_req%version)) self_req%version = other_req%version
+            end if
+        end subroutine merge_request
+
+    end subroutine meta_config_merge
 
     logical function meta_request_same(this, that)
         class(metapackage_request_t), intent(in) :: this

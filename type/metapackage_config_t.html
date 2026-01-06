@@ -92,7 +92,7 @@
 
             <li class="list-inline-item" id="statements"><i class="fa fa-list-ol"></i>
               <a data-bs-toggle="tooltip" data-bs-placement="bottom" data-bs-html="true"
-                 title="<p> 2.4% of total for derived types.</p>Including implementation: 191 statements,  2.8% of total for derived types.">16 statements</a>
+                 title="<p> 2.6% of total for derived types.</p>Including implementation: 212 statements,  3.1% of total for derived types.">17 statements</a>
             </li>
 
             <li class="list-inline-item" id="source-file">
@@ -137,7 +137,7 @@
             <a class="list-group-item" href="../type/metapackage_config_t.html#variable-blas">blas</a>
             <a class="list-group-item" href="../type/metapackage_config_t.html#variable-hdf5">hdf5</a>
             <a class="list-group-item" href="../type/metapackage_config_t.html#variable-minpack">minpack</a>
-            <a class="list-group-item" href="../type/metapackage_config_t.html#variable-mpi~2">mpi</a>
+            <a class="list-group-item" href="../type/metapackage_config_t.html#variable-mpi">mpi</a>
             <a class="list-group-item" href="../type/metapackage_config_t.html#variable-netcdf">netcdf</a>
             <a class="list-group-item" href="../type/metapackage_config_t.html#variable-openmp">openmp</a>
             <a class="list-group-item" href="../type/metapackage_config_t.html#variable-stdlib">stdlib</a>
@@ -178,14 +178,15 @@
       </a>
       <div id="boundprocs-0" class="collapse">
         <div class="list-group list-group-flush">
-            <a class="list-group-item" href="../type/metapackage_config_t.html#boundprocedure-dump~23">dump</a>
-            <a class="list-group-item" href="../type/metapackage_config_t.html#boundprocedure-dump_to_toml~19">dump_to_toml</a>
+            <a class="list-group-item" href="../type/metapackage_config_t.html#boundprocedure-dump~27">dump</a>
+            <a class="list-group-item" href="../type/metapackage_config_t.html#boundprocedure-dump_to_toml~23">dump_to_toml</a>
             <a class="list-group-item" href="../type/metapackage_config_t.html#boundprocedure-get_requests">get_requests</a>
-            <a class="list-group-item" href="../type/metapackage_config_t.html#boundprocedure-load~20">load</a>
-            <a class="list-group-item" href="../type/metapackage_config_t.html#boundprocedure-load_from_toml~19">load_from_toml</a>
-            <a class="list-group-item" href="../type/metapackage_config_t.html#boundprocedure-operator%28%3D%3D%29~21">operator(==)</a>
+            <a class="list-group-item" href="../type/metapackage_config_t.html#boundprocedure-load~24">load</a>
+            <a class="list-group-item" href="../type/metapackage_config_t.html#boundprocedure-load_from_toml~23">load_from_toml</a>
+            <a class="list-group-item" href="../type/metapackage_config_t.html#boundprocedure-merge">merge</a>
+            <a class="list-group-item" href="../type/metapackage_config_t.html#boundprocedure-operator%28%3D%3D%29~25">operator(==)</a>
             <a class="list-group-item" href="../type/metapackage_config_t.html#boundprocedure-reset">reset</a>
-            <a class="list-group-item" href="../type/metapackage_config_t.html#boundprocedure-serializable_is_same~19">serializable_is_same</a>
+            <a class="list-group-item" href="../type/metapackage_config_t.html#boundprocedure-serializable_is_same~23">serializable_is_same</a>
             <a class="list-group-item" href="../type/metapackage_config_t.html#boundprocedure-test_serialization">test_serialization</a>
         </div>
       </div>
@@ -276,7 +277,7 @@
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-mpi~2"></span>
+              <span class="anchor" id="variable-mpi"></span>
               type(<a href='metapackage_request_t.html'>metapackage_request_t</a>),
             </td>
               <td>public</td>
@@ -381,7 +382,7 @@
     <tbody>
         <tr>
             <td>
-              <span class="anchor" id="variable-self~152"></span>
+              <span class="anchor" id="variable-self~187"></span>
               type(<a href='metapackage_config_t.html'>metapackage_config_t</a>),
             </td>
 <td>intent(inout)</td>
@@ -410,10 +411,10 @@
           <div class="row">
               <div class="card mt-3">
     <div class="card-header codesum">
-      <span class="anchor" id="boundprocedure-dump~23"></span>
+      <span class="anchor" id="boundprocedure-dump~27"></span>
       <h3>
           generic, public ::
-  <strong>dump</strong> => <a href='/home/runner/work/fpm/fpm/fpm-doc/type/srcfile_t.html#boundprocedure-dump_to_toml~15'>dump_to_toml</a>, dump_to_file, dump_to_unit
+  <strong>dump</strong> => <a href='/home/runner/work/fpm/fpm/fpm-doc/type/srcfile_t.html#boundprocedure-dump_to_toml~16'>dump_to_toml</a>, dump_to_file, dump_to_unit
         
       </h3>
     </div>
@@ -659,7 +660,7 @@
           <div class="row">
               <div class="card mt-3">
     <div class="card-header codesum">
-      <span class="anchor" id="boundprocedure-dump_to_toml~19"></span>
+      <span class="anchor" id="boundprocedure-dump_to_toml~23"></span>
       <h3>
           procedure, public ::
   <strong>dump_to_toml</strong> => meta_config_dump
@@ -800,10 +801,10 @@
           <div class="row">
               <div class="card mt-3">
     <div class="card-header codesum">
-      <span class="anchor" id="boundprocedure-load~20"></span>
+      <span class="anchor" id="boundprocedure-load~24"></span>
       <h3>
           generic, public ::
-  <strong>load</strong> => <a href='/home/runner/work/fpm/fpm/fpm-doc/type/srcfile_t.html#boundprocedure-load_from_toml~15'>load_from_toml</a>, load_from_file, load_from_unit
+  <strong>load</strong> => <a href='/home/runner/work/fpm/fpm/fpm-doc/type/srcfile_t.html#boundprocedure-load_from_toml~16'>load_from_toml</a>, load_from_file, load_from_unit
         
       </h3>
     </div>
@@ -1053,7 +1054,7 @@ Read object from TOML table</p>
           <div class="row">
               <div class="card mt-3">
     <div class="card-header codesum">
-      <span class="anchor" id="boundprocedure-load_from_toml~19"></span>
+      <span class="anchor" id="boundprocedure-load_from_toml~23"></span>
       <h3>
           procedure, public ::
   <strong>load_from_toml</strong> => meta_config_load
@@ -1136,10 +1137,83 @@ Read object from TOML table</p>
           <div class="row">
               <div class="card mt-3">
     <div class="card-header codesum">
-      <span class="anchor" id="boundprocedure-operator%28%3D%3D%29~21"></span>
+      <span class="anchor" id="boundprocedure-merge"></span>
+      <h3>
+          procedure, public ::
+  <strong>merge</strong> => meta_config_merge
+        
+      </h3>
+    </div>
+        <div class="card-body">
+          
+          <p>Merge another config into this one (for propagating dependency metapackages)</p>
+        </div>
+      <ul class="list-group">
+          <li class="list-group-item">
+                    <h3>
+    private  subroutine meta_config_merge(self, other)  
+</h3>
+
+  <p>Merge another metapackage configuration into this one
+This is used to propagate metapackage requests from dependencies to the main package</p>
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" ></span>
+              class(<a href='metapackage_config_t.html'>metapackage_config_t</a>),
+            </td>
+<td>intent(inout)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>self</strong></td>
+            <td>
+                
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" ></span>
+              type(<a href='metapackage_config_t.html'>metapackage_config_t</a>),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>other</strong></td>
+            <td>
+                
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+
+          </li>
+      </ul>
+  </div>
+
+          </div>
+          <div class="row">
+              <div class="card mt-3">
+    <div class="card-header codesum">
+      <span class="anchor" id="boundprocedure-operator%28%3D%3D%29~25"></span>
       <h3>
           generic, public ::
-  <strong>operator(==)</strong> => <a href='/home/runner/work/fpm/fpm/fpm-doc/type/srcfile_t.html#boundprocedure-serializable_is_same~15'>serializable_is_same</a>
+  <strong>operator(==)</strong> => <a href='/home/runner/work/fpm/fpm/fpm-doc/type/srcfile_t.html#boundprocedure-serializable_is_same~16'>serializable_is_same</a>
         
       </h3>
     </div>
@@ -1263,7 +1337,7 @@ All checks passed!</p>
           <div class="row">
               <div class="card mt-3">
     <div class="card-header codesum">
-      <span class="anchor" id="boundprocedure-serializable_is_same~19"></span>
+      <span class="anchor" id="boundprocedure-serializable_is_same~23"></span>
       <h3>
           procedure, public ::
   <strong>serializable_is_same</strong> => meta_config_same
@@ -1451,9 +1525,12 @@ Check same</p>
 <span class="w">        </span><span class="k">type</span><span class="p">(</span><span class="n">metapackage_request_t</span><span class="p">)</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">blas</span>
 <span class="w">        </span>
 <span class="w">        </span><span class="k">contains</span>
-<span class="k">        </span>
+
 <span class="k">           procedure</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">get_requests</span>
-<span class="w">           </span>
+
+<span class="w">           </span><span class="c">!&gt; Merge another config into this one (for propagating dependency metapackages)</span>
+<span class="w">           </span><span class="k">procedure</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="nb">merge</span><span class="w"> </span><span class="o">=&gt;</span><span class="w"> </span><span class="n">meta_config_merge</span>
+
 <span class="w">           </span><span class="c">! Cleanup configuration; assert package names</span>
 <span class="w">           </span><span class="k">final</span><span class="w">     </span><span class="kd">::</span><span class="w"> </span><span class="n">meta_config_final</span>
 <span class="w">           </span><span class="k">procedure</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">reset</span><span class="w"> </span><span class="o">=&gt;</span><span class="w"> </span><span class="n">meta_config_reset</span>
@@ -1461,7 +1538,7 @@ Check same</p>
 <span class="w">           </span><span class="k">procedure</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">serializable_is_same</span><span class="w"> </span><span class="o">=&gt;</span><span class="w"> </span><span class="n">meta_config_same</span>
 <span class="w">           </span><span class="k">procedure</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">dump_to_toml</span><span class="w">        </span><span class="o">=&gt;</span><span class="w"> </span><span class="n">meta_config_dump</span>
 <span class="w">           </span><span class="k">procedure</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">load_from_toml</span><span class="w">      </span><span class="o">=&gt;</span><span class="w"> </span><span class="n">meta_config_load</span>
-<span class="w">           </span>
+
 <span class="w">    </span><span class="k">end type </span><span class="n">metapackage_config_t</span>
 </pre></div>
 
@@ -1485,7 +1562,7 @@ Check same</p>
             <p class="text-end">
               Documentation generated by
               <a href="https://github.com/Fortran-FOSS-Programmers/ford">FORD</a>
- on 2026-01-06 07:46 +0000             </p>
+ on 2026-01-06 11:33 +0000             </p>
           </div>
         </div>
         <br>

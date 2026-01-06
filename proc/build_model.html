@@ -92,7 +92,7 @@
 
             <li class="list-inline-item" id="statements"><i class="fa fa-list-ol"></i>
               <a data-bs-toggle="tooltip" data-bs-placement="bottom" data-bs-html="true"
-                 title=" 2.3% of total for procedures.">177 statements</a>
+                 title=" 2.4% of total for procedures.">179 statements</a>
             </li>
 
             <li class="list-inline-item" id="source-file">
@@ -181,7 +181,7 @@ Add this dependency&rsquo;s package-level macros</p>
     <tbody>
         <tr>
             <td>
-              <span class="anchor" id="variable-model~19"></span>
+              <span class="anchor" id="variable-model~4"></span>
               type(<a href='../type/fpm_model_t.html'>fpm_model_t</a>),
             </td>
 <td>intent(out)</td>
@@ -196,7 +196,7 @@ Add this dependency&rsquo;s package-level macros</p>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-settings~10"></span>
+              <span class="anchor" id="variable-settings~4"></span>
               class(<a href='../type/fpm_build_settings.html'>fpm_build_settings</a>),
             </td>
 <td>intent(inout)</td>
@@ -226,7 +226,7 @@ Add this dependency&rsquo;s package-level macros</p>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-error~181"></span>
+              <span class="anchor" id="variable-error~33"></span>
               type(<a href='../type/error_t.html'>error_t</a>),
             </td>
 <td>intent(out),</td>
@@ -317,17 +317,19 @@ Add this dependency&rsquo;s package-level macros</p>
 <span class="k">    end if</span>
 
 <span class="w">    </span><span class="c">! Initialize compiler flags using the feature-enabled package configuration</span>
-<span class="w">    </span><span class="k">call </span><span class="n">new_compiler_flags</span><span class="p">(</span><span class="n">model</span><span class="p">,</span><span class="w"> </span><span class="n">settings</span><span class="p">,</span><span class="w"> </span><span class="n">package</span><span class="p">)</span><span class="w">  </span>
-<span class="w">    </span>
+<span class="w">    </span><span class="k">call </span><span class="n">new_compiler_flags</span><span class="p">(</span><span class="n">model</span><span class="p">,</span><span class="w"> </span><span class="n">settings</span><span class="p">,</span><span class="w"> </span><span class="n">package</span><span class="p">)</span>
+
 <span class="w">    </span><span class="c">! Resolve meta-dependencies into the package and the model</span>
+<span class="w">    </span><span class="c">! This must happen BEFORE the dependency tree is built, because metapackages</span>
+<span class="w">    </span><span class="c">! add dependencies (e.g., stdlib adds stdlib and test-drive as dev-dependencies)</span>
 <span class="w">    </span><span class="k">call </span><span class="n">resolve_metapackages</span><span class="p">(</span><span class="n">model</span><span class="p">,</span><span class="n">package</span><span class="p">,</span><span class="n">settings</span><span class="p">,</span><span class="n">error</span><span class="p">)</span>
 <span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="nb">allocated</span><span class="p">(</span><span class="n">error</span><span class="p">))</span><span class="w"> </span><span class="k">return</span>
-<span class="k">    </span>
-<span class="k">    if</span><span class="w"> </span><span class="p">(</span><span class="nb">allocated</span><span class="p">(</span><span class="n">package</span><span class="p">%</span><span class="n">build</span><span class="p">))</span><span class="w"> </span><span class="k">then </span>
+
+<span class="k">    if</span><span class="w"> </span><span class="p">(</span><span class="nb">allocated</span><span class="p">(</span><span class="n">package</span><span class="p">%</span><span class="n">build</span><span class="p">))</span><span class="w"> </span><span class="k">then</span>
 <span class="k">        </span><span class="n">model</span><span class="p">%</span><span class="n">enforce_module_names</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">package</span><span class="p">%</span><span class="n">build</span><span class="p">%</span><span class="n">module_naming</span>
 <span class="w">        </span><span class="n">model</span><span class="p">%</span><span class="n">module_prefix</span><span class="w">        </span><span class="o">=</span><span class="w"> </span><span class="n">package</span><span class="p">%</span><span class="n">build</span><span class="p">%</span><span class="n">module_prefix</span>
-<span class="w">    </span><span class="k">endif</span><span class="w">      </span>
-<span class="w">    </span>
+<span class="w">    </span><span class="k">endif</span>
+
 <span class="w">    </span><span class="c">! Create dependencies</span>
 <span class="w">    </span><span class="k">call </span><span class="n">new_dependency_tree</span><span class="p">(</span><span class="n">model</span><span class="p">%</span><span class="n">deps</span><span class="p">,</span><span class="w"> </span><span class="n">cache</span><span class="o">=</span><span class="n">join_path</span><span class="p">(</span><span class="n">settings</span><span class="p">%</span><span class="n">build_dir</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;cache.toml&quot;</span><span class="p">),</span><span class="w"> </span><span class="p">&amp;</span>
 <span class="w">    </span><span class="p">&amp;</span><span class="w"> </span><span class="n">path_to_config</span><span class="o">=</span><span class="n">settings</span><span class="p">%</span><span class="n">path_to_config</span><span class="p">,</span><span class="w"> </span><span class="n">build_dir</span><span class="o">=</span><span class="n">settings</span><span class="p">%</span><span class="n">build_dir</span><span class="p">)</span>
@@ -338,6 +340,11 @@ Add this dependency&rsquo;s package-level macros</p>
 
 <span class="w">    </span><span class="c">! Update dependencies where needed</span>
 <span class="w">    </span><span class="k">call </span><span class="n">model</span><span class="p">%</span><span class="n">deps</span><span class="p">%</span><span class="n">update</span><span class="p">(</span><span class="n">error</span><span class="p">)</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="nb">allocated</span><span class="p">(</span><span class="n">error</span><span class="p">))</span><span class="w"> </span><span class="k">return</span>
+
+<span class="w">    </span><span class="c">! Resolve metapackages from dependencies (if any)</span>
+<span class="w">    </span><span class="c">! This second call merges metapackage requests from all resolved dependencies</span>
+<span class="w">    </span><span class="k">call </span><span class="n">resolve_metapackages</span><span class="p">(</span><span class="n">model</span><span class="p">,</span><span class="n">package</span><span class="p">,</span><span class="n">settings</span><span class="p">,</span><span class="n">error</span><span class="p">)</span>
 <span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="nb">allocated</span><span class="p">(</span><span class="n">error</span><span class="p">))</span><span class="w"> </span><span class="k">return</span>
 
 <span class="w">    </span><span class="c">! build directory should now exist</span>
@@ -567,7 +574,7 @@ Add this dependency&rsquo;s package-level macros</p>
             <p class="text-end">
               Documentation generated by
               <a href="https://github.com/Fortran-FOSS-Programmers/ford">FORD</a>
- on 2026-01-06 07:46 +0000             </p>
+ on 2026-01-06 11:33 +0000             </p>
           </div>
         </div>
         <br>
