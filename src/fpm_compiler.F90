@@ -336,14 +336,12 @@ subroutine get_release_compile_flags(id, flags)
         flags = &
             flag_gnu_opt//&
             flag_gnu_external//&
-            flag_gnu_pic//&
             flag_gnu_limit
 
     case(id_gcc)
         flags = &
             flag_gnu_opt//&
             flag_gnu_external//&
-            flag_gnu_pic//&
             flag_gnu_limit//&
             flag_gnu_coarray
 
@@ -351,7 +349,6 @@ subroutine get_release_compile_flags(id, flags)
         flags = &
             flag_gnu_opt//&
             flag_gnu_external//&
-            flag_gnu_pic//&
             flag_gnu_limit
 
     case(id_nvhpc)
@@ -415,8 +412,7 @@ subroutine get_release_compile_flags(id, flags)
     case(id_nag)
         flags = &
             flag_nag_opt//&
-            flag_nag_coarray//&
-            flag_nag_pic
+            flag_nag_coarray
 
     case(id_lfortran)
         flags = &
@@ -424,13 +420,11 @@ subroutine get_release_compile_flags(id, flags)
 
     case(id_flang)
         flags = &
-            flag_flang_opt//&
+            flag_flang_opt
 
-            flag_flang_pic
     case(id_amdflang)
         flags = &
-            flag_flang_opt//&
-            flag_flang_pic
+            flag_flang_opt
 
     end select
 end subroutine get_release_compile_flags
@@ -445,7 +439,6 @@ subroutine get_debug_compile_flags(id, flags)
     case(id_caf)
         flags = &
             flag_gnu_warn//&
-            flag_gnu_pic//&
             flag_gnu_limit//&
             flag_gnu_debug//&
             flag_gnu_check//&
@@ -453,7 +446,6 @@ subroutine get_debug_compile_flags(id, flags)
     case(id_gcc)
         flags = &
             flag_gnu_warn//&
-            flag_gnu_pic//&
             flag_gnu_limit//&
             flag_gnu_debug//&
             flag_gnu_check//&
@@ -462,7 +454,6 @@ subroutine get_debug_compile_flags(id, flags)
     case(id_f95)
         flags = &
             flag_gnu_warn//&
-            flag_gnu_pic//&
             flag_gnu_limit//&
             flag_gnu_debug//&
             flag_gnu_check//&
@@ -522,21 +513,18 @@ subroutine get_debug_compile_flags(id, flags)
             flag_nag_debug//&
             flag_nag_check//&
             flag_nag_backtrace//&
-            flag_nag_coarray//&
-            flag_nag_pic
+            flag_nag_coarray
 
     case(id_lfortran)
         flags = ""
 
     case(id_flang)
         flags = &
-            flag_flang_debug//&
-            flag_flang_pic
+            flag_flang_debug
 
     case(id_amdflang)
         flags = &
-            flag_flang_debug//&
-            flag_flang_pic
+            flag_flang_debug
 
     end select
 end subroutine get_debug_compile_flags

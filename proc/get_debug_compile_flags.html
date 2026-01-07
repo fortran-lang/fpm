@@ -178,7 +178,7 @@
     <tbody>
         <tr>
             <td>
-              <span class="anchor" id="variable-id~10"></span>
+              <span class="anchor" id="variable-id~3"></span>
               integer(kind=compiler_enum),
             </td>
 <td>intent(in)</td>
@@ -193,7 +193,7 @@
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-flags~13"></span>
+              <span class="anchor" id="variable-flags~7"></span>
               character(len=:),
             </td>
 <td>intent(out),</td>
@@ -233,7 +233,6 @@
 <span class="w">    </span><span class="k">case</span><span class="p">(</span><span class="n">id_caf</span><span class="p">)</span>
 <span class="w">        </span><span class="n">flags</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">&amp;</span>
 <span class="w">            </span><span class="n">flag_gnu_warn</span><span class="o">//</span><span class="p">&amp;</span>
-<span class="w">            </span><span class="n">flag_gnu_pic</span><span class="o">//</span><span class="p">&amp;</span>
 <span class="w">            </span><span class="n">flag_gnu_limit</span><span class="o">//</span><span class="p">&amp;</span>
 <span class="w">            </span><span class="n">flag_gnu_debug</span><span class="o">//</span><span class="p">&amp;</span>
 <span class="w">            </span><span class="n">flag_gnu_check</span><span class="o">//</span><span class="p">&amp;</span>
@@ -241,7 +240,6 @@
 <span class="w">    </span><span class="k">case</span><span class="p">(</span><span class="n">id_gcc</span><span class="p">)</span>
 <span class="w">        </span><span class="n">flags</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">&amp;</span>
 <span class="w">            </span><span class="n">flag_gnu_warn</span><span class="o">//</span><span class="p">&amp;</span>
-<span class="w">            </span><span class="n">flag_gnu_pic</span><span class="o">//</span><span class="p">&amp;</span>
 <span class="w">            </span><span class="n">flag_gnu_limit</span><span class="o">//</span><span class="p">&amp;</span>
 <span class="w">            </span><span class="n">flag_gnu_debug</span><span class="o">//</span><span class="p">&amp;</span>
 <span class="w">            </span><span class="n">flag_gnu_check</span><span class="o">//</span><span class="p">&amp;</span>
@@ -250,7 +248,6 @@
 <span class="w">    </span><span class="k">case</span><span class="p">(</span><span class="n">id_f95</span><span class="p">)</span>
 <span class="w">        </span><span class="n">flags</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">&amp;</span>
 <span class="w">            </span><span class="n">flag_gnu_warn</span><span class="o">//</span><span class="p">&amp;</span>
-<span class="w">            </span><span class="n">flag_gnu_pic</span><span class="o">//</span><span class="p">&amp;</span>
 <span class="w">            </span><span class="n">flag_gnu_limit</span><span class="o">//</span><span class="p">&amp;</span>
 <span class="w">            </span><span class="n">flag_gnu_debug</span><span class="o">//</span><span class="p">&amp;</span>
 <span class="w">            </span><span class="n">flag_gnu_check</span><span class="o">//</span><span class="p">&amp;</span>
@@ -310,21 +307,18 @@
 <span class="w">            </span><span class="n">flag_nag_debug</span><span class="o">//</span><span class="p">&amp;</span>
 <span class="w">            </span><span class="n">flag_nag_check</span><span class="o">//</span><span class="p">&amp;</span>
 <span class="w">            </span><span class="n">flag_nag_backtrace</span><span class="o">//</span><span class="p">&amp;</span>
-<span class="w">            </span><span class="n">flag_nag_coarray</span><span class="o">//</span><span class="p">&amp;</span>
-<span class="w">            </span><span class="n">flag_nag_pic</span>
+<span class="w">            </span><span class="n">flag_nag_coarray</span>
 
 <span class="w">    </span><span class="k">case</span><span class="p">(</span><span class="n">id_lfortran</span><span class="p">)</span>
 <span class="w">        </span><span class="n">flags</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;&quot;</span>
 
 <span class="w">    </span><span class="k">case</span><span class="p">(</span><span class="n">id_flang</span><span class="p">)</span>
 <span class="w">        </span><span class="n">flags</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">&amp;</span>
-<span class="w">            </span><span class="n">flag_flang_debug</span><span class="o">//</span><span class="p">&amp;</span>
-<span class="w">            </span><span class="n">flag_flang_pic</span>
+<span class="w">            </span><span class="n">flag_flang_debug</span>
 
 <span class="w">    </span><span class="k">case</span><span class="p">(</span><span class="n">id_amdflang</span><span class="p">)</span>
 <span class="w">        </span><span class="n">flags</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">&amp;</span>
-<span class="w">            </span><span class="n">flag_flang_debug</span><span class="o">//</span><span class="p">&amp;</span>
-<span class="w">            </span><span class="n">flag_flang_pic</span>
+<span class="w">            </span><span class="n">flag_flang_debug</span>
 
 <span class="w">    </span><span class="k">end select</span>
 <span class="k">end subroutine </span><span class="n">get_debug_compile_flags</span>
@@ -351,7 +345,7 @@
             <p class="text-end">
               Documentation generated by
               <a href="https://github.com/Fortran-FOSS-Programmers/ford">FORD</a>
- on 2026-01-06 17:55 +0000             </p>
+ on 2026-01-07 07:39 +0000             </p>
           </div>
         </div>
         <br>
