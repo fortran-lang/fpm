@@ -366,6 +366,16 @@ contains
             end do
             call append_line(lines, ')')
 
+            ! Set module directory properties
+            call append_line(lines, 'set_target_properties('//lib_name//' PROPERTIES')
+            call append_line(lines, '    Fortran_MODULE_DIRECTORY "${CMAKE_BINARY_DIR}/mod"')
+            call append_line(lines, '    POSITION_INDEPENDENT_CODE ON')
+            call append_line(lines, ')')
+            call append_line(lines, 'target_include_directories('//lib_name//' PUBLIC')
+            call append_line(lines, '    $<BUILD_INTERFACE:${CMAKE_BINARY_DIR}/mod>')
+            call append_line(lines, '    $<INSTALL_INTERFACE:include>')
+            call append_line(lines, ')')
+
             ! Link dependencies
             if (size(dependencies) > 0) then
                 call append_line(lines, 'target_link_libraries('//lib_name//' PUBLIC')
@@ -403,6 +413,17 @@ contains
                 if (has_library) then
                     call append_line(lines, 'target_link_libraries('//exe_name_str// &
                                  ' PRIVATE '//lib_name//')')
+                else if (size(dependencies) > 0) then
+                    ! If no library, link directly to dependencies
+                    call append_line(lines, 'target_link_libraries('//exe_name_str//' PRIVATE')
+                    do k = 1, size(dependencies)
+                        if (dependencies(k)%has_cmake) then
+                            call append_line(lines, '    '//trim(dependencies(k)%name)//'::'//trim(dependencies(k)%name))
+                        else
+                            call append_line(lines, '    '//trim(dependencies(k)%name))
+                        end if
+                    end do
+                    call append_line(lines, ')')
                 end if
                 call append_line(lines, "")
             end do
@@ -428,6 +449,17 @@ contains
                 if (has_library) then
                     call append_line(lines, 'target_link_libraries('//exe_name_str// &
                                  ' PRIVATE '//lib_name//')')
+                else if (size(dependencies) > 0) then
+                    ! If no library, link directly to dependencies
+                    call append_line(lines, 'target_link_libraries('//exe_name_str//' PRIVATE')
+                    do k = 1, size(dependencies)
+                        if (dependencies(k)%has_cmake) then
+                            call append_line(lines, '    '//trim(dependencies(k)%name)//'::'//trim(dependencies(k)%name))
+                        else
+                            call append_line(lines, '    '//trim(dependencies(k)%name))
+                        end if
+                    end do
+                    call append_line(lines, ')')
                 end if
                 call append_line(lines, 'add_test(NAME '//exe_name_str// &
                              ' COMMAND '//exe_name_str//')')
