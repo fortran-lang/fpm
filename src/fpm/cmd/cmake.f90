@@ -502,8 +502,8 @@ contains
             do i = 1, n_deps
                 temp_deps(i)%name = model%packages(i+1)%name
 
-                ! Construct path to dependency in build/dependencies
-                temp_deps(i)%path = 'build/dependencies/'//trim(model%packages(i+1)%name)
+                ! Use actual dependency location from proj_dir (handles path, git, and registry deps)
+                temp_deps(i)%path = model%deps%dep(i+1)%proj_dir
 
                 ! Check if it has CMake support
                 temp_deps(i)%has_cmake = has_cmake_support(temp_deps(i)%path)
@@ -597,8 +597,8 @@ contains
         ! Add all dependencies via add_subdirectory
         call append_line(lines, "# Add all dependencies")
         do i = 1, size(deps)
-            call append_line(lines, 'add_subdirectory("${FPM_DEPENDENCIES_DIR}/'// &
-                           trim(deps(i)%name)//'" '//trim(deps(i)%name)//' EXCLUDE_FROM_ALL)')
+            call append_line(lines, 'add_subdirectory("${CMAKE_SOURCE_DIR}/'// &
+                           trim(deps(i)%path)//'" '//trim(deps(i)%name)//' EXCLUDE_FROM_ALL)')
             ! Create namespace alias for CMake-enabled dependencies
             if (deps(i)%has_cmake) then
                 call append_line(lines, 'if(NOT TARGET '//trim(deps(i)%name)//'::'// &
