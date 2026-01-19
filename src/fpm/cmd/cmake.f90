@@ -2,6 +2,7 @@
 module fpm_cmd_cmake
     use fpm_command_line, only: fpm_generate_settings
     use fpm_error, only: error_t, fpm_stop
+    use fpm_filesystem, only: dirname
     use fpm_manifest, only: package_config_t, get_package_data
     use fpm_model, only: fpm_model_t, srcfile_t, FPM_SCOPE_LIB, FPM_SCOPE_APP, &
                          FPM_SCOPE_TEST, FPM_SCOPE_EXAMPLE, FPM_UNIT_PROGRAM, &
@@ -239,13 +240,33 @@ contains
 
         integer :: i, n
         type(string_t), allocatable :: temp(:)
+        character(len=:), allocatable :: exe_dir
+        logical :: found_main
 
-        ! Count matching sources
-        n = 0
+        ! Find the main program file to determine the source directory
+        found_main = .false.
         do i = 1, size(sources)
             if (sources(i)%unit_scope == scope .and. &
                 allocated(sources(i)%exe_name) .and. &
                 trim(sources(i)%exe_name) == trim(exe_name)) then
+                ! Extract directory from the main file path
+                exe_dir = dirname(sources(i)%file_name)
+                found_main = .true.
+                exit
+            end if
+        end do
+
+        if (.not. found_main) then
+            ! No main file found, return empty array
+            allocate(result_sources(0))
+            return
+        end if
+
+        ! Count all sources from the same directory with the same scope
+        n = 0
+        do i = 1, size(sources)
+            if (sources(i)%unit_scope == scope .and. &
+                dirname(sources(i)%file_name) == exe_dir) then
                 n = n + 1
             end if
         end do
@@ -255,8 +276,7 @@ contains
         n = 0
         do i = 1, size(sources)
             if (sources(i)%unit_scope == scope .and. &
-                allocated(sources(i)%exe_name) .and. &
-                trim(sources(i)%exe_name) == trim(exe_name)) then
+                dirname(sources(i)%file_name) == exe_dir) then
                 n = n + 1
                 temp(n)%s = sources(i)%file_name
             end if
