@@ -74,8 +74,8 @@ contains
 
         ! Generate CMakeLists.txt content as string_t array
         call write_cmake_content(cmake_lines, package%name, version_str, &
-                                lib_sources, app_sources, test_sources, &
-                                executables, tests, has_library, model%include_tests)
+                                lib_sources, executables, tests, has_library, &
+                                model%include_tests, model%packages(1)%sources)
 
         ! Write to file
         call write_lines_to_file("CMakeLists.txt", cmake_lines)
@@ -209,14 +209,51 @@ contains
 
     end subroutine collect_scope_sources
 
+    !> Get sources for a specific executable by name and scope
+    subroutine get_sources_for_exe(sources, exe_name, scope, result_sources)
+        type(srcfile_t), intent(in) :: sources(:)
+        character(len=*), intent(in) :: exe_name
+        integer, intent(in) :: scope
+        type(string_t), allocatable, intent(out) :: result_sources(:)
+
+        integer :: i, n
+        type(string_t), allocatable :: temp(:)
+
+        ! Count matching sources
+        n = 0
+        do i = 1, size(sources)
+            if (sources(i)%unit_scope == scope .and. &
+                allocated(sources(i)%exe_name) .and. &
+                trim(sources(i)%exe_name) == trim(exe_name)) then
+                n = n + 1
+            end if
+        end do
+
+        ! Allocate and populate
+        allocate(temp(n))
+        n = 0
+        do i = 1, size(sources)
+            if (sources(i)%unit_scope == scope .and. &
+                allocated(sources(i)%exe_name) .and. &
+                trim(sources(i)%exe_name) == trim(exe_name)) then
+                n = n + 1
+                temp(n)%s = sources(i)%file_name
+            end if
+        end do
+
+        call move_alloc(temp, result_sources)
+
+    end subroutine get_sources_for_exe
+
     !> Write CMake content to string_t array
-    subroutine write_cmake_content(lines, name, version, lib_sources, app_sources, &
-                                  test_sources, executables, tests, has_library, include_tests)
+    subroutine write_cmake_content(lines, name, version, lib_sources, &
+                                  executables, tests, has_library, include_tests, sources)
         type(string_t), allocatable, intent(out) :: lines(:)
         character(len=*), intent(in) :: name, version
-        type(string_t), intent(in) :: lib_sources(:), app_sources(:), test_sources(:)
+        type(string_t), intent(in) :: lib_sources(:)
         type(string_t), intent(in) :: executables(:), tests(:)
         logical, intent(in) :: has_library, include_tests
+        type(srcfile_t), intent(in) :: sources(:)
 
         integer :: i, j
         type(string_t), allocatable :: exe_sources(:)
@@ -259,13 +296,15 @@ contains
         if (size(executables) > 0) then
             call append_line(lines, "# Executables")
 
-            ! For single executable, list all app sources
-            ! For multiple executables, each needs its own sources (simplified: use all sources)
-            if (size(executables) == 1) then
-                exe_name_str = trim(executables(1)%s)
+            do i = 1, size(executables)
+                exe_name_str = trim(executables(i)%s)
+
+                ! Get sources specific to this executable
+                call get_sources_for_exe(sources, exe_name_str, FPM_SCOPE_APP, exe_sources)
+
                 call append_line(lines, 'add_executable('//exe_name_str)
-                do j = 1, size(app_sources)
-                    call append_line(lines, '    '//clean_path(app_sources(j)%s))
+                do j = 1, size(exe_sources)
+                    call append_line(lines, '    '//clean_path(exe_sources(j)%s))
                 end do
                 call append_line(lines, ')')
                 if (has_library) then
@@ -273,25 +312,7 @@ contains
                                  ' PRIVATE '//lib_name//')')
                 end if
                 call append_line(lines, "")
-            else
-                ! Multiple executables - list each with all sources
-                ! (CMake will handle the linking, user may need to adjust)
-                call append_line(lines, "# Note: Multiple executables detected.")
-                call append_line(lines, "# You may need to adjust which sources belong to which executable.")
-                do i = 1, size(executables)
-                    exe_name_str = trim(executables(i)%s)
-                    call append_line(lines, 'add_executable('//exe_name_str)
-                    do j = 1, size(app_sources)
-                        call append_line(lines, '    '//clean_path(app_sources(j)%s))
-                    end do
-                    call append_line(lines, ')')
-                    if (has_library) then
-                        call append_line(lines, 'target_link_libraries('//exe_name_str// &
-                                     ' PRIVATE '//lib_name//')')
-                    end if
-                    call append_line(lines, "")
-                end do
-            end if
+            end do
         end if
 
         ! Test targets
@@ -300,11 +321,15 @@ contains
             call append_line(lines, "enable_testing()")
             call append_line(lines, "")
 
-            if (size(tests) == 1) then
-                exe_name_str = trim(tests(1)%s)
+            do i = 1, size(tests)
+                exe_name_str = trim(tests(i)%s)
+
+                ! Get sources specific to this test
+                call get_sources_for_exe(sources, exe_name_str, FPM_SCOPE_TEST, exe_sources)
+
                 call append_line(lines, 'add_executable('//exe_name_str)
-                do j = 1, size(test_sources)
-                    call append_line(lines, '    '//clean_path(test_sources(j)%s))
+                do j = 1, size(exe_sources)
+                    call append_line(lines, '    '//clean_path(exe_sources(j)%s))
                 end do
                 call append_line(lines, ')')
                 if (has_library) then
@@ -314,25 +339,7 @@ contains
                 call append_line(lines, 'add_test(NAME '//exe_name_str// &
                              ' COMMAND '//exe_name_str//')')
                 call append_line(lines, "")
-            else
-                call append_line(lines, "# Note: Multiple test executables detected.")
-                call append_line(lines, "# You may need to adjust which sources belong to which test.")
-                do i = 1, size(tests)
-                    exe_name_str = trim(tests(i)%s)
-                    call append_line(lines, 'add_executable('//exe_name_str)
-                    do j = 1, size(test_sources)
-                        call append_line(lines, '    '//clean_path(test_sources(j)%s))
-                    end do
-                    call append_line(lines, ')')
-                    if (has_library) then
-                        call append_line(lines, 'target_link_libraries('//exe_name_str// &
-                                     ' PRIVATE '//lib_name//')')
-                    end if
-                    call append_line(lines, 'add_test(NAME '//exe_name_str// &
-                                 ' COMMAND '//exe_name_str//')')
-                    call append_line(lines, "")
-                end do
-            end if
+            end do
         end if
 
     end subroutine write_cmake_content
