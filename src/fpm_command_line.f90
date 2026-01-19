@@ -51,6 +51,7 @@ public :: fpm_cmd_settings, &
           fpm_update_settings, &
           fpm_clean_settings, &
           fpm_publish_settings, &
+          fpm_generate_settings, &
           get_command_line_settings, &
           get_fpm_env
 
@@ -146,6 +147,11 @@ type, extends(fpm_build_settings) :: fpm_publish_settings
     character(len=:), allocatable :: token
 end type
 
+!> Settings for generating build system files
+type, extends(fpm_build_settings) :: fpm_generate_settings
+    logical :: cmake = .false.
+end type
+
 character(len=:),allocatable :: name
 character(len=:),allocatable :: os_type
 character(len=ibug),allocatable :: names(:)
@@ -156,10 +162,11 @@ character(len=:), allocatable :: help_new(:), help_fpm(:), help_run(:), &
                  & help_test(:), help_build(:), help_usage(:), help_runner(:), &
                  & help_text(:), help_install(:), help_help(:), help_update(:), &
                  & help_list(:), help_list_dash(:), help_list_nodash(:), &
-                 & help_clean(:), help_publish(:)
+                 & help_clean(:), help_publish(:), help_generate(:)
 character(len=20),parameter :: manual(*)=[ character(len=20) ::&
-&  ' ',     'fpm',    'new',     'build',  'run',    'clean',  &
-&  'test',  'runner', 'install', 'update', 'list',   'help',   'version', 'publish' ]
+&  ' ',     'fpm',    'new',      'build',  'run',      'clean',  &
+&  'test',  'runner', 'install',  'update', 'list',     'help',   &
+&  'version', 'publish', 'generate' ]
 
 character(len=:), allocatable :: val_runner,val_runner_args,val_dump
 
@@ -516,6 +523,8 @@ contains
                    help_text=[character(len=widest) :: help_text, help_clean]
                 case('publish')
                    help_text=[character(len=widest) :: help_text, help_publish]
+                case('generate')
+                   help_text=[character(len=widest) :: help_text, help_generate]
                 case default
                    help_text=[character(len=widest) :: help_text, &
                    & '<ERROR> unknown help topic "'//trim(unnamed(i))//'"']
@@ -651,6 +660,27 @@ contains
             call get_char_arg(export_settings%dump_manifest, 'manifest')
             call get_char_arg(export_settings%dump_dependencies, 'dependencies')
             call move_alloc(export_settings, cmd_settings)
+
+        case('generate')
+            call set_args(common_args // compiler_args // '&
+                & --cmake F &
+                & --config-file " " &
+                &', help_generate, version_text)
+
+            allocate(fpm_generate_settings :: cmd_settings)
+
+            select type (gen => cmd_settings)
+            type is (fpm_generate_settings)
+
+                call build_settings(gen, config_file=sget('config-file'))
+
+                gen%cmake = lget('cmake')
+
+                if (.not. gen%cmake) then
+                    call fpm_stop(1, 'fpm generate: Please specify an output format (e.g., --cmake)')
+                end if
+
+            end select
 
         case('clean')
             call set_args(common_args // compiler_args // &
@@ -823,6 +853,7 @@ contains
    ' subcommand may be one of                                               ', &
    '                                                                        ', &
    '  build     Compile the package placing results in the "build" directory', &
+   '  generate  Generate build system files (e.g., CMakeLists.txt)          ', &
    '  help      Display help                                                ', &
    '  list      Display this list of subcommand descriptions                ', &
    '  new       Create a new Fortran package directory with sample files    ', &
@@ -841,6 +872,7 @@ contains
    ' build [--compiler COMPILER_NAME] [--profile PROF] [--features LIST] [--list]   ', &
    '       [--flag FFLAGS] [--tests] [--no-prune] [--dump [FILENAME]]               ', &
    '       [--config-file PATH]                                                     ', &
+   ' generate --cmake [--config-file PATH]                                          ', &
    ' help [NAME(s)]                                                                 ', &
    ' new NAME [[--lib|--src] [--app] [--test] [--example]]|                         ', &
    '          [--full|--bare][--backfill]                                           ', &
@@ -851,7 +883,7 @@ contains
    '      [--config-file PATH] [--flag FFLAGS]                                      ', &
    ' test [[--target] NAME(s)] [--profile PROF] [--features LIST] [--flag FFLAGS]   ', &
    '      [--runner "CMD"] [--list] [--compiler COMPILER_NAME] [--config-file PATH] ', &
-   '      [-- ARGS]                                                                 ', &    
+   '      [-- ARGS]                                                                 ', &
    ' install [--profile PROF] [--flag FFLAGS] [--no-rebuild] [--prefix PATH]        ', &
    '         [--config-file PATH] [--registry-cache] [options]                      ', &
    ' clean [--skip|--all] [--test] [--apps] [--examples] [--config-file PATH]       ', &
@@ -956,6 +988,7 @@ contains
     '  Valid fpm(1) subcommands are:                                        ', &
     '                                                                       ', &
     '  + build    Compile the packages into the "build/" directory.         ', &
+    '  + generate Generate build system files (e.g., CMakeLists.txt).       ', &
     '  + new      Create a new Fortran package directory with sample files. ', &
     '  + update   Update the project dependencies.                          ', &
     '  + run      Run the local package binaries. Defaults to all binaries  ', &
@@ -973,6 +1006,7 @@ contains
     '    build [--profile PROF] [--flag FFLAGS] [--list] [--compiler COMPILER_NAME]  ', &
     '          [--tests] [--no-prune] [--config-file PATH]                           ', &
     '          [--dump [FILENAME]]                                                   ', &
+    '    generate --cmake [--config-file PATH]                                       ', &
     '    new NAME [[--lib|--src] [--app] [--test] [--example]]|                      ', &
     '             [--full|--bare][--backfill]                                        ', &
     '    update [NAME(s)] [--fetch-only] [--clean] [--config-file PATH] [--dump [FILENAME]]', &
@@ -1550,6 +1584,42 @@ contains
     ' fpm publish --show-upload-data        # show upload data without publishing', &
     ' fpm publish --token TOKEN --dry-run   # perform dry run without publishing', &
     ' fpm publish --token TOKEN             # upload package to the registry', &
+    '' ]
+
+    help_generate=[character(len=80) :: &
+    'NAME', &
+    '   generate(1) - generate build system files from an fpm project', &
+    '', &
+    'SYNOPSIS', &
+    '   fpm generate --cmake [--config-file PATH]', &
+    '', &
+    '   fpm generate --help|--version', &
+    '', &
+    'DESCRIPTION', &
+    '   Generate build system files from the current fpm project. This allows', &
+    '   building the project with other tools like CMake for better IDE', &
+    '   integration or deployment to environments where fpm is not available.', &
+    '', &
+    'OPTIONS', &
+    '   --cmake              Generate a CMakeLists.txt file', &
+    '   --help               print this help and exit', &
+    '   --version            print program version information and exit', &
+    '   --config-file PATH   custom location of the config file', &
+    '', &
+    'LIMITATIONS', &
+    '   The generated CMakeLists.txt provides a starting point and may need', &
+    '   manual adjustments:', &
+    '', &
+    '   - fpm dependencies are not automatically handled in CMake', &
+    '   - Metapackages and registry dependencies are not translated', &
+    '   - Complex preprocessing configurations may need adjustment', &
+    '', &
+    'EXAMPLES', &
+    '', &
+    '   fpm generate --cmake      # Generate CMakeLists.txt in current directory', &
+    '', &
+    '   # Then build with CMake:', &
+    '   mkdir build && cd build && cmake .. && make', &
     '' ]
      end subroutine set_help
 
