@@ -263,11 +263,19 @@ contains
         end if
 
         ! Count all sources from the same directory with the same scope
+        ! Exclude program files that don't match this executable
         n = 0
         do i = 1, size(sources)
             if (sources(i)%unit_scope == scope .and. &
                 dirname(sources(i)%file_name) == exe_dir) then
-                n = n + 1
+                ! Include all non-program sources (modules, etc.)
+                ! or program sources that match this executable name
+                if (sources(i)%unit_type /= FPM_UNIT_PROGRAM) then
+                    n = n + 1
+                else if (allocated(sources(i)%exe_name) .and. &
+                         trim(sources(i)%exe_name) == trim(exe_name)) then
+                    n = n + 1
+                end if
             end if
         end do
 
@@ -277,8 +285,16 @@ contains
         do i = 1, size(sources)
             if (sources(i)%unit_scope == scope .and. &
                 dirname(sources(i)%file_name) == exe_dir) then
-                n = n + 1
-                temp(n)%s = sources(i)%file_name
+                ! Include all non-program sources (modules, etc.)
+                ! or program sources that match this executable name
+                if (sources(i)%unit_type /= FPM_UNIT_PROGRAM) then
+                    n = n + 1
+                    temp(n)%s = sources(i)%file_name
+                else if (allocated(sources(i)%exe_name) .and. &
+                         trim(sources(i)%exe_name) == trim(exe_name)) then
+                    n = n + 1
+                    temp(n)%s = sources(i)%file_name
+                end if
             end if
         end do
 
