@@ -9,7 +9,7 @@ module fpm_installer
   use fpm_error, only : error_t, fatal_error
   use fpm_targets, only: build_target_t, FPM_TARGET_ARCHIVE, FPM_TARGET_SHARED, FPM_TARGET_NAME
   use fpm_filesystem, only : join_path, mkdir, exists, unix_path, windows_path, get_local_prefix, &
-      basename
+       basename, set_executable
 
   implicit none
   private
@@ -210,10 +210,14 @@ contains
     call self%install(executable, self%bindir, error)
     if (allocated(error)) return
 
+    ! Set executable permissions on the installed file
+    exe_path = join_path(self%install_destination(self%bindir), basename(executable))
+    call set_executable(exe_path)
+
     ! on MacOS, add two relative paths for search of dynamic library dependencies: 
     add_rpath: if (self%os==OS_MACOS) then  
         
-        exe_path = join_path(self%install_destination(self%bindir) , basename(executable))
+        ! exe_path is already calculated above
         
         ! First path: for bin/lib/include structure
         cmd = "install_name_tool -add_rpath @executable_path/../lib " // exe_path
