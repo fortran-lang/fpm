@@ -43,18 +43,31 @@ end type cpp_block
 
 contains
 
-!> Case-insensitive check if macro_name is in the macros list
+!> Check if macro_name is defined in the macros list (case-sensitive, per CPP)
+!> Handles both "NAME" (defined without value) and "NAME=VALUE" formats
 logical function macro_in_list(macro_name, macros)
     character(*), intent(in) :: macro_name
     type(string_t), optional, intent(in) :: macros(:)
-    integer :: i
-    
-    type(string_t) :: lmacro
-    
+    integer :: i, eq_pos
+
     macro_in_list = .false.
     if (.not.present(macros)) return
-    
+
+    ! Fast path: exact match (handles macros defined without values)
     macro_in_list = macro_name .in. macros
+    if (macro_in_list) return
+
+    ! Slow path: check for NAME=VALUE format macros
+    do i = 1, size(macros)
+        eq_pos = index(macros(i)%s, '=')
+        if (eq_pos > 0) then
+            ! Macro with value: "NAME=VALUE" - extract just the name part
+            if (macros(i)%s(1:eq_pos-1) == macro_name) then
+                macro_in_list = .true.
+                return
+            end if
+        end if
+    end do
 
 end function macro_in_list
 
@@ -134,14 +147,14 @@ function get_macro_value(macro_name, macros, found) result(value)
         if (eq_pos > 0) then
             ! Macro with value: "NAME=VALUE"
             name_part = macros(i)%s(1:eq_pos-1)
-            if (lower(name_part) == lower(macro_name)) then
+            if (name_part == macro_name) then
                 value = macros(i)%s(eq_pos+1:)
                 if (present(found)) found = .true.
                 return
             end if
         else
             ! Macro without value: "NAME" (treated as defined but empty value)
-            if (lower(macros(i)%s) == lower(macro_name)) then
+            if (macros(i)%s == macro_name) then
                 value = ""
                 if (present(found)) found = .true.
                 return
@@ -188,11 +201,11 @@ subroutine parse_macro_comparison(condition, preprocess_macros, defined_macros, 
     ! Undefined macros evaluate to 0 per CPP behavior
     if (.not. macro_found) macro_value = "0"
 
-    ! Compare values (case-insensitive)
+    ! Compare values (case-sensitive, per CPP)
     if (is_equality) then
-        is_active = lower(macro_value) == lower(rhs)
+        is_active = macro_value == rhs
     else
-        is_active = lower(macro_value) /= lower(rhs)
+        is_active = macro_value /= rhs
     end if
 
 end subroutine parse_macro_comparison
@@ -211,11 +224,12 @@ subroutine parse_if_condition(lower_line, line, offset, heading_blanks, preproce
     logical, intent(out) :: is_active
     character(:), allocatable, intent(out) :: macro_name
 
-    integer :: start_pos, end_pos
+    integer :: start_pos, end_pos, defined_pos
     character(:), allocatable :: condition
+    logical :: negated
 
+    ! Check for defined() with parentheses: defined(MACRO) or !defined(MACRO)
     if (index(lower_line, 'defined(') > 0) then
-        ! #if/#elif defined(MACRO) or !defined(MACRO)
         start_pos = index(lower_line, 'defined(') + 8
         end_pos = index(lower_line(start_pos:), ')') - 1
 
@@ -231,22 +245,82 @@ subroutine parse_if_condition(lower_line, line, offset, heading_blanks, preproce
             is_active = .false.
             macro_name = ""
         end if
+
+    ! Check for defined without parentheses: defined MACRO or !defined MACRO
+    elseif (index(lower_line, 'defined ') > 0) then
+        negated = index(lower_line, '!defined ') > 0
+        if (negated) then
+            defined_pos = index(lower_line, '!defined ') + 9
+        else
+            defined_pos = index(lower_line, 'defined ') + 8
+        end if
+
+        ! Extract macro name (everything after 'defined ' until end of line or next space/operator)
+        start_pos = defined_pos + heading_blanks
+        macro_name = trim(adjustl(line(start_pos:)))
+
+        ! Remove any trailing content after first word
+        end_pos = scan(macro_name, ' &')
+        if (end_pos > 0) macro_name = macro_name(1:end_pos-1)
+
+        is_active = macro_in_list(macro_name, preprocess_macros) .or. &
+                    macro_in_list(macro_name, defined_macros)
+        if (negated) is_active = .not. is_active
+
     else
         condition = trim(adjustl(lower_line(offset:)))
 
         if (has_comparison_operator(condition)) then
-            call parse_macro_comparison(condition, preprocess_macros, defined_macros, is_active, macro_name)
+            call parse_macro_comparison(line(offset+heading_blanks:), preprocess_macros, defined_macros, is_active, macro_name)
         else
-            ! Simple macro check
+            ! Simple macro check: #if MACRO
+            ! Per CPP semantics: true if macro is defined with non-zero value
             start_pos = offset + heading_blanks
             end_pos = len_trim(lower_line) + heading_blanks
             macro_name = trim(adjustl(line(start_pos:end_pos)))
-            is_active = macro_in_list(macro_name, preprocess_macros) .or. &
-                        macro_in_list(macro_name, defined_macros)
+            is_active = macro_is_truthy(macro_name, preprocess_macros, locally_defined=.false.) .or. &
+                        macro_is_truthy(macro_name, defined_macros, locally_defined=.true.)
         end if
     end if
 
 end subroutine parse_if_condition
+
+!> Check if a macro evaluates to a truthy (non-zero) value
+!> Per CPP semantics: undefined macros = 0, "0" = false, non-zero = true
+!> locally_defined: if true, macro comes from #define in source (empty = false per CPP)
+!>                  if false, macro comes from command line/fpm.toml (empty = true, like -DMACRO)
+logical function macro_is_truthy(macro_name, macros, locally_defined)
+    character(*), intent(in) :: macro_name
+    type(string_t), optional, intent(in) :: macros(:)
+    logical, intent(in) :: locally_defined
+
+    character(:), allocatable :: value
+    logical :: found
+    integer :: int_value, ios
+
+    macro_is_truthy = .false.
+
+    value = get_macro_value(macro_name, macros, found)
+    if (.not. found) return  ! Undefined macro = false
+
+    ! Empty value behavior depends on source:
+    ! - Command line/fpm.toml (-DMACRO): treated as -DMACRO=1, so truthy
+    ! - #define MACRO in source: empty expression, would be CPP error, treat as false
+    if (len_trim(value) == 0) then
+        macro_is_truthy = .not. locally_defined
+        return
+    end if
+
+    ! Try to parse as integer
+    read(value, *, iostat=ios) int_value
+    if (ios == 0) then
+        macro_is_truthy = (int_value /= 0)
+    else
+        ! Non-numeric value: treat as truthy if non-empty
+        macro_is_truthy = .true.
+    end if
+
+end function macro_is_truthy
 
 !> Replace a single line with a chunk of lines (in-place)
 !> Replaces array(at_line) with chunk(:)
