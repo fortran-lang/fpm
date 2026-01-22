@@ -217,8 +217,6 @@ contains
     ! on MacOS, add two relative paths for search of dynamic library dependencies: 
     add_rpath: if (self%os==OS_MACOS) then  
         
-        ! exe_path is already calculated above
-        
         ! First path: for bin/lib/include structure
         cmd = "install_name_tool -add_rpath @executable_path/../lib " // exe_path
         call self%run(cmd, error)

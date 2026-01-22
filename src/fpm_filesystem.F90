@@ -1279,6 +1279,9 @@ end subroutine os_delete_dir
 #else
         ! Fallback using shell command
         call run("chmod +x " // filename, echo=.false., verbose=.false., exitstat=stat)
+        if (stat /= 0) then
+            write(stderr, *) "Warning: Failed to set executable permissions on: ", filename
+        end if
 #endif
 
     end subroutine set_executable
