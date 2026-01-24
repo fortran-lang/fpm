@@ -6,7 +6,7 @@ module fpm_cmd_cmake
     use fpm_manifest, only: package_config_t, get_package_data
     use fpm_model, only: fpm_model_t, srcfile_t, FPM_SCOPE_LIB, FPM_SCOPE_APP, &
                          FPM_SCOPE_TEST, FPM_SCOPE_EXAMPLE, FPM_UNIT_PROGRAM, &
-                         FPM_UNIT_CSOURCE, FPM_UNIT_CPPSOURCE
+                         FPM_UNIT_CSOURCE, FPM_UNIT_CPPSOURCE, FPM_UNIT_CHEADER
     use fpm, only: build_model
     use fpm_strings, only: string_t
     use, intrinsic :: iso_fortran_env, only: stdout => output_unit
@@ -77,7 +77,10 @@ contains
         call collect_sources(model%packages(1)%sources, lib_sources, app_sources, &
                             test_sources, executables, tests)
 
-        has_library = size(lib_sources) > 0
+        ! Check if package has a library (either compilable sources or header-only)
+        ! Header-only libraries have an include/ directory but no compilable sources
+        has_library = size(lib_sources) > 0 .or. &
+                     (size(lib_sources) == 0 .and. has_include_dir())
 
         ! Build version string
         version_str = package%version%s()
@@ -359,37 +362,62 @@ contains
                 end if
             end do
 
-            call append_line(lines, "# Library")
-            call append_line(lines, 'add_library('//lib_name)
-            do i = 1, size(lib_sources)
-                call append_line(lines, '    '//clean_path(lib_sources(i)%s))
-            end do
-            call append_line(lines, ')')
+            ! Check if this is a header-only library (has_library but no compilable sources)
+            if (size(lib_sources) == 0) then
+                ! Generate INTERFACE library for header-only
+                call append_line(lines, "# Header-only library")
+                call append_line(lines, 'add_library('//lib_name//' INTERFACE)')
+                call append_line(lines, 'target_include_directories('//lib_name//' INTERFACE')
+                call append_line(lines, '    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>')
+                call append_line(lines, '    $<INSTALL_INTERFACE:include>')
+                call append_line(lines, ')')
 
-            ! Set module directory properties
-            call append_line(lines, 'set_target_properties('//lib_name//' PROPERTIES')
-            call append_line(lines, '    Fortran_MODULE_DIRECTORY "${CMAKE_BINARY_DIR}/mod"')
-            call append_line(lines, '    POSITION_INDEPENDENT_CODE ON')
-            call append_line(lines, ')')
-            call append_line(lines, 'target_include_directories('//lib_name//' PUBLIC')
-            call append_line(lines, '    $<BUILD_INTERFACE:${CMAKE_BINARY_DIR}/mod>')
-            call append_line(lines, '    $<INSTALL_INTERFACE:include>')
-            call append_line(lines, ')')
-
-            ! Link dependencies
-            if (size(dependencies) > 0) then
-                call append_line(lines, 'target_link_libraries('//lib_name//' PUBLIC')
-                do i = 1, size(dependencies)
-                    ! Use the correct target name based on CMake support
-                    if (dependencies(i)%has_cmake) then
-                        ! For toml-f and jonquil, use the :: interface target
-                        call append_line(lines, '    '//trim(dependencies(i)%name)//'::'//trim(dependencies(i)%name))
-                    else
-                        ! For fpm-only deps, use the library target directly
-                        call append_line(lines, '    '//trim(dependencies(i)%name))
-                    end if
+                ! Link dependencies with INTERFACE
+                if (size(dependencies) > 0) then
+                    call append_line(lines, 'target_link_libraries('//lib_name//' INTERFACE')
+                    do i = 1, size(dependencies)
+                        if (dependencies(i)%has_cmake) then
+                            call append_line(lines, '    '//trim(dependencies(i)%name)//'::'//trim(dependencies(i)%name))
+                        else
+                            call append_line(lines, '    '//trim(dependencies(i)%name))
+                        end if
+                    end do
+                    call append_line(lines, ')')
+                end if
+            else
+                ! Generate STATIC library for normal libraries
+                call append_line(lines, "# Library")
+                call append_line(lines, 'add_library('//lib_name)
+                do i = 1, size(lib_sources)
+                    call append_line(lines, '    '//clean_path(lib_sources(i)%s))
                 end do
                 call append_line(lines, ')')
+
+                ! Set module directory properties
+                call append_line(lines, 'set_target_properties('//lib_name//' PROPERTIES')
+                call append_line(lines, '    Fortran_MODULE_DIRECTORY "${CMAKE_BINARY_DIR}/mod"')
+                call append_line(lines, '    POSITION_INDEPENDENT_CODE ON')
+                call append_line(lines, ')')
+                call append_line(lines, 'target_include_directories('//lib_name//' PUBLIC')
+                call append_line(lines, '    $<BUILD_INTERFACE:${CMAKE_BINARY_DIR}/mod>')
+                call append_line(lines, '    $<INSTALL_INTERFACE:include>')
+                call append_line(lines, ')')
+
+                ! Link dependencies
+                if (size(dependencies) > 0) then
+                    call append_line(lines, 'target_link_libraries('//lib_name//' PUBLIC')
+                    do i = 1, size(dependencies)
+                        ! Use the correct target name based on CMake support
+                        if (dependencies(i)%has_cmake) then
+                            ! For toml-f and jonquil, use the :: interface target
+                            call append_line(lines, '    '//trim(dependencies(i)%name)//'::'//trim(dependencies(i)%name))
+                        else
+                            ! For fpm-only deps, use the library target directly
+                            call append_line(lines, '    '//trim(dependencies(i)%name))
+                        end if
+                    end do
+                    call append_line(lines, ')')
+                end if
             end if
 
             call append_line(lines, "")
@@ -564,6 +592,7 @@ contains
         type(string_t), allocatable :: lines(:)
         character(len=:), allocatable :: cmake_file, rel_path
         integer :: i, path_len
+        logical :: has_compilable
 
         allocate(lines(0))
 
@@ -573,34 +602,55 @@ contains
         call append_line(lines, 'project('//trim(dep%name)//' LANGUAGES Fortran)')
         call append_line(lines, "")
 
-        ! Library target
-        call append_line(lines, 'add_library('//trim(dep%name)//' STATIC')
+        ! Check if dependency has any compilable sources (not just headers)
+        has_compilable = .false.
         do i = 1, size(dep%sources)
-            ! Strip the dependency path prefix to make paths relative
-            ! dep%path is "build/dependencies/NAME" and we need to remove "build/dependencies/NAME/"
-            path_len = len_trim(dep%path) + 1  ! +1 for the slash after the path
-            if (len_trim(dep%sources(i)%s) > path_len) then
-                rel_path = trim(dep%sources(i)%s(path_len+1:))
-            else
-                rel_path = trim(dep%sources(i)%s)
+            rel_path = trim(dep%sources(i)%s)
+            ! Check if the file does NOT end with .h or .hpp (i.e., it's compilable)
+            if (.not. (len(rel_path) >= 2 .and. rel_path(len(rel_path)-1:len(rel_path)) == '.h') .and. &
+                .not. (len(rel_path) >= 4 .and. rel_path(len(rel_path)-3:len(rel_path)) == '.hpp')) then
+                has_compilable = .true.
+                exit
             end if
-            call append_line(lines, '    '//clean_path(rel_path))
         end do
-        call append_line(lines, ')')
-        call append_line(lines, "")
 
-        ! Set properties
-        call append_line(lines, 'set_target_properties('//trim(dep%name)//' PROPERTIES')
-        call append_line(lines, '    Fortran_MODULE_DIRECTORY "${CMAKE_BINARY_DIR}/mod"')
-        call append_line(lines, '    POSITION_INDEPENDENT_CODE ON')
-        call append_line(lines, ')')
-        call append_line(lines, "")
+        if (has_compilable) then
+            ! Library target with compilable sources
+            call append_line(lines, 'add_library('//trim(dep%name)//' STATIC')
+            do i = 1, size(dep%sources)
+                ! Strip the dependency path prefix to make paths relative
+                ! dep%path is "build/dependencies/NAME" and we need to remove "build/dependencies/NAME/"
+                path_len = len_trim(dep%path) + 1  ! +1 for the slash after the path
+                if (len_trim(dep%sources(i)%s) > path_len) then
+                    rel_path = trim(dep%sources(i)%s(path_len+1:))
+                else
+                    rel_path = trim(dep%sources(i)%s)
+                end if
+                call append_line(lines, '    '//clean_path(rel_path))
+            end do
+            call append_line(lines, ')')
+            call append_line(lines, "")
 
-        ! Include directories
-        call append_line(lines, 'target_include_directories('//trim(dep%name)//' PUBLIC')
-        call append_line(lines, '    $<BUILD_INTERFACE:${CMAKE_BINARY_DIR}/mod>')
-        call append_line(lines, '    $<INSTALL_INTERFACE:include>')
-        call append_line(lines, ')')
+            ! Set properties
+            call append_line(lines, 'set_target_properties('//trim(dep%name)//' PROPERTIES')
+            call append_line(lines, '    Fortran_MODULE_DIRECTORY "${CMAKE_BINARY_DIR}/mod"')
+            call append_line(lines, '    POSITION_INDEPENDENT_CODE ON')
+            call append_line(lines, ')')
+            call append_line(lines, "")
+
+            ! Include directories
+            call append_line(lines, 'target_include_directories('//trim(dep%name)//' PUBLIC')
+            call append_line(lines, '    $<BUILD_INTERFACE:${CMAKE_BINARY_DIR}/mod>')
+            call append_line(lines, '    $<INSTALL_INTERFACE:include>')
+            call append_line(lines, ')')
+        else
+            ! INTERFACE library for header-only dependency
+            call append_line(lines, 'add_library('//trim(dep%name)//' INTERFACE)')
+            call append_line(lines, 'target_include_directories('//trim(dep%name)//' INTERFACE')
+            call append_line(lines, '    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>')
+            call append_line(lines, '    $<INSTALL_INTERFACE:include>')
+            call append_line(lines, ')')
+        end if
 
         ! Write to file
         cmake_file = trim(base_dir)//'/'//trim(dep%path)//'/CMakeLists.txt'
@@ -643,5 +693,38 @@ contains
         call append_line(lines, "")
 
     end subroutine write_cmake_dependencies
+
+    !> Check if include directory exists
+    function has_include_dir() result(exists)
+        logical :: exists
+        inquire(file='include', exist=exists)
+    end function has_include_dir
+
+    !> Check if sources contain only headers (no compilable library sources)
+    function is_header_only(sources) result(header_only)
+        type(srcfile_t), intent(in) :: sources(:)
+        logical :: header_only
+        integer :: i
+        logical :: has_headers, has_compilable_lib
+
+        has_headers = .false.
+        has_compilable_lib = .false.
+
+        ! Check for headers and compilable library sources
+        do i = 1, size(sources)
+            ! Check if we have any C header files
+            if (sources(i)%unit_type == FPM_UNIT_CHEADER) then
+                has_headers = .true.
+            end if
+            ! Check if we have any compilable library sources (not headers)
+            if (sources(i)%unit_scope == FPM_SCOPE_LIB .and. &
+                sources(i)%unit_type /= FPM_UNIT_CHEADER) then
+                has_compilable_lib = .true.
+            end if
+        end do
+
+        ! It's header-only if we have headers but no compilable library sources
+        header_only = has_headers .and. .not. has_compilable_lib
+    end function is_header_only
 
 end module fpm_cmd_cmake
