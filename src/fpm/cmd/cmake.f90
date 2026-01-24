@@ -400,6 +400,9 @@ contains
                 call append_line(lines, ')')
                 call append_line(lines, 'target_include_directories('//lib_name//' PUBLIC')
                 call append_line(lines, '    $<BUILD_INTERFACE:${CMAKE_BINARY_DIR}/mod>')
+                if (has_include_dir()) then
+                    call append_line(lines, '    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>')
+                end if
                 call append_line(lines, '    $<INSTALL_INTERFACE:include>')
                 call append_line(lines, ')')
 
@@ -592,7 +595,7 @@ contains
         type(string_t), allocatable :: lines(:)
         character(len=:), allocatable :: cmake_file, rel_path
         integer :: i, path_len
-        logical :: has_compilable
+        logical :: has_compilable, dep_has_include
 
         allocate(lines(0))
 
@@ -641,6 +644,11 @@ contains
             ! Include directories
             call append_line(lines, 'target_include_directories('//trim(dep%name)//' PUBLIC')
             call append_line(lines, '    $<BUILD_INTERFACE:${CMAKE_BINARY_DIR}/mod>')
+            ! Check if dependency has include directory
+            inquire(file=trim(dep%path)//'/include', exist=dep_has_include)
+            if (dep_has_include) then
+                call append_line(lines, '    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>')
+            end if
             call append_line(lines, '    $<INSTALL_INTERFACE:include>')
             call append_line(lines, ')')
         else
