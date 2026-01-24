@@ -9,7 +9,7 @@ module fpm_cmd_cmake
                          FPM_UNIT_MODULE, FPM_UNIT_SUBMODULE, FPM_UNIT_SUBPROGRAM, &
                          FPM_UNIT_CSOURCE, FPM_UNIT_CPPSOURCE, FPM_UNIT_CHEADER
     use fpm, only: build_model
-    use fpm_strings, only: string_t
+    use fpm_strings, only: string_t, lower, str_ends_with
     use, intrinsic :: iso_fortran_env, only: stdout => output_unit
     implicit none
     private
@@ -337,14 +337,9 @@ contains
             select case (sources(k)%unit_type)
                 case (FPM_UNIT_PROGRAM)
                     ! Programs can be either Fortran or C/C++ - check extension
-                    if (index(sources(k)%file_name, '.c') > 0 .and. &
-                        index(sources(k)%file_name, '.cpp') == 0 .and. &
-                        index(sources(k)%file_name, '.cxx') == 0 .and. &
-                        index(sources(k)%file_name, '.cc') == 0) then
+                    if (str_ends_with(lower(sources(k)%file_name), ".c")) then
                         has_c = .true.
-                    else if (index(sources(k)%file_name, '.cpp') > 0 .or. &
-                             index(sources(k)%file_name, '.cxx') > 0 .or. &
-                             index(sources(k)%file_name, '.cc') > 0) then
+                    else if (str_ends_with(lower(sources(k)%file_name), ".cpp")) then
                         has_cpp = .true.
                     else
                         has_fortran = .true.
