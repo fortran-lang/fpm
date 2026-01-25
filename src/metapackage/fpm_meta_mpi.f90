@@ -589,6 +589,10 @@ contains
             this%link_flags = string_t(' -Wl,--start-group '//this%link_flags%s)
         end if
 
+        ! Get include directories (for CMake generation)
+        call extract_include_dirs(this,compiler,mpilib,fort_wrapper,verbose,error)
+        if (allocated(error)) return
+
         ! Add language-specific flags
         call set_language_flags(compiler,mpilib,fort_wrapper,this%has_fortran_flags,this%fflags,verbose,error)
         if (allocated(error)) return
@@ -637,6 +641,54 @@ contains
             endif
 
         end subroutine set_language_flags
+
+        subroutine extract_include_dirs(this,compiler,mpilib,wrapper,verbose,error)
+            class(metapackage_t), intent(inout) :: this
+            type(compiler_t), intent(in) :: compiler
+            integer, intent(in) :: mpilib
+            type(string_t), intent(in) :: wrapper
+            logical, intent(in) :: verbose
+            type(error_t), allocatable, intent(out) :: error
+
+            type(string_t) :: incl_dirs_str
+            character(len=:), allocatable :: tokens(:)
+            integer :: i, n_dirs
+            type(string_t), allocatable :: temp_dirs(:)
+
+            ! Only OpenMPI currently supports querying include directories directly
+            if (mpilib == MPI_TYPE_OPENMPI .and. len_trim(wrapper)>0) then
+
+                ! Query include directories from wrapper
+                incl_dirs_str = mpi_wrapper_query(mpilib,wrapper,'incl_dirs',verbose,error)
+
+                ! If error or empty result, just return without setting include dirs
+                if (allocated(error) .or. len_trim(incl_dirs_str)<=0) then
+                    if (allocated(error)) deallocate(error)
+                    return
+                end if
+
+                ! Split space-separated paths into array
+                call split(incl_dirs_str%s,tokens,delimiters=' ')
+
+                n_dirs = size(tokens)
+                if (n_dirs > 0) then
+                    allocate(temp_dirs(n_dirs))
+                    do i = 1, n_dirs
+                        if (len_trim(tokens(i)) > 0) then
+                            temp_dirs(i)%s = trim(tokens(i))
+                        end if
+                    end do
+
+                    ! Set include directories
+                    this%has_include_dirs = .true.
+                    this%incl_dirs = temp_dirs
+
+                    if (verbose) print *, '+ MPI include dirs: ',incl_dirs_str%s
+                end if
+
+            end if
+
+        end subroutine extract_include_dirs
 
     end subroutine init_mpi_from_wrappers
 

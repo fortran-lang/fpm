@@ -322,12 +322,23 @@ contains
 
     end subroutine get_sources_for_exe
 
-    !> Add metapackage link options and libraries to a target
-    subroutine append_metapackage_link(lines, target_name, model)
+    !> Add metapackage settings (include directories, link options, and libraries) to a target
+    subroutine append_metapackage_settings(lines, target_name, model)
         type(string_t), allocatable, intent(inout) :: lines(:)
         character(len=*), intent(in) :: target_name
         type(fpm_model_t), intent(in) :: model
         integer :: i
+
+        ! Add include directories from metapackages (e.g., MPI, HDF5)
+        if (allocated(model%include_dirs)) then
+            if (size(model%include_dirs) > 0) then
+                call append_line(lines, 'target_include_directories('//target_name//' PRIVATE')
+                do i = 1, size(model%include_dirs)
+                    call append_line(lines, '    '//trim(model%include_dirs(i)%s))
+                end do
+                call append_line(lines, ')')
+            end if
+        end if
 
         ! Add link options (e.g., -L flags, -framework flags, etc.)
         if (allocated(model%link_flags)) then
@@ -348,7 +359,7 @@ contains
                 call append_line(lines, ')')
             end if
         end if
-    end subroutine append_metapackage_link
+    end subroutine append_metapackage_settings
 
     !> Write CMake content to string_t array
     subroutine write_cmake_content(lines, name, version, lib_sources, &
@@ -562,9 +573,9 @@ contains
             call append_line(lines, "")
         end if
 
-        ! Add metapackage link flags and libraries
+        ! Add metapackage settings (include dirs, link flags, and libraries)
         if (has_library) then
-            call append_metapackage_link(lines, lib_name, model)
+            call append_metapackage_settings(lines, lib_name, model)
             call append_line(lines, "")
         end if
 
@@ -605,8 +616,8 @@ contains
                     call append_line(lines, ')')
                 end if
 
-                ! Add metapackage link flags and libraries
-                call append_metapackage_link(lines, exe_name_str, model)
+                ! Add metapackage settings (include dirs, link flags, and libraries)
+                call append_metapackage_settings(lines, exe_name_str, model)
                 call append_line(lines, "")
             end do
         end if
@@ -654,8 +665,8 @@ contains
                 end if
                 call append_line(lines, ')')
 
-                ! Add metapackage link flags and libraries
-                call append_metapackage_link(lines, exe_name_str, model)
+                ! Add metapackage settings (include dirs, link flags, and libraries)
+                call append_metapackage_settings(lines, exe_name_str, model)
                 call append_line(lines, 'add_test(NAME '//exe_name_str// &
                              ' COMMAND '//exe_name_str//')')
                 call append_line(lines, "")
