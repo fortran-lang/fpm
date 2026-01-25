@@ -709,10 +709,11 @@ contains
 
             ! Filter dependencies if used_packages is provided
             if (present(used_packages)) then
-                ! First pass: count used dependencies
+                ! First pass: count used dependencies (include header-only deps regardless)
                 n_used_deps = 0
                 do i = 1, n_deps
-                    if (is_package_used(temp_deps(i)%name, used_packages)) then
+                    if (is_package_used(temp_deps(i)%name, used_packages) .or. &
+                        is_header_only_dep(temp_deps(i))) then
                         n_used_deps = n_used_deps + 1
                     end if
                 end do
@@ -721,7 +722,8 @@ contains
                 allocate(filtered_deps(n_used_deps))
                 n_used_deps = 0
                 do i = 1, n_deps
-                    if (is_package_used(temp_deps(i)%name, used_packages)) then
+                    if (is_package_used(temp_deps(i)%name, used_packages) .or. &
+                        is_header_only_dep(temp_deps(i))) then
                         n_used_deps = n_used_deps + 1
                         filtered_deps(n_used_deps) = temp_deps(i)
                     end if
@@ -806,6 +808,50 @@ contains
         end do
 
     end function is_package_used
+
+    !> Check if a dependency is header-only (no compilable sources)
+    function is_header_only_dep(dep) result(is_header_only)
+        type(dependency_info_t), intent(in) :: dep
+        logical :: is_header_only
+
+        integer :: i
+        character(len=:), allocatable :: file_path
+        logical :: has_compilable
+
+        is_header_only = .false.
+
+        ! If dependency has CMake support, assume it's not header-only for filtering purposes
+        ! (CMake-enabled deps manage their own header-only status)
+        if (dep%has_cmake) return
+
+        ! Check if dependency has any compilable sources
+        if (.not. allocated(dep%sources)) then
+            ! No sources allocated means header-only
+            is_header_only = .true.
+            return
+        end if
+
+        if (size(dep%sources) == 0) then
+            ! No sources means header-only
+            is_header_only = .true.
+            return
+        end if
+
+        ! Check if all sources are headers
+        has_compilable = .false.
+        do i = 1, size(dep%sources)
+            file_path = trim(dep%sources(i)%s)
+            ! Check if the file does NOT end with .h or .hpp (i.e., it's compilable)
+            if (.not. (len(file_path) >= 2 .and. file_path(len(file_path)-1:len(file_path)) == '.h') .and. &
+                .not. (len(file_path) >= 4 .and. file_path(len(file_path)-3:len(file_path)) == '.hpp')) then
+                has_compilable = .true.
+                exit
+            end if
+        end do
+
+        is_header_only = .not. has_compilable
+
+    end function is_header_only_dep
 
     !> Generate CMakeLists.txt for an fpm-only dependency
     subroutine generate_dependency_cmake(dep, base_dir)
