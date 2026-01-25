@@ -22,7 +22,9 @@ module fpm_cmd_cmake
         character(:), allocatable :: name
         character(:), allocatable :: path
         logical :: has_cmake
+        logical :: is_dev_dependency  ! True if this is a dev-dependency
         type(string_t), allocatable :: sources(:)
+        type(string_t), allocatable :: depends_on(:)  ! Names of this dependency's own dependencies
     end type dependency_info_t
 
 contains
@@ -90,7 +92,7 @@ contains
         if (version_str == '0') version_str = "0.1.0"
 
         ! Collect dependencies
-        call collect_dependencies(model, dependencies)
+        call collect_dependencies(model, package, dependencies)
 
         ! Generate CMakeLists.txt for fpm-only dependencies
         do i = 1, size(dependencies)
@@ -387,10 +389,7 @@ contains
                        ' LANGUAGES '//trim(languages)//')')
         call append_line(lines, "")
 
-        ! Dependencies section
-        call write_cmake_dependencies(lines, dependencies, '.')
-
-        ! Library target
+        ! Library target (defined before dependencies so subdirs can reference it)
         if (has_library) then
             ! Check if any executable has the same name as the library
             do i = 1, size(executables)
@@ -434,19 +433,6 @@ contains
                             end if
                         end if
                     end do
-                end if
-
-                ! Link dependencies with INTERFACE
-                if (size(dependencies) > 0) then
-                    call append_line(lines, 'target_link_libraries('//lib_name//' INTERFACE')
-                    do i = 1, size(dependencies)
-                        if (dependencies(i)%has_cmake) then
-                            call append_line(lines, '    '//trim(dependencies(i)%name)//'::'//trim(dependencies(i)%name))
-                        else
-                            call append_line(lines, '    '//trim(dependencies(i)%name))
-                        end if
-                    end do
-                    call append_line(lines, ')')
                 end if
             else
                 ! Generate STATIC library for normal libraries
@@ -495,24 +481,37 @@ contains
                         end if
                     end do
                 end if
-
-                ! Link dependencies
-                if (size(dependencies) > 0) then
-                    call append_line(lines, 'target_link_libraries('//lib_name//' PUBLIC')
-                    do i = 1, size(dependencies)
-                        ! Use the correct target name based on CMake support
-                        if (dependencies(i)%has_cmake) then
-                            ! For toml-f and jonquil, use the :: interface target
-                            call append_line(lines, '    '//trim(dependencies(i)%name)//'::'//trim(dependencies(i)%name))
-                        else
-                            ! For fpm-only deps, use the library target directly
-                            call append_line(lines, '    '//trim(dependencies(i)%name))
-                        end if
-                    end do
-                    call append_line(lines, ')')
-                end if
             end if
 
+            call append_line(lines, "")
+        end if
+
+        ! Dependencies section (after library so subdirs can reference it)
+        call write_cmake_dependencies(lines, dependencies, '.')
+
+        ! Link library to dependencies (after dependencies are added)
+        ! Skip dev-dependencies - those are only for tests
+        if (has_library .and. size(dependencies) > 0) then
+            ! Use INTERFACE for header-only libraries, PUBLIC for regular libraries
+            if (size(lib_sources) == 0) then
+                call append_line(lines, 'target_link_libraries('//lib_name//' INTERFACE')
+            else
+                call append_line(lines, 'target_link_libraries('//lib_name//' PUBLIC')
+            end if
+            do i = 1, size(dependencies)
+                ! Skip dev-dependencies (only link to regular dependencies)
+                if (.not. dependencies(i)%is_dev_dependency) then
+                    ! Use the correct target name based on CMake support
+                    if (dependencies(i)%has_cmake) then
+                        ! For toml-f and jonquil, use the :: interface target
+                        call append_line(lines, '    '//trim(dependencies(i)%name)//'::'//trim(dependencies(i)%name))
+                    else
+                        ! For fpm-only deps, use the library target directly
+                        call append_line(lines, '    '//trim(dependencies(i)%name))
+                    end if
+                end if
+            end do
+            call append_line(lines, ')')
             call append_line(lines, "")
         end if
 
@@ -567,21 +566,25 @@ contains
                     call append_line(lines, '    '//clean_path(exe_sources(j)%s))
                 end do
                 call append_line(lines, ')')
+                ! Link test to library and dev-dependencies
+                call append_line(lines, 'target_link_libraries('//exe_name_str//' PRIVATE')
                 if (has_library) then
-                    call append_line(lines, 'target_link_libraries('//exe_name_str// &
-                                 ' PRIVATE '//lib_name//')')
-                else if (size(dependencies) > 0) then
-                    ! If no library, link directly to dependencies
-                    call append_line(lines, 'target_link_libraries('//exe_name_str//' PRIVATE')
+                    call append_line(lines, '    '//lib_name)
+                end if
+                ! Link all dependencies (both regular and dev-dependencies for tests)
+                if (size(dependencies) > 0) then
                     do k = 1, size(dependencies)
-                        if (dependencies(k)%has_cmake) then
-                            call append_line(lines, '    '//trim(dependencies(k)%name)//'::'//trim(dependencies(k)%name))
-                        else
-                            call append_line(lines, '    '//trim(dependencies(k)%name))
+                        ! For tests, link both regular and dev-dependencies
+                        if (.not. has_library .or. dependencies(k)%is_dev_dependency) then
+                            if (dependencies(k)%has_cmake) then
+                                call append_line(lines, '    '//trim(dependencies(k)%name)//'::'//trim(dependencies(k)%name))
+                            else
+                                call append_line(lines, '    '//trim(dependencies(k)%name))
+                            end if
                         end if
                     end do
-                    call append_line(lines, ')')
                 end if
+                call append_line(lines, ')')
                 call append_line(lines, 'add_test(NAME '//exe_name_str// &
                              ' COMMAND '//exe_name_str//')')
                 call append_line(lines, "")
@@ -638,12 +641,14 @@ contains
     end function has_cmake_support
 
     !> Collect dependencies from model
-    subroutine collect_dependencies(model, deps)
+    subroutine collect_dependencies(model, package, deps)
         type(fpm_model_t), intent(in) :: model
+        type(package_config_t), intent(in) :: package
         type(dependency_info_t), allocatable, intent(out) :: deps(:)
 
-        integer :: i, n_deps, j
+        integer :: i, n_deps, j, k
         type(dependency_info_t), allocatable :: temp_deps(:)
+        logical :: is_dev_dep
 
         ! Count dependencies (packages 2 onwards are dependencies)
         n_deps = size(model%packages) - 1
@@ -661,12 +666,33 @@ contains
                 ! Check if it has CMake support
                 temp_deps(i)%has_cmake = has_cmake_support(temp_deps(i)%path)
 
+                ! Check if this is a dev-dependency
+                temp_deps(i)%is_dev_dependency = .false.
+                if (allocated(package%dev_dependency)) then
+                    do k = 1, size(package%dev_dependency)
+                        if (trim(package%dev_dependency(k)%name) == trim(temp_deps(i)%name)) then
+                            temp_deps(i)%is_dev_dependency = .true.
+                            exit
+                        end if
+                    end do
+                end if
+
                 ! Collect sources if it doesn't have CMake
                 if (.not. temp_deps(i)%has_cmake) then
                     allocate(temp_deps(i)%sources(size(model%packages(i+1)%sources)))
                     do j = 1, size(model%packages(i+1)%sources)
                         temp_deps(i)%sources(j)%s = model%packages(i+1)%sources(j)%file_name
                     end do
+                end if
+
+                ! Collect this dependency's own dependencies (sub-dependencies)
+                if (allocated(model%deps%dep(i+1)%package_dep)) then
+                    allocate(temp_deps(i)%depends_on(size(model%deps%dep(i+1)%package_dep)))
+                    do j = 1, size(model%deps%dep(i+1)%package_dep)
+                        temp_deps(i)%depends_on(j)%s = model%deps%dep(i+1)%package_dep(j)%s
+                    end do
+                else
+                    allocate(temp_deps(i)%depends_on(0))
                 end if
             end do
 
@@ -741,6 +767,21 @@ contains
             end if
             call append_line(lines, '    $<INSTALL_INTERFACE:include>')
             call append_line(lines, ')')
+
+            ! Link to this dependency's own dependencies (sub-dependencies)
+            if (allocated(dep%depends_on)) then
+                if (size(dep%depends_on) > 0) then
+                    call append_line(lines, "")
+                    call append_line(lines, 'target_link_libraries('//trim(dep%name)//' PUBLIC')
+                    do i = 1, size(dep%depends_on)
+                        ! Skip self-references
+                        if (trim(dep%depends_on(i)%s) /= trim(dep%name)) then
+                            call append_line(lines, '    '//trim(dep%depends_on(i)%s))
+                        end if
+                    end do
+                    call append_line(lines, ')')
+                end if
+            end if
         else
             ! INTERFACE library for header-only dependency
             call append_line(lines, 'add_library('//trim(dep%name)//' INTERFACE)')
@@ -748,6 +789,20 @@ contains
             call append_line(lines, '    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>')
             call append_line(lines, '    $<INSTALL_INTERFACE:include>')
             call append_line(lines, ')')
+
+            ! Link to this dependency's own dependencies (sub-dependencies) for INTERFACE library
+            if (allocated(dep%depends_on)) then
+                if (size(dep%depends_on) > 0) then
+                    call append_line(lines, 'target_link_libraries('//trim(dep%name)//' INTERFACE')
+                    do i = 1, size(dep%depends_on)
+                        ! Skip self-references
+                        if (trim(dep%depends_on(i)%s) /= trim(dep%name)) then
+                            call append_line(lines, '    '//trim(dep%depends_on(i)%s))
+                        end if
+                    end do
+                    call append_line(lines, ')')
+                end if
+            end if
         end if
 
         ! Write to file

@@ -11,8 +11,6 @@ failures=()
 for dir in example_packages/*/ ; do
 
 	# TODO
-	[[ "$dir" == "example_packages/circular_example/" ]] && continue
-	[[ "$dir" == "example_packages/circular_test/" ]] && continue
 	[[ "$dir" == "example_packages/dependency_priority/" ]] && continue
 	[[ "$dir" == "example_packages/features_with_dependency/" ]] && continue
 	[[ "$dir" == "example_packages/fixed-form/" ]] && continue
