@@ -11,7 +11,6 @@ failures=()
 for dir in example_packages/*/ ; do
 
 	# TODO
-	[[ "$dir" == "example_packages/features_with_dependency/" ]] && continue
 	[[ "$dir" == "example_packages/fixed-form/" ]] && continue
 	[[ "$dir" == "example_packages/metapackage_blas/" ]] && continue
 	[[ "$dir" == "example_packages/metapackage_blas/" ]] && continue
@@ -38,6 +37,10 @@ for dir in example_packages/*/ ; do
 	[[ "$dir" == "example_packages/preprocess_hello/" ]] && continue
 	[[ "$dir" == "example_packages/preprocess_hello_dependency/" ]] && continue
 	[[ "$dir" == "example_packages/program_with_cpp_guarded_module/" ]] && continue
+
+	# These example(s) do not work with "fpm build" either, either intentionally
+	# or a separate issue unrelated to cmake generation
+	[[ "$dir" == "example_packages/features_with_dependency/" ]] && continue
 
 	pushd "$dir"
 
