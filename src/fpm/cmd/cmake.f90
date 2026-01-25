@@ -12,6 +12,7 @@ module fpm_cmd_cmake
                          FPM_UNIT_CSOURCE, FPM_UNIT_CPPSOURCE, FPM_UNIT_CHEADER
     use fpm, only: build_model
     use fpm_strings, only: string_t, lower, str_ends_with
+    use fpm_targets, only: targets_from_sources, build_target_ptr
     use, intrinsic :: iso_fortran_env, only: stdout => output_unit
     implicit none
     private
@@ -67,13 +68,15 @@ contains
     !> Generate CMakeLists.txt from package and model
     subroutine generate_cmake(package, model, error)
         type(package_config_t), intent(in) :: package
-        type(fpm_model_t), intent(in) :: model
+        type(fpm_model_t), intent(inout) :: model
         type(error_t), allocatable, intent(out) :: error
 
         type(string_t), allocatable :: lib_sources(:), app_sources(:), test_sources(:)
         type(string_t), allocatable :: executables(:), tests(:)
         type(string_t), allocatable :: cmake_lines(:)
         type(dependency_info_t), allocatable :: dependencies(:)
+        type(string_t), allocatable :: used_package_names(:)
+        type(build_target_ptr), allocatable :: targets(:)
         character(len=:), allocatable :: version_str
         integer :: i
         logical :: has_library
@@ -91,8 +94,15 @@ contains
         version_str = package%version%s()
         if (version_str == '0') version_str = "0.1.0"
 
-        ! Collect dependencies
-        call collect_dependencies(model, package, dependencies)
+        ! Generate pruned build targets to determine which packages are actually used
+        call targets_from_sources(targets, model, prune=.true., error=error)
+        if (allocated(error)) return
+
+        ! Extract which packages are actually used from the pruned targets
+        call collect_used_packages(targets, used_package_names)
+
+        ! Collect ONLY dependencies that appear in targets
+        call collect_dependencies(model, package, dependencies, used_package_names)
 
         ! Generate CMakeLists.txt for fpm-only dependencies
         do i = 1, size(dependencies)
@@ -641,13 +651,14 @@ contains
     end function has_cmake_support
 
     !> Collect dependencies from model
-    subroutine collect_dependencies(model, package, deps)
+    subroutine collect_dependencies(model, package, deps, used_packages)
         type(fpm_model_t), intent(in) :: model
         type(package_config_t), intent(in) :: package
         type(dependency_info_t), allocatable, intent(out) :: deps(:)
+        type(string_t), intent(in), optional :: used_packages(:)
 
-        integer :: i, n_deps, j, k
-        type(dependency_info_t), allocatable :: temp_deps(:)
+        integer :: i, n_deps, j, k, n_used_deps
+        type(dependency_info_t), allocatable :: temp_deps(:), filtered_deps(:)
         logical :: is_dev_dep
 
         ! Count dependencies (packages 2 onwards are dependencies)
@@ -696,12 +707,105 @@ contains
                 end if
             end do
 
-            call move_alloc(temp_deps, deps)
+            ! Filter dependencies if used_packages is provided
+            if (present(used_packages)) then
+                ! First pass: count used dependencies
+                n_used_deps = 0
+                do i = 1, n_deps
+                    if (is_package_used(temp_deps(i)%name, used_packages)) then
+                        n_used_deps = n_used_deps + 1
+                    end if
+                end do
+
+                ! Second pass: collect used dependencies
+                allocate(filtered_deps(n_used_deps))
+                n_used_deps = 0
+                do i = 1, n_deps
+                    if (is_package_used(temp_deps(i)%name, used_packages)) then
+                        n_used_deps = n_used_deps + 1
+                        filtered_deps(n_used_deps) = temp_deps(i)
+                    end if
+                end do
+                call move_alloc(filtered_deps, deps)
+            else
+                call move_alloc(temp_deps, deps)
+            end if
         else
             allocate(deps(0))
         end if
 
     end subroutine collect_dependencies
+
+    !> Extract unique package names from build targets
+    subroutine collect_used_packages(targets, used_packages)
+        type(build_target_ptr), intent(in) :: targets(:)
+        type(string_t), allocatable, intent(out) :: used_packages(:)
+
+        integer :: i, j, n_unique
+        type(string_t), allocatable :: temp_packages(:)
+        logical :: is_duplicate
+
+        ! First pass: collect all package names (with duplicates)
+        allocate(temp_packages(size(targets)))
+        do i = 1, size(targets)
+            if (allocated(targets(i)%ptr%package_name)) then
+                temp_packages(i)%s = targets(i)%ptr%package_name
+            else
+                temp_packages(i)%s = ''
+            end if
+        end do
+
+        ! Second pass: count unique non-empty package names
+        n_unique = 0
+        do i = 1, size(temp_packages)
+            if (len_trim(temp_packages(i)%s) == 0) cycle
+            is_duplicate = .false.
+            do j = 1, i - 1
+                if (trim(temp_packages(j)%s) == trim(temp_packages(i)%s)) then
+                    is_duplicate = .true.
+                    exit
+                end if
+            end do
+            if (.not. is_duplicate) n_unique = n_unique + 1
+        end do
+
+        ! Third pass: collect unique package names
+        allocate(used_packages(n_unique))
+        n_unique = 0
+        do i = 1, size(temp_packages)
+            if (len_trim(temp_packages(i)%s) == 0) cycle
+            is_duplicate = .false.
+            do j = 1, i - 1
+                if (trim(temp_packages(j)%s) == trim(temp_packages(i)%s)) then
+                    is_duplicate = .true.
+                    exit
+                end if
+            end do
+            if (.not. is_duplicate) then
+                n_unique = n_unique + 1
+                used_packages(n_unique)%s = temp_packages(i)%s
+            end if
+        end do
+
+    end subroutine collect_used_packages
+
+    !> Check if a package name is in the used list
+    function is_package_used(package_name, used_packages) result(is_used)
+        character(len=*), intent(in) :: package_name
+        type(string_t), intent(in) :: used_packages(:)
+        logical :: is_used
+
+        integer :: i
+
+        is_used = .false.
+        do i = 1, size(used_packages)
+            if (trim(used_packages(i)%s) == trim(package_name)) then
+                is_used = .true.
+                exit
+            end if
+        end do
+
+    end function is_package_used
 
     !> Generate CMakeLists.txt for an fpm-only dependency
     subroutine generate_dependency_cmake(dep, base_dir)
