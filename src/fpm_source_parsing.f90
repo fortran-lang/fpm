@@ -391,6 +391,27 @@ subroutine add_macro(macros, macro)
 
 end subroutine add_macro
 
+!> Check if source file contains CPP directives
+logical function contains_cpp_directives(file_lines) result(has_directives)
+    type(string_t), intent(in) :: file_lines(:)
+    integer :: i
+    character(:), allocatable :: line_lower
+
+    has_directives = .false.
+    do i = 1, size(file_lines)
+        line_lower = lower(adjustl(file_lines(i)%s))
+        if (index(line_lower, '#ifdef') == 1 .or. &
+            index(line_lower, '#ifndef') == 1 .or. &
+            index(line_lower, '#if ') == 1 .or. &
+            index(line_lower, '#elif') == 1 .or. &
+            index(line_lower, '#else') == 1 .or. &
+            index(line_lower, '#endif') == 1) then
+            has_directives = .true.
+            return
+        end if
+    end do
+end function contains_cpp_directives
+
 !> Start a CPP conditional block (active or inactive)
 subroutine start_cpp_block(blk, lower_line, line, preprocess, defined_macros)
     type(cpp_block), intent(inout) :: blk
@@ -461,16 +482,16 @@ subroutine parse_cpp_condition(lower_line, line, preprocess, is_active, macro_na
 
     integer :: start_pos, heading_blanks, i
 
-    ! Always active if CPP preprocessor is not active
+    ! If no preprocess config, treat all conditionals as inactive
     if (.not. present(preprocess)) then
-        is_active = .true.
+        is_active = .false.
         macro_name = ""
         return
     endif
 
-    ! If CPP is not enabled, always active
+    ! If CPP is not enabled, treat all conditionals as inactive
     if (.not. preprocess%is_cpp()) then
-        is_active = .true.
+        is_active = .false.
         macro_name = ""
         return
     endif
@@ -568,15 +589,22 @@ function parse_f_source(f_filename,error,preprocess) result(f_source)
 
     f_source%file_name = f_filename
 
-    ! Only use conditional parsing if preprocessing is enabled with CPP
+    ! Check if preprocessing is explicitly enabled
     cpp_conditional_parsing = .false.
     if (present(preprocess)) cpp_conditional_parsing = preprocess%is_cpp()
 
-    ! Read file with #include directives expanded inline (for CPP parsing)
+    ! Read file and auto-detect CPP directives if not explicitly enabled
     if (cpp_conditional_parsing) then
+        ! CPP enabled: read with includes expanded
         file_lines = read_lines_with_includes(f_filename)
     else
+        ! Read file normally
         file_lines = read_lines_expanded(f_filename)
+
+        ! Auto-detect CPP directives and enable conditional parsing
+        if (contains_cpp_directives(file_lines)) then
+            cpp_conditional_parsing = .true.
+        end if
     end if
 
     ! for efficiency in parsing make a lowercase left-adjusted copy of the file

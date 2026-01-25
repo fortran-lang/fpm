@@ -13,6 +13,7 @@ module fpm_cmd_cmake
     use fpm, only: build_model
     use fpm_strings, only: string_t, lower, str_ends_with
     use fpm_targets, only: targets_from_sources, build_target_ptr
+    use fpm_filesystem, only: read_lines
     use, intrinsic :: iso_fortran_env, only: stdout => output_unit
     implicit none
     private
@@ -458,6 +459,15 @@ contains
                 call append_line(lines, '    Fortran_MODULE_DIRECTORY "${CMAKE_BINARY_DIR}/mod"')
                 call append_line(lines, '    POSITION_INDEPENDENT_CODE ON')
                 call append_line(lines, ')')
+
+                ! Enable preprocessing for files with CPP directives
+                do i = 1, size(lib_sources)
+                    if (file_has_cpp_directives(lib_sources(i)%s)) then
+                        call append_line(lines, 'set_source_files_properties('//clean_path(lib_sources(i)%s))
+                        call append_line(lines, '    PROPERTIES COMPILE_FLAGS "-cpp"')
+                        call append_line(lines, ')')
+                    end if
+                end do
                 call append_line(lines, 'target_include_directories('//lib_name//' PUBLIC')
                 call append_line(lines, '    $<BUILD_INTERFACE:${CMAKE_BINARY_DIR}/mod>')
                 ! Add include directories from manifest
@@ -540,6 +550,16 @@ contains
                     call append_line(lines, '    '//clean_path(exe_sources(j)%s))
                 end do
                 call append_line(lines, ')')
+
+                ! Enable preprocessing for files with CPP directives
+                do j = 1, size(exe_sources)
+                    if (file_has_cpp_directives(exe_sources(j)%s)) then
+                        call append_line(lines, 'set_source_files_properties('//clean_path(exe_sources(j)%s))
+                        call append_line(lines, '    PROPERTIES COMPILE_FLAGS "-cpp"')
+                        call append_line(lines, ')')
+                    end if
+                end do
+
                 if (has_library) then
                     call append_line(lines, 'target_link_libraries('//exe_name_str// &
                                  ' PRIVATE '//lib_name//')')
@@ -576,6 +596,16 @@ contains
                     call append_line(lines, '    '//clean_path(exe_sources(j)%s))
                 end do
                 call append_line(lines, ')')
+
+                ! Enable preprocessing for files with CPP directives
+                do j = 1, size(exe_sources)
+                    if (file_has_cpp_directives(exe_sources(j)%s)) then
+                        call append_line(lines, 'set_source_files_properties('//clean_path(exe_sources(j)%s))
+                        call append_line(lines, '    PROPERTIES COMPILE_FLAGS "-cpp"')
+                        call append_line(lines, ')')
+                    end if
+                end do
+
                 ! Link test to library and dev-dependencies
                 call append_line(lines, 'target_link_libraries('//exe_name_str//' PRIVATE')
                 if (has_library) then
@@ -907,6 +937,22 @@ contains
             call append_line(lines, ')')
             call append_line(lines, "")
 
+            ! Enable preprocessing for files with CPP directives
+            do i = 1, size(dep%sources)
+                if (file_has_cpp_directives(dep%sources(i)%s)) then
+                    ! Strip the dependency path prefix to make path relative
+                    path_len = len_trim(dep%path) + 1
+                    if (len_trim(dep%sources(i)%s) > path_len) then
+                        rel_path = trim(dep%sources(i)%s(path_len+1:))
+                    else
+                        rel_path = trim(dep%sources(i)%s)
+                    end if
+                    call append_line(lines, 'set_source_files_properties('//clean_path(rel_path))
+                    call append_line(lines, '    PROPERTIES COMPILE_FLAGS "-cpp"')
+                    call append_line(lines, ')')
+                end if
+            end do
+
             ! Include directories
             call append_line(lines, 'target_include_directories('//trim(dep%name)//' PUBLIC')
             call append_line(lines, '    $<BUILD_INTERFACE:${CMAKE_BINARY_DIR}/mod>')
@@ -1002,6 +1048,43 @@ contains
         logical :: exists
         inquire(file='include', exist=exists)
     end function has_include_dir
+
+    !> Check if a source file contains CPP directives
+    function file_has_cpp_directives(filename) result(has_directives)
+        character(len=*), intent(in) :: filename
+        logical :: has_directives
+
+        type(string_t), allocatable :: file_lines(:)
+        integer :: i
+        character(:), allocatable :: line_lower
+
+        has_directives = .false.
+
+        ! Only check Fortran source files (not C/C++)
+        if (str_ends_with(lower(filename), '.c') .or. &
+            str_ends_with(lower(filename), '.cpp') .or. &
+            str_ends_with(lower(filename), '.h') .or. &
+            str_ends_with(lower(filename), '.hpp')) then
+            return
+        end if
+
+        file_lines = read_lines(filename)
+        if (.not. allocated(file_lines)) return
+
+        do i = 1, size(file_lines)
+            line_lower = lower(adjustl(file_lines(i)%s))
+            if (index(line_lower, '#ifdef') == 1 .or. &
+                index(line_lower, '#ifndef') == 1 .or. &
+                index(line_lower, '#if ') == 1 .or. &
+                index(line_lower, '#elif') == 1 .or. &
+                index(line_lower, '#else') == 1 .or. &
+                index(line_lower, '#endif') == 1 .or. &
+                index(line_lower, '#define') == 1) then
+                has_directives = .true.
+                return
+            end if
+        end do
+    end function file_has_cpp_directives
 
     !> Check if sources contain only headers (no compilable library sources)
     function is_header_only(sources) result(header_only)
