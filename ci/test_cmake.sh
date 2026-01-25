@@ -10,10 +10,7 @@ failures=()
 
 for dir in example_packages/*/ ; do
 
-	# TODO
-	[[ "$dir" == "example_packages/metapackage_blas/" ]] && continue
-	[[ "$dir" == "example_packages/metapackage_blas/" ]] && continue
-	[[ "$dir" == "example_packages/metapackage_hdf5/" ]] && continue
+	# TODO: Fix remaining metapackages that require system libraries
 	[[ "$dir" == "example_packages/metapackage_mpi/" ]] && continue
 	[[ "$dir" == "example_packages/metapackage_mpi_c/" ]] && continue
 	[[ "$dir" == "example_packages/metapackage_mpi_cpp/" ]] && continue
@@ -28,7 +25,6 @@ for dir in example_packages/*/ ; do
 	[[ "$dir" == "example_packages/link_executable/" ]] && continue
 	[[ "$dir" == "example_packages/link_external/" ]] && continue
 	[[ "$dir" == "example_packages/metapackage_dep_parent/" ]] && continue
-	[[ "$dir" == "example_packages/metapackage_openmp/" ]] && continue
 	[[ "$dir" == "example_packages/metapackage_stdlib/" ]] && continue
 	[[ "$dir" == "example_packages/preprocess_cpp/" ]] && continue
 	[[ "$dir" == "example_packages/preprocess_cpp_deps/" ]] && continue

@@ -116,7 +116,7 @@ contains
         call write_cmake_content(cmake_lines, package%name, version_str, &
                                 lib_sources, executables, tests, has_library, &
                                 model%include_tests, model%packages(1)%sources, &
-                                dependencies, package%library, package%preprocess, &
+                                dependencies, model, package%library, package%preprocess, &
                                 package%fortran)
 
         ! Write to file
@@ -322,10 +322,38 @@ contains
 
     end subroutine get_sources_for_exe
 
+    !> Add metapackage link options and libraries to a target
+    subroutine append_metapackage_link(lines, target_name, model)
+        type(string_t), allocatable, intent(inout) :: lines(:)
+        character(len=*), intent(in) :: target_name
+        type(fpm_model_t), intent(in) :: model
+        integer :: i
+
+        ! Add link options (e.g., -L flags, -framework flags, etc.)
+        if (allocated(model%link_flags)) then
+            if (len_trim(model%link_flags) > 0) then
+                call append_line(lines, 'target_link_options('//target_name//' PRIVATE')
+                call append_line(lines, '    '//trim(model%link_flags))
+                call append_line(lines, ')')
+            end if
+        end if
+
+        ! Add link libraries (e.g., openblas, lapack, etc.)
+        if (allocated(model%link_libraries)) then
+            if (size(model%link_libraries) > 0) then
+                call append_line(lines, 'target_link_libraries('//target_name//' PRIVATE')
+                do i = 1, size(model%link_libraries)
+                    call append_line(lines, '    '//trim(model%link_libraries(i)%s))
+                end do
+                call append_line(lines, ')')
+            end if
+        end if
+    end subroutine append_metapackage_link
+
     !> Write CMake content to string_t array
     subroutine write_cmake_content(lines, name, version, lib_sources, &
                                   executables, tests, has_library, include_tests, sources, &
-                                  dependencies, library_config, preprocess, fortran_config)
+                                  dependencies, model, library_config, preprocess, fortran_config)
         type(string_t), allocatable, intent(out) :: lines(:)
         character(len=*), intent(in) :: name, version
         type(string_t), intent(in) :: lib_sources(:)
@@ -333,6 +361,7 @@ contains
         logical, intent(in) :: has_library, include_tests
         type(srcfile_t), intent(in) :: sources(:)
         type(dependency_info_t), intent(in) :: dependencies(:)
+        type(fpm_model_t), intent(in) :: model
         type(library_config_t), intent(in), optional :: library_config
         type(preprocess_config_t), intent(in), optional :: preprocess(:)
         type(fortran_config_t), intent(in), optional :: fortran_config
@@ -533,6 +562,12 @@ contains
             call append_line(lines, "")
         end if
 
+        ! Add metapackage link flags and libraries
+        if (has_library) then
+            call append_metapackage_link(lines, lib_name, model)
+            call append_line(lines, "")
+        end if
+
         ! Executable targets
         if (size(executables) > 0) then
             call append_line(lines, "# Executables")
@@ -569,6 +604,9 @@ contains
                     end do
                     call append_line(lines, ')')
                 end if
+
+                ! Add metapackage link flags and libraries
+                call append_metapackage_link(lines, exe_name_str, model)
                 call append_line(lines, "")
             end do
         end if
@@ -615,6 +653,9 @@ contains
                     end do
                 end if
                 call append_line(lines, ')')
+
+                ! Add metapackage link flags and libraries
+                call append_metapackage_link(lines, exe_name_str, model)
                 call append_line(lines, 'add_test(NAME '//exe_name_str// &
                              ' COMMAND '//exe_name_str//')')
                 call append_line(lines, "")
