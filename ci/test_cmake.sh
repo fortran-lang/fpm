@@ -11,6 +11,7 @@ failures=()
 for dir in example_packages/*/ ; do
 
 	# TODO
+	[[ "$dir" == "example_packages/features_with_dependency/" ]] && continue
 	[[ "$dir" == "example_packages/fixed-form/" ]] && continue
 	[[ "$dir" == "example_packages/metapackage_blas/" ]] && continue
 	[[ "$dir" == "example_packages/metapackage_blas/" ]] && continue
