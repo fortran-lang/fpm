@@ -6,6 +6,7 @@ module fpm_cmd_cmake
     use fpm_manifest, only: package_config_t, get_package_data
     use fpm_manifest_library, only: library_config_t
     use fpm_manifest_preprocess, only: preprocess_config_t
+    use fpm_manifest_fortran, only: fortran_config_t
     use fpm_model, only: fpm_model_t, srcfile_t, FPM_SCOPE_LIB, FPM_SCOPE_APP, &
                          FPM_SCOPE_TEST, FPM_SCOPE_EXAMPLE, FPM_UNIT_PROGRAM, &
                          FPM_UNIT_MODULE, FPM_UNIT_SUBMODULE, FPM_UNIT_SUBPROGRAM, &
@@ -115,7 +116,8 @@ contains
         call write_cmake_content(cmake_lines, package%name, version_str, &
                                 lib_sources, executables, tests, has_library, &
                                 model%include_tests, model%packages(1)%sources, &
-                                dependencies, package%library, package%preprocess)
+                                dependencies, package%library, package%preprocess, &
+                                package%fortran)
 
         ! Write to file
         call write_lines_to_file("CMakeLists.txt", cmake_lines)
@@ -323,7 +325,7 @@ contains
     !> Write CMake content to string_t array
     subroutine write_cmake_content(lines, name, version, lib_sources, &
                                   executables, tests, has_library, include_tests, sources, &
-                                  dependencies, library_config, preprocess)
+                                  dependencies, library_config, preprocess, fortran_config)
         type(string_t), allocatable, intent(out) :: lines(:)
         character(len=*), intent(in) :: name, version
         type(string_t), intent(in) :: lib_sources(:)
@@ -333,6 +335,7 @@ contains
         type(dependency_info_t), intent(in) :: dependencies(:)
         type(library_config_t), intent(in), optional :: library_config
         type(preprocess_config_t), intent(in), optional :: preprocess(:)
+        type(fortran_config_t), intent(in), optional :: fortran_config
 
         integer :: i, j, k
         type(string_t), allocatable :: exe_sources(:)
@@ -453,6 +456,11 @@ contains
                 end do
                 call append_line(lines, ')')
 
+                ! Set source format if fixed-form
+                if (should_set_fixed_form(fortran_config)) then
+                    call append_fortran_format(lines, lib_sources, 'FIXED')
+                end if
+
                 ! Set module directory properties
                 call append_line(lines, 'set_target_properties('//lib_name//' PROPERTIES')
                 call append_line(lines, '    Fortran_MODULE_DIRECTORY "${CMAKE_BINARY_DIR}/mod"')
@@ -540,6 +548,12 @@ contains
                     call append_line(lines, '    '//clean_path(exe_sources(j)%s))
                 end do
                 call append_line(lines, ')')
+
+                ! Set source format if fixed-form
+                if (should_set_fixed_form(fortran_config)) then
+                    call append_fortran_format(lines, exe_sources, 'FIXED')
+                end if
+
                 if (has_library) then
                     call append_line(lines, 'target_link_libraries('//exe_name_str// &
                                  ' PRIVATE '//lib_name//')')
@@ -576,6 +590,12 @@ contains
                     call append_line(lines, '    '//clean_path(exe_sources(j)%s))
                 end do
                 call append_line(lines, ')')
+
+                ! Set source format if fixed-form
+                if (should_set_fixed_form(fortran_config)) then
+                    call append_fortran_format(lines, exe_sources, 'FIXED')
+                end if
+
                 ! Link test to library and dev-dependencies
                 call append_line(lines, 'target_link_libraries('//exe_name_str//' PRIVATE')
                 if (has_library) then
@@ -1044,5 +1064,60 @@ contains
         ! Also check physical include/ directory
         if (.not. has_dirs) has_dirs = has_include_dir()
     end function has_include_dir_from_manifest
+
+    !> Check if we should set the Fortran_FORMAT property to FIXED
+    function should_set_fixed_form(fortran_config) result(should_set)
+        type(fortran_config_t), intent(in), optional :: fortran_config
+        logical :: should_set
+
+        should_set = .false.
+        if (present(fortran_config)) then
+            if (allocated(fortran_config%source_form)) then
+                ! Set FIXED format for "fixed" source form
+                ! For "default", let CMake use extension-based detection
+                should_set = (fortran_config%source_form == "fixed")
+            end if
+        end if
+    end function should_set_fixed_form
+
+    !> Append set_source_files_properties command for Fortran format
+    subroutine append_fortran_format(lines, sources, format)
+        type(string_t), allocatable, intent(inout) :: lines(:)
+        type(string_t), intent(in) :: sources(:)
+        character(len=*), intent(in) :: format
+
+        integer :: i
+        logical :: has_fortran_sources
+        character(len=:), allocatable :: file_ext
+
+        ! Check if there are any Fortran sources (skip C/C++ files)
+        has_fortran_sources = .false.
+        do i = 1, size(sources)
+            file_ext = lower(sources(i)%s)
+            ! Check for Fortran extensions
+            if (str_ends_with(file_ext, ".f90") .or. str_ends_with(file_ext, ".f") .or. &
+                str_ends_with(file_ext, ".f03") .or. str_ends_with(file_ext, ".f08") .or. &
+                str_ends_with(file_ext, ".f18") .or. str_ends_with(file_ext, ".for")) then
+                has_fortran_sources = .true.
+                exit
+            end if
+        end do
+
+        if (.not. has_fortran_sources) return
+
+        ! Emit set_source_files_properties command
+        call append_line(lines, 'set_source_files_properties(')
+        do i = 1, size(sources)
+            file_ext = lower(sources(i)%s)
+            ! Only include Fortran sources
+            if (str_ends_with(file_ext, ".f90") .or. str_ends_with(file_ext, ".f") .or. &
+                str_ends_with(file_ext, ".f03") .or. str_ends_with(file_ext, ".f08") .or. &
+                str_ends_with(file_ext, ".f18") .or. str_ends_with(file_ext, ".for")) then
+                call append_line(lines, '    '//clean_path(sources(i)%s))
+            end if
+        end do
+        call append_line(lines, '    PROPERTIES Fortran_FORMAT '//trim(format))
+        call append_line(lines, ')')
+    end subroutine append_fortran_format
 
 end module fpm_cmd_cmake
