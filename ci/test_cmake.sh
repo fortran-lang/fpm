@@ -11,7 +11,6 @@ failures=()
 for dir in example_packages/*/ ; do
 
 	# TODO
-	[[ "$dir" == "example_packages/c_main_preprocess/" ]] && continue
 	[[ "$dir" == "example_packages/circular_example/" ]] && continue
 	[[ "$dir" == "example_packages/circular_test/" ]] && continue
 	[[ "$dir" == "example_packages/dependency_priority/" ]] && continue
@@ -30,7 +29,6 @@ for dir in example_packages/*/ ; do
 	[[ "$dir" == "example_packages/shared_lib_empty/" ]] && continue
 	[[ "$dir" == "example_packages/static_app_only/" ]] && continue
 	[[ "$dir" == "example_packages/static_lib_empty/" ]] && continue
-	[[ "$dir" == "example_packages/fortran_includes/" ]] && continue
 	[[ "$dir" == "example_packages/free-form/" ]] && continue
 	[[ "$dir" == "example_packages/link_executable/" ]] && continue
 	[[ "$dir" == "example_packages/link_external/" ]] && continue

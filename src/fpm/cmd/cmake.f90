@@ -4,6 +4,8 @@ module fpm_cmd_cmake
     use fpm_error, only: error_t, fpm_stop
     use fpm_filesystem, only: dirname
     use fpm_manifest, only: package_config_t, get_package_data
+    use fpm_manifest_library, only: library_config_t
+    use fpm_manifest_preprocess, only: preprocess_config_t
     use fpm_model, only: fpm_model_t, srcfile_t, FPM_SCOPE_LIB, FPM_SCOPE_APP, &
                          FPM_SCOPE_TEST, FPM_SCOPE_EXAMPLE, FPM_UNIT_PROGRAM, &
                          FPM_UNIT_MODULE, FPM_UNIT_SUBMODULE, FPM_UNIT_SUBPROGRAM, &
@@ -81,7 +83,7 @@ contains
         ! Check if package has a library (either compilable sources or header-only)
         ! Header-only libraries have an include/ directory but no compilable sources
         has_library = size(lib_sources) > 0 .or. &
-                     (size(lib_sources) == 0 .and. has_include_dir())
+                     (size(lib_sources) == 0 .and. has_include_dir_from_manifest(package%library))
 
         ! Build version string
         version_str = package%version%s()
@@ -101,7 +103,7 @@ contains
         call write_cmake_content(cmake_lines, package%name, version_str, &
                                 lib_sources, executables, tests, has_library, &
                                 model%include_tests, model%packages(1)%sources, &
-                                dependencies)
+                                dependencies, package%library, package%preprocess)
 
         ! Write to file
         call write_lines_to_file("CMakeLists.txt", cmake_lines)
@@ -309,7 +311,7 @@ contains
     !> Write CMake content to string_t array
     subroutine write_cmake_content(lines, name, version, lib_sources, &
                                   executables, tests, has_library, include_tests, sources, &
-                                  dependencies)
+                                  dependencies, library_config, preprocess)
         type(string_t), allocatable, intent(out) :: lines(:)
         character(len=*), intent(in) :: name, version
         type(string_t), intent(in) :: lib_sources(:)
@@ -317,6 +319,8 @@ contains
         logical, intent(in) :: has_library, include_tests
         type(srcfile_t), intent(in) :: sources(:)
         type(dependency_info_t), intent(in) :: dependencies(:)
+        type(library_config_t), intent(in), optional :: library_config
+        type(preprocess_config_t), intent(in), optional :: preprocess(:)
 
         integer :: i, j, k
         type(string_t), allocatable :: exe_sources(:)
@@ -402,9 +406,35 @@ contains
                 call append_line(lines, "# Header-only library")
                 call append_line(lines, 'add_library('//lib_name//' INTERFACE)')
                 call append_line(lines, 'target_include_directories('//lib_name//' INTERFACE')
-                call append_line(lines, '    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>')
+                ! Add include directories from manifest
+                if (present(library_config)) then
+                    if (allocated(library_config%include_dir)) then
+                        do i = 1, size(library_config%include_dir)
+                            call append_line(lines, '    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/'// &
+                                           trim(library_config%include_dir(i)%s)//'>')
+                        end do
+                    end if
+                else
+                    ! Fallback: if no library config passed, check for physical include/ directory
+                    call append_line(lines, '    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>')
+                end if
                 call append_line(lines, '    $<INSTALL_INTERFACE:include>')
                 call append_line(lines, ')')
+
+                ! Add preprocessor definitions for INTERFACE library
+                if (present(preprocess)) then
+                    do i = 1, size(preprocess)
+                        if (allocated(preprocess(i)%macros)) then
+                            if (size(preprocess(i)%macros) > 0) then
+                                call append_line(lines, 'target_compile_definitions('//lib_name//' INTERFACE')
+                                do j = 1, size(preprocess(i)%macros)
+                                    call append_line(lines, '    '//trim(preprocess(i)%macros(j)%s))
+                                end do
+                                call append_line(lines, ')')
+                            end if
+                        end if
+                    end do
+                end if
 
                 ! Link dependencies with INTERFACE
                 if (size(dependencies) > 0) then
@@ -434,11 +464,37 @@ contains
                 call append_line(lines, ')')
                 call append_line(lines, 'target_include_directories('//lib_name//' PUBLIC')
                 call append_line(lines, '    $<BUILD_INTERFACE:${CMAKE_BINARY_DIR}/mod>')
-                if (has_include_dir()) then
-                    call append_line(lines, '    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>')
+                ! Add include directories from manifest
+                if (present(library_config)) then
+                    if (allocated(library_config%include_dir)) then
+                        do i = 1, size(library_config%include_dir)
+                            call append_line(lines, '    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/'// &
+                                           trim(library_config%include_dir(i)%s)//'>')
+                        end do
+                    end if
+                else
+                    ! Fallback: if no library config passed, check for physical include/ directory
+                    if (has_include_dir()) then
+                        call append_line(lines, '    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>')
+                    end if
                 end if
                 call append_line(lines, '    $<INSTALL_INTERFACE:include>')
                 call append_line(lines, ')')
+
+                ! Add preprocessor definitions
+                if (present(preprocess)) then
+                    do i = 1, size(preprocess)
+                        if (allocated(preprocess(i)%macros)) then
+                            if (size(preprocess(i)%macros) > 0) then
+                                call append_line(lines, 'target_compile_definitions('//lib_name//' PUBLIC')
+                                do j = 1, size(preprocess(i)%macros)
+                                    call append_line(lines, '    '//trim(preprocess(i)%macros(j)%s))
+                                end do
+                                call append_line(lines, ')')
+                            end if
+                        end if
+                    end do
+                end if
 
                 ! Link dependencies
                 if (size(dependencies) > 0) then
@@ -768,5 +824,20 @@ contains
         ! It's header-only if we have headers but no compilable library sources
         header_only = has_headers .and. .not. has_compilable_lib
     end function is_header_only
+
+    !> Check if library has include directories from manifest
+    function has_include_dir_from_manifest(library_config) result(has_dirs)
+        type(library_config_t), intent(in), optional :: library_config
+        logical :: has_dirs
+
+        has_dirs = .false.
+        if (present(library_config)) then
+            if (allocated(library_config%include_dir)) then
+                has_dirs = size(library_config%include_dir) > 0
+            end if
+        end if
+        ! Also check physical include/ directory
+        if (.not. has_dirs) has_dirs = has_include_dir()
+    end function has_include_dir_from_manifest
 
 end module fpm_cmd_cmake
