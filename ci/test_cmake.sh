@@ -11,27 +11,19 @@ failures=()
 for dir in example_packages/*/ ; do
 
 	# TODO: Fix remaining metapackages that require system libraries
-	[[ "$dir" == "example_packages/metapackage_hdf5/" ]] && continue
-	[[ "$dir" == "example_packages/metapackage_mpi_c/" ]] && continue
-	[[ "$dir" == "example_packages/metapackage_mpi_cpp/" ]] && continue
-	[[ "$dir" == "example_packages/metapackage_netcdf/" ]] && continue
-	[[ "$dir" == "example_packages/metapackage_stdlib_extblas/" ]] && continue
-	[[ "$dir" == "example_packages/preprocess_cpp_c/" ]] && continue
-	[[ "$dir" == "example_packages/shared_app_only/" ]] && continue
-	[[ "$dir" == "example_packages/shared_lib_empty/" ]] && continue
-	[[ "$dir" == "example_packages/static_app_only/" ]] && continue
-	[[ "$dir" == "example_packages/static_lib_empty/" ]] && continue
 	[[ "$dir" == "example_packages/free-form/" ]] && continue
 	[[ "$dir" == "example_packages/link_executable/" ]] && continue
-	[[ "$dir" == "example_packages/link_external/" ]] && continue
-	[[ "$dir" == "example_packages/metapackage_dep_parent/" ]] && continue
-	[[ "$dir" == "example_packages/metapackage_stdlib/" ]] && continue
+	[[ "$dir" == "example_packages/metapackage_hdf5/" ]] && continue
+	[[ "$dir" == "example_packages/metapackage_mpi_cpp/" ]] && continue
+	[[ "$dir" == "example_packages/metapackage_netcdf/" ]] && continue
 	[[ "$dir" == "example_packages/preprocess_cpp/" ]] && continue
 	[[ "$dir" == "example_packages/preprocess_cpp_deps/" ]] && continue
 	[[ "$dir" == "example_packages/preprocess_cpp_suffix/" ]] && continue
 	[[ "$dir" == "example_packages/preprocess_hello/" ]] && continue
 	[[ "$dir" == "example_packages/preprocess_hello_dependency/" ]] && continue
 	[[ "$dir" == "example_packages/program_with_cpp_guarded_module/" ]] && continue
+	[[ "$dir" == "example_packages/shared_app_only/" ]] && continue
+	[[ "$dir" == "example_packages/static_app_only/" ]] && continue
 
 	# These example(s) do not work with "fpm build" either, either intentionally
 	# or a separate issue unrelated to cmake generation
