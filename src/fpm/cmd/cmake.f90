@@ -12,8 +12,9 @@ module fpm_cmd_cmake
                          FPM_UNIT_MODULE, FPM_UNIT_SUBMODULE, FPM_UNIT_SUBPROGRAM, &
                          FPM_UNIT_CSOURCE, FPM_UNIT_CPPSOURCE, FPM_UNIT_CHEADER
     use fpm, only: build_model
-    use fpm_strings, only: string_t, lower, str_ends_with
+    use fpm_strings, only: string_t, lower, str_ends_with, str_begins_with_str
     use fpm_targets, only: targets_from_sources, build_target_ptr
+    use shlex_module, only: shlex_split => split
     use, intrinsic :: iso_fortran_env, only: stdout => output_unit
     implicit none
     private
@@ -28,6 +29,13 @@ module fpm_cmd_cmake
         type(string_t), allocatable :: sources(:)
         type(string_t), allocatable :: depends_on(:)  ! Names of this dependency's own dependencies
     end type dependency_info_t
+
+    !> Type to hold categorized link flags
+    type :: link_flags_t
+        type(string_t), allocatable :: linker_options(:)   ! -Wl,*, -pthread, -framework, etc.
+        type(string_t), allocatable :: library_dirs(:)     ! Paths from -L/path
+        type(string_t), allocatable :: library_names(:)    ! Names from -lfoo (stored without -l)
+    end type link_flags_t
 
 contains
 
@@ -328,6 +336,7 @@ contains
         character(len=*), intent(in) :: target_name
         type(fpm_model_t), intent(in) :: model
         integer :: i
+        type(link_flags_t) :: parsed_flags
 
         ! Add include directories from metapackages (e.g., MPI, HDF5)
         if (allocated(model%include_dirs)) then
@@ -340,16 +349,47 @@ contains
             end if
         end if
 
-        ! Add link options (e.g., -L flags, -framework flags, etc.)
+        ! Parse and categorize link flags
         if (allocated(model%link_flags)) then
             if (len_trim(model%link_flags) > 0) then
-                call append_line(lines, 'target_link_options('//target_name//' PRIVATE')
-                call append_line(lines, '    '//trim(model%link_flags))
-                call append_line(lines, ')')
+                call parse_link_flags(model%link_flags, parsed_flags)
+
+                ! Add library directories
+                if (allocated(parsed_flags%library_dirs)) then
+                    if (size(parsed_flags%library_dirs) > 0) then
+                        call append_line(lines, 'target_link_directories('//target_name//' PRIVATE')
+                        do i = 1, size(parsed_flags%library_dirs)
+                            call append_line(lines, '    '//trim(parsed_flags%library_dirs(i)%s))
+                        end do
+                        call append_line(lines, ')')
+                    end if
+                end if
+
+                ! Add linker options
+                if (allocated(parsed_flags%linker_options)) then
+                    if (size(parsed_flags%linker_options) > 0) then
+                        call append_line(lines, 'target_link_options('//target_name//' PRIVATE')
+                        do i = 1, size(parsed_flags%linker_options)
+                            call append_line(lines, '    '//trim(parsed_flags%linker_options(i)%s))
+                        end do
+                        call append_line(lines, ')')
+                    end if
+                end if
+
+                ! Add library names
+                if (allocated(parsed_flags%library_names)) then
+                    if (size(parsed_flags%library_names) > 0) then
+                        call append_line(lines, 'target_link_libraries('//target_name//' PRIVATE')
+                        do i = 1, size(parsed_flags%library_names)
+                            call append_line(lines, '    '//trim(parsed_flags%library_names(i)%s))
+                        end do
+                        call append_line(lines, ')')
+                    end if
+                end if
             end if
         end if
 
-        ! Add link libraries (e.g., openblas, lapack, etc.)
+        ! Add link libraries from model (e.g., openblas, lapack from non-link_flags sources)
         if (allocated(model%link_libraries)) then
             if (size(model%link_libraries) > 0) then
                 call append_line(lines, 'target_link_libraries('//target_name//' PRIVATE')
@@ -1171,5 +1211,150 @@ contains
         call append_line(lines, '    PROPERTIES Fortran_FORMAT '//trim(format))
         call append_line(lines, ')')
     end subroutine append_fortran_format
+
+    !> Check if a token is a library name flag (-l*)
+    function is_library_name_flag(token) result(is_lib)
+        character(len=*), intent(in) :: token
+        logical :: is_lib
+
+        is_lib = str_begins_with_str(token, '-l', case_sensitive=.true.)
+    end function is_library_name_flag
+
+    !> Check if a token is a library directory flag (-L*)
+    function is_library_dir_flag(token) result(is_dir)
+        character(len=*), intent(in) :: token
+        logical :: is_dir
+
+        is_dir = str_begins_with_str(token, '-L', case_sensitive=.true.)
+    end function is_library_dir_flag
+
+    !> Check if a token is a linker option flag
+    function is_linker_option_flag(token) result(is_option)
+        character(len=*), intent(in) :: token
+        logical :: is_option
+
+        ! Linker-specific flags that should go to target_link_options()
+        is_option = str_begins_with_str(token, '-Wl,', case_sensitive=.true.) .or. &
+                    str_begins_with_str(token, '-Xlinker', case_sensitive=.true.) .or. &
+                    str_begins_with_str(token, '-pthread', case_sensitive=.true.) .or. &
+                    str_begins_with_str(token, '-framework', case_sensitive=.true.) .or. &
+                    str_begins_with_str(token, '-rdynamic', case_sensitive=.true.)
+    end function is_linker_option_flag
+
+    !> Extract path from -L flag
+    function extract_path(token) result(path)
+        character(len=*), intent(in) :: token
+        character(len=:), allocatable :: path
+
+        ! Remove the '-L' prefix
+        if (len(token) > 2) then
+            path = token(3:)
+        else
+            path = ""
+        end if
+    end function extract_path
+
+    !> Extract library name from -l flag
+    function extract_libname(token) result(libname)
+        character(len=*), intent(in) :: token
+        character(len=:), allocatable :: libname
+
+        ! Remove the '-l' prefix
+        if (len(token) > 2) then
+            libname = token(3:)
+        else
+            libname = ""
+        end if
+    end function extract_libname
+
+    !> Parse link flags string into categorized components
+    subroutine parse_link_flags(flags_str, parsed_flags)
+        character(len=*), intent(in) :: flags_str
+        type(link_flags_t), intent(out) :: parsed_flags
+
+        character(len=:), allocatable :: tokens(:)
+        type(string_t), allocatable :: temp_options(:), temp_dirs(:), temp_libs(:)
+        integer :: i, n_options, n_dirs, n_libs, idx
+        logical :: next_is_framework
+
+        ! Tokenize using shlex_split
+        tokens = shlex_split(flags_str)
+
+        if (size(tokens) == 0) then
+            allocate(parsed_flags%linker_options(0))
+            allocate(parsed_flags%library_dirs(0))
+            allocate(parsed_flags%library_names(0))
+            return
+        end if
+
+        ! First pass: count each category
+        n_options = 0
+        n_dirs = 0
+        n_libs = 0
+        next_is_framework = .false.
+
+        do i = 1, size(tokens)
+            if (next_is_framework) then
+                ! The token after -framework is part of the linker option
+                n_options = n_options + 1
+                next_is_framework = .false.
+            else if (trim(tokens(i)) == '-framework') then
+                n_options = n_options + 1
+                next_is_framework = .true.
+            else if (is_library_name_flag(trim(tokens(i)))) then
+                n_libs = n_libs + 1
+            else if (is_library_dir_flag(trim(tokens(i)))) then
+                n_dirs = n_dirs + 1
+            else if (is_linker_option_flag(trim(tokens(i)))) then
+                n_options = n_options + 1
+            else
+                ! Unknown flags default to linker options (safer)
+                n_options = n_options + 1
+            end if
+        end do
+
+        ! Allocate arrays
+        allocate(temp_options(n_options))
+        allocate(temp_dirs(n_dirs))
+        allocate(temp_libs(n_libs))
+
+        ! Second pass: populate arrays
+        n_options = 0
+        n_dirs = 0
+        n_libs = 0
+        next_is_framework = .false.
+
+        do i = 1, size(tokens)
+            if (next_is_framework) then
+                ! Append framework name to previous -framework token
+                n_options = n_options + 1
+                temp_options(n_options)%s = trim(tokens(i))
+                next_is_framework = .false.
+            else if (trim(tokens(i)) == '-framework') then
+                n_options = n_options + 1
+                temp_options(n_options)%s = '-framework'
+                next_is_framework = .true.
+            else if (is_library_name_flag(trim(tokens(i)))) then
+                n_libs = n_libs + 1
+                temp_libs(n_libs)%s = extract_libname(trim(tokens(i)))
+            else if (is_library_dir_flag(trim(tokens(i)))) then
+                n_dirs = n_dirs + 1
+                temp_dirs(n_dirs)%s = extract_path(trim(tokens(i)))
+            else if (is_linker_option_flag(trim(tokens(i)))) then
+                n_options = n_options + 1
+                temp_options(n_options)%s = trim(tokens(i))
+            else
+                ! Unknown flags go to linker options
+                n_options = n_options + 1
+                temp_options(n_options)%s = trim(tokens(i))
+            end if
+        end do
+
+        ! Move to output structure
+        call move_alloc(temp_options, parsed_flags%linker_options)
+        call move_alloc(temp_dirs, parsed_flags%library_dirs)
+        call move_alloc(temp_libs, parsed_flags%library_names)
+
+    end subroutine parse_link_flags
 
 end module fpm_cmd_cmake
