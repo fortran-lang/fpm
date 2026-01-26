@@ -331,17 +331,25 @@ contains
     end subroutine get_sources_for_exe
 
     !> Add metapackage settings (include directories, link options, and libraries) to a target
-    subroutine append_metapackage_settings(lines, target_name, model)
+    subroutine append_metapackage_settings(lines, target_name, model, is_interface)
         type(string_t), allocatable, intent(inout) :: lines(:)
         character(len=*), intent(in) :: target_name
         type(fpm_model_t), intent(in) :: model
+        logical, intent(in), optional :: is_interface
         integer :: i
         type(link_flags_t) :: parsed_flags
+        character(len=:), allocatable :: prop_keyword
+
+        ! Determine property keyword based on target type
+        prop_keyword = 'PRIVATE'  ! Default for regular targets
+        if (present(is_interface)) then
+            if (is_interface) prop_keyword = 'INTERFACE'
+        end if
 
         ! Add include directories from metapackages (e.g., MPI, HDF5)
         if (allocated(model%include_dirs)) then
             if (size(model%include_dirs) > 0) then
-                call append_line(lines, 'target_include_directories('//target_name//' PRIVATE')
+                call append_line(lines, 'target_include_directories('//target_name//' '//prop_keyword)
                 do i = 1, size(model%include_dirs)
                     call append_line(lines, '    '//trim(model%include_dirs(i)%s))
                 end do
@@ -357,7 +365,7 @@ contains
                 ! Add library directories
                 if (allocated(parsed_flags%library_dirs)) then
                     if (size(parsed_flags%library_dirs) > 0) then
-                        call append_line(lines, 'target_link_directories('//target_name//' PRIVATE')
+                        call append_line(lines, 'target_link_directories('//target_name//' '//prop_keyword)
                         do i = 1, size(parsed_flags%library_dirs)
                             call append_line(lines, '    '//trim(parsed_flags%library_dirs(i)%s))
                         end do
@@ -368,7 +376,7 @@ contains
                 ! Add linker options
                 if (allocated(parsed_flags%linker_options)) then
                     if (size(parsed_flags%linker_options) > 0) then
-                        call append_line(lines, 'target_link_options('//target_name//' PRIVATE')
+                        call append_line(lines, 'target_link_options('//target_name//' '//prop_keyword)
                         do i = 1, size(parsed_flags%linker_options)
                             call append_line(lines, '    '//trim(parsed_flags%linker_options(i)%s))
                         end do
@@ -379,7 +387,7 @@ contains
                 ! Add library names
                 if (allocated(parsed_flags%library_names)) then
                     if (size(parsed_flags%library_names) > 0) then
-                        call append_line(lines, 'target_link_libraries('//target_name//' PRIVATE')
+                        call append_line(lines, 'target_link_libraries('//target_name//' '//prop_keyword)
                         do i = 1, size(parsed_flags%library_names)
                             call append_line(lines, '    '//trim(parsed_flags%library_names(i)%s))
                         end do
@@ -392,7 +400,7 @@ contains
         ! Add link libraries from model (e.g., openblas, lapack from non-link_flags sources)
         if (allocated(model%link_libraries)) then
             if (size(model%link_libraries) > 0) then
-                call append_line(lines, 'target_link_libraries('//target_name//' PRIVATE')
+                call append_line(lines, 'target_link_libraries('//target_name//' '//prop_keyword)
                 do i = 1, size(model%link_libraries)
                     call append_line(lines, '    '//trim(model%link_libraries(i)%s))
                 end do
@@ -615,7 +623,8 @@ contains
 
         ! Add metapackage settings (include dirs, link flags, and libraries)
         if (has_library) then
-            call append_metapackage_settings(lines, lib_name, model)
+            ! Pass .true. for header-only libraries (INTERFACE), .false. for regular libraries
+            call append_metapackage_settings(lines, lib_name, model, size(lib_sources) == 0)
             call append_line(lines, "")
         end if
 
@@ -657,7 +666,8 @@ contains
                 end if
 
                 ! Add metapackage settings (include dirs, link flags, and libraries)
-                call append_metapackage_settings(lines, exe_name_str, model)
+                ! Executables are always regular targets (not INTERFACE)
+                call append_metapackage_settings(lines, exe_name_str, model, .false.)
                 call append_line(lines, "")
             end do
         end if
@@ -706,7 +716,8 @@ contains
                 call append_line(lines, ')')
 
                 ! Add metapackage settings (include dirs, link flags, and libraries)
-                call append_metapackage_settings(lines, exe_name_str, model)
+                ! Tests are always regular targets (not INTERFACE)
+                call append_metapackage_settings(lines, exe_name_str, model, .false.)
                 call append_line(lines, 'add_test(NAME '//exe_name_str// &
                              ' COMMAND '//exe_name_str//')')
                 call append_line(lines, "")
