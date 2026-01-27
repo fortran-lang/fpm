@@ -7,6 +7,8 @@ module fpm_cmd_cmake
     use fpm_manifest_library, only: library_config_t
     use fpm_manifest_preprocess, only: preprocess_config_t
     use fpm_manifest_fortran, only: fortran_config_t
+    use fpm_manifest_executable, only: executable_config_t
+    use fpm_manifest_test, only: test_config_t
     use fpm_model, only: fpm_model_t, srcfile_t, FPM_SCOPE_LIB, FPM_SCOPE_APP, &
                          FPM_SCOPE_TEST, FPM_SCOPE_EXAMPLE, FPM_UNIT_PROGRAM, &
                          FPM_UNIT_MODULE, FPM_UNIT_SUBMODULE, FPM_UNIT_SUBPROGRAM, &
@@ -125,7 +127,7 @@ contains
                                 lib_sources, executables, tests, has_library, &
                                 model%include_tests, model%packages(1)%sources, &
                                 dependencies, model, package%library, package%preprocess, &
-                                package%fortran)
+                                package%fortran, package%executable, package%test)
 
         ! Write to file
         call write_lines_to_file("CMakeLists.txt", cmake_lines)
@@ -412,7 +414,8 @@ contains
     !> Write CMake content to string_t array
     subroutine write_cmake_content(lines, name, version, lib_sources, &
                                   executables, tests, has_library, include_tests, sources, &
-                                  dependencies, model, library_config, preprocess, fortran_config)
+                                  dependencies, model, library_config, preprocess, fortran_config, &
+                                  executable_config, test_config)
         type(string_t), allocatable, intent(out) :: lines(:)
         character(len=*), intent(in) :: name, version
         type(string_t), intent(in) :: lib_sources(:)
@@ -424,6 +427,8 @@ contains
         type(library_config_t), intent(in), optional :: library_config
         type(preprocess_config_t), intent(in), optional :: preprocess(:)
         type(fortran_config_t), intent(in), optional :: fortran_config
+        type(executable_config_t), intent(in), optional :: executable_config(:)
+        type(test_config_t), intent(in), optional :: test_config(:)
 
         integer :: i, j, k
         type(string_t), allocatable :: exe_sources(:)
@@ -667,6 +672,24 @@ contains
                     call append_line(lines, ')')
                 end if
 
+                ! Add link libraries from executable manifest
+                if (present(executable_config)) then
+                    do k = 1, size(executable_config)
+                        if (trim(executable_config(k)%name) == exe_name_str) then
+                            if (allocated(executable_config(k)%link)) then
+                                if (size(executable_config(k)%link) > 0) then
+                                    call append_line(lines, 'target_link_libraries('//exe_name_str//' PRIVATE')
+                                    do j = 1, size(executable_config(k)%link)
+                                        call append_line(lines, '    '//trim(executable_config(k)%link(j)%s))
+                                    end do
+                                    call append_line(lines, ')')
+                                end if
+                            end if
+                            exit
+                        end if
+                    end do
+                end if
+
                 ! Add metapackage settings (include dirs, link flags, and libraries)
                 ! Executables are always regular targets (not INTERFACE)
                 call append_metapackage_settings(lines, exe_name_str, model, .false.)
@@ -717,6 +740,24 @@ contains
                     end do
                 end if
                 call append_line(lines, ')')
+
+                ! Add link libraries from test manifest
+                if (present(test_config)) then
+                    do k = 1, size(test_config)
+                        if (trim(test_config(k)%name) == exe_name_str) then
+                            if (allocated(test_config(k)%link)) then
+                                if (size(test_config(k)%link) > 0) then
+                                    call append_line(lines, 'target_link_libraries('//exe_name_str//' PRIVATE')
+                                    do j = 1, size(test_config(k)%link)
+                                        call append_line(lines, '    '//trim(test_config(k)%link(j)%s))
+                                    end do
+                                    call append_line(lines, ')')
+                                end if
+                            end if
+                            exit
+                        end if
+                    end do
+                end if
 
                 ! Add metapackage settings (include dirs, link flags, and libraries)
                 ! Tests are always regular targets (not INTERFACE)
