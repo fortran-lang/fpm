@@ -544,9 +544,10 @@ contains
                 end do
                 call append_line(lines, ')')
 
-                ! Set source format if fixed-form
-                if (should_set_fixed_form(fortran_config)) then
-                    call append_fortran_format(lines, lib_sources, 'FIXED')
+                ! Set source format if not default
+                if (should_set_fortran_format(fortran_config)) then
+                    call append_fortran_format(lines, lib_sources, &
+                                               get_fortran_format_string(fortran_config))
                 end if
 
                 ! Set module directory properties
@@ -644,9 +645,10 @@ contains
                 end do
                 call append_line(lines, ')')
 
-                ! Set source format if fixed-form
-                if (should_set_fixed_form(fortran_config)) then
-                    call append_fortran_format(lines, exe_sources, 'FIXED')
+                ! Set source format if not default
+                if (should_set_fortran_format(fortran_config)) then
+                    call append_fortran_format(lines, exe_sources, &
+                                               get_fortran_format_string(fortran_config))
                 end if
 
                 if (has_library) then
@@ -690,9 +692,10 @@ contains
                 end do
                 call append_line(lines, ')')
 
-                ! Set source format if fixed-form
-                if (should_set_fixed_form(fortran_config)) then
-                    call append_fortran_format(lines, exe_sources, 'FIXED')
+                ! Set source format if not default
+                if (should_set_fortran_format(fortran_config)) then
+                    call append_fortran_format(lines, exe_sources, &
+                                               get_fortran_format_string(fortran_config))
                 end if
 
                 ! Link test to library and dev-dependencies
@@ -1168,20 +1171,38 @@ contains
         if (.not. has_dirs) has_dirs = has_include_dir()
     end function has_include_dir_from_manifest
 
-    !> Check if we should set the Fortran_FORMAT property to FIXED
-    function should_set_fixed_form(fortran_config) result(should_set)
+    !> Check if we should set the Fortran_FORMAT property
+    function should_set_fortran_format(fortran_config) result(should_set)
         type(fortran_config_t), intent(in), optional :: fortran_config
         logical :: should_set
 
         should_set = .false.
         if (present(fortran_config)) then
             if (allocated(fortran_config%source_form)) then
-                ! Set FIXED format for "fixed" source form
+                ! Set format for both "free" and "fixed" source forms
                 ! For "default", let CMake use extension-based detection
-                should_set = (fortran_config%source_form == "fixed")
+                should_set = (fortran_config%source_form == "free" .or. &
+                             fortran_config%source_form == "fixed")
             end if
         end if
-    end function should_set_fixed_form
+    end function should_set_fortran_format
+
+    !> Get the Fortran format string for CMake based on source form
+    function get_fortran_format_string(fortran_config) result(format_str)
+        type(fortran_config_t), intent(in), optional :: fortran_config
+        character(len=5) :: format_str
+
+        format_str = 'FIXED'  ! Default fallback
+        if (present(fortran_config)) then
+            if (allocated(fortran_config%source_form)) then
+                if (fortran_config%source_form == "free") then
+                    format_str = 'FREE'
+                else if (fortran_config%source_form == "fixed") then
+                    format_str = 'FIXED'
+                end if
+            end if
+        end if
+    end function get_fortran_format_string
 
     !> Append set_source_files_properties command for Fortran format
     subroutine append_fortran_format(lines, sources, format)
