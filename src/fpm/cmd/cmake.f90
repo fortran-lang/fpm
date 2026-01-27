@@ -14,10 +14,10 @@ module fpm_cmd_cmake
                          FPM_UNIT_MODULE, FPM_UNIT_SUBMODULE, FPM_UNIT_SUBPROGRAM, &
                          FPM_UNIT_CSOURCE, FPM_UNIT_CPPSOURCE, FPM_UNIT_CHEADER
     use fpm, only: build_model
-    use fpm_strings, only: string_t, lower, str_ends_with, str_begins_with_str
+    use fpm_strings, only: string_t, lower, str_ends_with, str_begins_with_str, fnv_1a
     use fpm_targets, only: targets_from_sources, build_target_ptr
     use shlex_module, only: shlex_split => split
-    use, intrinsic :: iso_fortran_env, only: stdout => output_unit
+    use, intrinsic :: iso_fortran_env, only: stdout => output_unit, int64
     implicit none
     private
     public :: cmd_generate
@@ -366,43 +366,53 @@ contains
         integer, intent(in) :: scope
         type(string_t), allocatable, intent(out) :: shared_sources(:)
 
+        ! Hash table for O(n) directory lookups
+        integer, parameter :: DIR_HASH_SIZE = 256  ! Power of 2 for typical projects
+        type :: directory_entry
+            character(:), allocatable :: path
+            integer :: program_count
+        end type
+        type(directory_entry) :: dir_hash_table(DIR_HASH_SIZE)
+
         integer :: i, j, n_shared
         character(len=:), allocatable :: dir_path
         type(string_t), allocatable :: temp_shared(:)
-        type(string_t), allocatable :: directories(:)
-        integer, allocatable :: program_counts(:)
-        integer :: n_dirs
+        integer(int64) :: hash_value
+        integer :: hash_idx, probe_idx
+        logical :: found_dir
 
-        ! First, collect unique directories and count programs in each
-        n_dirs = 0
-        allocate(directories(0))
-        allocate(program_counts(0))
-
-        ! Count programs per directory
+        ! Count programs per directory using hash table - O(n)
         do i = 1, size(sources)
             if (sources(i)%unit_scope == scope .and. &
                 sources(i)%unit_type == FPM_UNIT_PROGRAM) then
                 dir_path = dirname(sources(i)%file_name)
 
-                ! Check if this directory is already tracked
-                j = 0
-                do j = 1, n_dirs
-                    if (trim(directories(j)%s) == trim(dir_path)) exit
-                end do
+                ! Hash directory path to bucket index
+                hash_value = fnv_1a(dir_path)
+                hash_idx = modulo(abs(hash_value), DIR_HASH_SIZE) + 1
 
-                if (j > n_dirs) then
-                    ! New directory
-                    n_dirs = n_dirs + 1
-                    call append_to_list(directories, dir_path)
-                    call append_to_int_list(program_counts, 1)
-                else
-                    ! Existing directory - increment count
-                    program_counts(j) = program_counts(j) + 1
-                end if
+                ! Linear probe to find matching directory or empty slot
+                found_dir = .false.
+                do probe_idx = 0, DIR_HASH_SIZE - 1
+                    j = modulo(hash_idx + probe_idx - 1, DIR_HASH_SIZE) + 1
+
+                    if (.not. allocated(dir_hash_table(j)%path)) then
+                        ! Empty slot - new directory
+                        dir_hash_table(j)%path = dir_path
+                        dir_hash_table(j)%program_count = 1
+                        exit
+                    else if (trim(dir_hash_table(j)%path) == trim(dir_path)) then
+                        ! Found existing directory - increment count
+                        dir_hash_table(j)%program_count = dir_hash_table(j)%program_count + 1
+                        found_dir = .true.
+                        exit
+                    end if
+                    ! else: collision, try next slot
+                end do
             end if
         end do
 
-        ! Now collect all non-program sources from directories with 2+ programs
+        ! Collect non-program sources from directories with 2+ programs - O(n)
         n_shared = 0
         allocate(temp_shared(size(sources)))  ! Over-allocate
 
@@ -411,12 +421,25 @@ contains
                 sources(i)%unit_type /= FPM_UNIT_PROGRAM) then
                 dir_path = dirname(sources(i)%file_name)
 
-                ! Check if this directory has 2+ programs
-                do j = 1, n_dirs
-                    if (trim(directories(j)%s) == trim(dir_path) .and. &
-                        program_counts(j) >= 2) then
-                        n_shared = n_shared + 1
-                        temp_shared(n_shared)%s = sources(i)%file_name
+                ! Hash lookup for directory
+                hash_value = fnv_1a(dir_path)
+                hash_idx = modulo(abs(hash_value), DIR_HASH_SIZE) + 1
+
+                ! Linear probe to find matching directory
+                do probe_idx = 0, DIR_HASH_SIZE - 1
+                    j = modulo(hash_idx + probe_idx - 1, DIR_HASH_SIZE) + 1
+
+                    if (allocated(dir_hash_table(j)%path)) then
+                        if (trim(dir_hash_table(j)%path) == trim(dir_path)) then
+                            ! Found directory - check if it has 2+ programs
+                            if (dir_hash_table(j)%program_count >= 2) then
+                                n_shared = n_shared + 1
+                                temp_shared(n_shared)%s = sources(i)%file_name
+                            end if
+                            exit
+                        end if
+                    else
+                        ! Empty slot means directory not found (shouldn't happen for non-program sources)
                         exit
                     end if
                 end do
@@ -432,36 +455,6 @@ contains
         end if
 
     end subroutine find_shared_module_sources
-
-    !> Helper to append a string to a string_t array
-    subroutine append_to_list(list, str)
-        type(string_t), allocatable, intent(inout) :: list(:)
-        character(len=*), intent(in) :: str
-        type(string_t), allocatable :: temp(:)
-        integer :: n
-
-        n = size(list)
-        allocate(temp(n + 1))
-        if (n > 0) temp(1:n) = list
-        temp(n + 1)%s = str
-        call move_alloc(temp, list)
-
-    end subroutine append_to_list
-
-    !> Helper to append an integer to an integer array
-    subroutine append_to_int_list(list, val)
-        integer, allocatable, intent(inout) :: list(:)
-        integer, intent(in) :: val
-        integer, allocatable :: temp(:)
-        integer :: n
-
-        n = size(list)
-        allocate(temp(n + 1))
-        if (n > 0) temp(1:n) = list
-        temp(n + 1) = val
-        call move_alloc(temp, list)
-
-    end subroutine append_to_int_list
 
     !> Add metapackage settings (include directories, link options, and libraries) to a target
     subroutine append_metapackage_settings(lines, target_name, model, is_interface)
