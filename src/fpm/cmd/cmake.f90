@@ -262,11 +262,12 @@ contains
     end subroutine collect_scope_sources
 
     !> Get sources for a specific executable by name and scope
-    subroutine get_sources_for_exe(sources, exe_name, scope, result_sources)
+    subroutine get_sources_for_exe(sources, exe_name, scope, result_sources, exclude_sources)
         type(srcfile_t), intent(in) :: sources(:)
         character(len=*), intent(in) :: exe_name
         integer, intent(in) :: scope
         type(string_t), allocatable, intent(out) :: result_sources(:)
+        type(string_t), intent(in), optional :: exclude_sources(:)
 
         integer :: i, n
         type(string_t), allocatable :: temp(:)
@@ -298,6 +299,11 @@ contains
         do i = 1, size(sources)
             if (sources(i)%unit_scope == scope .and. &
                 dirname(sources(i)%file_name) == exe_dir) then
+                ! Skip sources in the exclusion list
+                if (present(exclude_sources)) then
+                    if (is_in_list(sources(i)%file_name, exclude_sources)) cycle
+                end if
+
                 ! Include all non-program sources (modules, etc.)
                 ! or program sources that match this executable name
                 if (sources(i)%unit_type /= FPM_UNIT_PROGRAM) then
@@ -315,6 +321,11 @@ contains
         do i = 1, size(sources)
             if (sources(i)%unit_scope == scope .and. &
                 dirname(sources(i)%file_name) == exe_dir) then
+                ! Skip sources in the exclusion list
+                if (present(exclude_sources)) then
+                    if (is_in_list(sources(i)%file_name, exclude_sources)) cycle
+                end if
+
                 ! Include all non-program sources (modules, etc.)
                 ! or program sources that match this executable name
                 if (sources(i)%unit_type /= FPM_UNIT_PROGRAM) then
@@ -331,6 +342,126 @@ contains
         call move_alloc(temp, result_sources)
 
     end subroutine get_sources_for_exe
+
+    !> Check if a file path is in a list of string_t
+    function is_in_list(file_path, list) result(found)
+        character(len=*), intent(in) :: file_path
+        type(string_t), intent(in) :: list(:)
+        logical :: found
+        integer :: i
+
+        found = .false.
+        do i = 1, size(list)
+            if (trim(list(i)%s) == trim(file_path)) then
+                found = .true.
+                exit
+            end if
+        end do
+
+    end function is_in_list
+
+    !> Find module sources shared across multiple executables in a directory
+    subroutine find_shared_module_sources(sources, scope, shared_sources)
+        type(srcfile_t), intent(in) :: sources(:)
+        integer, intent(in) :: scope
+        type(string_t), allocatable, intent(out) :: shared_sources(:)
+
+        integer :: i, j, n_shared
+        character(len=:), allocatable :: dir_path
+        type(string_t), allocatable :: temp_shared(:)
+        type(string_t), allocatable :: directories(:)
+        integer, allocatable :: program_counts(:)
+        integer :: n_dirs
+
+        ! First, collect unique directories and count programs in each
+        n_dirs = 0
+        allocate(directories(0))
+        allocate(program_counts(0))
+
+        ! Count programs per directory
+        do i = 1, size(sources)
+            if (sources(i)%unit_scope == scope .and. &
+                sources(i)%unit_type == FPM_UNIT_PROGRAM) then
+                dir_path = dirname(sources(i)%file_name)
+
+                ! Check if this directory is already tracked
+                j = 0
+                do j = 1, n_dirs
+                    if (trim(directories(j)%s) == trim(dir_path)) exit
+                end do
+
+                if (j > n_dirs) then
+                    ! New directory
+                    n_dirs = n_dirs + 1
+                    call append_to_list(directories, dir_path)
+                    call append_to_int_list(program_counts, 1)
+                else
+                    ! Existing directory - increment count
+                    program_counts(j) = program_counts(j) + 1
+                end if
+            end if
+        end do
+
+        ! Now collect all non-program sources from directories with 2+ programs
+        n_shared = 0
+        allocate(temp_shared(size(sources)))  ! Over-allocate
+
+        do i = 1, size(sources)
+            if (sources(i)%unit_scope == scope .and. &
+                sources(i)%unit_type /= FPM_UNIT_PROGRAM) then
+                dir_path = dirname(sources(i)%file_name)
+
+                ! Check if this directory has 2+ programs
+                do j = 1, n_dirs
+                    if (trim(directories(j)%s) == trim(dir_path) .and. &
+                        program_counts(j) >= 2) then
+                        n_shared = n_shared + 1
+                        temp_shared(n_shared)%s = sources(i)%file_name
+                        exit
+                    end if
+                end do
+            end if
+        end do
+
+        ! Copy to correctly-sized output array
+        if (n_shared > 0) then
+            allocate(shared_sources(n_shared))
+            shared_sources(1:n_shared) = temp_shared(1:n_shared)
+        else
+            allocate(shared_sources(0))
+        end if
+
+    end subroutine find_shared_module_sources
+
+    !> Helper to append a string to a string_t array
+    subroutine append_to_list(list, str)
+        type(string_t), allocatable, intent(inout) :: list(:)
+        character(len=*), intent(in) :: str
+        type(string_t), allocatable :: temp(:)
+        integer :: n
+
+        n = size(list)
+        allocate(temp(n + 1))
+        if (n > 0) temp(1:n) = list
+        temp(n + 1)%s = str
+        call move_alloc(temp, list)
+
+    end subroutine append_to_list
+
+    !> Helper to append an integer to an integer array
+    subroutine append_to_int_list(list, val)
+        integer, allocatable, intent(inout) :: list(:)
+        integer, intent(in) :: val
+        integer, allocatable :: temp(:)
+        integer :: n
+
+        n = size(list)
+        allocate(temp(n + 1))
+        if (n > 0) temp(1:n) = list
+        temp(n + 1) = val
+        call move_alloc(temp, list)
+
+    end subroutine append_to_int_list
 
     !> Add metapackage settings (include directories, link options, and libraries) to a target
     subroutine append_metapackage_settings(lines, target_name, model, is_interface)
@@ -434,6 +565,7 @@ contains
         type(string_t), allocatable :: exe_sources(:)
         character(len=:), allocatable :: lib_name, exe_name_str, languages
         logical :: has_c, has_cpp, has_fortran
+        type(string_t), allocatable :: shared_test_modules(:), shared_app_modules(:)
 
         ! Initialize empty lines array
         allocate(lines(0))
@@ -636,13 +768,42 @@ contains
 
         ! Executable targets
         if (size(executables) > 0) then
+            ! Find shared app module sources before generating app executables
+            call find_shared_module_sources(sources, FPM_SCOPE_APP, shared_app_modules)
+
+            ! Generate object library for shared app modules if any exist
+            if (allocated(shared_app_modules)) then
+                if (size(shared_app_modules) > 0) then
+                    call append_line(lines, "# Shared app modules")
+                    call append_line(lines, 'add_library(app_modules_obj OBJECT')
+                    do j = 1, size(shared_app_modules)
+                        call append_line(lines, '    '//clean_path(shared_app_modules(j)%s))
+                    end do
+                    call append_line(lines, ')')
+                    call append_line(lines, 'set_target_properties(app_modules_obj PROPERTIES')
+                    call append_line(lines, '    Fortran_MODULE_DIRECTORY "${CMAKE_BINARY_DIR}/mod"')
+                    call append_line(lines, ')')
+                    call append_line(lines, 'target_include_directories(app_modules_obj PUBLIC')
+                    call append_line(lines, '    $<BUILD_INTERFACE:${CMAKE_BINARY_DIR}/mod>')
+                    call append_line(lines, ')')
+                    if (has_library) then
+                        call append_line(lines, 'target_link_libraries(app_modules_obj PUBLIC '//lib_name//')')
+                    end if
+                    call append_line(lines, "")
+                end if
+            end if
+
             call append_line(lines, "# Executables")
 
             do i = 1, size(executables)
                 exe_name_str = trim(executables(i)%s)
 
-                ! Get sources specific to this executable
-                call get_sources_for_exe(sources, exe_name_str, FPM_SCOPE_APP, exe_sources)
+                ! Get sources specific to this executable, excluding shared modules
+                if (allocated(shared_app_modules)) then
+                    call get_sources_for_exe(sources, exe_name_str, FPM_SCOPE_APP, exe_sources, shared_app_modules)
+                else
+                    call get_sources_for_exe(sources, exe_name_str, FPM_SCOPE_APP, exe_sources)
+                end if
 
                 call append_line(lines, 'add_executable('//exe_name_str)
                 do j = 1, size(exe_sources)
@@ -656,19 +817,28 @@ contains
                                                get_fortran_format_string(fortran_config))
                 end if
 
-                if (has_library) then
-                    call append_line(lines, 'target_link_libraries('//exe_name_str// &
-                                 ' PRIVATE '//lib_name//')')
-                else if (size(dependencies) > 0) then
-                    ! If no library, link directly to dependencies
+                if (has_library .or. size(dependencies) > 0 .or. &
+                    (allocated(shared_app_modules) .and. size(shared_app_modules) > 0)) then
                     call append_line(lines, 'target_link_libraries('//exe_name_str//' PRIVATE')
-                    do k = 1, size(dependencies)
-                        if (dependencies(k)%has_cmake) then
-                            call append_line(lines, '    '//trim(dependencies(k)%name)//'::'//trim(dependencies(k)%name))
-                        else
-                            call append_line(lines, '    '//trim(dependencies(k)%name))
+                    if (has_library) then
+                        call append_line(lines, '    '//lib_name)
+                    end if
+                    if (.not. has_library .and. size(dependencies) > 0) then
+                        ! If no library, link directly to dependencies
+                        do k = 1, size(dependencies)
+                            if (dependencies(k)%has_cmake) then
+                                call append_line(lines, '    '//trim(dependencies(k)%name)//'::'//trim(dependencies(k)%name))
+                            else
+                                call append_line(lines, '    '//trim(dependencies(k)%name))
+                            end if
+                        end do
+                    end if
+                    ! Link to shared app modules object library if it exists
+                    if (allocated(shared_app_modules)) then
+                        if (size(shared_app_modules) > 0) then
+                            call append_line(lines, '    app_modules_obj')
                         end if
-                    end do
+                    end if
                     call append_line(lines, ')')
                 end if
 
@@ -699,6 +869,31 @@ contains
 
         ! Test targets
         if (include_tests .and. size(tests) > 0) then
+            ! Find shared test module sources before generating test executables
+            call find_shared_module_sources(sources, FPM_SCOPE_TEST, shared_test_modules)
+
+            ! Generate object library for shared test modules if any exist
+            if (allocated(shared_test_modules)) then
+                if (size(shared_test_modules) > 0) then
+                    call append_line(lines, "# Shared test modules")
+                    call append_line(lines, 'add_library(test_modules_obj OBJECT')
+                    do j = 1, size(shared_test_modules)
+                        call append_line(lines, '    '//clean_path(shared_test_modules(j)%s))
+                    end do
+                    call append_line(lines, ')')
+                    call append_line(lines, 'set_target_properties(test_modules_obj PROPERTIES')
+                    call append_line(lines, '    Fortran_MODULE_DIRECTORY "${CMAKE_BINARY_DIR}/mod"')
+                    call append_line(lines, ')')
+                    call append_line(lines, 'target_include_directories(test_modules_obj PUBLIC')
+                    call append_line(lines, '    $<BUILD_INTERFACE:${CMAKE_BINARY_DIR}/mod>')
+                    call append_line(lines, ')')
+                    if (has_library) then
+                        call append_line(lines, 'target_link_libraries(test_modules_obj PUBLIC '//lib_name//')')
+                    end if
+                    call append_line(lines, "")
+                end if
+            end if
+
             call append_line(lines, "# Tests")
             call append_line(lines, "enable_testing()")
             call append_line(lines, "")
@@ -706,8 +901,12 @@ contains
             do i = 1, size(tests)
                 exe_name_str = trim(tests(i)%s)
 
-                ! Get sources specific to this test
-                call get_sources_for_exe(sources, exe_name_str, FPM_SCOPE_TEST, exe_sources)
+                ! Get sources specific to this test, excluding shared modules
+                if (allocated(shared_test_modules)) then
+                    call get_sources_for_exe(sources, exe_name_str, FPM_SCOPE_TEST, exe_sources, shared_test_modules)
+                else
+                    call get_sources_for_exe(sources, exe_name_str, FPM_SCOPE_TEST, exe_sources)
+                end if
 
                 call append_line(lines, 'add_executable('//exe_name_str)
                 do j = 1, size(exe_sources)
@@ -738,6 +937,12 @@ contains
                             end if
                         end if
                     end do
+                end if
+                ! Link to shared test modules object library if it exists
+                if (allocated(shared_test_modules)) then
+                    if (size(shared_test_modules) > 0) then
+                        call append_line(lines, '    test_modules_obj')
+                    end if
                 end if
                 call append_line(lines, ')')
 
