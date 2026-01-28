@@ -505,7 +505,12 @@ subroutine build_target_list(targets,model,library)
                        case default
                             compile_flags = ""
                     end select
-                    target%compile_flags = target%compile_flags//' '//compile_flags
+
+                    if (allocated(target%compile_flags)) then
+                        target%compile_flags = target%compile_flags//' '//compile_flags
+                    else
+                        target%compile_flags = ' '//compile_flags                        
+                    end if
 
                     ! Executable depends on object
                     call add_dependency(target, targets(size(targets)-1)%ptr)
@@ -1132,8 +1137,10 @@ subroutine resolve_target_linking(targets, model, library, error)
                case (FPM_TARGET_CPP_OBJECT)
                    target%compile_flags = target%compile_flags//model%cxx_compile_flags
                case default
-                   target%compile_flags = target%compile_flags//model%fortran_compile_flags &
-                                        & // get_feature_flags(model%compiler, target%features)
+                    if (allocated(model%fortran_compile_flags)) then
+                        target%compile_flags = target%compile_flags//model%fortran_compile_flags
+                    end if
+                   target%compile_flags = target%compile_flags // get_feature_flags(model%compiler, target%features)
             end select
 
             !> Get macros as flags.
@@ -1230,7 +1237,11 @@ subroutine resolve_target_linking(targets, model, library, error)
 
                     call get_link_objects(target%link_objects,target,is_exe=.true.)
 
-                    target%link_flags = model%link_flags//" "//string_cat(target%link_objects," ")
+                    if (allocated(model%link_flags)) then
+                        target%link_flags = model%link_flags//" "//string_cat(target%link_objects," ")
+                    else 
+                        target%link_flags = " "//string_cat(target%link_objects," ")
+                    end if
                     
                     ! Add shared libs
                     if (.not.monolithic) then 
