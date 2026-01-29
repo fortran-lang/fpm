@@ -511,20 +511,93 @@ contains
 
     end subroutine find_shared_module_sources
 
+    !> Detect primary language of target sources
+    function detect_target_language(sources) result(lang)
+        type(string_t), intent(in) :: sources(:)
+        integer :: lang  ! 1=Fortran, 2=C, 3=C++
+
+        integer :: i
+        logical :: has_cpp, has_c, has_fortran
+        character(len=:), allocatable :: lower_name
+
+        has_fortran = .false.
+        has_c = .false.
+        has_cpp = .false.
+
+        do i = 1, size(sources)
+            lower_name = lower(sources(i)%s)
+
+            ! Check file extension
+            if (str_ends_with(lower_name, ".cpp") .or. &
+                str_ends_with(lower_name, ".cxx") .or. &
+                str_ends_with(lower_name, ".cc") .or. &
+                str_ends_with(lower_name, ".c++")) then
+                has_cpp = .true.
+            else if (str_ends_with(lower_name, ".c")) then
+                has_c = .true.
+            else
+                ! Assume Fortran for .f90, .f, .F90, .F, etc.
+                has_fortran = .true.
+            end if
+        end do
+
+        ! Priority: C++ > C > Fortran
+        if (has_cpp) then
+            lang = 3
+        else if (has_c) then
+            lang = 2
+        else
+            lang = 1
+        end if
+    end function detect_target_language
+
     !> Add metapackage settings (include directories, link options, and libraries) to a target
-    subroutine append_metapackage_settings(lines, target_name, model, is_interface)
+    subroutine append_metapackage_settings(lines, target_name, model, is_interface, target_sources)
         type(string_t), allocatable, intent(inout) :: lines(:)
         character(len=*), intent(in) :: target_name
         type(fpm_model_t), intent(in) :: model
         logical, intent(in), optional :: is_interface
-        integer :: i
+        type(string_t), intent(in), optional :: target_sources(:)
+        integer :: i, target_lang
         type(link_flags_t) :: parsed_flags
-        character(len=:), allocatable :: prop_keyword
+        character(len=:), allocatable :: prop_keyword, link_flags_to_use
 
         ! Determine property keyword based on target type
         prop_keyword = 'PRIVATE'  ! Default for regular targets
         if (present(is_interface)) then
             if (is_interface) prop_keyword = 'INTERFACE'
+        end if
+
+        ! Detect target language and select appropriate link flags
+        if (present(target_sources)) then
+            if (size(target_sources) > 0) then
+                target_lang = detect_target_language(target_sources)
+            else
+                target_lang = 1  ! Default to Fortran for empty sources
+            end if
+        else
+            target_lang = 1  ! Default to Fortran if sources not provided
+        end if
+
+        ! Select appropriate link flags based on language
+        select case (target_lang)
+            case (1)  ! Fortran
+                if (allocated(model%fortran_link_flags)) then
+                    link_flags_to_use = model%fortran_link_flags
+                end if
+            case (2)  ! C
+                if (allocated(model%c_link_flags)) then
+                    link_flags_to_use = model%c_link_flags
+                end if
+            case (3)  ! C++
+                if (allocated(model%cxx_link_flags)) then
+                    link_flags_to_use = model%cxx_link_flags
+                end if
+        end select
+
+        ! Fallback to merged link_flags if language-specific not available
+        if (.not. allocated(link_flags_to_use) .and. allocated(model%link_flags)) then
+            link_flags_to_use = model%link_flags
         end if
 
         ! Add include directories from metapackages (e.g., MPI, HDF5)
@@ -539,9 +612,9 @@ contains
         end if
 
         ! Parse and categorize link flags
-        if (allocated(model%link_flags)) then
-            if (len_trim(model%link_flags) > 0) then
-                call parse_link_flags(model%link_flags, parsed_flags)
+        if (allocated(link_flags_to_use)) then
+            if (len_trim(link_flags_to_use) > 0) then
+                call parse_link_flags(link_flags_to_use, parsed_flags)
 
                 ! Add library directories
                 if (allocated(parsed_flags%library_dirs)) then
@@ -810,7 +883,7 @@ contains
         ! Add metapackage settings (include dirs, link flags, and libraries)
         if (has_library) then
             ! Pass .true. for header-only libraries (INTERFACE), .false. for regular libraries
-            call append_metapackage_settings(lines, lib_name, model, size(lib_sources) == 0)
+            call append_metapackage_settings(lines, lib_name, model, size(lib_sources) == 0, lib_sources)
             call append_line(lines, "")
         end if
 
@@ -910,7 +983,7 @@ contains
 
                 ! Add metapackage settings (include dirs, link flags, and libraries)
                 ! Executables are always regular targets (not INTERFACE)
-                call append_metapackage_settings(lines, exe_name_str, model, .false.)
+                call append_metapackage_settings(lines, exe_name_str, model, .false., exe_sources)
                 call append_line(lines, "")
             end do
         end if
@@ -1014,7 +1087,7 @@ contains
 
                 ! Add metapackage settings (include dirs, link flags, and libraries)
                 ! Tests are always regular targets (not INTERFACE)
-                call append_metapackage_settings(lines, exe_name_str, model, .false.)
+                call append_metapackage_settings(lines, exe_name_str, model, .false., exe_sources)
                 call append_line(lines, 'add_test(NAME '//exe_name_str// &
                              ' COMMAND '//exe_name_str//')')
                 call append_line(lines, "")

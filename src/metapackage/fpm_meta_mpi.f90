@@ -285,6 +285,12 @@ contains
                 ! Add dir cpath
                 this%has_link_flags = .true.
                 this%link_flags = string_t(' -L'//get_dos_path(libdir,error))
+                this%has_fortran_link_flags = .true.
+                this%fortran_link_flags = this%link_flags
+                this%has_c_link_flags = .true.
+                this%c_link_flags = this%link_flags
+                this%has_cxx_link_flags = .true.
+                this%cxx_link_flags = this%link_flags
 
                 this%has_link_libraries = .true.
                 this%link_libs = [string_t('msmpi.dll')]
@@ -303,6 +309,12 @@ contains
                 ! Add dir path
                 this%has_link_flags = .true.
                 this%link_flags = string_t(' -L'//get_dos_path(libdir,error))
+                this%has_fortran_link_flags = .true.
+                this%fortran_link_flags = this%link_flags
+                this%has_c_link_flags = .true.
+                this%c_link_flags = this%link_flags
+                this%has_cxx_link_flags = .true.
+                this%cxx_link_flags = this%link_flags
 
                 this%has_link_libraries = .true.
                 this%link_libs = [string_t('msmpi'),string_t('msmpifec'),string_t('msmpifmc')]
@@ -575,25 +587,28 @@ contains
         ! Cleanup structure
         call destroy(this)
 
-        ! Get linking flags
-        this%link_flags = mpi_wrapper_query(mpilib,fort_wrapper,'link',verbose,error)
+        ! Get language-specific link flags
+        call set_language_link_flags(compiler,mpilib,fort_wrapper, &
+                                     this%has_fortran_link_flags,this%fortran_link_flags,verbose,error)
         if (allocated(error)) return
 
-        ! Remove useless/dangerous flags
-        call filter_link_arguments(compiler,this%link_flags)
+        call set_language_link_flags(compiler,mpilib,c_wrapper, &
+                                     this%has_c_link_flags,this%c_link_flags,verbose,error)
+        if (allocated(error)) return
 
-        this%has_link_flags = len_trim(this%link_flags)>0
+        call set_language_link_flags(compiler,mpilib,cxx_wrapper, &
+                                     this%has_cxx_link_flags,this%cxx_link_flags,verbose,error)
+        if (allocated(error)) return
 
-        ! Request to use libs in arbitrary order
-        if (this%has_link_flags .and. compiler%is_gnu() .and. os_is_unix() .and. get_os_type()/=OS_MACOS) then
-            this%link_flags = string_t(' -Wl,--start-group '//this%link_flags%s//' -Wl,--end-group')
-        end if
+        ! Keep backward compat: use Fortran flags as default
+        this%link_flags = this%fortran_link_flags
+        this%has_link_flags = this%has_fortran_link_flags
 
         ! Get include directories (for CMake generation)
         call extract_include_dirs(this,compiler,mpilib,fort_wrapper,verbose,error)
         if (allocated(error)) return
 
-        ! Add language-specific flags
+        ! Add language-specific compile flags
         call set_language_flags(compiler,mpilib,fort_wrapper,this%has_fortran_flags,this%fflags,verbose,error)
         if (allocated(error)) return
         call set_language_flags(compiler,mpilib,c_wrapper,this%has_c_flags,this%cflags,verbose,error)
@@ -641,6 +656,35 @@ contains
             endif
 
         end subroutine set_language_flags
+
+        subroutine set_language_link_flags(compiler,mpilib,wrapper,has_flags,flags,verbose,error)
+            type(compiler_t), intent(in) :: compiler
+            integer, intent(in) :: mpilib
+            type(string_t), intent(in) :: wrapper
+            logical, intent(inout) :: has_flags
+            type(string_t), intent(inout) :: flags
+            logical, intent(in) :: verbose
+            type(error_t), allocatable, intent(out) :: error
+
+            if (len_trim(wrapper)>0) then
+                ! Query link flags from wrapper
+                flags = mpi_wrapper_query(mpilib,wrapper,'link',verbose,error)
+                if (allocated(error)) return
+
+                has_flags = len_trim(flags)>0
+
+                ! Filter arguments
+                call filter_link_arguments(compiler,flags)
+
+                ! Add start-group wrapper for GNU linkers
+                if (has_flags .and. compiler%is_gnu() .and. os_is_unix() .and. get_os_type()/=OS_MACOS) then
+                    flags = string_t(' -Wl,--start-group '//flags%s//' -Wl,--end-group')
+                end if
+
+                if (verbose) print *, '+ MPI link flags from wrapper <',wrapper%s,'>: flags=',flags%s
+            endif
+
+        end subroutine set_language_link_flags
 
         subroutine extract_include_dirs(this,compiler,mpilib,wrapper,verbose,error)
             class(metapackage_t), intent(inout) :: this
