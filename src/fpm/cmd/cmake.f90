@@ -126,11 +126,10 @@ contains
                         tokens(j)%s = raw_tokens(j)
                     end do
 
-                    ! Add each macro flag with generator expression
+                    ! Add each macro flag (applies to all languages)
                     do j = 1, size(tokens)
                         if (len_trim(tokens(j)%s) > 0) then
-                            call append_line(lines, '    $<$<COMPILE_LANGUAGE:Fortran>:'// &
-                                           trim(tokens(j)%s)//'>')
+                            call append_line(lines, '    '//trim(tokens(j)%s))
                         end if
                     end do
                 end if
