@@ -11,8 +11,6 @@ failures=()
 for dir in example_packages/*/ ; do
 
 	# TODO: Fix remaining metapackages that require system libraries
-	[[ "$dir" == "example_packages/metapackage_netcdf/" ]] && continue
-	[[ "$dir" == "example_packages/preprocess_cpp/" ]] && continue
 	[[ "$dir" == "example_packages/preprocess_cpp_deps/" ]] && continue
 	[[ "$dir" == "example_packages/preprocess_cpp_suffix/" ]] && continue
 	[[ "$dir" == "example_packages/preprocess_hello/" ]] && continue

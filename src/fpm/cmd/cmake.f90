@@ -14,8 +14,14 @@ module fpm_cmd_cmake
                          FPM_UNIT_MODULE, FPM_UNIT_SUBMODULE, FPM_UNIT_SUBPROGRAM, &
                          FPM_UNIT_CSOURCE, FPM_UNIT_CPPSOURCE, FPM_UNIT_CHEADER
     use fpm, only: build_model
+    use fpm_compiler, only: get_macros, compiler_enum, &
+                        id_gcc, id_f95, id_caf, id_nvhpc, id_flang, id_amdflang, &
+                        id_intel_classic_nix, id_intel_classic_mac, id_intel_classic_windows, &
+                        id_intel_llvm_nix, id_intel_llvm_windows, &
+                        id_nag, id_lfortran
     use fpm_strings, only: string_t, lower, str_ends_with, str_begins_with_str, fnv_1a
     use fpm_targets, only: targets_from_sources, build_target_ptr
+    use fpm_versioning, only: version_t
     use shlex_module, only: shlex_split => split
     use, intrinsic :: iso_fortran_env, only: stdout => output_unit, int64
     implicit none
@@ -40,6 +46,100 @@ module fpm_cmd_cmake
     end type link_flags_t
 
 contains
+
+    !> Add preprocessing flags to target (preprocessing flag + expanded macros)
+    subroutine append_preprocessing_flags(lines, target_name, compiler_id, &
+                                          preprocess, version, visibility)
+        type(string_t), allocatable, intent(inout) :: lines(:)
+        character(len=*), intent(in) :: target_name
+        integer(compiler_enum), intent(in) :: compiler_id
+        type(preprocess_config_t), intent(in), optional :: preprocess(:)
+        type(version_t), intent(in), optional :: version
+        character(len=*), intent(in), optional :: visibility
+
+        character(:), allocatable :: cpp_flag, macros_str, vis
+        character(:), allocatable :: raw_tokens(:)
+        type(string_t), allocatable :: tokens(:)
+        integer :: i, j
+        logical :: has_macros
+
+        ! Return early if no preprocessing
+        if (.not. present(preprocess)) return
+        if (size(preprocess) == 0) return
+
+        ! Check if any preprocess config has macros
+        has_macros = .false.
+        do i = 1, size(preprocess)
+            if (allocated(preprocess(i)%macros)) then
+                if (size(preprocess(i)%macros) > 0) then
+                    has_macros = .true.
+                    exit
+                end if
+            end if
+        end do
+        if (.not. has_macros) return
+
+        ! Default visibility
+        vis = 'PUBLIC'
+        if (present(visibility)) vis = visibility
+
+        ! Determine preprocessing flag based on compiler ID
+        select case(compiler_id)
+        case default
+            cpp_flag = ""
+        case(id_caf, id_gcc, id_f95, id_nvhpc, id_flang, id_amdflang)
+            cpp_flag = "-cpp"
+        case(id_intel_classic_windows, id_intel_llvm_windows)
+            cpp_flag = "/fpp"
+        case(id_intel_classic_nix, id_intel_classic_mac, id_intel_llvm_nix, id_nag)
+            cpp_flag = "-fpp"
+        case(id_lfortran)
+            cpp_flag = "--cpp"
+        end select
+
+        ! Start target_compile_options
+        call append_line(lines, 'target_compile_options('//target_name//' '//vis)
+
+        ! Add preprocessing flag first (if compiler needs one)
+        if (len(cpp_flag) > 0) then
+            call append_line(lines, '    $<$<COMPILE_LANGUAGE:Fortran>:'//cpp_flag//'>')
+        end if
+
+        ! Process each preprocess config (typically just one: cpp)
+        do i = 1, size(preprocess)
+            if (allocated(preprocess(i)%macros)) then
+                if (size(preprocess(i)%macros) > 0) then
+                    ! Get expanded and prefixed macros from get_macros()
+                    ! This returns e.g., " -DMACRO1 -DMACRO2=3 -DMACRO3=1"
+                    if (present(version)) then
+                        macros_str = get_macros(compiler_id, preprocess(i)%macros, version)
+                    else
+                        macros_str = get_macros(compiler_id, preprocess(i)%macros)
+                    end if
+
+                    ! Split space-separated macro string into individual flags
+                    raw_tokens = shlex_split(macros_str)
+
+                    ! Convert to string_t array
+                    allocate(tokens(size(raw_tokens)))
+                    do j = 1, size(raw_tokens)
+                        tokens(j)%s = raw_tokens(j)
+                    end do
+
+                    ! Add each macro flag with generator expression
+                    do j = 1, size(tokens)
+                        if (len_trim(tokens(j)%s) > 0) then
+                            call append_line(lines, '    $<$<COMPILE_LANGUAGE:Fortran>:'// &
+                                           trim(tokens(j)%s)//'>')
+                        end if
+                    end do
+                end if
+            end if
+        end do
+
+        call append_line(lines, ')')
+
+    end subroutine append_preprocessing_flags
 
     !> Entry point for the generate subcommand
     subroutine cmd_generate(settings)
@@ -127,7 +227,7 @@ contains
                                 lib_sources, executables, tests, has_library, &
                                 model%include_tests, model%packages(1)%sources, &
                                 dependencies, model, package%library, package%preprocess, &
-                                package%fortran, package%executable, package%test)
+                                package%fortran, package%executable, package%test, package%version)
 
         ! Write to file
         call write_lines_to_file("CMakeLists.txt", cmake_lines)
@@ -667,7 +767,7 @@ contains
     subroutine write_cmake_content(lines, name, version, lib_sources, &
                                   executables, tests, has_library, include_tests, sources, &
                                   dependencies, model, library_config, preprocess, fortran_config, &
-                                  executable_config, test_config)
+                                  executable_config, test_config, package_version)
         type(string_t), allocatable, intent(out) :: lines(:)
         character(len=*), intent(in) :: name, version
         type(string_t), intent(in) :: lib_sources(:)
@@ -681,6 +781,7 @@ contains
         type(fortran_config_t), intent(in), optional :: fortran_config
         type(executable_config_t), intent(in), optional :: executable_config(:)
         type(test_config_t), intent(in), optional :: test_config(:)
+        type(version_t), intent(in), optional :: package_version
 
         integer :: i, j, k
         type(string_t), allocatable :: exe_sources(:)
@@ -779,20 +880,9 @@ contains
                 call append_line(lines, '    $<INSTALL_INTERFACE:include>')
                 call append_line(lines, ')')
 
-                ! Add preprocessor definitions for INTERFACE library
-                if (present(preprocess)) then
-                    do i = 1, size(preprocess)
-                        if (allocated(preprocess(i)%macros)) then
-                            if (size(preprocess(i)%macros) > 0) then
-                                call append_line(lines, 'target_compile_definitions('//lib_name//' INTERFACE')
-                                do j = 1, size(preprocess(i)%macros)
-                                    call append_line(lines, '    '//trim(preprocess(i)%macros(j)%s))
-                                end do
-                                call append_line(lines, ')')
-                            end if
-                        end if
-                    end do
-                end if
+                ! Add preprocessing flags for INTERFACE library
+                call append_preprocessing_flags(lines, lib_name, model%compiler%id, &
+                                                preprocess, package_version, 'INTERFACE')
             else
                 ! Generate STATIC library for normal libraries
                 call append_line(lines, "# Library")
@@ -832,20 +922,9 @@ contains
                 call append_line(lines, '    $<INSTALL_INTERFACE:include>')
                 call append_line(lines, ')')
 
-                ! Add preprocessor definitions
-                if (present(preprocess)) then
-                    do i = 1, size(preprocess)
-                        if (allocated(preprocess(i)%macros)) then
-                            if (size(preprocess(i)%macros) > 0) then
-                                call append_line(lines, 'target_compile_definitions('//lib_name//' PUBLIC')
-                                do j = 1, size(preprocess(i)%macros)
-                                    call append_line(lines, '    '//trim(preprocess(i)%macros(j)%s))
-                                end do
-                                call append_line(lines, ')')
-                            end if
-                        end if
-                    end do
-                end if
+                ! Add preprocessing flags (preprocessing flag + expanded macros)
+                call append_preprocessing_flags(lines, lib_name, model%compiler%id, &
+                                                preprocess, package_version, 'PUBLIC')
             end if
 
             call append_line(lines, "")
