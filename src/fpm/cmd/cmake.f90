@@ -892,9 +892,9 @@ contains
                 call append_line(lines, ')')
 
                 ! Set source format if not default
-                if (should_set_fortran_format(fortran_config)) then
+                if (should_set_fortran_format(fortran_config, preprocess, lib_sources)) then
                     call append_fortran_format(lines, lib_sources, &
-                                               get_fortran_format_string(fortran_config))
+                                               get_fortran_format_string(fortran_config), preprocess)
                 end if
 
                 ! Set module directory properties
@@ -1011,9 +1011,9 @@ contains
                 call append_line(lines, ')')
 
                 ! Set source format if not default
-                if (should_set_fortran_format(fortran_config)) then
+                if (should_set_fortran_format(fortran_config, preprocess, exe_sources)) then
                     call append_fortran_format(lines, exe_sources, &
-                                               get_fortran_format_string(fortran_config))
+                                               get_fortran_format_string(fortran_config), preprocess)
                 end if
 
                 if (has_library .or. size(dependencies) > 0 .or. &
@@ -1114,9 +1114,9 @@ contains
                 call append_line(lines, ')')
 
                 ! Set source format if not default
-                if (should_set_fortran_format(fortran_config)) then
+                if (should_set_fortran_format(fortran_config, preprocess, exe_sources)) then
                     call append_fortran_format(lines, exe_sources, &
-                                               get_fortran_format_string(fortran_config))
+                                               get_fortran_format_string(fortran_config), preprocess)
                 end if
 
                 ! Link test to library and dev-dependencies
@@ -1617,11 +1617,17 @@ contains
     end function has_include_dir_from_manifest
 
     !> Check if we should set the Fortran_FORMAT property
-    function should_set_fortran_format(fortran_config) result(should_set)
+    function should_set_fortran_format(fortran_config, preprocess, sources) result(should_set)
         type(fortran_config_t), intent(in), optional :: fortran_config
+        type(preprocess_config_t), intent(in), optional :: preprocess(:)
+        type(string_t), intent(in), optional :: sources(:)
         logical :: should_set
 
+        integer :: i
+
         should_set = .false.
+
+        ! Check if there's an explicit fortran config
         if (present(fortran_config)) then
             if (allocated(fortran_config%source_form)) then
                 ! Set format for both "free" and "fixed" source forms
@@ -1630,14 +1636,49 @@ contains
                              fortran_config%source_form == "fixed")
             end if
         end if
+
+        ! If no explicit fortran config, check if we have custom preprocessor suffixes
+        ! that need explicit FREE format declaration for CMake
+        if (.not. should_set .and. present(preprocess) .and. present(sources)) then
+            if (has_custom_suffix_sources(sources, preprocess)) then
+                should_set = .true.
+            end if
+        end if
     end function should_set_fortran_format
+
+    !> Check if sources contain files with custom preprocessor suffixes
+    function has_custom_suffix_sources(sources, preprocess) result(has_custom)
+        type(string_t), intent(in) :: sources(:)
+        type(preprocess_config_t), intent(in) :: preprocess(:)
+        logical :: has_custom
+
+        integer :: i, j, k
+        character(len=:), allocatable :: file_ext
+
+        has_custom = .false.
+
+        do i = 1, size(sources)
+            file_ext = lower(sources(i)%s)
+            ! Check if this file matches a custom preprocessor suffix
+            do j = 1, size(preprocess)
+                if (allocated(preprocess(j)%suffixes)) then
+                    do k = 1, size(preprocess(j)%suffixes)
+                        if (str_ends_with(file_ext, "."//trim(preprocess(j)%suffixes(k)%s))) then
+                            has_custom = .true.
+                            return
+                        end if
+                    end do
+                end if
+            end do
+        end do
+    end function has_custom_suffix_sources
 
     !> Get the Fortran format string for CMake based on source form
     function get_fortran_format_string(fortran_config) result(format_str)
         type(fortran_config_t), intent(in), optional :: fortran_config
         character(len=5) :: format_str
 
-        format_str = 'FIXED'  ! Default fallback
+        format_str = 'FREE'  ! Default to FREE (matches fpm default)
         if (present(fortran_config)) then
             if (allocated(fortran_config%source_form)) then
                 if (fortran_config%source_form == "free") then
@@ -1650,10 +1691,11 @@ contains
     end function get_fortran_format_string
 
     !> Append set_source_files_properties command for Fortran format
-    subroutine append_fortran_format(lines, sources, format)
+    subroutine append_fortran_format(lines, sources, format, preprocess)
         type(string_t), allocatable, intent(inout) :: lines(:)
         type(string_t), intent(in) :: sources(:)
         character(len=*), intent(in) :: format
+        type(preprocess_config_t), intent(in), optional :: preprocess(:)
 
         integer :: i
         logical :: has_fortran_sources
@@ -1662,11 +1704,7 @@ contains
         ! Check if there are any Fortran sources (skip C/C++ files)
         has_fortran_sources = .false.
         do i = 1, size(sources)
-            file_ext = lower(sources(i)%s)
-            ! Check for Fortran extensions
-            if (str_ends_with(file_ext, ".f90") .or. str_ends_with(file_ext, ".f") .or. &
-                str_ends_with(file_ext, ".f03") .or. str_ends_with(file_ext, ".f08") .or. &
-                str_ends_with(file_ext, ".f18") .or. str_ends_with(file_ext, ".for")) then
+            if (is_fortran_source(sources(i)%s, preprocess)) then
                 has_fortran_sources = .true.
                 exit
             end if
@@ -1677,17 +1715,50 @@ contains
         ! Emit set_source_files_properties command
         call append_line(lines, 'set_source_files_properties(')
         do i = 1, size(sources)
-            file_ext = lower(sources(i)%s)
             ! Only include Fortran sources
-            if (str_ends_with(file_ext, ".f90") .or. str_ends_with(file_ext, ".f") .or. &
-                str_ends_with(file_ext, ".f03") .or. str_ends_with(file_ext, ".f08") .or. &
-                str_ends_with(file_ext, ".f18") .or. str_ends_with(file_ext, ".for")) then
+            if (is_fortran_source(sources(i)%s, preprocess)) then
                 call append_line(lines, '    '//clean_path(sources(i)%s))
             end if
         end do
         call append_line(lines, '    PROPERTIES Fortran_FORMAT '//trim(format))
         call append_line(lines, ')')
     end subroutine append_fortran_format
+
+    !> Check if a file has a Fortran extension (standard or custom preprocessor suffix)
+    function is_fortran_source(filename, preprocess) result(is_fortran)
+        character(len=*), intent(in) :: filename
+        type(preprocess_config_t), intent(in), optional :: preprocess(:)
+        logical :: is_fortran
+
+        character(len=:), allocatable :: file_ext
+        integer :: i, j
+
+        file_ext = lower(filename)
+
+        ! Check standard Fortran extensions
+        if (str_ends_with(file_ext, ".f90") .or. str_ends_with(file_ext, ".f") .or. &
+            str_ends_with(file_ext, ".f03") .or. str_ends_with(file_ext, ".f08") .or. &
+            str_ends_with(file_ext, ".f18") .or. str_ends_with(file_ext, ".for")) then
+            is_fortran = .true.
+            return
+        end if
+
+        ! Check custom preprocessor suffixes
+        if (present(preprocess)) then
+            do i = 1, size(preprocess)
+                if (allocated(preprocess(i)%suffixes)) then
+                    do j = 1, size(preprocess(i)%suffixes)
+                        if (str_ends_with(file_ext, "."//trim(preprocess(i)%suffixes(j)%s))) then
+                            is_fortran = .true.
+                            return
+                        end if
+                    end do
+                end if
+            end do
+        end if
+
+        is_fortran = .false.
+    end function is_fortran_source
 
     !> Check if a token is a library name flag (-l*)
     function is_library_name_flag(token) result(is_lib)
