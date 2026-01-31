@@ -11,8 +11,6 @@ failures=()
 for dir in example_packages/*/ ; do
 
 	# TODO
-	[[ "$dir" == "example_packages/preprocess_hello/" ]] && continue
-	[[ "$dir" == "example_packages/preprocess_hello_dependency/" ]] && continue
 	[[ "$dir" == "example_packages/program_with_cpp_guarded_module/" ]] && continue
 	[[ "$dir" == "example_packages/shared_app_only/" ]] && continue
 	[[ "$dir" == "example_packages/static_app_only/" ]] && continue
@@ -29,6 +27,10 @@ for dir in example_packages/*/ ; do
 	if [[ $? -ne 0 ]] ; then
 		failures+=("$dir")
 	fi
+
+	# TODO: also find the app exe, run it, and check the return code.  Some of
+	# the macro examples may build successfully but fail to run if macros are
+	# defined incorrectly
 
 	# Cleanup
 	rm CMakeLists.txt

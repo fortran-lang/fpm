@@ -99,13 +99,8 @@ contains
             cpp_flag = "--cpp"
         end select
 
-        ! Start target_compile_options
+        ! Start target_compile_options only if we have macros to add
         call append_line(lines, 'target_compile_options('//target_name//' '//vis)
-
-        ! Add preprocessing flag first (if compiler needs one)
-        if (len(cpp_flag) > 0) then
-            call append_line(lines, '    $<$<COMPILE_LANGUAGE:Fortran>:'//cpp_flag//'>')
-        end if
 
         ! Process each preprocess config (typically just one: cpp)
         do i = 1, size(preprocess)
@@ -141,6 +136,42 @@ contains
         call append_line(lines, ')')
 
     end subroutine append_preprocessing_flags
+
+    !> Add base preprocessing flag (-cpp) to any Fortran target without macros
+    subroutine append_base_preprocessing(lines, target_name, compiler_id, visibility)
+        type(string_t), allocatable, intent(inout) :: lines(:)
+        character(len=*), intent(in) :: target_name
+        integer(compiler_enum), intent(in) :: compiler_id
+        character(len=*), intent(in), optional :: visibility
+
+        character(:), allocatable :: cpp_flag, vis
+
+        ! Default visibility
+        vis = 'PUBLIC'
+        if (present(visibility)) vis = visibility
+
+        ! Determine preprocessing flag based on compiler ID
+        select case(compiler_id)
+        case default
+            cpp_flag = ""
+        case(id_caf, id_gcc, id_f95, id_nvhpc, id_flang, id_amdflang)
+            cpp_flag = "-cpp"
+        case(id_intel_classic_windows, id_intel_llvm_windows)
+            cpp_flag = "/fpp"
+        case(id_intel_classic_nix, id_intel_classic_mac, id_intel_llvm_nix, id_nag)
+            cpp_flag = "-fpp"
+        case(id_lfortran)
+            cpp_flag = "--cpp"
+        end select
+
+        ! Add preprocessing flag if compiler needs one
+        if (len(cpp_flag) > 0) then
+            call append_line(lines, 'target_compile_options('//target_name//' '//vis)
+            call append_line(lines, '    $<$<COMPILE_LANGUAGE:Fortran>:'//cpp_flag//'>')
+            call append_line(lines, ')')
+        end if
+
+    end subroutine append_base_preprocessing
 
     !> Entry point for the generate subcommand
     subroutine cmd_generate(settings)
@@ -881,7 +912,10 @@ contains
                 call append_line(lines, '    $<INSTALL_INTERFACE:include>')
                 call append_line(lines, ')')
 
-                ! Add preprocessing flags for INTERFACE library
+                ! Add base preprocessing flag (always enable -cpp for Fortran)
+                call append_base_preprocessing(lines, lib_name, model%compiler%id, 'INTERFACE')
+
+                ! Add preprocessing flags with macros for INTERFACE library
                 call append_preprocessing_flags(lines, lib_name, model%compiler%id, &
                                                 preprocess, package_version, 'INTERFACE')
             else
@@ -923,7 +957,10 @@ contains
                 call append_line(lines, '    $<INSTALL_INTERFACE:include>')
                 call append_line(lines, ')')
 
-                ! Add preprocessing flags (preprocessing flag + expanded macros)
+                ! Add base preprocessing flag (always enable -cpp for Fortran)
+                call append_base_preprocessing(lines, lib_name, model%compiler%id, 'PUBLIC')
+
+                ! Add preprocessing flags with macros (preprocessing flag + expanded macros)
                 call append_preprocessing_flags(lines, lib_name, model%compiler%id, &
                                                 preprocess, package_version, 'PUBLIC')
             end if
@@ -1061,6 +1098,13 @@ contains
                     end do
                 end if
 
+                ! Add base preprocessing flag (always enable -cpp for Fortran)
+                call append_base_preprocessing(lines, exe_name_str, model%compiler%id, 'PRIVATE')
+
+                ! Add preprocessing flags with macros from package-level preprocess config
+                call append_preprocessing_flags(lines, exe_name_str, model%compiler%id, &
+                                                preprocess, package_version, 'PRIVATE')
+
                 ! Add metapackage settings (include dirs, link flags, and libraries)
                 ! Executables are always regular targets (not INTERFACE)
                 call append_metapackage_settings(lines, exe_name_str, model, .false., exe_sources)
@@ -1164,6 +1208,13 @@ contains
                         end if
                     end do
                 end if
+
+                ! Add base preprocessing flag (always enable -cpp for Fortran)
+                call append_base_preprocessing(lines, exe_name_str, model%compiler%id, 'PRIVATE')
+
+                ! Add preprocessing flags with macros from package-level preprocess config
+                call append_preprocessing_flags(lines, exe_name_str, model%compiler%id, &
+                                                preprocess, package_version, 'PRIVATE')
 
                 ! Add metapackage settings (include dirs, link flags, and libraries)
                 ! Tests are always regular targets (not INTERFACE)
@@ -1512,8 +1563,12 @@ contains
             end if
             call append_line(lines, '    $<INSTALL_INTERFACE:include>')
             call append_line(lines, ')')
+            call append_line(lines, "")
 
-            ! Add preprocessing flags (preprocessing flag + expanded macros)
+            ! Add base preprocessing flag (always enable -cpp for Fortran)
+            call append_base_preprocessing(lines, dep%name, compiler_id, 'PUBLIC')
+
+            ! Add preprocessing flags with macros (if dependency has preprocess config)
             if (allocated(dep%preprocess)) then
                 call append_line(lines, "")
                 call append_preprocessing_flags(lines, dep%name, compiler_id, &
@@ -1541,8 +1596,12 @@ contains
             call append_line(lines, '    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>')
             call append_line(lines, '    $<INSTALL_INTERFACE:include>')
             call append_line(lines, ')')
+            call append_line(lines, "")
 
-            ! Add preprocessing flags for INTERFACE library
+            ! Add base preprocessing flag (always enable -cpp for Fortran)
+            call append_base_preprocessing(lines, dep%name, compiler_id, 'INTERFACE')
+
+            ! Add preprocessing flags with macros for INTERFACE library
             if (allocated(dep%preprocess)) then
                 call append_line(lines, "")
                 call append_preprocessing_flags(lines, dep%name, compiler_id, &
