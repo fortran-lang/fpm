@@ -1607,12 +1607,12 @@ contains
     '   --config-file PATH   custom location of the config file', &
     '', &
     'LIMITATIONS', &
-    '   The generated CMakeLists.txt provides a starting point and may need', &
-    '   manual adjustments:', &
+    '   The generated CMakeLists.txt handles fpm dependencies, metapackages,', &
+    '   and preprocessing. Manual adjustments may be needed for:', &
     '', &
-    '   - fpm dependencies are not automatically handled in CMake', &
-    '   - Metapackages and registry dependencies are not translated', &
-    '   - Complex preprocessing configurations may need adjustment', &
+    '   - Non-standard metapackage configurations', &
+    '   - Complex preprocessing macros or custom compiler flags', &
+    '   - IDE-specific CMake settings', &
     '', &
     'EXAMPLES', &
     '', &
