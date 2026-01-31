@@ -1473,28 +1473,62 @@ contains
         type(build_target_ptr), intent(in) :: targets(:)
         type(string_t), allocatable, intent(out) :: used_packages(:)
 
+        ! Hash table for O(n) deduplication with dynamic resizing
+        integer, parameter :: INITIAL_HASH_CAPACITY = 64
+        real, parameter :: LOAD_FACTOR_THRESHOLD = 0.75
+        type :: package_hash_entry
+            character(:), allocatable :: name
+        end type
+        type(package_hash_entry), allocatable :: pkg_hash_table(:)
+        integer :: hash_table_capacity
+        integer :: hash_table_count
+
         integer :: i, j, n_unique
+        character(len=:), allocatable :: pkg_name
         type(string_t), allocatable :: temp_packages(:)
-        logical :: is_duplicate
+        integer(int64) :: hash_value
+        integer :: hash_idx, probe_idx
 
-        ! Collect all package names (with duplicates)
-        allocate(temp_packages(size(targets)))
-        do i = 1, size(targets)
-            if (allocated(targets(i)%ptr%package_name)) then
-                temp_packages(i)%s = targets(i)%ptr%package_name
-            else
-                temp_packages(i)%s = ''
-            end if
-        end do
+        ! Initialize hash table
+        hash_table_capacity = INITIAL_HASH_CAPACITY
+        hash_table_count = 0
+        allocate(pkg_hash_table(hash_table_capacity))
 
-        ! Single pass: collect unique package names using over-allocation
-        allocate(used_packages(size(temp_packages)))  ! Over-allocate
+        ! Over-allocate output array
+        allocate(used_packages(size(targets)))
         n_unique = 0
-        do i = 1, size(temp_packages)
-            if (len_trim(temp_packages(i)%s) == 0) cycle
-            if (is_duplicate_in_range(temp_packages, i)) cycle
-            n_unique = n_unique + 1
-            used_packages(n_unique)%s = temp_packages(i)%s
+
+        ! Single pass: deduplicate using hash table
+        do i = 1, size(targets)
+            ! Extract and validate package name
+            if (.not. allocated(targets(i)%ptr%package_name)) cycle
+            pkg_name = targets(i)%ptr%package_name
+            if (len_trim(pkg_name) == 0) cycle
+
+            ! Check resize threshold
+            if (real(hash_table_count) / real(hash_table_capacity) >= LOAD_FACTOR_THRESHOLD) then
+                call resize_hash_table()
+            end if
+
+            ! Hash and probe
+            hash_value = fnv_1a(pkg_name)
+            hash_idx = modulo(abs(hash_value), hash_table_capacity) + 1
+
+            do probe_idx = 0, hash_table_capacity - 1
+                j = modulo(hash_idx + probe_idx - 1, hash_table_capacity) + 1
+
+                if (.not. allocated(pkg_hash_table(j)%name)) then
+                    ! First occurrence - insert and add to output
+                    pkg_hash_table(j)%name = pkg_name
+                    hash_table_count = hash_table_count + 1
+                    n_unique = n_unique + 1
+                    used_packages(n_unique)%s = pkg_name
+                    exit
+                else if (trim(pkg_hash_table(j)%name) == trim(pkg_name)) then
+                    ! Duplicate - skip
+                    exit
+                end if
+            end do
         end do
 
         ! Resize to actual size (using array slicing and move_alloc)
@@ -1505,6 +1539,46 @@ contains
             deallocate(used_packages)
             allocate(used_packages(0))
         end if
+
+    contains
+
+        !> Resize and rehash the package hash table (doubles size)
+        subroutine resize_hash_table()
+            type(package_hash_entry), allocatable :: old_table(:)
+            integer :: old_size, new_size, i_old, j_new
+            integer(int64) :: hash_val
+            integer :: h_idx, p_idx
+
+            ! Save old table and double size
+            old_size = hash_table_capacity
+            call move_alloc(pkg_hash_table, old_table)
+            new_size = old_size * 2
+            hash_table_capacity = new_size
+            allocate(pkg_hash_table(new_size))
+
+            ! Rehash all entries from old table into new table
+            do i_old = 1, old_size
+                if (allocated(old_table(i_old)%name)) then
+                    ! Recompute hash index for new table size
+                    hash_val = fnv_1a(old_table(i_old)%name)
+                    h_idx = modulo(abs(hash_val), new_size) + 1
+
+                    ! Linear probe to find empty slot in new table
+                    do p_idx = 0, new_size - 1
+                        j_new = modulo(h_idx + p_idx - 1, new_size) + 1
+
+                        if (.not. allocated(pkg_hash_table(j_new)%name)) then
+                            ! Move entry to new location
+                            call move_alloc(old_table(i_old)%name, pkg_hash_table(j_new)%name)
+                            exit
+                        end if
+                    end do
+                end if
+            end do
+
+            deallocate(old_table)
+
+        end subroutine resize_hash_table
 
     end subroutine collect_used_packages
 
@@ -1651,22 +1725,6 @@ contains
     end subroutine append_dependency_links
 
     !> Check if packages(index) exists in packages(1:index-1)
-    function is_duplicate_in_range(packages, index) result(is_dup)
-        type(string_t), intent(in) :: packages(:)
-        integer, intent(in) :: index
-        logical :: is_dup
-
-        integer :: j
-
-        is_dup = .false.
-        do j = 1, index - 1
-            if (trim(packages(j)%s) == trim(packages(index)%s)) then
-                is_dup = .true.
-                return
-            end if
-        end do
-
-    end function is_duplicate_in_range
 
     !> Categorize a link flag token
     !> Returns: 1=option, 2=libdir, 3=libname, 0=unknown (treated as option)
