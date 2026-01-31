@@ -115,33 +115,9 @@ contains
 
         ! Process each preprocess config (typically just one: cpp)
         do i = 1, size(preprocess)
-            if (allocated(preprocess(i)%macros)) then
-                if (size(preprocess(i)%macros) > 0) then
-                    ! Get expanded and prefixed macros from get_macros()
-                    ! This returns e.g., " -DMACRO1 -DMACRO2=3 -DMACRO3=1"
-                    if (present(version)) then
-                        macros_str = get_macros(compiler_id, preprocess(i)%macros, version)
-                    else
-                        macros_str = get_macros(compiler_id, preprocess(i)%macros)
-                    end if
-
-                    ! Split space-separated macro string into individual flags
-                    raw_tokens = shlex_split(macros_str)
-
-                    ! Convert to string_t array
-                    allocate(tokens(size(raw_tokens)))
-                    do j = 1, size(raw_tokens)
-                        tokens(j)%s = raw_tokens(j)
-                    end do
-
-                    ! Add each macro flag (applies to all languages)
-                    do j = 1, size(tokens)
-                        if (len_trim(tokens(j)%s) > 0) then
-                            call builder%append( '    '//trim(tokens(j)%s))
-                        end if
-                    end do
-                end if
-            end if
+            if (.not. allocated(preprocess(i)%macros)) cycle
+            if (size(preprocess(i)%macros) == 0) cycle
+            call append_macros_for_config(builder, preprocess(i), compiler_id, version)
         end do
 
         call builder%append( ')')
@@ -520,7 +496,7 @@ contains
         integer :: hash_table_capacity      ! Current capacity
         integer :: hash_table_size     ! Number of occupied slots
 
-        integer :: i, j, n_shared
+        integer :: i, j, n_shared, program_count
         character(len=:), allocatable :: dir_path
         type(string_t), allocatable :: temp_shared(:)
         integer(int64) :: hash_value
@@ -574,32 +550,15 @@ contains
         allocate(temp_shared(size(sources)))  ! Over-allocate
 
         do i = 1, size(sources)
-            if (sources(i)%unit_scope == scope .and. &
-                sources(i)%unit_type /= FPM_UNIT_PROGRAM) then
-                dir_path = dirname(sources(i)%file_name)
+            if (sources(i)%unit_scope /= scope) cycle
+            if (sources(i)%unit_type == FPM_UNIT_PROGRAM) cycle
 
-                ! Hash lookup for directory
-                hash_value = fnv_1a(dir_path)
-                hash_idx = modulo(abs(hash_value), hash_table_capacity) + 1
+            dir_path = dirname(sources(i)%file_name)
+            program_count = lookup_directory_program_count(dir_path)
 
-                ! Linear probe to find matching directory
-                do probe_idx = 0, hash_table_capacity - 1
-                    j = modulo(hash_idx + probe_idx - 1, hash_table_capacity) + 1
-
-                    if (allocated(dir_hash_table(j)%path)) then
-                        if (trim(dir_hash_table(j)%path) == trim(dir_path)) then
-                            ! Found directory - check if it has 2+ programs
-                            if (dir_hash_table(j)%program_count >= 2) then
-                                n_shared = n_shared + 1
-                                temp_shared(n_shared)%s = sources(i)%file_name
-                            end if
-                            exit
-                        end if
-                    else
-                        ! Empty slot means directory not found (shouldn't happen for non-program sources)
-                        exit
-                    end if
-                end do
+            if (program_count >= 2) then
+                n_shared = n_shared + 1
+                temp_shared(n_shared)%s = sources(i)%file_name
             end if
         end do
 
@@ -651,6 +610,37 @@ contains
             deallocate(old_table)
 
         end subroutine resize_hash_table
+
+        !> Lookup directory in hash table and return program count (0 if not found)
+        function lookup_directory_program_count(dir_path) result(count)
+            character(len=*), intent(in) :: dir_path
+            integer :: count
+
+            integer(int64) :: hash_val
+            integer :: h_idx, p_idx, j_idx
+
+            count = 0
+
+            ! Hash lookup
+            hash_val = fnv_1a(dir_path)
+            h_idx = modulo(abs(hash_val), hash_table_capacity) + 1
+
+            ! Linear probe to find matching directory
+            do p_idx = 0, hash_table_capacity - 1
+                j_idx = modulo(h_idx + p_idx - 1, hash_table_capacity) + 1
+
+                if (.not. allocated(dir_hash_table(j_idx)%path)) then
+                    ! Empty slot - directory not found
+                    return
+                else if (trim(dir_hash_table(j_idx)%path) == trim(dir_path)) then
+                    ! Found directory - return count
+                    count = dir_hash_table(j_idx)%program_count
+                    return
+                end if
+                ! else: collision, try next slot
+            end do
+
+        end function lookup_directory_program_count
 
     end subroutine find_shared_module_sources
 
@@ -745,13 +735,8 @@ contains
 
         ! Add include directories from metapackages (e.g., MPI, HDF5)
         if (allocated(model%include_dirs)) then
-            if (size(model%include_dirs) > 0) then
-                call builder%append( 'target_include_directories('//target_name//' '//prop_keyword)
-                do i = 1, size(model%include_dirs)
-                    call builder%append( '    '//trim(model%include_dirs(i)%s))
-                end do
-                call builder%append( ')')
-            end if
+            call append_cmake_list_directive(builder, 'target_include_directories', &
+                                             target_name, prop_keyword, model%include_dirs)
         end if
 
         ! Parse and categorize link flags
@@ -761,48 +746,28 @@ contains
 
                 ! Add library directories
                 if (allocated(parsed_flags%library_dirs)) then
-                    if (size(parsed_flags%library_dirs) > 0) then
-                        call builder%append( 'target_link_directories('//target_name//' '//prop_keyword)
-                        do i = 1, size(parsed_flags%library_dirs)
-                            call builder%append( '    '//trim(parsed_flags%library_dirs(i)%s))
-                        end do
-                        call builder%append( ')')
-                    end if
+                    call append_cmake_list_directive(builder, 'target_link_directories', &
+                                                     target_name, prop_keyword, parsed_flags%library_dirs)
                 end if
 
                 ! Add linker options
                 if (allocated(parsed_flags%linker_options)) then
-                    if (size(parsed_flags%linker_options) > 0) then
-                        call builder%append( 'target_link_options('//target_name//' '//prop_keyword)
-                        do i = 1, size(parsed_flags%linker_options)
-                            call builder%append( '    '//trim(parsed_flags%linker_options(i)%s))
-                        end do
-                        call builder%append( ')')
-                    end if
+                    call append_cmake_list_directive(builder, 'target_link_options', &
+                                                     target_name, prop_keyword, parsed_flags%linker_options)
                 end if
 
                 ! Add library names
                 if (allocated(parsed_flags%library_names)) then
-                    if (size(parsed_flags%library_names) > 0) then
-                        call builder%append( 'target_link_libraries('//target_name//' '//prop_keyword)
-                        do i = 1, size(parsed_flags%library_names)
-                            call builder%append( '    '//trim(parsed_flags%library_names(i)%s))
-                        end do
-                        call builder%append( ')')
-                    end if
+                    call append_cmake_list_directive(builder, 'target_link_libraries', &
+                                                     target_name, prop_keyword, parsed_flags%library_names)
                 end if
             end if
         end if
 
         ! Add link libraries from model (e.g., openblas, lapack from non-link_flags sources)
         if (allocated(model%link_libraries)) then
-            if (size(model%link_libraries) > 0) then
-                call builder%append( 'target_link_libraries('//target_name//' '//prop_keyword)
-                do i = 1, size(model%link_libraries)
-                    call builder%append( '    '//trim(model%link_libraries(i)%s))
-                end do
-                call builder%append( ')')
-            end if
+            call append_cmake_list_directive(builder, 'target_link_libraries', &
+                                             target_name, prop_keyword, model%link_libraries)
         end if
     end subroutine append_metapackage_settings
 
@@ -1512,7 +1477,7 @@ contains
         type(string_t), allocatable :: temp_packages(:)
         logical :: is_duplicate
 
-        ! First pass: collect all package names (with duplicates)
+        ! Collect all package names (with duplicates)
         allocate(temp_packages(size(targets)))
         do i = 1, size(targets)
             if (allocated(targets(i)%ptr%package_name)) then
@@ -1522,37 +1487,24 @@ contains
             end if
         end do
 
-        ! Second pass: count unique non-empty package names
+        ! Single pass: collect unique package names using over-allocation
+        allocate(used_packages(size(temp_packages)))  ! Over-allocate
         n_unique = 0
         do i = 1, size(temp_packages)
             if (len_trim(temp_packages(i)%s) == 0) cycle
-            is_duplicate = .false.
-            do j = 1, i - 1
-                if (trim(temp_packages(j)%s) == trim(temp_packages(i)%s)) then
-                    is_duplicate = .true.
-                    exit
-                end if
-            end do
-            if (.not. is_duplicate) n_unique = n_unique + 1
+            if (is_duplicate_in_range(temp_packages, i)) cycle
+            n_unique = n_unique + 1
+            used_packages(n_unique)%s = temp_packages(i)%s
         end do
 
-        ! Third pass: collect unique package names
-        allocate(used_packages(n_unique))
-        n_unique = 0
-        do i = 1, size(temp_packages)
-            if (len_trim(temp_packages(i)%s) == 0) cycle
-            is_duplicate = .false.
-            do j = 1, i - 1
-                if (trim(temp_packages(j)%s) == trim(temp_packages(i)%s)) then
-                    is_duplicate = .true.
-                    exit
-                end if
-            end do
-            if (.not. is_duplicate) then
-                n_unique = n_unique + 1
-                used_packages(n_unique)%s = temp_packages(i)%s
-            end if
-        end do
+        ! Resize to actual size (using array slicing and move_alloc)
+        if (n_unique > 0) then
+            temp_packages = used_packages(1:n_unique)
+            call move_alloc(temp_packages, used_packages)
+        else
+            deallocate(used_packages)
+            allocate(used_packages(0))
+        end if
 
     end subroutine collect_used_packages
 
@@ -1617,6 +1569,130 @@ contains
         is_header_only = .not. has_compilable
 
     end function is_header_only_dep
+
+    !> Append macros from a single preprocess config to builder
+    subroutine append_macros_for_config(builder, config, compiler_id, version)
+        type(line_builder_t), intent(inout) :: builder
+        type(preprocess_config_t), intent(in) :: config
+        integer(compiler_enum), intent(in) :: compiler_id
+        type(version_t), intent(in), optional :: version
+
+        character(:), allocatable :: macros_str, raw_tokens(:)
+        type(string_t), allocatable :: tokens(:)
+        integer :: j
+
+        ! Get expanded and prefixed macros from get_macros()
+        ! This returns e.g., " -DMACRO1 -DMACRO2=3 -DMACRO3=1"
+        if (present(version)) then
+            macros_str = get_macros(compiler_id, config%macros, version)
+        else
+            macros_str = get_macros(compiler_id, config%macros)
+        end if
+
+        ! Split space-separated macro string into individual flags
+        raw_tokens = shlex_split(macros_str)
+
+        ! Convert to string_t array
+        allocate(tokens(size(raw_tokens)))
+        do j = 1, size(raw_tokens)
+            tokens(j)%s = raw_tokens(j)
+        end do
+
+        ! Add each macro flag (applies to all languages)
+        do j = 1, size(tokens)
+            if (len_trim(tokens(j)%s) > 0) then
+                call builder%append('    '//trim(tokens(j)%s))
+            end if
+        end do
+
+    end subroutine append_macros_for_config
+
+    !> Generic helper to append CMake list directive (include_directories, link_directories, link_libraries)
+    subroutine append_cmake_list_directive(builder, directive, target_name, visibility, items)
+        type(line_builder_t), intent(inout) :: builder
+        character(len=*), intent(in) :: directive
+        character(len=*), intent(in) :: target_name
+        character(len=*), intent(in) :: visibility
+        type(string_t), intent(in) :: items(:)
+
+        integer :: i
+
+        if (size(items) == 0) return
+
+        call builder%append(trim(directive)//'('//trim(target_name)//' '//trim(visibility))
+        do i = 1, size(items)
+            call builder%append('    '//trim(items(i)%s))
+        end do
+        call builder%append(')')
+
+    end subroutine append_cmake_list_directive
+
+    !> Append dependency links with visibility (PUBLIC or INTERFACE)
+    subroutine append_dependency_links(builder, target_name, depends_on, visibility)
+        type(line_builder_t), intent(inout) :: builder
+        character(len=*), intent(in) :: target_name
+        type(string_t), intent(in) :: depends_on(:)
+        character(len=*), intent(in) :: visibility
+
+        integer :: i
+
+        if (size(depends_on) == 0) return
+
+        call builder%append("")
+        call builder%append('target_link_libraries('//trim(target_name)//' '//trim(visibility))
+        do i = 1, size(depends_on)
+            ! Skip self-references
+            if (trim(depends_on(i)%s) /= trim(target_name)) then
+                call builder%append('    '//trim(depends_on(i)%s))
+            end if
+        end do
+        call builder%append(')')
+
+    end subroutine append_dependency_links
+
+    !> Check if packages(index) exists in packages(1:index-1)
+    function is_duplicate_in_range(packages, index) result(is_dup)
+        type(string_t), intent(in) :: packages(:)
+        integer, intent(in) :: index
+        logical :: is_dup
+
+        integer :: j
+
+        is_dup = .false.
+        do j = 1, index - 1
+            if (trim(packages(j)%s) == trim(packages(index)%s)) then
+                is_dup = .true.
+                return
+            end if
+        end do
+
+    end function is_duplicate_in_range
+
+    !> Categorize a link flag token
+    !> Returns: 1=option, 2=libdir, 3=libname, 0=unknown (treated as option)
+    function categorize_link_flag(token, is_framework_arg) result(category)
+        character(len=*), intent(in) :: token
+        logical, intent(in) :: is_framework_arg
+        integer :: category
+
+        if (is_framework_arg) then
+            ! Token after -framework is an option argument
+            category = 1
+        else if (trim(token) == '-framework') then
+            ! -framework itself is an option
+            category = 1
+        else if (is_library_name_flag(trim(token))) then
+            category = 3  ! Library name
+        else if (is_library_dir_flag(trim(token))) then
+            category = 2  ! Library directory
+        else if (is_linker_option_flag(trim(token))) then
+            category = 1  ! Linker option
+        else
+            ! Unknown flags default to linker options (safer)
+            category = 0  ! Unknown (treated as option)
+        end if
+
+    end function categorize_link_flag
 
     !> Generate CMakeLists.txt for an fpm-only dependency
     subroutine generate_dependency_cmake(dep, base_dir, compiler_id)
@@ -1697,17 +1773,7 @@ contains
 
             ! Link to this dependency's own dependencies (sub-dependencies)
             if (allocated(dep%depends_on)) then
-                if (size(dep%depends_on) > 0) then
-                    call builder%append( "")
-                    call builder%append( 'target_link_libraries('//trim(dep%name)//' PUBLIC')
-                    do i = 1, size(dep%depends_on)
-                        ! Skip self-references
-                        if (trim(dep%depends_on(i)%s) /= trim(dep%name)) then
-                            call builder%append( '    '//trim(dep%depends_on(i)%s))
-                        end if
-                    end do
-                    call builder%append( ')')
-                end if
+                call append_dependency_links(builder, dep%name, dep%depends_on, 'PUBLIC')
             end if
         else
             ! INTERFACE library for header-only dependency
@@ -1730,16 +1796,7 @@ contains
 
             ! Link to this dependency's own dependencies (sub-dependencies) for INTERFACE library
             if (allocated(dep%depends_on)) then
-                if (size(dep%depends_on) > 0) then
-                    call builder%append( 'target_link_libraries('//trim(dep%name)//' INTERFACE')
-                    do i = 1, size(dep%depends_on)
-                        ! Skip self-references
-                        if (trim(dep%depends_on(i)%s) /= trim(dep%name)) then
-                            call builder%append( '    '//trim(dep%depends_on(i)%s))
-                        end if
-                    end do
-                    call builder%append( ')')
-                end if
+                call append_dependency_links(builder, dep%name, dep%depends_on, 'INTERFACE')
             end if
         end if
 
@@ -2059,23 +2116,19 @@ contains
         next_is_framework = .false.
 
         do i = 1, size(tokens)
-            if (next_is_framework) then
-                ! The token after -framework is part of the linker option
+            idx = categorize_link_flag(tokens(i), next_is_framework)
+
+            select case (idx)
+            case (1)  ! Option
                 n_options = n_options + 1
-                next_is_framework = .false.
-            else if (trim(tokens(i)) == '-framework') then
-                n_options = n_options + 1
-                next_is_framework = .true.
-            else if (is_library_name_flag(trim(tokens(i)))) then
-                n_libs = n_libs + 1
-            else if (is_library_dir_flag(trim(tokens(i)))) then
+                next_is_framework = (trim(tokens(i)) == '-framework')
+            case (2)  ! Library directory
                 n_dirs = n_dirs + 1
-            else if (is_linker_option_flag(trim(tokens(i)))) then
+            case (3)  ! Library name
+                n_libs = n_libs + 1
+            case default  ! Unknown (treated as option)
                 n_options = n_options + 1
-            else
-                ! Unknown flags default to linker options (safer)
-                n_options = n_options + 1
-            end if
+            end select
         end do
 
         ! Allocate arrays
@@ -2090,29 +2143,23 @@ contains
         next_is_framework = .false.
 
         do i = 1, size(tokens)
-            if (next_is_framework) then
-                ! Append framework name to previous -framework token
+            idx = categorize_link_flag(tokens(i), next_is_framework)
+
+            select case (idx)
+            case (1)  ! Option
                 n_options = n_options + 1
                 temp_options(n_options)%s = trim(tokens(i))
-                next_is_framework = .false.
-            else if (trim(tokens(i)) == '-framework') then
-                n_options = n_options + 1
-                temp_options(n_options)%s = '-framework'
-                next_is_framework = .true.
-            else if (is_library_name_flag(trim(tokens(i)))) then
-                n_libs = n_libs + 1
-                temp_libs(n_libs)%s = extract_libname(trim(tokens(i)))
-            else if (is_library_dir_flag(trim(tokens(i)))) then
+                next_is_framework = (trim(tokens(i)) == '-framework')
+            case (2)  ! Library directory
                 n_dirs = n_dirs + 1
                 temp_dirs(n_dirs)%s = extract_path(trim(tokens(i)))
-            else if (is_linker_option_flag(trim(tokens(i)))) then
+            case (3)  ! Library name
+                n_libs = n_libs + 1
+                temp_libs(n_libs)%s = extract_libname(trim(tokens(i)))
+            case default  ! Unknown (treated as option)
                 n_options = n_options + 1
                 temp_options(n_options)%s = trim(tokens(i))
-            else
-                ! Unknown flags go to linker options
-                n_options = n_options + 1
-                temp_options(n_options)%s = trim(tokens(i))
-            end if
+            end select
         end do
 
         ! Move to output structure
