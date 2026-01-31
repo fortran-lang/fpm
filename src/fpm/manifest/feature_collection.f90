@@ -807,7 +807,6 @@ module fpm_manifest_feature_collection
         collection%base%name              = 'debug'
         collection%base%platform%compiler = id_all
         collection%base%platform%os_type  = OS_ALL
-        collection%base%default           = .true.
         
         ! Add debug variants for different compilers
         call collection%push_variant(default_variant('debug', id_caf, OS_ALL, &
@@ -865,7 +864,6 @@ module fpm_manifest_feature_collection
         collection%base%name = 'release'
         collection%base%platform%compiler = id_all
         collection%base%platform%os_type = OS_ALL
-        collection%base%default = .true.
         
         ! Add release variants for different compilers
         call collection%push_variant(default_variant('release', id_caf, OS_ALL, &
@@ -951,7 +949,6 @@ module fpm_manifest_feature_collection
         feature%name = name
         feature%platform%compiler = compiler_id
         feature%platform%os_type = os_type
-        feature%default = .true.  ! These are built-in features
         feature%flags = ""
         feature%c_flags = ""
         feature%cxx_flags = ""
