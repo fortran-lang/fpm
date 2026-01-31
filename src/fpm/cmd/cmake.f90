@@ -19,7 +19,7 @@ module fpm_cmd_cmake
                         id_intel_classic_nix, id_intel_classic_mac, id_intel_classic_windows, &
                         id_intel_llvm_nix, id_intel_llvm_windows, &
                         id_nag, id_lfortran
-    use fpm_strings, only: string_t, lower, str_ends_with, str_begins_with_str, fnv_1a
+    use fpm_strings, only: string_t, lower, str_ends_with, str_begins_with_str, fnv_1a, resize
     use fpm_targets, only: targets_from_sources, build_target_ptr
     use fpm_versioning, only: version_t
     use shlex_module, only: shlex_split => split
@@ -27,6 +27,17 @@ module fpm_cmd_cmake
     implicit none
     private
     public :: cmd_generate
+
+    !> Builder type for efficient line-by-line array construction
+    !> Uses exponential growth (1.5x) to achieve O(n) amortized append complexity
+    type :: line_builder_t
+        type(string_t), allocatable :: lines(:)
+        integer :: size = 0      ! Number of lines currently stored
+        integer :: capacity = 0  ! Total allocated capacity
+    contains
+        procedure :: append => builder_append_line
+        procedure :: finalize => builder_finalize
+    end type line_builder_t
 
     !> Type to hold dependency information
     type :: dependency_info_t
@@ -50,9 +61,9 @@ module fpm_cmd_cmake
 contains
 
     !> Add preprocessing flags to target (preprocessing flag + expanded macros)
-    subroutine append_preprocessing_flags(lines, target_name, compiler_id, &
+    subroutine append_preprocessing_flags(builder, target_name, compiler_id, &
                                           preprocess, version, visibility)
-        type(string_t), allocatable, intent(inout) :: lines(:)
+        type(line_builder_t), intent(inout) :: builder
         character(len=*), intent(in) :: target_name
         integer(compiler_enum), intent(in) :: compiler_id
         type(preprocess_config_t), intent(in), optional :: preprocess(:)
@@ -100,7 +111,7 @@ contains
         end select
 
         ! Start target_compile_options only if we have macros to add
-        call append_line(lines, 'target_compile_options('//target_name//' '//vis)
+        call builder%append( 'target_compile_options('//target_name//' '//vis)
 
         ! Process each preprocess config (typically just one: cpp)
         do i = 1, size(preprocess)
@@ -126,20 +137,20 @@ contains
                     ! Add each macro flag (applies to all languages)
                     do j = 1, size(tokens)
                         if (len_trim(tokens(j)%s) > 0) then
-                            call append_line(lines, '    '//trim(tokens(j)%s))
+                            call builder%append( '    '//trim(tokens(j)%s))
                         end if
                     end do
                 end if
             end if
         end do
 
-        call append_line(lines, ')')
+        call builder%append( ')')
 
     end subroutine append_preprocessing_flags
 
     !> Add base preprocessing flag (-cpp) to any Fortran target without macros
-    subroutine append_base_preprocessing(lines, target_name, compiler_id, visibility)
-        type(string_t), allocatable, intent(inout) :: lines(:)
+    subroutine append_base_preprocessing(builder, target_name, compiler_id, visibility)
+        type(line_builder_t), intent(inout) :: builder
         character(len=*), intent(in) :: target_name
         integer(compiler_enum), intent(in) :: compiler_id
         character(len=*), intent(in), optional :: visibility
@@ -166,9 +177,9 @@ contains
 
         ! Add preprocessing flag if compiler needs one
         if (len(cpp_flag) > 0) then
-            call append_line(lines, 'target_compile_options('//target_name//' '//vis)
-            call append_line(lines, '    $<$<COMPILE_LANGUAGE:Fortran>:'//cpp_flag//'>')
-            call append_line(lines, ')')
+            call builder%append( 'target_compile_options('//target_name//' '//vis)
+            call builder%append( '    $<$<COMPILE_LANGUAGE:Fortran>:'//cpp_flag//'>')
+            call builder%append( ')')
         end if
 
     end subroutine append_base_preprocessing
@@ -216,7 +227,7 @@ contains
 
         type(string_t), allocatable :: lib_sources(:), app_sources(:), test_sources(:)
         type(string_t), allocatable :: executables(:), tests(:)
-        type(string_t), allocatable :: cmake_lines(:)
+        type(line_builder_t) :: cmake_builder
         type(dependency_info_t), allocatable :: dependencies(:)
         type(string_t), allocatable :: used_package_names(:)
         type(build_target_ptr), allocatable :: targets(:)
@@ -255,14 +266,14 @@ contains
         end do
 
         ! Generate CMakeLists.txt content as string_t array
-        call write_cmake_content(cmake_lines, package%name, version_str, &
+        call write_cmake_content(cmake_builder, package%name, version_str, &
                                 lib_sources, executables, tests, has_library, &
                                 model%include_tests, model%packages(1)%sources, &
                                 dependencies, model, package%library, package%preprocess, &
                                 package%fortran, package%executable, package%test, package%version)
 
         ! Write to file
-        call write_lines_to_file("CMakeLists.txt", cmake_lines)
+        call write_lines_to_file("CMakeLists.txt", cmake_builder%finalize())
 
     end subroutine generate_cmake
 
@@ -684,8 +695,8 @@ contains
     end function detect_target_language
 
     !> Add metapackage settings (include directories, link options, and libraries) to a target
-    subroutine append_metapackage_settings(lines, target_name, model, is_interface, target_sources)
-        type(string_t), allocatable, intent(inout) :: lines(:)
+    subroutine append_metapackage_settings(builder, target_name, model, is_interface, target_sources)
+        type(line_builder_t), intent(inout) :: builder
         character(len=*), intent(in) :: target_name
         type(fpm_model_t), intent(in) :: model
         logical, intent(in), optional :: is_interface
@@ -735,11 +746,11 @@ contains
         ! Add include directories from metapackages (e.g., MPI, HDF5)
         if (allocated(model%include_dirs)) then
             if (size(model%include_dirs) > 0) then
-                call append_line(lines, 'target_include_directories('//target_name//' '//prop_keyword)
+                call builder%append( 'target_include_directories('//target_name//' '//prop_keyword)
                 do i = 1, size(model%include_dirs)
-                    call append_line(lines, '    '//trim(model%include_dirs(i)%s))
+                    call builder%append( '    '//trim(model%include_dirs(i)%s))
                 end do
-                call append_line(lines, ')')
+                call builder%append( ')')
             end if
         end if
 
@@ -751,33 +762,33 @@ contains
                 ! Add library directories
                 if (allocated(parsed_flags%library_dirs)) then
                     if (size(parsed_flags%library_dirs) > 0) then
-                        call append_line(lines, 'target_link_directories('//target_name//' '//prop_keyword)
+                        call builder%append( 'target_link_directories('//target_name//' '//prop_keyword)
                         do i = 1, size(parsed_flags%library_dirs)
-                            call append_line(lines, '    '//trim(parsed_flags%library_dirs(i)%s))
+                            call builder%append( '    '//trim(parsed_flags%library_dirs(i)%s))
                         end do
-                        call append_line(lines, ')')
+                        call builder%append( ')')
                     end if
                 end if
 
                 ! Add linker options
                 if (allocated(parsed_flags%linker_options)) then
                     if (size(parsed_flags%linker_options) > 0) then
-                        call append_line(lines, 'target_link_options('//target_name//' '//prop_keyword)
+                        call builder%append( 'target_link_options('//target_name//' '//prop_keyword)
                         do i = 1, size(parsed_flags%linker_options)
-                            call append_line(lines, '    '//trim(parsed_flags%linker_options(i)%s))
+                            call builder%append( '    '//trim(parsed_flags%linker_options(i)%s))
                         end do
-                        call append_line(lines, ')')
+                        call builder%append( ')')
                     end if
                 end if
 
                 ! Add library names
                 if (allocated(parsed_flags%library_names)) then
                     if (size(parsed_flags%library_names) > 0) then
-                        call append_line(lines, 'target_link_libraries('//target_name//' '//prop_keyword)
+                        call builder%append( 'target_link_libraries('//target_name//' '//prop_keyword)
                         do i = 1, size(parsed_flags%library_names)
-                            call append_line(lines, '    '//trim(parsed_flags%library_names(i)%s))
+                            call builder%append( '    '//trim(parsed_flags%library_names(i)%s))
                         end do
-                        call append_line(lines, ')')
+                        call builder%append( ')')
                     end if
                 end if
             end if
@@ -786,21 +797,21 @@ contains
         ! Add link libraries from model (e.g., openblas, lapack from non-link_flags sources)
         if (allocated(model%link_libraries)) then
             if (size(model%link_libraries) > 0) then
-                call append_line(lines, 'target_link_libraries('//target_name//' '//prop_keyword)
+                call builder%append( 'target_link_libraries('//target_name//' '//prop_keyword)
                 do i = 1, size(model%link_libraries)
-                    call append_line(lines, '    '//trim(model%link_libraries(i)%s))
+                    call builder%append( '    '//trim(model%link_libraries(i)%s))
                 end do
-                call append_line(lines, ')')
+                call builder%append( ')')
             end if
         end if
     end subroutine append_metapackage_settings
 
     !> Write CMake content to string_t array
-    subroutine write_cmake_content(lines, name, version, lib_sources, &
+    subroutine write_cmake_content(builder, name, version, lib_sources, &
                                   executables, tests, has_library, include_tests, sources, &
                                   dependencies, model, library_config, preprocess, fortran_config, &
                                   executable_config, test_config, package_version)
-        type(string_t), allocatable, intent(out) :: lines(:)
+        type(line_builder_t), intent(out) :: builder
         character(len=*), intent(in) :: name, version
         type(string_t), intent(in) :: lib_sources(:)
         type(string_t), intent(in) :: executables(:), tests(:)
@@ -822,7 +833,7 @@ contains
         type(string_t), allocatable :: shared_test_modules(:), shared_app_modules(:)
 
         ! Initialize empty lines array
-        allocate(lines(0))
+        ! Builder will auto-initialize
 
         ! Library name - if same as an executable, append _lib
         lib_name = trim(name)
@@ -874,12 +885,12 @@ contains
         if (len(languages) == 0) languages = 'Fortran'
 
         ! Header
-        call append_line(lines, "# CMakeLists.txt generated by fpm")
-        call append_line(lines, "")
-        call append_line(lines, "cmake_minimum_required(VERSION 3.12)")
-        call append_line(lines, 'project('//trim(name)//' VERSION '//trim(version)// &
+        call builder%append( "# CMakeLists.txt generated by fpm")
+        call builder%append( "")
+        call builder%append( "cmake_minimum_required(VERSION 3.12)")
+        call builder%append( 'project('//trim(name)//' VERSION '//trim(version)// &
                        ' LANGUAGES '//trim(languages)//')')
-        call append_line(lines, "")
+        call builder%append( "")
 
         ! Library target (defined before dependencies so subdirs can reference it)
         if (has_library) then
@@ -894,91 +905,91 @@ contains
             ! Check if this is a header-only library (has_library but no compilable sources)
             if (size(lib_sources) == 0) then
                 ! Generate INTERFACE library for header-only
-                call append_line(lines, "# Header-only library")
-                call append_line(lines, 'add_library('//lib_name//' INTERFACE)')
-                call append_line(lines, 'target_include_directories('//lib_name//' INTERFACE')
+                call builder%append( "# Header-only library")
+                call builder%append( 'add_library('//lib_name//' INTERFACE)')
+                call builder%append( 'target_include_directories('//lib_name//' INTERFACE')
                 ! Add include directories from manifest
                 if (present(library_config)) then
                     if (allocated(library_config%include_dir)) then
                         do i = 1, size(library_config%include_dir)
-                            call append_line(lines, '    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/'// &
+                            call builder%append( '    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/'// &
                                            trim(library_config%include_dir(i)%s)//'>')
                         end do
                     end if
                 else
                     ! Fallback: if no library config passed, check for physical include/ directory
-                    call append_line(lines, '    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>')
+                    call builder%append( '    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>')
                 end if
-                call append_line(lines, '    $<INSTALL_INTERFACE:include>')
-                call append_line(lines, ')')
+                call builder%append( '    $<INSTALL_INTERFACE:include>')
+                call builder%append( ')')
 
                 ! Add base preprocessing flag (always enable -cpp for Fortran)
-                call append_base_preprocessing(lines, lib_name, model%compiler%id, 'INTERFACE')
+                call append_base_preprocessing(builder, lib_name, model%compiler%id, 'INTERFACE')
 
                 ! Add preprocessing flags with macros for INTERFACE library
-                call append_preprocessing_flags(lines, lib_name, model%compiler%id, &
+                call append_preprocessing_flags(builder, lib_name, model%compiler%id, &
                                                 preprocess, package_version, 'INTERFACE')
             else
                 ! Generate STATIC library for normal libraries
-                call append_line(lines, "# Library")
-                call append_line(lines, 'add_library('//lib_name)
+                call builder%append( "# Library")
+                call builder%append( 'add_library('//lib_name)
                 do i = 1, size(lib_sources)
-                    call append_line(lines, '    '//clean_path(lib_sources(i)%s))
+                    call builder%append( '    '//clean_path(lib_sources(i)%s))
                 end do
-                call append_line(lines, ')')
+                call builder%append( ')')
 
                 ! Set source format if not default
                 if (should_set_fortran_format(fortran_config, preprocess, lib_sources)) then
-                    call append_fortran_format(lines, lib_sources, &
+                    call append_fortran_format(builder, lib_sources, &
                                                get_fortran_format_string(fortran_config), preprocess)
                 end if
 
                 ! Set module directory properties
-                call append_line(lines, 'set_target_properties('//lib_name//' PROPERTIES')
-                call append_line(lines, '    Fortran_MODULE_DIRECTORY "${CMAKE_BINARY_DIR}/mod"')
-                call append_line(lines, '    POSITION_INDEPENDENT_CODE ON')
-                call append_line(lines, ')')
-                call append_line(lines, 'target_include_directories('//lib_name//' PUBLIC')
-                call append_line(lines, '    $<BUILD_INTERFACE:${CMAKE_BINARY_DIR}/mod>')
+                call builder%append( 'set_target_properties('//lib_name//' PROPERTIES')
+                call builder%append( '    Fortran_MODULE_DIRECTORY "${CMAKE_BINARY_DIR}/mod"')
+                call builder%append( '    POSITION_INDEPENDENT_CODE ON')
+                call builder%append( ')')
+                call builder%append( 'target_include_directories('//lib_name//' PUBLIC')
+                call builder%append( '    $<BUILD_INTERFACE:${CMAKE_BINARY_DIR}/mod>')
                 ! Add include directories from manifest
                 if (present(library_config)) then
                     if (allocated(library_config%include_dir)) then
                         do i = 1, size(library_config%include_dir)
-                            call append_line(lines, '    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/'// &
+                            call builder%append( '    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/'// &
                                            trim(library_config%include_dir(i)%s)//'>')
                         end do
                     end if
                 else
                     ! Fallback: if no library config passed, check for physical include/ directory
                     if (has_include_dir()) then
-                        call append_line(lines, '    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>')
+                        call builder%append( '    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>')
                     end if
                 end if
-                call append_line(lines, '    $<INSTALL_INTERFACE:include>')
-                call append_line(lines, ')')
+                call builder%append( '    $<INSTALL_INTERFACE:include>')
+                call builder%append( ')')
 
                 ! Add base preprocessing flag (always enable -cpp for Fortran)
-                call append_base_preprocessing(lines, lib_name, model%compiler%id, 'PUBLIC')
+                call append_base_preprocessing(builder, lib_name, model%compiler%id, 'PUBLIC')
 
                 ! Add preprocessing flags with macros (preprocessing flag + expanded macros)
-                call append_preprocessing_flags(lines, lib_name, model%compiler%id, &
+                call append_preprocessing_flags(builder, lib_name, model%compiler%id, &
                                                 preprocess, package_version, 'PUBLIC')
             end if
 
-            call append_line(lines, "")
+            call builder%append( "")
         end if
 
         ! Dependencies section (after library so subdirs can reference it)
-        call write_cmake_dependencies(lines, dependencies, '.')
+        call write_cmake_dependencies(builder, dependencies, '.')
 
         ! Link library to dependencies (after dependencies are added)
         ! Skip dev-dependencies - those are only for tests
         if (has_library .and. size(dependencies) > 0) then
             ! Use INTERFACE for header-only libraries, PUBLIC for regular libraries
             if (size(lib_sources) == 0) then
-                call append_line(lines, 'target_link_libraries('//lib_name//' INTERFACE')
+                call builder%append( 'target_link_libraries('//lib_name//' INTERFACE')
             else
-                call append_line(lines, 'target_link_libraries('//lib_name//' PUBLIC')
+                call builder%append( 'target_link_libraries('//lib_name//' PUBLIC')
             end if
             do i = 1, size(dependencies)
                 ! Skip dev-dependencies (only link to regular dependencies)
@@ -986,22 +997,22 @@ contains
                     ! Use the correct target name based on CMake support
                     if (dependencies(i)%has_cmake) then
                         ! For toml-f and jonquil, use the :: interface target
-                        call append_line(lines, '    '//trim(dependencies(i)%name)//'::'//trim(dependencies(i)%name))
+                        call builder%append( '    '//trim(dependencies(i)%name)//'::'//trim(dependencies(i)%name))
                     else
                         ! For fpm-only deps, use the library target directly
-                        call append_line(lines, '    '//trim(dependencies(i)%name))
+                        call builder%append( '    '//trim(dependencies(i)%name))
                     end if
                 end if
             end do
-            call append_line(lines, ')')
-            call append_line(lines, "")
+            call builder%append( ')')
+            call builder%append( "")
         end if
 
         ! Add metapackage settings (include dirs, link flags, and libraries)
         if (has_library) then
             ! Pass .true. for header-only libraries (INTERFACE), .false. for regular libraries
-            call append_metapackage_settings(lines, lib_name, model, size(lib_sources) == 0, lib_sources)
-            call append_line(lines, "")
+            call append_metapackage_settings(builder, lib_name, model, size(lib_sources) == 0, lib_sources)
+            call builder%append( "")
         end if
 
         ! Executable targets
@@ -1012,26 +1023,26 @@ contains
             ! Generate object library for shared app modules if any exist
             if (allocated(shared_app_modules)) then
                 if (size(shared_app_modules) > 0) then
-                    call append_line(lines, "# Shared app modules")
-                    call append_line(lines, 'add_library(app_modules_obj OBJECT')
+                    call builder%append( "# Shared app modules")
+                    call builder%append( 'add_library(app_modules_obj OBJECT')
                     do j = 1, size(shared_app_modules)
-                        call append_line(lines, '    '//clean_path(shared_app_modules(j)%s))
+                        call builder%append( '    '//clean_path(shared_app_modules(j)%s))
                     end do
-                    call append_line(lines, ')')
-                    call append_line(lines, 'set_target_properties(app_modules_obj PROPERTIES')
-                    call append_line(lines, '    Fortran_MODULE_DIRECTORY "${CMAKE_BINARY_DIR}/mod"')
-                    call append_line(lines, ')')
-                    call append_line(lines, 'target_include_directories(app_modules_obj PUBLIC')
-                    call append_line(lines, '    $<BUILD_INTERFACE:${CMAKE_BINARY_DIR}/mod>')
-                    call append_line(lines, ')')
+                    call builder%append( ')')
+                    call builder%append( 'set_target_properties(app_modules_obj PROPERTIES')
+                    call builder%append( '    Fortran_MODULE_DIRECTORY "${CMAKE_BINARY_DIR}/mod"')
+                    call builder%append( ')')
+                    call builder%append( 'target_include_directories(app_modules_obj PUBLIC')
+                    call builder%append( '    $<BUILD_INTERFACE:${CMAKE_BINARY_DIR}/mod>')
+                    call builder%append( ')')
                     if (has_library) then
-                        call append_line(lines, 'target_link_libraries(app_modules_obj PUBLIC '//lib_name//')')
+                        call builder%append( 'target_link_libraries(app_modules_obj PUBLIC '//lib_name//')')
                     end if
-                    call append_line(lines, "")
+                    call builder%append( "")
                 end if
             end if
 
-            call append_line(lines, "# Executables")
+            call builder%append( "# Executables")
 
             do i = 1, size(executables)
                 original_exe_name = trim(executables(i)%s)
@@ -1044,30 +1055,30 @@ contains
                     call get_sources_for_exe(sources, original_exe_name, FPM_SCOPE_APP, exe_sources)
                 end if
 
-                call append_line(lines, 'add_executable('//exe_name_str)
+                call builder%append( 'add_executable('//exe_name_str)
                 do j = 1, size(exe_sources)
-                    call append_line(lines, '    '//clean_path(exe_sources(j)%s))
+                    call builder%append( '    '//clean_path(exe_sources(j)%s))
                 end do
-                call append_line(lines, ')')
+                call builder%append( ')')
 
                 ! Set output binary name to original if target name was sanitized
                 if (exe_name_str /= original_exe_name) then
-                    call append_line(lines, 'set_target_properties('//exe_name_str//' PROPERTIES')
-                    call append_line(lines, '    OUTPUT_NAME "'//original_exe_name//'"')
-                    call append_line(lines, ')')
+                    call builder%append( 'set_target_properties('//exe_name_str//' PROPERTIES')
+                    call builder%append( '    OUTPUT_NAME "'//original_exe_name//'"')
+                    call builder%append( ')')
                 end if
 
                 ! Set source format if not default
                 if (should_set_fortran_format(fortran_config, preprocess, exe_sources)) then
-                    call append_fortran_format(lines, exe_sources, &
+                    call append_fortran_format(builder, exe_sources, &
                                                get_fortran_format_string(fortran_config), preprocess)
                 end if
 
                 if (has_library .or. size(dependencies) > 0 .or. &
                     (allocated(shared_app_modules) .and. size(shared_app_modules) > 0)) then
-                    call append_line(lines, 'target_link_libraries('//exe_name_str//' PRIVATE')
+                    call builder%append( 'target_link_libraries('//exe_name_str//' PRIVATE')
                     if (has_library) then
-                        call append_line(lines, '    '//lib_name)
+                        call builder%append( '    '//lib_name)
                     end if
                     ! Link dependencies and dev-dependencies to executables
                     if (size(dependencies) > 0) then
@@ -1075,9 +1086,9 @@ contains
                             ! Link both regular and dev-dependencies for executables
                             if (.not. has_library .or. dependencies(k)%is_dev_dependency) then
                                 if (dependencies(k)%has_cmake) then
-                                    call append_line(lines, '    '//trim(dependencies(k)%name)//'::'//trim(dependencies(k)%name))
+                                    call builder%append( '    '//trim(dependencies(k)%name)//'::'//trim(dependencies(k)%name))
                                 else
-                                    call append_line(lines, '    '//trim(dependencies(k)%name))
+                                    call builder%append( '    '//trim(dependencies(k)%name))
                                 end if
                             end if
                         end do
@@ -1085,10 +1096,10 @@ contains
                     ! Link to shared app modules object library if it exists
                     if (allocated(shared_app_modules)) then
                         if (size(shared_app_modules) > 0) then
-                            call append_line(lines, '    app_modules_obj')
+                            call builder%append( '    app_modules_obj')
                         end if
                     end if
-                    call append_line(lines, ')')
+                    call builder%append( ')')
                 end if
 
                 ! Add link libraries from executable manifest
@@ -1097,11 +1108,11 @@ contains
                         if (trim(executable_config(k)%name) == original_exe_name) then
                             if (allocated(executable_config(k)%link)) then
                                 if (size(executable_config(k)%link) > 0) then
-                                    call append_line(lines, 'target_link_libraries('//exe_name_str//' PRIVATE')
+                                    call builder%append( 'target_link_libraries('//exe_name_str//' PRIVATE')
                                     do j = 1, size(executable_config(k)%link)
-                                        call append_line(lines, '    '//trim(executable_config(k)%link(j)%s))
+                                        call builder%append( '    '//trim(executable_config(k)%link(j)%s))
                                     end do
-                                    call append_line(lines, ')')
+                                    call builder%append( ')')
                                 end if
                             end if
                             exit
@@ -1110,16 +1121,16 @@ contains
                 end if
 
                 ! Add base preprocessing flag (always enable -cpp for Fortran)
-                call append_base_preprocessing(lines, exe_name_str, model%compiler%id, 'PRIVATE')
+                call append_base_preprocessing(builder, exe_name_str, model%compiler%id, 'PRIVATE')
 
                 ! Add preprocessing flags with macros from package-level preprocess config
-                call append_preprocessing_flags(lines, exe_name_str, model%compiler%id, &
+                call append_preprocessing_flags(builder, exe_name_str, model%compiler%id, &
                                                 preprocess, package_version, 'PRIVATE')
 
                 ! Add metapackage settings (include dirs, link flags, and libraries)
                 ! Executables are always regular targets (not INTERFACE)
-                call append_metapackage_settings(lines, exe_name_str, model, .false., exe_sources)
-                call append_line(lines, "")
+                call append_metapackage_settings(builder, exe_name_str, model, .false., exe_sources)
+                call builder%append( "")
             end do
         end if
 
@@ -1131,28 +1142,28 @@ contains
             ! Generate object library for shared test modules if any exist
             if (allocated(shared_test_modules)) then
                 if (size(shared_test_modules) > 0) then
-                    call append_line(lines, "# Shared test modules")
-                    call append_line(lines, 'add_library(test_modules_obj OBJECT')
+                    call builder%append( "# Shared test modules")
+                    call builder%append( 'add_library(test_modules_obj OBJECT')
                     do j = 1, size(shared_test_modules)
-                        call append_line(lines, '    '//clean_path(shared_test_modules(j)%s))
+                        call builder%append( '    '//clean_path(shared_test_modules(j)%s))
                     end do
-                    call append_line(lines, ')')
-                    call append_line(lines, 'set_target_properties(test_modules_obj PROPERTIES')
-                    call append_line(lines, '    Fortran_MODULE_DIRECTORY "${CMAKE_BINARY_DIR}/mod"')
-                    call append_line(lines, ')')
-                    call append_line(lines, 'target_include_directories(test_modules_obj PUBLIC')
-                    call append_line(lines, '    $<BUILD_INTERFACE:${CMAKE_BINARY_DIR}/mod>')
-                    call append_line(lines, ')')
+                    call builder%append( ')')
+                    call builder%append( 'set_target_properties(test_modules_obj PROPERTIES')
+                    call builder%append( '    Fortran_MODULE_DIRECTORY "${CMAKE_BINARY_DIR}/mod"')
+                    call builder%append( ')')
+                    call builder%append( 'target_include_directories(test_modules_obj PUBLIC')
+                    call builder%append( '    $<BUILD_INTERFACE:${CMAKE_BINARY_DIR}/mod>')
+                    call builder%append( ')')
                     if (has_library) then
-                        call append_line(lines, 'target_link_libraries(test_modules_obj PUBLIC '//lib_name//')')
+                        call builder%append( 'target_link_libraries(test_modules_obj PUBLIC '//lib_name//')')
                     end if
-                    call append_line(lines, "")
+                    call builder%append( "")
                 end if
             end if
 
-            call append_line(lines, "# Tests")
-            call append_line(lines, "enable_testing()")
-            call append_line(lines, "")
+            call builder%append( "# Tests")
+            call builder%append( "enable_testing()")
+            call builder%append( "")
 
             do i = 1, size(tests)
                 original_test_name = trim(tests(i)%s)
@@ -1165,29 +1176,29 @@ contains
                     call get_sources_for_exe(sources, original_test_name, FPM_SCOPE_TEST, exe_sources)
                 end if
 
-                call append_line(lines, 'add_executable('//exe_name_str)
+                call builder%append( 'add_executable('//exe_name_str)
                 do j = 1, size(exe_sources)
-                    call append_line(lines, '    '//clean_path(exe_sources(j)%s))
+                    call builder%append( '    '//clean_path(exe_sources(j)%s))
                 end do
-                call append_line(lines, ')')
+                call builder%append( ')')
 
                 ! Set output binary name to original if target name was sanitized
                 if (exe_name_str /= original_test_name) then
-                    call append_line(lines, 'set_target_properties('//exe_name_str//' PROPERTIES')
-                    call append_line(lines, '    OUTPUT_NAME "'//original_test_name//'"')
-                    call append_line(lines, ')')
+                    call builder%append( 'set_target_properties('//exe_name_str//' PROPERTIES')
+                    call builder%append( '    OUTPUT_NAME "'//original_test_name//'"')
+                    call builder%append( ')')
                 end if
 
                 ! Set source format if not default
                 if (should_set_fortran_format(fortran_config, preprocess, exe_sources)) then
-                    call append_fortran_format(lines, exe_sources, &
+                    call append_fortran_format(builder, exe_sources, &
                                                get_fortran_format_string(fortran_config), preprocess)
                 end if
 
                 ! Link test to library and dev-dependencies
-                call append_line(lines, 'target_link_libraries('//exe_name_str//' PRIVATE')
+                call builder%append( 'target_link_libraries('//exe_name_str//' PRIVATE')
                 if (has_library) then
-                    call append_line(lines, '    '//lib_name)
+                    call builder%append( '    '//lib_name)
                 end if
                 ! Link all dependencies (both regular and dev-dependencies for tests)
                 if (size(dependencies) > 0) then
@@ -1195,9 +1206,9 @@ contains
                         ! For tests, link both regular and dev-dependencies
                         if (.not. has_library .or. dependencies(k)%is_dev_dependency) then
                             if (dependencies(k)%has_cmake) then
-                                call append_line(lines, '    '//trim(dependencies(k)%name)//'::'//trim(dependencies(k)%name))
+                                call builder%append( '    '//trim(dependencies(k)%name)//'::'//trim(dependencies(k)%name))
                             else
-                                call append_line(lines, '    '//trim(dependencies(k)%name))
+                                call builder%append( '    '//trim(dependencies(k)%name))
                             end if
                         end if
                     end do
@@ -1205,10 +1216,10 @@ contains
                 ! Link to shared test modules object library if it exists
                 if (allocated(shared_test_modules)) then
                     if (size(shared_test_modules) > 0) then
-                        call append_line(lines, '    test_modules_obj')
+                        call builder%append( '    test_modules_obj')
                     end if
                 end if
-                call append_line(lines, ')')
+                call builder%append( ')')
 
                 ! Add link libraries from test manifest
                 if (present(test_config)) then
@@ -1216,11 +1227,11 @@ contains
                         if (trim(test_config(k)%name) == original_test_name) then
                             if (allocated(test_config(k)%link)) then
                                 if (size(test_config(k)%link) > 0) then
-                                    call append_line(lines, 'target_link_libraries('//exe_name_str//' PRIVATE')
+                                    call builder%append( 'target_link_libraries('//exe_name_str//' PRIVATE')
                                     do j = 1, size(test_config(k)%link)
-                                        call append_line(lines, '    '//trim(test_config(k)%link(j)%s))
+                                        call builder%append( '    '//trim(test_config(k)%link(j)%s))
                                     end do
-                                    call append_line(lines, ')')
+                                    call builder%append( ')')
                                 end if
                             end if
                             exit
@@ -1229,38 +1240,72 @@ contains
                 end if
 
                 ! Add base preprocessing flag (always enable -cpp for Fortran)
-                call append_base_preprocessing(lines, exe_name_str, model%compiler%id, 'PRIVATE')
+                call append_base_preprocessing(builder, exe_name_str, model%compiler%id, 'PRIVATE')
 
                 ! Add preprocessing flags with macros from package-level preprocess config
-                call append_preprocessing_flags(lines, exe_name_str, model%compiler%id, &
+                call append_preprocessing_flags(builder, exe_name_str, model%compiler%id, &
                                                 preprocess, package_version, 'PRIVATE')
 
                 ! Add metapackage settings (include dirs, link flags, and libraries)
                 ! Tests are always regular targets (not INTERFACE)
-                call append_metapackage_settings(lines, exe_name_str, model, .false., exe_sources)
-                call append_line(lines, 'add_test(NAME '//exe_name_str// &
+                call append_metapackage_settings(builder, exe_name_str, model, .false., exe_sources)
+                call builder%append( 'add_test(NAME '//exe_name_str// &
                              ' COMMAND '//original_test_name//')')
-                call append_line(lines, "")
+                call builder%append( "")
             end do
         end if
 
     end subroutine write_cmake_content
 
-    !> Append a line to the string_t array
-    subroutine append_line(lines, text)
-        type(string_t), allocatable, intent(inout) :: lines(:)
+    !> Append a line to the builder
+    !> Automatically resizes with 1.5x growth when capacity is reached
+    subroutine builder_append_line(self, text)
+        class(line_builder_t), intent(inout) :: self
         character(len=*), intent(in) :: text
 
-        type(string_t), allocatable :: temp(:)
-        integer :: n
+        ! Initialize on first use
+        if (.not. allocated(self%lines)) then
+            allocate(self%lines(0))
+            self%size = 0
+            self%capacity = 0
+        end if
 
-        n = size(lines)
-        allocate(temp(n + 1))
-        if (n > 0) temp(1:n) = lines
-        temp(n + 1)%s = text
-        call move_alloc(temp, lines)
+        ! Resize if at capacity
+        if (self%size >= self%capacity) then
+            call resize(self%lines)
+            self%capacity = size(self%lines)
+        end if
 
-    end subroutine append_line
+        ! Append to next slot
+        self%size = self%size + 1
+        self%lines(self%size)%s = text
+
+    end subroutine builder_append_line
+
+    !> Finalize and return the lines array, trimmed to exact size
+    !> Resets the builder for potential reuse
+    function builder_finalize(self) result(output)
+        class(line_builder_t), intent(inout) :: self
+        type(string_t), allocatable :: output(:)
+
+        if (.not. allocated(self%lines)) then
+            allocate(output(0))
+            return
+        end if
+
+        ! Trim to exact size
+        if (self%size < self%capacity) then
+            call resize(self%lines, self%size)
+        end if
+
+        ! Move ownership to output
+        call move_alloc(self%lines, output)
+
+        ! Reset state
+        self%size = 0
+        self%capacity = 0
+
+    end function builder_finalize
 
     !> Clean up path (remove leading ./ or ././)
     function clean_path(path) result(cleaned)
@@ -1561,18 +1606,18 @@ contains
         character(len=*), intent(in) :: base_dir
         integer(compiler_enum), intent(in) :: compiler_id
 
-        type(string_t), allocatable :: lines(:)
+        type(line_builder_t) :: builder
         character(len=:), allocatable :: cmake_file, rel_path
         integer :: i, path_len
         logical :: has_compilable, dep_has_include
 
-        allocate(lines(0))
+        ! Builder will auto-initialize
 
         ! Header
-        call append_line(lines, "# CMakeLists.txt generated by fpm for "//trim(dep%name))
-        call append_line(lines, "cmake_minimum_required(VERSION 3.12)")
-        call append_line(lines, 'project('//trim(dep%name)//' LANGUAGES Fortran)')
-        call append_line(lines, "")
+        call builder%append( "# CMakeLists.txt generated by fpm for "//trim(dep%name))
+        call builder%append( "cmake_minimum_required(VERSION 3.12)")
+        call builder%append( 'project('//trim(dep%name)//' LANGUAGES Fortran)')
+        call builder%append( "")
 
         ! Check if dependency has any compilable sources (not just headers)
         has_compilable = .false.
@@ -1588,7 +1633,7 @@ contains
 
         if (has_compilable) then
             ! Library target with compilable sources
-            call append_line(lines, 'add_library('//trim(dep%name)//' STATIC')
+            call builder%append( 'add_library('//trim(dep%name)//' STATIC')
             do i = 1, size(dep%sources)
                 ! Strip the dependency path prefix to make paths relative
                 ! dep%path is "build/dependencies/NAME" and we need to remove "build/dependencies/NAME/"
@@ -1598,97 +1643,97 @@ contains
                 else
                     rel_path = trim(dep%sources(i)%s)
                 end if
-                call append_line(lines, '    '//clean_path(rel_path))
+                call builder%append( '    '//clean_path(rel_path))
             end do
-            call append_line(lines, ')')
-            call append_line(lines, "")
+            call builder%append( ')')
+            call builder%append( "")
 
             ! Set properties
-            call append_line(lines, 'set_target_properties('//trim(dep%name)//' PROPERTIES')
-            call append_line(lines, '    Fortran_MODULE_DIRECTORY "${CMAKE_BINARY_DIR}/mod"')
-            call append_line(lines, '    POSITION_INDEPENDENT_CODE ON')
-            call append_line(lines, ')')
-            call append_line(lines, "")
+            call builder%append( 'set_target_properties('//trim(dep%name)//' PROPERTIES')
+            call builder%append( '    Fortran_MODULE_DIRECTORY "${CMAKE_BINARY_DIR}/mod"')
+            call builder%append( '    POSITION_INDEPENDENT_CODE ON')
+            call builder%append( ')')
+            call builder%append( "")
 
             ! Include directories
-            call append_line(lines, 'target_include_directories('//trim(dep%name)//' PUBLIC')
-            call append_line(lines, '    $<BUILD_INTERFACE:${CMAKE_BINARY_DIR}/mod>')
+            call builder%append( 'target_include_directories('//trim(dep%name)//' PUBLIC')
+            call builder%append( '    $<BUILD_INTERFACE:${CMAKE_BINARY_DIR}/mod>')
             ! Check if dependency has include directory
             inquire(file=trim(dep%path)//'/include', exist=dep_has_include)
             if (dep_has_include) then
-                call append_line(lines, '    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>')
+                call builder%append( '    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>')
             end if
-            call append_line(lines, '    $<INSTALL_INTERFACE:include>')
-            call append_line(lines, ')')
-            call append_line(lines, "")
+            call builder%append( '    $<INSTALL_INTERFACE:include>')
+            call builder%append( ')')
+            call builder%append( "")
 
             ! Add base preprocessing flag (always enable -cpp for Fortran)
-            call append_base_preprocessing(lines, dep%name, compiler_id, 'PUBLIC')
+            call append_base_preprocessing(builder, dep%name, compiler_id, 'PUBLIC')
 
             ! Add preprocessing flags with macros (if dependency has preprocess config)
             if (allocated(dep%preprocess)) then
-                call append_line(lines, "")
-                call append_preprocessing_flags(lines, dep%name, compiler_id, &
+                call builder%append( "")
+                call append_preprocessing_flags(builder, dep%name, compiler_id, &
                                                 dep%preprocess, dep%version, 'PUBLIC')
             end if
 
             ! Link to this dependency's own dependencies (sub-dependencies)
             if (allocated(dep%depends_on)) then
                 if (size(dep%depends_on) > 0) then
-                    call append_line(lines, "")
-                    call append_line(lines, 'target_link_libraries('//trim(dep%name)//' PUBLIC')
+                    call builder%append( "")
+                    call builder%append( 'target_link_libraries('//trim(dep%name)//' PUBLIC')
                     do i = 1, size(dep%depends_on)
                         ! Skip self-references
                         if (trim(dep%depends_on(i)%s) /= trim(dep%name)) then
-                            call append_line(lines, '    '//trim(dep%depends_on(i)%s))
+                            call builder%append( '    '//trim(dep%depends_on(i)%s))
                         end if
                     end do
-                    call append_line(lines, ')')
+                    call builder%append( ')')
                 end if
             end if
         else
             ! INTERFACE library for header-only dependency
-            call append_line(lines, 'add_library('//trim(dep%name)//' INTERFACE)')
-            call append_line(lines, 'target_include_directories('//trim(dep%name)//' INTERFACE')
-            call append_line(lines, '    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>')
-            call append_line(lines, '    $<INSTALL_INTERFACE:include>')
-            call append_line(lines, ')')
-            call append_line(lines, "")
+            call builder%append( 'add_library('//trim(dep%name)//' INTERFACE)')
+            call builder%append( 'target_include_directories('//trim(dep%name)//' INTERFACE')
+            call builder%append( '    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>')
+            call builder%append( '    $<INSTALL_INTERFACE:include>')
+            call builder%append( ')')
+            call builder%append( "")
 
             ! Add base preprocessing flag (always enable -cpp for Fortran)
-            call append_base_preprocessing(lines, dep%name, compiler_id, 'INTERFACE')
+            call append_base_preprocessing(builder, dep%name, compiler_id, 'INTERFACE')
 
             ! Add preprocessing flags with macros for INTERFACE library
             if (allocated(dep%preprocess)) then
-                call append_line(lines, "")
-                call append_preprocessing_flags(lines, dep%name, compiler_id, &
+                call builder%append( "")
+                call append_preprocessing_flags(builder, dep%name, compiler_id, &
                                                 dep%preprocess, dep%version, 'INTERFACE')
             end if
 
             ! Link to this dependency's own dependencies (sub-dependencies) for INTERFACE library
             if (allocated(dep%depends_on)) then
                 if (size(dep%depends_on) > 0) then
-                    call append_line(lines, 'target_link_libraries('//trim(dep%name)//' INTERFACE')
+                    call builder%append( 'target_link_libraries('//trim(dep%name)//' INTERFACE')
                     do i = 1, size(dep%depends_on)
                         ! Skip self-references
                         if (trim(dep%depends_on(i)%s) /= trim(dep%name)) then
-                            call append_line(lines, '    '//trim(dep%depends_on(i)%s))
+                            call builder%append( '    '//trim(dep%depends_on(i)%s))
                         end if
                     end do
-                    call append_line(lines, ')')
+                    call builder%append( ')')
                 end if
             end if
         end if
 
         ! Write to file
         cmake_file = trim(base_dir)//'/'//trim(dep%path)//'/CMakeLists.txt'
-        call write_lines_to_file(cmake_file, lines)
+        call write_lines_to_file(cmake_file, builder%finalize())
 
     end subroutine generate_dependency_cmake
 
     !> Write dependency section to CMakeLists.txt
-    subroutine write_cmake_dependencies(lines, deps, base_dir)
-        type(string_t), allocatable, intent(inout) :: lines(:)
+    subroutine write_cmake_dependencies(builder, deps, base_dir)
+        type(line_builder_t), intent(inout) :: builder
         type(dependency_info_t), intent(in) :: deps(:)
         character(len=*), intent(in) :: base_dir
 
@@ -1696,29 +1741,29 @@ contains
 
         if (size(deps) == 0) return
 
-        call append_line(lines, "# Dependencies")
-        call append_line(lines, 'set(FPM_DEPENDENCIES_DIR "${CMAKE_SOURCE_DIR}/build/dependencies" '// &
+        call builder%append( "# Dependencies")
+        call builder%append( 'set(FPM_DEPENDENCIES_DIR "${CMAKE_SOURCE_DIR}/build/dependencies" '// &
                        'CACHE PATH "FPM dependencies directory")')
-        call append_line(lines, "")
-        call append_line(lines, "# Disable testing for all dependencies")
-        call append_line(lines, 'set(BUILD_TESTING OFF CACHE BOOL "" FORCE)')
-        call append_line(lines, "")
+        call builder%append( "")
+        call builder%append( "# Disable testing for all dependencies")
+        call builder%append( 'set(BUILD_TESTING OFF CACHE BOOL "" FORCE)')
+        call builder%append( "")
 
         ! Add all dependencies via add_subdirectory
-        call append_line(lines, "# Add all dependencies")
+        call builder%append( "# Add all dependencies")
         do i = 1, size(deps)
-            call append_line(lines, 'add_subdirectory("${CMAKE_SOURCE_DIR}/'// &
+            call builder%append( 'add_subdirectory("${CMAKE_SOURCE_DIR}/'// &
                            trim(deps(i)%path)//'" '//trim(deps(i)%name)//' EXCLUDE_FROM_ALL)')
             ! Create namespace alias for CMake-enabled dependencies
             if (deps(i)%has_cmake) then
-                call append_line(lines, 'if(NOT TARGET '//trim(deps(i)%name)//'::'// &
+                call builder%append( 'if(NOT TARGET '//trim(deps(i)%name)//'::'// &
                                trim(deps(i)%name)//')')
-                call append_line(lines, '    add_library('//trim(deps(i)%name)//'::'// &
+                call builder%append( '    add_library('//trim(deps(i)%name)//'::'// &
                                trim(deps(i)%name)//' ALIAS '//trim(deps(i)%name)//')')
-                call append_line(lines, 'endif()')
+                call builder%append( 'endif()')
             end if
         end do
-        call append_line(lines, "")
+        call builder%append( "")
 
     end subroutine write_cmake_dependencies
 
@@ -1845,8 +1890,8 @@ contains
     end function get_fortran_format_string
 
     !> Append set_source_files_properties command for Fortran format
-    subroutine append_fortran_format(lines, sources, format, preprocess)
-        type(string_t), allocatable, intent(inout) :: lines(:)
+    subroutine append_fortran_format(builder, sources, format, preprocess)
+        type(line_builder_t), intent(inout) :: builder
         type(string_t), intent(in) :: sources(:)
         character(len=*), intent(in) :: format
         type(preprocess_config_t), intent(in), optional :: preprocess(:)
@@ -1867,15 +1912,15 @@ contains
         if (.not. has_fortran_sources) return
 
         ! Emit set_source_files_properties command
-        call append_line(lines, 'set_source_files_properties(')
+        call builder%append( 'set_source_files_properties(')
         do i = 1, size(sources)
             ! Only include Fortran sources
             if (is_fortran_source(sources(i)%s, preprocess)) then
-                call append_line(lines, '    '//clean_path(sources(i)%s))
+                call builder%append( '    '//clean_path(sources(i)%s))
             end if
         end do
-        call append_line(lines, '    PROPERTIES Fortran_FORMAT '//trim(format))
-        call append_line(lines, ')')
+        call builder%append( '    PROPERTIES Fortran_FORMAT '//trim(format))
+        call builder%append( ')')
     end subroutine append_fortran_format
 
     !> Check if a file has a Fortran extension (standard or custom preprocessor suffix)
