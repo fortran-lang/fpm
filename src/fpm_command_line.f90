@@ -988,7 +988,6 @@ contains
     '  Valid fpm(1) subcommands are:                                        ', &
     '                                                                       ', &
     '  + build    Compile the packages into the "build/" directory.         ', &
-    '  + generate Generate build system files (e.g., CMakeLists.txt).       ', &
     '  + new      Create a new Fortran package directory with sample files. ', &
     '  + update   Update the project dependencies.                          ', &
     '  + run      Run the local package binaries. Defaults to all binaries  ', &
@@ -999,6 +998,7 @@ contains
     '  + install  Install project.                                          ', &
     '  + clean    Delete directories in the "build/" directory, except      ', &
     '             dependencies. Use --test/--apps/--examples for selective. ', &
+    '  + generate Generate build system files (e.g., CMakeLists.txt).       ', &
     '  + publish  Publish package to the registry.                          ', &
     '                                                                       ', &
     '  Their syntax is                                                      ', &
@@ -1006,7 +1006,6 @@ contains
     '    build [--profile PROF] [--flag FFLAGS] [--list] [--compiler COMPILER_NAME]  ', &
     '          [--tests] [--no-prune] [--config-file PATH]                           ', &
     '          [--dump [FILENAME]]                                                   ', &
-    '    generate --cmake [--config-file PATH]                                       ', &
     '    new NAME [[--lib|--src] [--app] [--test] [--example]]|                      ', &
     '             [--full|--bare][--backfill]                                        ', &
     '    update [NAME(s)] [--fetch-only] [--clean] [--config-file PATH] [--dump [FILENAME]]', &
@@ -1022,6 +1021,7 @@ contains
     '            [options] [--config-file PATH] [--registry-cache]                    ', &
     '    clean [--skip|--all] [--test] [--apps] [--examples] [--config-file PATH]     ', &
     '          [--registry-cache]                                                    ', &
+    '    generate --cmake [--config-file PATH]                                       ', &
     '    publish [--token TOKEN] [--show-package-version] [--show-upload-data]       ', &
     '            [--dry-run] [--verbose] [--config-file PATH]                        ', &
     '                                                                                ', &
