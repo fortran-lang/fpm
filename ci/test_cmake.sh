@@ -10,11 +10,6 @@ failures=()
 
 for dir in example_packages/*/ ; do
 
-	# TODO
-	[[ "$dir" == "example_packages/program_with_cpp_guarded_module/" ]] && continue
-	[[ "$dir" == "example_packages/shared_app_only/" ]] && continue
-	[[ "$dir" == "example_packages/static_app_only/" ]] && continue
-
 	# These example(s) do not work with "fpm build" either, either intentionally
 	# or a separate issue unrelated to cmake generation
 	[[ "$dir" == "example_packages/features_with_dependency/" ]] && continue

@@ -817,7 +817,7 @@ contains
 
         integer :: i, j, k
         type(string_t), allocatable :: exe_sources(:)
-        character(len=:), allocatable :: lib_name, exe_name_str, languages
+        character(len=:), allocatable :: lib_name, exe_name_str, original_exe_name, original_test_name, languages
         logical :: has_c, has_cpp, has_fortran
         type(string_t), allocatable :: shared_test_modules(:), shared_app_modules(:)
 
@@ -1034,13 +1034,14 @@ contains
             call append_line(lines, "# Executables")
 
             do i = 1, size(executables)
-                exe_name_str = trim(executables(i)%s)
+                original_exe_name = trim(executables(i)%s)
+                exe_name_str = sanitize_target_name(original_exe_name)
 
                 ! Get sources specific to this executable, excluding shared modules
                 if (allocated(shared_app_modules)) then
-                    call get_sources_for_exe(sources, exe_name_str, FPM_SCOPE_APP, exe_sources, shared_app_modules)
+                    call get_sources_for_exe(sources, original_exe_name, FPM_SCOPE_APP, exe_sources, shared_app_modules)
                 else
-                    call get_sources_for_exe(sources, exe_name_str, FPM_SCOPE_APP, exe_sources)
+                    call get_sources_for_exe(sources, original_exe_name, FPM_SCOPE_APP, exe_sources)
                 end if
 
                 call append_line(lines, 'add_executable('//exe_name_str)
@@ -1061,13 +1062,16 @@ contains
                     if (has_library) then
                         call append_line(lines, '    '//lib_name)
                     end if
-                    if (.not. has_library .and. size(dependencies) > 0) then
-                        ! If no library, link directly to dependencies
+                    ! Link dependencies and dev-dependencies to executables
+                    if (size(dependencies) > 0) then
                         do k = 1, size(dependencies)
-                            if (dependencies(k)%has_cmake) then
-                                call append_line(lines, '    '//trim(dependencies(k)%name)//'::'//trim(dependencies(k)%name))
-                            else
-                                call append_line(lines, '    '//trim(dependencies(k)%name))
+                            ! Link both regular and dev-dependencies for executables
+                            if (.not. has_library .or. dependencies(k)%is_dev_dependency) then
+                                if (dependencies(k)%has_cmake) then
+                                    call append_line(lines, '    '//trim(dependencies(k)%name)//'::'//trim(dependencies(k)%name))
+                                else
+                                    call append_line(lines, '    '//trim(dependencies(k)%name))
+                                end if
                             end if
                         end do
                     end if
@@ -1083,7 +1087,7 @@ contains
                 ! Add link libraries from executable manifest
                 if (present(executable_config)) then
                     do k = 1, size(executable_config)
-                        if (trim(executable_config(k)%name) == exe_name_str) then
+                        if (trim(executable_config(k)%name) == original_exe_name) then
                             if (allocated(executable_config(k)%link)) then
                                 if (size(executable_config(k)%link) > 0) then
                                     call append_line(lines, 'target_link_libraries('//exe_name_str//' PRIVATE')
@@ -1144,13 +1148,14 @@ contains
             call append_line(lines, "")
 
             do i = 1, size(tests)
-                exe_name_str = trim(tests(i)%s)
+                original_test_name = trim(tests(i)%s)
+                exe_name_str = sanitize_target_name(original_test_name)
 
                 ! Get sources specific to this test, excluding shared modules
                 if (allocated(shared_test_modules)) then
-                    call get_sources_for_exe(sources, exe_name_str, FPM_SCOPE_TEST, exe_sources, shared_test_modules)
+                    call get_sources_for_exe(sources, original_test_name, FPM_SCOPE_TEST, exe_sources, shared_test_modules)
                 else
-                    call get_sources_for_exe(sources, exe_name_str, FPM_SCOPE_TEST, exe_sources)
+                    call get_sources_for_exe(sources, original_test_name, FPM_SCOPE_TEST, exe_sources)
                 end if
 
                 call append_line(lines, 'add_executable('//exe_name_str)
@@ -1194,7 +1199,7 @@ contains
                 ! Add link libraries from test manifest
                 if (present(test_config)) then
                     do k = 1, size(test_config)
-                        if (trim(test_config(k)%name) == exe_name_str) then
+                        if (trim(test_config(k)%name) == original_test_name) then
                             if (allocated(test_config(k)%link)) then
                                 if (size(test_config(k)%link) > 0) then
                                     call append_line(lines, 'target_link_libraries('//exe_name_str//' PRIVATE')
@@ -1273,6 +1278,44 @@ contains
         inquire(file=cmake_file, exist=has_cmake)
 
     end function has_cmake_support
+
+    !> Check if target name conflicts with CMake reserved names
+    !> CMake Policy CMP0037 defines reserved target names
+    pure function is_cmake_reserved_name(name) result(is_reserved)
+        character(len=*), intent(in) :: name
+        logical :: is_reserved
+
+        character(len=:), allocatable :: lower_name
+
+        lower_name = lower(name)
+
+        ! CMake reserved target names (case-insensitive)
+        ! - Always reserved: all, clean, help, install
+        ! - Reserved when testing enabled: test
+        ! - Reserved when packaging enabled: package
+        is_reserved = (lower_name == 'all') .or. &
+                      (lower_name == 'clean') .or. &
+                      (lower_name == 'help') .or. &
+                      (lower_name == 'install') .or. &
+                      (lower_name == 'test') .or. &
+                      (lower_name == 'package')
+
+    end function is_cmake_reserved_name
+
+    !> Generate a non-conflicting CMake target name by appending _exe suffix
+    pure function sanitize_target_name(name) result(sanitized)
+        character(len=*), intent(in) :: name
+        character(len=:), allocatable :: sanitized
+
+        ! If no conflict, return original name
+        if (.not. is_cmake_reserved_name(name)) then
+            sanitized = trim(name)
+        else
+            ! Append _exe suffix to avoid conflict
+            sanitized = trim(name)//'_exe'
+        end if
+
+    end function sanitize_target_name
 
     !> Collect dependencies from model
     subroutine collect_dependencies(model, package, deps, used_packages)
