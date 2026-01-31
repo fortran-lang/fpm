@@ -510,15 +510,15 @@ contains
         type(string_t), allocatable, intent(out) :: shared_sources(:)
 
         ! Hash table for O(n) directory lookups with dynamic resizing
-        integer, parameter :: INITIAL_HASH_SIZE = 256  ! Starting size (power of 2)
+        integer, parameter :: INITIAL_HASH_CAPACITY = 256  ! Starting size (power of 2)
         real, parameter :: LOAD_FACTOR_THRESHOLD = 0.75
         type :: directory_entry
             character(:), allocatable :: path
             integer :: program_count
         end type
         type(directory_entry), allocatable :: dir_hash_table(:)
-        integer :: hash_table_size      ! Current capacity
-        integer :: hash_table_count     ! Number of occupied slots
+        integer :: hash_table_capacity      ! Current capacity
+        integer :: hash_table_size     ! Number of occupied slots
 
         integer :: i, j, n_shared
         character(len=:), allocatable :: dir_path
@@ -528,9 +528,9 @@ contains
         logical :: found_dir
 
         ! Initialize hash table
-        hash_table_size = INITIAL_HASH_SIZE
-        hash_table_count = 0
-        allocate(dir_hash_table(hash_table_size))
+        hash_table_capacity = INITIAL_HASH_CAPACITY
+        hash_table_size = 0
+        allocate(dir_hash_table(hash_table_capacity))
 
         ! Count programs per directory using hash table - O(n)
         do i = 1, size(sources)
@@ -539,24 +539,24 @@ contains
                 dir_path = dirname(sources(i)%file_name)
 
                 ! Check if resize needed before insertion
-                if (real(hash_table_count) / real(hash_table_size) >= LOAD_FACTOR_THRESHOLD) then
+                if (real(hash_table_size) / real(hash_table_capacity) >= LOAD_FACTOR_THRESHOLD) then
                     call resize_hash_table()
                 end if
 
                 ! Hash directory path to bucket index
                 hash_value = fnv_1a(dir_path)
-                hash_idx = modulo(abs(hash_value), hash_table_size) + 1
+                hash_idx = modulo(abs(hash_value), hash_table_capacity) + 1
 
                 ! Linear probe to find matching directory or empty slot
                 found_dir = .false.
-                do probe_idx = 0, hash_table_size - 1
-                    j = modulo(hash_idx + probe_idx - 1, hash_table_size) + 1
+                do probe_idx = 0, hash_table_capacity - 1
+                    j = modulo(hash_idx + probe_idx - 1, hash_table_capacity) + 1
 
                     if (.not. allocated(dir_hash_table(j)%path)) then
                         ! Empty slot - new directory
                         dir_hash_table(j)%path = dir_path
                         dir_hash_table(j)%program_count = 1
-                        hash_table_count = hash_table_count + 1
+                        hash_table_size = hash_table_size + 1
                         exit
                     else if (trim(dir_hash_table(j)%path) == trim(dir_path)) then
                         ! Found existing directory - increment count
@@ -580,11 +580,11 @@ contains
 
                 ! Hash lookup for directory
                 hash_value = fnv_1a(dir_path)
-                hash_idx = modulo(abs(hash_value), hash_table_size) + 1
+                hash_idx = modulo(abs(hash_value), hash_table_capacity) + 1
 
                 ! Linear probe to find matching directory
-                do probe_idx = 0, hash_table_size - 1
-                    j = modulo(hash_idx + probe_idx - 1, hash_table_size) + 1
+                do probe_idx = 0, hash_table_capacity - 1
+                    j = modulo(hash_idx + probe_idx - 1, hash_table_capacity) + 1
 
                     if (allocated(dir_hash_table(j)%path)) then
                         if (trim(dir_hash_table(j)%path) == trim(dir_path)) then
@@ -621,10 +621,10 @@ contains
             integer :: hash_idx, probe_idx
 
             ! Save old table and double size
-            old_size = hash_table_size
+            old_size = hash_table_capacity
             call move_alloc(dir_hash_table, old_table)
             new_size = old_size * 2
-            hash_table_size = new_size
+            hash_table_capacity = new_size
             allocate(dir_hash_table(new_size))
 
             ! Rehash all entries from old table into new table
