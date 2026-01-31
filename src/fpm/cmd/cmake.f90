@@ -1050,6 +1050,13 @@ contains
                 end do
                 call append_line(lines, ')')
 
+                ! Set output binary name to original if target name was sanitized
+                if (exe_name_str /= original_exe_name) then
+                    call append_line(lines, 'set_target_properties('//exe_name_str//' PROPERTIES')
+                    call append_line(lines, '    OUTPUT_NAME "'//original_exe_name//'"')
+                    call append_line(lines, ')')
+                end if
+
                 ! Set source format if not default
                 if (should_set_fortran_format(fortran_config, preprocess, exe_sources)) then
                     call append_fortran_format(lines, exe_sources, &
@@ -1164,6 +1171,13 @@ contains
                 end do
                 call append_line(lines, ')')
 
+                ! Set output binary name to original if target name was sanitized
+                if (exe_name_str /= original_test_name) then
+                    call append_line(lines, 'set_target_properties('//exe_name_str//' PROPERTIES')
+                    call append_line(lines, '    OUTPUT_NAME "'//original_test_name//'"')
+                    call append_line(lines, ')')
+                end if
+
                 ! Set source format if not default
                 if (should_set_fortran_format(fortran_config, preprocess, exe_sources)) then
                     call append_fortran_format(lines, exe_sources, &
@@ -1225,7 +1239,7 @@ contains
                 ! Tests are always regular targets (not INTERFACE)
                 call append_metapackage_settings(lines, exe_name_str, model, .false., exe_sources)
                 call append_line(lines, 'add_test(NAME '//exe_name_str// &
-                             ' COMMAND '//exe_name_str//')')
+                             ' COMMAND '//original_test_name//')')
                 call append_line(lines, "")
             end do
         end if
