@@ -10,9 +10,7 @@ failures=()
 
 for dir in example_packages/*/ ; do
 
-	# TODO: Fix remaining metapackages that require system libraries
-	[[ "$dir" == "example_packages/preprocess_cpp_deps/" ]] && continue
-	[[ "$dir" == "example_packages/preprocess_cpp_suffix/" ]] && continue
+	# TODO
 	[[ "$dir" == "example_packages/preprocess_hello/" ]] && continue
 	[[ "$dir" == "example_packages/preprocess_hello_dependency/" ]] && continue
 	[[ "$dir" == "example_packages/program_with_cpp_guarded_module/" ]] && continue

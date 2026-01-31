@@ -36,6 +36,8 @@ module fpm_cmd_cmake
         logical :: is_dev_dependency  ! True if this is a dev-dependency
         type(string_t), allocatable :: sources(:)
         type(string_t), allocatable :: depends_on(:)  ! Names of this dependency's own dependencies
+        type(preprocess_config_t), allocatable :: preprocess(:)  ! Preprocessing configuration
+        type(version_t) :: version  ! Package version
     end type dependency_info_t
 
     !> Type to hold categorized link flags
@@ -217,7 +219,7 @@ contains
         ! Generate CMakeLists.txt for fpm-only dependencies
         do i = 1, size(dependencies)
             if (.not. dependencies(i)%has_cmake) then
-                call generate_dependency_cmake(dependencies(i), '.')
+                call generate_dependency_cmake(dependencies(i), '.', model%compiler%id)
             end if
         end do
 
@@ -1231,6 +1233,9 @@ contains
         integer :: i, n_deps, j, k, n_used_deps
         type(dependency_info_t), allocatable :: temp_deps(:), filtered_deps(:)
         logical :: is_dev_dep
+        type(package_config_t) :: dep_package
+        type(error_t), allocatable :: dep_error
+        character(:), allocatable :: dep_manifest_path
 
         ! Count dependencies (packages 2 onwards are dependencies)
         n_deps = size(model%packages) - 1
@@ -1257,6 +1262,24 @@ contains
                             exit
                         end if
                     end do
+                end if
+
+                ! Read dependency's manifest to get preprocessing config and version
+                dep_manifest_path = trim(temp_deps(i)%path)//'/fpm.toml'
+                call get_package_data(dep_package, dep_manifest_path, dep_error, apply_defaults=.true.)
+                if (.not. allocated(dep_error)) then
+                    ! Extract preprocessing configuration
+                    if (allocated(dep_package%preprocess)) then
+                        if (size(dep_package%preprocess) > 0) then
+                            allocate(temp_deps(i)%preprocess(size(dep_package%preprocess)))
+                            temp_deps(i)%preprocess = dep_package%preprocess
+                        end if
+                    end if
+                    ! Extract version
+                    temp_deps(i)%version = dep_package%version
+                else
+                    ! If reading manifest fails, just skip preprocessing (don't crash)
+                    deallocate(dep_error)
                 end if
 
                 ! Collect sources if it doesn't have CMake
@@ -1425,9 +1448,10 @@ contains
     end function is_header_only_dep
 
     !> Generate CMakeLists.txt for an fpm-only dependency
-    subroutine generate_dependency_cmake(dep, base_dir)
+    subroutine generate_dependency_cmake(dep, base_dir, compiler_id)
         type(dependency_info_t), intent(in) :: dep
         character(len=*), intent(in) :: base_dir
+        integer(compiler_enum), intent(in) :: compiler_id
 
         type(string_t), allocatable :: lines(:)
         character(len=:), allocatable :: cmake_file, rel_path
@@ -1489,6 +1513,13 @@ contains
             call append_line(lines, '    $<INSTALL_INTERFACE:include>')
             call append_line(lines, ')')
 
+            ! Add preprocessing flags (preprocessing flag + expanded macros)
+            if (allocated(dep%preprocess)) then
+                call append_line(lines, "")
+                call append_preprocessing_flags(lines, dep%name, compiler_id, &
+                                                dep%preprocess, dep%version, 'PUBLIC')
+            end if
+
             ! Link to this dependency's own dependencies (sub-dependencies)
             if (allocated(dep%depends_on)) then
                 if (size(dep%depends_on) > 0) then
@@ -1510,6 +1541,13 @@ contains
             call append_line(lines, '    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>')
             call append_line(lines, '    $<INSTALL_INTERFACE:include>')
             call append_line(lines, ')')
+
+            ! Add preprocessing flags for INTERFACE library
+            if (allocated(dep%preprocess)) then
+                call append_line(lines, "")
+                call append_preprocessing_flags(lines, dep%name, compiler_id, &
+                                                dep%preprocess, dep%version, 'INTERFACE')
+            end if
 
             ! Link to this dependency's own dependencies (sub-dependencies) for INTERFACE library
             if (allocated(dep%depends_on)) then
