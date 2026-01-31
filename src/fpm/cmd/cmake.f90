@@ -2,7 +2,7 @@
 module fpm_cmd_cmake
     use fpm_command_line, only: fpm_generate_settings
     use fpm_error, only: error_t, fpm_stop
-    use fpm_filesystem, only: dirname
+    use fpm_filesystem, only: dirname, is_dir
     use fpm_manifest, only: package_config_t, get_package_data
     use fpm_manifest_library, only: library_config_t
     use fpm_manifest_preprocess, only: preprocess_config_t
@@ -912,13 +912,23 @@ contains
                 if (present(library_config)) then
                     if (allocated(library_config%include_dir)) then
                         do i = 1, size(library_config%include_dir)
-                            call builder%append( '    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/'// &
-                                           trim(library_config%include_dir(i)%s)//'>')
+                            ! Only add include directory if it actually exists
+                            if (is_dir(trim(library_config%include_dir(i)%s))) then
+                                call builder%append( '    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/'// &
+                                               trim(library_config%include_dir(i)%s)//'>')
+                            end if
                         end do
+                    else
+                        ! Fallback: check for physical include/ directory if not in manifest
+                        if (has_include_dir()) then
+                            call builder%append( '    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>')
+                        end if
                     end if
                 else
                     ! Fallback: if no library config passed, check for physical include/ directory
-                    call builder%append( '    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>')
+                    if (has_include_dir()) then
+                        call builder%append( '    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>')
+                    end if
                 end if
                 call builder%append( '    $<INSTALL_INTERFACE:include>')
                 call builder%append( ')')
@@ -955,9 +965,17 @@ contains
                 if (present(library_config)) then
                     if (allocated(library_config%include_dir)) then
                         do i = 1, size(library_config%include_dir)
-                            call builder%append( '    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/'// &
-                                           trim(library_config%include_dir(i)%s)//'>')
+                            ! Only add include directory if it actually exists
+                            if (is_dir(trim(library_config%include_dir(i)%s))) then
+                                call builder%append( '    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/'// &
+                                               trim(library_config%include_dir(i)%s)//'>')
+                            end if
                         end do
+                    else
+                        ! Fallback: check for physical include/ directory if not in manifest
+                        if (has_include_dir()) then
+                            call builder%append( '    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>')
+                        end if
                     end if
                 else
                     ! Fallback: if no library config passed, check for physical include/ directory
@@ -1770,7 +1788,7 @@ contains
     !> Check if include directory exists
     function has_include_dir() result(exists)
         logical :: exists
-        inquire(file='include', exist=exists)
+        exists = is_dir('include')
     end function has_include_dir
 
     !> Check if sources contain only headers (no compilable library sources)
