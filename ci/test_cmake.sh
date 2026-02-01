@@ -32,9 +32,7 @@ for dir in example_packages/*/ ; do
 
 			# TODO
 			[[ "$dir" == "example_packages/metapackage_stdlib_extblas/" ]] && continue
-			[[ "$dir" == "example_packages/preprocess_per_dependency/" ]] && continue
 
-			#[[ "$dir" == "example_packages/dependency_priority/" ]] && continue  # hangs indefinitely
 			[[ "$dir" == "example_packages/fpm_test_exit_code/" ]] && continue  # returns 1 on purpose
 
 			if [[ -x "$exe" ]]; then

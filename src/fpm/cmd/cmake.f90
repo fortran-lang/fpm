@@ -1285,8 +1285,10 @@ contains
         type(dependency_info_t), allocatable, intent(out) :: deps(:)
         type(string_t), intent(in), optional :: used_packages(:)
 
-        integer :: i, n_deps, j, k, n_used_deps
+        integer :: i, n_deps, j, k, n_used_deps, n_preprocess
+        logical :: found_match
         type(dependency_info_t), allocatable :: temp_deps(:), filtered_deps(:)
+        type(preprocess_config_t), allocatable :: temp_preprocess(:)
         logical :: is_dev_dep
         type(package_config_t) :: dep_package
         type(error_t), allocatable :: dep_error
@@ -1333,13 +1335,49 @@ contains
                 dep_manifest_path = trim(temp_deps(i)%path)//'/fpm.toml'
                 call get_package_data(dep_package, dep_manifest_path, dep_error, apply_defaults=.true.)
                 if (.not. allocated(dep_error)) then
-                    ! Extract preprocessing configuration
+                    ! Merge preprocessing configuration from both sources
+                    ! This follows the pattern in src/fpm.f90 lines 173-185
+
+                    ! Start with dependency's own manifest macros
                     if (allocated(dep_package%preprocess)) then
                         if (size(dep_package%preprocess) > 0) then
                             allocate(temp_deps(i)%preprocess(size(dep_package%preprocess)))
                             temp_deps(i)%preprocess = dep_package%preprocess
                         end if
                     end if
+
+                    ! Add per-dependency macros from parent package using add_config
+                    if (allocated(model%deps%dep(i+1)%preprocess)) then
+                        do j = 1, size(model%deps%dep(i+1)%preprocess)
+                            if (allocated(temp_deps(i)%preprocess)) then
+                                ! Find matching config by name and merge
+                                found_match = .false.
+                                do k = 1, size(temp_deps(i)%preprocess)
+                                    if (temp_deps(i)%preprocess(k)%name == &
+                                        model%deps%dep(i+1)%preprocess(j)%name) then
+                                        call temp_deps(i)%preprocess(k)%add_config( &
+                                            model%deps%dep(i+1)%preprocess(j))
+                                        found_match = .true.
+                                        exit
+                                    end if
+                                end do
+                                ! If no match found, append new config
+                                if (.not. found_match) then
+                                    n_preprocess = size(temp_deps(i)%preprocess)
+                                    allocate(temp_preprocess(n_preprocess + 1))
+                                    temp_preprocess(1:n_preprocess) = temp_deps(i)%preprocess
+                                    temp_preprocess(n_preprocess + 1) = &
+                                        model%deps%dep(i+1)%preprocess(j)
+                                    call move_alloc(temp_preprocess, temp_deps(i)%preprocess)
+                                end if
+                            else
+                                ! No existing configs, just allocate and copy
+                                allocate(temp_deps(i)%preprocess(1))
+                                temp_deps(i)%preprocess(1) = model%deps%dep(i+1)%preprocess(j)
+                            end if
+                        end do
+                    end if
+
                     ! Extract version
                     temp_deps(i)%version = dep_package%version
                 else
