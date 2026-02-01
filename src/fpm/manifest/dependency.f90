@@ -477,10 +477,11 @@ contains
         type(toml_table), intent(inout) :: table
 
         !> Error handling
-        type(toml_table), pointer :: ptr
+        type(toml_table), pointer :: ptr, ptr2
         type(error_t), allocatable, intent(out) :: error
 
-        integer :: ierr
+        integer :: ierr, i
+        character(30) :: preprocess_key
 
         call set_string(table, "name", self%name, error, 'dependency_config_t')
         if (allocated(error)) return
@@ -493,7 +494,20 @@ contains
              if (allocated(error)) return
         endif
        call set_list(table, "features", self%features, error)
-       if (allocated(error)) return        
+       if (allocated(error)) return
+
+        ! Serialize preprocessing configurations
+        if (allocated(self%preprocess)) then
+            call add_table(table, "preprocess", ptr, error)
+            if (allocated(error)) return
+            do i = 1, size(self%preprocess)
+                write(preprocess_key, '(A,I0)') "config_", i
+                call add_table(ptr, preprocess_key, ptr2, error)
+                if (allocated(error)) return
+                call self%preprocess(i)%dump_to_toml(ptr2, error)
+                if (allocated(error)) return
+            end do
+        end if
 
         if (allocated(self%git)) then
             call add_table(table, "git", ptr, error)
@@ -517,10 +531,10 @@ contains
         type(error_t), allocatable, intent(out) :: error
 
         !> Local variables
-        type(toml_key), allocatable :: list(:)
-        type(toml_table), pointer :: ptr
+        type(toml_key), allocatable :: list(:), preprocess_keys(:)
+        type(toml_table), pointer :: ptr, ptr2
         character(len=:), allocatable :: requested_version
-        integer :: ierr,ii
+        integer :: ierr, ii, jj
 
         call dependency_destroy(self)
 
@@ -537,22 +551,43 @@ contains
             endif
         end if
         call get_list(table, "features", self%features, error)
-        if (allocated(error)) return        
+        if (allocated(error)) return
 
         call table%get_keys(list)
-        add_git: do ii = 1, size(list)
-            if (list(ii)%key=="git") then
-               call get_value(table, list(ii)%key, ptr, stat=ierr)
-               if (ierr /= toml_stat%success) then
-                   call fatal_error(error,'dependency_config_t: cannot retrieve git from TOML table')
-                   exit
-               endif
-               allocate(self%git)
-               call self%git%load_from_toml(ptr, error)
-               if (allocated(error)) return
-               exit add_git
-            end if
-        end do add_git
+        do ii = 1, size(list)
+            select case (list(ii)%key)
+            case ("git")
+                call get_value(table, list(ii)%key, ptr, stat=ierr)
+                if (ierr /= toml_stat%success) then
+                    call fatal_error(error,'dependency_config_t: cannot retrieve git from TOML table')
+                    exit
+                endif
+                allocate(self%git)
+                call self%git%load_from_toml(ptr, error)
+                if (allocated(error)) return
+
+            case ("preprocess")
+                call get_value(table, list(ii)%key, ptr, stat=ierr)
+                if (ierr /= toml_stat%success) then
+                    call fatal_error(error, 'dependency_config_t: cannot retrieve preprocess from TOML table')
+                    exit
+                end if
+
+                call ptr%get_keys(preprocess_keys)
+                if (size(preprocess_keys) > 0) then
+                    allocate(self%preprocess(size(preprocess_keys)))
+                    do jj = 1, size(preprocess_keys)
+                        call get_value(ptr, preprocess_keys(jj)%key, ptr2, stat=ierr)
+                        if (ierr /= toml_stat%success) then
+                            call fatal_error(error, 'dependency_config_t: cannot retrieve preprocess config')
+                            exit
+                        end if
+                        call self%preprocess(jj)%load_from_toml(ptr2, error)
+                        if (allocated(error)) return
+                    end do
+                end if
+            end select
+        end do
 
     end subroutine load_from_toml
 

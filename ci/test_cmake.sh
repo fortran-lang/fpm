@@ -30,9 +30,6 @@ for dir in example_packages/*/ ; do
 		#exes=$(find temp_cmake_build -type f -executable | grep -v '/CMakeFiles/')
 		for exe in $exes; do
 
-			# TODO
-			[[ "$dir" == "example_packages/metapackage_stdlib_extblas/" ]] && continue
-
 			[[ "$dir" == "example_packages/fpm_test_exit_code/" ]] && continue  # returns 1 on purpose
 
 			if [[ -x "$exe" ]]; then
