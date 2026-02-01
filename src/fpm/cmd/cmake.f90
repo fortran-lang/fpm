@@ -2,7 +2,7 @@
 module fpm_cmd_cmake
     use fpm_command_line, only: fpm_generate_settings
     use fpm_error, only: error_t, fpm_stop
-    use fpm_filesystem, only: dirname, is_dir
+    use fpm_filesystem, only: dirname, is_dir, fileopen, fileclose
     use fpm_manifest, only: package_config_t, get_package_data
     use fpm_manifest_library, only: library_config_t
     use fpm_manifest_preprocess, only: preprocess_config_t
@@ -266,15 +266,18 @@ contains
         integer :: lun, i, ios
         character(len=256) :: message
 
-        open(newunit=lun, file=filename, status='replace', action='write', &
-             iostat=ios, iomsg=message)
+        call fileopen(filename, lun, ier=ios, file_status='replace')
         if (ios /= 0) return
 
         do i = 1, size(lines)
-            write(lun, '(a)') trim(lines(i)%s)
+            write(lun, '(a)', iostat=ios, iomsg=message) trim(lines(i)%s)
+            if (ios /= 0) then
+                call fileclose(lun)
+                return
+            end if
         end do
 
-        close(lun)
+        call fileclose(lun)
 
     end subroutine write_lines_to_file
 
