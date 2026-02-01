@@ -20,6 +20,7 @@ module fpm_cmd_cmake
                         id_intel_llvm_nix, id_intel_llvm_windows, &
                         id_nag, id_lfortran
     use fpm_strings, only: string_t, lower, str_ends_with, str_begins_with_str, fnv_1a, resize
+    use fpm_hash_table, only: string_hash_map_t
     use fpm_targets, only: targets_from_sources, build_target_ptr
     use fpm_versioning, only: version_t
     use shlex_module, only: shlex_split => split
@@ -388,20 +389,12 @@ contains
         type(string_t), allocatable, intent(out) :: result_sources(:)
         type(string_t), intent(in), optional :: exclude_sources(:)
 
-        integer :: i, n
+        integer :: i, n, j
         type(string_t), allocatable :: temp(:)
         character(len=:), allocatable :: exe_dir
         logical :: found_main
         logical :: use_exclude_hash
-
-        ! Hash table for O(1) exclusion lookups
-        type :: exclude_entry
-            character(:), allocatable :: name
-        end type
-        type(exclude_entry), allocatable :: exclude_lookup(:)
-        integer :: exclude_capacity, j, j_idx, probe_idx
-        integer(int64) :: hash_val
-        integer :: hash_idx
+        type(string_hash_map_t) :: exclude_map
 
         ! Find the main program file to determine the source directory
         found_main = .false.
@@ -427,23 +420,9 @@ contains
         if (present(exclude_sources)) then
             if (size(exclude_sources) > 0) then
                 use_exclude_hash = .true.
-                exclude_capacity = max(32, size(exclude_sources) * 2)
-                allocate(exclude_lookup(exclude_capacity))
-
+                call exclude_map%init(capacity=max(32, size(exclude_sources) * 2))
                 do j = 1, size(exclude_sources)
-                    hash_val = fnv_1a(exclude_sources(j)%s)
-                    hash_idx = modulo(abs(hash_val), exclude_capacity) + 1
-
-                    do probe_idx = 0, exclude_capacity - 1
-                        j_idx = modulo(hash_idx + probe_idx - 1, exclude_capacity) + 1
-
-                        if (.not. allocated(exclude_lookup(j_idx)%name)) then
-                            exclude_lookup(j_idx)%name = trim(exclude_sources(j)%s)
-                            exit
-                        else if (trim(exclude_lookup(j_idx)%name) == trim(exclude_sources(j)%s)) then
-                            exit  ! Duplicate
-                        end if
-                    end do
+                    call exclude_map%set(exclude_sources(j)%s, 1)
                 end do
             end if
         end if
@@ -456,7 +435,7 @@ contains
                 dirname(sources(i)%file_name) == exe_dir) then
                 ! Skip sources in the exclusion list
                 if (use_exclude_hash) then
-                    if (lookup_excluded(sources(i)%file_name)) cycle
+                    if (exclude_map%contains(sources(i)%file_name)) cycle
                 else if (present(exclude_sources)) then
                     if (is_in_list(sources(i)%file_name, exclude_sources)) cycle
                 end if
@@ -480,7 +459,7 @@ contains
                 dirname(sources(i)%file_name) == exe_dir) then
                 ! Skip sources in the exclusion list
                 if (use_exclude_hash) then
-                    if (lookup_excluded(sources(i)%file_name)) cycle
+                    if (exclude_map%contains(sources(i)%file_name)) cycle
                 else if (present(exclude_sources)) then
                     if (is_in_list(sources(i)%file_name, exclude_sources)) cycle
                 end if
@@ -500,30 +479,8 @@ contains
 
         call move_alloc(temp, result_sources)
 
-    contains
-
-        !> O(1) hash table lookup for excluded sources
-        function lookup_excluded(file_path) result(found)
-            character(len=*), intent(in) :: file_path
-            logical :: found
-            integer(int64) :: h_val
-            integer :: h_idx, p_idx, j_idx
-
-            found = .false.
-            h_val = fnv_1a(file_path)
-            h_idx = modulo(abs(h_val), exclude_capacity) + 1
-
-            do p_idx = 0, exclude_capacity - 1
-                j_idx = modulo(h_idx + p_idx - 1, exclude_capacity) + 1
-
-                if (.not. allocated(exclude_lookup(j_idx)%name)) then
-                    return  ! Not found
-                else if (trim(exclude_lookup(j_idx)%name) == trim(file_path)) then
-                    found = .true.
-                    return
-                end if
-            end do
-        end function lookup_excluded
+        ! Cleanup
+        if (use_exclude_hash) call exclude_map%destroy()
 
     end subroutine get_sources_for_exe
 
@@ -1431,34 +1388,15 @@ contains
         type(dependency_info_t), allocatable, intent(out) :: deps(:)
         type(string_t), intent(in), optional :: used_packages(:)
 
-        ! Hash table type for dev-dependency lookups
-        type :: dev_dep_entry
-            character(:), allocatable :: name
-        end type
-        ! Hash table type for package lookups
-        type :: lookup_entry
-            character(:), allocatable :: name
-        end type
-
         integer :: i, n_deps, j, k, n_used_deps
         type(dependency_info_t), allocatable :: temp_deps(:), filtered_deps(:)
         logical :: is_dev_dep
         type(package_config_t) :: dep_package
         type(error_t), allocatable :: dep_error
         character(:), allocatable :: dep_manifest_path
-
-        ! Dev-dependency hash table variables
-        type(dev_dep_entry), allocatable :: dev_dep_lookup(:)
-        integer :: dev_dep_capacity, dev_j_idx, dev_probe_idx
-        integer(int64) :: dev_hash_val
-        integer :: dev_hash_idx
         logical :: has_dev_deps
-
-        ! Package lookup hash table variables
-        type(lookup_entry), allocatable :: package_lookup(:)
-        integer :: lookup_capacity, pkg_j_idx, pkg_probe_idx
-        integer(int64) :: pkg_hash_val
-        integer :: pkg_hash_idx
+        type(string_hash_map_t) :: dev_dep_map
+        type(string_hash_map_t) :: package_map
 
         ! Count dependencies (packages 2 onwards are dependencies)
         n_deps = size(model%packages) - 1
@@ -1471,24 +1409,9 @@ contains
             if (allocated(package%dev_dependency)) then
                 if (size(package%dev_dependency) > 0) then
                     has_dev_deps = .true.
-                    dev_dep_capacity = max(16, size(package%dev_dependency) * 2)
-                    allocate(dev_dep_lookup(dev_dep_capacity))
-
+                    call dev_dep_map%init(capacity=max(16, size(package%dev_dependency) * 2))
                     do j = 1, size(package%dev_dependency)
-                        dev_hash_val = fnv_1a(package%dev_dependency(j)%name)
-                        dev_hash_idx = modulo(abs(dev_hash_val), dev_dep_capacity) + 1
-
-                        do dev_probe_idx = 0, dev_dep_capacity - 1
-                            dev_j_idx = modulo(dev_hash_idx + dev_probe_idx - 1, dev_dep_capacity) + 1
-
-                            if (.not. allocated(dev_dep_lookup(dev_j_idx)%name)) then
-                                dev_dep_lookup(dev_j_idx)%name = trim(package%dev_dependency(j)%name)
-                                exit
-                            else if (trim(dev_dep_lookup(dev_j_idx)%name) == &
-                                     trim(package%dev_dependency(j)%name)) then
-                                exit  ! Duplicate
-                            end if
-                        end do
+                        call dev_dep_map%set(package%dev_dependency(j)%name, 1)
                     end do
                 end if
             end if
@@ -1506,7 +1429,7 @@ contains
                 ! Check if this is a dev-dependency using hash table
                 temp_deps(i)%is_dev_dependency = .false.
                 if (has_dev_deps) then
-                    temp_deps(i)%is_dev_dependency = lookup_dev_dep(temp_deps(i)%name)
+                    temp_deps(i)%is_dev_dependency = dev_dep_map%contains(temp_deps(i)%name)
                 end if
 
                 ! Read dependency's manifest to get preprocessing config and version
@@ -1549,29 +1472,15 @@ contains
             ! Filter dependencies if used_packages is provided
             if (present(used_packages)) then
                 ! Build hash table for O(1) package lookups
-                lookup_capacity = max(64, size(used_packages) * 2)
-                allocate(package_lookup(lookup_capacity))
-
+                call package_map%init(capacity=max(64, size(used_packages) * 2))
                 do j = 1, size(used_packages)
-                    pkg_hash_val = fnv_1a(used_packages(j)%s)
-                    pkg_hash_idx = modulo(abs(pkg_hash_val), lookup_capacity) + 1
-
-                    do pkg_probe_idx = 0, lookup_capacity - 1
-                        pkg_j_idx = modulo(pkg_hash_idx + pkg_probe_idx - 1, lookup_capacity) + 1
-
-                        if (.not. allocated(package_lookup(pkg_j_idx)%name)) then
-                            package_lookup(pkg_j_idx)%name = trim(used_packages(j)%s)
-                            exit
-                        else if (trim(package_lookup(pkg_j_idx)%name) == trim(used_packages(j)%s)) then
-                            exit  ! Duplicate
-                        end if
-                    end do
+                    call package_map%set(used_packages(j)%s, 1)
                 end do
 
                 ! First pass: count used dependencies (include header-only deps regardless)
                 n_used_deps = 0
                 do i = 1, n_deps
-                    if (lookup_package(temp_deps(i)%name) .or. &
+                    if (package_map%contains(temp_deps(i)%name) .or. &
                         is_header_only_dep(temp_deps(i))) then
                         n_used_deps = n_used_deps + 1
                     end if
@@ -1581,7 +1490,7 @@ contains
                 allocate(filtered_deps(n_used_deps))
                 n_used_deps = 0
                 do i = 1, n_deps
-                    if (lookup_package(temp_deps(i)%name) .or. &
+                    if (package_map%contains(temp_deps(i)%name) .or. &
                         is_header_only_dep(temp_deps(i))) then
                         n_used_deps = n_used_deps + 1
                         filtered_deps(n_used_deps) = temp_deps(i)
@@ -1595,53 +1504,9 @@ contains
             allocate(deps(0))
         end if
 
-    contains
-
-        !> O(1) hash table lookup for package names
-        function lookup_package(package_name) result(found)
-            character(len=*), intent(in) :: package_name
-            logical :: found
-            integer(int64) :: h_val
-            integer :: h_idx, p_idx, j_idx
-
-            found = .false.
-            h_val = fnv_1a(package_name)
-            h_idx = modulo(abs(h_val), lookup_capacity) + 1
-
-            do p_idx = 0, lookup_capacity - 1
-                j_idx = modulo(h_idx + p_idx - 1, lookup_capacity) + 1
-
-                if (.not. allocated(package_lookup(j_idx)%name)) then
-                    return  ! Not found
-                else if (trim(package_lookup(j_idx)%name) == trim(package_name)) then
-                    found = .true.
-                    return
-                end if
-            end do
-        end function lookup_package
-
-        !> O(1) hash table lookup for dev-dependency names
-        function lookup_dev_dep(dep_name) result(found)
-            character(len=*), intent(in) :: dep_name
-            logical :: found
-            integer(int64) :: h_val
-            integer :: h_idx, p_idx, j_idx
-
-            found = .false.
-            h_val = fnv_1a(dep_name)
-            h_idx = modulo(abs(h_val), dev_dep_capacity) + 1
-
-            do p_idx = 0, dev_dep_capacity - 1
-                j_idx = modulo(h_idx + p_idx - 1, dev_dep_capacity) + 1
-
-                if (.not. allocated(dev_dep_lookup(j_idx)%name)) then
-                    return  ! Not found
-                else if (trim(dev_dep_lookup(j_idx)%name) == trim(dep_name)) then
-                    found = .true.
-                    return
-                end if
-            end do
-        end function lookup_dev_dep
+        ! Cleanup
+        if (has_dev_deps) call dev_dep_map%destroy()
+        if (present(used_packages)) call package_map%destroy()
 
     end subroutine collect_dependencies
 
