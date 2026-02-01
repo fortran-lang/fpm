@@ -59,18 +59,18 @@ echo "Test Results Summary"
 echo "================================"
 
 if [[ ${#build_failures[@]} -eq 0 ]]; then
-	echo "Build failures: none"
+	echo -e "Build failures: \033[0;32mnone\033[0m"
 else
-	echo "Build failures (${#build_failures[@]}):"
+	echo -e "Build failures (\033[0;31m${#build_failures[@]}\033[0m):"
 	printf '  %s\n' "${build_failures[@]}"
 fi
 
 echo ""
 
 if [[ ${#runtime_failures[@]} -eq 0 ]]; then
-	echo "Runtime failures: none"
+	echo -e "Runtime failures: \033[0;32mnone\033[0m"
 else
-	echo "Runtime failures (${#runtime_failures[@]}):"
+	echo -e "Runtime failures (\033[0;31m${#runtime_failures[@]}\033[0m):"
 	printf '  %s\n' "${runtime_failures[@]}"
 fi
 
