@@ -507,63 +507,20 @@ contains
         integer, intent(in) :: scope
         type(string_t), allocatable, intent(out) :: shared_sources(:)
 
-        ! Hash table for O(n) directory lookups with dynamic resizing
-        integer, parameter :: INITIAL_HASH_CAPACITY = 256  ! Starting size (power of 2)
-        real, parameter :: LOAD_FACTOR_THRESHOLD = 0.75
-        type :: directory_entry
-            character(:), allocatable :: path
-            integer :: program_count
-        end type
-        type(directory_entry), allocatable :: dir_hash_table(:)
-        integer :: hash_table_capacity      ! Current capacity
-        integer :: hash_table_size     ! Number of occupied slots
-
-        integer :: i, j, n_shared, program_count
+        type(string_hash_map_t) :: dir_program_count_map
+        integer :: i, n_shared, program_count
         character(len=:), allocatable :: dir_path
         type(string_t), allocatable :: temp_shared(:)
-        integer(int64) :: hash_value
-        integer :: hash_idx, probe_idx
-        logical :: found_dir
 
-        ! Initialize hash table
-        hash_table_capacity = INITIAL_HASH_CAPACITY
-        hash_table_size = 0
-        allocate(dir_hash_table(hash_table_capacity))
+        ! Initialize hash map for directory program counts
+        call dir_program_count_map%init(capacity=256)
 
-        ! Count programs per directory using hash table - O(n)
+        ! Count programs per directory using hash map - O(n)
         do i = 1, size(sources)
             if (sources(i)%unit_scope == scope .and. &
                 sources(i)%unit_type == FPM_UNIT_PROGRAM) then
                 dir_path = dirname(sources(i)%file_name)
-
-                ! Check if resize needed before insertion
-                if (real(hash_table_size) / real(hash_table_capacity) >= LOAD_FACTOR_THRESHOLD) then
-                    call resize_hash_table()
-                end if
-
-                ! Hash directory path to bucket index
-                hash_value = fnv_1a(dir_path)
-                hash_idx = modulo(abs(hash_value), hash_table_capacity) + 1
-
-                ! Linear probe to find matching directory or empty slot
-                found_dir = .false.
-                do probe_idx = 0, hash_table_capacity - 1
-                    j = modulo(hash_idx + probe_idx - 1, hash_table_capacity) + 1
-
-                    if (.not. allocated(dir_hash_table(j)%path)) then
-                        ! Empty slot - new directory
-                        dir_hash_table(j)%path = dir_path
-                        dir_hash_table(j)%program_count = 1
-                        hash_table_size = hash_table_size + 1
-                        exit
-                    else if (trim(dir_hash_table(j)%path) == trim(dir_path)) then
-                        ! Found existing directory - increment count
-                        dir_hash_table(j)%program_count = dir_hash_table(j)%program_count + 1
-                        found_dir = .true.
-                        exit
-                    end if
-                    ! else: collision, try next slot
-                end do
+                call dir_program_count_map%increment(dir_path)
             end if
         end do
 
@@ -576,7 +533,9 @@ contains
             if (sources(i)%unit_type == FPM_UNIT_PROGRAM) cycle
 
             dir_path = dirname(sources(i)%file_name)
-            program_count = lookup_directory_program_count(dir_path)
+            if (.not. dir_program_count_map%get(dir_path, program_count)) then
+                program_count = 0
+            end if
 
             if (program_count >= 2) then
                 n_shared = n_shared + 1
@@ -592,77 +551,8 @@ contains
             allocate(shared_sources(0))
         end if
 
-    contains
-
-        !> Resize and rehash the directory hash table (doubles size)
-        subroutine resize_hash_table()
-            type(directory_entry), allocatable :: old_table(:)
-            integer :: old_size, new_size, i_old, j_new
-            integer(int64) :: hash_value
-            integer :: hash_idx, probe_idx
-
-            ! Save old table and double size
-            old_size = hash_table_capacity
-            call move_alloc(dir_hash_table, old_table)
-            new_size = old_size * 2
-            hash_table_capacity = new_size
-            allocate(dir_hash_table(new_size))
-
-            ! Rehash all entries from old table into new table
-            do i_old = 1, old_size
-                if (allocated(old_table(i_old)%path)) then
-                    ! Recompute hash index for new table size
-                    hash_value = fnv_1a(old_table(i_old)%path)
-                    hash_idx = modulo(abs(hash_value), new_size) + 1
-
-                    ! Linear probe to find empty slot in new table
-                    do probe_idx = 0, new_size - 1
-                        j_new = modulo(hash_idx + probe_idx - 1, new_size) + 1
-
-                        if (.not. allocated(dir_hash_table(j_new)%path)) then
-                            ! Move entry to new location
-                            call move_alloc(old_table(i_old)%path, dir_hash_table(j_new)%path)
-                            dir_hash_table(j_new)%program_count = old_table(i_old)%program_count
-                            exit
-                        end if
-                    end do
-                end if
-            end do
-
-            deallocate(old_table)
-
-        end subroutine resize_hash_table
-
-        !> Lookup directory in hash table and return program count (0 if not found)
-        function lookup_directory_program_count(dir_path) result(count)
-            character(len=*), intent(in) :: dir_path
-            integer :: count
-
-            integer(int64) :: hash_val
-            integer :: h_idx, p_idx, j_idx
-
-            count = 0
-
-            ! Hash lookup
-            hash_val = fnv_1a(dir_path)
-            h_idx = modulo(abs(hash_val), hash_table_capacity) + 1
-
-            ! Linear probe to find matching directory
-            do p_idx = 0, hash_table_capacity - 1
-                j_idx = modulo(h_idx + p_idx - 1, hash_table_capacity) + 1
-
-                if (.not. allocated(dir_hash_table(j_idx)%path)) then
-                    ! Empty slot - directory not found
-                    return
-                else if (trim(dir_hash_table(j_idx)%path) == trim(dir_path)) then
-                    ! Found directory - return count
-                    count = dir_hash_table(j_idx)%program_count
-                    return
-                end if
-                ! else: collision, try next slot
-            end do
-
-        end function lookup_directory_program_count
+        ! Cleanup hash map
+        call dir_program_count_map%destroy()
 
     end subroutine find_shared_module_sources
 
