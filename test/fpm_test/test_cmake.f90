@@ -1,6 +1,5 @@
 !> Define tests for the `fpm_cmd_cmake` module
 module test_cmake
-    use iso_c_binding, only: c_char, c_int, c_null_char, c_ptr, c_associated
     use testsuite, only : new_unittest, unittest_t, error_t, test_failed
     use fpm_cmd_cmake, only : categorize_link_flag, extract_path, extract_libname, &
                              detect_target_language, is_fortran_source, &
@@ -14,6 +13,7 @@ module test_cmake
                               delete_file, get_temp_filename
     use fpm_environment, only: os_is_unix
     use fpm_command_line, only: fpm_build_settings
+    use fpm_os, only: get_current_directory, change_directory
     implicit none
     private
 
@@ -21,22 +21,6 @@ module test_cmake
 
     ! Module-level temp directory constant
     character(*), parameter :: test_dir = 'fpm_test_cmake_tmp'
-
-    ! C interface for chdir
-    interface
-        function c_chdir(path) bind(C, name="chdir") result(stat)
-            import :: c_char, c_int
-            character(kind=c_char), intent(in) :: path(*)
-            integer(c_int) :: stat
-        end function c_chdir
-
-        function c_getcwd(buf, size) bind(C, name="getcwd") result(ptr)
-            import :: c_char, c_int, c_ptr
-            character(kind=c_char), intent(out) :: buf(*)
-            integer(c_int), value :: size
-            type(c_ptr) :: ptr
-        end function c_getcwd
-    end interface
 
 contains
 
@@ -313,46 +297,17 @@ contains
         end do
     end function cmake_contains
 
-    !> Get current working directory
-    function get_cwd() result(cwd)
-        character(:), allocatable :: cwd
-        character(kind=c_char, len=1024) :: buf
-        type(c_ptr) :: ptr
-        integer :: i
-
-        ptr = c_getcwd(buf, 1024_c_int)
-        if (.not. c_associated(ptr)) then
-            cwd = "."
-            return
-        end if
-
-        ! Find null terminator
-        do i = 1, 1024
-            if (buf(i:i) == c_null_char) exit
-        end do
-
-        cwd = buf(1:i-1)
-    end function get_cwd
-
-    !> Change to directory (returns 0 on success)
-    function change_dir(path) result(stat)
-        character(*), intent(in) :: path
-        integer :: stat
-        character(kind=c_char, len=:), allocatable :: c_path
-
-        c_path = trim(path) // c_null_char
-        stat = int(c_chdir(c_path))
-    end function change_dir
-
     !> Get absolute path by prepending current directory
-    function get_absolute_path(relative_path) result(absolute_path)
+    subroutine get_absolute_path(relative_path, absolute_path, error)
         character(*), intent(in) :: relative_path
-        character(:), allocatable :: absolute_path
+        character(:), allocatable, intent(out) :: absolute_path
+        type(error_t), allocatable, intent(out) :: error
         character(:), allocatable :: cwd
 
-        cwd = get_cwd()
+        call get_current_directory(cwd, error)
+        if (allocated(error)) return
         absolute_path = trim(cwd) // '/' // relative_path
-    end function get_absolute_path
+    end subroutine get_absolute_path
 
     !> Test generation of CMakeLists.txt for simple library package
     subroutine test_generate_simple_library(error)
@@ -361,15 +316,17 @@ contains
         type(fpm_model_t) :: model
         type(fpm_build_settings) :: settings
         type(string_t), allocatable :: cmake_lines(:)
-        integer :: unit, stat
+        integer :: unit
         character(len=:), allocatable :: manifest_path, src_file, abs_test_dir, cmake_path
         character(len=:), allocatable :: original_dir
 
         ! Save current directory
-        original_dir = get_cwd()
+        call get_current_directory(original_dir, error)
+        if (allocated(error)) return
 
         ! Get absolute path for test directory
-        abs_test_dir = get_absolute_path(test_dir)
+        call get_absolute_path(test_dir, abs_test_dir, error)
+        if (allocated(error)) return
 
         ! Setup: Create temp directory
         call cleanup_test_dir()
@@ -393,9 +350,9 @@ contains
         close(unit)
 
         ! Change to test directory
-        stat = change_dir(abs_test_dir)
-        if (stat /= 0) then
-            call test_failed(error, "Failed to change to test directory")
+        call change_directory(abs_test_dir, error)
+        if (allocated(error)) then
+            call test_failed(error, "Failed to change to test directory: " // error%message)
             call cleanup_test_dir()
             return
         end if
@@ -403,7 +360,7 @@ contains
         ! Parse manifest (now using relative path since we're in test_dir)
         call get_package_data(package, manifest_path, error, apply_defaults=.true.)
         if (allocated(error)) then
-            stat = change_dir(original_dir)
+            call change_directory(original_dir, error)
             call cleanup_test_dir()
             return
         end if
@@ -413,7 +370,7 @@ contains
         settings%build_dir = 'build_test'
         call build_model(model, settings, package, error)
         if (allocated(error)) then
-            stat = change_dir(original_dir)
+            call change_directory(original_dir, error)
             call cleanup_test_dir()
             return
         end if
@@ -421,7 +378,7 @@ contains
         ! Generate CMakeLists.txt
         call generate_cmake(package, model, error)
         if (allocated(error)) then
-            stat = change_dir(original_dir)
+            call change_directory(original_dir, error)
             call cleanup_test_dir()
             return
         end if
@@ -431,7 +388,8 @@ contains
         cmake_lines = read_lines(cmake_path)
 
         ! Change back to original directory
-        stat = change_dir(original_dir)
+        call change_directory(original_dir, error)
+        if (allocated(error)) return
 
         ! Verify contents
         if (.not. cmake_contains(cmake_lines, 'cmake_minimum_required')) then
@@ -464,12 +422,15 @@ contains
         type(fpm_model_t) :: model
         type(fpm_build_settings) :: settings
         type(string_t), allocatable :: cmake_lines(:)
-        integer :: unit, stat
+        integer :: unit
         character(len=:), allocatable :: manifest_path, abs_test_dir, original_dir
 
         ! Save current directory
-        original_dir = get_cwd()
-        abs_test_dir = get_absolute_path(test_dir)
+        call get_current_directory(original_dir, error)
+        if (allocated(error)) return
+
+        call get_absolute_path(test_dir, abs_test_dir, error)
+        if (allocated(error)) return
 
         ! Setup
         call cleanup_test_dir()
@@ -500,9 +461,9 @@ contains
         close(unit)
 
         ! Change to test directory
-        stat = change_dir(abs_test_dir)
-        if (stat /= 0) then
-            call test_failed(error, "Failed to change directory")
+        call change_directory(abs_test_dir, error)
+        if (allocated(error)) then
+            call test_failed(error, "Failed to change directory: " // error%message)
             call cleanup_test_dir()
             return
         end if
@@ -510,7 +471,7 @@ contains
         ! Parse and build
         call get_package_data(package, manifest_path, error, apply_defaults=.true.)
         if (allocated(error)) then
-            stat = change_dir(original_dir)
+            call change_directory(original_dir, error)
             call cleanup_test_dir()
             return
         end if
@@ -519,14 +480,14 @@ contains
         settings%build_dir = 'build_test'
         call build_model(model, settings, package, error)
         if (allocated(error)) then
-            stat = change_dir(original_dir)
+            call change_directory(original_dir, error)
             call cleanup_test_dir()
             return
         end if
 
         call generate_cmake(package, model, error)
         if (allocated(error)) then
-            stat = change_dir(original_dir)
+            call change_directory(original_dir, error)
             call cleanup_test_dir()
             return
         end if
@@ -534,7 +495,8 @@ contains
         cmake_lines = read_lines('CMakeLists.txt')
 
         ! Change back
-        stat = change_dir(original_dir)
+        call change_directory(original_dir, error)
+        if (allocated(error)) return
 
         ! Verify
         if (.not. cmake_contains(cmake_lines, 'add_library(testpkg')) then
@@ -561,12 +523,15 @@ contains
         type(fpm_model_t) :: model
         type(fpm_build_settings) :: settings
         type(string_t), allocatable :: cmake_lines(:)
-        integer :: unit, stat
+        integer :: unit
         character(len=:), allocatable :: manifest_path, abs_test_dir, original_dir
 
         ! Save current directory
-        original_dir = get_cwd()
-        abs_test_dir = get_absolute_path(test_dir)
+        call get_current_directory(original_dir, error)
+        if (allocated(error)) return
+
+        call get_absolute_path(test_dir, abs_test_dir, error)
+        if (allocated(error)) return
 
         ! Setup
         call cleanup_test_dir()
@@ -608,9 +573,9 @@ contains
         close(unit)
 
         ! Change to test directory
-        stat = change_dir(abs_test_dir)
-        if (stat /= 0) then
-            call test_failed(error, "Failed to change directory")
+        call change_directory(abs_test_dir, error)
+        if (allocated(error)) then
+            call test_failed(error, "Failed to change directory: " // error%message)
             call cleanup_test_dir()
             return
         end if
@@ -618,7 +583,7 @@ contains
         ! Parse and build
         call get_package_data(package, manifest_path, error, apply_defaults=.true.)
         if (allocated(error)) then
-            stat = change_dir(original_dir)
+            call change_directory(original_dir, error)
             call cleanup_test_dir()
             return
         end if
@@ -627,14 +592,14 @@ contains
         settings%build_dir = 'build_test'
         call build_model(model, settings, package, error)
         if (allocated(error)) then
-            stat = change_dir(original_dir)
+            call change_directory(original_dir, error)
             call cleanup_test_dir()
             return
         end if
 
         call generate_cmake(package, model, error)
         if (allocated(error)) then
-            stat = change_dir(original_dir)
+            call change_directory(original_dir, error)
             call cleanup_test_dir()
             return
         end if
@@ -642,7 +607,8 @@ contains
         cmake_lines = read_lines('CMakeLists.txt')
 
         ! Change back
-        stat = change_dir(original_dir)
+        call change_directory(original_dir, error)
+        if (allocated(error)) return
 
         ! Verify dependency handling
         if (.not. (cmake_contains(cmake_lines, 'add_subdirectory') .or. &
