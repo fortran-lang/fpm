@@ -28,6 +28,9 @@ module fpm_cmd_cmake
     implicit none
     private
     public :: cmd_generate
+    public :: categorize_link_flag, extract_path, extract_libname
+    public :: detect_target_language, is_fortran_source
+    public :: get_fortran_format_string, link_flags_t
 
     !> Builder type for efficient line-by-line array construction
     !> Uses exponential growth (1.5x) to achieve O(n) amortized append complexity
