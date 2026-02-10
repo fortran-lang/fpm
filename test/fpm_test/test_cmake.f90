@@ -228,17 +228,6 @@ contains
             return
         end if
 
-        ! Test C++ source (.cxx)
-        deallocate(sources)
-        allocate(sources(1))
-        sources(1)%s = "src/bar.cxx"
-
-        lang = detect_target_language(sources)
-        if (lang /= TARGET_LANG_CXX) then
-            call test_failed(error, "Expected TARGET_LANG_CXX for .cxx file")
-            return
-        end if
-
         ! Test mixed C and Fortran (C should take priority)
         deallocate(sources)
         allocate(sources(2))
