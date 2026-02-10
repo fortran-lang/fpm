@@ -311,11 +311,9 @@ contains
             call builder%append( ')')
 
             ! Set source format if not default
-            if (present(fortran_config)) then
-                if (should_set_fortran_format(fortran_config, preprocess, sources)) then
-                    call append_fortran_format(builder, sources, &
-                                               get_fortran_format_string(fortran_config), preprocess)
-                end if
+            if (should_set_fortran_format(fortran_config, preprocess, sources)) then
+                call append_fortran_format(builder, sources, &
+                                           get_fortran_format_string(fortran_config), preprocess)
             end if
 
             ! Set module directory properties
