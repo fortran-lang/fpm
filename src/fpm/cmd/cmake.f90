@@ -33,6 +33,12 @@ module fpm_cmd_cmake
     public :: detect_target_language, is_fortran_source
     public :: get_fortran_format_string, link_flags_t
     public :: generate_cmake
+    ! Public constants
+    public :: LINK_FLAG_UNKNOWN, LINK_FLAG_OPTION, LINK_FLAG_LIBDIR, LINK_FLAG_LIBNAME
+    public :: TARGET_LANG_FORTRAN, TARGET_LANG_C, TARGET_LANG_CXX
+    public :: CMAKE_VISIBILITY_PUBLIC, CMAKE_VISIBILITY_PRIVATE, CMAKE_VISIBILITY_INTERFACE
+    public :: FORTRAN_FORMAT_FREE, FORTRAN_FORMAT_FIXED
+    public :: CMAKE_MINIMUM_VERSION, CMAKE_EXE_SUFFIX
 
     !> Builder type for efficient line-by-line array construction
     !> Uses exponential growth (1.5x) to achieve O(n) amortized append complexity
@@ -63,6 +69,44 @@ module fpm_cmd_cmake
         type(string_t), allocatable :: library_dirs(:)     ! Paths from -L/path
         type(string_t), allocatable :: library_names(:)    ! Names from -lfoo (stored without -l)
     end type link_flags_t
+
+    !> ===== Link Flag Categories =====
+    !> Unknown flag type (treated as linker option for safety)
+    integer, parameter :: LINK_FLAG_UNKNOWN = 0
+    !> Linker option flag (-Wl,*, -pthread, -framework, etc.)
+    integer, parameter :: LINK_FLAG_OPTION = 1
+    !> Library directory flag (-L/path)
+    integer, parameter :: LINK_FLAG_LIBDIR = 2
+    !> Library name flag (-lfoo)
+    integer, parameter :: LINK_FLAG_LIBNAME = 3
+
+    !> ===== Target Language Codes =====
+    !> Fortran language target
+    integer, parameter :: TARGET_LANG_FORTRAN = 1
+    !> C language target
+    integer, parameter :: TARGET_LANG_C = 2
+    !> C++ language target
+    integer, parameter :: TARGET_LANG_CXX = 3
+
+    !> ===== CMake Visibility Keywords =====
+    !> Public visibility - propagates to dependents
+    character(len=*), parameter :: CMAKE_VISIBILITY_PUBLIC = 'PUBLIC'
+    !> Private visibility - internal to target only
+    character(len=*), parameter :: CMAKE_VISIBILITY_PRIVATE = 'PRIVATE'
+    !> Interface visibility - only for dependents (header-only libraries)
+    character(len=*), parameter :: CMAKE_VISIBILITY_INTERFACE = 'INTERFACE'
+
+    !> ===== Fortran Source Format =====
+    !> Free-form Fortran source format
+    character(len=*), parameter :: FORTRAN_FORMAT_FREE = 'FREE'
+    !> Fixed-form Fortran source format
+    character(len=*), parameter :: FORTRAN_FORMAT_FIXED = 'FIXED'
+
+    !> ===== CMake Configuration =====
+    !> Minimum CMake version required for generated CMakeLists.txt
+    character(len=*), parameter :: CMAKE_MINIMUM_VERSION = '3.12'
+    !> Suffix appended to executable names to avoid CMake reserved name conflicts
+    character(len=*), parameter :: CMAKE_EXE_SUFFIX = '_exe'
 
 contains
 
@@ -99,7 +143,7 @@ contains
         if (.not. has_macros) return
 
         ! Default visibility
-        vis = 'PUBLIC'
+        vis = CMAKE_VISIBILITY_PUBLIC
         if (present(visibility)) vis = visibility
 
         ! Determine preprocessing flag based on compiler ID
@@ -140,7 +184,7 @@ contains
         character(:), allocatable :: cpp_flag, vis
 
         ! Default visibility
-        vis = 'PUBLIC'
+        vis = CMAKE_VISIBILITY_PUBLIC
         if (present(visibility)) vis = visibility
 
         ! Determine preprocessing flag based on compiler ID
@@ -567,7 +611,7 @@ contains
     !> Detect primary language of target sources
     function detect_target_language(sources) result(lang)
         type(string_t), intent(in) :: sources(:)
-        integer :: lang  ! 1=Fortran, 2=C, 3=C++
+        integer :: lang
 
         integer :: i, j
         logical :: has_cpp, has_c, has_fortran, matched
@@ -607,11 +651,11 @@ contains
 
         ! Priority: C++ > C > Fortran
         if (has_cpp) then
-            lang = 3
+            lang = TARGET_LANG_CXX
         else if (has_c) then
-            lang = 2
+            lang = TARGET_LANG_C
         else
-            lang = 1
+            lang = TARGET_LANG_FORTRAN
         end if
     end function detect_target_language
 
@@ -627,9 +671,9 @@ contains
         character(len=:), allocatable :: prop_keyword, link_flags_to_use
 
         ! Determine property keyword based on target type
-        prop_keyword = 'PRIVATE'  ! Default for regular targets
+        prop_keyword = CMAKE_VISIBILITY_PRIVATE  ! Default for regular targets
         if (present(is_interface)) then
-            if (is_interface) prop_keyword = 'INTERFACE'
+            if (is_interface) prop_keyword = CMAKE_VISIBILITY_INTERFACE
         end if
 
         ! Detect target language and select appropriate link flags
@@ -645,15 +689,15 @@ contains
 
         ! Select appropriate link flags based on language
         select case (target_lang)
-            case (1)  ! Fortran
+            case (TARGET_LANG_FORTRAN)
                 if (allocated(model%fortran_link_flags)) then
                     link_flags_to_use = model%fortran_link_flags
                 end if
-            case (2)  ! C
+            case (TARGET_LANG_C)
                 if (allocated(model%c_link_flags)) then
                     link_flags_to_use = model%c_link_flags
                 end if
-            case (3)  ! C++
+            case (TARGET_LANG_CXX)
                 if (allocated(model%cxx_link_flags)) then
                     link_flags_to_use = model%cxx_link_flags
                 end if
@@ -802,7 +846,7 @@ contains
         ! Header
         call builder%append( "# CMakeLists.txt generated by fpm")
         call builder%append( "")
-        call builder%append( "cmake_minimum_required(VERSION 3.12)")
+        call builder%append( "cmake_minimum_required(VERSION "//CMAKE_MINIMUM_VERSION//")")
         call builder%append( 'project('//trim(name)//' VERSION '//trim(version)// &
                        ' LANGUAGES '//trim(languages)//')')
         call builder%append( "")
@@ -849,11 +893,11 @@ contains
                 call builder%append( ')')
 
                 ! Add base preprocessing flag (always enable -cpp for Fortran)
-                call append_base_preprocessing(builder, lib_name, model%compiler%id, 'INTERFACE')
+                call append_base_preprocessing(builder, lib_name, model%compiler%id, CMAKE_VISIBILITY_INTERFACE)
 
                 ! Add preprocessing flags with macros for INTERFACE library
                 call append_preprocessing_flags(builder, lib_name, model%compiler%id, &
-                                                preprocess, package_version, 'INTERFACE')
+                                                preprocess, package_version, CMAKE_VISIBILITY_INTERFACE)
             else
                 ! Generate STATIC library for normal libraries
                 call builder%append( "# Library")
@@ -902,11 +946,11 @@ contains
                 call builder%append( ')')
 
                 ! Add base preprocessing flag (always enable -cpp for Fortran)
-                call append_base_preprocessing(builder, lib_name, model%compiler%id, 'PUBLIC')
+                call append_base_preprocessing(builder, lib_name, model%compiler%id, CMAKE_VISIBILITY_PUBLIC)
 
                 ! Add preprocessing flags with macros (preprocessing flag + expanded macros)
                 call append_preprocessing_flags(builder, lib_name, model%compiler%id, &
-                                                preprocess, package_version, 'PUBLIC')
+                                                preprocess, package_version, CMAKE_VISIBILITY_PUBLIC)
             end if
 
             call builder%append( "")
@@ -1054,11 +1098,11 @@ contains
                 end if
 
                 ! Add base preprocessing flag (always enable -cpp for Fortran)
-                call append_base_preprocessing(builder, exe_name_str, model%compiler%id, 'PRIVATE')
+                call append_base_preprocessing(builder, exe_name_str, model%compiler%id, CMAKE_VISIBILITY_PRIVATE)
 
                 ! Add preprocessing flags with macros from package-level preprocess config
                 call append_preprocessing_flags(builder, exe_name_str, model%compiler%id, &
-                                                preprocess, package_version, 'PRIVATE')
+                                                preprocess, package_version, CMAKE_VISIBILITY_PRIVATE)
 
                 ! Add metapackage settings (include dirs, link flags, and libraries)
                 ! Executables are always regular targets (not INTERFACE)
@@ -1173,11 +1217,11 @@ contains
                 end if
 
                 ! Add base preprocessing flag (always enable -cpp for Fortran)
-                call append_base_preprocessing(builder, exe_name_str, model%compiler%id, 'PRIVATE')
+                call append_base_preprocessing(builder, exe_name_str, model%compiler%id, CMAKE_VISIBILITY_PRIVATE)
 
                 ! Add preprocessing flags with macros from package-level preprocess config
                 call append_preprocessing_flags(builder, exe_name_str, model%compiler%id, &
-                                                preprocess, package_version, 'PRIVATE')
+                                                preprocess, package_version, CMAKE_VISIBILITY_PRIVATE)
 
                 ! Add metapackage settings (include dirs, link flags, and libraries)
                 ! Tests are always regular targets (not INTERFACE)
@@ -1304,7 +1348,7 @@ contains
             sanitized = trim(name)
         else
             ! Append _exe suffix to avoid conflict
-            sanitized = trim(name)//'_exe'
+            sanitized = trim(name)//CMAKE_EXE_SUFFIX
         end if
 
     end function sanitize_target_name
@@ -1669,19 +1713,19 @@ contains
 
         if (is_framework_arg) then
             ! Token after -framework is an option argument
-            category = 1
+            category = LINK_FLAG_OPTION
         else if (trim(token) == '-framework') then
             ! -framework itself is an option
-            category = 1
+            category = LINK_FLAG_OPTION
         else if (is_library_name_flag(trim(token))) then
-            category = 3  ! Library name
+            category = LINK_FLAG_LIBNAME
         else if (is_library_dir_flag(trim(token))) then
-            category = 2  ! Library directory
+            category = LINK_FLAG_LIBDIR
         else if (is_linker_option_flag(trim(token))) then
-            category = 1  ! Linker option
+            category = LINK_FLAG_OPTION
         else
             ! Unknown flags default to linker options (safer)
-            category = 0  ! Unknown (treated as option)
+            category = LINK_FLAG_UNKNOWN
         end if
 
     end function categorize_link_flag
@@ -1701,7 +1745,7 @@ contains
 
         ! Header
         call builder%append( "# CMakeLists.txt generated by fpm for "//trim(dep%name))
-        call builder%append( "cmake_minimum_required(VERSION 3.12)")
+        call builder%append( "cmake_minimum_required(VERSION "//CMAKE_MINIMUM_VERSION//")")
         call builder%append( 'project('//trim(dep%name)//' LANGUAGES Fortran)')
         call builder%append( "")
 
@@ -1763,18 +1807,18 @@ contains
             call builder%append( "")
 
             ! Add base preprocessing flag (always enable -cpp for Fortran)
-            call append_base_preprocessing(builder, dep%name, compiler_id, 'PUBLIC')
+            call append_base_preprocessing(builder, dep%name, compiler_id, CMAKE_VISIBILITY_PUBLIC)
 
             ! Add preprocessing flags with macros (if dependency has preprocess config)
             if (allocated(dep%preprocess)) then
                 call builder%append( "")
                 call append_preprocessing_flags(builder, dep%name, compiler_id, &
-                                                dep%preprocess, dep%version, 'PUBLIC')
+                                                dep%preprocess, dep%version, CMAKE_VISIBILITY_PUBLIC)
             end if
 
             ! Link to this dependency's own dependencies (sub-dependencies)
             if (allocated(dep%depends_on)) then
-                call append_dependency_links(builder, dep%name, dep%depends_on, 'PUBLIC')
+                call append_dependency_links(builder, dep%name, dep%depends_on, CMAKE_VISIBILITY_PUBLIC)
             end if
         else
             ! INTERFACE library for header-only dependency
@@ -1786,18 +1830,18 @@ contains
             call builder%append( "")
 
             ! Add base preprocessing flag (always enable -cpp for Fortran)
-            call append_base_preprocessing(builder, dep%name, compiler_id, 'INTERFACE')
+            call append_base_preprocessing(builder, dep%name, compiler_id, CMAKE_VISIBILITY_INTERFACE)
 
             ! Add preprocessing flags with macros for INTERFACE library
             if (allocated(dep%preprocess)) then
                 call builder%append( "")
                 call append_preprocessing_flags(builder, dep%name, compiler_id, &
-                                                dep%preprocess, dep%version, 'INTERFACE')
+                                                dep%preprocess, dep%version, CMAKE_VISIBILITY_INTERFACE)
             end if
 
             ! Link to this dependency's own dependencies (sub-dependencies) for INTERFACE library
             if (allocated(dep%depends_on)) then
-                call append_dependency_links(builder, dep%name, dep%depends_on, 'INTERFACE')
+                call append_dependency_links(builder, dep%name, dep%depends_on, CMAKE_VISIBILITY_INTERFACE)
             end if
         end if
 
@@ -1953,13 +1997,13 @@ contains
         type(fortran_config_t), intent(in), optional :: fortran_config
         character(len=5) :: format_str
 
-        format_str = 'FREE'  ! Default to FREE (matches fpm default)
+        format_str = FORTRAN_FORMAT_FREE  ! Default to FREE (matches fpm default)
         if (present(fortran_config)) then
             if (allocated(fortran_config%source_form)) then
                 if (fortran_config%source_form == "free") then
-                    format_str = 'FREE'
+                    format_str = FORTRAN_FORMAT_FREE
                 else if (fortran_config%source_form == "fixed") then
-                    format_str = 'FIXED'
+                    format_str = FORTRAN_FORMAT_FIXED
                 end if
             end if
         end if
@@ -2130,12 +2174,12 @@ contains
             idx = categorize_link_flag(tokens(i), next_is_framework)
 
             select case (idx)
-            case (1)  ! Option
+            case (LINK_FLAG_OPTION)
                 n_options = n_options + 1
                 next_is_framework = (trim(tokens(i)) == '-framework')
-            case (2)  ! Library directory
+            case (LINK_FLAG_LIBDIR)
                 n_dirs = n_dirs + 1
-            case (3)  ! Library name
+            case (LINK_FLAG_LIBNAME)
                 n_libs = n_libs + 1
             case default  ! Unknown (treated as option)
                 n_options = n_options + 1
@@ -2157,14 +2201,14 @@ contains
             idx = categorize_link_flag(tokens(i), next_is_framework)
 
             select case (idx)
-            case (1)  ! Option
+            case (LINK_FLAG_OPTION)
                 n_options = n_options + 1
                 temp_options(n_options)%s = trim(tokens(i))
                 next_is_framework = (trim(tokens(i)) == '-framework')
-            case (2)  ! Library directory
+            case (LINK_FLAG_LIBDIR)
                 n_dirs = n_dirs + 1
                 temp_dirs(n_dirs)%s = extract_path(trim(tokens(i)))
-            case (3)  ! Library name
+            case (LINK_FLAG_LIBNAME)
                 n_libs = n_libs + 1
                 temp_libs(n_libs)%s = extract_libname(trim(tokens(i)))
             case default  ! Unknown (treated as option)

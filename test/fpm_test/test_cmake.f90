@@ -3,7 +3,9 @@ module test_cmake
     use testsuite, only : new_unittest, unittest_t, error_t, test_failed
     use fpm_cmd_cmake, only : categorize_link_flag, extract_path, extract_libname, &
                              detect_target_language, is_fortran_source, &
-                             get_fortran_format_string, link_flags_t, generate_cmake
+                             get_fortran_format_string, link_flags_t, generate_cmake, &
+                             LINK_FLAG_UNKNOWN, LINK_FLAG_OPTION, LINK_FLAG_LIBDIR, LINK_FLAG_LIBNAME, &
+                             TARGET_LANG_FORTRAN, TARGET_LANG_C, TARGET_LANG_CXX
     use fpm_strings, only : string_t
     use fpm_manifest_fortran, only : fortran_config_t
     use fpm_manifest, only: package_config_t, get_package_data
@@ -109,22 +111,22 @@ contains
 
         ! Test library name flag (-l*)
         category = categorize_link_flag("-lm", is_framework_arg)
-        if (category /= 3) then
-            call test_failed(error, "Expected category 3 for '-lm', got category")
+        if (category /= LINK_FLAG_LIBNAME) then
+            call test_failed(error, "Expected LINK_FLAG_LIBNAME for '-lm', got different category")
             return
         end if
 
         ! Test library directory flag (-L*)
         category = categorize_link_flag("-L/usr/lib", is_framework_arg)
-        if (category /= 2) then
-            call test_failed(error, "Expected category 2 for '-L/usr/lib', got different category")
+        if (category /= LINK_FLAG_LIBDIR) then
+            call test_failed(error, "Expected LINK_FLAG_LIBDIR for '-L/usr/lib', got different category")
             return
         end if
 
         ! Test another library name
         category = categorize_link_flag("-lopenblas", is_framework_arg)
-        if (category /= 3) then
-            call test_failed(error, "Expected category 3 for '-lopenblas', got different category")
+        if (category /= LINK_FLAG_LIBNAME) then
+            call test_failed(error, "Expected LINK_FLAG_LIBNAME for '-lopenblas', got different category")
             return
         end if
 
@@ -140,30 +142,30 @@ contains
 
         ! Test -Wl,* linker option
         category = categorize_link_flag("-Wl,--as-needed", is_framework_arg)
-        if (category /= 1) then
-            call test_failed(error, "Expected category 1 for '-Wl,--as-needed', got different category")
+        if (category /= LINK_FLAG_OPTION) then
+            call test_failed(error, "Expected LINK_FLAG_OPTION for '-Wl,--as-needed', got different category")
             return
         end if
 
         ! Test -pthread linker option
         category = categorize_link_flag("-pthread", is_framework_arg)
-        if (category /= 1) then
-            call test_failed(error, "Expected category 1 for '-pthread', got different category")
+        if (category /= LINK_FLAG_OPTION) then
+            call test_failed(error, "Expected LINK_FLAG_OPTION for '-pthread', got different category")
             return
         end if
 
         ! Test -framework flag
         category = categorize_link_flag("-framework", is_framework_arg)
-        if (category /= 1) then
-            call test_failed(error, "Expected category 1 for '-framework', got different category")
+        if (category /= LINK_FLAG_OPTION) then
+            call test_failed(error, "Expected LINK_FLAG_OPTION for '-framework', got different category")
             return
         end if
 
         ! Test framework argument (following -framework)
         is_framework_arg = .true.
         category = categorize_link_flag("CoreFoundation", is_framework_arg)
-        if (category /= 1) then
-            call test_failed(error, "Expected category 1 for framework argument, got different category")
+        if (category /= LINK_FLAG_OPTION) then
+            call test_failed(error, "Expected LINK_FLAG_OPTION for framework argument, got different category")
             return
         end if
 
@@ -181,8 +183,8 @@ contains
         sources(2)%s = "src/sub.f"
 
         lang = detect_target_language(sources)
-        if (lang /= 1) then
-            call test_failed(error, "Expected language 1 (Fortran) for .f90/.f files")
+        if (lang /= TARGET_LANG_FORTRAN) then
+            call test_failed(error, "Expected TARGET_LANG_FORTRAN for .f90/.f files")
             return
         end if
 
@@ -192,8 +194,8 @@ contains
         sources(1)%s = "src/program.f03"
 
         lang = detect_target_language(sources)
-        if (lang /= 1) then
-            call test_failed(error, "Expected language 1 (Fortran) for .f03 file")
+        if (lang /= TARGET_LANG_FORTRAN) then
+            call test_failed(error, "Expected TARGET_LANG_FORTRAN for .f03 file")
             return
         end if
 
@@ -210,8 +212,8 @@ contains
         sources(1)%s = "src/foo.c"
 
         lang = detect_target_language(sources)
-        if (lang /= 2) then
-            call test_failed(error, "Expected language 2 (C) for .c file")
+        if (lang /= TARGET_LANG_C) then
+            call test_failed(error, "Expected TARGET_LANG_C for .c file")
             return
         end if
 
@@ -221,8 +223,8 @@ contains
         sources(1)%s = "src/foo.cpp"
 
         lang = detect_target_language(sources)
-        if (lang /= 3) then
-            call test_failed(error, "Expected language 3 (C++) for .cpp file")
+        if (lang /= TARGET_LANG_CXX) then
+            call test_failed(error, "Expected TARGET_LANG_CXX for .cpp file")
             return
         end if
 
@@ -232,8 +234,8 @@ contains
         sources(1)%s = "src/bar.cxx"
 
         lang = detect_target_language(sources)
-        if (lang /= 3) then
-            call test_failed(error, "Expected language 3 (C++) for .cxx file")
+        if (lang /= TARGET_LANG_CXX) then
+            call test_failed(error, "Expected TARGET_LANG_CXX for .cxx file")
             return
         end if
 
@@ -244,8 +246,8 @@ contains
         sources(2)%s = "src/bar.f90"
 
         lang = detect_target_language(sources)
-        if (lang /= 2) then
-            call test_failed(error, "Expected language 2 (C) for mixed C/Fortran")
+        if (lang /= TARGET_LANG_C) then
+            call test_failed(error, "Expected TARGET_LANG_C for mixed C/Fortran")
             return
         end if
 
@@ -256,8 +258,8 @@ contains
         sources(2)%s = "src/bar.c"
 
         lang = detect_target_language(sources)
-        if (lang /= 3) then
-            call test_failed(error, "Expected language 3 (C++) for mixed C++/C")
+        if (lang /= TARGET_LANG_CXX) then
+            call test_failed(error, "Expected TARGET_LANG_CXX for mixed C++/C")
             return
         end if
 
@@ -269,8 +271,8 @@ contains
         sources(3)%s = "src/baz.f90"
 
         lang = detect_target_language(sources)
-        if (lang /= 3) then
-            call test_failed(error, "Expected language 3 (C++) for mixed C++/C/Fortran")
+        if (lang /= TARGET_LANG_CXX) then
+            call test_failed(error, "Expected TARGET_LANG_CXX for mixed C++/C/Fortran")
             return
         end if
 

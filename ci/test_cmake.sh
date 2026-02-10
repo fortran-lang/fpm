@@ -6,6 +6,12 @@
 #set -exu
 set -u
 
+if [ $# -gt 0 ]; then
+   fpm="$1"
+else
+   fpm=fpm
+fi
+
 build_failures=()
 runtime_failures=()
 
@@ -17,7 +23,7 @@ for dir in example_packages/*/ ; do
 
 	pushd "$dir"
 
-	../../build/bin/fpm generate --cmake
+	"$fpm" generate --cmake
 	cmake -B temp_cmake_build -S .
 	cmake --build temp_cmake_build --parallel
 	if [[ $? -ne 0 ]] ; then
