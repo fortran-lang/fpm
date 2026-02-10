@@ -15,7 +15,6 @@ module fpm_hash_table
     type :: hash_entry
         character(:), allocatable :: key
         integer :: value
-        logical :: occupied = .false.
     end type
 
     !> String-keyed hash map with integer values
@@ -52,7 +51,6 @@ contains
         self%capacity = capacity
         self%count = 0
         allocate(self%table(capacity))
-        self%table(:)%occupied = .false.
     end subroutine hash_map_init
 
     !> Set key-value pair (inserts new or updates existing)
@@ -78,11 +76,10 @@ contains
         do probe = 0, self%capacity - 1
             idx = modulo(hash_idx + probe - 1, self%capacity) + 1
 
-            if (.not. self%table(idx)%occupied) then
+            if (.not. allocated(self%table(idx)%key)) then
                 ! Empty slot - insert new entry
                 self%table(idx)%key = trim(key)
                 self%table(idx)%value = value
-                self%table(idx)%occupied = .true.
                 self%count = self%count + 1
                 return
             else if (trim(self%table(idx)%key) == trim(key)) then
@@ -114,7 +111,7 @@ contains
         do probe = 0, self%capacity - 1
             idx = modulo(hash_idx + probe - 1, self%capacity) + 1
 
-            if (.not. self%table(idx)%occupied) then
+            if (.not. allocated(self%table(idx)%key)) then
                 return  ! Not found
             else if (trim(self%table(idx)%key) == trim(key)) then
                 value = self%table(idx)%value
@@ -139,7 +136,7 @@ contains
         do probe = 0, self%capacity - 1
             idx = modulo(hash_idx + probe - 1, self%capacity) + 1
 
-            if (.not. self%table(idx)%occupied) then
+            if (.not. allocated(self%table(idx)%key)) then
                 return  ! Not found
             else if (trim(self%table(idx)%key) == trim(key)) then
                 found = .true.
@@ -184,11 +181,10 @@ contains
         self%capacity = new_capacity
         self%count = 0
         allocate(self%table(new_capacity))
-        self%table(:)%occupied = .false.
 
         ! Rehash all entries from old table
         do i = 1, old_capacity
-            if (old_table(i)%occupied) then
+            if (allocated(old_table(i)%key)) then
                 call self%set(old_table(i)%key, old_table(i)%value)
             end if
         end do
