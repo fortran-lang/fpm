@@ -210,6 +210,142 @@ contains
 
     end subroutine append_base_preprocessing
 
+    !> Resolve include directories from library config
+    subroutine resolve_include_dirs(library_config, include_dirs)
+        type(library_config_t), intent(in), optional :: library_config
+        type(string_t), allocatable, intent(out) :: include_dirs(:)
+
+        type(string_t), allocatable :: temp_dirs(:)
+        integer :: i, count
+
+        ! Count existing include directories
+        count = 0
+        if (present(library_config)) then
+            if (allocated(library_config%include_dir)) then
+                do i = 1, size(library_config%include_dir)
+                    if (is_dir(trim(library_config%include_dir(i)%s))) then
+                        count = count + 1
+                    end if
+                end do
+            else if (has_include_dir()) then
+                count = 1
+            end if
+        else if (has_include_dir()) then
+            count = 1
+        end if
+
+        ! Allocate and fill include_dirs array
+        if (count > 0) then
+            allocate(include_dirs(count))
+            count = 0
+            if (present(library_config)) then
+                if (allocated(library_config%include_dir)) then
+                    do i = 1, size(library_config%include_dir)
+                        if (is_dir(trim(library_config%include_dir(i)%s))) then
+                            count = count + 1
+                            include_dirs(count)%s = trim(library_config%include_dir(i)%s)
+                        end if
+                    end do
+                else if (has_include_dir()) then
+                    include_dirs(1)%s = 'include'
+                end if
+            else if (has_include_dir()) then
+                include_dirs(1)%s = 'include'
+            end if
+        else
+            allocate(include_dirs(0))
+        end if
+
+    end subroutine resolve_include_dirs
+
+    !> Resolve include directories for a dependency
+    subroutine resolve_dep_include_dirs(dep_path, include_dirs)
+        character(len=*), intent(in) :: dep_path
+        type(string_t), allocatable, intent(out) :: include_dirs(:)
+
+        logical :: dep_has_include
+
+        inquire(file=trim(dep_path)//'/include', exist=dep_has_include)
+        if (dep_has_include) then
+            allocate(include_dirs(1))
+            include_dirs(1)%s = 'include'
+        else
+            allocate(include_dirs(0))
+        end if
+
+    end subroutine resolve_dep_include_dirs
+
+    !> Write a library target (STATIC or INTERFACE) to CMakeLists.txt
+    subroutine write_library_target(builder, target_name, sources, &
+                                    include_dirs, compiler_id, &
+                                    preprocess, version, fortran_config)
+        type(line_builder_t), intent(inout) :: builder
+        character(len=*), intent(in) :: target_name
+        type(string_t), intent(in) :: sources(:)
+        type(string_t), intent(in) :: include_dirs(:)
+        integer(compiler_enum), intent(in) :: compiler_id
+        type(preprocess_config_t), intent(in), optional :: preprocess(:)
+        type(version_t), intent(in), optional :: version
+        type(fortran_config_t), intent(in), optional :: fortran_config
+
+        integer :: i
+        character(len=:), allocatable :: visibility
+        logical :: is_header_only
+
+        is_header_only = (size(sources) == 0)
+
+        if (is_header_only) then
+            ! INTERFACE library for header-only
+            visibility = CMAKE_VISIBILITY_INTERFACE
+            call builder%append( "# Header-only library")
+            call builder%append( 'add_library('//target_name//' INTERFACE)')
+            call builder%append( 'target_include_directories('//target_name//' INTERFACE')
+        else
+            ! STATIC library
+            visibility = CMAKE_VISIBILITY_PUBLIC
+            call builder%append( "# Library")
+            call builder%append( 'add_library('//target_name)
+            do i = 1, size(sources)
+                call builder%append( '    '//clean_path(sources(i)%s))
+            end do
+            call builder%append( ')')
+
+            ! Set source format if not default
+            if (present(fortran_config)) then
+                if (should_set_fortran_format(fortran_config, preprocess, sources)) then
+                    call append_fortran_format(builder, sources, &
+                                               get_fortran_format_string(fortran_config), preprocess)
+                end if
+            end if
+
+            ! Set module directory properties
+            call builder%append( 'set_target_properties('//target_name//' PROPERTIES')
+            call builder%append( '    Fortran_MODULE_DIRECTORY "${CMAKE_BINARY_DIR}/mod"')
+            call builder%append( '    POSITION_INDEPENDENT_CODE ON')
+            call builder%append( ')')
+            call builder%append( 'target_include_directories('//target_name//' PUBLIC')
+            call builder%append( '    $<BUILD_INTERFACE:${CMAKE_BINARY_DIR}/mod>')
+        end if
+
+        ! Add include directories
+        do i = 1, size(include_dirs)
+            call builder%append( '    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/'// &
+                           trim(include_dirs(i)%s)//'>')
+        end do
+        call builder%append( '    $<INSTALL_INTERFACE:include>')
+        call builder%append( ')')
+
+        ! Add base preprocessing flag (always enable -cpp for Fortran)
+        call append_base_preprocessing(builder, target_name, compiler_id, visibility)
+
+        ! Add preprocessing flags with macros
+        if (present(preprocess) .or. present(version)) then
+            call append_preprocessing_flags(builder, target_name, compiler_id, &
+                                            preprocess, version, visibility)
+        end if
+
+    end subroutine write_library_target
+
     !> Entry point for the generate subcommand
     subroutine cmd_generate(settings)
         !> Representation of the command line arguments
@@ -767,7 +903,7 @@ contains
         type(version_t), intent(in), optional :: package_version
 
         integer :: i, j, k, ext_i
-        type(string_t), allocatable :: exe_sources(:)
+        type(string_t), allocatable :: exe_sources(:), include_dirs(:)
         character(len=:), allocatable :: lib_name, exe_name_str, original_exe_name, original_test_name, languages, lower_fname
         logical :: has_c, has_cpp, has_fortran, ext_matched
         type(string_t), allocatable :: shared_test_modules(:), shared_app_modules(:)
@@ -861,97 +997,13 @@ contains
                 end if
             end do
 
-            ! Check if this is a header-only library (has_library but no compilable sources)
-            if (size(lib_sources) == 0) then
-                ! Generate INTERFACE library for header-only
-                call builder%append( "# Header-only library")
-                call builder%append( 'add_library('//lib_name//' INTERFACE)')
-                call builder%append( 'target_include_directories('//lib_name//' INTERFACE')
-                ! Add include directories from manifest
-                if (present(library_config)) then
-                    if (allocated(library_config%include_dir)) then
-                        do i = 1, size(library_config%include_dir)
-                            ! Only add include directory if it actually exists
-                            if (is_dir(trim(library_config%include_dir(i)%s))) then
-                                call builder%append( '    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/'// &
-                                               trim(library_config%include_dir(i)%s)//'>')
-                            end if
-                        end do
-                    else
-                        ! Fallback: check for physical include/ directory if not in manifest
-                        if (has_include_dir()) then
-                            call builder%append( '    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>')
-                        end if
-                    end if
-                else
-                    ! Fallback: if no library config passed, check for physical include/ directory
-                    if (has_include_dir()) then
-                        call builder%append( '    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>')
-                    end if
-                end if
-                call builder%append( '    $<INSTALL_INTERFACE:include>')
-                call builder%append( ')')
+            ! Resolve include directories from library config
+            call resolve_include_dirs(library_config, include_dirs)
 
-                ! Add base preprocessing flag (always enable -cpp for Fortran)
-                call append_base_preprocessing(builder, lib_name, model%compiler%id, CMAKE_VISIBILITY_INTERFACE)
-
-                ! Add preprocessing flags with macros for INTERFACE library
-                call append_preprocessing_flags(builder, lib_name, model%compiler%id, &
-                                                preprocess, package_version, CMAKE_VISIBILITY_INTERFACE)
-            else
-                ! Generate STATIC library for normal libraries
-                call builder%append( "# Library")
-                call builder%append( 'add_library('//lib_name)
-                do i = 1, size(lib_sources)
-                    call builder%append( '    '//clean_path(lib_sources(i)%s))
-                end do
-                call builder%append( ')')
-
-                ! Set source format if not default
-                if (should_set_fortran_format(fortran_config, preprocess, lib_sources)) then
-                    call append_fortran_format(builder, lib_sources, &
-                                               get_fortran_format_string(fortran_config), preprocess)
-                end if
-
-                ! Set module directory properties
-                call builder%append( 'set_target_properties('//lib_name//' PROPERTIES')
-                call builder%append( '    Fortran_MODULE_DIRECTORY "${CMAKE_BINARY_DIR}/mod"')
-                call builder%append( '    POSITION_INDEPENDENT_CODE ON')
-                call builder%append( ')')
-                call builder%append( 'target_include_directories('//lib_name//' PUBLIC')
-                call builder%append( '    $<BUILD_INTERFACE:${CMAKE_BINARY_DIR}/mod>')
-                ! Add include directories from manifest
-                if (present(library_config)) then
-                    if (allocated(library_config%include_dir)) then
-                        do i = 1, size(library_config%include_dir)
-                            ! Only add include directory if it actually exists
-                            if (is_dir(trim(library_config%include_dir(i)%s))) then
-                                call builder%append( '    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/'// &
-                                               trim(library_config%include_dir(i)%s)//'>')
-                            end if
-                        end do
-                    else
-                        ! Fallback: check for physical include/ directory if not in manifest
-                        if (has_include_dir()) then
-                            call builder%append( '    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>')
-                        end if
-                    end if
-                else
-                    ! Fallback: if no library config passed, check for physical include/ directory
-                    if (has_include_dir()) then
-                        call builder%append( '    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>')
-                    end if
-                end if
-                call builder%append( '    $<INSTALL_INTERFACE:include>')
-                call builder%append( ')')
-
-                ! Add base preprocessing flag (always enable -cpp for Fortran)
-                call append_base_preprocessing(builder, lib_name, model%compiler%id, CMAKE_VISIBILITY_PUBLIC)
-
-                ! Add preprocessing flags with macros (preprocessing flag + expanded macros)
-                call append_preprocessing_flags(builder, lib_name, model%compiler%id, &
-                                                preprocess, package_version, CMAKE_VISIBILITY_PUBLIC)
-            end if
+            ! Generate library target (STATIC or INTERFACE)
+            call write_library_target(builder, lib_name, lib_sources, &
+                                     include_dirs, model%compiler%id, &
+                                     preprocess, package_version, fortran_config)
 
             call builder%append( "")
         end if
@@ -1738,8 +1790,10 @@ contains
 
         type(line_builder_t) :: builder
         character(len=:), allocatable :: cmake_file, rel_path
-        integer :: i, path_len, hdr_i
-        logical :: has_compilable, dep_has_include, is_header
+        type(string_t), allocatable :: rel_sources(:), include_dirs(:)
+        integer :: i, path_len, src_count
+        logical :: header_only
+        character(len=:), allocatable :: visibility
 
         ! Builder will auto-initialize
 
@@ -1749,30 +1803,15 @@ contains
         call builder%append( 'project('//trim(dep%name)//' LANGUAGES Fortran)')
         call builder%append( "")
 
-        ! Check if dependency has any compilable sources (not just headers)
-        has_compilable = .false.
-        do i = 1, size(dep%sources)
-            rel_path = lower(trim(dep%sources(i)%s))
+        ! Check if dependency is header-only using existing helper
+        header_only = is_header_only_dep(dep)
 
-            ! Check if the file is a header
-            is_header = .false.
-            do hdr_i = 1, size(c_header_suffixes)
-                if (str_ends_with(rel_path, trim(c_header_suffixes(hdr_i)))) then
-                    is_header = .true.
-                    exit
-                end if
-            end do
-
-            ! If NOT a header, it's compilable
-            if (.not. is_header) then
-                has_compilable = .true.
-                exit
-            end if
-        end do
-
-        if (has_compilable) then
-            ! Library target with compilable sources
-            call builder%append( 'add_library('//trim(dep%name)//' STATIC')
+        ! Prepare relative sources (strip dependency path prefix)
+        if (header_only) then
+            allocate(rel_sources(0))
+        else
+            allocate(rel_sources(size(dep%sources)))
+            src_count = 0
             do i = 1, size(dep%sources)
                 ! Strip the dependency path prefix to make paths relative
                 ! dep%path is "build/dependencies/NAME" and we need to remove "build/dependencies/NAME/"
@@ -1782,67 +1821,29 @@ contains
                 else
                     rel_path = trim(dep%sources(i)%s)
                 end if
-                call builder%append( '    '//clean_path(rel_path))
+                src_count = src_count + 1
+                rel_sources(src_count)%s = rel_path
             end do
-            call builder%append( ')')
-            call builder%append( "")
+        end if
 
-            ! Set properties
-            call builder%append( 'set_target_properties('//trim(dep%name)//' PROPERTIES')
-            call builder%append( '    Fortran_MODULE_DIRECTORY "${CMAKE_BINARY_DIR}/mod"')
-            call builder%append( '    POSITION_INDEPENDENT_CODE ON')
-            call builder%append( ')')
-            call builder%append( "")
+        ! Resolve include directories for dependency
+        call resolve_dep_include_dirs(dep%path, include_dirs)
 
-            ! Include directories
-            call builder%append( 'target_include_directories('//trim(dep%name)//' PUBLIC')
-            call builder%append( '    $<BUILD_INTERFACE:${CMAKE_BINARY_DIR}/mod>')
-            ! Check if dependency has include directory
-            inquire(file=trim(dep%path)//'/include', exist=dep_has_include)
-            if (dep_has_include) then
-                call builder%append( '    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>')
-            end if
-            call builder%append( '    $<INSTALL_INTERFACE:include>')
-            call builder%append( ')')
-            call builder%append( "")
+        ! Generate library target (STATIC or INTERFACE)
+        call write_library_target(builder, dep%name, rel_sources, &
+                                 include_dirs, compiler_id, &
+                                 dep%preprocess, dep%version)
 
-            ! Add base preprocessing flag (always enable -cpp for Fortran)
-            call append_base_preprocessing(builder, dep%name, compiler_id, CMAKE_VISIBILITY_PUBLIC)
-
-            ! Add preprocessing flags with macros (if dependency has preprocess config)
-            if (allocated(dep%preprocess)) then
-                call builder%append( "")
-                call append_preprocessing_flags(builder, dep%name, compiler_id, &
-                                                dep%preprocess, dep%version, CMAKE_VISIBILITY_PUBLIC)
-            end if
-
-            ! Link to this dependency's own dependencies (sub-dependencies)
-            if (allocated(dep%depends_on)) then
-                call append_dependency_links(builder, dep%name, dep%depends_on, CMAKE_VISIBILITY_PUBLIC)
-            end if
+        ! Determine visibility for dependency links
+        if (header_only) then
+            visibility = CMAKE_VISIBILITY_INTERFACE
         else
-            ! INTERFACE library for header-only dependency
-            call builder%append( 'add_library('//trim(dep%name)//' INTERFACE)')
-            call builder%append( 'target_include_directories('//trim(dep%name)//' INTERFACE')
-            call builder%append( '    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>')
-            call builder%append( '    $<INSTALL_INTERFACE:include>')
-            call builder%append( ')')
-            call builder%append( "")
+            visibility = CMAKE_VISIBILITY_PUBLIC
+        end if
 
-            ! Add base preprocessing flag (always enable -cpp for Fortran)
-            call append_base_preprocessing(builder, dep%name, compiler_id, CMAKE_VISIBILITY_INTERFACE)
-
-            ! Add preprocessing flags with macros for INTERFACE library
-            if (allocated(dep%preprocess)) then
-                call builder%append( "")
-                call append_preprocessing_flags(builder, dep%name, compiler_id, &
-                                                dep%preprocess, dep%version, CMAKE_VISIBILITY_INTERFACE)
-            end if
-
-            ! Link to this dependency's own dependencies (sub-dependencies) for INTERFACE library
-            if (allocated(dep%depends_on)) then
-                call append_dependency_links(builder, dep%name, dep%depends_on, CMAKE_VISIBILITY_INTERFACE)
-            end if
+        ! Link to this dependency's own dependencies (sub-dependencies)
+        if (allocated(dep%depends_on)) then
+            call append_dependency_links(builder, dep%name, dep%depends_on, visibility)
         end if
 
         ! Write to file
