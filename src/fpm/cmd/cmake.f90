@@ -20,6 +20,7 @@ module fpm_cmd_cmake
                         id_intel_llvm_nix, id_intel_llvm_windows, &
                         id_nag, id_lfortran
     use fpm_strings, only: string_t, lower, str_ends_with, str_begins_with_str, fnv_1a, resize
+    use fpm_sources, only: fortran_suffixes, c_source_suffixes, cpp_source_suffixes, c_header_suffixes
     use fpm_hash_table, only: string_hash_map_t
     use fpm_targets, only: targets_from_sources, build_target_ptr
     use fpm_versioning, only: version_t
@@ -568,8 +569,8 @@ contains
         type(string_t), intent(in) :: sources(:)
         integer :: lang  ! 1=Fortran, 2=C, 3=C++
 
-        integer :: i
-        logical :: has_cpp, has_c, has_fortran
+        integer :: i, j
+        logical :: has_cpp, has_c, has_fortran, matched
         character(len=:), allocatable :: lower_name
 
         has_fortran = .false.
@@ -578,19 +579,30 @@ contains
 
         do i = 1, size(sources)
             lower_name = lower(sources(i)%s)
+            matched = .false.
 
-            ! Check file extension
-            if (str_ends_with(lower_name, ".cpp") .or. &
-                str_ends_with(lower_name, ".cxx") .or. &
-                str_ends_with(lower_name, ".cc") .or. &
-                str_ends_with(lower_name, ".c++")) then
-                has_cpp = .true.
-            else if (str_ends_with(lower_name, ".c")) then
-                has_c = .true.
-            else
-                ! Assume Fortran for .f90, .f, .F90, .F, etc.
-                has_fortran = .true.
-            end if
+            ! Check for C++ source extensions
+            do j = 1, size(cpp_source_suffixes)
+                if (str_ends_with(lower_name, trim(cpp_source_suffixes(j)))) then
+                    has_cpp = .true.
+                    matched = .true.
+                    exit
+                end if
+            end do
+            if (matched) cycle
+
+            ! Check for C source extensions
+            do j = 1, size(c_source_suffixes)
+                if (str_ends_with(lower_name, trim(c_source_suffixes(j)))) then
+                    has_c = .true.
+                    matched = .true.
+                    exit
+                end if
+            end do
+            if (matched) cycle
+
+            ! Assume Fortran for .f90, .f, .F90, .F, etc.
+            has_fortran = .true.
         end do
 
         ! Priority: C++ > C > Fortran
@@ -710,10 +722,10 @@ contains
         type(test_config_t), intent(in), optional :: test_config(:)
         type(version_t), intent(in), optional :: package_version
 
-        integer :: i, j, k
+        integer :: i, j, k, ext_i
         type(string_t), allocatable :: exe_sources(:)
-        character(len=:), allocatable :: lib_name, exe_name_str, original_exe_name, original_test_name, languages
-        logical :: has_c, has_cpp, has_fortran
+        character(len=:), allocatable :: lib_name, exe_name_str, original_exe_name, original_test_name, languages, lower_fname
+        logical :: has_c, has_cpp, has_fortran, ext_matched
         type(string_t), allocatable :: shared_test_modules(:), shared_app_modules(:)
 
         ! Initialize empty lines array
@@ -730,11 +742,30 @@ contains
             select case (sources(k)%unit_type)
                 case (FPM_UNIT_PROGRAM)
                     ! Programs can be either Fortran or C/C++ - check extension
-                    if (str_ends_with(lower(sources(k)%file_name), ".c")) then
-                        has_c = .true.
-                    else if (str_ends_with(lower(sources(k)%file_name), ".cpp")) then
-                        has_cpp = .true.
-                    else
+                    lower_fname = lower(sources(k)%file_name)
+                    ext_matched = .false.
+
+                    ! Check for C++ extensions
+                    do ext_i = 1, size(cpp_source_suffixes)
+                        if (str_ends_with(lower_fname, trim(cpp_source_suffixes(ext_i)))) then
+                            has_cpp = .true.
+                            ext_matched = .true.
+                            exit
+                        end if
+                    end do
+
+                    if (.not. ext_matched) then
+                        ! Check for C extensions
+                        do ext_i = 1, size(c_source_suffixes)
+                            if (str_ends_with(lower_fname, trim(c_source_suffixes(ext_i)))) then
+                                has_c = .true.
+                                ext_matched = .true.
+                                exit
+                            end if
+                        end do
+                    end if
+
+                    if (.not. ext_matched) then
                         has_fortran = .true.
                     end if
                 case (FPM_UNIT_MODULE, FPM_UNIT_SUBMODULE, FPM_UNIT_SUBPROGRAM)
@@ -1499,9 +1530,9 @@ contains
         type(dependency_info_t), intent(in) :: dep
         logical :: is_header_only
 
-        integer :: i
+        integer :: i, hdr_i
         character(len=:), allocatable :: file_path
-        logical :: has_compilable
+        logical :: has_compilable, is_header
 
         is_header_only = .false.
 
@@ -1525,10 +1556,19 @@ contains
         ! Check if all sources are headers
         has_compilable = .false.
         do i = 1, size(dep%sources)
-            file_path = trim(dep%sources(i)%s)
-            ! Check if the file does NOT end with .h or .hpp (i.e., it's compilable)
-            if (.not. (len(file_path) >= 2 .and. file_path(len(file_path)-1:len(file_path)) == '.h') .and. &
-                .not. (len(file_path) >= 4 .and. file_path(len(file_path)-3:len(file_path)) == '.hpp')) then
+            file_path = lower(trim(dep%sources(i)%s))
+
+            ! Check if the file is a header
+            is_header = .false.
+            do hdr_i = 1, size(c_header_suffixes)
+                if (str_ends_with(file_path, trim(c_header_suffixes(hdr_i)))) then
+                    is_header = .true.
+                    exit
+                end if
+            end do
+
+            ! If NOT a header, it's compilable
+            if (.not. is_header) then
                 has_compilable = .true.
                 exit
             end if
@@ -1654,8 +1694,8 @@ contains
 
         type(line_builder_t) :: builder
         character(len=:), allocatable :: cmake_file, rel_path
-        integer :: i, path_len
-        logical :: has_compilable, dep_has_include
+        integer :: i, path_len, hdr_i
+        logical :: has_compilable, dep_has_include, is_header
 
         ! Builder will auto-initialize
 
@@ -1668,10 +1708,19 @@ contains
         ! Check if dependency has any compilable sources (not just headers)
         has_compilable = .false.
         do i = 1, size(dep%sources)
-            rel_path = trim(dep%sources(i)%s)
-            ! Check if the file does NOT end with .h or .hpp (i.e., it's compilable)
-            if (.not. (len(rel_path) >= 2 .and. rel_path(len(rel_path)-1:len(rel_path)) == '.h') .and. &
-                .not. (len(rel_path) >= 4 .and. rel_path(len(rel_path)-3:len(rel_path)) == '.hpp')) then
+            rel_path = lower(trim(dep%sources(i)%s))
+
+            ! Check if the file is a header
+            is_header = .false.
+            do hdr_i = 1, size(c_header_suffixes)
+                if (str_ends_with(rel_path, trim(c_header_suffixes(hdr_i)))) then
+                    is_header = .true.
+                    exit
+                end if
+            end do
+
+            ! If NOT a header, it's compilable
+            if (.not. is_header) then
                 has_compilable = .true.
                 exit
             end if
@@ -1962,12 +2011,12 @@ contains
         file_ext = lower(filename)
 
         ! Check standard Fortran extensions first (most common case)
-        if (str_ends_with(file_ext, ".f90") .or. str_ends_with(file_ext, ".f") .or. &
-            str_ends_with(file_ext, ".f03") .or. str_ends_with(file_ext, ".f08") .or. &
-            str_ends_with(file_ext, ".f18") .or. str_ends_with(file_ext, ".for")) then
-            is_fortran = .true.
-            return
-        end if
+        do i = 1, size(fortran_suffixes)
+            if (str_ends_with(file_ext, trim(fortran_suffixes(i)))) then
+                is_fortran = .true.
+                return
+            end if
+        end do
 
         ! Early exit if no custom preprocessor suffixes
         if (.not. present(preprocess)) then
