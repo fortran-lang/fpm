@@ -557,15 +557,15 @@ if (allocated(error)) then
     call fpm_stop(1,'*cmd_build* Package error: '//error%message)
 end if
 
-! Check if CMake files are out of date
-if (check_cmake_staleness()) then
-    write(stderr, '(a)') "Warning: CMakeLists.txt is out of date with fpm.toml"
-    write(stderr, '(a)') "         Run 'fpm generate --cmake' to regenerate"
-end if
-
 call build_model(model, settings, package, error)
 if (allocated(error)) then
     call fpm_stop(1,'*cmd_build* Model error: '//error%message)
+end if
+
+! Check if CMake files are out of date (after build_model provides source digests)
+if (check_cmake_staleness(model%packages(1)%sources)) then
+    write(stderr, '(a)') "Warning: CMakeLists.txt is out of date with fpm.toml"
+    write(stderr, '(a)') "         Run 'fpm generate --cmake' to regenerate"
 end if
 
 call targets_from_sources(targets, model, settings%prune, package%library, error)
@@ -618,15 +618,15 @@ subroutine cmd_run(settings,test)
         call fpm_stop(1, '*cmd_run* Package error: '//error%message)
     end if
 
-    ! Check if CMake files are out of date
-    if (check_cmake_staleness()) then
-        write(stderr, '(a)') "Warning: CMakeLists.txt is out of date with fpm.toml"
-        write(stderr, '(a)') "         Run 'fpm generate --cmake' to regenerate"
-    end if
-
     call build_model(model, settings, package, error)
     if (allocated(error)) then
         call fpm_stop(1, '*cmd_run* Model error: '//error%message)
+    end if
+
+    ! Check if CMake files are out of date (after build_model provides source digests)
+    if (check_cmake_staleness(model%packages(1)%sources)) then
+        write(stderr, '(a)') "Warning: CMakeLists.txt is out of date with fpm.toml"
+        write(stderr, '(a)') "         Run 'fpm generate --cmake' to regenerate"
     end if
 
     call targets_from_sources(targets, model, settings%prune, package%library, error)
