@@ -42,9 +42,11 @@ fpm run --target fpm-test -- fpm_manifest test_name
 fpm install --prefix build
 ```
 
-Do not use the system-wide `fpm` from the PATH for anything besides
-bootstrapping itself.  Do not try to search the build dir for `fpm` because
-multiple versions are cached.  Use `fpm install` instead.
+**IMPORTANT**: Do not use the system-wide `fpm` from the PATH for anything besides
+bootstrapping itself. Do not try to search the build dir for `fpm` with wildcards
+(like `./build/gfortran_*/app/fpm`) because multiple versions are cached. Instead:
+1. Use `fpm install --prefix build` to install to `./build/bin/fpm`
+2. Then use `./build/bin/fpm` for all testing and development work
 
 ## Code Architecture
 

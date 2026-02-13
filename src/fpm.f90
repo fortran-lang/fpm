@@ -31,6 +31,7 @@ use, intrinsic :: iso_fortran_env, only : stdin => input_unit, &
 use iso_c_binding, only: c_char, c_ptr, c_int, c_null_char, c_associated, c_f_pointer
 use fpm_environment, only: os_is_unix, get_os_type, OS_WINDOWS, OS_MACOS, get_env, set_env, delete_env
 use fpm_settings, only: fpm_global_settings, get_global_settings
+use fpm_cmake_check, only: check_cmake_staleness
 
 implicit none
 private
@@ -556,6 +557,12 @@ if (allocated(error)) then
     call fpm_stop(1,'*cmd_build* Package error: '//error%message)
 end if
 
+! Check if CMake files are out of date
+if (check_cmake_staleness()) then
+    write(stderr, '(a)') "Warning: CMakeLists.txt is out of date with fpm.toml"
+    write(stderr, '(a)') "         Run 'fpm generate --cmake' to regenerate"
+end if
+
 call build_model(model, settings, package, error)
 if (allocated(error)) then
     call fpm_stop(1,'*cmd_build* Model error: '//error%message)
@@ -609,6 +616,12 @@ subroutine cmd_run(settings,test)
     call get_package_data(package, "fpm.toml", error, apply_defaults=.true.)
     if (allocated(error)) then
         call fpm_stop(1, '*cmd_run* Package error: '//error%message)
+    end if
+
+    ! Check if CMake files are out of date
+    if (check_cmake_staleness()) then
+        write(stderr, '(a)') "Warning: CMakeLists.txt is out of date with fpm.toml"
+        write(stderr, '(a)') "         Run 'fpm generate --cmake' to regenerate"
     end if
 
     call build_model(model, settings, package, error)
