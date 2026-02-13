@@ -147,10 +147,6 @@ contains
                 ! Extract hash from line like "# Project hash: ABCD1234"
                 has_hash = .true.
                 stored_hash = trim(adjustl(lines(i)%s(index(lines(i)%s, "Project hash:") + 13:)))
-            else if (index(lines(i)%s, "Manifest hash:") > 0) then
-                ! Old format detected - force regeneration
-                is_stale = .true.
-                return
             end if
         end do
 
