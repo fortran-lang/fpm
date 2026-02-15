@@ -20,6 +20,20 @@ for dir in example_packages/*/ ; do
 	# or a separate issue unrelated to cmake generation
 	[[ "$dir" == "example_packages/features_with_dependency/" ]] && continue
 
+	# These examples require external dependencies not available in CI/CD
+	case "$dir" in
+		example_packages/link_external/ | \
+		example_packages/metapackage_blas/ | \
+		example_packages/metapackage_hdf5/ | \
+		example_packages/metapackage_mpi/ | \
+		example_packages/metapackage_mpi_c/ | \
+		example_packages/metapackage_mpi_cpp/ | \
+		example_packages/metapackage_netcdf/ | \
+		example_packages/metapackage_stdlib_extblas/)
+			continue
+			;;
+	esac
+
 	pushd "$dir"
 
 	"$fpm" generate --cmake
