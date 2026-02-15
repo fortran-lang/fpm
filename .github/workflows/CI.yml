@@ -250,6 +250,19 @@ jobs:
       run: |
         ${{ env.FPM }} install ${{ matrix.release-flags }}
 
+    - name: Install fpm for cmake test
+      if: matrix.toolchain.version == 13
+      shell: bash
+      run: |
+        ${{ env.FPM }} install ${{ matrix.release-flags }} --prefix build
+
+    - name: Test CMake generation
+      if: matrix.toolchain.version == 13
+      shell: bash
+      run: |
+        chmod +x ci/test_cmake.sh
+        ci/test_cmake.sh ./build/bin/fpm${{ matrix.exe }}
+
     - name: Package release version
       shell: bash
       run: |

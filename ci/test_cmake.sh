@@ -3,13 +3,12 @@
 # Test "fpm generate --cmake" by generating cmake for each example package and
 # then building with the generated CMakeLists.txt
 
-#set -exu
 set -u
 
 if [ $# -gt 0 ]; then
-   fpm="$1"
+	fpm="$1"
 else
-   fpm=fpm
+	fpm=fpm
 fi
 
 build_failures=()
@@ -32,8 +31,7 @@ for dir in example_packages/*/ ; do
 		# Find and run executables. Use maxdepth because dependencies like
 		# test-drive have executable hooks not built by us that I don't want to
 		# run
-		exes=$(find temp_cmake_build -maxdepth 1 -type f -executable | grep -v '/CMakeFiles/')
-		#exes=$(find temp_cmake_build -type f -executable | grep -v '/CMakeFiles/')
+		exes=$(find temp_cmake_build -maxdepth 1 -type f -executable)
 		for exe in $exes; do
 
 			[[ "$dir" == "example_packages/fpm_test_exit_code/" ]] && continue  # returns 1 on purpose
