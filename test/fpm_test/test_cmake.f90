@@ -45,6 +45,36 @@ contains
 
     end subroutine collect_cmake
 
+    !> Initialize build settings for testing with minimal required fields
+    subroutine init_test_settings(settings, compiler, build_dir)
+        type(fpm_build_settings), intent(out) :: settings
+        character(len=*), intent(in) :: compiler
+        character(len=*), intent(in) :: build_dir
+
+        ! Set required fields
+        settings%compiler = compiler
+        settings%build_dir = build_dir
+
+        ! Initialize all allocatable fields to empty strings (matches build_settings pattern)
+        settings%c_compiler = ''
+        settings%cxx_compiler = ''
+        settings%archiver = ''
+        settings%flag = ''
+        settings%cflag = ''
+        settings%cxxflag = ''
+        settings%ldflag = ''
+        settings%dump = ''
+        settings%path_to_config = ''
+
+        ! Set reasonable defaults for non-allocatable fields
+        settings%verbose = .false.
+        settings%list = .false.
+        settings%show_model = .false.
+        settings%build_tests = .false.
+        settings%prune = .true.
+
+    end subroutine init_test_settings
+
     !> Test path extraction from -L flags
     subroutine test_extract_path(error)
         type(error_t), allocatable, intent(out) :: error
@@ -357,8 +387,7 @@ contains
         end if
 
         ! Build model (use unique build dir for each test)
-        settings%compiler = 'gfortran'
-        settings%build_dir = 'build_test'
+        call init_test_settings(settings, 'gfortran', 'build_test')
         call build_model(model, settings, package, error)
         if (allocated(error)) then
             call change_directory(original_dir, error)
@@ -467,8 +496,7 @@ contains
             return
         end if
 
-        settings%compiler = 'gfortran'
-        settings%build_dir = 'build_test'
+        call init_test_settings(settings, 'gfortran', 'build_test')
         call build_model(model, settings, package, error)
         if (allocated(error)) then
             call change_directory(original_dir, error)
@@ -579,8 +607,7 @@ contains
             return
         end if
 
-        settings%compiler = 'gfortran'
-        settings%build_dir = 'build_test'
+        call init_test_settings(settings, 'gfortran', 'build_test')
         call build_model(model, settings, package, error)
         if (allocated(error)) then
             call change_directory(original_dir, error)
