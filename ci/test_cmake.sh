@@ -85,5 +85,4 @@ exit $total_failures
 #     fpm run -- generate --cmake
 #     cmake -B build -S .
 #     cmake --build build --parallel
-#
 
