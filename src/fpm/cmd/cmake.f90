@@ -1881,8 +1881,10 @@ contains
         ! Add all dependencies via add_subdirectory
         call builder%append( "# Add all dependencies")
         do i = 1, size(deps)
-            call builder%append( 'add_subdirectory("${CMAKE_SOURCE_DIR}/'// &
+            call builder%append( 'if(NOT TARGET '//trim(deps(i)%name)//')')
+            call builder%append( '    add_subdirectory("${CMAKE_SOURCE_DIR}/'// &
                            trim(deps(i)%path)//'" '//trim(deps(i)%name)//' EXCLUDE_FROM_ALL)')
+            call builder%append( 'endif()')
             ! Create namespace alias for CMake-enabled dependencies
             if (deps(i)%has_cmake) then
                 call builder%append( 'if(NOT TARGET '//trim(deps(i)%name)//'::'// &
