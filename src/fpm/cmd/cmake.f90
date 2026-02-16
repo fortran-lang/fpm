@@ -2,7 +2,7 @@
 module fpm_cmd_cmake
     use fpm_command_line, only: fpm_generate_settings
     use fpm_error, only: error_t, fpm_stop
-    use fpm_filesystem, only: dirname, is_dir, fileopen, fileclose
+    use fpm_filesystem, only: dirname, is_dir, fileopen, fileclose, unix_path
     use fpm_cmake_check, only: compute_manifest_hash, compute_project_hash
     use fpm_manifest, only: package_config_t, get_package_data
     use fpm_manifest_library, only: library_config_t
@@ -1344,7 +1344,8 @@ contains
         character(len=*), intent(in) :: path
         character(len=:), allocatable :: cleaned
 
-        cleaned = path
+        ! Normalize backslashes to forward slashes (for Windows compatibility)
+        cleaned = unix_path(path)
 
         ! Remove leading ././
         do while (len(cleaned) > 4 .and. cleaned(1:4) == '././')
