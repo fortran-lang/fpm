@@ -1729,7 +1729,7 @@ contains
 
         call builder%append(trim(directive)//'('//trim(target_name)//' '//trim(visibility))
         do i = 1, size(items)
-            call builder%append('    '//trim(unix_path(items(i)%s)))
+            call builder%append('    '//clean_path(items(i)%s))
         end do
         call builder%append(')')
 
@@ -1884,7 +1884,7 @@ contains
         do i = 1, size(deps)
             call builder%append( 'if(NOT TARGET '//trim(deps(i)%name)//')')
             call builder%append( '    add_subdirectory("${CMAKE_SOURCE_DIR}/'// &
-                           trim(unix_path(deps(i)%path))//'" '//trim(deps(i)%name)//' EXCLUDE_FROM_ALL)')
+                           clean_path(deps(i)%path)//'" '//trim(deps(i)%name)//' EXCLUDE_FROM_ALL)')
             call builder%append( 'endif()')
             ! Create namespace alias for CMake-enabled dependencies
             if (deps(i)%has_cmake) then
