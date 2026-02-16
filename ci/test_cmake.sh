@@ -47,6 +47,11 @@ for dir in example_packages/*/ ; do
 	pushd "$dir"
 
 	"$fpm" generate --cmake
+	if [[ $? -ne 0 ]] ; then
+		build_failures+=("$dir (fpm generate failed)")
+		popd
+		continue
+	fi
 	if [[ -n "${CMAKE_GENERATOR_FLAG}" ]]; then
 		eval cmake ${CMAKE_GENERATOR_FLAG} -B temp_cmake_build -S .
 	else

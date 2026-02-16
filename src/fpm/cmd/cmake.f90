@@ -1,7 +1,7 @@
 !> Implementation of the `fpm generate --cmake` command
 module fpm_cmd_cmake
     use fpm_command_line, only: fpm_generate_settings
-    use fpm_error, only: error_t, fpm_stop
+    use fpm_error, only: error_t, fatal_error, fpm_stop
     use fpm_filesystem, only: dirname, is_dir, fileopen, fileclose, unix_path
     use fpm_cmake_check, only: compute_manifest_hash, compute_project_hash
     use fpm_manifest, only: package_config_t, get_package_data
@@ -425,7 +425,8 @@ contains
         ! Generate CMakeLists.txt for fpm-only dependencies
         do i = 1, size(dependencies)
             if (.not. dependencies(i)%has_cmake) then
-                call generate_dependency_cmake(dependencies(i), '.', model%compiler%id)
+                call generate_dependency_cmake(dependencies(i), '.', model%compiler%id, error)
+                if (allocated(error)) return
             end if
         end do
 
@@ -437,25 +438,30 @@ contains
                                 package%fortran, package%executable, package%test, package%version)
 
         ! Write to file
-        call write_lines_to_file("CMakeLists.txt", cmake_builder%finalize())
+        call write_lines_to_file("CMakeLists.txt", cmake_builder%finalize(), error)
 
     end subroutine generate_cmake
 
     !> Write string_t array to file
-    subroutine write_lines_to_file(filename, lines)
+    subroutine write_lines_to_file(filename, lines, error)
         character(len=*), intent(in) :: filename
         type(string_t), intent(in) :: lines(:)
+        type(error_t), allocatable, intent(out) :: error
 
         integer :: lun, i, ios
         character(len=256) :: message
 
         call fileopen(filename, lun, ier=ios, file_status='replace')
-        if (ios /= 0) return
+        if (ios /= 0) then
+            call fatal_error(error, "Failed to open file for writing: "//filename)
+            return
+        end if
 
         do i = 1, size(lines)
             write(lun, '(a)', iostat=ios, iomsg=message) trim(lines(i)%s)
             if (ios /= 0) then
                 call fileclose(lun)
+                call fatal_error(error, "Failed to write to file "//filename//": "//trim(message))
                 return
             end if
         end do
@@ -1787,10 +1793,11 @@ contains
     end function categorize_link_flag
 
     !> Generate CMakeLists.txt for an fpm-only dependency
-    subroutine generate_dependency_cmake(dep, base_dir, compiler_id)
+    subroutine generate_dependency_cmake(dep, base_dir, compiler_id, error)
         type(dependency_info_t), intent(in) :: dep
         character(len=*), intent(in) :: base_dir
         integer(compiler_enum), intent(in) :: compiler_id
+        type(error_t), allocatable, intent(out) :: error
 
         type(line_builder_t) :: builder
         character(len=:), allocatable :: cmake_file, rel_path, dep_manifest, manifest_hash
@@ -1857,7 +1864,7 @@ contains
 
         ! Write to file
         cmake_file = trim(base_dir)//'/'//trim(dep%path)//'/CMakeLists.txt'
-        call write_lines_to_file(cmake_file, builder%finalize())
+        call write_lines_to_file(cmake_file, builder%finalize(), error)
 
     end subroutine generate_dependency_cmake
 

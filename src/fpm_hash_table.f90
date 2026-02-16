@@ -70,7 +70,7 @@ contains
 
         ! FNV-1a hash
         hash_val = fnv_1a(key)
-        hash_idx = modulo(abs(hash_val), self%capacity) + 1
+        hash_idx = modulo(iand(hash_val, huge(hash_val)), int(self%capacity, int64)) + 1
 
         ! Linear probing
         do probe = 0, self%capacity - 1
@@ -106,7 +106,7 @@ contains
 
         found = .false.
         hash_val = fnv_1a(key)
-        hash_idx = modulo(abs(hash_val), self%capacity) + 1
+        hash_idx = modulo(iand(hash_val, huge(hash_val)), int(self%capacity, int64)) + 1
 
         do probe = 0, self%capacity - 1
             idx = modulo(hash_idx + probe - 1, self%capacity) + 1
@@ -131,7 +131,7 @@ contains
 
         found = .false.
         hash_val = fnv_1a(key)
-        hash_idx = modulo(abs(hash_val), self%capacity) + 1
+        hash_idx = modulo(iand(hash_val, huge(hash_val)), int(self%capacity, int64)) + 1
 
         do probe = 0, self%capacity - 1
             idx = modulo(hash_idx + probe - 1, self%capacity) + 1

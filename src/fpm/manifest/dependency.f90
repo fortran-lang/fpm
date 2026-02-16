@@ -496,13 +496,17 @@ contains
        call set_list(table, "features", self%features, error)
        if (allocated(error)) return
 
-        ! Serialize preprocessing configurations
+        ! Serialize preprocessing configurations using config name as key
         if (allocated(self%preprocess)) then
             call add_table(table, "preprocess", ptr, error)
             if (allocated(error)) return
             do i = 1, size(self%preprocess)
-                write(preprocess_key, '(A,I0)') "config_", i
-                call add_table(ptr, preprocess_key, ptr2, error)
+                if (allocated(self%preprocess(i)%name)) then
+                    preprocess_key = self%preprocess(i)%name
+                else
+                    write(preprocess_key, '(A,I0)') "config_", i
+                end if
+                call add_table(ptr, trim(preprocess_key), ptr2, error)
                 if (allocated(error)) return
                 call self%preprocess(i)%dump_to_toml(ptr2, error)
                 if (allocated(error)) return
