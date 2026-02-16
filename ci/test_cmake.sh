@@ -25,8 +25,12 @@ for dir in example_packages/*/ ; do
 
 	# Skip examples that don't work with cmake generation
 	case "$dir" in
+
 		# Does not work with "fpm build" either (intentionally or separate issue)
-		example_packages/features_with_dependency/ | \
+		example_packages/features_with_dependency/ )
+			continue
+			;;
+
 		# Require external dependencies not available in CI/CD
 		example_packages/link_external/ | \
 		example_packages/metapackage_blas/ | \
