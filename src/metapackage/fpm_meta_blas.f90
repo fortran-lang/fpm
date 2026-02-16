@@ -26,7 +26,7 @@ contains
         integer :: i
         character(len=:), allocatable :: include_flag, libdir
         character(*), parameter :: candidates(*) = &
-                                   [character(20) :: 'mkl-dynamic-lp64-tbb', 'openblas', 'blas']
+                                   [character(20) :: 'mkl-dynamic-lp64-tbb', 'openblas', 'blas', 'flexiblas']
 
         include_flag = get_include_flag(compiler, "")
 

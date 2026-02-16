@@ -67,7 +67,7 @@ jobs:
         patch -p1 < ./ci/single-file.patch
 
     - name: Install fpm
-      uses: fortran-lang/setup-fpm@v8
+      uses: fortran-lang/setup-fpm@v9
       with:
         fpm-version: 'v0.8.0'
 

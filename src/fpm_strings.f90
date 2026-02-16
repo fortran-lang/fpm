@@ -535,10 +535,11 @@ pure subroutine split_first_last(string, set, first, last)
     integer, allocatable, intent(out) :: first(:)
     integer, allocatable, intent(out) :: last(:)
 
-    integer, dimension(len(string) + 1) :: istart, iend
+    integer, allocatable, dimension(:) :: istart, iend
     integer :: p, n, slen
 
     slen = len(string)
+    allocate(istart(slen + 1), iend(slen + 1))
 
     n = 0
     if (slen > 0) then
@@ -565,12 +566,13 @@ pure subroutine split_lines_first_last(string, first, last)
     integer, allocatable, intent(out) :: first(:)
     integer, allocatable, intent(out) :: last(:)
 
-    integer, dimension(len(string) + 1) :: istart, iend
+    integer, allocatable, dimension(:) :: istart, iend
     integer :: p, n, slen
     character, parameter :: CR = achar(13)
     character, parameter :: LF = new_line('A')
 
     slen = len(string)
+    allocate(istart(slen + 1), iend(slen + 1))
 
     n = 0
     if (slen > 0) then
