@@ -329,7 +329,7 @@ contains
         ! Add include directories
         do i = 1, size(include_dirs)
             call builder%append( '    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/'// &
-                           trim(include_dirs(i)%s)//'>')
+                           trim(unix_path(include_dirs(i)%s))//'>')
         end do
         call builder%append( '    $<INSTALL_INTERFACE:include>')
         call builder%append( ')')
@@ -1729,7 +1729,7 @@ contains
 
         call builder%append(trim(directive)//'('//trim(target_name)//' '//trim(visibility))
         do i = 1, size(items)
-            call builder%append('    '//trim(items(i)%s))
+            call builder%append('    '//trim(unix_path(items(i)%s)))
         end do
         call builder%append(')')
 
@@ -1884,7 +1884,7 @@ contains
         do i = 1, size(deps)
             call builder%append( 'if(NOT TARGET '//trim(deps(i)%name)//')')
             call builder%append( '    add_subdirectory("${CMAKE_SOURCE_DIR}/'// &
-                           trim(deps(i)%path)//'" '//trim(deps(i)%name)//' EXCLUDE_FROM_ALL)')
+                           trim(unix_path(deps(i)%path))//'" '//trim(deps(i)%name)//' EXCLUDE_FROM_ALL)')
             call builder%append( 'endif()')
             ! Create namespace alias for CMake-enabled dependencies
             if (deps(i)%has_cmake) then
