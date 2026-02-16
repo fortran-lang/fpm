@@ -23,12 +23,11 @@ fi
 
 for dir in example_packages/*/ ; do
 
-	# These example(s) do not work with "fpm build" either, either intentionally
-	# or a separate issue unrelated to cmake generation
-	[[ "$dir" == "example_packages/features_with_dependency/" ]] && continue
-
-	# These examples require external dependencies not available in CI/CD
+	# Skip examples that don't work with cmake generation
 	case "$dir" in
+		# Does not work with "fpm build" either (intentionally or separate issue)
+		example_packages/features_with_dependency/ | \
+		# Require external dependencies not available in CI/CD
 		example_packages/link_external/ | \
 		example_packages/metapackage_blas/ | \
 		example_packages/metapackage_hdf5/ | \
