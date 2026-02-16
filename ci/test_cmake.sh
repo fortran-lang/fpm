@@ -14,6 +14,13 @@ fi
 build_failures=()
 runtime_failures=()
 
+# Detect Windows/MSYS2 and set CMake generator accordingly
+CMAKE_GENERATOR_FLAG=""
+if [[ "$OSTYPE" == "msys" ]] || [[ "$OSTYPE" == "win32" ]] || [[ -n "${MSYSTEM:-}" ]]; then
+	# On Windows with MSYS2/MinGW, use MinGW Makefiles generator for Fortran support
+	CMAKE_GENERATOR_FLAG="-G \"MinGW Makefiles\""
+fi
+
 for dir in example_packages/*/ ; do
 
 	# These example(s) do not work with "fpm build" either, either intentionally
@@ -37,7 +44,11 @@ for dir in example_packages/*/ ; do
 	pushd "$dir"
 
 	"$fpm" generate --cmake
-	cmake -B temp_cmake_build -S .
+	if [[ -n "${CMAKE_GENERATOR_FLAG}" ]]; then
+		eval cmake ${CMAKE_GENERATOR_FLAG} -B temp_cmake_build -S .
+	else
+		cmake -B temp_cmake_build -S .
+	fi
 	cmake --build temp_cmake_build --parallel
 	if [[ $? -ne 0 ]] ; then
 		build_failures+=("$dir")
