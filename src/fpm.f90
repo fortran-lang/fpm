@@ -159,7 +159,7 @@ subroutine build_model(model, settings, package_config, error)
                 
                 ! Adapt it to the current profile/platform
                 dependency = dependency_config%export_config(target_platform, &
-                                                             dep%features,verbose=.false.,error=error)
+                                                             dep%features,dep%profile,verbose=.false.,error=error)
                 if (allocated(error)) exit
                 
                 manifest => dependency
