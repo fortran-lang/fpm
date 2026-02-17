@@ -101,7 +101,7 @@ module fpm_manifest_feature
         character(len=:), allocatable :: link_time_flags
         
         !> Feature dependencies (not active yet)
-        type(string_t), allocatable :: requires_features(:)
+        type(string_t), allocatable :: requires_features(:)       
 
     contains
 
@@ -424,7 +424,7 @@ contains
             end if
             
             if (.not.this%platform == other%platform) return
-
+            
             if (allocated(this%build).neqv.allocated(other%build)) return
             if (allocated(this%build)) then
                 if (.not.(this%build==other%build)) return
@@ -551,7 +551,7 @@ contains
         if (allocated(error)) return
         call set_string(table, "description", self%description, error, class_name)
         if (allocated(error)) return
-
+        
         call add_table(table, "platform", ptr, error, class_name)
         if (allocated(error)) return
         call self%platform%dump_to_toml(ptr, error)

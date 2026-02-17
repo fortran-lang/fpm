@@ -581,31 +581,51 @@ contains
         
         integer :: i, idx
         type(string_t), pointer :: want_features(:)
-        
+        logical :: apply_default
+
         ! Validate that both profile and features are not specified simultaneously
         if (present(profile) .and. present(features)) then
             call syntax_error(error, "Cannot specify both 'profile' and 'features' parameters simultaneously")
             return
         end if
-        
+
         ! Copy the entire package configuration
         cfg = self
-        
-        ! TODO: Feature processing will be implemented here
-        ! For now, features parameter is ignored as requested
-        if (present(features)) then 
+
+        ! Determine which features to apply and whether to include the "default" profile.
+        ! Default profile features are applied when:
+        !   - No explicit profile/features are specified (implicit debug build)
+        !   - The "debug" or "release" profile is requested
+        ! Default profile features are NOT applied when:
+        !   - An explicit features list is specified
+        !   - A custom (non-debug/release) profile is requested
+        apply_default = .false.
+
+        if (present(features)) then
             want_features => features
-        elseif (present(profile)) then 
+        elseif (present(profile)) then
             idx = find_profile(self, profile)
-            if (idx<=0) then 
+            if (idx<=0) then
                 call fatal_error(error, "Cannot find profile "//profile//" in package "//self%name)
                 return
-            end if                  
-            want_features => self%profiles(idx)%features                  
+            end if
+            want_features => self%profiles(idx)%features
+            apply_default = (profile == "debug" .or. profile == "release")
         else
             nullify(want_features)
+            apply_default = .true.
         endif
-            
+
+        ! Apply "default" profile features first (baseline configuration)
+        if (apply_default) then
+            idx = find_profile(self, "default")
+            if (idx > 0) then
+                call apply_default_features(self, self%profiles(idx), cfg, platform, verbose, error)
+                if (allocated(error)) return
+            end if
+        end if
+
+        ! Then apply the requested features on top
         apply_features: if (associated(want_features)) then
             do i=1,size(want_features)
 
@@ -685,6 +705,53 @@ contains
         end do
         
     end function find_profile
+
+    !> Apply all features from a profile into the package configuration
+    subroutine apply_default_features(self, prof, cfg, platform, verbose, error)
+
+        !> Instance of the package configuration
+        class(package_config_t), intent(in) :: self
+
+        !> Profile whose features to apply
+        type(profile_config_t), intent(in) :: prof
+
+        !> Package configuration to merge into
+        type(package_config_t), intent(inout) :: cfg
+
+        !> Target platform
+        type(platform_config_t), intent(in) :: platform
+
+        !> Verbose output flag
+        logical, optional, intent(in) :: verbose
+
+        !> Error handling
+        type(error_t), allocatable, intent(out) :: error
+
+        integer :: i, idx
+
+        if (.not. allocated(prof%features)) return
+
+        do i = 1, size(prof%features)
+
+            idx = self%find_feature(prof%features(i)%s)
+            if (idx <= 0) then
+                call fatal_error(error, "Cannot find feature "//prof%features(i)%s//&
+                                        " in package "//self%name)
+                return
+            end if
+
+            if (present(verbose)) then
+                if (verbose) then
+                    call print_feature_collection(self%features(idx), platform)
+                end if
+            end if
+
+            call self%features(idx)%merge_into_package(cfg, platform, error)
+            if (allocated(error)) return
+
+        end do
+
+    end subroutine apply_default_features
 
     !> Find feature by name, returns index or 0 if not found
     function find_feature(self, feature_name) result(idx)

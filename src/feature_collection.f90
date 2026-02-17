@@ -807,7 +807,7 @@ module fpm_manifest_feature_collection
         collection%base%name              = 'debug'
         collection%base%platform%compiler = id_all
         collection%base%platform%os_type  = OS_ALL
-        
+
         ! Add debug variants for different compilers
         call collection%push_variant(default_variant('debug', id_caf, OS_ALL, &
             ' -Wall -Wextra -Wimplicit-interface -Wno-external-argument-mismatch&
@@ -864,7 +864,7 @@ module fpm_manifest_feature_collection
         collection%base%name = 'release'
         collection%base%platform%compiler = id_all
         collection%base%platform%os_type = OS_ALL
-        
+
         ! Add release variants for different compilers
         call collection%push_variant(default_variant('release', id_caf, OS_ALL, &
             ' -O3 -Wimplicit-interface -fPIC -fmax-errors=1 -funroll-loops', &
