@@ -11,7 +11,7 @@ module fpm_cmd_cmake
     use fpm_manifest_executable, only: executable_config_t
     use fpm_manifest_test, only: test_config_t
     use fpm_model, only: fpm_model_t, srcfile_t, FPM_SCOPE_LIB, FPM_SCOPE_APP, &
-                         FPM_SCOPE_TEST, FPM_SCOPE_EXAMPLE, FPM_UNIT_PROGRAM, &
+                         FPM_SCOPE_TEST, FPM_UNIT_PROGRAM, &
                          FPM_UNIT_MODULE, FPM_UNIT_SUBMODULE, FPM_UNIT_SUBPROGRAM, &
                          FPM_UNIT_CSOURCE, FPM_UNIT_CPPSOURCE, FPM_UNIT_CHEADER
     use fpm, only: build_model
@@ -111,6 +111,24 @@ module fpm_cmd_cmake
 
 contains
 
+    !> Get the compiler-specific preprocessing flag for Fortran
+    pure function get_cpp_flag(compiler_id) result(flag)
+        integer(compiler_enum), intent(in) :: compiler_id
+        character(:), allocatable :: flag
+        select case(compiler_id)
+        case default
+            flag = ""
+        case(id_caf, id_gcc, id_f95, id_nvhpc, id_flang, id_amdflang)
+            flag = "-cpp"
+        case(id_intel_classic_windows, id_intel_llvm_windows)
+            flag = "/fpp"
+        case(id_intel_classic_nix, id_intel_classic_mac, id_intel_llvm_nix, id_nag)
+            flag = "-fpp"
+        case(id_lfortran)
+            flag = "--cpp"
+        end select
+    end function get_cpp_flag
+
     !> Add preprocessing flags to target (preprocessing flag + expanded macros)
     subroutine append_preprocessing_flags(builder, target_name, compiler_id, &
                                           preprocess, version, visibility)
@@ -147,19 +165,7 @@ contains
         vis = CMAKE_VISIBILITY_PUBLIC
         if (present(visibility)) vis = visibility
 
-        ! Determine preprocessing flag based on compiler ID
-        select case(compiler_id)
-        case default
-            cpp_flag = ""
-        case(id_caf, id_gcc, id_f95, id_nvhpc, id_flang, id_amdflang)
-            cpp_flag = "-cpp"
-        case(id_intel_classic_windows, id_intel_llvm_windows)
-            cpp_flag = "/fpp"
-        case(id_intel_classic_nix, id_intel_classic_mac, id_intel_llvm_nix, id_nag)
-            cpp_flag = "-fpp"
-        case(id_lfortran)
-            cpp_flag = "--cpp"
-        end select
+        cpp_flag = get_cpp_flag(compiler_id)
 
         ! Start target_compile_options only if we have macros to add
         call builder%append( 'target_compile_options('//target_name//' '//vis)
@@ -188,19 +194,7 @@ contains
         vis = CMAKE_VISIBILITY_PUBLIC
         if (present(visibility)) vis = visibility
 
-        ! Determine preprocessing flag based on compiler ID
-        select case(compiler_id)
-        case default
-            cpp_flag = ""
-        case(id_caf, id_gcc, id_f95, id_nvhpc, id_flang, id_amdflang)
-            cpp_flag = "-cpp"
-        case(id_intel_classic_windows, id_intel_llvm_windows)
-            cpp_flag = "/fpp"
-        case(id_intel_classic_nix, id_intel_classic_mac, id_intel_llvm_nix, id_nag)
-            cpp_flag = "-fpp"
-        case(id_lfortran)
-            cpp_flag = "--cpp"
-        end select
+        cpp_flag = get_cpp_flag(compiler_id)
 
         ! Add preprocessing flag if compiler needs one
         if (len(cpp_flag) > 0) then
@@ -216,7 +210,6 @@ contains
         type(library_config_t), intent(in), optional :: library_config
         type(string_t), allocatable, intent(out) :: include_dirs(:)
 
-        type(string_t), allocatable :: temp_dirs(:)
         integer :: i, count
 
         ! Count existing include directories
@@ -266,7 +259,7 @@ contains
 
         logical :: dep_has_include
 
-        inquire(file=trim(dep_path)//'/include', exist=dep_has_include)
+        dep_has_include = is_dir(trim(dep_path)//'/include')
         if (dep_has_include) then
             allocate(include_dirs(1))
             include_dirs(1)%s = 'include'
@@ -789,6 +782,15 @@ contains
             end do
             if (matched) cycle
 
+            ! Check for C/C++ header extensions (don't count as any language)
+            do j = 1, size(c_header_suffixes)
+                if (str_ends_with(lower_name, trim(c_header_suffixes(j)))) then
+                    matched = .true.
+                    exit
+                end if
+            end do
+            if (matched) cycle
+
             ! Assume Fortran for .f90, .f, .F90, .F, etc.
             has_fortran = .true.
         end do
@@ -802,6 +804,72 @@ contains
             lang = TARGET_LANG_FORTRAN
         end if
     end function detect_target_language
+
+    !> Detect all languages present in source files and return a CMake LANGUAGES string
+    function detect_languages_string(sources) result(languages)
+        type(string_t), intent(in) :: sources(:)
+        character(:), allocatable :: languages
+
+        integer :: i, j
+        logical :: has_fortran, has_c, has_cpp, matched
+        character(len=:), allocatable :: lower_name
+
+        has_fortran = .false.
+        has_c = .false.
+        has_cpp = .false.
+
+        do i = 1, size(sources)
+            lower_name = lower(sources(i)%s)
+            matched = .false.
+
+            do j = 1, size(cpp_source_suffixes)
+                if (str_ends_with(lower_name, trim(cpp_source_suffixes(j)))) then
+                    has_cpp = .true.
+                    matched = .true.
+                    exit
+                end if
+            end do
+            if (matched) cycle
+
+            do j = 1, size(c_source_suffixes)
+                if (str_ends_with(lower_name, trim(c_source_suffixes(j)))) then
+                    has_c = .true.
+                    matched = .true.
+                    exit
+                end if
+            end do
+            if (matched) cycle
+
+            do j = 1, size(c_header_suffixes)
+                if (str_ends_with(lower_name, trim(c_header_suffixes(j)))) then
+                    matched = .true.
+                    exit
+                end if
+            end do
+            if (matched) cycle
+
+            has_fortran = .true.
+        end do
+
+        languages = ''
+        if (has_fortran) languages = 'Fortran'
+        if (has_c) then
+            if (len(languages) > 0) then
+                languages = trim(languages)//' C'
+            else
+                languages = 'C'
+            end if
+        end if
+        if (has_cpp) then
+            if (len(languages) > 0) then
+                languages = trim(languages)//' CXX'
+            else
+                languages = 'CXX'
+            end if
+        end if
+
+        if (len(languages) == 0) languages = 'Fortran'
+    end function detect_languages_string
 
     !> Add metapackage settings (include directories, link options, and libraries) to a target
     subroutine append_metapackage_settings(builder, target_name, model, is_interface, target_sources)
@@ -1287,7 +1355,7 @@ contains
                 ! Add metapackage settings (include dirs, link flags, and libraries)
                 ! Tests are always regular targets (not INTERFACE)
                 call append_metapackage_settings(builder, exe_name_str, model, .false., exe_sources)
-                call builder%append( 'add_test(NAME '//exe_name_str// &
+                call builder%append( 'add_test(NAME '//original_test_name// &
                              ' COMMAND '//original_test_name//')')
                 call builder%append( "")
             end do
@@ -1801,6 +1869,7 @@ contains
 
         type(line_builder_t) :: builder
         character(len=:), allocatable :: cmake_file, rel_path, dep_manifest, manifest_hash
+        character(len=:), allocatable :: languages
         type(string_t), allocatable :: rel_sources(:), include_dirs(:)
         integer :: i, path_len, src_count
         logical :: header_only
@@ -1816,7 +1885,8 @@ contains
         call builder%append( "# CMakeLists.txt generated by fpm for "//trim(dep%name))
         call builder%append( "# Manifest hash: "//manifest_hash)
         call builder%append( "cmake_minimum_required(VERSION "//CMAKE_MINIMUM_VERSION//")")
-        call builder%append( 'project('//trim(dep%name)//' LANGUAGES Fortran)')
+        languages = detect_languages_string(dep%sources)
+        call builder%append( 'project('//trim(dep%name)//' LANGUAGES '//trim(languages)//')')
         call builder%append( "")
 
         ! Check if dependency is header-only using existing helper
@@ -1911,33 +1981,6 @@ contains
         logical :: exists
         exists = is_dir('include')
     end function has_include_dir
-
-    !> Check if sources contain only headers (no compilable library sources)
-    function is_header_only(sources) result(header_only)
-        type(srcfile_t), intent(in) :: sources(:)
-        logical :: header_only
-        integer :: i
-        logical :: has_headers, has_compilable_lib
-
-        has_headers = .false.
-        has_compilable_lib = .false.
-
-        ! Check for headers and compilable library sources
-        do i = 1, size(sources)
-            ! Check if we have any C header files
-            if (sources(i)%unit_type == FPM_UNIT_CHEADER) then
-                has_headers = .true.
-            end if
-            ! Check if we have any compilable library sources (not headers)
-            if (sources(i)%unit_scope == FPM_SCOPE_LIB .and. &
-                sources(i)%unit_type /= FPM_UNIT_CHEADER) then
-                has_compilable_lib = .true.
-            end if
-        end do
-
-        ! It's header-only if we have headers but no compilable library sources
-        header_only = has_headers .and. .not. has_compilable_lib
-    end function is_header_only
 
     !> Check if library has include directories from manifest
     function has_include_dir_from_manifest(library_config) result(has_dirs)

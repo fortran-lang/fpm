@@ -79,8 +79,10 @@ for dir in example_packages/*/ ; do
 	fi
 
 	# Cleanup
-	rm CMakeLists.txt
+	rm -f CMakeLists.txt
 	rm -rf temp_cmake_build
+	# Clean up generated CMakeLists.txt in dependency directories
+	find build/dependencies -name CMakeLists.txt -delete 2>/dev/null || true
 
 	popd
 
