@@ -840,7 +840,7 @@ module fpm_manifest_feature_collection
             ' -fPIC', &
             ' -fPIC'))
             
-        call collection%push_variant(default_variant('debug', id_intel_classic_nix, OS_WINDOWS, &
+        call collection%push_variant(default_variant('debug', id_intel_classic_windows, OS_WINDOWS, &
             ' /warn:all /check:all /error-limit:1&
             & /Od /Z7 /assume:byterecl /traceback'))
             
@@ -849,7 +849,7 @@ module fpm_manifest_feature_collection
             ' -fPIC', &
             ' -fPIC'))
             
-        call collection%push_variant(default_variant('debug', id_intel_llvm_nix, OS_WINDOWS, &
+        call collection%push_variant(default_variant('debug', id_intel_llvm_windows, OS_WINDOWS, &
             ' /warn:all /check:all /error-limit:1 /Od /Z7 /assume:byterecl'))
             
         call collection%push_variant(default_variant('debug', id_lfortran, OS_ALL, '', ' -fPIC', ' -fPIC'))
@@ -902,7 +902,7 @@ module fpm_manifest_feature_collection
             ' -fPIC', &
             ' -fPIC'))
             
-        call collection%push_variant(default_variant('release', id_intel_llvm_nix, &
+        call collection%push_variant(default_variant('release', id_intel_llvm_windows, &
             OS_WINDOWS, ' /fp:precise /align:all /error-limit:1 /reentrancy:threaded&
             & /nogen-interfaces /assume:byterecl'))
         
@@ -912,7 +912,7 @@ module fpm_manifest_feature_collection
             ' -fPIC'))
             
         call collection%push_variant(default_variant('release', id_lfortran, OS_ALL, &
-            ' flag_lfortran_opt', &
+            ' --fast', &
             ' -fPIC', &
             ' -fPIC'))
             

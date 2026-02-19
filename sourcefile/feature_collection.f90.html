@@ -1012,7 +1012,7 @@
 <a id="ln-839" name="ln-839" href="#ln-839"></a><span class="w">            </span><span class="s1">&#39; -fPIC&#39;</span><span class="p">,</span><span class="w"> </span><span class="p">&amp;</span>
 <a id="ln-840" name="ln-840" href="#ln-840"></a><span class="w">            </span><span class="s1">&#39; -fPIC&#39;</span><span class="p">))</span>
 <a id="ln-841" name="ln-841" href="#ln-841"></a><span class="w">            </span>
-<a id="ln-842" name="ln-842" href="#ln-842"></a><span class="w">        </span><span class="k">call </span><span class="n">collection</span><span class="p">%</span><span class="n">push_variant</span><span class="p">(</span><span class="n">default_variant</span><span class="p">(</span><span class="s1">&#39;debug&#39;</span><span class="p">,</span><span class="w"> </span><span class="n">id_intel_classic_nix</span><span class="p">,</span><span class="w"> </span><span class="n">OS_WINDOWS</span><span class="p">,</span><span class="w"> </span><span class="p">&amp;</span>
+<a id="ln-842" name="ln-842" href="#ln-842"></a><span class="w">        </span><span class="k">call </span><span class="n">collection</span><span class="p">%</span><span class="n">push_variant</span><span class="p">(</span><span class="n">default_variant</span><span class="p">(</span><span class="s1">&#39;debug&#39;</span><span class="p">,</span><span class="w"> </span><span class="n">id_intel_classic_windows</span><span class="p">,</span><span class="w"> </span><span class="n">OS_WINDOWS</span><span class="p">,</span><span class="w"> </span><span class="p">&amp;</span>
 <a id="ln-843" name="ln-843" href="#ln-843"></a><span class="w">            </span><span class="s1">&#39; /warn:all /check:all /error-limit:1&amp;</span>
 <a id="ln-844" name="ln-844" href="#ln-844"></a><span class="s1">            &amp; /Od /Z7 /assume:byterecl /traceback&#39;</span><span class="p">))</span>
 <a id="ln-845" name="ln-845" href="#ln-845"></a><span class="w">            </span>
@@ -1021,7 +1021,7 @@
 <a id="ln-848" name="ln-848" href="#ln-848"></a><span class="w">            </span><span class="s1">&#39; -fPIC&#39;</span><span class="p">,</span><span class="w"> </span><span class="p">&amp;</span>
 <a id="ln-849" name="ln-849" href="#ln-849"></a><span class="w">            </span><span class="s1">&#39; -fPIC&#39;</span><span class="p">))</span>
 <a id="ln-850" name="ln-850" href="#ln-850"></a><span class="w">            </span>
-<a id="ln-851" name="ln-851" href="#ln-851"></a><span class="w">        </span><span class="k">call </span><span class="n">collection</span><span class="p">%</span><span class="n">push_variant</span><span class="p">(</span><span class="n">default_variant</span><span class="p">(</span><span class="s1">&#39;debug&#39;</span><span class="p">,</span><span class="w"> </span><span class="n">id_intel_llvm_nix</span><span class="p">,</span><span class="w"> </span><span class="n">OS_WINDOWS</span><span class="p">,</span><span class="w"> </span><span class="p">&amp;</span>
+<a id="ln-851" name="ln-851" href="#ln-851"></a><span class="w">        </span><span class="k">call </span><span class="n">collection</span><span class="p">%</span><span class="n">push_variant</span><span class="p">(</span><span class="n">default_variant</span><span class="p">(</span><span class="s1">&#39;debug&#39;</span><span class="p">,</span><span class="w"> </span><span class="n">id_intel_llvm_windows</span><span class="p">,</span><span class="w"> </span><span class="n">OS_WINDOWS</span><span class="p">,</span><span class="w"> </span><span class="p">&amp;</span>
 <a id="ln-852" name="ln-852" href="#ln-852"></a><span class="w">            </span><span class="s1">&#39; /warn:all /check:all /error-limit:1 /Od /Z7 /assume:byterecl&#39;</span><span class="p">))</span>
 <a id="ln-853" name="ln-853" href="#ln-853"></a><span class="w">            </span>
 <a id="ln-854" name="ln-854" href="#ln-854"></a><span class="w">        </span><span class="k">call </span><span class="n">collection</span><span class="p">%</span><span class="n">push_variant</span><span class="p">(</span><span class="n">default_variant</span><span class="p">(</span><span class="s1">&#39;debug&#39;</span><span class="p">,</span><span class="w"> </span><span class="n">id_lfortran</span><span class="p">,</span><span class="w"> </span><span class="n">OS_ALL</span><span class="p">,</span><span class="w"> </span><span class="s1">&#39;&#39;</span><span class="p">,</span><span class="w"> </span><span class="s1">&#39; -fPIC&#39;</span><span class="p">,</span><span class="w"> </span><span class="s1">&#39; -fPIC&#39;</span><span class="p">))</span>
@@ -1074,7 +1074,7 @@
 <a id="ln-901" name="ln-901" href="#ln-901"></a><span class="w">            </span><span class="s1">&#39; -fPIC&#39;</span><span class="p">,</span><span class="w"> </span><span class="p">&amp;</span>
 <a id="ln-902" name="ln-902" href="#ln-902"></a><span class="w">            </span><span class="s1">&#39; -fPIC&#39;</span><span class="p">))</span>
 <a id="ln-903" name="ln-903" href="#ln-903"></a><span class="w">            </span>
-<a id="ln-904" name="ln-904" href="#ln-904"></a><span class="w">        </span><span class="k">call </span><span class="n">collection</span><span class="p">%</span><span class="n">push_variant</span><span class="p">(</span><span class="n">default_variant</span><span class="p">(</span><span class="s1">&#39;release&#39;</span><span class="p">,</span><span class="w"> </span><span class="n">id_intel_llvm_nix</span><span class="p">,</span><span class="w"> </span><span class="p">&amp;</span>
+<a id="ln-904" name="ln-904" href="#ln-904"></a><span class="w">        </span><span class="k">call </span><span class="n">collection</span><span class="p">%</span><span class="n">push_variant</span><span class="p">(</span><span class="n">default_variant</span><span class="p">(</span><span class="s1">&#39;release&#39;</span><span class="p">,</span><span class="w"> </span><span class="n">id_intel_llvm_windows</span><span class="p">,</span><span class="w"> </span><span class="p">&amp;</span>
 <a id="ln-905" name="ln-905" href="#ln-905"></a><span class="w">            </span><span class="n">OS_WINDOWS</span><span class="p">,</span><span class="w"> </span><span class="s1">&#39; /fp:precise /align:all /error-limit:1 /reentrancy:threaded&amp;</span>
 <a id="ln-906" name="ln-906" href="#ln-906"></a><span class="s1">            &amp; /nogen-interfaces /assume:byterecl&#39;</span><span class="p">))</span>
 <a id="ln-907" name="ln-907" href="#ln-907"></a><span class="w">        </span>
@@ -1084,7 +1084,7 @@
 <a id="ln-911" name="ln-911" href="#ln-911"></a><span class="w">            </span><span class="s1">&#39; -fPIC&#39;</span><span class="p">))</span>
 <a id="ln-912" name="ln-912" href="#ln-912"></a><span class="w">            </span>
 <a id="ln-913" name="ln-913" href="#ln-913"></a><span class="w">        </span><span class="k">call </span><span class="n">collection</span><span class="p">%</span><span class="n">push_variant</span><span class="p">(</span><span class="n">default_variant</span><span class="p">(</span><span class="s1">&#39;release&#39;</span><span class="p">,</span><span class="w"> </span><span class="n">id_lfortran</span><span class="p">,</span><span class="w"> </span><span class="n">OS_ALL</span><span class="p">,</span><span class="w"> </span><span class="p">&amp;</span>
-<a id="ln-914" name="ln-914" href="#ln-914"></a><span class="w">            </span><span class="s1">&#39; flag_lfortran_opt&#39;</span><span class="p">,</span><span class="w"> </span><span class="p">&amp;</span>
+<a id="ln-914" name="ln-914" href="#ln-914"></a><span class="w">            </span><span class="s1">&#39; --fast&#39;</span><span class="p">,</span><span class="w"> </span><span class="p">&amp;</span>
 <a id="ln-915" name="ln-915" href="#ln-915"></a><span class="w">            </span><span class="s1">&#39; -fPIC&#39;</span><span class="p">,</span><span class="w"> </span><span class="p">&amp;</span>
 <a id="ln-916" name="ln-916" href="#ln-916"></a><span class="w">            </span><span class="s1">&#39; -fPIC&#39;</span><span class="p">))</span>
 <a id="ln-917" name="ln-917" href="#ln-917"></a><span class="w">            </span>
@@ -1530,7 +1530,7 @@
             <p class="text-end">
               Documentation generated by
               <a href="https://github.com/Fortran-FOSS-Programmers/ford">FORD</a>
- on 2026-02-17 17:06 +0000             </p>
+ on 2026-02-19 18:32 +0000             </p>
           </div>
         </div>
         <br>
