@@ -1,0 +1,27 @@
+name = "features_default_profile"
+version = "0.1.0"
+description = "Demo package for FPM default profile functionality"
+
+[[executable]]
+name = "features_default_profile"
+source-dir = "app"
+main = "main.f90"
+
+[features]
+# Baseline feature: always present with debug/release, not with custom profiles
+baseline.preprocess.cpp.macros = "BASELINE"
+
+# Debug feature
+debug.preprocess.cpp.macros = "DEBUG"
+
+# Release feature
+release.preprocess.cpp.macros = "RELEASE"
+
+# A custom feature
+custom_opt.preprocess.cpp.macros = "CUSTOM"
+
+[profiles]
+default = ["baseline"]
+debug = ["debug"]
+release = ["release"]
+myprofile = ["custom_opt"]

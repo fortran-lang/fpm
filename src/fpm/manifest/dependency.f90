@@ -9,7 +9,13 @@
 !>"dep3" = { git = "url", tag = "name" }
 !>"dep4" = { git = "url", rev = "sha1" }
 !>"dep0" = { path = "path" }
+!>"dep5" = { path = "path", features = ["feat1", "feat2"] }
+!>"dep6" = { path = "path", profile = "myprofile" }
 !>```
+!>
+!> The `features` and `profile` keys are mutually exclusive.
+!> `features` provides a list of individual feature names;
+!> `profile` provides a single profile name defined in the dependency's manifest.
 !>
 !> To reduce the amount of boilerplate code this module provides two constructors
 !> for dependency types, one basic for an actual dependency (inline) table
@@ -65,6 +71,9 @@ module fpm_manifest_dependency
         
         !> Requested features for the dependency
         type(string_t), allocatable :: features(:)
+
+        !> Requested profile for the dependency (mutually exclusive with features)
+        character(len=:), allocatable :: profile
 
         !> Git descriptor
         type(git_target_t), allocatable :: git
@@ -136,6 +145,9 @@ contains
         call get_list(table, "features", self%features, error)
         if (allocated(error)) return
 
+        !> Get optional profile name
+        call get_value(table, "profile", self%profile)
+
         call get_value(table, "path", uri)
         if (allocated(uri)) then
             if (get_os_type() == OS_WINDOWS) uri = windows_path(uri)
@@ -197,7 +209,8 @@ contains
               "branch", &
               "rev", &
               "preprocess", &
-              "features" &
+              "features", &
+              "profile" &
             & ]
 
         call table%get_key(name)
@@ -252,7 +265,13 @@ contains
             end if
 
         end if
-        
+
+        ! Check that features and profile are not both specified
+        if (table%has_key('features') .and. table%has_key('profile')) then
+            call syntax_error(error, "Dependency '"//name//"' cannot have both 'features' and 'profile' entries")
+            return
+        end if
+
     end subroutine check
 
     !> Construct new dependency array from a TOML data structure
@@ -381,6 +400,10 @@ contains
           end do
        end if
 
+       if (allocated(self%profile)) then
+          write(unit, fmt) " - profile", self%profile
+       end if
+
     end subroutine info
 
     !> Check if two dependency configurations are different
@@ -418,6 +441,7 @@ contains
         if (allocated(self%requested_version)) deallocate(self%requested_version)
         if (allocated(self%git)) deallocate(self%git)
         if (allocated(self%features)) deallocate(self%features)
+        if (allocated(self%profile)) deallocate(self%profile)
 
     end subroutine dependency_destroy
 
@@ -450,7 +474,11 @@ contains
               if (allocated(this%features).neqv.allocated(other%features)) return
               if (allocated(this%features)) then
                 if (.not.(this%features==other%features)) return
-              endif              
+              endif
+              if (allocated(this%profile).neqv.allocated(other%profile)) return
+              if (allocated(this%profile)) then
+                if (.not.(this%profile==other%profile)) return
+              endif
 
               if ((allocated(this%git).neqv.allocated(other%git))) return
               if (allocated(this%git)) then
@@ -494,6 +522,8 @@ contains
              if (allocated(error)) return
         endif
        call set_list(table, "features", self%features, error)
+       if (allocated(error)) return
+       call set_string(table, "profile", self%profile, error, 'dependency_config_t')
        if (allocated(error)) return
 
         ! Serialize preprocessing configurations using config name as key
@@ -556,6 +586,7 @@ contains
         end if
         call get_list(table, "features", self%features, error)
         if (allocated(error)) return
+        call get_value(table, "profile", self%profile)
 
         call table%get_keys(list)
         do ii = 1, size(list)

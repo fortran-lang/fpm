@@ -157,6 +157,16 @@ grep -q "WITH_DEBUG_DEPENDENCY" output.txt || { echo "ERROR: WITH_DEBUG_DEPENDEN
 grep -q "DEBUG mode enabled" output.txt || { echo "ERROR: DEBUG mode not enabled in dependency profile test"; exit 1; }
 echo "✓ Debug dependency profile works"
 
+# Test 15: Dependency with profile (instead of features list)
+# features_demo's "prof_feats" profile resolves to ["prof_feat1", "prof_feat2"],
+# which sets the PROF_FEAT1 and PROF_FEAT2 macros
+echo "Test 15: Dependency with profile"
+rm -rf build
+"$fpm" run --profile dep_profile > output.txt
+grep -q "PROF_FEAT1 enabled" output.txt || { echo "ERROR: PROF_FEAT1 not enabled via dependency profile=prof_feats"; exit 1; }
+grep -q "PROF_FEAT2 enabled" output.txt || { echo "ERROR: PROF_FEAT2 not enabled via dependency profile=prof_feats"; exit 1; }
+echo "Dependency profile works"
+
 # Cleanup
 rm -rf build output.txt
 popd
@@ -303,6 +313,48 @@ if grep -q "✓ RELEASE: -O flags found" output.txt; then
     exit 1
 fi
 echo "✓ Baseline (no profile) works"
+
+# Cleanup
+rm -rf build output.txt
+popd
+
+echo "=== Testing features_default_profile package ==="
+
+pushd "features_default_profile"
+
+# Test: --profile debug should include default (baseline) + debug features
+echo "Test: Default profile with --profile debug"
+rm -rf build
+"$fpm" run --profile debug > output.txt
+grep -q "BASELINE active" output.txt || { echo "ERROR: BASELINE not active with --profile debug"; exit 1; }
+grep -q "DEBUG active" output.txt || { echo "ERROR: DEBUG not active with --profile debug"; exit 1; }
+echo "Default + debug profile works"
+
+# Test: --profile release should include default (baseline) + release features
+echo "Test: Default profile with --profile release"
+rm -rf build
+"$fpm" run --profile release > output.txt
+grep -q "BASELINE active" output.txt || { echo "ERROR: BASELINE not active with --profile release"; exit 1; }
+grep -q "RELEASE active" output.txt || { echo "ERROR: RELEASE not active with --profile release"; exit 1; }
+echo "Default + release profile works"
+
+# Test: --profile myprofile (custom) should NOT include default features
+echo "Test: Custom profile skips default features"
+rm -rf build
+"$fpm" run --profile myprofile > output.txt
+grep -q "CUSTOM active" output.txt || { echo "ERROR: CUSTOM not active with --profile myprofile"; exit 1; }
+if grep -q "BASELINE active" output.txt; then
+    echo "ERROR: BASELINE should NOT be active with custom profile"
+    exit 1
+fi
+echo "Custom profile correctly skips default"
+
+# Test: no profile (implicit debug) should include default features
+echo "Test: No profile includes default features"
+rm -rf build
+"$fpm" run > output.txt
+grep -q "BASELINE active" output.txt || { echo "ERROR: BASELINE not active with no explicit profile"; exit 1; }
+echo "Implicit build includes default features"
 
 # Cleanup
 rm -rf build output.txt

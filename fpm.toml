@@ -1,9 +1,9 @@
 name = "fpm"
-version = "0.12.0"
+version = "0.13.0"
 license = "MIT"
 author = "fpm maintainers"
 maintainer = "@fortran-lang/fpm"
-copyright = "2020-2025 fpm contributors"
+copyright = "2020-2026 fpm contributors"
 homepage = "https://fpm.fortran-lang.org/"
 description = "Fortran Package Manager"
 

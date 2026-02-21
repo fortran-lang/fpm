@@ -30,6 +30,11 @@ mpi.dependencies.mpi = "*"
 openmp.preprocess.cpp.macros = "USE_OPENMP"
 openmp.dependencies.openmp = "*"
 
+# Features for testing dependency profile resolution
+prof_feat1.preprocess.cpp.macros = "PROF_FEAT1"
+prof_feat2.preprocess.cpp.macros = "PROF_FEAT2"
+
 [profiles]
 development = ["debug"]
 production = ["release", "openmp"]
+prof_feats = ["prof_feat1", "prof_feat2"]

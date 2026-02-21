@@ -34,6 +34,13 @@ contains
         write(*,*) '✓ OpenMP support enabled'
 #endif
 
+#ifdef PROF_FEAT1
+        write(*,*) '✓ PROF_FEAT1 enabled'
+#endif
+#ifdef PROF_FEAT2
+        write(*,*) '✓ PROF_FEAT2 enabled'
+#endif
+
         ! Compiler info (if available)
         write(*,*) 'Build configuration:'
         call show_compiler_info()

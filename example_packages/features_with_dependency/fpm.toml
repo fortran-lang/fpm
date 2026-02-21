@@ -33,8 +33,14 @@ gfortran_optimized.gfortran.dependencies.features_demo = { path = "../features_d
 gfortran_optimized.gfortran.flags = "-O3 -mtune=generic -funroll-loops"
 gfortran_optimized.preprocess.cpp.macros = ["WITH_DEMO"]
 
+# Feature that uses a profile name (instead of features list) to build the dependency
+# "prof_feats" profile in features_demo resolves to ["prof_feat1", "prof_feat2"],
+# which sets the PROF_FEAT1 and PROF_FEAT2 macros
+with_dep_profile.dependencies.features_demo = { path = "../features_demo", profile = "prof_feats" }
+with_dep_profile.preprocess.cpp.macros = ["WITH_DEMO"]
 
 [profiles]
 debug_dep = ["with_feat_debug"]
 release_dep = ["with_feat_release"]
 full_test = ["with_feat_multi", "linux_specific"]
+dep_profile = ["with_dep_profile"]

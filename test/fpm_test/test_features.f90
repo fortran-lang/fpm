@@ -50,7 +50,11 @@ contains
             & new_unittest("feature-complex-chain-os-compiler-os", &
             &              test_feature_complex_chain_os_compiler_os, should_fail=.true.), &
             & new_unittest("feature-mixed-valid-chains", test_feature_mixed_valid_chains), &
-            & new_unittest("feature-compiler-flags-integration", test_feature_compiler_flags_integration) &
+            & new_unittest("feature-compiler-flags-integration", test_feature_compiler_flags_integration), &
+            & new_unittest("default-profile-with-debug", test_default_profile_with_debug), &
+            & new_unittest("default-profile-with-release", test_default_profile_with_release), &
+            & new_unittest("default-profile-implicit-debug", test_default_profile_implicit_debug), &
+            & new_unittest("default-profile-skipped-custom", test_default_profile_skipped_custom) &
             & ]
 
     end subroutine collect_features
@@ -1607,5 +1611,193 @@ contains
         ! Clean up - file was already closed after writing
 
     end subroutine test_feature_compiler_flags_integration
+
+    !> Test that "default" profile features are applied alongside --profile debug
+    subroutine test_default_profile_with_debug(error)
+        type(error_t), allocatable, intent(out) :: error
+
+        type(package_config_t) :: package_config, package
+        type(platform_config_t) :: target_platform
+        character(:), allocatable :: temp_file
+        integer :: unit
+
+        allocate(temp_file, source=get_temp_filename())
+
+        open(newunit=unit, file=temp_file, status='unknown')
+        write(unit, '(a)') 'name = "test_default"'
+        write(unit, '(a)') 'version = "0.1.0"'
+        write(unit, '(a)') '[library]'
+        write(unit, '(a)') 'source-dir = "src"'
+        write(unit, '(a)') ''
+        write(unit, '(a)') '[features]'
+        write(unit, '(a)') 'baseline.flags = "-fPIC"'
+        write(unit, '(a)') 'debug.flags = "-g"'
+        write(unit, '(a)') ''
+        write(unit, '(a)') '[profiles]'
+        write(unit, '(a)') 'default = ["baseline"]'
+        write(unit, '(a)') 'debug = ["debug"]'
+        close(unit)
+
+        call get_package_data(package_config, temp_file, error, apply_defaults=.true.)
+        if (allocated(error)) return
+
+        target_platform = platform_config_t(id_gcc, OS_LINUX)
+
+        ! Export with --profile debug: should get both default (baseline) and debug features
+        package = package_config%export_config(target_platform, profile="debug", verbose=.false., error=error)
+        if (allocated(error)) return
+
+        ! Should have baseline flags from default profile
+        if (index(package%flags, "-fPIC") == 0) then
+            call test_failed(error, "Expected default profile flags '-fPIC' to be present with --profile debug")
+            return
+        end if
+
+        ! Should also have debug flags
+        if (index(package%flags, "-g") == 0) then
+            call test_failed(error, "Expected debug flags '-g' to be present with --profile debug")
+            return
+        end if
+
+    end subroutine test_default_profile_with_debug
+
+    !> Test that "default" profile features are applied alongside --profile release
+    subroutine test_default_profile_with_release(error)
+        type(error_t), allocatable, intent(out) :: error
+
+        type(package_config_t) :: package_config, package
+        type(platform_config_t) :: target_platform
+        character(:), allocatable :: temp_file
+        integer :: unit
+
+        allocate(temp_file, source=get_temp_filename())
+
+        open(newunit=unit, file=temp_file, status='unknown')
+        write(unit, '(a)') 'name = "test_default"'
+        write(unit, '(a)') 'version = "0.1.0"'
+        write(unit, '(a)') '[library]'
+        write(unit, '(a)') 'source-dir = "src"'
+        write(unit, '(a)') ''
+        write(unit, '(a)') '[features]'
+        write(unit, '(a)') 'baseline.flags = "-fPIC"'
+        write(unit, '(a)') 'release.flags = "-O3"'
+        write(unit, '(a)') ''
+        write(unit, '(a)') '[profiles]'
+        write(unit, '(a)') 'default = ["baseline"]'
+        write(unit, '(a)') 'release = ["release"]'
+        close(unit)
+
+        call get_package_data(package_config, temp_file, error, apply_defaults=.true.)
+        if (allocated(error)) return
+
+        target_platform = platform_config_t(id_gcc, OS_LINUX)
+
+        ! Export with --profile release: should get both default (baseline) and release features
+        package = package_config%export_config(target_platform, profile="release", verbose=.false., error=error)
+        if (allocated(error)) return
+
+        ! Should have baseline flags from default profile
+        if (index(package%flags, "-fPIC") == 0) then
+            call test_failed(error, "Expected default profile flags '-fPIC' to be present with --profile release")
+            return
+        end if
+
+        ! Should also have release flags
+        if (index(package%flags, "-O3") == 0) then
+            call test_failed(error, "Expected release flags '-O3' to be present with --profile release")
+            return
+        end if
+
+    end subroutine test_default_profile_with_release
+
+    !> Test that "default" profile features are applied when no profile is specified (implicit debug)
+    subroutine test_default_profile_implicit_debug(error)
+        type(error_t), allocatable, intent(out) :: error
+
+        type(package_config_t) :: package_config, package
+        type(platform_config_t) :: target_platform
+        character(:), allocatable :: temp_file
+        integer :: unit
+
+        allocate(temp_file, source=get_temp_filename())
+
+        open(newunit=unit, file=temp_file, status='unknown')
+        write(unit, '(a)') 'name = "test_default"'
+        write(unit, '(a)') 'version = "0.1.0"'
+        write(unit, '(a)') '[library]'
+        write(unit, '(a)') 'source-dir = "src"'
+        write(unit, '(a)') ''
+        write(unit, '(a)') '[features]'
+        write(unit, '(a)') 'baseline.flags = "-fPIC"'
+        write(unit, '(a)') ''
+        write(unit, '(a)') '[profiles]'
+        write(unit, '(a)') 'default = ["baseline"]'
+        close(unit)
+
+        call get_package_data(package_config, temp_file, error, apply_defaults=.true.)
+        if (allocated(error)) return
+
+        target_platform = platform_config_t(id_gcc, OS_LINUX)
+
+        ! Export with no profile/features: should still get default profile features
+        package = package_config%export_config(target_platform, verbose=.false., error=error)
+        if (allocated(error)) return
+
+        ! Should have baseline flags from default profile
+        if (index(package%flags, "-fPIC") == 0) then
+            call test_failed(error, "Expected default profile flags '-fPIC' to be present with no explicit profile")
+            return
+        end if
+
+    end subroutine test_default_profile_implicit_debug
+
+    !> Test that "default" profile features are NOT applied when a custom profile is requested
+    subroutine test_default_profile_skipped_custom(error)
+        type(error_t), allocatable, intent(out) :: error
+
+        type(package_config_t) :: package_config, package
+        type(platform_config_t) :: target_platform
+        character(:), allocatable :: temp_file
+        integer :: unit
+
+        allocate(temp_file, source=get_temp_filename())
+
+        open(newunit=unit, file=temp_file, status='unknown')
+        write(unit, '(a)') 'name = "test_default"'
+        write(unit, '(a)') 'version = "0.1.0"'
+        write(unit, '(a)') '[library]'
+        write(unit, '(a)') 'source-dir = "src"'
+        write(unit, '(a)') ''
+        write(unit, '(a)') '[features]'
+        write(unit, '(a)') 'baseline.flags = "-fPIC"'
+        write(unit, '(a)') 'custom_opt.flags = "-O1"'
+        write(unit, '(a)') ''
+        write(unit, '(a)') '[profiles]'
+        write(unit, '(a)') 'default = ["baseline"]'
+        write(unit, '(a)') 'myprofile = ["custom_opt"]'
+        close(unit)
+
+        call get_package_data(package_config, temp_file, error, apply_defaults=.true.)
+        if (allocated(error)) return
+
+        target_platform = platform_config_t(id_gcc, OS_LINUX)
+
+        ! Export with --profile myprofile: should NOT get default profile features
+        package = package_config%export_config(target_platform, profile="myprofile", verbose=.false., error=error)
+        if (allocated(error)) return
+
+        ! Should have custom profile flags
+        if (index(package%flags, "-O1") == 0) then
+            call test_failed(error, "Expected custom profile flags '-O1' to be present")
+            return
+        end if
+
+        ! Should NOT have baseline flags from default profile
+        if (index(package%flags, "-fPIC") /= 0) then
+            call test_failed(error, "Default profile flags '-fPIC' should NOT be present with custom profile")
+            return
+        end if
+
+    end subroutine test_default_profile_skipped_custom
 
 end module test_features

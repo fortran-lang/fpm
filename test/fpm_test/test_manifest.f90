@@ -41,6 +41,10 @@ contains
             & new_unittest("dependency-features-present", test_dependency_features_present), &
             & new_unittest("dependency-features-absent",  test_dependency_features_absent),  &
             & new_unittest("dependency-features-empty",   test_dependency_features_empty),   &
+            & new_unittest("dependency-profile-present",  test_dependency_profile_present),  &
+            & new_unittest("dependency-profile-absent",   test_dependency_profile_absent),   &
+            & new_unittest("dependency-profile-features-conflict", &
+            &              test_dependency_profile_features_conflict, should_fail=.true.), &
             & new_unittest("dependency-wrongkey", test_dependency_wrongkey, should_fail=.true.), &
             & new_unittest("dependencies-empty", test_dependencies_empty), &
             & new_unittest("dependencies-typeerror", test_dependencies_typeerror, should_fail=.true.), &
@@ -1807,6 +1811,131 @@ contains
         if (allocated(error)) return
 
     end subroutine test_features_demo_serialization
+
+
+    !> Test that a dependency with "profile" key is parsed correctly
+    subroutine test_dependency_profile_present(error)
+        !> Error handling
+        type(error_t), allocatable, intent(out) :: error
+
+        type(package_config_t) :: package
+        character(:), allocatable :: temp_file
+        integer :: unit, i, idx_dep0, idx_dep1
+
+        allocate(temp_file, source=get_temp_filename())
+
+        open(file=temp_file, newunit=unit)
+        write(unit, '(a)') &
+            & 'name = "example"', &
+            & 'version = "0.1.0"', &
+            & '[dependencies]', &
+            & '"dep0" = { path = "local/dep0", profile = "release" }', &
+            & '"dep1" = { path = "local/dep1" }'
+        close(unit)
+
+        call get_package_data(package, temp_file, error)
+        if (allocated(error)) return
+
+        if (.not.allocated(package%dependency)) then
+            call test_failed(error, 'No dependencies parsed from manifest')
+            return
+        end if
+
+        idx_dep0 = 0; idx_dep1 = 0
+        do i = 1, size(package%dependency)
+            select case (package%dependency(i)%name)
+            case ('dep0'); idx_dep0 = i
+            case ('dep1'); idx_dep1 = i
+            end select
+        end do
+
+        if (idx_dep0 == 0 .or. idx_dep1 == 0) then
+            call test_failed(error, 'Expected dependencies dep0/dep1 not found')
+            return
+        end if
+
+        ! dep0: profile = "release"
+        if (.not.allocated(package%dependency(idx_dep0)%profile)) then
+            call test_failed(error, 'dep0 profile not allocated')
+            return
+        end if
+        if (package%dependency(idx_dep0)%profile /= 'release') then
+            call test_failed(error, 'dep0 profile value mismatch, expected "release"')
+            return
+        end if
+        ! dep0 should NOT have features allocated
+        if (allocated(package%dependency(idx_dep0)%features)) then
+            if (size(package%dependency(idx_dep0)%features) > 0) then
+                call test_failed(error, 'dep0 features should not be present when profile is used')
+                return
+            end if
+        end if
+
+        ! dep1: no profile key -> should be NOT allocated
+        if (allocated(package%dependency(idx_dep1)%profile)) then
+            call test_failed(error, 'dep1 profile should be unallocated when key is absent')
+            return
+        end if
+    end subroutine test_dependency_profile_present
+
+
+    !> Ensure a dependency without "profile" key leaves it unallocated
+    subroutine test_dependency_profile_absent(error)
+        !> Error handling
+        type(error_t), allocatable, intent(out) :: error
+
+        type(package_config_t) :: package
+        character(:), allocatable :: temp_file
+        integer :: unit, i
+
+        allocate(temp_file, source=get_temp_filename())
+
+        open(file=temp_file, newunit=unit)
+        write(unit, '(a)') &
+            & 'name = "example"', &
+            & '[dependencies]', &
+            & '"a" = { path = "a" }', &
+            & '"b" = { git = "https://example.org/b.git", branch = "main" }'
+        close(unit)
+
+        call get_package_data(package, temp_file, error)
+        if (allocated(error)) return
+
+        if (.not.allocated(package%dependency)) then
+            call test_failed(error, 'No dependencies parsed from manifest')
+            return
+        end if
+
+        do i = 1, size(package%dependency)
+            if (allocated(package%dependency(i)%profile)) then
+                call test_failed(error, 'profile should be unallocated when not specified')
+                return
+            end if
+        end do
+    end subroutine test_dependency_profile_absent
+
+
+    !> Specifying both "features" and "profile" should be an error
+    subroutine test_dependency_profile_features_conflict(error)
+        !> Error handling
+        type(error_t), allocatable, intent(out) :: error
+
+        type(package_config_t) :: package
+        character(:), allocatable :: temp_file
+        integer :: unit
+
+        allocate(temp_file, source=get_temp_filename())
+
+        open(file=temp_file, newunit=unit)
+        write(unit, '(a)') &
+            & 'name = "example"', &
+            & '[dependencies]', &
+            & '"bad" = { path = "bad", features = ["f1"], profile = "release" }'
+        close(unit)
+
+        call get_package_data(package, temp_file, error)
+
+    end subroutine test_dependency_profile_features_conflict
 
 
 end module test_manifest
