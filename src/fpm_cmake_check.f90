@@ -3,7 +3,6 @@ module fpm_cmake_check
     use fpm_filesystem, only: exists, read_lines
     use fpm_strings, only: string_t, fnv_1a
     use fpm_model, only: srcfile_t
-    use fpm_hash_table, only: string_hash_map_t
     use, intrinsic :: iso_fortran_env, only: int64
     implicit none
     private
@@ -14,24 +13,6 @@ module fpm_cmake_check
 
 contains
 
-    !> Sort string_t array in-place using insertion sort (for deterministic ordering)
-    subroutine sort_strings(arr)
-        type(string_t), intent(inout) :: arr(:)
-        integer :: i, j
-        type(string_t) :: temp
-
-        do i = 2, size(arr)
-            temp = arr(i)
-            j = i - 1
-            do while (j >= 1)
-                if (.not. llt(temp%s, arr(j)%s)) exit
-                arr(j + 1) = arr(j)
-                j = j - 1
-            end do
-            arr(j + 1) = temp
-        end do
-    end subroutine sort_strings
-
     !> Compute hash of manifest + all source files for comprehensive staleness detection
     !> This combines the manifest file hash with hashes of all source files (paths and content)
     function compute_project_hash(manifest_file, sources) result(hash_str)
@@ -39,11 +20,10 @@ contains
         type(srcfile_t), intent(in) :: sources(:)
         character(len=:), allocatable :: hash_str
 
-        type(string_t), allocatable :: lines(:), file_paths(:)
-        type(string_hash_map_t) :: source_index
-        integer(int64) :: hash_val
+        type(string_t), allocatable :: lines(:)
+        integer(int64) :: hash_val, file_hash
         character(len=20) :: temp_str, digest_str
-        integer :: i, src_idx
+        integer :: i
 
         ! Start with manifest file content hash
         if (exists(manifest_file)) then
@@ -60,30 +40,14 @@ contains
             hash_val = 0_int64
         end if
 
-        ! Collect and sort source file paths for deterministic ordering
+        ! XOR all per-file hashes for order-independent combination
         if (size(sources) > 0) then
-            ! Build hash map from file path to source index for O(1) lookup
-            call source_index%init(max(size(sources) * 2, 16))
-            allocate(file_paths(size(sources)))
+            file_hash = 0_int64
             do i = 1, size(sources)
-                file_paths(i)%s = sources(i)%file_name
-                call source_index%set(sources(i)%file_name, i)
+                write(digest_str, '(z16.16)') sources(i)%digest
+                file_hash = ieor(file_hash, ieor(fnv_1a(sources(i)%file_name), fnv_1a(trim(digest_str))))
             end do
-            call sort_strings(file_paths)
-
-            ! Chain-hash each file: path + content digest
-            do i = 1, size(file_paths)
-                ! Hash the file path
-                hash_val = fnv_1a(file_paths(i)%s, hash_val)
-
-                ! Look up source index and hash its digest
-                if (source_index%get(file_paths(i)%s, src_idx)) then
-                    write(digest_str, '(z16.16)') sources(src_idx)%digest
-                    hash_val = fnv_1a(trim(digest_str), hash_val)
-                end if
-            end do
-
-            call source_index%destroy()
+            hash_val = ieor(hash_val, file_hash)
         end if
 
         ! Convert hash to hex string
