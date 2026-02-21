@@ -625,8 +625,6 @@ contains
                 ! Skip sources in the exclusion list
                 if (use_exclude_hash) then
                     if (exclude_map%contains(sources(i)%file_name)) cycle
-                else if (present(exclude_sources)) then
-                    if (is_in_list(sources(i)%file_name, exclude_sources)) cycle
                 end if
 
                 ! Include all non-program sources (modules, etc.)
@@ -649,8 +647,6 @@ contains
                 ! Skip sources in the exclusion list
                 if (use_exclude_hash) then
                     if (exclude_map%contains(sources(i)%file_name)) cycle
-                else if (present(exclude_sources)) then
-                    if (is_in_list(sources(i)%file_name, exclude_sources)) cycle
                 end if
 
                 ! Include all non-program sources (modules, etc.)
@@ -673,22 +669,6 @@ contains
 
     end subroutine get_sources_for_exe
 
-    !> Check if a file path is in a list of string_t
-    function is_in_list(file_path, list) result(found)
-        character(len=*), intent(in) :: file_path
-        type(string_t), intent(in) :: list(:)
-        logical :: found
-        integer :: i
-
-        found = .false.
-        do i = 1, size(list)
-            if (trim(list(i)%s) == trim(file_path)) then
-                found = .true.
-                exit
-            end if
-        end do
-
-    end function is_in_list
 
     !> Find module sources shared across multiple executables in a directory
     subroutine find_shared_module_sources(sources, scope, shared_sources)
