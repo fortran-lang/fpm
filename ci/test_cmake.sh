@@ -89,6 +89,132 @@ for dir in example_packages/*/ ; do
 done
 
 echo "================================"
+echo "Testing fpm self-generation with CMake"
+echo "================================"
+
+# Ensure dependencies are fetched first
+"$fpm" build
+if [[ $? -ne 0 ]] ; then
+    build_failures+=("fpm self-generation (fpm build failed)")
+    echo "================================"
+    echo "Test Results Summary"
+    echo "================================"
+
+    if [[ ${#build_failures[@]} -eq 0 ]]; then
+        echo -e "Build failures: \033[0;32mnone\033[0m"
+    else
+        echo -e "Build failures (\033[0;31m${#build_failures[@]}\033[0m):"
+        printf '  %s\n' "${build_failures[@]}"
+    fi
+
+    echo ""
+
+    if [[ ${#runtime_failures[@]} -eq 0 ]]; then
+        echo -e "Runtime failures: \033[0;32mnone\033[0m"
+    else
+        echo -e "Runtime failures (\033[0;31m${#runtime_failures[@]}\033[0m):"
+        printf '  %s\n' "${runtime_failures[@]}"
+    fi
+
+    echo "================================"
+
+    total_failures=$((${#build_failures[@]} + ${#runtime_failures[@]}))
+    exit $total_failures
+fi
+
+# Generate CMakeLists.txt for fpm itself
+"$fpm" generate --cmake
+if [[ $? -ne 0 ]] ; then
+    build_failures+=("fpm self-generation (generate --cmake failed)")
+    # Cleanup and exit
+    rm -f CMakeLists.txt
+    find build/dependencies -name CMakeLists.txt -delete 2>/dev/null || true
+
+    echo "================================"
+    echo "Test Results Summary"
+    echo "================================"
+
+    if [[ ${#build_failures[@]} -eq 0 ]]; then
+        echo -e "Build failures: \033[0;32mnone\033[0m"
+    else
+        echo -e "Build failures (\033[0;31m${#build_failures[@]}\033[0m):"
+        printf '  %s\n' "${build_failures[@]}"
+    fi
+
+    echo ""
+
+    if [[ ${#runtime_failures[@]} -eq 0 ]]; then
+        echo -e "Runtime failures: \033[0;32mnone\033[0m"
+    else
+        echo -e "Runtime failures (\033[0;31m${#runtime_failures[@]}\033[0m):"
+        printf '  %s\n' "${runtime_failures[@]}"
+    fi
+
+    echo "================================"
+
+    total_failures=$((${#build_failures[@]} + ${#runtime_failures[@]}))
+    exit $total_failures
+fi
+
+# Configure and build with CMake
+if [[ -n "${CMAKE_GENERATOR_FLAG}" ]]; then
+    eval cmake ${CMAKE_GENERATOR_FLAG} -B temp_self_cmake_build -S .
+else
+    cmake -B temp_self_cmake_build -S .
+fi
+cmake --build temp_self_cmake_build --parallel
+if [[ $? -ne 0 ]] ; then
+    build_failures+=("fpm self-generation (cmake build failed)")
+    # Cleanup
+    rm -f CMakeLists.txt
+    rm -rf temp_self_cmake_build
+    find build/dependencies -name CMakeLists.txt -delete 2>/dev/null || true
+
+    echo "================================"
+    echo "Test Results Summary"
+    echo "================================"
+
+    if [[ ${#build_failures[@]} -eq 0 ]]; then
+        echo -e "Build failures: \033[0;32mnone\033[0m"
+    else
+        echo -e "Build failures (\033[0;31m${#build_failures[@]}\033[0m):"
+        printf '  %s\n' "${build_failures[@]}"
+    fi
+
+    echo ""
+
+    if [[ ${#runtime_failures[@]} -eq 0 ]]; then
+        echo -e "Runtime failures: \033[0;32mnone\033[0m"
+    else
+        echo -e "Runtime failures (\033[0;31m${#runtime_failures[@]}\033[0m):"
+        printf '  %s\n' "${runtime_failures[@]}"
+    fi
+
+    echo "================================"
+
+    total_failures=$((${#build_failures[@]} + ${#runtime_failures[@]}))
+    exit $total_failures
+fi
+
+# Run the CMake-built test suites
+echo "Running CMake-built test suites..."
+for test_exe in temp_self_cmake_build/fpm-test temp_self_cmake_build/cli-test ; do
+    if [[ -x "$test_exe" ]]; then
+        "$test_exe"
+        if [[ $? -ne 0 ]]; then
+            runtime_failures+=("fpm self-generation : $(basename $test_exe)")
+        fi
+    fi
+done
+
+# Cleanup
+rm -f CMakeLists.txt
+rm -rf temp_self_cmake_build
+find build/dependencies -name CMakeLists.txt -delete 2>/dev/null || true
+
+echo "Self-generation test completed"
+
+echo "================================"
 echo "Test Results Summary"
 echo "================================"
 
@@ -112,10 +238,3 @@ echo "================================"
 
 total_failures=$((${#build_failures[@]} + ${#runtime_failures[@]}))
 exit $total_failures
-
-# TODO: test fpm self-generation too:
-#
-#     fpm run -- generate --cmake
-#     cmake -B build -S .
-#     cmake --build build --parallel
-
