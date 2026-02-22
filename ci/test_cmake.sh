@@ -14,6 +14,28 @@ fi
 build_failures=()
 runtime_failures=()
 
+print_summary_and_exit() {
+	echo "================================"
+	echo "Test Results Summary"
+	echo "================================"
+	if [[ ${#build_failures[@]} -eq 0 ]]; then
+		echo -e "Build failures: \033[0;32mnone\033[0m"
+	else
+		echo -e "Build failures (\033[0;31m${#build_failures[@]}\033[0m):"
+		printf '  %s\n' "${build_failures[@]}"
+	fi
+	echo ""
+	if [[ ${#runtime_failures[@]} -eq 0 ]]; then
+		echo -e "Runtime failures: \033[0;32mnone\033[0m"
+	else
+		echo -e "Runtime failures (\033[0;31m${#runtime_failures[@]}\033[0m):"
+		printf '  %s\n' "${runtime_failures[@]}"
+	fi
+	echo "================================"
+	total_failures=$((${#build_failures[@]} + ${#runtime_failures[@]}))
+	exit $total_failures
+}
+
 # Detect Windows/MSYS2 and set CMake generator accordingly
 CMAKE_GENERATOR_FLAG=""
 if [[ "$OSTYPE" == "msys" ]] || [[ "$OSTYPE" == "win32" ]] || [[ -n "${MSYSTEM:-}" ]]; then
@@ -96,30 +118,7 @@ echo "================================"
 "$fpm" build
 if [[ $? -ne 0 ]] ; then
     build_failures+=("fpm self-generation (fpm build failed)")
-    echo "================================"
-    echo "Test Results Summary"
-    echo "================================"
-
-    if [[ ${#build_failures[@]} -eq 0 ]]; then
-        echo -e "Build failures: \033[0;32mnone\033[0m"
-    else
-        echo -e "Build failures (\033[0;31m${#build_failures[@]}\033[0m):"
-        printf '  %s\n' "${build_failures[@]}"
-    fi
-
-    echo ""
-
-    if [[ ${#runtime_failures[@]} -eq 0 ]]; then
-        echo -e "Runtime failures: \033[0;32mnone\033[0m"
-    else
-        echo -e "Runtime failures (\033[0;31m${#runtime_failures[@]}\033[0m):"
-        printf '  %s\n' "${runtime_failures[@]}"
-    fi
-
-    echo "================================"
-
-    total_failures=$((${#build_failures[@]} + ${#runtime_failures[@]}))
-    exit $total_failures
+    print_summary_and_exit
 fi
 
 # Generate CMakeLists.txt for fpm itself
@@ -129,31 +128,7 @@ if [[ $? -ne 0 ]] ; then
     # Cleanup and exit
     rm -f CMakeLists.txt
     find build/dependencies -name CMakeLists.txt -delete 2>/dev/null || true
-
-    echo "================================"
-    echo "Test Results Summary"
-    echo "================================"
-
-    if [[ ${#build_failures[@]} -eq 0 ]]; then
-        echo -e "Build failures: \033[0;32mnone\033[0m"
-    else
-        echo -e "Build failures (\033[0;31m${#build_failures[@]}\033[0m):"
-        printf '  %s\n' "${build_failures[@]}"
-    fi
-
-    echo ""
-
-    if [[ ${#runtime_failures[@]} -eq 0 ]]; then
-        echo -e "Runtime failures: \033[0;32mnone\033[0m"
-    else
-        echo -e "Runtime failures (\033[0;31m${#runtime_failures[@]}\033[0m):"
-        printf '  %s\n' "${runtime_failures[@]}"
-    fi
-
-    echo "================================"
-
-    total_failures=$((${#build_failures[@]} + ${#runtime_failures[@]}))
-    exit $total_failures
+    print_summary_and_exit
 fi
 
 # Configure and build with CMake
@@ -169,31 +144,7 @@ if [[ $? -ne 0 ]] ; then
     rm -f CMakeLists.txt
     rm -rf temp_self_cmake_build
     find build/dependencies -name CMakeLists.txt -delete 2>/dev/null || true
-
-    echo "================================"
-    echo "Test Results Summary"
-    echo "================================"
-
-    if [[ ${#build_failures[@]} -eq 0 ]]; then
-        echo -e "Build failures: \033[0;32mnone\033[0m"
-    else
-        echo -e "Build failures (\033[0;31m${#build_failures[@]}\033[0m):"
-        printf '  %s\n' "${build_failures[@]}"
-    fi
-
-    echo ""
-
-    if [[ ${#runtime_failures[@]} -eq 0 ]]; then
-        echo -e "Runtime failures: \033[0;32mnone\033[0m"
-    else
-        echo -e "Runtime failures (\033[0;31m${#runtime_failures[@]}\033[0m):"
-        printf '  %s\n' "${runtime_failures[@]}"
-    fi
-
-    echo "================================"
-
-    total_failures=$((${#build_failures[@]} + ${#runtime_failures[@]}))
-    exit $total_failures
+    print_summary_and_exit
 fi
 
 # Run the CMake-built test suites
@@ -214,27 +165,4 @@ find build/dependencies -name CMakeLists.txt -delete 2>/dev/null || true
 
 echo "Self-generation test completed"
 
-echo "================================"
-echo "Test Results Summary"
-echo "================================"
-
-if [[ ${#build_failures[@]} -eq 0 ]]; then
-	echo -e "Build failures: \033[0;32mnone\033[0m"
-else
-	echo -e "Build failures (\033[0;31m${#build_failures[@]}\033[0m):"
-	printf '  %s\n' "${build_failures[@]}"
-fi
-
-echo ""
-
-if [[ ${#runtime_failures[@]} -eq 0 ]]; then
-	echo -e "Runtime failures: \033[0;32mnone\033[0m"
-else
-	echo -e "Runtime failures (\033[0;31m${#runtime_failures[@]}\033[0m):"
-	printf '  %s\n' "${runtime_failures[@]}"
-fi
-
-echo "================================"
-
-total_failures=$((${#build_failures[@]} + ${#runtime_failures[@]}))
-exit $total_failures
+print_summary_and_exit
