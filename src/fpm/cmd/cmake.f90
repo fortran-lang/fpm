@@ -854,7 +854,7 @@ contains
         type(fpm_model_t), intent(in) :: model
         logical, intent(in), optional :: is_interface
         type(string_t), intent(in), optional :: target_sources(:)
-        integer :: i, target_lang
+        integer :: target_lang
         type(link_flags_t) :: parsed_flags
         character(len=:), allocatable :: prop_keyword, link_flags_to_use
 
@@ -1062,7 +1062,7 @@ contains
         end if
 
         ! Dependencies section (after library so subdirs can reference it)
-        call write_cmake_dependencies(builder, dependencies, '.')
+        call write_cmake_dependencies(builder, dependencies)
 
         ! Link library to dependencies (after dependencies are added)
         ! Skip dev-dependencies - those are only for tests
@@ -1470,7 +1470,6 @@ contains
         logical :: found_match
         type(dependency_info_t), allocatable :: temp_deps(:), filtered_deps(:)
         type(preprocess_config_t), allocatable :: temp_preprocess(:)
-        logical :: is_dev_dep
         type(package_config_t) :: dep_package
         type(error_t), allocatable :: dep_error
         character(:), allocatable :: dep_manifest_path
@@ -1808,8 +1807,6 @@ contains
 
     end subroutine append_dependency_links
 
-    !> Check if packages(index) exists in packages(1:index-1)
-
     !> Categorize a link flag token
     !> Returns: 1=option, 2=libdir, 3=libname, 0=unknown (treated as option)
     function categorize_link_flag(token, is_framework_arg) result(category)
@@ -1915,10 +1912,9 @@ contains
     end subroutine generate_dependency_cmake
 
     !> Write dependency section to CMakeLists.txt
-    subroutine write_cmake_dependencies(builder, deps, base_dir)
+    subroutine write_cmake_dependencies(builder, deps)
         type(line_builder_t), intent(inout) :: builder
         type(dependency_info_t), intent(in) :: deps(:)
-        character(len=*), intent(in) :: base_dir
 
         integer :: i
 
@@ -1979,8 +1975,6 @@ contains
         type(preprocess_config_t), intent(in), optional :: preprocess(:)
         type(string_t), intent(in), optional :: sources(:)
         logical :: should_set
-
-        integer :: i
 
         should_set = .false.
 
@@ -2135,11 +2129,9 @@ contains
     end function is_library_name_flag
 
     !> Check if a token is a library directory flag (-L*)
-    function is_library_dir_flag(token) result(is_dir)
+    logical function is_library_dir_flag(token)
         character(len=*), intent(in) :: token
-        logical :: is_dir
-
-        is_dir = str_begins_with_str(token, '-L', case_sensitive=.true.)
+        is_library_dir_flag = str_begins_with_str(token, '-L', case_sensitive=.true.)
     end function is_library_dir_flag
 
     !> Check if a token is a linker option flag
