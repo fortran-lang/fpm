@@ -139,10 +139,8 @@ contains
         type(version_t), intent(in), optional :: version
         character(len=*), intent(in), optional :: visibility
 
-        character(:), allocatable :: cpp_flag, macros_str, vis
-        character(:), allocatable :: raw_tokens(:)
-        type(string_t), allocatable :: tokens(:)
-        integer :: i, j
+        character(:), allocatable :: vis
+        integer :: i
         logical :: has_macros
 
         ! Return early if no preprocessing
@@ -164,8 +162,6 @@ contains
         ! Default visibility
         vis = CMAKE_VISIBILITY_PUBLIC
         if (present(visibility)) vis = visibility
-
-        cpp_flag = get_cpp_flag(compiler_id)
 
         ! Start target_compile_options only if we have macros to add
         call builder%append( 'target_compile_options('//target_name//' '//vis)
@@ -2060,7 +2056,6 @@ contains
 
         integer :: i
         logical :: has_fortran_sources
-        character(len=:), allocatable :: file_ext
 
         ! Check if there are any Fortran sources (skip C/C++ files)
         has_fortran_sources = .false.
