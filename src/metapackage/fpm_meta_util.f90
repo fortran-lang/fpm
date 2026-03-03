@@ -65,7 +65,14 @@ module fpm_meta_util
 
         do i = 1, size(flags)
             if (str_begins_with_str(flags(i)%s, include_flag)) then
+                ! Flag starts with include_flag (e.g., "-I " for flag "-I /path")
                 current_include_dir = string_t(flags(i)%s(len(include_flag)+1:))
+                if (len_trim(current_include_dir%s) == 0) cycle
+                this%has_include_dirs = .true.
+                call add_strings(this%incl_dirs, current_include_dir)
+            else if (str_begins_with_str(flags(i)%s, trim(include_flag))) then
+                ! Flag starts with trimmed include_flag (e.g., "-I" for flag "-I/path")
+                current_include_dir = string_t(flags(i)%s(len(trim(include_flag))+1:))
                 if (len_trim(current_include_dir%s) == 0) cycle
                 this%has_include_dirs = .true.
                 call add_strings(this%incl_dirs, current_include_dir)
