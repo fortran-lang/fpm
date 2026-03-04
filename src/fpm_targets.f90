@@ -810,6 +810,27 @@ subroutine resolve_module_dependencies(targets,external_modules,error)
 
     end do
 
+    ! Ensure ALL submodules are compiled before ANY program target.
+    ! Programs are terminal nodes in the build graph, so adding these edges
+    ! has minimal impact on parallelism but guarantees correct build order
+    ! for compilers that need .smod files before compiling the main program
+    ! (e.g., LFortran's direct compilation mode).
+    do i=1,size(targets)
+
+        if (.not.allocated(targets(i)%ptr%source)) cycle
+        if (targets(i)%ptr%source%unit_type /= FPM_UNIT_PROGRAM) cycle
+
+        do j=1,size(targets)
+
+            if (.not.allocated(targets(j)%ptr%source)) cycle
+            if (targets(j)%ptr%source%unit_type /= FPM_UNIT_SUBMODULE) cycle
+
+            call add_dependency(targets(i)%ptr, targets(j)%ptr)
+
+        end do
+
+    end do
+
 end subroutine resolve_module_dependencies
 
 function find_module_dependency(targets,module_name,include_dir) result(target_ptr)
