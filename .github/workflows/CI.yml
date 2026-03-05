@@ -259,6 +259,15 @@ jobs:
       env:
         EXE: fpm-${{ env.VERSION }}-${{ matrix.os-arch }}-gcc-${{ matrix.toolchain.version }}${{ matrix.exe }}
 
+    # Verify Windows release binary is statically linked (Issue #1204)
+    # Dynamic linking against GCC runtime DLLs causes ABI mismatch crashes
+    # when users have different GCC versions with incompatible threading models.
+    - name: Verify static linking (Windows)
+      if: contains(matrix.os, 'windows')
+      shell: bash
+      run: |
+        bash ci/verify_static_linking.sh "${{ env.FPM_RELEASE }}"
+
     - name: Run release version
       shell: bash
       run: |
@@ -338,6 +347,12 @@ jobs:
           exit 1
         fi
         cp "$exe_path" ./ci/fpm.exe
+
+    # Verify the binary going into the installer is statically linked (Issue #1204)
+    - name: Verify static linking (installer binary)
+      shell: msys2 {0}
+      run: |
+        bash ci/verify_static_linking.sh ./ci/fpm.exe
 
     - name: Fetch Git for Windows
       shell: msys2 {0}
