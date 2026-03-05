@@ -716,3 +716,58 @@ that should be produced as the command line argument.
 
 > Note: All file and directory names are specified with their full canonical
 > path.
+
+### Windows distribution builds: static linking requirement
+
+When building *fpm* for distribution on **Windows** (e.g., for conda-forge,
+MSYS2, Spack, package installers, or any other distribution channel), you
+**must** statically link the GCC runtime libraries into the `fpm.exe` binary.
+Use the `--static` flag:
+
+```
+fpm install --prefix <install-dir> --flag "-static"
+```
+
+or equivalently set the `FPM_FFLAGS` environment variable:
+
+```
+set FPM_FFLAGS=-static
+fpm install --prefix <install-dir>
+```
+
+#### Why this is required
+
+GCC on Windows supports multiple **threading models** (Win32, POSIX, MCF), each
+producing runtime DLLs (`libgfortran-5.dll`, `libgcc_s_seh-1.dll`, etc.) with
+the **same filename** but **incompatible ABIs**. If `fpm.exe` is dynamically
+linked against these DLLs, it will crash with an "Entry point not found" error
+when a user installs a GCC compiler built with a different threading model:
+
+```
+fpm.exe - Entry point not found
+The entry point of procedure __gthr_win32_create cannot be found in the
+dynamic link library ...\libgfortran-5.dll
+```
+
+This occurs because the older `m2w64-gcc` toolchain uses **Win32 threading**,
+while modern GCC 14+ compilers typically use **POSIX threading** via
+`winpthreads`. Both produce a `libgfortran-5.dll`, but the POSIX version lacks
+the `__gthr_win32_*` symbols expected by binaries built with the Win32 model.
+
+Static linking eliminates the runtime DLL dependency entirely, making the
+binary self-contained and immune to this class of ABI mismatch.
+
+See [Issue #1204](https://github.com/fortran-lang/fpm/issues/1204) for details.
+
+#### Verifying static linking
+
+You can verify that a Windows binary is properly statically linked using
+the CI script provided in this repository:
+
+```bash
+bash ci/verify_static_linking.sh path/to/fpm.exe
+```
+
+This checks that the binary has no dynamic dependencies on `libgfortran`,
+`libgcc`, `libwinpthread`, or `libquadmath` DLLs.
+
