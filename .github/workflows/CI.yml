@@ -72,7 +72,7 @@ jobs:
       uses: actions/checkout@v6
 
     - name: Setup Fortran compiler
-      uses: fortran-lang/setup-fortran@v1.8.1
+      uses: fortran-lang/setup-fortran@v1.9.0
       id: setup-fortran 
       with:
         compiler: ${{ matrix.toolchain.compiler }}
@@ -274,7 +274,7 @@ jobs:
         ci/run_tests.sh "$PWD/${{ env.FPM_RELEASE }}"
 
     - name: Upload artifact
-      uses: actions/upload-artifact@v6
+      uses: actions/upload-artifact@v7
       with:
         name: ${{ env.FPM_RELEASE }}
         path: ${{ env.FPM_RELEASE }}
@@ -295,7 +295,7 @@ jobs:
 
     - name: Download Artifacts
       id: download_windows_artifacts
-      uses: actions/download-artifact@v7
+      uses: actions/download-artifact@v8
       with:
         path: ${{ github.workspace }}
         pattern: fpm-*-windows-*-gcc-${{ matrix.gcc_v }}.exe
@@ -394,7 +394,7 @@ jobs:
         move fpm-installer.exe fpm-installer-${{ env.VERSION }}-gcc-${{ matrix.gcc_v }}.exe
 
     - name: Upload artifact
-      uses: actions/upload-artifact@v6
+      uses: actions/upload-artifact@v7
       with:
         name: fpm-installer-gcc-${{ matrix.gcc_v }}
         path: ci/fpm-installer-${{ env.VERSION }}-gcc-${{ matrix.gcc_v }}.exe
@@ -418,7 +418,7 @@ jobs:
       if: ${{ github.event_name == 'push' }}
 
     - name: Download Artifacts
-      uses: actions/download-artifact@v7
+      uses: actions/download-artifact@v8
       with:
         path: fpm-cd-artifacts
         pattern: 'fpm-*-gcc-12*'

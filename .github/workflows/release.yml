@@ -35,7 +35,7 @@ jobs:
         PREFIX: fpm-${{ env.VERSION }}/
 
     - name: Upload artifact
-      uses: actions/upload-artifact@v6
+      uses: actions/upload-artifact@v7
       with:
         name: ${{ env.OUTPUT }}
         path: ${{ env.OUTPUT }}
@@ -104,7 +104,7 @@ jobs:
         ${{ env.EXE }} build 
 
     - name: Upload artifact
-      uses: actions/upload-artifact@v6
+      uses: actions/upload-artifact@v7
       with:
         name: ${{ env.OUTPUT }}
         path: ${{ env.OUTPUT }}
@@ -128,7 +128,7 @@ jobs:
       if: ${{ github.event_name == 'push' }}
 
     - name: Download Artifacts
-      uses: actions/download-artifact@v7
+      uses: actions/download-artifact@v8
       with:
         path: fpm-cd-artifacts
         merge-multiple: true
