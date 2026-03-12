@@ -1383,8 +1383,9 @@ subroutine get_library_dirs(model, targets, shared_lib_dirs)
 
     do i = 1, size(targets)
         associate(target => targets(i)%ptr)
-            ! Only consider shared and archive library targets
-            if (all(target%target_type /= [FPM_TARGET_SHARED,FPM_TARGET_ARCHIVE])) cycle
+            ! Only consider shared library targets (.so) since
+            ! only they require runtime lookup via LD_LIBRARY_PATH.
+            if (.not. any(target%target_type == [FPM_TARGET_SHARED])) cycle
             ! Always include the output_dir for shared libraries
             ! Avoid duplicates
             if (target%output_dir .in. shared_lib_dirs) cycle
