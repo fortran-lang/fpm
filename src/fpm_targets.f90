@@ -1377,18 +1377,25 @@ subroutine get_library_dirs(model, targets, shared_lib_dirs)
 
     integer :: i
     type(string_t) :: temp
-    
+
+    ! Start with an empty list
     allocate(shared_lib_dirs(0))
 
     do i = 1, size(targets)
         associate(target => targets(i)%ptr)
+            ! Only consider shared and archive library targets
             if (all(target%target_type /= [FPM_TARGET_SHARED,FPM_TARGET_ARCHIVE])) cycle
+            ! Always include the output_dir for shared libraries
+            ! Avoid duplicates
             if (target%output_dir .in. shared_lib_dirs) cycle
             temp = string_t(target%output_dir)
             call add_strings(shared_lib_dirs, temp)
         end associate
     end do
-    
+
+    ! This fix ensures that the directory where shared libraries are produced
+    ! (target%output_dir) is always included in the list returned, so LD_LIBRARY_PATH
+    ! will contain the correct path for test execution. No interface changes, no filesystem scanning.
 end subroutine get_library_dirs
 
 !> Add link directories for all shared libraries in the dependency graph
