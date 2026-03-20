@@ -285,6 +285,8 @@ subroutine targets_from_sources(targets,model,prune,library,error)
         
     call prune_build_targets(targets,model%packages(1),should_prune)
 
+    call add_submodule_dependencies(targets)
+
     call resolve_target_linking(targets,model,library,error)
     if (allocated(error)) return
 
@@ -810,11 +812,22 @@ subroutine resolve_module_dependencies(targets,external_modules,error)
 
     end do
 
-    ! Ensure ALL submodules are compiled before ANY program target.
-    ! Programs are terminal nodes in the build graph, so adding these edges
-    ! has minimal impact on parallelism but guarantees correct build order
-    ! for compilers that need .smod files before compiling the main program
-    ! (e.g., LFortran's direct compilation mode).
+end subroutine resolve_module_dependencies
+
+!> Ensure ALL submodules are compiled before ANY program target.
+!>
+!> Programs are terminal nodes in the build graph, so adding these edges
+!> has minimal impact on parallelism but guarantees correct build order
+!> for compilers that need .smod files before compiling the main program
+!> (e.g., LFortran's direct compilation mode). See issue #1252.
+!>
+!> This must run AFTER prune_build_targets so that unused submodules
+!> are already removed and don't interfere with tree-shaking.
+subroutine add_submodule_dependencies(targets)
+    type(build_target_ptr), intent(inout), target :: targets(:)
+
+    integer :: i, j
+
     do i=1,size(targets)
 
         if (.not.allocated(targets(i)%ptr%source)) cycle
@@ -831,7 +844,7 @@ subroutine resolve_module_dependencies(targets,external_modules,error)
 
     end do
 
-end subroutine resolve_module_dependencies
+end subroutine add_submodule_dependencies
 
 function find_module_dependency(targets,module_name,include_dir) result(target_ptr)
     ! Find a module dependency in the library or a dependency library
