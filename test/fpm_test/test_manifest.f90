@@ -1267,6 +1267,17 @@ contains
             return
         end if
 
+        if (size(test%dependency) /= 1) then
+            call test_failed(error, 'Expected exactly one dependency to be parsed')
+            return
+        end if
+
+        call check_string(error, test%dependency(1)%name, 'dummydep', 'Dependency name')
+        if (allocated(error)) return
+
+        call check_string(error, test%dependency(1)%path, './dummydep', 'Dependency path')
+        if (allocated(error)) return
+
     end subroutine test_test_fullparse
 
 
