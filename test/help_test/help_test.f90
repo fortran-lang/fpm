@@ -118,7 +118,7 @@ integer :: length
    call swallow('fpm_scratch_manual.txt',book2)
    ! get rid of lines from run() which is not on stderr at the moment
    book1=pack(book1,index(book1,' + build/')==0)
-   book2=pack(book1,index(book2,' + build/')==0)
+   book2=pack(book2,index(book2,' + build/')==0)
    write(*,*)'<INFO>book1 ',size(book1), len(book1)
    write(*,*)'<INFO>book2 ',size(book2), len(book2)
    if(size(book1)/=size(book2))then
