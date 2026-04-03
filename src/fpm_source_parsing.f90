@@ -790,7 +790,20 @@ function parse_f_source(f_filename,error,preprocess) result(f_source)
             end if
 
             ! Process 'USE' statements
-            call parse_use_statement(f_filename,i,file_lines_lower(i)%s,using,intrinsic_module,mod_name,error)
+            block
+                character(:), allocatable :: line_for_parsing
+                integer :: comment_pos
+
+                comment_pos = index(file_lines_lower(i)%s, '!')
+                if (comment_pos > 0) then
+                    line_for_parsing = trim(file_lines_lower(i)%s(1:comment_pos-1))
+                else
+                    line_for_parsing = file_lines_lower(i)%s
+                end if
+
+                call parse_use_statement(f_filename,i,line_for_parsing,using,&
+                                        intrinsic_module,mod_name,error)
+            end block
             if (allocated(error)) return
 
             if (using) then
