@@ -1100,6 +1100,17 @@ subroutine resolve_target_linking(targets, model, library, error)
             global_link_flags = model%compiler%enumerate_libraries(global_link_flags, model%link_libraries)
         end if
     end if
+
+    ! Extract -L library search paths from C/C++ compile flags so that the
+    ! Fortran linker can find libraries specified via link_libraries.
+    ! This handles the case where users pass -L paths via --cxx-flag or --c-flag
+    ! but link_libraries (from fpm.toml [build] link) are resolved at link time.
+    if (allocated(model%cxx_compile_flags)) then
+        global_link_flags = global_link_flags // extract_library_paths(model%cxx_compile_flags)
+    end if
+    if (allocated(model%c_compile_flags)) then
+        global_link_flags = global_link_flags // extract_library_paths(model%c_compile_flags)
+    end if
     
     allocate(character(0) :: global_include_flags)
     if (allocated(model%include_dirs)) then
@@ -1616,5 +1627,38 @@ subroutine add_target_ptr_many(list,new)
     call move_alloc(from=tmp,to=list)
 
 end subroutine add_target_ptr_many
+
+
+!> Extract -L library search path flags from a flags string.
+!> This allows -L paths specified in C/C++ flags to be propagated
+!> to the Fortran linker when linking executables.
+function extract_library_paths(flags) result(paths)
+    character(*), intent(in) :: flags
+    character(:), allocatable :: paths
+
+    integer :: i, j, n
+
+    allocate(character(0) :: paths)
+    n = len_trim(flags)
+    i = 1
+
+    do while (i <= n - 1)
+        ! Look for -L followed by a path
+        if (flags(i:i+1) == '-L') then
+            ! Find the end of this flag (next space or end of string)
+            j = i + 2
+            do while (j <= n .and. flags(j:j) /= ' ')
+                j = j + 1
+            end do
+            ! Append this -L flag
+            paths = paths // ' ' // flags(i:j-1)
+            i = j
+        else
+            i = i + 1
+        end if
+    end do
+
+end function extract_library_paths
+
 
 end module fpm_targets
