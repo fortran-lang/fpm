@@ -1334,8 +1334,8 @@ subroutine parse_use_statement(f_filename,i,line,use_stmt,is_intrinsic,module_na
 
     end if have_colons
 
-    ! If declared intrinsic, check that it is true
-    has_intrinsic_name = any([(index(module_name,trim(INTRINSIC_NAMES(j)))>0, &
+    ! If declared intrinsic, check that it exactly matches a known intrinsic module name
+    has_intrinsic_name = any([(trim(lower(module_name)) == trim(INTRINSIC_NAMES(j)), &
                              j=1,size(INTRINSIC_NAMES))])
     if (intr>0 .and. .not.has_intrinsic_name) then
 
