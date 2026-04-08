@@ -17,7 +17,7 @@ jobs:
       FORMAT: ${{ matrix.format }}
     steps:
     - name: Checkout code
-      uses: actions/checkout@v4
+      uses: actions/checkout@v6
       with:
         fetch-depth: 0
 
@@ -35,7 +35,7 @@ jobs:
         PREFIX: fpm-${{ env.VERSION }}/
 
     - name: Upload artifact
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@v7
       with:
         name: ${{ env.OUTPUT }}
         path: ${{ env.OUTPUT }}
@@ -44,7 +44,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - name: Checkout code
-      uses: actions/checkout@v4
+      uses: actions/checkout@v6
       with:
         fetch-depth: 0
 
@@ -67,7 +67,7 @@ jobs:
         patch -p1 < ./ci/single-file.patch
 
     - name: Install fpm
-      uses: fortran-lang/setup-fpm@v5
+      uses: fortran-lang/setup-fpm@v9
       with:
         fpm-version: 'v0.8.0'
 
@@ -104,7 +104,7 @@ jobs:
         ${{ env.EXE }} build 
 
     - name: Upload artifact
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@v7
       with:
         name: ${{ env.OUTPUT }}
         path: ${{ env.OUTPUT }}
@@ -124,11 +124,11 @@ jobs:
       env:
         DEPLOY_BRANCH: ${{ secrets.DEPLOY_BRANCH && contains(github.ref, secrets.DEPLOY_BRANCH) && 1 || 0 }}
 
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v6
       if: ${{ github.event_name == 'push' }}
 
     - name: Download Artifacts
-      uses: actions/download-artifact@v4
+      uses: actions/download-artifact@v8
       with:
         path: fpm-cd-artifacts
         merge-multiple: true

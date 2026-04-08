@@ -5,9 +5,11 @@
 !> to any directory within the prefix.
 module fpm_installer
   use, intrinsic :: iso_fortran_env, only : output_unit
-  use fpm_environment, only : get_os_type, os_is_unix
+  use fpm_environment, only : get_os_type, os_is_unix, OS_WINDOWS, OS_MACOS
   use fpm_error, only : error_t, fatal_error
-  use fpm_filesystem, only : join_path, mkdir, exists, unix_path, windows_path, get_local_prefix
+  use fpm_targets, only: build_target_t, FPM_TARGET_ARCHIVE, FPM_TARGET_SHARED, FPM_TARGET_NAME
+  use fpm_filesystem, only : join_path, mkdir, exists, unix_path, windows_path, get_local_prefix, &
+      basename
 
   implicit none
   private
@@ -21,8 +23,12 @@ module fpm_installer
     character(len=:), allocatable :: bindir
     !> Library directory relative to the installation prefix
     character(len=:), allocatable :: libdir
+    !> Test program directory relative to the installation prefix
+    character(len=:), allocatable :: testdir
     !> Include directory relative to the installation prefix
     character(len=:), allocatable :: includedir
+    !> Module directory relative to the installation prefix
+    character(len=:), allocatable :: moduledir
     !> Output unit for informative printout
     integer :: unit = output_unit
     !> Verbosity of the installer
@@ -34,18 +40,25 @@ module fpm_installer
     !> Cached operating system
     integer :: os
   contains
+    !> Evaluate the installation path
+    procedure :: install_destination  
     !> Install an executable in its correct subdirectory
     procedure :: install_executable
     !> Install a library in its correct subdirectory
     procedure :: install_library
     !> Install a header/module in its correct subdirectory
     procedure :: install_header
+    !> Install a module in its correct subdirectory
+    procedure :: install_module
+    !> Install a test program in its correct subdirectory
+    procedure :: install_test
     !> Install a generic file into a subdirectory in the installation prefix
     procedure :: install
     !> Run an installation command, type-bound for unit testing purposes
     procedure :: run
     !> Create a new directory in the prefix, type-bound for unit testing purposes
     procedure :: make_dir
+
   end type installer_t
 
   !> Default name of the binary subdirectory
@@ -53,9 +66,15 @@ module fpm_installer
 
   !> Default name of the library subdirectory
   character(len=*), parameter :: default_libdir = "lib"
+  
+  !> Default name of the test subdirectory
+  character(len=*), parameter :: default_testdir = "test"
 
   !> Default name of the include subdirectory
   character(len=*), parameter :: default_includedir = "include"
+
+  !> Default name of the module subdirectory
+  character(len=*), parameter :: default_moduledir = "include"
 
   !> Copy command on Unix platforms
   character(len=*), parameter :: default_copy_unix = "cp"
@@ -78,7 +97,7 @@ module fpm_installer
 contains
 
   !> Create a new instance of an installer
-  subroutine new_installer(self, prefix, bindir, libdir, includedir, verbosity, &
+  subroutine new_installer(self, prefix, bindir, libdir, includedir, moduledir, testdir, verbosity, &
           copy, move)
     !> Instance of the installer
     type(installer_t), intent(out) :: self
@@ -90,6 +109,10 @@ contains
     character(len=*), intent(in), optional :: libdir
     !> Include directory relative to the installation prefix
     character(len=*), intent(in), optional :: includedir
+    !> Module directory relative to the installation prefix
+    character(len=*), intent(in), optional :: moduledir
+    !> Test directory relative to the installation prefix
+    character(len=*), intent(in), optional :: testdir    
     !> Verbosity of the installer
     integer, intent(in), optional :: verbosity
     !> Copy command
@@ -124,6 +147,18 @@ contains
       self%includedir = includedir
     else
       self%includedir = default_includedir
+    end if
+
+    if (present(moduledir)) then
+      self%moduledir = moduledir
+    else
+      self%moduledir = default_moduledir
+    end if
+    
+    if (present(testdir)) then 
+      self%testdir = testdir
+    else
+      self%testdir = default_testdir  
     end if
 
     if (present(prefix)) then
@@ -161,6 +196,8 @@ contains
     !> Error handling
     type(error_t), allocatable, intent(out) :: error
     integer :: ll
+    
+    character(len=:), allocatable :: exe_path, cmd
 
     if (.not.os_is_unix(self%os)) then
         ll = len(executable)
@@ -169,8 +206,26 @@ contains
             return
         end if
     end if
-
+    
     call self%install(executable, self%bindir, error)
+    if (allocated(error)) return
+
+    ! on MacOS, add two relative paths for search of dynamic library dependencies: 
+    add_rpath: if (self%os==OS_MACOS) then  
+        
+        exe_path = join_path(self%install_destination(self%bindir) , basename(executable))
+        
+        ! First path: for bin/lib/include structure
+        cmd = "install_name_tool -add_rpath @executable_path/../lib " // exe_path
+        call self%run(cmd, error)
+        if (allocated(error)) return
+
+        ! Second path: same as executable folder
+        cmd = "install_name_tool -add_rpath @executable_path " // exe_path
+        call self%run(cmd, error)
+        if (allocated(error)) return
+        
+    end if add_rpath
 
   end subroutine install_executable
 
@@ -178,13 +233,64 @@ contains
   subroutine install_library(self, library, error)
     !> Instance of the installer
     class(installer_t), intent(inout) :: self
-    !> Path to the library
-    character(len=*), intent(in) :: library
+    !> Library target    
+    type(build_target_t), intent(in) :: library
     !> Error handling
     type(error_t), allocatable, intent(out) :: error
+    
+    character(:), allocatable :: def_file, implib_file
+    
+    select case (library%target_type)
+       case (FPM_TARGET_ARCHIVE)
+          call self%install(library%output_file, self%libdir, error)
+       case (FPM_TARGET_SHARED)
+          call self%install(library%output_file, self%libdir, error)
+          
+          ! Handle shared library side-files only on Windows
+          if (self%os==OS_WINDOWS) then 
+            
+            ! Try both compiler-dependent import library names
+            implib_file = join_path(library%output_dir, library%package_name // ".dll.a")           
+            if (exists(implib_file)) then 
+                call self%install(implib_file, self%libdir, error)            
+                if (allocated(error)) return
+            else
+                implib_file = join_path(library%output_dir, library%package_name // ".lib")
+                if (exists(implib_file)) call self%install(implib_file, self%libdir, error)            
+                if (allocated(error)) return
+            endif
 
-    call self%install(library, self%libdir, error)
+          end if
+          
+       case default 
+          call fatal_error(error,"Installer error: "//library%package_name//" is a "// &
+                                 FPM_TARGET_NAME(library%target_type)//", not a library")
+          return        
+    end select
+    
   end subroutine install_library
+
+  !> Install a test program in its correct subdirectory
+  subroutine install_test(self, test, error)
+    !> Instance of the installer
+    class(installer_t), intent(inout) :: self
+    !> Path to the test executable
+    character(len=*), intent(in) :: test
+    !> Error handling
+    type(error_t), allocatable, intent(out) :: error
+    integer :: ll
+
+    if (.not.os_is_unix(self%os)) then
+        ll = len(test)
+        if (test(max(1, ll-3):ll) /= ".exe") then
+            call self%install(test//".exe", self%testdir, error)
+            return
+        end if
+    end if
+
+    call self%install(test, self%testdir, error)
+
+  end subroutine install_test
 
   !> Install a header/module in its correct subdirectory
   subroutine install_header(self, header, error)
@@ -197,6 +303,18 @@ contains
 
     call self%install(header, self%includedir, error)
   end subroutine install_header
+
+  !> Install a module in its correct subdirectory
+  subroutine install_module(self, module, error)
+    !> Instance of the installer
+    class(installer_t), intent(inout) :: self
+    !> Path to the module
+    character(len=*), intent(in) :: module
+    !> Error handling
+    type(error_t), allocatable, intent(out) :: error
+
+    call self%install(module, self%moduledir, error)
+  end subroutine install_module
 
   !> Install a generic file into a subdirectory in the installation prefix
   subroutine install(self, source, destination, error)
@@ -211,12 +329,7 @@ contains
 
     character(len=:), allocatable :: install_dest
 
-    install_dest = join_path(self%prefix, destination)
-    if (os_is_unix(self%os)) then
-      install_dest = unix_path(install_dest)
-    else
-      install_dest = windows_path(install_dest)
-    end if
+    install_dest = self%install_destination(destination)
     call self%make_dir(install_dest, error)
     if (allocated(error)) return
 
@@ -236,6 +349,24 @@ contains
     if (allocated(error)) return
 
   end subroutine install
+  
+  !> Evaluate the installation path
+  function install_destination(self, destination) result(install_dest)
+    !> Instance of the installer
+    class(installer_t), intent(inout) :: self
+    !> Path to the destination inside the prefix
+    character(len=*), intent(in) :: destination    
+    
+    character(len=:), allocatable :: install_dest
+
+    install_dest = join_path(self%prefix, destination)
+    if (os_is_unix(self%os)) then
+      install_dest = unix_path(install_dest)
+    else
+      install_dest = windows_path(install_dest)
+    end if    
+    
+  end function install_destination
 
   !> Create a new directory in the prefix
   subroutine make_dir(self, dir, error)

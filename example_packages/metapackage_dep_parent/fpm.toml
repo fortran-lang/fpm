@@ -1,0 +1,7 @@
+name = "metapackage_dep_parent"
+version = "0.1.0"
+
+# Note: This package does NOT directly declare openmp as a dependency.
+# The openmp metapackage should be propagated from metapackage_dep_child.
+[dependencies]
+metapackage_dep_child = { path = "../metapackage_dep_child" }

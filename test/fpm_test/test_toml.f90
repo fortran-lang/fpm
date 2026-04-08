@@ -1,23 +1,33 @@
 !> Define tests for the `fpm_toml` modules
 module test_toml
     use testsuite, only : new_unittest, unittest_t, error_t
-    use fpm_toml
+    use tomlf, only: toml_table, toml_load
+    use fpm_toml, only: read_package_file, toml_array, toml_key, toml_stat, &
+        get_value, set_value, get_list, new_table, add_table, add_array, len, &
+        toml_error, toml_serialize, check_keys, set_list, set_string, &
+        name_is_json
     use tomlf_constants, only: tf_i8
-    use fpm_git
+    use fpm_git, only: git_target_t, git_target_revision, git_target_branch, &
+         & git_target_tag
     use fpm_dependency, only: dependency_node_t, destroy_dependency_node, dependency_tree_t, &
          & new_dependency_node, new_dependency_tree, resize
     use fpm_manifest_dependency, only: dependency_config_t, dependency_destroy
-    use fpm_manifest_install
-    use fpm_manifest_fortran
-    use fpm_manifest_library
-    use fpm_manifest_executable
-    use fpm_manifest_preprocess
-    use fpm_manifest_profile
+    use fpm_manifest_install, only: install_config_t
+    use fpm_manifest_fortran, only: fortran_config_t
+    use fpm_manifest_library, only: library_config_t
+    use fpm_manifest_executable, only: executable_config_t
+    use fpm_manifest_preprocess, only: preprocess_config_t
+    use fpm_manifest_platform, only: platform_config_t
+    use fpm_manifest_metapackages, only: metapackage_config_t
+    use fpm_manifest_feature_collection, only: feature_collection_t
+    use fpm_manifest_profile, only: profile_config_t
+    use fpm_environment, only: OS_ALL, OS_LINUX, OS_MACOS
     use fpm_versioning, only: new_version
     use fpm_strings, only: string_t, operator(==), split
-    use fpm_model, only: fortran_features_t, package_t, FPM_SCOPE_LIB, FPM_UNIT_MODULE, fpm_model_t, &
+    use fpm_model, only: fortran_config_t, package_t, FPM_SCOPE_LIB, FPM_UNIT_MODULE, fpm_model_t, &
          & srcfile_t
-    use fpm_compiler, only: archiver_t, compiler_t, id_gcc
+    use fpm_compiler, only: archiver_t, compiler_t, id_all, id_gcc
+    use fpm_error, only: fatal_error
 
 
     implicit none
@@ -28,7 +38,6 @@ module test_toml
     character, parameter :: NL = new_line('a')
 
 contains
-
 
     !> Collect all exported unit tests
     subroutine collect_toml(testsuite)
@@ -54,7 +63,6 @@ contains
            & new_unittest("serialize-library-config", library_config_roundtrip), &
            & new_unittest("serialize-executable-config", executable_config_roundtrip), &
            & new_unittest("serialize-preprocess-config", preprocess_config_roundtrip), &
-           & new_unittest("serialize-file-scope-flag", file_scope_flag_roundtrip), &
            & new_unittest("serialize-string-array", string_array_roundtrip), &
            & new_unittest("serialize-fortran-features", fft_roundtrip), &
            & new_unittest("serialize-fortran-invalid", fft_invalid, should_fail=.true.), &
@@ -66,7 +74,11 @@ contains
            & new_unittest("serialize-compiler", compiler_roundtrip), &
            & new_unittest("serialize-compiler-invalid", compiler_invalid, should_fail=.true.), &
            & new_unittest("serialize-model", fpm_model_roundtrip), &
-           & new_unittest("serialize-model-invalid", fpm_model_invalid, should_fail=.true.)]
+           & new_unittest("serialize-model-invalid", fpm_model_invalid, should_fail=.true.), &
+           & new_unittest("serialize-metapackage-config", metapackage_config_roundtrip), &
+           & new_unittest("serialize-feature-collection", feature_collection_roundtrip), &
+           & new_unittest("serialize-profile-config", profile_config_roundtrip)]
+
 
     end subroutine collect_toml
 
@@ -599,15 +611,15 @@ contains
         !> Error handling
         type(error_t), allocatable, intent(out) :: error
 
-        type(fortran_features_t) :: fortran
+        type(fortran_config_t) :: fortran
 
         !> Default object
-        call fortran%test_serialization('fortran_features_t: default object',error)
+        call fortran%test_serialization('fortran_config_t: default object',error)
         if (allocated(error)) return
 
         !> Set form
         fortran%source_form = "free"
-        call fortran%test_serialization('fortran_features_t: with form',error)
+        call fortran%test_serialization('fortran_config_t: with form',error)
         if (allocated(error)) return
 
     end subroutine fft_roundtrip
@@ -618,7 +630,7 @@ contains
         !> Error handling
         type(error_t), allocatable, intent(out) :: error
 
-        type(fortran_features_t) :: fortran
+        type(fortran_config_t) :: fortran
         type(toml_table), allocatable :: table
 
         character(len=*), parameter :: toml = 'implicit-typing = false '//NL//&
@@ -647,7 +659,9 @@ contains
 
         !> Create a dummy package
         pkg%name = "orderpack"
-        pkg%version = "0.1.0"
+        if (.not.allocated(pkg%version)) allocate(pkg%version)
+        call new_version(pkg%version, "0.1.0", error)
+        if (allocated(error)) return
         pkg%enforce_module_names = .false.
         pkg%module_prefix = string_t("")
         pkg%features%source_form = "free"
@@ -867,7 +881,7 @@ contains
 
         allocate(character(len=0) :: fpm)
         fpm = fpm//NL//'package-name = "fpm"'
-        fpm = fpm//NL//'fortran-flags = " -Wall -Wextra -fPIC -fmax-errors=1 -g "'
+        fpm = fpm//NL//'fortran-flags = " -Wall -Wextra -Wno-external-argument-mismatch -fPIC -fmax-errors=1 -g "'
         fpm = fpm//NL//'c-flags = ""'
         fpm = fpm//NL//'cxx-flags = ""'
         fpm = fpm//NL//'link-flags = ""'
@@ -1090,7 +1104,7 @@ contains
         integer :: iunit
 
         ! Write
-        open(newunit=iunit,form='formatted',status='scratch',action='readwrite')
+        open(newunit=iunit,form='formatted',status='scratch',action='readwrite',recl=1073741824)
 
         !> Dump to scratch file
         write(iunit,*) string
@@ -1138,7 +1152,7 @@ contains
 
         allocate(character(len=0) :: fpm)
         fpm = fpm//NL//'package-name = "fpm"'
-        fpm = fpm//NL//'fortran-flags = " -Wall -Wextra -fPIC -fmax-errors=1 -g "'
+        fpm = fpm//NL//'fortran-flags = " -Wall -Wextra -Wno-external-argument-mismatch -fPIC -fmax-errors=1 -g "'
         fpm = fpm//NL//'c-flags = ""'
         fpm = fpm//NL//'cxx-flags = ""'
         fpm = fpm//NL//'link-flags = ""'
@@ -1273,21 +1287,68 @@ contains
 
     end subroutine preprocess_config_roundtrip
 
-    subroutine file_scope_flag_roundtrip(error)
+    !> Test a metapackage configuration
+    subroutine metapackage_config_roundtrip(error)
 
         !> Error handling
         type(error_t), allocatable, intent(out) :: error
 
-        type(file_scope_flag) :: ff
+        type(metapackage_config_t) :: meta
+        
+        meta%mpi%on = .true.
+        meta%mpi%version = "MPICH"
+        meta%minpack%on = .true.
+        meta%blas%on = .false.
+        
+        call meta%test_serialization('metapackage_config_t', error)        
+        
+    end subroutine metapackage_config_roundtrip
 
-        call ff%test_serialization('file_scope_flag: empty', error)
-        if (allocated(error)) return
+    subroutine feature_collection_roundtrip(error)
+        type(error_t), allocatable, intent(out) :: error
+        type(feature_collection_t) :: fc
 
-        ff%file_name = "preprocessor config"
-        ff%flags = "-1 -f -2 -g"
+        ! Base feature (applies everywhere)
+        fc%base%name      = "my_blas"
+        fc%base%flags     = "-O2"
+        fc%base%link_time_flags = "-lblas -llapack"
 
-        call ff%test_serialization('file_scope_flag: non-empty', error)
+        ! Two platform/compiler-specific variants
+        if (allocated(fc%variants)) deallocate(fc%variants)
+        allocate(fc%variants(2))
 
-    end subroutine file_scope_flag_roundtrip
+        ! Variant 1: GCC on Linux → OpenBLAS
+        fc%variants(1)%name      = "my_blas"
+        fc%variants(1)%platform  = platform_config_t("gfortran",OS_LINUX)
+        fc%variants(1)%link_time_flags = "-lopenblas"
+
+        ! Variant 2: any compiler on macOS → Accelerate framework
+        fc%variants(2)%name      = "my_blas"
+        fc%variants(2)%platform  = platform_config_t("all",OS_MACOS)
+        fc%variants(2)%link_time_flags = "-framework Accelerate"
+
+        ! Round-trip via the generic serialization tester
+        call fc%test_serialization('feature_collection: base + 2 variants', error)
+        
+    end subroutine feature_collection_roundtrip
+
+    subroutine profile_config_roundtrip(error)
+        type(error_t), allocatable, intent(out) :: error
+        type(profile_config_t) :: profile
+
+        ! Set up a profile with features
+        profile%name = "development"
+        
+        ! Allocate and populate features array
+        allocate(profile%features(3))
+        profile%features(1)%s = "debug"
+        profile%features(2)%s = "testing"  
+        profile%features(3)%s = "verbose"
+
+        ! Round-trip via the generic serialization tester
+        call profile%test_serialization('profile_config_t: development profile', error)
+        
+    end subroutine profile_config_roundtrip
+
 
 end module test_toml

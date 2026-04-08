@@ -28,7 +28,7 @@ module fpm_toml
     public :: read_package_file, toml_table, toml_array, toml_key, toml_stat, &
               get_value, set_value, get_list, new_table, add_table, add_array, len, &
               toml_error, toml_serialize, toml_load, check_keys, set_list, set_string, &
-              name_is_json
+              name_is_json, has_list
 
     !> An abstract interface for any fpm class that should be fully serializable to/from TOML/JSON
     type, abstract, public :: serializable_t
@@ -78,6 +78,8 @@ module fpm_toml
         module procedure get_logical
         module procedure get_integer
         module procedure get_integer_64
+        module procedure get_char
+        module procedure get_string
     end interface get_value
 
 
@@ -337,6 +339,29 @@ contains
         end if
 
     end subroutine read_package_file
+
+    !> Check if an instance of the TOML data structure contains a list
+    logical function has_list(table, key)
+
+        !> Instance of the TOML data structure
+        type(toml_table), intent(inout) :: table
+
+        !> Key to read from
+        character(len=*), intent(in) :: key
+
+        type(toml_array), pointer :: children
+
+        has_list = .false.
+
+        if (.not.table%has_key(key)) return
+
+        call get_value(table, key, children, requested=.false.)
+
+        ! There is an allocated list
+        has_list = associated(children)
+
+    end function has_list
+
 
     subroutine get_list(table, key, list, error)
 
@@ -681,6 +706,57 @@ contains
 
     end subroutine get_integer
 
+    !> Function wrapper to get a default string variable from a toml table, returning an fpm error
+    subroutine get_string(table, key, var, error, whereAt)
+
+        !> Instance of the TOML data structure
+        type(toml_table), intent(inout) :: table
+
+        !> The key
+        character(len=*), intent(in) :: key
+
+        !> The variable
+        type(string_t), intent(inout) :: var
+
+        !> Error handling
+        type(error_t), allocatable, intent(out) :: error
+
+        !> Optional description
+        character(len=*), intent(in), optional :: whereAt
+
+        call get_char(table, key, var%s, error, whereAt)
+
+    end subroutine get_string
+
+    !> Function wrapper to get a default character variable from a toml table, returning an fpm error
+    subroutine get_char(table, key, var, error, whereAt)
+
+        !> Instance of the TOML data structure
+        type(toml_table), intent(inout) :: table
+
+        !> The key
+        character(len=*), intent(in) :: key
+
+        !> The variable
+        character(len=:), allocatable, intent(inout) :: var
+
+        !> Error handling
+        type(error_t), allocatable, intent(out) :: error
+
+        !> Optional description
+        character(len=*), intent(in), optional :: whereAt
+
+        integer :: ierr
+
+        call get_value(table, key, var, stat=ierr)
+        if (ierr/=toml_stat%success) then
+            call fatal_error(error,'cannot get string key <'//key//'> from TOML table')
+            if (present(whereAt)) error%message = whereAt//': '//error%message
+            return
+        end if
+
+    end subroutine get_char
+
     !> Function wrapper to get a integer(int64) variable from a toml table, returning an fpm error
     subroutine get_integer_64(table, key, var, error, whereAt)
 
@@ -745,7 +821,10 @@ contains
             end if
 
             ! Check if value can be mapped or else (wrong type) show error message with the error location.
-            ! Right now, it can only be mapped to a string or to a child node, but this can be extended in the future.
+            ! Right now, it can only be mapped to a string or to a list or a child node, but this can be 
+            ! extended in the future.
+            if (has_list(table, keys(ikey)%key)) cycle
+            
             call get_value(table, keys(ikey)%key, value)
             if (.not. allocated(value)) then
 

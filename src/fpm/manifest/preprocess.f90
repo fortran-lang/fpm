@@ -12,14 +12,15 @@
 
 module fpm_manifest_preprocess
    use fpm_error, only : error_t, syntax_error
-   use fpm_strings, only : string_t, operator(==)
-   use fpm_toml, only : toml_table, toml_key, toml_stat, get_value, get_list, serializable_t, set_value, set_list, &
+   use fpm_strings, only : string_t, operator(==), add_strings
+   use tomlf, only : toml_table, toml_key, toml_stat
+   use fpm_toml, only : get_value, get_list, serializable_t, set_value, set_list, &
                         set_string
    use,intrinsic :: iso_fortran_env, only : stderr=>error_unit
    implicit none
    private
 
-   public :: preprocess_config_t, new_preprocess_config, new_preprocessors, operator(==)
+   public :: preprocess_config_t, new_preprocessors, operator(==)
 
    !> Configuration meta data for a preprocessor
    type, extends(serializable_t) :: preprocess_config_t
@@ -40,6 +41,11 @@ module fpm_manifest_preprocess
 
       !> Print information on this instance
       procedure :: info
+      
+      !> Initialization
+      procedure, private :: new_cpp_config_with_macros
+      procedure, private :: new_preprocess_config
+      generic   :: new => new_cpp_config_with_macros, new_preprocess_config
 
       !> Serialization interface
       procedure :: serializable_is_same => preprocess_is_same
@@ -60,11 +66,34 @@ module fpm_manifest_preprocess
 
 contains
 
+   !> Construct a new cpp preprocessor configuration with a list of macros
+   subroutine new_cpp_config_with_macros(self, macros)
+
+      !> Instance of the preprocess configuration
+      class(preprocess_config_t), intent(out) :: self
+      
+      !> List of macros
+      type(string_t), intent(in) :: macros(:)
+      
+      call self%destroy()
+      
+      !> Set cpp
+      self%name = "cpp"
+      
+      !> Set macros
+      if (size(macros)<=0) then 
+         allocate(self%macros(0))
+      else
+         allocate(self%macros, source=macros)
+      end if
+      
+   end subroutine new_cpp_config_with_macros
+
    !> Construct a new preprocess configuration from TOML data structure
    subroutine new_preprocess_config(self, table, error)
 
       !> Instance of the preprocess configuration
-      type(preprocess_config_t), intent(out) :: self
+      class(preprocess_config_t), intent(out) :: self
 
       !> Instance of the TOML data structure.
       type(toml_table), intent(inout) :: table
@@ -144,7 +173,7 @@ contains
             call syntax_error(error, "Preprocessor "//list(iprep)%key//" must be a table entry")
             exit
          end if
-         call new_preprocess_config(preprocessors(iprep), node, error)
+         call preprocessors(iprep)%new(node, error)
          if (allocated(error)) exit
       end do
 
@@ -297,36 +326,21 @@ contains
         if (.not.allocated(this%name)) this%name = that%name
 
         ! Add macros
-        if (allocated(that%macros)) then
-            if (allocated(this%macros)) then
-                this%macros = [this%macros, that%macros]
-            else
-                allocate(this%macros, source = that%macros)
-            end if
-        endif
-
+        if (allocated(that%macros)) &
+        call add_strings(this%macros, that%macros)
+            
         ! Add suffixes
-        if (allocated(that%suffixes)) then
-            if (allocated(this%suffixes)) then
-                this%suffixes = [this%suffixes, that%suffixes]
-            else
-                allocate(this%suffixes, source = that%suffixes)
-            end if
-        endif
+        if (allocated(that%suffixes)) &
+        call add_strings(this%suffixes, that%suffixes)
 
         ! Add directories
-        if (allocated(that%directories)) then
-            if (allocated(this%directories)) then
-                this%directories = [this%directories, that%directories]
-            else
-                allocate(this%directories, source = that%directories)
-            end if
-        endif
+        if (allocated(that%directories)) &
+        call add_strings(this%directories, that%directories)
 
     end subroutine add_config
 
     ! Check cpp
-    logical function is_cpp(this)
+    elemental logical function is_cpp(this)
        class(preprocess_config_t), intent(in) :: this
        is_cpp = .false.
        if (allocated(this%name)) is_cpp = this%name == "cpp"

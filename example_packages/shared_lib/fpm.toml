@@ -1,0 +1,3 @@
+# Shared library with no executables
+name = "shared_lib"
+library.type="shared"

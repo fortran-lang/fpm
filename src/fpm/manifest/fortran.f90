@@ -1,10 +1,11 @@
 module fpm_manifest_fortran
     use fpm_error, only : error_t, syntax_error, fatal_error
-    use fpm_toml, only : toml_table, toml_key, toml_stat, get_value, serializable_t, set_value, set_string
+    use tomlf, only : toml_table, toml_key, toml_stat
+    use fpm_toml, only : get_value, serializable_t, set_value, set_string
     implicit none
     private
 
-    public :: fortran_config_t, new_fortran_config
+    public :: fortran_config_t, new_fortran_config, default_fortran_config
 
     !> Configuration data for Fortran
     type, extends(serializable_t) :: fortran_config_t
@@ -19,17 +20,27 @@ module fpm_manifest_fortran
         character(:), allocatable :: source_form
 
         contains
-
+        
             !> Serialization interface
             procedure :: serializable_is_same => fortran_is_same
             procedure :: dump_to_toml
             procedure :: load_from_toml
-
+            
     end type fortran_config_t
 
     character(len=*), parameter, private :: class_name = 'fortran_config_t'
 
 contains
+
+    !> Initialize fortran config
+    subroutine default_fortran_config(self)
+        type(fortran_config_t), intent(inout) :: self
+        
+        self%implicit_external = .false.
+        self%implicit_typing = .false.
+        self%source_form = 'free'
+        
+    end subroutine default_fortran_config
 
     !> Construct a new build configuration from a TOML data structure
     subroutine new_fortran_config(self, table, error)
@@ -121,8 +132,10 @@ contains
        type is (fortran_config_t)
           if (this%implicit_typing.neqv.other%implicit_typing) return
           if (this%implicit_external.neqv.other%implicit_external) return
-          if (.not.allocated(this%source_form).eqv.allocated(other%source_form)) return
-          if (.not.this%source_form==other%source_form) return
+          if (allocated(this%source_form).neqv.allocated(other%source_form)) return
+          if (allocated(this%source_form)) then
+            if (.not.this%source_form==other%source_form) return
+          end if
        class default
           ! Not the same type
           return

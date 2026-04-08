@@ -21,69 +21,158 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-latest, macos-11, windows-latest]
-        gcc_v: [10,11,12] # Version of GFortran we want to use.
+        os: [ubuntu-latest, macos-14, macos-15-intel, windows-latest]
+        toolchain:
+          - {compiler: gcc, version: 10}
+          - {compiler: gcc, version: 11}
+          - {compiler: gcc, version: 12}
+          - {compiler: gcc, version: 13}
+          - {compiler: gcc, version: 14}
+          - {compiler: gcc, version: 15}
+          - {compiler: intel, version: 2025.2}
+        exclude:
+          - os: macos-14  # No Intel on MacOS anymore since 2024
+            toolchain: {compiler: intel, version: '2025.1'}
+          - os: macos-14  # Intel compiler does not support ARM (macos-14)
+            toolchain: {compiler: intel, version: '2025.2'}
+          - os: macos-14  # gcc@10 not available on macos-14 (ARM64)
+            toolchain: {compiler: gcc, version: 10}
+          - os: macos-15-intel  # Intel compiler not available on macOS
+            toolchain: {compiler: intel, version: '2025.2'}
+          - os: macos-15-intel  # gcc@10 not available on macos-15
+            toolchain: {compiler: gcc, version: 10}
+          - os: windows-latest  # Doesn't pass build and tests yet
+            toolchain: {compiler: intel, version: '2025.2'}
+          - os: windows-latest  # gcc 14 not available on Windows yet
+            toolchain: {compiler: gcc, version: 14}
+          - os: windows-latest  # gcc 15 not available on Windows yet
+            toolchain: {compiler: gcc, version: 15}
+          - os: ubuntu-latest  # gcc 15 not available on Ubuntu via setup-fortran yet
+            toolchain: {compiler: gcc, version: 15}
         include:
-        - os: ubuntu-latest
-          os-arch: linux-x86_64
-          release-flags: --flag '--static -g -fbacktrace -O3'
-
-        - os: macos-11
-          os-arch: macos-x86_64
-          release-flags: --flag '-g -fbacktrace -O3'
-
-        - os: windows-latest
-          os-arch: windows-x86_64
-          release-flags: --flag '--static -g -fbacktrace -O3'
-          exe: .exe
-
-    env:
-      FC: gfortran
-      GCC_V: ${{ matrix.gcc_v }}
+          - os: ubuntu-latest
+            os-arch: linux-x86_64
+            release-flags: --flag '--static -g -fbacktrace -O3'
+          - os: macos-14
+            os-arch: macos-arm64
+            release-flags: --flag '-g -fbacktrace -O3'
+          - os: macos-15-intel
+            os-arch: macos-x86_64
+            release-flags: --flag '-g -fbacktrace -O3'
+          - os: windows-latest
+            os-arch: windows-x86_64
+            release-flags: --flag '--static -g -fbacktrace -O3'
+            exe: .exe
+          - os: macos-14
+            toolchain: {compiler: gcc, version: 15}
+            release-flags: --flag '-g -fbacktrace -Og -fcheck=all,no-recursion -Wno-external-argument-mismatch'
 
     steps:
     - name: Checkout code
-      uses: actions/checkout@v4
+      uses: actions/checkout@v6
 
-    - name: Install GFortran macOS
-      if: contains(matrix.os, 'macos')
-      run: |
-        ln -s /usr/local/bin/gfortran-${GCC_V} /usr/local/bin/gfortran
-        which gfortran-${GCC_V}
-        which gfortran
-        # Backport gfortran shared libraries to version 9 folder. This is necessary because all macOS releases of fpm 
-        # have these paths hardcoded in the executable (no PIC?). As the gcc ABIs have not changed from 9 to 10, we 
-        # can just create symbolic links for now. This can be removed when an updated fpm release is built with gcc-10  
-        mkdir /usr/local/opt/gcc@9
-        mkdir /usr/local/opt/gcc@9/lib
-        mkdir /usr/local/opt/gcc@9/lib/gcc
-        mkdir /usr/local/opt/gcc@9/lib/gcc/9
-        mkdir /usr/local/lib/gcc/9
-        ln -fs /usr/local/opt/gcc@${GCC_V}/lib/gcc/${GCC_V}/libquadmath.0.dylib /usr/local/opt/gcc@9/lib/gcc/9/libquadmath.0.dylib 
-        ln -fs /usr/local/opt/gcc@${GCC_V}/lib/gcc/${GCC_V}/libgfortran.5.dylib /usr/local/opt/gcc@9/lib/gcc/9/libgfortran.5.dylib
-        ln -fs /usr/local/lib/gcc/${GCC_V}/libgcc_s.1.dylib /usr/local/lib/gcc/9/libgcc_s.1.dylib
-
-    - name: Install GFortran Linux
-      if: contains(matrix.os, 'ubuntu')
-      run: |
-        sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-${GCC_V} 100 \
-        --slave /usr/bin/gfortran gfortran /usr/bin/gfortran-${GCC_V} \
-        --slave /usr/bin/gcov gcov /usr/bin/gcov-${GCC_V}
-
-    - name: Install GFortran Windows
-      if: contains(matrix.os, 'windows')
-      run: |
-        Invoke-WebRequest -Uri $Env:GCC_DOWNLOAD -OutFile mingw-w64.zip
-        Expand-Archive mingw-w64.zip
-        echo "$pwd\mingw-w64\mingw64\bin" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
-      env:
-        GCC_DOWNLOAD: "https://github.com/brechtsanders/winlibs_mingw/releases/download/10.4.0-10.0.0-msvcrt-r1/winlibs-x86_64-posix-seh-gcc-10.4.0-mingw-w64msvcrt-10.0.0-r1.zip"
+    - name: Setup Fortran compiler
+      uses: fortran-lang/setup-fortran@v1.9.0
+      id: setup-fortran 
+      with:
+        compiler: ${{ matrix.toolchain.compiler }}
+        version: ${{ matrix.toolchain.version }}
 
     # Phase 1: Bootstrap fpm with existing version
     - name: Install fpm
-      uses: fortran-lang/setup-fpm@v5
+      uses: fortran-lang/setup-fpm@v9
       with:
-        fpm-version: 'v0.8.0'
+        fpm-version: 'v0.12.0'
+
+    # Backport gfortran shared libraries to the paths expected by the bootstrap fpm binary.
+    # The macOS x86_64 release used for bootstrapping has hardcoded library paths from the gcc version
+    # it was built with. If the versions match, skip this step. Otherwise, create symlinks.
+    # On ARM64 it runs under Rosetta 2 and needs /usr/local paths.
+    - name: MacOS patch libgfortran
+      if: contains(matrix.os, 'macos')
+      run: |
+        which gfortran-${{ matrix.toolchain.version }}
+        which gfortran
+        BREW_PREFIX=$(brew --prefix)
+
+        # Query the actual library paths that fpm expects
+        echo "Checking library dependencies of fpm bootstrap binary..."
+        otool -L $(which fpm)
+
+        # Extract the gcc version from the bootstrap binary's library paths
+        BOOTSTRAP_GCC_VERSION=$(otool -L $(which fpm) | grep -o 'gcc@[0-9]\+' | head -n 1 | cut -d@ -f2)
+        if [ -z "$BOOTSTRAP_GCC_VERSION" ]; then
+          # Try alternative pattern: /lib/gcc/13/ -> extract 13
+          BOOTSTRAP_GCC_VERSION=$(otool -L $(which fpm) | grep libgfortran | grep -o '/lib/gcc/[0-9]\+/' | grep -o '[0-9]\+' | head -n 1)
+        fi
+
+        echo "Bootstrap fpm built with gcc@$BOOTSTRAP_GCC_VERSION"
+        echo "Current toolchain: gcc@${{ matrix.toolchain.version }}"
+
+        if [ "$BOOTSTRAP_GCC_VERSION" == "${{ matrix.toolchain.version }}" ]; then
+          echo "✓ Bootstrap gcc version matches current toolchain - no patching needed"
+          exit 0
+        fi
+
+        echo "⚠ Version mismatch detected - creating compatibility symlinks..."
+
+        # Find the actual Cellar path by following the symlink
+        if [ -L "${BREW_PREFIX}/opt/gcc@${{ matrix.toolchain.version }}" ]; then
+          GCC_CELLAR_PATH=$(cd -P "${BREW_PREFIX}/opt/gcc@${{ matrix.toolchain.version }}" && pwd)
+        else
+          GCC_CELLAR_PATH="${BREW_PREFIX}/Cellar/gcc@${{ matrix.toolchain.version }}"/*
+        fi
+        echo "GCC Cellar path: $GCC_CELLAR_PATH"
+
+        # Find the actual library files
+        CURRENT_GFORTRAN=$(find "$GCC_CELLAR_PATH"/lib/gcc/${{ matrix.toolchain.version }} -name "libgfortran.*.dylib" 2>/dev/null | head -n 1)
+        CURRENT_QUADMATH=$(find "$GCC_CELLAR_PATH"/lib/gcc/${{ matrix.toolchain.version }} -name "libquadmath.*.dylib" 2>/dev/null | head -n 1)
+        CURRENT_GCC_S=$(find "$GCC_CELLAR_PATH"/lib/gcc/${{ matrix.toolchain.version }} -name "libgcc_s.*.dylib" 2>/dev/null | head -n 1)
+
+        echo "Current gcc@${{ matrix.toolchain.version }} libraries:"
+        echo "  libgfortran: $CURRENT_GFORTRAN"
+        echo "  libquadmath: $CURRENT_QUADMATH"
+        echo "  libgcc_s: $CURRENT_GCC_S"
+
+        # Extract the expected libgfortran path and create symlink
+        LIBGFORTRAN_PATH=$(otool -L $(which fpm) | grep libgfortran | awk '{print $1}' | head -n 1)
+        if [ -n "$LIBGFORTRAN_PATH" ] && [ -n "$CURRENT_GFORTRAN" ]; then
+          TARGET_DIR=$(dirname "$LIBGFORTRAN_PATH")
+          echo "Creating directory: $TARGET_DIR"
+          sudo mkdir -p "$TARGET_DIR"
+          echo "Linking $CURRENT_GFORTRAN to $LIBGFORTRAN_PATH"
+          sudo ln -fs "$CURRENT_GFORTRAN" "$LIBGFORTRAN_PATH"
+        fi
+
+        # Extract the expected libquadmath path and create symlink
+        LIBQUADMATH_PATH=$(otool -L $(which fpm) | grep libquadmath | awk '{print $1}' | head -n 1)
+        if [ -n "$LIBQUADMATH_PATH" ] && [ -n "$CURRENT_QUADMATH" ]; then
+          TARGET_DIR=$(dirname "$LIBQUADMATH_PATH")
+          echo "Creating directory: $TARGET_DIR"
+          sudo mkdir -p "$TARGET_DIR"
+          echo "Linking $CURRENT_QUADMATH to $LIBQUADMATH_PATH"
+          sudo ln -fs "$CURRENT_QUADMATH" "$LIBQUADMATH_PATH"
+        fi
+
+        # Extract the expected libgcc_s path and create symlink
+        LIBGCC_PATH=$(otool -L $(which fpm) | grep libgcc_s | awk '{print $1}' | head -n 1)
+        if [ -n "$LIBGCC_PATH" ] && [ -n "$CURRENT_GCC_S" ]; then
+          TARGET_DIR=$(dirname "$LIBGCC_PATH")
+          echo "Creating directory: $TARGET_DIR"
+          sudo mkdir -p "$TARGET_DIR"
+          echo "Linking $CURRENT_GCC_S to $LIBGCC_PATH"
+          sudo ln -fs "$CURRENT_GCC_S" "$LIBGCC_PATH"
+        fi
+
+    # gcc and g++ will point to clang/clang++: use versioned alias for fpm
+    - name: MacOS patch C and C++ compilers
+      if: contains(matrix.os, 'macos')
+      run: |
+        echo "CC=gcc-${{ matrix.toolchain.version }}" >> $GITHUB_ENV
+        echo "FPM_CC=gcc-${{ matrix.toolchain.version }}" >> $GITHUB_ENV
+        echo "CXX=g++-${{ matrix.toolchain.version }}" >> $GITHUB_ENV
+        echo "FPM_CXX=g++-${{ matrix.toolchain.version }}" >> $GITHUB_ENV
+        echo "FPM_LDFLAGS=-lstdc++" >> $GITHUB_ENV
 
     - name: Remove fpm from path
       shell: bash
@@ -94,7 +183,7 @@ jobs:
     - name: Build Fortran fpm (bootstrap)
       shell: bash
       run: |
-        ${{ env.BOOTSTRAP }} build 
+        ${{ env.BOOTSTRAP }} build
 
     - name: Run Fortran fpm (bootstrap)
       shell: bash
@@ -106,7 +195,7 @@ jobs:
     - name: Test Fortran fpm (bootstrap)
       shell: bash
       run: |
-        ${{ env.BOOTSTRAP }} test
+        ${{ env.BOOTSTRAP }} test --flag " -Wno-external-argument-mismatch"
 
     - name: Install Fortran fpm (bootstrap)
       shell: bash
@@ -139,11 +228,6 @@ jobs:
       env:
         REGEX: '[0-9]\{1,4\}\.[0-9]\{1,4\}\.[0-9]\{1,4\}'
 
-    - name: Build example packages
-      shell: bash
-      run: |
-        ci/run_tests.sh "${{ env.FPM }}"
-
     - name: Build Fortran fpm
       shell: bash
       run: |
@@ -173,7 +257,7 @@ jobs:
         rm -v ${{ env.FPM }}
         echo "FPM_RELEASE=${{ env.EXE }}" >> $GITHUB_ENV
       env:
-        EXE: fpm-${{ env.VERSION }}-${{ matrix.os-arch }}-gcc-${{ matrix.gcc_v }}${{ matrix.exe }}
+        EXE: fpm-${{ env.VERSION }}-${{ matrix.os-arch }}-gcc-${{ matrix.toolchain.version }}${{ matrix.exe }}
 
     - name: Run release version
       shell: bash
@@ -181,7 +265,7 @@ jobs:
         ci/run_tests.sh "$PWD/${{ env.FPM_RELEASE }}"
 
     - name: Upload artifact
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@v7
       with:
         name: ${{ env.FPM_RELEASE }}
         path: ${{ env.FPM_RELEASE }}
@@ -195,13 +279,14 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        gcc_v: [10,11,12]
-    
+        gcc_v: [11,12,13]
+
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v6
 
     - name: Download Artifacts
-      uses: actions/download-artifact@v4
+      id: download_windows_artifacts
+      uses: actions/download-artifact@v8
       with:
         path: ${{ github.workspace }}
         pattern: fpm-*-windows-*-gcc-${{ matrix.gcc_v }}.exe
@@ -234,7 +319,25 @@ jobs:
     - name: Fetch Windows executable
       shell: msys2 {0}
       run: |
-        cp fpm-*/fpm-*-windows-*-gcc-${{ matrix.gcc_v }}.exe ./ci/fpm.exe
+        set -e
+        download_path='${{ steps.download_windows_artifacts.outputs.download-path }}'
+        download_path=$(printf '%s\n' "$download_path" | head -n1)
+        if [ -z "$download_path" ]; then
+          echo "download-artifact did not report a download path" >&2
+          exit 1
+        fi
+        if command -v cygpath >/dev/null 2>&1; then
+          posix_path=$(cygpath -u "$download_path")
+        else
+          posix_path="$download_path"
+        fi
+        exe_path=$(find "$posix_path" -maxdepth 2 -type f -name "fpm-*-windows-*-gcc-${{ matrix.gcc_v }}.exe" | head -n 1)
+        if [ -z "$exe_path" ]; then
+          echo "Windows executable not found under $posix_path" >&2
+          ls -al "$posix_path" || true
+          exit 1
+        fi
+        cp "$exe_path" ./ci/fpm.exe
 
     - name: Fetch Git for Windows
       shell: msys2 {0}
@@ -255,6 +358,20 @@ jobs:
       env:
         envar_download: "https://github.com/GsNSIS/EnVar/releases/download/v0.3.1/EnVar-Plugin.zip"
 
+    - name: Install NSIS
+      run: choco install nsis -y
+      shell: pwsh
+
+    - name: Add NSIS to PATH 
+      shell: pwsh
+      run: |
+        $dirs = @(
+          "${env:ProgramFiles(x86)}\NSIS",
+          "${env:ProgramFiles}\NSIS"
+        ) | Where-Object { $_ -and (Test-Path $_) }
+        if (-not $dirs) { throw "NSIS not found under Program Files." }
+        $dirs | ForEach-Object { $_ | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append }
+
     - name: Generate installer
       run: |
         cd ./ci
@@ -262,7 +379,7 @@ jobs:
         move fpm-installer.exe fpm-installer-${{ env.VERSION }}-gcc-${{ matrix.gcc_v }}.exe
 
     - name: Upload artifact
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@v7
       with:
         name: fpm-installer-gcc-${{ matrix.gcc_v }}
         path: ci/fpm-installer-${{ env.VERSION }}-gcc-${{ matrix.gcc_v }}.exe
@@ -282,11 +399,11 @@ jobs:
       env:
         DEPLOY_BRANCH: ${{ secrets.DEPLOY_BRANCH && contains(github.ref, secrets.DEPLOY_BRANCH) && 1 || 0 }}
 
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v6
       if: ${{ github.event_name == 'push' }}
 
     - name: Download Artifacts
-      uses: actions/download-artifact@v4
+      uses: actions/download-artifact@v8
       with:
         path: fpm-cd-artifacts
         pattern: 'fpm-*-gcc-12*'

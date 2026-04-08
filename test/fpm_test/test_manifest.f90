@@ -3,9 +3,15 @@ module test_manifest
     use fpm_filesystem, only: get_temp_filename
     use testsuite, only : new_unittest, unittest_t, error_t, test_failed, check_string
     use fpm_manifest
-    use fpm_manifest_profile, only: profile_config_t, find_profile
-    use fpm_strings, only: operator(.in.)
+    use fpm_manifest_profile, only: profile_config_t
+    use fpm_manifest_platform, only: platform_config_t
+    use fpm_compiler, only: id_gcc, id_intel_classic_nix
+    use fpm_environment, only: OS_LINUX
+    use fpm_manifest_feature, only: feature_config_t
+    use fpm_strings, only: operator(.in.), string_t
     use fpm_error, only: fatal_error, error_t
+    use tomlf, only : new_table, toml_table, toml_array
+    use fpm_toml, only : add_table, add_array, get_value, get_list, set_value, set_list
     implicit none
     private
     public :: collect_manifest
@@ -13,15 +19,16 @@ module test_manifest
 contains
 
     !> Collect all exported unit tests
-    subroutine collect_manifest(tests)
+    subroutine collect_manifest(testsuite)
 
         !> Collection of tests
-        type(unittest_t), allocatable, intent(out) :: tests(:)
+        type(unittest_t), allocatable, intent(out) :: testsuite(:)
 
-        tests = [ &
+        testsuite = [ &
             & new_unittest("valid-manifest", test_valid_manifest), &
             & new_unittest("invalid-manifest", test_invalid_manifest, should_fail=.true.), &
             & new_unittest("default-library", test_default_library), &
+            & new_unittest("default-library-type", test_default_library_type), &
             & new_unittest("default-executable", test_default_executable), &
             & new_unittest("dependency-empty", test_dependency_empty, should_fail=.true.), &
             & new_unittest("dependency-pathtag", test_dependency_pathtag, should_fail=.true.), &
@@ -31,11 +38,18 @@ contains
             & new_unittest("dependency-invalid-git", test_dependency_invalid_git, should_fail=.true.), &
             & new_unittest("dependency-no-namespace", test_dependency_no_namespace, should_fail=.true.), &
             & new_unittest("dependency-redundant-v", test_dependency_redundant_v, should_fail=.true.), &
+            & new_unittest("dependency-features-present", test_dependency_features_present), &
+            & new_unittest("dependency-features-absent",  test_dependency_features_absent),  &
+            & new_unittest("dependency-features-empty",   test_dependency_features_empty),   &
+            & new_unittest("dependency-profile-present",  test_dependency_profile_present),  &
+            & new_unittest("dependency-profile-absent",   test_dependency_profile_absent),   &
+            & new_unittest("dependency-profile-features-conflict", &
+            &              test_dependency_profile_features_conflict, should_fail=.true.), &
             & new_unittest("dependency-wrongkey", test_dependency_wrongkey, should_fail=.true.), &
             & new_unittest("dependencies-empty", test_dependencies_empty), &
             & new_unittest("dependencies-typeerror", test_dependencies_typeerror, should_fail=.true.), &
             & new_unittest("profiles", test_profiles), &
-            & new_unittest("profiles-keyvalue-table", test_profiles_keyvalue_table, should_fail=.true.), &
+            & new_unittest("profiles-invalid", test_profiles_invalid, should_fail=.true.), &
             & new_unittest("executable-empty", test_executable_empty, should_fail=.true.), &
             & new_unittest("executable-typeerror", test_executable_typeerror, should_fail=.true.), &
             & new_unittest("executable-noname", test_executable_noname, should_fail=.true.), &
@@ -46,6 +60,7 @@ contains
             & new_unittest("build-key-invalid", test_build_invalid_key), &
             & new_unittest("library-empty", test_library_empty), &
             & new_unittest("library-wrongkey", test_library_wrongkey, should_fail=.true.), &
+            & new_unittest("library-list", test_library_list, should_fail=.true.), &
             & new_unittest("package-simple", test_package_simple), &
             & new_unittest("package-empty", test_package_empty, should_fail=.true.), &
             & new_unittest("package-typeerror", test_package_typeerror, should_fail=.true.), &
@@ -65,12 +80,15 @@ contains
             & new_unittest("example-empty", test_example_empty, should_fail=.true.), &
             & new_unittest("install-library", test_install_library), &
             & new_unittest("install-empty", test_install_empty), &
+            & new_unittest("install-module-dir", test_install_module_dir), &
             & new_unittest("install-wrongkey", test_install_wrongkey, should_fail=.true.), &
             & new_unittest("preprocess-empty", test_preprocess_empty), &
             & new_unittest("preprocess-wrongkey", test_preprocess_wrongkey, should_fail=.true.), &
             & new_unittest("preprocessors-empty", test_preprocessors_empty, should_fail=.true.), &
             & new_unittest("macro-parsing", test_macro_parsing, should_fail=.false.), &
-            & new_unittest("macro-parsing-dependency", test_macro_parsing_dependency, should_fail=.false.) &
+            & new_unittest("macro-parsing-dependency", &
+            &              test_macro_parsing_dependency, should_fail=.false.), &
+            & new_unittest("features-demo-serialization", test_features_demo_serialization) &
             & ]
 
     end subroutine collect_manifest
@@ -230,6 +248,55 @@ contains
     end subroutine test_default_library
 
 
+    !> Test that a package with non-specified library returns monolithic and not shared/static
+    subroutine test_default_library_type(error)
+
+        !> Error handling
+        type(error_t), allocatable, intent(out) :: error
+
+        type(package_config_t) :: package
+        character(len=*), parameter :: manifest = 'fpm-default-library-type.toml'
+        integer :: unit
+
+        open(file=manifest, newunit=unit)
+        write(unit, '(a)') &
+            & 'name = "example"', &
+            & '[library]'
+        close(unit)
+
+        call get_package_data(package, manifest, error)
+
+        open(file=manifest, newunit=unit)
+        close(unit, status='delete')
+
+        if (allocated(error)) return
+
+        if (.not.allocated(package%library)) then
+            call test_failed(error, "Default library is not present in package data")
+            return
+        end if
+
+        if (.not.package%library%monolithic()) then
+            call test_failed(error, "Default library should be monolithic")
+            return
+        end if
+
+        if (package%library%shared()) then
+            call test_failed(error, "Default library should not be shared")
+            return
+        end if
+
+        if (package%library%static()) then
+            call test_failed(error, "Default library should not be static")
+            return
+        end if
+
+        call package%test_serialization('test_default_library_type',error)
+        if (allocated(error)) return
+
+    end subroutine test_default_library_type
+
+
     !> Create a default executable
     subroutine test_default_executable(error)
 
@@ -249,17 +316,18 @@ contains
         call check_string(error, package%executable(1)%name, name, &
             & "Default executable name")
         if (allocated(error)) return
+        
+        call package%feature_config_t%test_serialization('test_default_executable (feature only)',error)
+        if (allocated(error)) return
 
         call package%test_serialization('test_default_executable',error)
         if (allocated(error)) return
 
     end subroutine test_default_executable
-
-
+    
     !> Dependencies cannot be created from empty tables
     subroutine test_dependency_empty(error)
         use fpm_manifest_dependency
-        use fpm_toml, only : new_table, toml_table
 
         !> Error handling
         type(error_t), allocatable, intent(out) :: error
@@ -278,7 +346,6 @@ contains
     !> Try to create a dependency with conflicting entries
     subroutine test_dependency_pathtag(error)
         use fpm_manifest_dependency
-        use fpm_toml, only : new_table, toml_table, set_value
 
         !> Error handling
         type(error_t), allocatable, intent(out) :: error
@@ -300,7 +367,6 @@ contains
     !> Try to create a dependency with conflicting entries
     subroutine test_dependency_nourl(error)
         use fpm_manifest_dependency
-        use fpm_toml, only : new_table, toml_table, set_value
 
         !> Error handling
         type(error_t), allocatable, intent(out) :: error
@@ -321,7 +387,6 @@ contains
     !> Try to create a dependency with conflicting entries
     subroutine test_dependency_gitpath(error)
         use fpm_manifest_dependency
-        use fpm_toml, only : new_table, toml_table, set_value
 
         !> Error handling
         type(error_t), allocatable, intent(out) :: error
@@ -343,7 +408,6 @@ contains
     !> Try to create a dependency with conflicting entries
     subroutine test_dependency_gitconflict(error)
         use fpm_manifest_dependency
-        use fpm_toml, only : new_table, toml_table, set_value
 
         !> Error handling
         type(error_t), allocatable, intent(out) :: error
@@ -366,7 +430,6 @@ contains
     !> Try to create a git dependency with an invalid source format.
     subroutine test_dependency_invalid_git(error)
         use fpm_manifest_dependency
-        use fpm_toml, only : new_table, toml_table, set_value
 
         !> Error handling
         type(error_t), allocatable, intent(out) :: error
@@ -385,7 +448,6 @@ contains
     !> Namespace is necessary if a dependency is not a git or path dependency
     subroutine test_dependency_no_namespace(error)
         use fpm_manifest_dependency
-        use fpm_toml, only : new_table, toml_table, set_value
 
         type(error_t), allocatable, intent(out) :: error
 
@@ -403,7 +465,6 @@ contains
     !> Do not specify version with a git or path dependency
     subroutine test_dependency_redundant_v(error)
         use fpm_manifest_dependency
-        use fpm_toml, only : new_table, toml_table, set_value
 
         type(error_t), allocatable, intent(out) :: error
 
@@ -423,7 +484,6 @@ contains
     !> Try to create a dependency with conflicting entries
     subroutine test_dependency_wrongkey(error)
         use fpm_manifest_dependency
-        use fpm_toml, only : new_table, toml_table, set_value
 
         !> Error handling
         type(error_t), allocatable, intent(out) :: error
@@ -444,7 +504,6 @@ contains
     !> Dependency tables can be empty
     subroutine test_dependencies_empty(error)
         use fpm_manifest_dependency
-        use fpm_toml, only : new_table, toml_table
 
         !> Error handling
         type(error_t), allocatable, intent(out) :: error
@@ -467,7 +526,6 @@ contains
     !> Add a dependency as an array, which is not supported
     subroutine test_dependencies_typeerror(error)
         use fpm_manifest_dependency
-        use fpm_toml, only : new_table, add_array, toml_table, toml_array
 
         !> Error handling
         type(error_t), allocatable, intent(out) :: error
@@ -484,7 +542,7 @@ contains
 
     end subroutine test_dependencies_typeerror
 
-    !> Include a table of profiles in toml, check whether they are parsed correctly and stored in package
+    !> Test profile parsing and storage in package
     subroutine test_profiles(error)
 
         !> Error handling
@@ -493,23 +551,18 @@ contains
         type(package_config_t) :: package
         character(len=*), parameter :: manifest = 'fpm-profiles.toml'
         integer :: unit
-        character(:), allocatable :: profile_name, compiler
-        logical :: profile_found
-        type(profile_config_t) :: chosen_profile
 
         open(file=manifest, newunit=unit)
         write(unit, '(a)') &
             & 'name = "example"', &
-            & '[profiles.release.gfortran.linux]', &
-            & 'flags = "1" #release.gfortran.linux', &
-            & '[profiles.release.gfortran]', &
-            & 'flags = "2" #release.gfortran.all', &
-            & '[profiles.gfortran.linux]', &
-            & 'flags = "3" #all.gfortran.linux', &
-            & '[profiles.gfortran]', &
-            & 'flags = "4" #all.gfortran.all', &
-            & '[profiles.release.ifort]', &
-            & 'flags = "5" #release.ifort.all'
+            & '[profiles]', &
+            & 'development = ["debug", "testing"]', &
+            & 'release = ["optimized"]', &
+            & 'full-test = ["debug", "testing", "benchmarks"]', &
+            & '[features]', &
+            & 'testing.flags = " -g"', &            
+            & 'optimized.flags = " -O2"', &            
+            & 'benchmarks.flags = " -O3"'
         close(unit)
 
         call get_package_data(package, manifest, error)
@@ -519,66 +572,39 @@ contains
 
         if (allocated(error)) return
 
-        profile_name = 'release'
-        compiler = 'gfortran'
-        call find_profile(package%profiles, profile_name, compiler, 1, profile_found, chosen_profile)
-        if (.not.(chosen_profile%flags.eq.'1 3')) then
-            call test_failed(error, "Failed to append flags from profiles named 'all'")
+        ! Check that profiles were parsed correctly
+        if (.not. allocated(package%profiles)) then
+            call test_failed(error, "No profiles found in package")
             return
         end if
 
-        call chosen_profile%test_serialization('profile serialization: '//profile_name//' '//compiler,error)
-        if (allocated(error)) return
-
-        profile_name = 'release'
-        compiler = 'gfortran'
-        call find_profile(package%profiles, profile_name, compiler, 3, profile_found, chosen_profile)
-        if (.not.(chosen_profile%flags.eq.'2 4')) then
-            call test_failed(error, "Failed to choose profile with OS 'all'")
+        ! debug, release, development, full-test
+        if (size(package%profiles) /= 4) then
+            call test_failed(error, "Unexpected number of profiles, should be 4")
             return
         end if
 
-        call chosen_profile%test_serialization('profile serialization: '//profile_name//' '//compiler,error)
-        if (allocated(error)) return
-
-        profile_name = 'publish'
-        compiler = 'gfortran'
-        call find_profile(package%profiles, profile_name, compiler, 1, profile_found, chosen_profile)
-        if (allocated(chosen_profile%flags)) then
-            call test_failed(error, "Profile named "//profile_name//" should not exist")
+        ! Check development profile
+        if (package%profiles(1)%name /= "development") then
+            call test_failed(error, "Expected profile name 'development', got '" // package%profiles(1)%name // "'")
             return
         end if
 
-        call chosen_profile%test_serialization('profile serialization: '//profile_name//' '//compiler,error)
-        if (allocated(error)) return
-
-        profile_name = 'debug'
-        compiler = 'ifort'
-        call find_profile(package%profiles, profile_name, compiler, 3, profile_found, chosen_profile)
-        if (.not.(chosen_profile%flags.eq.&
-            ' /warn:all /check:all /error-limit:1 /Od /Z7 /assume:byterecl /standard-semantics /traceback')) then
-            call test_failed(error, "Failed to load built-in profile "//profile_name)
+        if (size(package%profiles(1)%features) /= 2) then
+            call test_failed(error, "Unexpected number of features, should be 2")
             return
         end if
 
-        call chosen_profile%test_serialization('profile serialization: '//profile_name//' '//compiler,error)
-        if (allocated(error)) return
-
-        profile_name = 'release'
-        compiler = 'ifort'
-        call find_profile(package%profiles, profile_name, compiler, 1, profile_found, chosen_profile)
-        if (.not.(chosen_profile%flags.eq.'5')) then
-            call test_failed(error, "Failed to overwrite built-in profile")
+        if (package%profiles(1)%features(1)%s /= "debug" .or. &
+            package%profiles(1)%features(2)%s /= "testing") then
+            call test_failed(error, "Incorrect features in development profile")
             return
         end if
-
-        call chosen_profile%test_serialization('profile serialization: '//profile_name//' '//compiler,error)
-        if (allocated(error)) return
 
     end subroutine test_profiles
 
-    !> 'flags' is a key-value entry, test should fail as it is defined as a table
-    subroutine test_profiles_keyvalue_table(error)
+    !> Test invalid profile configuration should fail
+    subroutine test_profiles_invalid(error)
 
         !> Error handling
         type(error_t), allocatable, intent(out) :: error
@@ -590,19 +616,19 @@ contains
         open(file=manifest, newunit=unit)
         write(unit, '(a)') &
             & 'name = "example"', &
-            & '[profiles.linux.flags]'
+            & '[profiles]', &
+            & 'development = "not_an_array"'
         close(unit)
 
         call get_package_data(package, manifest, error)
 
         open(file=manifest, newunit=unit)
         close(unit, status='delete')
-    end subroutine test_profiles_keyvalue_table
+    end subroutine test_profiles_invalid
 
     !> Executables cannot be created from empty tables
     subroutine test_executable_empty(error)
         use fpm_manifest_executable
-        use fpm_toml, only : new_table, toml_table
 
         !> Error handling
         type(error_t), allocatable, intent(out) :: error
@@ -620,7 +646,6 @@ contains
     !> Pass a wrong TOML type to the name field of the executable
     subroutine test_executable_typeerror(error)
         use fpm_manifest_executable
-        use fpm_toml, only : new_table, add_table, toml_table
 
         !> Error handling
         type(error_t), allocatable, intent(out) :: error
@@ -641,7 +666,6 @@ contains
     !> Pass a TOML table with insufficient entries to the executable constructor
     subroutine test_executable_noname(error)
         use fpm_manifest_executable
-        use fpm_toml, only : new_table, add_table, toml_table
 
         !> Error handling
         type(error_t), allocatable, intent(out) :: error
@@ -662,7 +686,6 @@ contains
     !> Pass a TOML table with not allowed keys
     subroutine test_executable_wrongkey(error)
         use fpm_manifest_executable
-        use fpm_toml, only : new_table, add_table, toml_table
 
         !> Error handling
         type(error_t), allocatable, intent(out) :: error
@@ -837,7 +860,6 @@ contains
     !> Libraries can be created from empty tables
     subroutine test_library_empty(error)
         use fpm_manifest_library
-        use fpm_toml, only : new_table, toml_table
 
         !> Error handling
         type(error_t), allocatable, intent(out) :: error
@@ -870,7 +892,6 @@ contains
     !> Pass a TOML table with not allowed keys
     subroutine test_library_wrongkey(error)
         use fpm_manifest_library
-        use fpm_toml, only : new_table, add_table, toml_table
 
         !> Error handling
         type(error_t), allocatable, intent(out) :: error
@@ -887,12 +908,49 @@ contains
 
     end subroutine test_library_wrongkey
 
+   !> Pass a TOML table with not allowed source dirs
+    subroutine test_library_list(error)
+        use fpm_manifest_library
+
+        !> Error handling
+        type(error_t), allocatable, intent(out) :: error
+
+        type(string_t), allocatable :: source_dirs(:)
+        type(toml_table) :: table
+        type(library_config_t) :: library
+
+        source_dirs = [string_t("src1"),string_t("src2")]
+        call new_table  (table)
+        call set_list   (table, "source-dir", source_dirs, error)
+        call new_library(library, table, error)
+
+    end subroutine test_library_list
+
+    !> Pass a TOML table with a 1-sized source dir list
+    subroutine test_library_listone(error)
+        use fpm_manifest_library
+
+        !> Error handling
+        type(error_t), allocatable, intent(out) :: error
+
+        type(package_config_t) :: package
+        character(:), allocatable :: temp_file
+        integer :: unit
+
+        open(file=temp_file, newunit=unit)
+        write(unit, '(a)') &
+            & 'name = "example"', &
+            & '[library]', &
+            & 'source-dir = ["my-src"]'
+        close(unit)
+
+        call get_package_data(package, temp_file, error)
+
+    end subroutine test_library_listone
 
     !> Packages cannot be created from empty tables
     subroutine test_package_simple(error)
         use fpm_manifest_package
-        use fpm_toml, only : new_table, add_table, add_array, set_value, &
-            & toml_table, toml_array
 
         !> Error handling
         type(error_t), allocatable, intent(out) :: error
@@ -930,7 +988,6 @@ contains
     !> Packages cannot be created from empty tables
     subroutine test_package_empty(error)
         use fpm_manifest_package
-        use fpm_toml, only : new_table, toml_table
 
         !> Error handling
         type(error_t), allocatable, intent(out) :: error
@@ -948,7 +1005,6 @@ contains
     !> Create an array in the package name, which should cause an error
     subroutine test_package_typeerror(error)
         use fpm_manifest_package
-        use fpm_toml, only : new_table, add_array, toml_table, toml_array
 
         !> Error handling
         type(error_t), allocatable, intent(out) :: error
@@ -969,7 +1025,6 @@ contains
     !> Try to create a new package without a name field
     subroutine test_package_noname(error)
         use fpm_manifest_package
-        use fpm_toml, only : new_table, add_table, toml_table
 
         !> Error handling
         type(error_t), allocatable, intent(out) :: error
@@ -992,7 +1047,6 @@ contains
     !> Try to read executables from a mixed type array
     subroutine test_package_wrongexe(error)
         use fpm_manifest_package
-        use fpm_toml, only : new_table, set_value, add_array, toml_table, toml_array
 
         !> Error handling
         type(error_t), allocatable, intent(out) :: error
@@ -1015,7 +1069,6 @@ contains
     !> Try to read tests from a mixed type array
     subroutine test_package_wrongtest(error)
         use fpm_manifest_package
-        use fpm_toml, only : new_table, set_value, add_array, toml_table, toml_array
 
         !> Error handling
         type(error_t), allocatable, intent(out) :: error
@@ -1038,7 +1091,6 @@ contains
     !> Try to read tests from a mixed type array
     subroutine test_package_duplicate(error)
         use fpm_manifest_package
-        use fpm_toml, only : set_value, add_table, add_array, toml_table, toml_array
 
         !> Error handling
         type(error_t), allocatable, intent(out) :: error
@@ -1065,7 +1117,6 @@ contains
     !> Tests cannot be created from empty tables
     subroutine test_test_simple(error)
         use fpm_manifest_test
-        use fpm_toml, only : new_table, set_value, add_table, toml_table
 
         !> Error handling
         type(error_t), allocatable, intent(out) :: error
@@ -1093,7 +1144,6 @@ contains
     !> Tests cannot be created from empty tables
     subroutine test_test_empty(error)
         use fpm_manifest_test
-        use fpm_toml, only : new_table, toml_table
 
         !> Error handling
         type(error_t), allocatable, intent(out) :: error
@@ -1111,7 +1161,6 @@ contains
     !> Pass a wrong TOML type to the name field of the test
     subroutine test_test_typeerror(error)
         use fpm_manifest_test
-        use fpm_toml, only : new_table, add_table, toml_table
 
         !> Error handling
         type(error_t), allocatable, intent(out) :: error
@@ -1132,7 +1181,6 @@ contains
     !> Pass a TOML table with insufficient entries to the test constructor
     subroutine test_test_noname(error)
         use fpm_manifest_test
-        use fpm_toml, only : new_table, add_table, toml_table
 
         !> Error handling
         type(error_t), allocatable, intent(out) :: error
@@ -1153,7 +1201,6 @@ contains
     !> Pass a TOML table with not allowed keys
     subroutine test_test_wrongkey(error)
         use fpm_manifest_test
-        use fpm_toml, only : new_table, add_table, toml_table
 
         !> Error handling
         type(error_t), allocatable, intent(out) :: error
@@ -1174,7 +1221,6 @@ contains
     !> Create a simple example entry
     subroutine test_example_simple(error)
         use fpm_manifest_example
-        use fpm_toml, only : new_table, set_value, add_table, toml_table
 
         !> Error handling
         type(error_t), allocatable, intent(out) :: error
@@ -1202,7 +1248,6 @@ contains
     !> Examples cannot be created from empty tables
     subroutine test_example_empty(error)
         use fpm_manifest_example
-        use fpm_toml, only : new_table, toml_table
 
         !> Error handling
         type(error_t), allocatable, intent(out) :: error
@@ -1220,7 +1265,6 @@ contains
     !> Test link options
     subroutine test_link_string(error)
         use fpm_manifest_build
-        use fpm_toml, only : set_value, toml_table
 
         !> Error handling
         type(error_t), allocatable, intent(out) :: error
@@ -1245,7 +1289,6 @@ contains
     !> Test link options
     subroutine test_link_array(error)
         use fpm_manifest_build
-        use fpm_toml, only : add_array, set_value, toml_table, toml_array
 
         !> Error handling
         type(error_t), allocatable, intent(out) :: error
@@ -1273,7 +1316,6 @@ contains
     !> Test link options
     subroutine test_invalid_link(error)
         use fpm_manifest_build
-        use fpm_toml, only : add_table, toml_table
 
         !> Error handling
         type(error_t), allocatable, intent(out) :: error
@@ -1293,7 +1335,6 @@ contains
 
     subroutine test_install_library(error)
         use fpm_manifest_install
-        use fpm_toml, only : toml_table, set_value
 
         !> Error handling
         type(error_t), allocatable, intent(out) :: error
@@ -1317,7 +1358,6 @@ contains
 
     subroutine test_install_empty(error)
         use fpm_manifest_install
-        use fpm_toml, only : toml_table
 
         !> Error handling
         type(error_t), allocatable, intent(out) :: error
@@ -1340,7 +1380,6 @@ contains
 
     subroutine test_install_wrongkey(error)
         use fpm_manifest_install
-        use fpm_toml, only : toml_table, set_value
 
         !> Error handling
         type(error_t), allocatable, intent(out) :: error
@@ -1355,9 +1394,36 @@ contains
 
     end subroutine test_install_wrongkey
 
+
+    subroutine test_install_module_dir(error)
+        use fpm_manifest_install
+
+        !> Error handling
+        type(error_t), allocatable, intent(out) :: error
+
+        type(toml_table) :: table
+        type(install_config_t) :: install
+
+        table = toml_table()
+        call set_value(table, "module-dir", "custom_modules")
+
+        call new_install_config(install, table, error)
+        if (allocated(error)) return
+
+        if (.not.allocated(install%module_dir)) then
+            call test_failed(error, "Module directory should be allocated")
+            return
+        end if
+
+        if (install%module_dir /= "custom_modules") then
+            call test_failed(error, "Module directory should match input")
+            return
+        end if
+
+    end subroutine test_install_module_dir
+
     subroutine test_preprocess_empty(error)
         use fpm_manifest_preprocess
-        use fpm_toml, only : new_table, toml_table
 
         !> Error handling
         type(error_t), allocatable, intent(out) :: error
@@ -1368,14 +1434,13 @@ contains
         call new_table(table)
         table%key = "example"
 
-        call new_preprocess_config(preprocess, table, error)
+        call preprocess%new(table, error)
 
     end subroutine test_preprocess_empty
 
     !> Pass a TOML table with not allowed keys
     subroutine test_preprocess_wrongkey(error)
         use fpm_manifest_preprocess
-        use fpm_toml, only : new_table, add_table, toml_table
 
         !> Error handling
         type(error_t), allocatable, intent(out) :: error
@@ -1389,14 +1454,13 @@ contains
         table%key = 'example'
         call add_table(table, 'wrong-field', child, stat)
 
-        call new_preprocess_config(preprocess, table, error)
+        call preprocess%new(table, error)
 
     end subroutine test_preprocess_wrongkey
 
     !> Preprocess table cannot be empty.
     subroutine test_preprocessors_empty(error)
         use fpm_manifest_preprocess
-        use fpm_toml, only : new_table, toml_table
 
         !> Error handling
         type(error_t), allocatable, intent(out) :: error
@@ -1413,15 +1477,17 @@ contains
 
     !> Test macro parsing function get_macros_from_manifest
     subroutine test_macro_parsing(error)
-        use fpm_compiler, only: get_macros, compiler_enum
+        use fpm_compiler, only: get_macros, compiler_enum, id_gcc
 
         !> Error handling
         type(error_t), allocatable, intent(out) :: error
 
         type(package_config_t) :: package
-        character(:), allocatable :: temp_file,pkg_ver
+        character(:), allocatable :: temp_file
         integer :: unit
         integer(compiler_enum)  :: id
+        
+        id = id_gcc
 
         allocate(temp_file, source=get_temp_filename())
 
@@ -1438,9 +1504,7 @@ contains
 
         if (allocated(error)) return
 
-        pkg_ver = package%version%s()
-
-        if (get_macros(id, package%preprocess(1)%macros, pkg_ver) /= " -DFOO -DBAR=2 -DVERSION=0.1.0") then
+        if (get_macros(id, package%preprocess(1)%macros, package%version) /= " -DFOO -DBAR=2 -DVERSION=0.1.0") then
             call test_failed(error, "Macros were not parsed correctly")
         end if
 
@@ -1459,7 +1523,6 @@ contains
 
         character(:), allocatable :: toml_file_package
         character(:), allocatable :: toml_file_dependency
-        character(:), allocatable :: pkg_ver,dep_ver
 
         integer :: unit
         integer(compiler_enum)  :: id
@@ -1496,15 +1559,383 @@ contains
 
         if (allocated(error)) return
 
-        pkg_ver = package%version%s()
-        dep_ver = dependency%version%s()
-
-        macros_package = get_macros(id, package%preprocess(1)%macros, pkg_ver)
-        macros_dependency = get_macros(id, dependency%preprocess(1)%macros, dep_ver)
+        macros_package = get_macros(id, package%preprocess(1)%macros, package%version)
+        macros_dependency = get_macros(id, dependency%preprocess(1)%macros, dependency%version)
         if (macros_package == macros_dependency) then
             call test_failed(error, "Macros of package and dependency should not be equal")
         end if
 
     end subroutine test_macro_parsing_dependency
+
+    !> Ensure dependency "features" array is correctly parsed when present
+    subroutine test_dependency_features_present(error)
+        !> Error handling
+        type(error_t), allocatable, intent(out) :: error
+
+        type(package_config_t) :: package
+        character(:), allocatable :: temp_file
+        integer :: unit, i, idx_dep0, idx_dep1, idx_dep2
+
+        allocate(temp_file, source=get_temp_filename())
+
+        open(file=temp_file, newunit=unit)
+        write(unit, '(a)') &
+            & 'name = "example"', &
+            & 'version = "0.1.0"', &
+            & '[dependencies]', &
+            & '"dep0" = { path = "local/dep0", features = ["featA", "featB"] }', &
+            & '"dep1" = { git = "https://example.com/repo.git", tag = "v1.2.3", features = ["only"] }', &
+            & '"dep2" = { path = "other/dep2" }'
+        close(unit)
+
+        call get_package_data(package, temp_file, error)
+        if (allocated(error)) return
+
+        if (.not.allocated(package%dependency)) then
+            call test_failed(error, 'No dependencies parsed from manifest')
+            return
+        end if
+
+        idx_dep0 = 0; idx_dep1 = 0; idx_dep2 = 0
+        do i = 1, size(package%dependency)
+            select case (package%dependency(i)%name)
+            case ('dep0'); idx_dep0 = i
+            case ('dep1'); idx_dep1 = i
+            case ('dep2'); idx_dep2 = i
+            end select
+        end do
+
+        if (idx_dep0 == 0 .or. idx_dep1 == 0 .or. idx_dep2 == 0) then
+            call test_failed(error, 'Expected dependencies dep0/dep1/dep2 not found')
+            return
+        end if
+
+        ! dep0: features = ["featA","featB"]
+        if (.not.allocated(package%dependency(idx_dep0)%features)) then
+            call test_failed(error, 'dep0 features not allocated')
+            return
+        end if
+        if (size(package%dependency(idx_dep0)%features) /= 2) then
+            call test_failed(error, 'dep0 features size /= 2')
+            return
+        end if
+        if (package%dependency(idx_dep0)%features(1)%s /= 'featA' .or. &
+            & package%dependency(idx_dep0)%features(2)%s /= 'featB') then
+            call test_failed(error, 'dep0 features values mismatch')
+            return
+        end if
+
+        ! dep1: features = ["only"]
+        if (.not.allocated(package%dependency(idx_dep1)%features)) then
+            call test_failed(error, 'dep1 features not allocated')
+            return
+        end if
+        if (size(package%dependency(idx_dep1)%features) /= 1) then
+            call test_failed(error, 'dep1 features size /= 1')
+            return
+        end if
+        if (package%dependency(idx_dep1)%features(1)%s /= 'only') then
+            call test_failed(error, 'dep1 features value mismatch')
+            return
+        end if
+
+        ! dep2: no features key -> should be NOT allocated
+        if (allocated(package%dependency(idx_dep2)%features)) then
+            call test_failed(error, 'dep2 features should be unallocated when key is absent')
+            return
+        end if
+    end subroutine test_dependency_features_present
+
+
+    !> Ensure a dependency without "features" key is accepted (no allocation)
+    subroutine test_dependency_features_absent(error)
+        !> Error handling
+        type(error_t), allocatable, intent(out) :: error
+
+        type(package_config_t) :: package
+        character(:), allocatable :: temp_file
+        integer :: unit, i
+
+        allocate(temp_file, source=get_temp_filename())
+
+        open(file=temp_file, newunit=unit)
+        write(unit, '(a)') &
+            & 'name = "example"', &
+            & '[dependencies]', &
+            & '"a" = { path = "a" }', &
+            & '"b" = { git = "https://example.org/b.git", branch = "main" }'
+        close(unit)
+
+        call get_package_data(package, temp_file, error)
+        if (allocated(error)) return
+
+        if (.not.allocated(package%dependency)) then
+            call test_failed(error, 'No dependencies parsed from manifest')
+            return
+        end if
+
+        do i = 1, size(package%dependency)
+            if (allocated(package%dependency(i)%features)) then
+                call test_failed(error, 'features should be unallocated when not specified')
+                return
+            end if
+        end do
+    end subroutine test_dependency_features_absent
+
+
+    !> Accept an explicit empty "features = []" list
+    subroutine test_dependency_features_empty(error)
+        !> Error handling
+        type(error_t), allocatable, intent(out) :: error
+
+        type(package_config_t) :: package
+        character(:), allocatable :: temp_file
+        integer :: unit, i, idx
+
+        allocate(temp_file, source=get_temp_filename())
+
+        open(file=temp_file, newunit=unit)
+        write(unit, '(a)') &
+            & 'name = "example"', &
+            & '[dependencies]', &
+            & '"empty" = { path = "local/empty", features = [] }'
+        close(unit)
+
+        call get_package_data(package, temp_file, error)
+        if (allocated(error)) return
+
+        idx = -1
+        if (.not.allocated(package%dependency)) then
+            call test_failed(error, 'No dependencies parsed from manifest')
+            return
+        end if
+
+        do i = 1, size(package%dependency)
+            if (package%dependency(i)%name == 'empty') then
+                idx = i
+                exit
+            end if
+        end do
+
+        if (idx < 1) then
+            call test_failed(error, 'Dependency "empty" not found')
+            return
+        end if
+
+        if (.not.allocated(package%dependency(idx)%features)) then
+            call test_failed(error, 'features should be allocated (size=0) for empty list')
+            return
+        end if
+        if (size(package%dependency(idx)%features) /= 0) then
+            call test_failed(error, 'features size should be zero for empty list')
+            return
+        end if
+    end subroutine test_dependency_features_empty
+
+    !> Test features demo manifest serialization (from example_packages/features_demo/fpm.toml)
+    subroutine test_features_demo_serialization(error)
+        !> Error handling
+        type(error_t), allocatable, intent(out) :: error
+
+        type(package_config_t) :: package
+        character(:), allocatable :: temp_file
+        integer :: unit
+
+        allocate(temp_file, source=get_temp_filename())
+
+        open(file=temp_file, newunit=unit)
+        write(unit, '(a)') &
+            & 'name = "features_demo"', &
+            & 'version = "0.1.0"', &
+            & 'license = "MIT"', &
+            & 'description = "Demo package for FPM features functionality"', &
+            & '', &
+            & '[[executable]]', &
+            & 'name = "features_demo"', &
+            & 'source-dir = "app"', &
+            & 'main = "main.f90"', &
+            & '', &
+            & '[features]', &
+            & '# Base debug feature', &
+            & 'debug.flags = "-g"', &
+            & 'debug.preprocess.cpp.macros = "DEBUG"', &
+            & '', &
+            & '# Release feature', &
+            & 'release.flags = "-O3"', &
+            & 'release.preprocess.cpp.macros = "RELEASE"', &
+            & '', &
+            & '# Compiler-specific features', &
+            & 'debug.gfortran.flags = "-Wall -fcheck=bounds"', &
+            & 'release.gfortran.flags = "-mtune=generic -funroll-loops"', &
+            & '', &
+            & '# Platform-specific features', &
+            & 'linux.preprocess.cpp.macros = "LINUX_BUILD"', &
+            & '', &
+            & '# Parallel features', &
+            & 'mpi.preprocess.cpp.macros = "USE_MPI"', &
+            & 'mpi.dependencies.mpi = "*"', &
+            & 'openmp.preprocess.cpp.macros = "USE_OPENMP"', &
+            & 'openmp.dependencies.openmp = "*"', &
+            & '', &
+            & '[profiles]', &
+            & 'development = ["debug"]', &
+            & 'production = ["release", "openmp"]'
+        close(unit)
+
+        call get_package_data(package, temp_file, error)
+        if (allocated(error)) return
+
+        ! Verify basic package structure
+        if (package%name /= "features_demo") then
+            call test_failed(error, "Package name should be 'features_demo'")
+            return
+        end if
+
+        if (.not. allocated(package%features)) then
+            call test_failed(error, "Features should be allocated")
+            return
+        end if
+
+        if (.not. allocated(package%profiles)) then
+            call test_failed(error, "Profiles should be allocated") 
+            return
+        end if
+
+        if (.not. allocated(package%executable)) then
+            call test_failed(error, "Executables should be allocated")
+            return
+        end if
+
+        ! Test package serialization roundtrip
+        call package%test_serialization('test_features_demo_serialization', error)
+        if (allocated(error)) return
+
+    end subroutine test_features_demo_serialization
+
+
+    !> Test that a dependency with "profile" key is parsed correctly
+    subroutine test_dependency_profile_present(error)
+        !> Error handling
+        type(error_t), allocatable, intent(out) :: error
+
+        type(package_config_t) :: package
+        character(:), allocatable :: temp_file
+        integer :: unit, i, idx_dep0, idx_dep1
+
+        allocate(temp_file, source=get_temp_filename())
+
+        open(file=temp_file, newunit=unit)
+        write(unit, '(a)') &
+            & 'name = "example"', &
+            & 'version = "0.1.0"', &
+            & '[dependencies]', &
+            & '"dep0" = { path = "local/dep0", profile = "release" }', &
+            & '"dep1" = { path = "local/dep1" }'
+        close(unit)
+
+        call get_package_data(package, temp_file, error)
+        if (allocated(error)) return
+
+        if (.not.allocated(package%dependency)) then
+            call test_failed(error, 'No dependencies parsed from manifest')
+            return
+        end if
+
+        idx_dep0 = 0; idx_dep1 = 0
+        do i = 1, size(package%dependency)
+            select case (package%dependency(i)%name)
+            case ('dep0'); idx_dep0 = i
+            case ('dep1'); idx_dep1 = i
+            end select
+        end do
+
+        if (idx_dep0 == 0 .or. idx_dep1 == 0) then
+            call test_failed(error, 'Expected dependencies dep0/dep1 not found')
+            return
+        end if
+
+        ! dep0: profile = "release"
+        if (.not.allocated(package%dependency(idx_dep0)%profile)) then
+            call test_failed(error, 'dep0 profile not allocated')
+            return
+        end if
+        if (package%dependency(idx_dep0)%profile /= 'release') then
+            call test_failed(error, 'dep0 profile value mismatch, expected "release"')
+            return
+        end if
+        ! dep0 should NOT have features allocated
+        if (allocated(package%dependency(idx_dep0)%features)) then
+            if (size(package%dependency(idx_dep0)%features) > 0) then
+                call test_failed(error, 'dep0 features should not be present when profile is used')
+                return
+            end if
+        end if
+
+        ! dep1: no profile key -> should be NOT allocated
+        if (allocated(package%dependency(idx_dep1)%profile)) then
+            call test_failed(error, 'dep1 profile should be unallocated when key is absent')
+            return
+        end if
+    end subroutine test_dependency_profile_present
+
+
+    !> Ensure a dependency without "profile" key leaves it unallocated
+    subroutine test_dependency_profile_absent(error)
+        !> Error handling
+        type(error_t), allocatable, intent(out) :: error
+
+        type(package_config_t) :: package
+        character(:), allocatable :: temp_file
+        integer :: unit, i
+
+        allocate(temp_file, source=get_temp_filename())
+
+        open(file=temp_file, newunit=unit)
+        write(unit, '(a)') &
+            & 'name = "example"', &
+            & '[dependencies]', &
+            & '"a" = { path = "a" }', &
+            & '"b" = { git = "https://example.org/b.git", branch = "main" }'
+        close(unit)
+
+        call get_package_data(package, temp_file, error)
+        if (allocated(error)) return
+
+        if (.not.allocated(package%dependency)) then
+            call test_failed(error, 'No dependencies parsed from manifest')
+            return
+        end if
+
+        do i = 1, size(package%dependency)
+            if (allocated(package%dependency(i)%profile)) then
+                call test_failed(error, 'profile should be unallocated when not specified')
+                return
+            end if
+        end do
+    end subroutine test_dependency_profile_absent
+
+
+    !> Specifying both "features" and "profile" should be an error
+    subroutine test_dependency_profile_features_conflict(error)
+        !> Error handling
+        type(error_t), allocatable, intent(out) :: error
+
+        type(package_config_t) :: package
+        character(:), allocatable :: temp_file
+        integer :: unit
+
+        allocate(temp_file, source=get_temp_filename())
+
+        open(file=temp_file, newunit=unit)
+        write(unit, '(a)') &
+            & 'name = "example"', &
+            & '[dependencies]', &
+            & '"bad" = { path = "bad", features = ["f1"], profile = "release" }'
+        close(unit)
+
+        call get_package_data(package, temp_file, error)
+
+    end subroutine test_dependency_profile_features_conflict
+
 
 end module test_manifest

@@ -28,17 +28,43 @@ pushd metapackage_stdlib
 popd
 
 pushd metapackage_minpack
+"$fpm" build --verbose --flag " -Wno-external-argument-mismatch"
+"$fpm" run --verbose --flag " -Wno-external-argument-mismatch"
+popd
+
+pushd metapackage_mpi
 "$fpm" build --verbose
 "$fpm" run --verbose
 popd
 
-pushd metapackage_mpi
-"$fpm" build --verbose 
+pushd metapackage_mpi_c
+"$fpm" build --verbose
 "$fpm" run --verbose
 popd
 
-pushd metapackage_mpi_c
-"$fpm" build --verbose 
+pushd metapackage_hdf5
+"$fpm" build --verbose
+"$fpm" run --verbose
+popd
+
+pushd metapackage_netcdf
+"$fpm" build --verbose
+"$fpm" run --verbose
+popd
+
+pushd metapackage_blas
+"$fpm" build --verbose
+"$fpm" run --verbose
+popd
+
+pushd metapackage_stdlib_extblas
+"$fpm" build --verbose
+"$fpm" run --verbose
+popd
+
+# Test metapackage propagation from dependencies (issue #1209)
+pushd metapackage_dep_parent
+"$fpm" build --verbose
 "$fpm" run --verbose
 popd
 

@@ -6,16 +6,24 @@ module fpm_environment
     use,intrinsic :: iso_fortran_env, only : stdin=>input_unit,   &
                                            & stdout=>output_unit, &
                                            & stderr=>error_unit
+    use,intrinsic :: iso_c_binding, only: c_char,c_int,c_null_char
     use fpm_error, only : fpm_stop
+    use fpm_strings, only : lower
     implicit none
     private
     public :: get_os_type
+    public :: match_os_type
+    public :: validate_os_name
     public :: os_is_unix
     public :: get_env
+    public :: set_env
+    public :: delete_env
     public :: get_command_arguments_quoted
     public :: separator
-
+    public :: library_filename
+    
                         public :: OS_NAME
+    integer, parameter, public :: OS_ALL     = -1   ! "all" flag for profile support
     integer, parameter, public :: OS_UNKNOWN = 0
     integer, parameter, public :: OS_LINUX   = 1
     integer, parameter, public :: OS_MACOS   = 2
@@ -25,6 +33,40 @@ module fpm_environment
     integer, parameter, public :: OS_FREEBSD = 6
     integer, parameter, public :: OS_OPENBSD = 7
 contains
+
+    !> Utility function: return library filename
+    pure function library_filename(package_name, shared, import, target_os) result(name)
+        character(*), intent(in) :: package_name    
+        !> Whether it's a shared library
+        logical, intent(in) :: shared       
+        !> Whether it's for linking (import library) or actual library
+        logical, intent(in) :: import       
+        !> Build target OS: one of OS_WINDOWS, OS_MACOS, ...
+        integer, intent(in) :: target_os        
+
+        character(len=:), allocatable :: name
+
+        if (shared) then
+            select case (target_os)
+            case (OS_WINDOWS)
+                if (import) then
+                    ! Linking requires the import library
+                    name = 'lib' // package_name // '.lib'
+                else
+                    ! The actual shared object is a DLL
+                    name = 'lib' // package_name // '.dll'
+                end if
+            case (OS_MACOS)
+                name = 'lib' // package_name // '.dylib'
+            case default
+                name = 'lib' // package_name // '.so'
+            end select
+        else
+            ! Static library (same for all platforms)
+            name = 'lib' // package_name // '.a'
+        end if
+
+    end function library_filename
 
     !> Return string describing the OS type flag
     pure function OS_NAME(os)
@@ -40,9 +82,46 @@ contains
             case (OS_FREEBSD); OS_NAME =  "FreeBSD"
             case (OS_OPENBSD); OS_NAME =  "OpenBSD"
             case (OS_UNKNOWN); OS_NAME =  "Unknown"
+            case (OS_ALL)    ; OS_NAME =  "all"
             case default     ; OS_NAME =  "UNKNOWN"
         end select
     end function OS_NAME
+
+    !> Match os_name to os_type enum (similar to profiles.f90)
+    integer function match_os_type(os_name) result(os_type)
+        character(len=*), intent(in) :: os_name
+        
+        select case (lower(os_name))
+            case ("linux");   os_type = OS_LINUX
+            case ("macos");   os_type = OS_MACOS
+            case ("windows"); os_type = OS_WINDOWS
+            case ("cygwin");  os_type = OS_CYGWIN
+            case ("solaris"); os_type = OS_SOLARIS
+            case ("freebsd"); os_type = OS_FREEBSD
+            case ("openbsd"); os_type = OS_OPENBSD
+            case ("all");     os_type = OS_ALL
+            case default;     os_type = OS_UNKNOWN
+        end select
+    end function match_os_type
+
+    !> Check if os_name is a valid name of a supported OS
+    pure elemental subroutine validate_os_name(os_name, is_valid)
+
+       !> Name of an operating system
+       character(len=*), intent(in) :: os_name
+
+       !> Boolean value of whether os_name is valid or not
+       logical, intent(out) :: is_valid
+
+       select case (lower(os_name))
+         case ("linux", "macos", "windows", "cygwin", "solaris", "freebsd", &
+                         & "openbsd", "all")
+           is_valid = .true.
+         case default
+           is_valid = .false.
+       end select
+
+    end subroutine validate_os_name
 
     !> Determine the OS type
     integer function get_os_type() result(r)
@@ -338,4 +417,100 @@ character(len=:),allocatable :: fname
    endif
    !*ifort_bug*!sep_cache=sep
 end function separator
+
+!> Set an environment variable for the current environment using the C standard library
+logical function set_env(name,value,overwrite)
+
+   !> Variable name
+   character(*), intent(in) :: name
+   
+   !> Variable value
+   character(*), intent(in) :: value
+   
+   !> Should a former value be overwritten? default = .true.
+   logical, optional, intent(in) :: overwrite
+   
+   ! Local variables
+   logical :: can_overwrite
+   integer(c_int) :: cover,cerr
+   character(kind=c_char,len=1), allocatable :: c_value(:),c_name(:)
+   
+   interface
+      integer(c_int) function c_setenv(envname, envval, overwrite) &
+                     bind(C,name="c_setenv")
+         import c_int, c_char
+         implicit none
+         !> Pointer to the name string
+         character(kind=c_char,len=1), intent(in) :: envname(*)
+         !> Pointer to the value string 
+         character(kind=c_char,len=1), intent(in) :: envval(*)
+         !> Overwrite option
+         integer(c_int), intent(in), value :: overwrite
+      end function c_setenv 
+   end interface
+   
+   !> Overwrite setting
+   cerr = 0_c_int
+   can_overwrite = .true.
+   if (present(overwrite)) can_overwrite = overwrite
+   cover = merge(1_c_int,0_c_int,can_overwrite)
+   
+   !> C strings
+   call f2cs(name,c_name)
+   call f2cs(value,c_value)
+   
+   !> Call setenv
+#ifndef FPM_BOOTSTRAP   
+   cerr = c_setenv(c_name,c_value,cover)
+#endif
+   set_env = cerr==0_c_int
+   
+end function set_env
+
+!> Deletes an environment variable for the current environment using the C standard library
+!> Returns an error if the variable did not exist in the first place
+logical function delete_env(name) result(success)
+
+   !> Variable name
+   character(*), intent(in) :: name
+   
+   ! Local variables
+   integer(c_int) :: cerr
+   character(kind=c_char,len=1), allocatable :: c_name(:)
+   
+   interface
+      integer(c_int) function c_unsetenv(envname) bind(C,name="c_unsetenv")
+         import c_int, c_char
+         implicit none
+         !> Pointer to the name string
+         character(kind=c_char,len=1), intent(in) :: envname(*)
+      end function c_unsetenv      
+   end interface
+   
+   !> C strings
+   call f2cs(name,c_name)
+   
+   !> Call setenv
+#ifndef FPM_BOOTSTRAP   
+   cerr = c_unsetenv(c_name)
+#endif
+   success = cerr==0_c_int
+   
+end function delete_env
+
+!> Fortran to C allocatable string
+pure subroutine f2cs(f,c)
+  use iso_c_binding, only: c_char,c_null_char
+  character(*), intent(in) :: f
+  character(len=1,kind=c_char), allocatable, intent(out) :: c(:)
+  
+  integer :: lf,i
+  
+  lf = len(f)
+  allocate(c(lf+1))
+  c(lf+1) = c_null_char 
+  forall(i=1:lf) c(i) = f(i:i)
+  
+end subroutine f2cs 
+
 end module fpm_environment

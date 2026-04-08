@@ -110,12 +110,19 @@ with the following contents and initialized as a git repository.
 * `fpm build` – build your library, executables and tests
 * `fpm run` – run executables
 * `fpm test` – run tests
+* `fpm search` – search the local or remote registry
 * `fpm install` - installs the executables locally
 
 The command `fpm run` can optionally accept the name of the specific executable
 to run, as can `fpm test`; like `fpm run specific_executable`. Command line
 arguments can also be passed to the executable(s) or test(s) with the option
 `-- some arguments`.
+
+Sample queries:
+
+* `fpm search --query mpi`
+* `fpm search --namespace fortran-lang --package stdlib`
+* `fpm search --license MIT --sort-by name --sort asc`
 
 See additional instructions in the [Packaging guide](PACKAGING.md) or
 the [manifest reference](https://fpm.fortran-lang.org/spec/manifest.html).

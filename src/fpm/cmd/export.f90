@@ -22,7 +22,6 @@ contains
     type(fpm_model_t) :: model
     type(error_t), allocatable :: error
 
-    integer :: ii
     character(len=:), allocatable :: filename
 
     if (len_trim(settings%dump_manifest)<=0 .and. &
@@ -45,8 +44,8 @@ contains
     if (len_trim(settings%dump_dependencies)>0) then
 
         !> Generate dependency tree
-        filename = join_path("build", "cache.toml")
-        call new_dependency_tree(deps, cache=filename, verbosity=merge(2, 1, settings%verbose))
+        filename = join_path(settings%build_dir, "cache.toml")
+        call new_dependency_tree(deps, cache=filename, verbosity=merge(2, 1, settings%verbose), build_dir=settings%build_dir)
         call deps%add(package, error)
         call handle_error(error)
 

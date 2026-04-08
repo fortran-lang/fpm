@@ -65,7 +65,7 @@ test -e demo1.txt
 test -e demo2.txt
 popd
 
-# Test building individual targets 
+# Test building individual targets
 pushd many_targets
 cases=( "1" "2" "3" )
 targets=( "run" "example" "test" )
@@ -75,16 +75,16 @@ do
    for i in {0..2}
    do
       rm -f *.txt
-      this=${cases[$i]}	
+      this=${cases[$i]}
       others=${cases[@]/$this}
       filename=${targets[$j]}$this
       echo "$filename"
-      "$fpm" ${cmdrun[$j]} $filename 
+      "$fpm" ${cmdrun[$j]} $filename
       test -e $filename.txt
       # non-i-th tests should not have run
       for k in ${others[@]}
       do
-         test ! -e ${targets[$k]}$k.txt   
+         test ! -e ${targets[$k]}$k.txt
       done
    done
 done
@@ -93,22 +93,22 @@ done
 if [[ "$(which time)" ]]; then
 targets=( "run" "run --example" "test" )
 names=( "run" "example" "test" )
-cmdrun=( " " " --runner time" ) 
+cmdrun=( " " " --runner time" )
 for j in {0..2}
 do
   for i in {0..1}
   do
     rm -f *.txt
-    "$fpm" ${targets[$j]}${cmdrun[$i]} 
+    "$fpm" ${targets[$j]}${cmdrun[$i]}
     # all targets should have run
     for k in ${cases[@]}
     do
-       test -e ${names[$j]}$k.txt   
+       test -e ${names[$j]}$k.txt
     done
   done
 done
 fi
-popd 
+popd
 
 
 pushd auto_discovery_off
@@ -162,6 +162,11 @@ popd
 pushd program_with_module
 "$fpm" build
 "$fpm" run --target Program_with_module
+popd
+
+pushd program_with_cpp_guarded_module
+"$fpm" build
+"$fpm" run 
 popd
 
 pushd link_executable
@@ -226,7 +231,7 @@ pushd fpm_test_exe_issues
 popd
 
 pushd cpp_files
-"$fpm" test
+"$fpm" test --verbose 
 popd
 
 # Test Fortran features
@@ -259,7 +264,11 @@ test $EXIT_CODE -eq 3
 # not an integer -> error 2
 EXIT_CODE=0
 "$fpm" run -- 3.1415 || EXIT_CODE=$?
-test $EXIT_CODE -eq 2
+if [[ "$FPM_FC" == "ifx" ]]; then
+   test $EXIT_CODE -eq 0  # ifx does not return error code on non-integer input
+else
+   test $EXIT_CODE -eq 2
+fi
 
 # not a number -> error 2
 EXIT_CODE=0
@@ -305,6 +314,69 @@ fi
 "$fpm" install --prefix c
 
 popd
+
+# Test shared library dependencies
+pushd shared_lib
+"$fpm" build --verbose || EXIT_CODE=$?
+test $EXIT_CODE -eq 0
+popd
+
+pushd shared_lib_extra
+"$fpm" build || EXIT_CODE=$?
+test $EXIT_CODE -eq 0
+popd
+
+pushd shared_lib_empty
+"$fpm" build
+"$fpm" run
+"$fpm" test
+popd
+
+pushd static_lib_empty
+"$fpm" build
+"$fpm" run
+"$fpm" test
+popd
+
+pushd shared_app_only
+"$fpm" test || EXIT_CODE=$?
+test $EXIT_CODE -eq 0
+popd
+
+# Static library dependencies
+pushd static_app_only
+"$fpm" test || EXIT_CODE=$?
+test $EXIT_CODE -eq 0
+popd
+
+# Test custom module directory
+pushd custom_module_dir
+"$fpm" build
+rm -rf ./test_custom_install
+"$fpm" install --prefix ./test_custom_install
+# Verify modules are installed in custom directory
+test -f ./test_custom_install/custom_modules/greeting.mod
+test -f ./test_custom_install/custom_modules/math_utils.mod
+# Verify library is still installed normally
+test -f ./test_custom_install/lib/libcustom-module-dir.a
+# Clean up
+rm -rf ./test_custom_install
+popd
+
+# Test both shared and static library types
+pushd both_lib_types
+"$fpm" build
+"$fpm" install --prefix=.
+# Check that exactly 2 libboth_lib_types library files were installed
+test $(ls lib/libboth_lib_types* | wc -l) -eq 2
+popd
+
+# Test custom build directory functionality 
+bash "../ci/test_custom_build_dir.sh" "$fpm" hello_world
+
+# Test FPM features functionality
+echo "=== Testing FPM Features Functionality ==="
+bash "../ci/test_features.sh" "$fpm"
 
 # Cleanup
 rm -rf ./*/build

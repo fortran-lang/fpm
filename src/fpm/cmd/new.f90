@@ -223,6 +223,12 @@ character(len=:,kind=tfc),allocatable :: littlefile(:)
         &'  # files and library archive. Without this being set to "true" an "install"    ',&
         &'  # subcommand ignores parameters that specify library installation.            ',&
         &'                                                                                ',&
+        &'  # If your project sets `[library] type = "shared"`, enabling this option      ',&
+        &'  # will install the compiled `.so`, `.dylib`, or `.dll` files into the         ',&
+        &'  # appropriate `lib/` folder. This applies equally to static archives.         ',&
+        &'  #                                                                             ',&
+        &'  # For shared libraries, installing is typically required for runtime usage.   ',&
+        &'                                                                                ',&
         &'library = false                                                                 ',&
         &'                                                                                ',&
         &'[build] # General Build Options                                                 ',&
@@ -305,6 +311,32 @@ character(len=:,kind=tfc),allocatable :: littlefile(:)
             &'  # This rule applies generally to any number of nested directories and         ',&
             &'  # modules. For example, src/a/b/c/d.f90 must define a module called a_b_c_d.  ',&
             &'  # Again, this is not enforced but may be required in future releases.         ',&
+            &'                                                                                ',&
+            &'  ### Library type                                                              ',&
+            &'  # Set `type = "shared"` to build dynamic libraries (.so/.dylib/.dll)          ',&
+            &'  # instead of a static archive. You can also set `type = "static"` to          ',&
+            &'  # generate per-package archives, or use `type = "monolithic"` (default)       ',&
+            &'  # to bundle all sources and dependencies into a single archive.               ',&
+            &'  #                                                                             ',&
+            &'  # Supported types:                                                            ',&
+            &'  #                                                                             ',&
+            &'  #  + "monolithic": Single archive with used sources and dependencies.         ',&
+            &'  #  + "static":    One full archive per package (for external integration).    ',&
+            &'  #  + "shared":    One shared library per package, for dynamic linking.        ',&
+            &'  #                                                                             ',&
+            &'  # Shared libraries are useful for plugin systems, dynamic linking, or         ',&
+            &'  # language bindings. Static per-package archives may aid external reuse.      ',&
+            &'  #                                                                             ',&
+            &'  # When running with `fpm run`, shared library paths are automatically         ',&
+            &'  # added to the environment (e.g. `LD_LIBRARY_PATH`, `PATH`) at runtime.       ',&
+            &'  #                                                                             ',&            
+            &'  # Note: library files are not installed unless `[install] library=true`       ',&
+            &'  # is also enabled.                                                            ',&
+            &'  #                                                                             ',&
+            &'  # Example:                                                                    ',&
+            &'                                                                                ',&            
+            &'type = "shared"                                                                 ',&
+            &'                                                                                ',&
             &'']
         endif
         ! create placeholder module src/bname.f90
@@ -627,7 +659,8 @@ end function git_metadata
 
 subroutine create_verified_basic_manifest(filename)
 !> create a basic but verified default manifest file
-use fpm_toml, only : toml_table, toml_serialize, set_value
+use tomlf, only : toml_table, toml_serialize
+use fpm_toml, only : set_value
 use fpm_manifest_package, only : package_config_t, new_package
 use fpm_error, only : error_t
 implicit none
@@ -672,8 +705,7 @@ end subroutine create_verified_basic_manifest
 subroutine validate_toml_data(input)
 !> verify a string array is a valid fpm.toml file
 !
-use tomlf, only : toml_load
-use fpm_toml, only : toml_table, toml_serialize
+use tomlf, only : toml_table, toml_load, toml_serialize
 implicit none
 character(kind=tfc,len=:),intent(in),allocatable :: input(:)
 character(len=1), parameter                      :: nl = new_line('a')

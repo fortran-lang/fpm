@@ -1,0 +1,3 @@
+name = "test_stdlib_ext_blas"
+dependencies.blas = "*"
+dependencies.stdlib = "*" 

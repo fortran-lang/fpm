@@ -1,0 +1,21 @@
+name = "test_duplicates"
+version = "0.1.0"
+
+[[executable]]
+name = "test_program"
+source-dir = "app"
+main = "main.f90"
+
+[features]
+# This should cause a duplicate executable error when features are combined
+feature1.executable.name = "my_exe"
+feature1.executable.source-dir = "app1"
+feature1.executable.main = "main1.f90"
+
+feature2.executable.name = "my_exe"  # Same name - should cause duplicate error
+feature2.executable.source-dir = "app2" 
+feature2.executable.main = "main2.f90"
+
+[profiles]
+# This profile combines features with duplicate executables
+combined = ["feature1", "feature2"]

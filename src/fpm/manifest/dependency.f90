@@ -9,7 +9,13 @@
 !>"dep3" = { git = "url", tag = "name" }
 !>"dep4" = { git = "url", rev = "sha1" }
 !>"dep0" = { path = "path" }
+!>"dep5" = { path = "path", features = ["feat1", "feat2"] }
+!>"dep6" = { path = "path", profile = "myprofile" }
 !>```
+!>
+!> The `features` and `profile` keys are mutually exclusive.
+!> `features` provides a list of individual feature names;
+!> `profile` provides a single profile name defined in the dependency's manifest.
 !>
 !> To reduce the amount of boilerplate code this module provides two constructors
 !> for dependency types, one basic for an actual dependency (inline) table
@@ -26,8 +32,9 @@ module fpm_manifest_dependency
     use fpm_error, only: error_t, syntax_error, fatal_error
     use fpm_git, only: git_target_t, git_target_tag, git_target_branch, &
         & git_target_revision, git_target_default, git_matches_manifest
-    use fpm_toml, only: toml_table, toml_key, toml_stat, get_value, check_keys, serializable_t, add_table, &
-        & set_value, set_string
+    use tomlf, only: toml_table, toml_key, toml_stat
+    use fpm_toml, only: get_value, check_keys, serializable_t, add_table, &
+        & set_value, set_string, get_list, set_list
     use fpm_filesystem, only: windows_path, join_path
     use fpm_environment, only: get_os_type, OS_WINDOWS
     use fpm_manifest_metapackages, only: metapackage_config_t, is_meta_package, new_meta_config, &
@@ -61,6 +68,12 @@ module fpm_manifest_dependency
 
         !> Requested macros for the dependency
         type(preprocess_config_t), allocatable :: preprocess(:)
+        
+        !> Requested features for the dependency
+        type(string_t), allocatable :: features(:)
+
+        !> Requested profile for the dependency (mutually exclusive with features)
+        character(len=:), allocatable :: profile
 
         !> Git descriptor
         type(git_target_t), allocatable :: git
@@ -69,6 +82,9 @@ module fpm_manifest_dependency
 
         !> Print information on this instance
         procedure :: info
+        
+        !> Add a preprocessor configuration
+        procedure :: add_preprocess
 
         !> Serialization interface
         procedure :: serializable_is_same => dependency_is_same
@@ -124,6 +140,13 @@ contains
             call new_preprocessors(self%preprocess, child, error)
             if (allocated(error)) return
         endif
+        
+        !> Get optional features list
+        call get_list(table, "features", self%features, error)
+        if (allocated(error)) return
+
+        !> Get optional profile name
+        call get_value(table, "profile", self%profile)
 
         call get_value(table, "path", uri)
         if (allocated(uri)) then
@@ -172,6 +195,7 @@ contains
         type(error_t), allocatable, intent(out) :: error
 
         character(len=:), allocatable :: name
+        type(string_t), allocatable :: string_list(:)
         type(toml_key), allocatable :: list(:)
         type(toml_table), pointer :: child
 
@@ -184,7 +208,9 @@ contains
               "tag", &
               "branch", &
               "rev", &
-              "preprocess" &
+              "preprocess", &
+              "features", &
+              "profile" &
             & ]
 
         call table%get_key(name)
@@ -238,6 +264,12 @@ contains
                 return
             end if
 
+        end if
+
+        ! Check that features and profile are not both specified
+        if (table%has_key('features') .and. table%has_key('profile')) then
+            call syntax_error(error, "Dependency '"//name//"' cannot have both 'features' and 'profile' entries")
+            return
         end if
 
     end subroutine check
@@ -337,7 +369,7 @@ contains
         !> Verbosity of the printout
         integer, intent(in), optional :: verbosity
 
-        integer :: pr
+        integer :: pr, ilink
         character(len=*), parameter :: fmt = '("#", 1x, a, t30, a)'
 
         if (present(verbosity)) then
@@ -360,6 +392,17 @@ contains
             write (unit, fmt) "- kind", "local"
             write (unit, fmt) "- path", self%path
         end if
+
+       if (allocated(self%features)) then
+          write(unit, fmt) " - features"
+          do ilink = 1, size(self%features)
+             write(unit, fmt) "   - " // self%features(ilink)%s
+          end do
+       end if
+
+       if (allocated(self%profile)) then
+          write(unit, fmt) " - profile", self%profile
+       end if
 
     end subroutine info
 
@@ -397,6 +440,8 @@ contains
         if (allocated(self%namespace)) deallocate(self%namespace)
         if (allocated(self%requested_version)) deallocate(self%requested_version)
         if (allocated(self%git)) deallocate(self%git)
+        if (allocated(self%features)) deallocate(self%features)
+        if (allocated(self%profile)) deallocate(self%profile)
 
     end subroutine dependency_destroy
 
@@ -410,15 +455,32 @@ contains
         select type (other=>that)
            type is (dependency_config_t)
 
-              if (.not.(this%name==other%name)) return
-              if (.not.(this%path==other%path)) return
-              if (.not.(this%namespace==other%namespace)) return
-              if (.not.(allocated(this%requested_version).eqv.allocated(other%requested_version))) return
+              if (allocated(this%name).neqv.allocated(other%name)) return
+              if (allocated(this%name)) then
+                if (.not.(this%name==other%name)) return
+              endif
+              if (allocated(this%path).neqv.allocated(other%path)) return
+              if (allocated(this%path)) then
+                if (.not.(this%path==other%path)) return
+              endif
+              if (allocated(this%namespace).neqv.allocated(other%namespace)) return
+              if (allocated(this%namespace)) then
+                if (.not.(this%namespace==other%namespace)) return
+              endif
+              if (allocated(this%requested_version).neqv.allocated(other%requested_version)) return
               if (allocated(this%requested_version)) then
                 if (.not.(this%requested_version==other%requested_version)) return
               endif
+              if (allocated(this%features).neqv.allocated(other%features)) return
+              if (allocated(this%features)) then
+                if (.not.(this%features==other%features)) return
+              endif
+              if (allocated(this%profile).neqv.allocated(other%profile)) return
+              if (allocated(this%profile)) then
+                if (.not.(this%profile==other%profile)) return
+              endif
 
-              if (.not.(allocated(this%git).eqv.allocated(other%git))) return
+              if ((allocated(this%git).neqv.allocated(other%git))) return
               if (allocated(this%git)) then
                 if (.not.(this%git==other%git)) return
               endif
@@ -458,6 +520,10 @@ contains
              call set_string(table, "requested_version", self%requested_version%s(), error, 'dependency_config_t')
              if (allocated(error)) return
         endif
+       call set_list(table, "features", self%features, error)
+       if (allocated(error)) return
+       call set_string(table, "profile", self%profile, error, 'dependency_config_t')
+       if (allocated(error)) return
 
         if (allocated(self%git)) then
             call add_table(table, "git", ptr, error)
@@ -500,6 +566,9 @@ contains
                 return
             endif
         end if
+        call get_list(table, "features", self%features, error)
+        if (allocated(error)) return
+        call get_value(table, "profile", self%profile)
 
         call table%get_keys(list)
         add_git: do ii = 1, size(list)
@@ -551,6 +620,47 @@ contains
         end if
 
     end subroutine resize_dependency_config
+    
+    subroutine add_preprocess(dep, preprocess)
+        !> Instance of the dependency config
+        class(dependency_config_t), intent(inout) :: dep
+        !> Instance of the preprocessor configuration
+        type(preprocess_config_t), intent(in) :: preprocess
+        
+        integer :: i,n
+        type(preprocess_config_t), allocatable :: new_preprocess(:)
+        
+        if (allocated(dep%preprocess)) then 
+            
+            n = size(dep%preprocess)
+            
+            if (n<1) then 
+                deallocate(dep%preprocess)
+                allocate(dep%preprocess(1),source=preprocess)
+            else
+                
+                find_similar: do i=1,n
+                    if (dep%preprocess(i)%name==dep%name) then                             
+                        call dep%preprocess(i)%add_config(preprocess)
+                        return                            
+                    end if
+                end do find_similar                   
+                
+                ! Similar preprocessor config not found: add a new one
+                allocate(new_preprocess(n+1))
+                new_preprocess(1:n) = dep%preprocess
+                new_preprocess(n+1) = preprocess
+                call move_alloc(from=new_preprocess,to=dep%preprocess)
+                
+            end if
+        else
+            
+            ! Copy configuration
+            allocate(dep%preprocess(1),source=preprocess)
+            
+        end if                
+               
+    end subroutine add_preprocess
 
 
 end module fpm_manifest_dependency

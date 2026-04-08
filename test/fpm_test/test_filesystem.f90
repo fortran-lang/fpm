@@ -1,8 +1,10 @@
 module test_filesystem
     use testsuite, only: new_unittest, unittest_t, error_t, test_failed
     use fpm_filesystem, only: canon_path, is_dir, mkdir, os_delete_dir, &
-                              join_path, is_absolute_path, get_home
+                              join_path, is_absolute_path, get_home, &
+                              delete_file, read_lines, get_temp_filename
     use fpm_environment, only: OS_WINDOWS, get_os_type, os_is_unix
+    use fpm_strings, only: string_t, split_lines_first_last
     implicit none
     private
 
@@ -20,7 +22,9 @@ contains
             & new_unittest("canon-path", test_canon_path), &
             & new_unittest("create-delete-directory", test_mkdir_rmdir), &
             & new_unittest("test-is-absolute-path", test_is_absolute_path), &
-            & new_unittest("test-get-home", test_get_home) &
+            & new_unittest("test-get-home", test_get_home), &
+            & new_unittest("test-split-lines-first-last", test_split_lines_first_last), &
+            & new_unittest("test-crlf-lines", test_dir_with_crlf) &
             ]
 
     end subroutine collect_filesystem
@@ -289,5 +293,141 @@ contains
         end if
 
     end subroutine test_get_home
+    
+    ! Test line splitting on MS windows
+    subroutine test_split_lines_first_last(error)
+        !> Error handling
+        type(error_t), allocatable, intent(out) :: error
+
+        character,    parameter :: CR = achar(13)
+        character,    parameter :: LF = new_line('A')
+        character(*), parameter :: CRLF = CR//LF
+        integer, allocatable    :: first(:), last(:)
+        
+        call split_lines_first_last(CR//LF//'line1'//CR//'line2'//LF//'line3'//CR//LF//'hello', first, last)
+        if (.not.(all(first==[3,9,15,22]) .and. all(last==[7,13,19,26]))) then 
+            call test_failed(error, "Test split_lines_first_last #1 failed")
+            return
+        end if
+
+        call split_lines_first_last('single_line', first, last)
+        if (.not.(all(first==[1]) .and. all(last==[11]))) then 
+            call test_failed(error, "Test split_lines_first_last #2 failed")
+            return
+        end if
+
+        call split_lines_first_last(CR//LF//CR//LF//'test', first, last)
+        if (.not.(all(first == [5]) .and. all(last == [8]))) then 
+            call test_failed(error, "Test split_lines_first_last #3 failed")
+            return
+        end if
+
+        call split_lines_first_last('a'//CR//'b'//LF//'c'//CR//LF//'d', first, last)
+        if (.not.(all(first == [1, 3, 5, 8]) .and. all(last == [1, 3, 5, 8]))) then 
+            call test_failed(error, "Test split_lines_first_last #4 failed")
+            return
+        end if
+
+        call split_lines_first_last('', first, last)
+        if (.not.(size(first) == 0 .and. size(last) == 0)) then 
+            call test_failed(error, "Test split_lines_first_last #5 failed")
+            return
+        end if
+        
+        call split_lines_first_last('build.f90'//CRLF//&
+                                    'dependency.f90'//CRLF//&
+                                    'example.f90'//CRLF//&
+                                    'executable.f90'//CRLF//&
+                                    'fortran.f90'//CRLF, &
+                                    first, last)
+
+        if (.not.(all(first == [1,12,28,41,57]) .and. all(last == [9,25,38,54,67]))) then 
+            call test_failed(error, "Test split_lines_first_last #6 failed")
+            return
+        end if
+
+    end subroutine test_split_lines_first_last    
+    
+    ! On MS windows, directory listings are printed to files with CR//LF endings. 
+    ! Check that the lines can be properly read back from such files.
+    subroutine test_dir_with_crlf(error)
+        type(error_t), allocatable, intent(out) :: error
+        
+        character,    parameter :: CR = achar(13)
+        character,    parameter :: LF = new_line('A')
+        character(*), parameter :: CRLF = CR//LF
+        
+        character(*), parameter :: test_lines = 'build.f90'//CRLF//&
+                                                'dependency.f90'//CRLF//&
+                                                'example.f90'//CRLF//&
+                                                'executable.f90'//CRLF//&
+                                                'fortran.f90'//CRLF
+                                               
+        type(string_t), allocatable :: lines(:)
+        character(len=:), allocatable :: temp_file
+        character(256) :: msg
+        integer :: unit, i, ios
+        
+        temp_file = get_temp_filename()
+        
+        open(newunit=unit,file=temp_file,access='stream',action='write',iostat=ios)
+        if (ios/=0) then 
+            call test_failed(error, "cannot create temporary file")
+            return
+        end if
+        
+        write(unit,iostat=ios) test_lines
+        if (ios/=0) then 
+            call test_failed(error, "cannot write to temporary file")
+            return
+        end if
+                
+        close(unit,iostat=ios)
+        if (ios/=0) then 
+            call test_failed(error, "cannot close temporary file")
+            return
+        end if        
+        
+        lines = read_lines(temp_file) 
+        
+        if (.not.allocated(lines)) then 
+            write(msg, 1) 'no output'
+            call test_failed(error, msg)
+            return
+        end if
+        
+        if (size(lines)/=5) then 
+            write(msg, 1) 'wrong number of lines: expected ',5,', actual ',size(lines)
+            call test_failed(error, msg)
+            return
+        end if
+        
+        if (lines(1)%s/='build.f90') then 
+            call test_failed(error, "Failed reading file with CRLF: at build.f90")
+            return
+        end if
+        if (lines(2)%s/='dependency.f90') then 
+            call test_failed(error, "Failed reading file with CRLF: at dependency.f90")
+            return
+        end if
+        if (lines(3)%s/='example.f90') then 
+            call test_failed(error, "Failed reading file with CRLF: at example.f90")
+            return
+        end if
+        if (lines(4)%s/='executable.f90') then 
+            call test_failed(error, "Failed reading file with CRLF: at executable.f90")
+            return
+        end if
+        if (lines(5)%s/='fortran.f90') then 
+            call test_failed(error, "Failed reading file with CRLF: at fortran.f90")
+            return
+        end if                                
+        
+        call delete_file(temp_file)
+        
+        1 format("Failed reading file with CRLF: ",a,:,i0,:,a,:,i0)
+        
+    end subroutine test_dir_with_crlf
+    
 
 end module test_filesystem

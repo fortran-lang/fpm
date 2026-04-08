@@ -59,19 +59,18 @@ module fpm_dependency
   use fpm_environment, only: get_os_type, OS_WINDOWS, os_is_unix
   use fpm_error, only: error_t, fatal_error
   use fpm_filesystem, only: exists, join_path, mkdir, canon_path, windows_path, list_files, is_dir, basename, &
-                            os_delete_dir, get_temp_filename
+                            os_delete_dir, get_temp_filename, parent_dir
   use fpm_git, only: git_target_revision, git_target_default, git_revision, serializable_t
-  use fpm_manifest, only: package_config_t, dependency_config_t, get_package_data
+  use fpm_manifest, only: package_config_t, dependency_config_t, get_package_data, get_package_dependencies
   use fpm_manifest_dependency, only: manifest_has_changed, dependency_destroy
   use fpm_manifest_preprocess, only: operator(==)
-  use fpm_strings, only: string_t, operator(.in.)
-  use fpm_toml, only: toml_table, toml_key, toml_error, toml_serialize, &
-                      get_value, set_value, add_table, toml_load, toml_stat, set_string
+  use fpm_strings, only: string_t, operator(.in.), operator(==), str
+  use tomlf, only: toml_table, toml_key, toml_error, toml_load, toml_stat, toml_array, len, add_array
+  use fpm_toml, only: toml_serialize, get_value, set_value, add_table, set_string, get_list, set_list
   use fpm_versioning, only: version_t, new_version
   use fpm_settings, only: fpm_global_settings, get_global_settings, official_registry_base_url
   use fpm_downloader, only: downloader_t
   use jonquil, only: json_object
-  use fpm_strings, only: str
   implicit none
   private
 
@@ -86,7 +85,7 @@ module fpm_dependency
   !> Dependency node in the projects dependency tree
   type, extends(dependency_config_t) :: dependency_node_t
     !> Actual version of this dependency
-    type(version_t), allocatable :: version
+    type(version_t), allocatable  :: version
     !> Installation prefix of this dependencies
     character(len=:), allocatable :: proj_dir
     !> Checked out revision of the version control system
@@ -97,9 +96,13 @@ module fpm_dependency
     logical :: update = .false.
     !> Dependency was loaded from a cache
     logical :: cached = .false.
+    !> Internal: package dependencies of this node 
+    type(string_t), allocatable :: package_dep(:)    
   contains
+
     !> Update dependency from project manifest.
-    procedure :: register
+    procedure :: register    
+
     !> Get dependency from the registry.
     procedure :: get_from_registry
     procedure, private :: get_from_local_registry
@@ -108,8 +111,8 @@ module fpm_dependency
 
     !> Serialization interface
     procedure :: serializable_is_same => dependency_node_is_same
-    procedure :: dump_to_toml => node_dump_to_toml
-    procedure :: load_from_toml => node_load_from_toml
+    procedure :: dump_to_toml         => node_dump_to_toml
+    procedure :: load_from_toml       => node_load_from_toml
 
   end type dependency_node_t
 
@@ -130,6 +133,8 @@ module fpm_dependency
     type(dependency_node_t), allocatable :: dep(:)
     !> Cache file
     character(len=:), allocatable :: cache
+    !> Custom path to the global config file
+    character(len=:), allocatable :: path_to_config
 
   contains
 
@@ -160,6 +165,8 @@ module fpm_dependency
     generic :: find => find_name
     !> Find a dependency by its name
     procedure, private :: find_name
+    !> Establish local link order for a node's package dependencies
+    procedure :: local_link_order
     !> Depedendncy resolution finished
     procedure :: finished
     !> Reading of dependency tree
@@ -187,8 +194,8 @@ module fpm_dependency
 
     !> Serialization interface
     procedure :: serializable_is_same => dependency_tree_is_same
-    procedure :: dump_to_toml   => tree_dump_to_toml
-    procedure :: load_from_toml => tree_load_from_toml
+    procedure :: dump_to_toml         => tree_dump_to_toml
+    procedure :: load_from_toml       => tree_load_from_toml
 
   end type dependency_tree_t
 
@@ -198,20 +205,30 @@ module fpm_dependency
 contains
 
   !> Create a new dependency tree
-  subroutine new_dependency_tree(self, verbosity, cache)
+  subroutine new_dependency_tree(self, verbosity, cache, path_to_config, build_dir)
     !> Instance of the dependency tree
     type(dependency_tree_t), intent(out) :: self
     !> Verbosity of printout
     integer, intent(in), optional :: verbosity
     !> Name of the cache file
     character(len=*), intent(in), optional :: cache
+    !> Path to the global config file.
+    character(len=*), intent(in), optional :: path_to_config
+    !> Custom build directory
+    character(len=*), intent(in), optional :: build_dir
 
     call resize(self%dep)
-    self%dep_dir = join_path("build", "dependencies")
+    if (present(build_dir)) then
+        self%dep_dir = join_path(build_dir, "dependencies")
+    else
+        self%dep_dir = join_path("build", "dependencies")
+    end if
 
     if (present(verbosity)) self%verbosity = verbosity
 
     if (present(cache)) self%cache = cache
+
+    if (present(path_to_config)) self%path_to_config = path_to_config
 
   end subroutine new_dependency_tree
 
@@ -256,7 +273,7 @@ contains
     !> Verbosity of the printout
     integer, intent(in), optional :: verbosity
 
-    integer :: pr
+    integer :: pr, i
     character(len=*), parameter :: fmt = '("#", 1x, a, t30, a)'
 
     if (present(verbosity)) then
@@ -282,7 +299,14 @@ contains
 
     write (unit, fmt) "- done", merge('YES', 'NO ', self%done)
     write (unit, fmt) "- update", merge('YES', 'NO ', self%update)
-
+    
+    if (allocated(self%package_dep)) then
+        write(unit, fmt) " - package_dep "
+        do i = 1, size(self%package_dep)
+           write(unit, fmt) "   - " // self%package_dep(i)%s
+        end do            
+    end if
+    
   end subroutine info
 
   !> Add project dependencies, each depth level after each other.
@@ -315,7 +339,7 @@ contains
     ! Resolve the root project
     call self%resolve(root, error)
     if (allocated(error)) return
-
+    
     ! Add the root project dependencies (depth 1)
     call self%add(package, root, .true., error)
     if (allocated(error)) return
@@ -340,6 +364,10 @@ contains
       if (allocated(error)) exit
     end do
     if (allocated(error)) return
+        
+    ! Resolve internal dependency graph and remove temporary package storage
+    call resolve_dependency_graph(self, package, error)
+    if (allocated(error)) return
 
     if (allocated(self%cache)) then
       call self%dump_cache(self%cache, error)
@@ -347,6 +375,63 @@ contains
     end if
 
   end subroutine add_project
+
+  subroutine resolve_dependency_graph(self, main, error)
+      !> Instance of the dependency tree
+      class(dependency_tree_t), intent(inout) :: self
+      !> Main project configuration 
+      type(package_config_t), intent(in) :: main      
+      !> Error handling
+      type(error_t), allocatable, intent(out) :: error
+
+      integer :: i,nit
+      integer, parameter   :: MAXIT = 50
+      logical, allocatable :: finished(:)
+      type(string_t), allocatable :: old_package_dep(:)
+      
+      if (self%ndep<1) then 
+          call fatal_error(error, "Trying to compute the dependency graph of an empty tree")
+          return
+      end if
+      
+      nit = 0
+      allocate(finished(self%ndep),source=.false.)
+      do while (.not.all(finished) .and. nit<MAXIT)
+        
+          nit = nit+1
+      
+          do i = 1, self%ndep
+            
+              ! Save old deps
+              call move_alloc(from=self%dep(i)%package_dep,to=old_package_dep)
+              
+              call get_required_packages(self, i, error=error)
+              if (allocated(error)) return
+              
+              finished(i) = all_alloc(self%dep(i)%package_dep, old_package_dep)
+              
+          end do  
+      
+      end do
+      
+      if (nit>=MAXIT) call fatal_error(error, "Infinite loop detected computing the dependency graph")
+      
+      contains
+      
+      pure logical function all_alloc(this,that)
+          type(string_t), intent(in), allocatable :: this(:),that(:)
+          all_alloc = .false.
+          if (allocated(this).neqv.allocated(that)) return
+          if (.not.allocated(this)) then 
+              all_alloc = .true.
+          else  
+              if (size(this)/=size(that)) return
+              if (.not.(this==that)) return
+              all_alloc = .true.
+          end if
+      end function all_alloc
+
+  end subroutine resolve_dependency_graph
 
   !> Add a project and its dependencies to the dependency tree
   recursive subroutine add_project_dependencies(self, package, root, main, error)
@@ -566,7 +651,23 @@ contains
     type(error_t), allocatable, intent(out) :: error
 
     type(fpm_global_settings) :: global_settings
+    character(:), allocatable :: parent_directory
     integer :: ii
+
+    ! Register path to global config file if it was entered via the command line.
+    if (allocated(self%path_to_config)) then
+      if (len_trim(self%path_to_config) > 0) then
+        parent_directory = parent_dir(self%path_to_config)
+
+        if (len_trim(parent_directory) == 0) then
+          global_settings%path_to_config_folder = "."
+        else
+          global_settings%path_to_config_folder = parent_directory
+        end if
+
+        global_settings%config_file_name = basename(self%path_to_config)
+      end if
+    end if
 
     call get_global_settings(global_settings, error)
     if (allocated(error)) return
@@ -627,6 +728,7 @@ contains
 
     call dependency%register(package, proj_dir, fetch, revision, error)
     if (allocated(error)) return
+    
 
     if (self%verbosity > 1) then
       write (self%unit, out_fmt) &
@@ -636,7 +738,7 @@ contains
 
     call self%add(package, proj_dir, .false., error)
     if (allocated(error)) return
-
+    
   end subroutine resolve_dependency
 
   !> Get a dependency from the registry. Whether the dependency is fetched
@@ -695,7 +797,7 @@ contains
     end if
 
     ! Include namespace and package name in the target url and download package data.
-    target_url = global_settings%registry_settings%url//'packages/'//self%namespace//'/'//self%name
+    target_url = global_settings%registry_settings%url//'/packages/'//self%namespace//'/'//self%name
     call downloader%get_pkg_data(target_url, self%requested_version, tmp_file, json, error)
     close (unit, status='delete')
     if (allocated(error)) return
@@ -944,11 +1046,12 @@ contains
   end function finished
 
   !> Update dependency from project manifest
-  subroutine register(self, package, root, fetch, revision, error)
+  subroutine register(node, package, root, fetch, revision, error)
     !> Instance of the dependency node
-    class(dependency_node_t), intent(inout) :: self
+    class(dependency_node_t), intent(inout) :: node
     !> Package configuration data
     type(package_config_t), intent(in) :: package
+   
     !> Project has been fetched
     logical, intent(in) :: fetch
     !> Root directory of the project
@@ -961,26 +1064,187 @@ contains
     logical :: update
 
     update = .false.
-    if (self%name /= package%name) then
+    if (node%name /= package%name) then
       call fatal_error(error, "Dependency name '"//package%name// &
-        & "' found, but expected '"//self%name//"' instead")
+        & "' found, but expected '"//node%name//"' instead")
+        return
     end if
 
-    self%version = package%version
-    self%proj_dir = root
+    node%version  = package%version
+    node%proj_dir = root
 
-    if (allocated(self%git) .and. present(revision)) then
-      self%revision = revision
+    if (allocated(node%git) .and. present(revision)) then
+      node%revision = revision
       if (.not. fetch) then
         ! Change in revision ID was checked already. Only update if ALL git information is missing
-        update = .not. allocated(self%git%url)
+        update = .not. allocated(node%git%url)
       end if
     end if
-
-    if (update) self%update = update
-    self%done = .true.
-
+  
+    if (update) node%update = update
+    node%done = .true.  
+    
   end subroutine register
+
+  !> Capture the list of "required" packages while the manifest is loaded. 
+  !> This subroutine should be called during the "resolve" phase, i.e. when the whole 
+  !> dependency tree has been built already
+  subroutine get_required_packages(tree, node_ID, error)
+      !> Instance of the dependency tree
+      class(dependency_tree_t), intent(inout) :: tree     
+      !> Instance of the dependency node
+      integer, intent(in) :: node_ID
+      !> Error handling
+      type(error_t), allocatable, intent(out) :: error
+      
+      integer :: nreq,k,id
+      type(dependency_config_t), allocatable :: dependency(:)
+      type(package_config_t) :: manifest
+      logical :: required(tree%ndep),main
+      
+      associate(node => tree%dep(node_ID))
+        
+      ! Is the main project
+      main = node_ID==1  
+      
+      ! Get manifest
+      call get_package_data(manifest, join_path(node%proj_dir,"fpm.toml"), error)
+      if (allocated(error)) return
+      
+      call get_package_dependencies(manifest, main, dependency) 
+      nreq = size(dependency)
+    
+      ! Translate names -> indices
+      required = .false.
+
+      do k = 1, nreq
+        
+          id = tree%find(dependency(k)%name)
+          if (id<=0) then
+             ! Shouldn't happen because tree already contains every dep
+             call fatal_error(error, "Internal error: "//trim(node%name)// &
+                  & " cannot find resolved dependency "//trim(dependency(k)%name)//" in tree")                  
+             return             
+          end if
+          
+          ! Recurse dependencies
+          call recurse_deps(tree, id, required)
+                    
+      end do    
+      
+      ! Recursed list
+      nreq = count(required)
+      if (allocated(node%package_dep)) deallocate(node%package_dep)
+      allocate(node%package_dep(nreq))  
+      k = 0
+      do id=1,tree%ndep
+         if (.not.required(id)) cycle
+         k = k+1
+         node%package_dep(k) = string_t(tree%dep(id)%name)
+      end do
+      
+      endassociate
+      
+      contains
+                
+          recursive subroutine recurse_deps(tree, id, required)
+              class(dependency_tree_t), intent(in) :: tree
+              integer, intent(in) :: id
+              logical, intent(inout) :: required(:)
+
+              integer :: j,dep_id
+              
+              if (required(id)) return
+              
+              required(id) = .true.
+              if (allocated(tree%dep(id)%package_dep)) then
+                  do j = 1, size(tree%dep(id)%package_dep)
+                      dep_id = tree%find(tree%dep(id)%package_dep(j)%s)
+                      call recurse_deps(tree, dep_id, required)
+                  end do
+              end if
+          end subroutine recurse_deps         
+      
+  end subroutine get_required_packages  
+
+  !> Build a correct topological link order for a given dependency node.
+  !>
+  !> This routine returns the list of dependencies required to build `root_id`,
+  !> sorted such that each dependency appears *before* any node that depends on it.
+  !> This is suitable for correct linker ordering: `-lA -lB` means B can use symbols from A.
+  !>
+  !> The returned list includes both the transitive dependencies and the node itself.
+  !> Example: if node 3 requires [5, 7, 9, 2] and 9 also requires 2,
+  !> then the result will ensure that 2 appears before 9, etc.
+  subroutine local_link_order(tree, root_id, order, error)
+    !> The full dependency graph
+    class(dependency_tree_t), intent(in) :: tree
+    !> Index of the node for which to compute link order (e.g., the target being linked)
+    integer, intent(in) :: root_id
+    !> Ordered list of dependency indices (subset of tree%dep(:)) in link-safe order
+    integer, allocatable, intent(out) :: order(:)
+    !> Optional fatal error if a cycle is detected (not expected)
+    type(error_t), allocatable, intent(out) :: error
+
+    !> Track which nodes have been visited
+    logical, allocatable :: visited(:)
+    !> Work stack holding post-order DFS traversal
+    integer, allocatable :: stack(:)
+    !> Total number of nodes and current stack position
+    integer :: n, top
+
+    n = tree%ndep
+    allocate(visited(n), source=.false.)
+    allocate(stack(n), source=0)
+    top = 0
+
+    !> Depth-First Search from root node
+    call dfs(root_id,visited,stack,top,error)
+    if (allocated(error)) return
+
+    !> The final link order is the reverse of the DFS post-order
+    allocate(order(top))
+    if (top>0) order(:) = stack(:top)
+    
+  contains
+
+    !> Recursive depth-first search, post-order
+    recursive subroutine dfs(i,visited,stack,top,error)
+        integer, intent(in) :: i
+        logical, intent(inout) :: visited(:)
+        integer, intent(inout) :: stack(:),top
+        type(error_t), allocatable, intent(out) :: error
+        integer :: k, id
+
+        if (.not.(i>0 .and. i<=tree%ndep)) then 
+            call fatal_error(error,'package graph failed: invalid dependency ID')
+            return
+        end if
+        if (visited(i)) return
+        
+        visited(i) = .true.
+
+        ! Visit all required dependencies before this node
+        if (allocated(tree%dep(i)%package_dep)) then
+            do k = 1, size(tree%dep(i)%package_dep)
+                id = tree%find(tree%dep(i)%package_dep(k)%s)
+                
+                if (.not.(id>0 .and. id<=tree%ndep)) then 
+                    call fatal_error(error,'package graph failed: cannot find '//tree%dep(i)%package_dep(k)%s)
+                    return
+                end if
+
+                call dfs(id, visited, stack, top, error)
+                if (allocated(error)) return
+            end do
+        end if
+
+        ! Now that all dependencies are handled, record this node
+        top = top + 1
+        stack(top) = i
+    end subroutine dfs
+
+  end subroutine local_link_order
 
   !> Read dependency tree from file
   subroutine load_cache_from_file(self, file, error)
@@ -1284,14 +1548,27 @@ contains
             if (.not.(this%done  .eqv.other%done)) return
             if (.not.(this%update.eqv.other%update)) return
             if (.not.(this%cached.eqv.other%cached)) return
-            if (.not.(this%proj_dir==other%proj_dir)) return
-            if (.not.(this%revision==other%revision)) return
 
-            if (.not.(allocated(this%version).eqv.allocated(other%version))) return
-               if (allocated(this%version)) then
+            if (allocated(this%proj_dir) .neqv. allocated(other%proj_dir)) return
+            if (allocated(this%proj_dir)) then
+              if (.not.(this%proj_dir==other%proj_dir)) return
+            endif
+            if (allocated(this%revision) .neqv. allocated(other%revision)) return
+            if (allocated(this%revision)) then
+              if (.not.(this%revision==other%revision)) return
+            endif
+
+            if (allocated(this%version).neqv.allocated(other%version)) return
+            if (allocated(this%version)) then
               if (.not.(this%version==other%version)) return
             endif
 
+            if (allocated(this%package_dep).neqv.allocated(other%package_dep)) return
+            if (allocated(this%package_dep)) then
+              if (.not.size(this%package_dep)==size(other%package_dep)) return
+              if (.not.(this%package_dep==other%package_dep)) return
+            endif
+            
          class default
             ! Not the same type
             return
@@ -1314,7 +1591,8 @@ contains
         !> Error handling
         type(error_t), allocatable, intent(out) :: error
 
-        integer :: ierr
+        integer :: i,n,ierr
+        type(toml_array), pointer :: array
 
         ! Dump parent class
         call self%dependency_config_t%dump_to_toml(table, error)
@@ -1333,8 +1611,10 @@ contains
         call set_value(table, "update", self%update, error, 'dependency_node_t')
         if (allocated(error)) return
         call set_value(table, "cached", self%cached, error, 'dependency_node_t')
-        if (allocated(error)) return
-
+        if (allocated(error)) return        
+        call set_list(table, "package-dep",self%package_dep, error)
+        if (allocated(error)) return        
+        
     end subroutine node_dump_to_toml
 
     !> Read dependency from toml table (no checks made at this stage)
@@ -1351,7 +1631,8 @@ contains
 
         !> Local variables
         character(len=:), allocatable :: version
-        integer :: ierr
+        integer :: ierr,i,n
+        type(toml_array), pointer :: array
 
         call destroy_dependency_node(self)
 
@@ -1377,8 +1658,11 @@ contains
                 error%message = 'dependency_node_t: version error from TOML table - '//error%message
                 return
             endif
-        end if
-
+        end if        
+        
+        call get_list(table,"package-dep",self%package_dep, error)
+        if (allocated(error)) return        
+        
     end subroutine node_load_from_toml
 
     !> Destructor
@@ -1393,6 +1677,7 @@ contains
         deallocate(self%version,stat=ierr)
         deallocate(self%proj_dir,stat=ierr)
         deallocate(self%revision,stat=ierr)
+        deallocate(self%package_dep,stat=ierr)
         self%done = .false.
         self%update = .false.
         self%cached = .false.
@@ -1413,7 +1698,10 @@ contains
 
           if (.not.(this%unit==other%unit)) return
           if (.not.(this%verbosity==other%verbosity)) return
-          if (.not.(this%dep_dir==other%dep_dir)) return
+          if (allocated(this%dep_dir) .neqv. allocated(other%dep_dir)) return
+          if (allocated(this%dep_dir)) then
+            if (.not.(this%dep_dir==other%dep_dir)) return
+          endif
           if (.not.(this%ndep==other%ndep)) return
           if (.not.(allocated(this%dep).eqv.allocated(other%dep))) return
           if (allocated(this%dep)) then
@@ -1422,7 +1710,10 @@ contains
                 if (.not.(this%dep(ii)==other%dep(ii))) return
              end do
           endif
-          if (.not.(this%cache==other%cache)) return
+          if (allocated(this%cache) .neqv. allocated(other%cache)) return
+          if (allocated(this%cache)) then
+            if (.not.(this%cache==other%cache)) return
+          endif
 
        class default
           ! Not the same type
@@ -1475,7 +1766,10 @@ contains
 
                  !> Because dependencies are named, fallback if this has no name
                  !> So, serialization will work regardless of size(self%dep) == self%ndep
-                 if (len_trim(dep%name)==0) then
+                 if (.not. allocated(dep%name)) then
+                    write(unnamed,1) ii
+                    call add_table(ptr_deps, trim(unnamed), ptr)
+                 else if (len_trim(dep%name)==0) then
                     write(unnamed,1) ii
                     call add_table(ptr_deps, trim(unnamed), ptr)
                  else

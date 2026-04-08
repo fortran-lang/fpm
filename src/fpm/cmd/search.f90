@@ -1,178 +1,220 @@
-!> Search a package from both local and remote registry using the `search` subcommand.
-!> The package can be searched by packagename, namespace, query (description and README.md), and license from the registries (local and remote).
-!> the remote registry URL can also be specified by the paramter --registry.
-!> It can be used as `fpm search --query q* --page 1 --registry URL --namespace n* --package p* --package_version v* --license l* --limit 10 --sort-by [name] --sort [asc/desc]`
+!> Search packages in both the local cache and the remote registry using the
+!> `search` subcommand.
+!> Packages can be filtered by package name, namespace, version, query,
+!> license, page, limit, and sort order. Use `--registry` to target a custom
+!> registry URL.
+!>
+!> Sample queries:
+!>   fpm search --query mpi
+!>   fpm search --namespace fortran-lang --package stdlib
+!>   fpm search --license MIT --sort-by name --sort asc
+!>   fpm search --query hdf5 --page 1 --limit 10 --sort-by downloads --sort desc
 module fpm_cmd_search
     use fpm_command_line, only: fpm_search_settings
-    use fpm_manifest, only: package_config_t, get_package_data
-    use fpm_model, only: fpm_model_t
-    use fpm_error, only: error_t, fpm_stop
-    use fpm_versioning, only: version_t
-    use fpm_filesystem, only: exists, join_path, get_temp_filename, delete_file, basename, &
-                            canon_path, dirname, list_files, is_hidden_file
-    use fpm_git, only: git_archive
     use fpm_downloader, only: downloader_t
-    use fpm_strings, only: string_t, string_array_contains, split, str,glob
-    use fpm, only: build_model
-    use fpm_error, only : error_t, fatal_error, fpm_stop
-    use jonquil, only : json_object
-    use tomlf, only : toml_array, get_value, len, toml_key, toml_loads, toml_table, &
-                    toml_serializer,toml_value
-    use tomlf_utils_io, only : read_whole_file
-    use fpm_settings, only: fpm_global_settings, get_global_settings, official_registry_base_url
-  
+    use fpm_error, only: error_t, fatal_error, fpm_stop
+    use fpm_filesystem, only: basename, dirname, get_temp_filename, list_files
+    use fpm_settings, only: fpm_global_settings, get_global_settings
+    use fpm_strings, only: glob, string_t
+    use fpm_versioning, only: version_t
+    use jonquil, only: json_object
+    use tomlf, only: get_value, len, toml_array, toml_loads, toml_table
+    use tomlf_utils_io, only: read_whole_file
+
     implicit none
     private
     public :: cmd_search
-  
-  contains
-  
-    !> Search the fpm registry for a package
-    subroutine cmd_search(settings)
-        !> Settings for the search command.
-        class(fpm_search_settings), intent(in) :: settings
-        type(fpm_global_settings) :: global_settings
-        character(:), allocatable :: tmp_file, name, namespace, description, query_url, package_version
-        integer :: stat, unit, ii
-        type(json_object) :: json
-        type(json_object), pointer :: p
-        !> Error handling.
-        type(error_t), allocatable :: error
-        type(toml_array), pointer :: array
-        type(version_t), allocatable :: version
 
-        !> Downloader instance.
+  contains
+
+    !> Search packages in the registry and in the local cache.
+    subroutine cmd_search(settings)
+        class(fpm_search_settings), intent(in) :: settings
+
+        type(fpm_global_settings) :: global_settings
+        type(error_t), allocatable :: error
         class(downloader_t), allocatable :: downloader
-        allocate (downloader)
+        type(json_object) :: json
+        type(version_t), allocatable :: version
+        character(len=:), allocatable :: query_url, tmp_file
+        integer :: stat, unit
 
         call get_global_settings(global_settings, error)
         if (allocated(error)) then
-            call fpm_stop(1, "Error retrieving global settings"); return
+            call fpm_stop(1, 'Error retrieving global settings')
+            return
         end if
 
-        !> Generate a temporary file to store the downloaded package search data
         tmp_file = get_temp_filename()
         open (newunit=unit, file=tmp_file, action='readwrite', iostat=stat)
         if (stat /= 0) then
-        call fatal_error(error, "Error creating temporary file for downloading package."); return
+            call fpm_stop(1, 'Error creating temporary file for downloading package data.')
+            return
         end if
-        query_url = settings%registry//'/packages_cli' &
-                    & // '?query='//settings%query &
-                    & // '&page='//settings%page &
-                    & // '&package='//settings%package &
-                    & // '&namespace='//settings%namespace &
-                    & // '&version='//settings%version &
-                    & // '&license='//settings%license &
-                    & // '&limit='//settings%limit &
-                    & // '&sort_by='//settings%sort_by &
-                    & // '&sort='//settings%sort
 
-        !> Get the package data from the registry
+        allocate (downloader)
+        query_url = build_query_url(settings)
         call downloader%get_pkg_data(query_url, version, tmp_file, json, error)
-        close (unit)
+        close (unit, status='delete')
         if (allocated(error)) then
-            call fpm_stop(1, "Error retrieving package data from registry: "//settings%registry); return
+            call fpm_stop(1, 'Error retrieving package data from registry: '//trim(settings%registry))
+            return
         end if
-        print *
-        print *, "Searching packages in Local Registry:"
-        print *
-        call search_package(settings%query, settings%namespace, settings%package, settings%version)
-        if (json%has_key("packages")) then
-            call get_value(json, 'packages', array)
-            print *
-            print '(A,I0,A)', ' Found ', len(array), ' packages in fpm - registry:'
-            print *
-            do ii=1, len(array)
-                call get_value(array, ii, p)
-                call get_value(p, 'name', name)
-                call get_value(p, 'namespace', namespace)
-                call get_value(p, 'description', description)
-                call get_value(p, 'version', package_version)
 
-                print *, "Name: ", name
-                print *, "namespace: ", namespace
-                print *, "Description: ", description
-                print *, "version: ", package_version
-                print *
-            end do
-        else 
-            call fpm_stop(1, "Invalid package data returned"); return
+        call print_local_matches(global_settings, settings, error)
+        if (allocated(error)) then
+            call fpm_stop(1, error%message)
+            return
+        end if
+
+        call print_remote_matches(json, error)
+        if (allocated(error)) then
+            call fpm_stop(1, error%message)
         end if
     end subroutine cmd_search
 
-    subroutine search_package(query,namespace,package,version)
-        type(fpm_global_settings)             :: global_settings
-        type(error_t), allocatable            :: error
-        character(:), allocatable, intent(in) :: namespace, package, version, query
-        character(:), allocatable             :: path, array(:), versioncheck(:), toml_package_data, print_package(:)
-        character(:), allocatable             :: description, wild
-        type(string_t), allocatable           :: file_names(:)
-        type(toml_table), allocatable         :: table
-        integer :: i, j, unit, stat
-        logical :: result
+    pure function build_query_url(settings) result(query_url)
+        class(fpm_search_settings), intent(in) :: settings
+        character(len=:), allocatable :: query_url
 
-        call get_global_settings(global_settings, error)
-        if (allocated(error)) then
-            call fpm_stop(1, "Error retrieving global settings"); return
+        query_url = trim(settings%registry)//'/packages_cli' &
+            // '?query='//trim(settings%query) &
+            // '&page='//trim(settings%page) &
+            // '&package='//trim(settings%package) &
+            // '&namespace='//trim(settings%namespace) &
+            // '&version='//trim(settings%version) &
+            // '&license='//trim(settings%license) &
+            // '&limit='//trim(settings%limit) &
+            // '&sort_by='//trim(settings%sort_by) &
+            // '&sort='//trim(settings%sort)
+    end function build_query_url
+
+    subroutine print_local_matches(global_settings, settings, error)
+        type(fpm_global_settings), intent(in) :: global_settings
+        class(fpm_search_settings), intent(in) :: settings
+        type(error_t), allocatable, intent(out) :: error
+
+        type(string_t), allocatable :: file_names(:)
+        type(toml_table), allocatable :: table
+        character(len=:), allocatable :: file_name, manifest_text, description, package_name
+        character(len=:), allocatable :: namespace, version, license
+        integer :: i, stat
+
+        if (.not. allocated(global_settings%registry_settings)) then
+            call fatal_error(error, 'Registry settings are not available.')
+            return
         end if
 
-        path = global_settings%registry_settings%cache_path           
+        if (.not. allocated(global_settings%registry_settings%cache_path)) then
+            call fatal_error(error, 'Registry cache path is not available.')
+            return
+        end if
 
-        ! Scan directory for packages
-        call list_files(path, file_names,recurse=.true.)
-        do i=1,size(file_names)
-            result = package_search_wild(namespace,package,version,file_names(i)%s)
-            call split(file_names(i)%s,array,'/')
-            if (result) then            
-                !> query search for description
-                call read_whole_file(file_names(i)%s, toml_package_data, stat)
-                if (stat /= 0) then
-                call fatal_error(error, "Error reading file: "//file_names(i)%s); return
-                end if
-                ! Load TOML data into a table
-                call toml_loads(table,toml_package_data)
-                if (allocated(error)) then
-                call fpm_stop(1, "Error loading toml file"); return
-                end if
+        call list_files(global_settings%registry_settings%cache_path, file_names, recurse=.true.)
 
-                if (allocated(table)) then
-                    call get_value(table, 'description', description)
-                    if (query /="") then
-                        result = glob(description,query)
-                        if (result) call print_package_data(array,description)
-                    else
-                        call print_package_data(array,description)
-                    end if
-                else 
-                    call fpm_stop(1, "Error Searching for the query"); return
-                end if
-            endif
-        end do
-    end subroutine search_package
-
-    function package_search_wild(namespace,package,version, file_name) result(result)
-        character(:), allocatable, intent(in) :: namespace, package, version, file_name
-        character(:), allocatable :: array(:), versioncheck(:)
-        logical :: result
-
-        call split(file_name,array,'/')
-        call split(array(size(array)-1),versioncheck,'.')
-        result = array(size(array)) == "fpm.toml"
-        result = result .and. glob(array(size(array)-3),namespace)
-        result = result .and. glob(array(size(array)-2),package)
-        result = result .and. glob(array(size(array)-1),version)
-        result = result .and. size(versioncheck) > 2
-    end function package_search_wild
-
-    subroutine print_package_data(package_array,description)
-        character(:), allocatable, intent(in) :: package_array(:)
-        character(*), intent(in) :: description
-
-        print *, "Name: ", package_array(size(package_array)-2)
-        print *, "Namespace: ", package_array(size(package_array)-3)
-        print *, "Version: ", package_array(size(package_array)-1)
-        print *, "Description: ", description
         print *
-    end subroutine print_package_data
-  end
+        print *, 'Searching packages in local registry:'
+        print *
+
+        do i = 1, size(file_names)
+            file_name = file_names(i)%s
+            if (basename(file_name) /= 'fpm.toml') cycle
+
+            namespace = basename(dirname(dirname(dirname(file_name))))
+            package_name = basename(dirname(dirname(file_name)))
+            version = basename(dirname(file_name))
+
+            if (.not. matches_pattern(namespace, settings%namespace)) cycle
+            if (.not. matches_pattern(package_name, settings%package)) cycle
+            if (.not. matches_pattern(version, settings%version)) cycle
+
+            call read_whole_file(file_name, manifest_text, stat)
+            if (stat /= 0) then
+                call fatal_error(error, 'Error reading file: '//file_name)
+                return
+            end if
+
+            call toml_loads(table, manifest_text)
+            if (.not. allocated(table)) then
+                call fatal_error(error, 'Error loading TOML file: '//file_name)
+                return
+            end if
+
+            description = ''
+            license = ''
+            call get_value(table, 'description', description, stat=stat)
+            call get_value(table, 'license', license, stat=stat)
+
+            if (matches_pattern(description, settings%query) .and. matches_pattern(license, settings%license)) then
+                call print_package_summary(package_name, namespace, version, description)
+            end if
+        end do
+    end subroutine print_local_matches
+
+    subroutine print_remote_matches(json, error)
+        type(json_object), intent(inout) :: json
+        type(error_t), allocatable, intent(out) :: error
+
+        type(toml_array), pointer :: packages
+        type(json_object), pointer :: package
+        character(len=:), allocatable :: name, namespace, description, version
+        integer :: i, stat
+
+        if (.not. json%has_key('packages')) then
+            call fatal_error(error, 'Invalid package data returned')
+            return
+        end if
+
+        call get_value(json, 'packages', packages)
+        if (.not. associated(packages)) then
+            call fatal_error(error, 'Invalid package data returned')
+            return
+        end if
+
+        print *
+        print *, 'Searching packages in remote registry:'
+        print *
+        print '(A,I0,A)', ' Found ', len(packages), ' packages in fpm - registry:'
+        print *
+
+        do i = 1, len(packages)
+            call get_value(packages, i, package)
+            if (.not. associated(package)) cycle
+
+            name = ''
+            namespace = ''
+            description = ''
+            version = ''
+            call get_value(package, 'name', name, stat=stat)
+            call get_value(package, 'namespace', namespace, stat=stat)
+            call get_value(package, 'description', description, stat=stat)
+            call get_value(package, 'version', version, stat=stat)
+
+            call print_package_summary(name, namespace, version, description)
+        end do
+    end subroutine print_remote_matches
+
+    logical function matches_pattern(value, pattern) result(match)
+        character(*), intent(in) :: value
+        character(len=:), allocatable, intent(in) :: pattern
+
+        if (.not. allocated(pattern)) then
+            match = .true.
+        else if (len_trim(pattern) == 0) then
+            match = .true.
+        else
+            match = glob(value, pattern)
+        end if
+    end function matches_pattern
+
+    subroutine print_package_summary(name, namespace, version, description)
+        character(len=*), intent(in) :: name, namespace, version, description
+
+        print *, 'Name: ', name
+        print *, 'Namespace: ', namespace
+        print *, 'Version: ', version
+        print *, 'Description: ', description
+        print *
+    end subroutine print_package_summary
+  end module fpm_cmd_search
   

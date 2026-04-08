@@ -1,0 +1,3 @@
+name = "custom-module-dir"
+install.library = true
+install.module-dir = "custom_modules"

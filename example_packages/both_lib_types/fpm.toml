@@ -1,0 +1,3 @@
+name = "both_lib_types"
+library.type=["shared", "static"]
+install.library=true

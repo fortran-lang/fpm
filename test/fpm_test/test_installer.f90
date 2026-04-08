@@ -8,6 +8,8 @@ module test_installer
     use fpm_environment, only : OS_WINDOWS, OS_LINUX
     use fpm_filesystem, only : join_path
     use fpm_installer
+    use fpm_targets, only: build_target_ptr, add_target, FPM_TARGET_ARCHIVE, &
+        FPM_TARGET_SHARED
     implicit none
     private
 
@@ -34,8 +36,12 @@ contains
             & new_unittest("install-pkgconfig", test_install_pkgconfig), &
             & new_unittest("install-sitepackages", test_install_sitepackages), &
             & new_unittest("install-mod", test_install_mod), &
+            & new_unittest("install-module-custom", test_install_module_custom), &
             & new_unittest("install-exe-unix", test_install_exe_unix), &
-            & new_unittest("install-exe-win", test_install_exe_win)]
+            & new_unittest("install-exe-win", test_install_exe_win), &
+            & new_unittest("install-test-unix", test_install_tests_unix), &
+            & new_unittest("install-test-win", test_install_tests_win), &
+            & new_unittest("install-shared-lib-unix", test_install_shared_library_unix)]
 
     end subroutine collect_installer
 
@@ -73,19 +79,58 @@ contains
 
     end subroutine test_install_exe_win
 
-    subroutine test_install_lib(error)
+    subroutine test_install_tests_unix(error)
         !> Error handling
         type(error_t), allocatable, intent(out) :: error
 
         type(mock_installer_t) :: mock
         type(installer_t) :: installer
 
+        call new_installer(installer, prefix="PREFIX", testdir="tdir", verbosity=0, copy="mock")
+        mock%installer_t = installer
+        mock%os = OS_LINUX
+        mock%expected_dir = "PREFIX/tdir"
+        mock%expected_run = 'mock "name" "'//mock%expected_dir//'"'
+
+        call mock%install_test("name", error)
+
+    end subroutine test_install_tests_unix
+
+    subroutine test_install_tests_win(error)
+        !> Error handling
+        type(error_t), allocatable, intent(out) :: error
+
+        type(mock_installer_t) :: mock
+        type(installer_t) :: installer
+
+        call new_installer(installer, prefix="PREFIX", testdir="tdir", verbosity=0, copy="mock")
+        mock%installer_t = installer
+        mock%os = OS_WINDOWS
+        mock%expected_dir = "PREFIX\tdir"
+        mock%expected_run = 'mock "name.exe" "'//mock%expected_dir//'"'
+
+        call mock%install_test("name", error)
+
+    end subroutine test_install_tests_win
+
+    subroutine test_install_lib(error)
+        !> Error handling
+        type(error_t), allocatable, intent(out) :: error
+
+        type(mock_installer_t) :: mock
+        type(installer_t) :: installer
+        type(build_target_ptr), allocatable :: targets(:)
+
         call new_installer(installer, prefix="PREFIX", verbosity=0, copy="mock")
         mock%installer_t = installer
         mock%expected_dir = join_path("PREFIX", "lib")
         mock%expected_run = 'mock "name" "'//join_path("PREFIX", "lib")//'"'
+        
+        call add_target(targets,"name",FPM_TARGET_ARCHIVE,"name")
 
-        call mock%install_library("name", error)
+        call mock%install_library(targets(1)%ptr, error)
+        
+        deallocate(targets(1)%ptr)
 
     end subroutine test_install_lib
 
@@ -94,16 +139,16 @@ contains
         type(error_t), allocatable, intent(out) :: error
 
         type(mock_installer_t) :: mock
-        type(installer_t) :: installer
+        type(installer_t) :: installer        
 
         call new_installer(installer, prefix="PREFIX", verbosity=0, copy="mock")
         mock%installer_t = installer
         mock%os = OS_WINDOWS
         mock%expected_dir = "PREFIX\lib\pkgconfig"
         mock%expected_run = 'mock "name" "'//mock%expected_dir//'"'
-
+        
         call mock%install("name", "lib/pkgconfig", error)
-
+        
     end subroutine test_install_pkgconfig
 
     subroutine test_install_sitepackages(error)
@@ -139,6 +184,45 @@ contains
         call mock%install_header("name", error)
 
     end subroutine test_install_mod
+
+    subroutine test_install_module_custom(error)
+        !> Error handling
+        type(error_t), allocatable, intent(out) :: error
+
+        type(mock_installer_t) :: mock
+        type(installer_t) :: installer
+
+        call new_installer(installer, prefix="PREFIX", moduledir="custom_modules", verbosity=0, copy="mock")
+        mock%installer_t = installer
+        mock%expected_dir = join_path("PREFIX", "custom_modules")
+        mock%expected_run = 'mock "test_module.mod" "'//join_path("PREFIX", "custom_modules")//'"'
+
+        call mock%install_module("test_module.mod", error)
+
+    end subroutine test_install_module_custom
+
+    subroutine test_install_shared_library_unix(error)
+        !> Error handling
+        type(error_t), allocatable, intent(out) :: error
+
+        type(mock_installer_t) :: mock
+        type(installer_t) :: installer
+        character(len=*), parameter :: libname = "libname.so"
+        type(build_target_ptr), allocatable :: targets(:)        
+
+        call new_installer(installer, prefix="PREFIX", verbosity=0, copy="mock")
+        mock%installer_t = installer
+        mock%expected_dir = join_path("PREFIX", "lib")
+        mock%expected_run = 'mock "'//libname//'" "'//mock%expected_dir//'"'
+        
+        call add_target(targets,"name",FPM_TARGET_SHARED,libname)
+
+        call mock%install_library(targets(1)%ptr, error)
+        
+        deallocate(targets(1)%ptr)
+
+    end subroutine test_install_shared_library_unix
+
 
     !> Create a new directory in the prefix
     subroutine make_dir(self, dir, error)

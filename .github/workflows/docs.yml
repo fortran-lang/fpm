@@ -6,15 +6,15 @@ jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v4
-    - uses: actions/setup-python@v5
+    - uses: actions/checkout@v6
+    - uses: actions/setup-python@v6
       with:
         python-version: '3.x'
     - name: Install dependencies
       run: pip install ford
     - name: Build Documentation
       run: ford docs.md
-    - uses: JamesIves/github-pages-deploy-action@3.7.1
+    - uses: JamesIves/github-pages-deploy-action@v4.7.6
       if: github.event_name == 'push' && github.repository == 'fortran-lang/fpm' && ( startsWith( github.ref, 'refs/tags/' ) || github.ref == 'refs/heads/main' )
       with:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

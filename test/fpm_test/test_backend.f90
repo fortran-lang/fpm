@@ -4,9 +4,12 @@ module test_backend
     use test_module_dependencies, only: operator(.in.)
     use fpm_filesystem, only: exists, mkdir, get_temp_filename
     use fpm_targets, only: build_target_t, build_target_ptr, &
-                            FPM_TARGET_OBJECT, FPM_TARGET_ARCHIVE, &
+                            FPM_TARGET_OBJECT, FPM_TARGET_ARCHIVE, FPM_TARGET_SHARED, &
                            add_target, add_dependency
     use fpm_backend, only: sort_target, schedule_targets
+    use fpm_strings, only: string_t
+    use fpm_environment, only: OS_LINUX
+    use fpm_compile_commands, only: compile_command_t, compile_command_table_t
     implicit none
     private
 
@@ -25,8 +28,12 @@ contains
             & new_unittest("target-sort", test_target_sort), &
             & new_unittest("target-sort-skip-all", test_target_sort_skip_all), &
             & new_unittest("target-sort-rebuild-all", test_target_sort_rebuild_all), &
+            & new_unittest("target-shared-sort", test_target_shared), &
             & new_unittest("schedule-targets", test_schedule_targets), &
-            & new_unittest("schedule-targets-empty", test_schedule_empty) &
+            & new_unittest("schedule-targets-empty", test_schedule_empty), &
+            & new_unittest("serialize-compile-commands", compile_commands_roundtrip), &
+            & new_unittest("compile-commands-write", compile_commands_register_from_cmd), &
+            & new_unittest("compile-commands-register-string", compile_commands_register_from_string) &
             ]
 
     end subroutine collect_backend
@@ -348,11 +355,169 @@ contains
         call add_dependency(targets(2)%ptr,targets(4)%ptr)
         call add_dependency(targets(3)%ptr,targets(4)%ptr)
 
+    end function new_test_package
+
+    subroutine compile_commands_roundtrip(error)
+        
+        !> Error handling
+        type(error_t), allocatable, intent(out) :: error
+        
+        type(compile_command_t) :: cmd
+        type(compile_command_table_t) :: cc
+        integer :: i
+        
+        call cmd%test_serialization('compile_command: empty', error)
+        if (allocated(error)) return
+        
+        cmd = compile_command_t(directory = string_t("/test/dir"), &
+                                arguments = [string_t("gfortran"), &
+                                             string_t("-c"), string_t("main.f90"), &
+                                             string_t("-o"), string_t("main.o")], &
+                                file = string_t("main.f90"))
+        
+        call cmd%test_serialization('compile_command: non-empty', error)
+        if (allocated(error)) return       
+       
+        call cc%test_serialization('compile_command_table: empty', error)
+        if (allocated(error)) return
+        
+        do i=1,10
+           call cc%register(cmd,error)
+           if (allocated(error)) return
+        end do
+        
+        call cc%test_serialization('compile_command_table: non-empty', error)
+        if (allocated(error)) return        
+         
+    end subroutine compile_commands_roundtrip
+
+    subroutine compile_commands_register_from_cmd(error)
+        type(error_t), allocatable, intent(out) :: error
+        
+        type(compile_command_table_t) :: table
+        type(compile_command_t) :: cmd
+        integer :: i
+
+        cmd = compile_command_t(directory = string_t("/src"), &
+                                arguments = [string_t("gfortran"), &
+                                             string_t("-c"), string_t("example.f90"), &
+                                             string_t("-o"), string_t("example.o")], &
+                                file = string_t("example.f90"))
+
+        call table%register(cmd, error)
+        if (allocated(error)) return
+
+        if (.not.allocated(table%command)) then 
+            call test_failed(error, "Command table not allocated after registration")
+            return 
+        endif
+            
+        if (size(table%command) /= 1) then 
+            call test_failed(error, "Expected one registered command")
+            return
+        endif
+        
+        if (table%command(1)%file%s /= "example.f90") then 
+            call test_failed(error, "Registered file mismatch")
+            return
+        endif
+        
+    end subroutine compile_commands_register_from_cmd
+
+    subroutine compile_commands_register_from_string(error)
+        type(error_t), allocatable, intent(out) :: error
+
+        type(compile_command_table_t) :: table
+        character(len=*), parameter :: cmd_line = "gfortran -c example.f90 -o example.o"
+
+        ! Register a raw command line string
+        call table%register(cmd_line, OS_LINUX, error)
+        if (allocated(error)) return
+
+        if (.not.allocated(table%command)) then
+            call test_failed(error, "Command table not allocated after string registration")
+            return
+        end if
+
+        if (size(table%command) /= 1) then
+            call test_failed(error, "Expected one registered command after string registration")
+            return
+        end if
+
+        if (.not.allocated(table%command(1)%arguments)) then
+            call test_failed(error, "Command arguments not allocated")
+            return
+        end if
+
+        if (size(table%command(1)%arguments) /= 5) then
+            call test_failed(error, "Wrong number of parsed arguments, should be 5")
+            return
+        end if
+
+        if (table%command(1)%arguments(1)%s /= "gfortran") then
+            call test_failed(error, "Expected 'gfortran' as first argument")
+            return
+        end if
+
+        if (table%command(1)%arguments(3)%s /= "example.f90") then
+            call test_failed(error, "Expected 'example.f90' as third argument")
+            return
+        end if
+
+    end subroutine compile_commands_register_from_string
+
+    !> Check sorting and scheduling for shared library targets
+    subroutine test_target_shared(error)
+
+        !> Error handling
+        type(error_t), allocatable, intent(out) :: error
+
+        type(build_target_ptr), allocatable :: targets(:)
+        integer :: i
+
+        ! Create a new test package with a shared library
+        call add_target(targets, 'test-shared', FPM_TARGET_SHARED, get_temp_filename())
+        call add_target(targets, 'test-shared', FPM_TARGET_OBJECT, get_temp_filename())
+        call add_target(targets, 'test-shared', FPM_TARGET_OBJECT, get_temp_filename())
+
+        ! Shared library depends on the two object files
+        call add_dependency(targets(1)%ptr, targets(2)%ptr)
+        call add_dependency(targets(1)%ptr, targets(3)%ptr)
+
+        ! Perform topological sort
         do i = 1, size(targets)
-          targets(i)%ptr%output_file = targets(i)%ptr%output_name
+            call sort_target(targets(i)%ptr)
         end do
 
-    end function new_test_package
+        ! Check scheduling and flags
+        do i = 1, size(targets)
+            if (.not.targets(i)%ptr%touched) then
+                call test_failed(error, "Shared: Target not touched")
+                return
+            end if
+            if (.not.targets(i)%ptr%sorted) then
+                call test_failed(error, "Shared: Target not sorted")
+                return
+            end if
+            if (targets(i)%ptr%skip) then
+                call test_failed(error, "Shared: Target incorrectly skipped")
+                return
+            end if
+        end do
+
+        ! Check dependencies scheduled before the shared lib
+        if (targets(2)%ptr%schedule >= targets(1)%ptr%schedule) then
+            call test_failed(error, "Shared: Object 2 scheduled after shared lib")
+            return
+        end if
+        if (targets(3)%ptr%schedule >= targets(1)%ptr%schedule) then
+            call test_failed(error, "Shared: Object 3 scheduled after shared lib")
+            return
+        end if
+
+    end subroutine test_target_shared
+
+
 
 
 end module test_backend
