@@ -7,6 +7,7 @@ use fpm_environment, only : get_os_type
 use fpm_environment, only : OS_UNKNOWN, OS_LINUX, OS_MACOS, OS_CYGWIN, OS_SOLARIS, OS_FREEBSD, OS_OPENBSD, OS_WINDOWS
 implicit none
 type(string_t), allocatable    :: file_names(:)
+type(string_t), allocatable    :: filtered_file_names(:)
 integer                        :: i, j, k
 character(len=:),allocatable   :: cmdpath
 character(len=:),allocatable   :: path
@@ -125,20 +126,21 @@ character(len=:),allocatable  :: rm_command
          !! MSwindows has hidden files in it
          !! Warning: This only looks for expected files. If there are more files than expected it does not fail
          call list_files(trim(directories(i)), file_names,recurse=.true.)
+         call filter_git_paths(file_names, filtered_file_names)
 
-         if(size(expected)/=size(file_names))then
-            write(*,*)'WARNING: unexpected number of files in file list=',size(file_names),' expected ',size(expected)
+         if(size(expected)/=size(filtered_file_names))then
+            write(*,*)'WARNING: unexpected number of files in file list=',size(filtered_file_names),' expected ',size(expected)
             write(*,'("EXPECTED: ",*(g0:,","))')(scr//trim(expected(j)),j=1,size(expected))
-            write(*,'("FOUND:    ",*(g0:,","))')(trim(file_names(j)%s),j=1,size(file_names))
+            write(*,'("FOUND:    ",*(g0:,","))')(trim(filtered_file_names(j)%s),j=1,size(filtered_file_names))
          endif
 
          do j=1,size(expected)
 
             expected(j)=scr//expected(j)
             if(is_os_windows) expected(j)=windows_path(expected(j))
-            if( .not.(trim(expected(j)).in.file_names) )then
+            if( .not.(trim(expected(j)).in.filtered_file_names) )then
                 tally=[tally,.false.]
-                write(*,'("ERROR: FOUND ",*(g0:,", "))')( trim(file_names(k)%s), k=1,size(file_names) )
+               write(*,'("ERROR: FOUND ",*(g0:,", "))')( trim(filtered_file_names(k)%s), k=1,size(filtered_file_names) )
                 write(*,'(*(g0))')'       BUT NO MATCH FOR ',expected(j)
                 tally=[tally,.false.]
                 cycle TESTS
@@ -181,6 +183,57 @@ character(len=:),allocatable  :: rm_command
       stop 5
    endif
 contains
+   logical function is_git_path(path) result(matches)
+      character(len=*), intent(in) :: path
+      character(len=:), allocatable :: p
+      integer :: n
+
+      p = trim(path)
+      n = len_trim(p)
+      matches = .false.
+
+      if (n == 4 .and. p(1:4) == '.git') then
+         matches = .true.
+         return
+      end if
+
+      if (index(p, '/.git/') > 0 .or. index(p, '\.git\') > 0) then
+         matches = .true.
+         return
+      end if
+
+      if (n >= 5) then
+         if (p(1:5) == '.git/' .or. p(1:5) == '.git\') then
+            matches = .true.
+            return
+         end if
+         if (p(n-4:n) == '/.git' .or. p(n-4:n) == '\.git') then
+            matches = .true.
+            return
+         end if
+      end if
+   end function is_git_path
+
+   subroutine filter_git_paths(paths, filtered)
+      type(string_t), intent(in) :: paths(:)
+      type(string_t), allocatable, intent(out) :: filtered(:)
+      integer :: nkeep, ipath
+
+      nkeep = 0
+      do ipath = 1, size(paths)
+         if (.not. is_git_path(paths(ipath)%s)) nkeep = nkeep + 1
+      end do
+
+      allocate(filtered(nkeep))
+      nkeep = 0
+      do ipath = 1, size(paths)
+         if (is_git_path(paths(ipath)%s)) cycle
+         nkeep = nkeep + 1
+         filtered(nkeep) = paths(ipath)
+      end do
+
+   end subroutine filter_git_paths
+
   function get_command_path() result(prog)
     character(len=:), allocatable :: prog
 
