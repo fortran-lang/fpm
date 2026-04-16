@@ -27,7 +27,7 @@ contains
 
         if (os_is_unix()) then
             call run_wrapper(wrapper=string_t("sh"), &
-                             args=[string_t("-c"), string_t("'exit 7'")], &
+                             args=[string_t("-c"), string_t("exit 7")], &
                              exitcode=exitcode, cmd_success=success, screen_output=output)
         else
             call run_wrapper(wrapper=string_t("cmd"), &
