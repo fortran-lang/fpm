@@ -92,7 +92,7 @@
 
             <li class="list-inline-item" id="statements"><i class="fa fa-list-ol"></i>
               <a data-bs-toggle="tooltip" data-bs-placement="bottom" data-bs-html="true"
-                 title=" 0.4% of total for procedures.">30 statements</a>
+                 title=" 0.4% of total for procedures.">31 statements</a>
             </li>
 
             <li class="list-inline-item" id="source-file">
@@ -134,7 +134,7 @@
       </a>
       <div id="vars-0" class="collapse">
         <div class="list-group list-group-flush">
-            <a class="list-group-item" href="../proc/make_archive.html#variable-mock~6">mock</a>
+            <a class="list-group-item" href="../proc/make_archive.html#variable-mock~7">mock</a>
         </div>
       </div>
     </div>
@@ -209,7 +209,7 @@ see issue #707, #708 and #808.</p>
     <tbody>
         <tr>
             <td>
-              <span class="anchor" id="variable-self~52"></span>
+              <span class="anchor" id="variable-self~202"></span>
               class(<a href='../type/archiver_t.html'>archiver_t</a>),
             </td>
 <td>intent(in)</td>
@@ -224,7 +224,7 @@ see issue #707, #708 and #808.</p>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-output~7"></span>
+              <span class="anchor" id="variable-output~10"></span>
               character(len=*),
             </td>
 <td>intent(in)</td>
@@ -239,7 +239,7 @@ see issue #707, #708 and #808.</p>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-args~8"></span>
+              <span class="anchor" id="variable-args~11"></span>
               type(<a href='../type/string_t.html'>string_t</a>),
             </td>
 <td>intent(in)</td>
@@ -269,7 +269,7 @@ see issue #707, #708 and #808.</p>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-stat~27"></span>
+              <span class="anchor" id="variable-stat~66"></span>
               integer,
             </td>
 <td>intent(out)</td>
@@ -284,7 +284,7 @@ see issue #707, #708 and #808.</p>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-dry_run~6"></span>
+              <span class="anchor" id="variable-dry_run~9"></span>
               logical,
             </td>
 <td>intent(in),</td>
@@ -317,7 +317,7 @@ see issue #707, #708 and #808.</p>
     <tbody>
         <tr>
             <td>
-              <span class="anchor" id="variable-mock~6"></span>
+              <span class="anchor" id="variable-mock~7"></span>
               logical,
             </td>
               <td>public</td>
@@ -366,7 +366,7 @@ see issue #707, #708 and #808.</p>
     <tbody>
         <tr>
             <td>
-              <span class="anchor" id="variable-file"></span>
+              <span class="anchor" id="variable-file~9"></span>
               character(len=*),
             </td>
 <td>intent(in)</td>
@@ -403,25 +403,32 @@ see issue #707, #708 and #808.</p>
 <span class="w">    </span><span class="c">!&gt; Status flag</span>
 <span class="w">    </span><span class="kt">integer</span><span class="p">,</span><span class="w"> </span><span class="k">intent</span><span class="p">(</span><span class="n">out</span><span class="p">)</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="nb">stat</span>
 <span class="w">    </span><span class="c">!&gt; Optional mocking</span>
-<span class="w">    </span><span class="kt">logical</span><span class="p">,</span><span class="w"> </span><span class="k">optional</span><span class="p">,</span><span class="w"> </span><span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">)</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">dry_run</span><span class="w">    </span>
-<span class="w">    </span>
+<span class="w">    </span><span class="kt">logical</span><span class="p">,</span><span class="w"> </span><span class="k">optional</span><span class="p">,</span><span class="w"> </span><span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">)</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">dry_run</span>
+
 <span class="w">    </span><span class="kt">logical</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">mock</span>
-<span class="w">        </span>
+
+<span class="w">    </span><span class="c">! Initialize intent(out) status so the mock path returns a defined value.</span>
+<span class="w">    </span><span class="nb">stat</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span>
+
 <span class="w">    </span><span class="c">! Check if we&#39;re actually linking</span>
 <span class="w">    </span><span class="n">mock</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">.</span><span class="n">false</span><span class="p">.</span>
-<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="nb">present</span><span class="p">(</span><span class="n">dry_run</span><span class="p">))</span><span class="w"> </span><span class="n">mock</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">dry_run</span><span class="w">            </span>
-<span class="w">    </span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="nb">present</span><span class="p">(</span><span class="n">dry_run</span><span class="p">))</span><span class="w"> </span><span class="n">mock</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">dry_run</span>
+
 <span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">mock</span><span class="p">)</span><span class="w"> </span><span class="k">return</span>
 
 <span class="k">    if</span><span class="w"> </span><span class="p">(</span><span class="n">self</span><span class="p">%</span><span class="n">use_response_file</span><span class="p">)</span><span class="w"> </span><span class="k">then</span>
 <span class="k">        call </span><span class="n">write_response_file</span><span class="p">(</span><span class="n">output</span><span class="o">//</span><span class="s2">&quot;.resp&quot;</span><span class="w"> </span><span class="p">,</span><span class="w"> </span><span class="n">args</span><span class="p">)</span>
+<span class="w">        </span><span class="c">!$omp critical (run_command)</span>
 <span class="w">        </span><span class="k">call </span><span class="n">run</span><span class="p">(</span><span class="n">self</span><span class="p">%</span><span class="n">ar</span><span class="w"> </span><span class="o">//</span><span class="w"> </span><span class="n">output</span><span class="w"> </span><span class="o">//</span><span class="w"> </span><span class="s2">&quot; @&quot;</span><span class="w"> </span><span class="o">//</span><span class="w"> </span><span class="n">output</span><span class="o">//</span><span class="s2">&quot;.resp&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">echo</span><span class="o">=</span><span class="n">self</span><span class="p">%</span><span class="n">echo</span><span class="p">,</span><span class="w"> </span><span class="p">&amp;</span>
 <span class="w">            </span><span class="p">&amp;</span><span class="w">  </span><span class="n">verbose</span><span class="o">=</span><span class="n">self</span><span class="p">%</span><span class="n">verbose</span><span class="p">,</span><span class="w"> </span><span class="n">redirect</span><span class="o">=</span><span class="n">log_file</span><span class="p">,</span><span class="w"> </span><span class="n">exitstat</span><span class="o">=</span><span class="nb">stat</span><span class="p">)</span>
+<span class="w">        </span><span class="c">!$omp end critical (run_command)</span>
 <span class="w">        </span><span class="k">call </span><span class="n">delete_file_win32</span><span class="p">(</span><span class="n">output</span><span class="o">//</span><span class="s2">&quot;.resp&quot;</span><span class="p">)</span>
 
 <span class="w">    </span><span class="k">else</span>
-<span class="k">        call </span><span class="n">run</span><span class="p">(</span><span class="n">self</span><span class="p">%</span><span class="n">ar</span><span class="w"> </span><span class="o">//</span><span class="w"> </span><span class="n">output</span><span class="w"> </span><span class="o">//</span><span class="w"> </span><span class="s2">&quot; &quot;</span><span class="w"> </span><span class="o">//</span><span class="w"> </span><span class="n">string_cat</span><span class="p">(</span><span class="n">args</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot; &quot;</span><span class="p">),</span><span class="w"> </span><span class="p">&amp;</span>
+<span class="w">        </span><span class="c">!$omp critical (run_command)</span>
+<span class="w">        </span><span class="k">call </span><span class="n">run</span><span class="p">(</span><span class="n">self</span><span class="p">%</span><span class="n">ar</span><span class="w"> </span><span class="o">//</span><span class="w"> </span><span class="n">output</span><span class="w"> </span><span class="o">//</span><span class="w"> </span><span class="s2">&quot; &quot;</span><span class="w"> </span><span class="o">//</span><span class="w"> </span><span class="n">string_cat</span><span class="p">(</span><span class="n">args</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot; &quot;</span><span class="p">),</span><span class="w"> </span><span class="p">&amp;</span>
 <span class="w">            </span><span class="p">&amp;</span><span class="w"> </span><span class="n">echo</span><span class="o">=</span><span class="n">self</span><span class="p">%</span><span class="n">echo</span><span class="p">,</span><span class="w"> </span><span class="n">verbose</span><span class="o">=</span><span class="n">self</span><span class="p">%</span><span class="n">verbose</span><span class="p">,</span><span class="w"> </span><span class="n">redirect</span><span class="o">=</span><span class="n">log_file</span><span class="p">,</span><span class="w"> </span><span class="n">exitstat</span><span class="o">=</span><span class="nb">stat</span><span class="p">)</span>
+<span class="w">        </span><span class="c">!$omp end critical (run_command)</span>
 <span class="w">    </span><span class="k">end if</span>
 
 <span class="k">    contains</span>
@@ -459,7 +466,7 @@ see issue #707, #708 and #808.</p>
             <p class="text-end">
               Documentation generated by
               <a href="https://github.com/Fortran-FOSS-Programmers/ford">FORD</a>
- on 2026-04-07 06:34 +0000             </p>
+ on 2026-05-02 00:07 +0000             </p>
           </div>
         </div>
         <br>

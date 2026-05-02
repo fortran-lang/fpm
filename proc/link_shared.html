@@ -92,7 +92,7 @@
 
             <li class="list-inline-item" id="statements"><i class="fa fa-list-ol"></i>
               <a data-bs-toggle="tooltip" data-bs-placement="bottom" data-bs-html="true"
-                 title=" 0.2% of total for procedures.">16 statements</a>
+                 title=" 0.3% of total for procedures.">19 statements</a>
             </li>
 
             <li class="list-inline-item" id="source-file">
@@ -134,8 +134,8 @@
       </a>
       <div id="vars-0" class="collapse">
         <div class="list-group list-group-flush">
-            <a class="list-group-item" href="../proc/link_shared.html#variable-command~7">command</a>
-            <a class="list-group-item" href="../proc/link_shared.html#variable-mock~5">mock</a>
+            <a class="list-group-item" href="../proc/link_shared.html#variable-command~18">command</a>
+            <a class="list-group-item" href="../proc/link_shared.html#variable-mock~6">mock</a>
             <a class="list-group-item" href="../proc/link_shared.html#variable-shared_flag~2">shared_flag</a>
         </div>
       </div>
@@ -194,7 +194,7 @@
     <tbody>
         <tr>
             <td>
-              <span class="anchor" id="variable-self~51"></span>
+              <span class="anchor" id="variable-self~201"></span>
               class(<a href='../type/compiler_t.html'>compiler_t</a>),
             </td>
 <td>intent(in)</td>
@@ -209,7 +209,7 @@
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-output~6"></span>
+              <span class="anchor" id="variable-output~9"></span>
               character(len=*),
             </td>
 <td>intent(in)</td>
@@ -224,7 +224,7 @@
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-args~7"></span>
+              <span class="anchor" id="variable-args~10"></span>
               character(len=*),
             </td>
 <td>intent(in)</td>
@@ -254,7 +254,7 @@
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-stat~26"></span>
+              <span class="anchor" id="variable-stat~65"></span>
               integer,
             </td>
 <td>intent(out)</td>
@@ -269,7 +269,7 @@
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-dry_run~5"></span>
+              <span class="anchor" id="variable-dry_run~8"></span>
               logical,
             </td>
 <td>intent(in),</td>
@@ -302,7 +302,7 @@
     <tbody>
         <tr>
             <td>
-              <span class="anchor" id="variable-command~7"></span>
+              <span class="anchor" id="variable-command~18"></span>
               character(len=:),
             </td>
               <td>public,</td>
@@ -319,7 +319,7 @@
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-mock~5"></span>
+              <span class="anchor" id="variable-mock~6"></span>
               logical,
             </td>
               <td>public</td>
@@ -385,6 +385,9 @@
 <span class="w">    </span><span class="kt">logical</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">mock</span>
 <span class="w">    </span><span class="kt">character</span><span class="p">(</span><span class="nb">len</span><span class="o">=</span><span class="p">:),</span><span class="w"> </span><span class="k">allocatable</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">shared_flag</span>
 
+<span class="w">    </span><span class="c">! Initialize intent(out) status so the mock path returns a defined value.</span>
+<span class="w">    </span><span class="nb">stat</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span>
+
 <span class="w">    </span><span class="n">mock</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">.</span><span class="n">false</span><span class="p">.</span>
 <span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="nb">present</span><span class="p">(</span><span class="n">dry_run</span><span class="p">))</span><span class="w"> </span><span class="n">mock</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">dry_run</span>
 
@@ -392,8 +395,11 @@
 
 <span class="w">    </span><span class="n">command</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">self</span><span class="p">%</span><span class="n">fc</span><span class="w"> </span><span class="o">//</span><span class="w"> </span><span class="s2">&quot; &quot;</span><span class="w"> </span><span class="o">//</span><span class="w"> </span><span class="n">shared_flag</span><span class="w"> </span><span class="o">//</span><span class="w"> </span><span class="s2">&quot; &quot;</span><span class="w"> </span><span class="o">//</span><span class="w"> </span><span class="n">args</span><span class="w"> </span><span class="o">//</span><span class="w"> </span><span class="s2">&quot; -o &quot;</span><span class="w"> </span><span class="o">//</span><span class="w"> </span><span class="n">output</span>
 
-<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(.</span><span class="nb">not</span><span class="p">.</span><span class="n">mock</span><span class="p">)</span><span class="w"> </span><span class="p">&amp;</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(.</span><span class="nb">not</span><span class="p">.</span><span class="n">mock</span><span class="p">)</span><span class="w"> </span><span class="k">then</span>
+<span class="w">        </span><span class="c">!$omp critical (run_command)</span>
 <span class="w">        </span><span class="k">call </span><span class="n">run</span><span class="p">(</span><span class="n">command</span><span class="p">,</span><span class="w"> </span><span class="n">echo</span><span class="o">=</span><span class="n">self</span><span class="p">%</span><span class="n">echo</span><span class="p">,</span><span class="w"> </span><span class="n">verbose</span><span class="o">=</span><span class="n">self</span><span class="p">%</span><span class="n">verbose</span><span class="p">,</span><span class="w"> </span><span class="n">redirect</span><span class="o">=</span><span class="n">log_file</span><span class="p">,</span><span class="w"> </span><span class="n">exitstat</span><span class="o">=</span><span class="nb">stat</span><span class="p">)</span>
+<span class="w">        </span><span class="c">!$omp end critical (run_command)</span>
+<span class="w">    </span><span class="k">end if</span>
 
 <span class="k">end subroutine </span><span class="n">link_shared</span>
 </pre></div>
@@ -419,7 +425,7 @@
             <p class="text-end">
               Documentation generated by
               <a href="https://github.com/Fortran-FOSS-Programmers/ford">FORD</a>
- on 2026-04-07 06:34 +0000             </p>
+ on 2026-05-02 00:07 +0000             </p>
           </div>
         </div>
         <br>
