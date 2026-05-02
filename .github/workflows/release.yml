@@ -35,7 +35,7 @@ jobs:
         PREFIX: fpm-${{ env.VERSION }}/
 
     - name: Upload artifact
-      uses: actions/upload-artifact@v6
+      uses: actions/upload-artifact@v7
       with:
         name: ${{ env.OUTPUT }}
         path: ${{ env.OUTPUT }}
@@ -69,7 +69,7 @@ jobs:
     - name: Install fpm
       uses: fortran-lang/setup-fpm@v9
       with:
-        fpm-version: 'v0.8.0'
+        fpm-version: 'v0.13.0'
 
     - name: Create single file version
       run: |
@@ -101,10 +101,10 @@ jobs:
 
     - name: Build fpm with bootstrap version
       run: |
-        ${{ env.EXE }} build 
+        ${{ env.EXE }} build
 
     - name: Upload artifact
-      uses: actions/upload-artifact@v6
+      uses: actions/upload-artifact@v7
       with:
         name: ${{ env.OUTPUT }}
         path: ${{ env.OUTPUT }}
@@ -128,7 +128,7 @@ jobs:
       if: ${{ github.event_name == 'push' }}
 
     - name: Download Artifacts
-      uses: actions/download-artifact@v7
+      uses: actions/download-artifact@v8
       with:
         path: fpm-cd-artifacts
         merge-multiple: true
@@ -153,7 +153,7 @@ jobs:
     - name: Move/Create continuous tag
       if: ${{ github.event_name == 'push' && steps.deploy-on-push.outputs.result != 0 }}
       run: |
-        git tag --force 'current' ${{ github.sha }}
+        git tag --force 'current' "$GITHUB_SHA"
         git push --tags --force
 
     - name: Upload assets

@@ -24,7 +24,9 @@ contains
 
         testsuite = [ &
             & new_unittest("modules-used", test_modules_used), &
+            & new_unittest("modules-used-inline-comment", test_modules_used_inline_comment), &
             & new_unittest("intrinsic-modules-used", test_intrinsic_modules_used), &
+            & new_unittest("intrinsic-substring-module-name", test_intrinsic_substring_module_name), &
             & new_unittest("nonintrinsic-modules-used", test_nonintrinsic_modules_used), &
             & new_unittest("include-stmt", test_include_stmt), &
             & new_unittest("program", test_program), &
@@ -139,6 +141,44 @@ contains
     end subroutine test_modules_used
 
 
+    !> Regression test: inline comments should not break module extraction
+    subroutine test_modules_used_inline_comment(error)
+
+        !> Error handling
+        type(error_t), allocatable, intent(out) :: error
+
+        integer :: unit
+        character(:), allocatable :: temp_file
+        type(srcfile_t), allocatable :: f_source
+
+        allocate(temp_file, source=get_temp_filename())
+
+        open(file=temp_file, newunit=unit)
+        write(unit, '(a)') &
+            & 'program test', &
+            & ' use utilities_mod!comment', &
+            & ' implicit none', &
+            & 'end program test'
+        close(unit)
+
+        f_source = parse_f_source(temp_file,error)
+        if (allocated(error)) then
+            return
+        end if
+
+        if (size(f_source%modules_used) /= 1) then
+            call test_failed(error,'Incorrect number of modules_used - expecting one')
+            return
+        end if
+
+        if (.not.('utilities_mod' .in. f_source%modules_used)) then
+            call test_failed(error,'Missing module in modules_used')
+            return
+        end if
+
+    end subroutine test_modules_used_inline_comment
+
+
     !> Check that intrinsic modules are properly ignore
     subroutine test_intrinsic_modules_used(error)
 
@@ -206,6 +246,50 @@ contains
         call f_source%test_serialization('srcfile_t: serialization', error)
 
     end subroutine test_intrinsic_modules_used
+
+
+    !> Regression test: intrinsic name substring must not classify a user module as intrinsic
+    subroutine test_intrinsic_substring_module_name(error)
+
+        !> Error handling
+        type(error_t), allocatable, intent(out) :: error
+
+        integer :: unit
+        character(:), allocatable :: temp_file
+        type(srcfile_t), allocatable :: f_source
+
+        allocate(temp_file, source=get_temp_filename())
+
+        open(file=temp_file, newunit=unit)
+        write(unit, '(a)') &
+            & 'program test', &
+            & '  use my_iso_fortran_env_utils', &
+            & '  use iso_fortran_env', &
+            & '  implicit none', &
+            & 'end program test'
+        close(unit)
+
+        f_source = parse_f_source(temp_file, error)
+        if (allocated(error)) then
+            return
+        end if
+
+        if (size(f_source%modules_used) /= 1) then
+            call test_failed(error, 'Incorrect number of modules_used - expecting one')
+            return
+        end if
+
+        if (.not.('my_iso_fortran_env_utils' .in. f_source%modules_used)) then
+            call test_failed(error, 'Expected user module my_iso_fortran_env_utils in modules_used')
+            return
+        end if
+
+        if ('iso_fortran_env' .in. f_source%modules_used) then
+            call test_failed(error, 'Intrinsic module found in modules_used')
+            return
+        end if
+
+    end subroutine test_intrinsic_substring_module_name
 
 
     !> Check that intrinsic module names are not ignored if declared non_intrinsic

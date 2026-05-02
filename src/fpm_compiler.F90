@@ -109,7 +109,7 @@ contains
     !> Get flags for the main linking command
     procedure :: get_main_flags
     !> Get library export flags
-    procedure :: get_export_flags    
+    procedure :: get_export_flags
     !> Get library install name flags
     procedure :: get_install_name_flags
     !> Generate header padding flags for macOS executables
@@ -301,7 +301,7 @@ function get_default_flags(self, release) result(flags)
         call get_debug_compile_flags(self%id, flags)
     end if
 
-    ! Append position-independent code (PIC) flag, that is necessary 
+    ! Append position-independent code (PIC) flag, that is necessary
     ! building shared libraries
     select case (self%id)
     case (id_gcc, id_f95, id_caf, id_flang_classic, id_amdflang, id_f18, id_lfortran, &
@@ -601,17 +601,17 @@ function get_macros(id, macros_list, version) result(macros)
                     if (index(valued_macros(size(valued_macros)), "version") /= 0) then
 
                         !> These conditions are placed in order to ensure proper spacing between the macros.
-                        if (present(version)) then 
-                           
+                        if (present(version)) then
+
                            macros = macros//macro_definition_symbol//trim(valued_macros(1))//'='//version%s()
                            cycle
-                        
+
                         else
-                            
+
                            call fpm_stop(1,'Internal error: cannot expand {version} macro in '//macros_list(i)%s)
-                        
+
                         endif
-                        
+
                     end if
                 end if
             end if
@@ -955,7 +955,7 @@ function is_cxx_gnu_based(self) result(is_gnu)
     integer :: stat, io
 
     is_gnu = .false.
-    
+
     if (.not.allocated(self%cxx)) return
     if (len_trim(self%cxx)<=0) return
 
@@ -1140,11 +1140,11 @@ pure elemental subroutine validate_compiler_name(compiler_name, is_valid)
 
     !> Boolean value of whether compiler_name is valid or not
     logical, intent(out) :: is_valid
-    
+
     character(:), allocatable :: lname
-    
+
     lname = lower(compiler_name)
-    
+
     select case (lname)
       case("gfortran", "ifort", "ifx", "pgfortran", &
            "nvfortran", "flang", "amdflang", "caf", &
@@ -1154,7 +1154,7 @@ pure elemental subroutine validate_compiler_name(compiler_name, is_valid)
       case default
         is_valid = .false.
     end select
-    
+
 end subroutine validate_compiler_name
 
 
@@ -1255,12 +1255,12 @@ function get_export_flags(self, target_dir, target_name) result(export_flags)
         ! Intel/MSVC-style
         implib_path = quote(join_path(target_dir, target_name // ".lib") , for_cmd=.true.)
         def_path    = quote(join_path(target_dir, target_name // ".def") , for_cmd=.true.)
-                
+
         export_flags = " /IMPLIB:" // implib_path // &
                        " /DEF:" // def_path
 
     case default
-        
+
         export_flags = ""  ! Do nothing elsewhere
 
     end select
@@ -1283,11 +1283,11 @@ function get_install_name_flags(self, target_dir, target_name) result(flags)
 
     ! Shared library basename (e.g., libfoo.dylib)
     if (str_ends_with(target_name, ".dylib")) then
-        library_file = target_name        
+        library_file = target_name
     else
         library_file = library_filename(target_name,.true.,.false.,OS_MACOS)
     end if
-    
+
     flags = " -Wl,-install_name,@rpath/" // library_file
 
 end function get_install_name_flags
@@ -1420,33 +1420,37 @@ subroutine compile_fortran(self, input, output, args, log_file, stat, table, dry
     !> Status flag
     integer, intent(out) :: stat
     !> Optional compile_commands table
-    type(compile_command_table_t), optional, intent(inout) :: table    
+    type(compile_command_table_t), optional, intent(inout) :: table
     !> Optional mocking
     logical, optional, intent(in) :: dry_run
-    
-    character(len=:), allocatable :: command 
+
+    character(len=:), allocatable :: command
     type(error_t), allocatable :: error
     logical :: mock
-    
+
+    ! Initialize intent(out) status so the mock path with no table returns
+    ! a defined value.
+    stat = 0
+
     ! Check if we're actually building this file
     mock = .false.
     if (present(dry_run)) mock = dry_run
-    
+
     ! Set command
     command = self%fc // " -c " // input // " " // args // " -o " // output
 
     ! Execute command
-    if (.not.mock) then 
+    if (.not.mock) then
        call run(command, echo=self%echo, verbose=self%verbose, redirect=log_file, exitstat=stat)
        if (stat/=0) return
     endif
-        
-    ! Optionally register compile command 
-    if (present(table)) then 
+
+    ! Optionally register compile command
+    if (present(table)) then
         call table%register(command, get_os_type(), error)
         stat = merge(-1,0,allocated(error))
-    endif    
-        
+    endif
+
 end subroutine compile_fortran
 
 
@@ -1465,33 +1469,37 @@ subroutine compile_c(self, input, output, args, log_file, stat, table, dry_run)
     !> Status flag
     integer, intent(out) :: stat
     !> Optional compile_commands table
-    type(compile_command_table_t), optional, intent(inout) :: table    
+    type(compile_command_table_t), optional, intent(inout) :: table
     !> Optional mocking
-    logical, optional, intent(in) :: dry_run    
-    
-    character(len=:), allocatable :: command 
+    logical, optional, intent(in) :: dry_run
+
+    character(len=:), allocatable :: command
     type(error_t), allocatable :: error
     logical :: mock
-    
+
+    ! Initialize intent(out) status so the mock path with no table returns
+    ! a defined value.
+    stat = 0
+
     ! Check if we're actually building this file
     mock = .false.
-    if (present(dry_run)) mock = dry_run    
-    
+    if (present(dry_run)) mock = dry_run
+
     ! Set command
     command = self%cc // " -c " // input // " " // args // " -o " // output
 
     ! Execute command
-    if (.not.mock) then 
+    if (.not.mock) then
        call run(command, echo=self%echo, verbose=self%verbose, redirect=log_file, exitstat=stat)
        if (stat/=0) return
     endif
-        
-    ! Optionally register compile command 
-    if (present(table)) then 
+
+    ! Optionally register compile command
+    if (present(table)) then
         call table%register(command, get_os_type(), error)
         stat = merge(-1,0,allocated(error))
-    endif        
-    
+    endif
+
 end subroutine compile_c
 
 !> Compile a CPP object
@@ -1509,33 +1517,37 @@ subroutine compile_cpp(self, input, output, args, log_file, stat, table, dry_run
     !> Status flag
     integer, intent(out) :: stat
     !> Optional compile_commands table
-    type(compile_command_table_t), optional, intent(inout) :: table    
+    type(compile_command_table_t), optional, intent(inout) :: table
     !> Optional mocking
-    logical, optional, intent(in) :: dry_run    
-    
-    character(len=:), allocatable :: command 
+    logical, optional, intent(in) :: dry_run
+
+    character(len=:), allocatable :: command
     type(error_t), allocatable :: error
     logical :: mock
-        
+
+    ! Initialize intent(out) status so the mock path with no table returns
+    ! a defined value.
+    stat = 0
+
     ! Check if we're actually building this file
     mock = .false.
-    if (present(dry_run)) mock = dry_run        
-        
+    if (present(dry_run)) mock = dry_run
+
     ! Set command
     command = self%cxx // " -c " // input // " " // args // " -o " // output
 
     ! Execute command
-    if (.not.mock) then 
+    if (.not.mock) then
        call run(command, echo=self%echo, verbose=self%verbose, redirect=log_file, exitstat=stat)
        if (stat/=0) return
     endif
-        
-    ! Optionally register compile command 
-    if (present(table)) then 
+
+    ! Optionally register compile command
+    if (present(table)) then
         call table%register(command, get_os_type(), error)
         stat = merge(-1,0,allocated(error))
-    endif               
-        
+    endif
+
 end subroutine compile_cpp
 
 !> Link an executable
@@ -1551,22 +1563,30 @@ subroutine link_executable(self, output, args, log_file, stat, dry_run)
     !> Status flag
     integer, intent(out) :: stat
     !> Optional mocking
-    logical, optional, intent(in) :: dry_run    
-    
-    character(len=:), allocatable :: command 
+    logical, optional, intent(in) :: dry_run
+
+    character(len=:), allocatable :: command
     logical :: mock
-        
+
+    ! Initialize intent(out) status so the mock path returns a defined value.
+    stat = 0
+
     ! Check if we're actually linking
     mock = .false.
-    if (present(dry_run)) mock = dry_run                
-        
+    if (present(dry_run)) mock = dry_run
+
     ! Set command
-    command = self%fc // " " // args // " -o " // output    
-    
-    ! Execute command
-    if (.not.mock) &
-    call run(command, echo=self%echo, verbose=self%verbose, redirect=log_file, exitstat=stat)
-    
+    command = self%fc // " " // args // " -o " // output
+
+    ! Execute command. Serialize concurrent forks: gfortran's
+    ! execute_command_line uses system(3) which forks, and concurrent
+    ! fork from OpenMP threads is documented non-thread-safe.
+    if (.not.mock) then
+        !$omp critical (run_command)
+        call run(command, echo=self%echo, verbose=self%verbose, redirect=log_file, exitstat=stat)
+        !$omp end critical (run_command)
+    end if
+
 end subroutine link_executable
 
 !> Link a shared library
@@ -1588,6 +1608,9 @@ subroutine link_shared(self, output, args, log_file, stat, dry_run)
     logical :: mock
     character(len=:), allocatable :: shared_flag
 
+    ! Initialize intent(out) status so the mock path returns a defined value.
+    stat = 0
+
     mock = .false.
     if (present(dry_run)) mock = dry_run
 
@@ -1595,8 +1618,11 @@ subroutine link_shared(self, output, args, log_file, stat, dry_run)
 
     command = self%fc // " " // shared_flag // " " // args // " -o " // output
 
-    if (.not.mock) &
+    if (.not.mock) then
+        !$omp critical (run_command)
         call run(command, echo=self%echo, verbose=self%verbose, redirect=log_file, exitstat=stat)
+        !$omp end critical (run_command)
+    end if
 
 end subroutine link_shared
 
@@ -1617,25 +1643,32 @@ subroutine make_archive(self, output, args, log_file, stat, dry_run)
     !> Status flag
     integer, intent(out) :: stat
     !> Optional mocking
-    logical, optional, intent(in) :: dry_run    
-    
+    logical, optional, intent(in) :: dry_run
+
     logical :: mock
-        
+
+    ! Initialize intent(out) status so the mock path returns a defined value.
+    stat = 0
+
     ! Check if we're actually linking
     mock = .false.
-    if (present(dry_run)) mock = dry_run            
-    
+    if (present(dry_run)) mock = dry_run
+
     if (mock) return
 
     if (self%use_response_file) then
         call write_response_file(output//".resp" , args)
+        !$omp critical (run_command)
         call run(self%ar // output // " @" // output//".resp", echo=self%echo, &
             &  verbose=self%verbose, redirect=log_file, exitstat=stat)
+        !$omp end critical (run_command)
         call delete_file_win32(output//".resp")
 
     else
+        !$omp critical (run_command)
         call run(self%ar // output // " " // string_cat(args, " "), &
             & echo=self%echo, verbose=self%verbose, redirect=log_file, exitstat=stat)
+        !$omp end critical (run_command)
     end if
 
     contains
@@ -1971,41 +2004,41 @@ logical function check_c_source_runs(self, input, compile_flags, link_flags) res
     character(len=*), optional, intent(in) :: compile_flags, link_flags
     integer :: stat,unit
     character(:), allocatable :: source,object,logf,exe,flags,ldflags
-    
+
     success = .false.
-    
+
     !> Create temporary source file
     exe    = get_temp_filename()
     source = exe//'.c'
     object = exe//'.o'
     logf   = exe//'.log'
-    
+
     open(newunit=unit, file=source, action='readwrite', iostat=stat)
     if (stat/=0) return
-    
+
     !> Write contents
     write(unit,'(a)') input
     close(unit)
-    
+
     !> Get flags
     flags    = ""
     ldflags  = ""
     if (present(compile_flags)) flags = flags//" "//compile_flags
     if (present(link_flags)) ldflags = ldflags//" "//link_flags
-    
+
     !> Compile
     call self%compile_c(source,object,flags,logf,stat,dry_run=.false.)
     if (stat/=0) return
-    
+
     !> Link using C compiler for pure C programs
     call run(self%cc//" "//ldflags//" "//object//" -o "//exe, &
               echo=self%echo, verbose=self%verbose, redirect=logf, exitstat=stat)
     if (stat/=0) return
-    
+
     !> Run
     call run(exe//" > "//logf//" 2>&1",echo=.false.,exitstat=stat)
     success = (stat == 0)
-    
+
     !> Delete temporary files
     open(newunit=unit, file=source, action='readwrite', iostat=stat)
     close(unit,status='delete')
@@ -2015,7 +2048,7 @@ logical function check_c_source_runs(self, input, compile_flags, link_flags) res
     close(unit,status='delete')
     open(newunit=unit, file=exe, action='readwrite', iostat=stat)
     close(unit,status='delete')
-    
+
 end function check_c_source_runs
 
 !> Check if the given C++ source code compiles, links, and runs successfully
@@ -2028,41 +2061,41 @@ logical function check_cxx_source_runs(self, input, compile_flags, link_flags) r
     character(len=*), optional, intent(in) :: compile_flags, link_flags
     integer :: stat,unit
     character(:), allocatable :: source,object,logf,exe,flags,ldflags
-    
+
     success = .false.
-    
+
     !> Create temporary source file
     exe    = get_temp_filename()
     source = exe//'.cpp'
     object = exe//'.o'
     logf   = exe//'.log'
-    
+
     open(newunit=unit, file=source, action='readwrite', iostat=stat)
     if (stat/=0) return
-    
+
     !> Write contents
     write(unit,'(a)') input
     close(unit)
-    
+
     !> Get flags
     flags    = ""
     ldflags  = ""
     if (present(compile_flags)) flags = flags//" "//compile_flags
     if (present(link_flags)) ldflags = ldflags//" "//link_flags
-    
+
     !> Compile
     call self%compile_cpp(source,object,flags,logf,stat,dry_run=.false.)
     if (stat/=0) return
-    
+
     !> Link using C++ compiler for pure C++ programs
     call run(self%cxx//" "//ldflags//" "//object//" -o "//exe, &
               echo=self%echo, verbose=self%verbose, redirect=logf, exitstat=stat)
     if (stat/=0) return
-    
+
     !> Run
     call run(exe//" > "//logf//" 2>&1",echo=.false.,exitstat=stat)
     success = (stat == 0)
-    
+
     !> Delete temporary files
     open(newunit=unit, file=source, action='readwrite', iostat=stat)
     close(unit,status='delete')
@@ -2072,19 +2105,19 @@ logical function check_cxx_source_runs(self, input, compile_flags, link_flags) r
     close(unit,status='delete')
     open(newunit=unit, file=exe, action='readwrite', iostat=stat)
     close(unit,status='delete')
-    
+
 end function check_cxx_source_runs
 
 !> Check if the given C compile and/or link flags are accepted by the C compiler
 logical function check_c_flags_supported(self, compile_flags, link_flags)
     class(compiler_t), intent(in) :: self
     character(len=*), optional, intent(in) :: compile_flags, link_flags
-    
+
     ! Minimal C program that always compiles
     character(len=*), parameter :: hello_world_c = &
         "#include <stdio.h>" // new_line('a') // &
         "int main() { printf(""Hello, World!""); return 0; }"
-    
+
     check_c_flags_supported = self%check_c_source_runs(hello_world_c, compile_flags, link_flags)
 end function check_c_flags_supported
 
@@ -2092,12 +2125,12 @@ end function check_c_flags_supported
 logical function check_cxx_flags_supported(self, compile_flags, link_flags)
     class(compiler_t), intent(in) :: self
     character(len=*), optional, intent(in) :: compile_flags, link_flags
-    
+
     ! Minimal C++ program that always compiles
     character(len=*), parameter :: hello_world_cxx = &
         "#include <cstdio>" // new_line('a') // &
         "int main() { printf(""Hello, World!""); return 0; }"
-    
+
     check_cxx_flags_supported = self%check_cxx_source_runs(hello_world_cxx, compile_flags, link_flags)
 end function check_cxx_flags_supported
 

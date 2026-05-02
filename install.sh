@@ -7,14 +7,21 @@ usage()
     echo "Fortran Package Manager Bootstrap Script"
     echo ""
     echo "USAGE:"
-    echo "./install.sh [--help | [--prefix=PREFIX]"
+    echo "./install.sh [--help] [--prefix=PREFIX] [--openmp | --no-openmp]"
     echo ""
     echo " --help             Display this help text"
     echo " --prefix=PREFIX    Install binary in 'PREFIX/bin'"
-    echo "                    Default prefix='\$HOME/.local/bin'"
+    echo "                    Default prefix='\$HOME/.local'"
+    echo " --openmp           Build fpm with OpenMP support (default)"
+    echo " --no-openmp        Build fpm without OpenMP support"
     echo ""
     echo "FC and FFLAGS environment variables can be used to select the"
     echo "Fortran compiler and the build flags."
+    echo ""
+    echo "FPM_OPENMP env var sets the default for --openmp/--no-openmp."
+    echo "Accepted truthy values: 1, true, yes, on (default if unset)."
+    echo "Accepted falsy values:  0, false, no, off."
+    echo "Command-line flags override FPM_OPENMP."
     echo ""
 }
 
@@ -42,6 +49,17 @@ get_latest_release()
 
 PREFIX="$HOME/.local"
 
+# OpenMP default: env var FPM_OPENMP, else "on"
+case "${FPM_OPENMP:-1}" in
+    0|false|no|off|FALSE|No|NO|Off|OFF) OPENMP=0 ;;
+    1|true|yes|on|TRUE|Yes|YES|On|ON|"") OPENMP=1 ;;
+    *)
+        echo "ERROR: unrecognized FPM_OPENMP value '$FPM_OPENMP'"
+        usage
+        exit 1
+        ;;
+esac
+
 while [ "$1" != "" ]; do
     PARAM=$(echo "$1" | awk -F= '{print $1}')
     VALUE=$(echo "$1" | awk -F= '{print $2}')
@@ -52,6 +70,12 @@ while [ "$1" != "" ]; do
             ;;
         --prefix)
             PREFIX=$VALUE
+            ;;
+        --openmp)
+            OPENMP=1
+            ;;
+        --no-openmp)
+            OPENMP=0
             ;;
         *)
             echo "ERROR: unknown parameter \"$PARAM\""
@@ -71,8 +95,9 @@ if [ $? -ne 0 ]; then
   exit 2
 fi
 
-# Use 0.8.0 too bootstrap
-BOOTSTRAP_RELEASE="0.8.0"
+# Use 0.13.0 to bootstrap (first release with the features system,
+# which fpm.toml depends on for the openmp metapackage feature).
+BOOTSTRAP_RELEASE="0.13.0"
 SOURCE_URL="https://github.com/fortran-lang/fpm/releases/download/v${BOOTSTRAP_RELEASE}/fpm-${BOOTSTRAP_RELEASE}.F90"
 BOOTSTRAP_DIR="build/bootstrap"
 
@@ -92,6 +117,11 @@ cd $BOOTSTRAP_DIR
 $FC $FFLAGS fpm.F90 -o fpm
 cd "$SAVEDIR"
 
+FEATURES_FLAG=""
+if [ "$OPENMP" = "1" ]; then
+    FEATURES_FLAG="--features openmp"
+fi
+
 $BOOTSTRAP_DIR/fpm update
-$BOOTSTRAP_DIR/fpm install --compiler "$FC" --flag "$FFLAGS" --prefix "$PREFIX"
+$BOOTSTRAP_DIR/fpm install $FEATURES_FLAG --compiler "$FC" --flag "$FFLAGS" --prefix "$PREFIX"
 rm -r $BOOTSTRAP_DIR
