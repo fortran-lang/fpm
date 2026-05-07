@@ -2,7 +2,8 @@ module test_filesystem
     use testsuite, only: new_unittest, unittest_t, error_t, test_failed
     use fpm_filesystem, only: canon_path, is_dir, mkdir, os_delete_dir, &
                               join_path, is_absolute_path, get_home, &
-                              delete_file, read_lines, get_temp_filename
+                              delete_file, read_lines, get_temp_filename, &
+                              set_executable, filewrite, exists
     use fpm_environment, only: OS_WINDOWS, get_os_type, os_is_unix
     use fpm_strings, only: string_t, split_lines_first_last
     implicit none
@@ -24,7 +25,8 @@ contains
             & new_unittest("test-is-absolute-path", test_is_absolute_path), &
             & new_unittest("test-get-home", test_get_home), &
             & new_unittest("test-split-lines-first-last", test_split_lines_first_last), &
-            & new_unittest("test-crlf-lines", test_dir_with_crlf) &
+            & new_unittest("test-crlf-lines", test_dir_with_crlf), &
+            & new_unittest("test-set-executable", test_set_executable) &
             ]
 
     end subroutine collect_filesystem
@@ -428,6 +430,41 @@ contains
         1 format("Failed reading file with CRLF: ",a,:,i0,:,a,:,i0)
         
     end subroutine test_dir_with_crlf
+
+    ! Test for set_executable
+    subroutine test_set_executable(error)
+        type(error_t), allocatable, intent(out) :: error
+        character(len=:), allocatable :: temp_file
+        integer :: stat
+        
+        ! 1. Setup: Create a dummy file
+        temp_file = "test_exec_perm.txt"
+        call filewrite(temp_file, [character(len=13) :: "dummy content"])
+
+        if (.not. exists(temp_file)) then
+             call test_failed(error, "Setup failed: Could not create temp file")
+             return
+        end if
+
+        ! 2. Action: Call the function
+        call set_executable(temp_file)
+
+        ! 3. Assertion: Verify permissions
+        if (os_is_unix()) then
+            ! 'test -x' returns 0 if executable, 1 if not
+           call execute_command_line("test -x " // temp_file, exitstat=stat)
+            
+            if (stat /= 0) then
+                call test_failed(error, "Test Failed: File was not made executable on Unix")
+                ! Attempt cleanup before returning
+                call delete_file(temp_file)
+                return
+            end if
+        end if
+        
+        call delete_file(temp_file)
+
+    end subroutine test_set_executable
     
 
 end module test_filesystem
