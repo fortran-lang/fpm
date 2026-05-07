@@ -691,8 +691,10 @@ function get_shared_flag(self) result(shared_flag)
     select case (self%id)
     case default
         shared_flag = "-shared"
-    case (id_gcc, id_f95, id_flang, id_amdflang, id_flang_classic, id_lfortran)
+    case (id_gcc, id_f95, id_flang, id_amdflang, id_flang_classic)
         shared_flag = "-shared"
+    case (id_lfortran)
+        shared_flag = "--shared"
     case (id_intel_classic_nix, id_intel_llvm_nix, id_pgi, id_nvhpc)
         shared_flag = "-shared"
     case (id_intel_classic_windows, id_intel_llvm_windows)
