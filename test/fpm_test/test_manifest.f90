@@ -69,6 +69,9 @@ contains
             & new_unittest("package-wrongtest", test_package_wrongtest, should_fail=.true.), &
             & new_unittest("package-duplicate", test_package_duplicate, should_fail=.true.), &
             & new_unittest("test-simple", test_test_simple), &
+            & new_unittest("test-args", test_test_args), &
+            & new_unittest("test-args-missing", test_test_args_missing), &
+            & new_unittest("test-args-typeerror", test_test_args_typeerror, should_fail=.true.), &
             & new_unittest("test-empty", test_test_empty, should_fail=.true.), &
             & new_unittest("test-typeerror", test_test_typeerror, should_fail=.true.), &
             & new_unittest("test-noname", test_test_noname, should_fail=.true.), &
@@ -1139,6 +1142,95 @@ contains
         if (allocated(error)) return
 
     end subroutine test_test_simple
+
+
+    !> Tests parsing of test arguments from a manifest table
+    subroutine test_test_args(error)
+        use fpm_manifest_test
+
+        !> Error handling
+        type(error_t), allocatable, intent(out) :: error
+
+        type(toml_table) :: table
+        type(toml_array), pointer :: children
+        integer :: stat
+        type(test_config_t) :: test
+
+        call new_table(table)
+        call set_value(table, 'name', 'example', stat)
+        call add_array(table, 'args', children, stat)
+        call set_value(children, 1, '--input', stat)
+        call set_value(children, 2, 'file.txt', stat)
+
+        call new_test(test, table, error)
+        if (allocated(error)) return
+
+        if (.not.allocated(test%args)) then
+            call test_failed(error, 'args is not allocated')
+            return
+        end if
+
+        if (size(test%args) /= 2) then
+            call test_failed(error, 'args does not have size 2')
+            return
+        end if
+
+        if (test%args(1) /= '--input') then
+            call test_failed(error, 'First test arg does not match')
+            return
+        end if
+
+        if (test%args(2) /= 'file.txt') then
+            call test_failed(error, 'Second test arg does not match')
+            return
+        end if
+
+    end subroutine test_test_args
+
+
+    !> Tests that test arguments are optional
+    subroutine test_test_args_missing(error)
+        use fpm_manifest_test
+
+        !> Error handling
+        type(error_t), allocatable, intent(out) :: error
+
+        type(toml_table) :: table
+        type(test_config_t) :: test
+        integer :: stat
+
+        call new_table(table)
+        call set_value(table, 'name', 'example', stat)
+
+        call new_test(test, table, error)
+        if (allocated(error)) return
+
+        if (allocated(test%args)) then
+            call test_failed(error, 'args should not be allocated when missing')
+            return
+        end if
+
+    end subroutine test_test_args_missing
+
+
+    !> Tests that scalar args values are rejected
+    subroutine test_test_args_typeerror(error)
+        use fpm_manifest_test
+
+        !> Error handling
+        type(error_t), allocatable, intent(out) :: error
+
+        type(toml_table) :: table
+        type(test_config_t) :: test
+        integer :: stat
+
+        call new_table(table)
+        call set_value(table, 'name', 'example', stat)
+        call set_value(table, 'args', 'not-an-array', stat)
+
+        call new_test(test, table, error)
+
+    end subroutine test_test_args_typeerror
 
 
     !> Tests cannot be created from empty tables
