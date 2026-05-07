@@ -1238,8 +1238,8 @@ subroutine resolve_target_linking(targets, model, library, error)
                     call get_link_objects(target%link_objects,target,is_exe=.true.)
 
                     if (allocated(model%link_flags)) then
-                        target%link_flags = model%link_flags//" "//string_cat(target%link_objects," ")
-                    else 
+                        target%link_flags = string_cat(target%link_objects," ")//" "//model%link_flags
+                    else
                         target%link_flags = " "//string_cat(target%link_objects," ")
                     end if
                     

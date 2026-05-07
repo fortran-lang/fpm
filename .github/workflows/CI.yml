@@ -287,6 +287,12 @@ jobs:
       run: |
         ci/run_tests.sh "$PWD/${{ env.FPM_RELEASE }}"
 
+    - name: Test CMake generation
+      if: matrix.toolchain.version == 13
+      shell: bash
+      run: |
+        ci/test_cmake.sh "$PWD/${{ env.FPM_RELEASE }}"
+
     # Exercise the parallel backend of the just-built release fpm. Skips on
     # matrix entries that did not opt into the openmp metapackage feature.
     - name: Verify parallel build with release fpm
