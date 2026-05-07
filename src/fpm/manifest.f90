@@ -120,14 +120,36 @@ contains
         call new_package(package, table, dirname(file), error)
         if (allocated(error)) return
 
-        if (present(apply_defaults)) then
-            if (apply_defaults) then
-                root = dirname(file)
-                if (len_trim(root) == 0) root = "."
-                call package_defaults(package, root, error)
-                if (allocated(error)) return
-            end if
-        end if
+        ! --- FIX START: Check minimal version ---
+       if (allocated(package%minimal_version)) then
+          block
+             ! Import everything from versioning to get the '<' operator automatically
+             use fpm_versioning
+             use fpm_release, only: fpm_version
+
+             type(version_t) :: required, current
+             type(error_t), allocatable :: err_ver
+
+             ! 1. Get current version
+             current = fpm_version()
+
+             ! 2. Parse the required version from the manifest
+             call new_version(required, package%minimal_version, err_ver)
+             if (allocated(err_ver)) then
+                 call fatal_error(error, "Error parsing 'minimal-version': "//err_ver%message)
+                 return
+             end if
+
+             ! 3. Compare using the operator
+             if (current < required) then
+                 call fatal_error(error, "This package requires fpm version " // &
+                                         package%minimal_version // " or newer. " // &
+                                         "You are using version " // current%s())
+                 return
+             end if
+          end block
+       end if
+       ! --- FIX END ---
 
     end subroutine get_package_data
 
