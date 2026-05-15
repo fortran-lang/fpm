@@ -57,6 +57,7 @@ contains
             & new_unittest("conditional-compilation-elif-else", test_conditional_compilation_elif_else), &
             & new_unittest("conditional-compilation_ifdef_else", test_conditional_compilation_ifdef_else), &
             & new_unittest("conditional-if-defined", test_conditional_if_defined), &
+            & new_unittest("conditional-if-defined-indented", test_conditional_if_defined_indented), &
             & new_unittest("conditional-macro-comparison", test_conditional_macro_comparison), &
             & new_unittest("define-without-trailing-space", test_define_no_trailing_space), &
             & new_unittest("macro-case-sensitivity", test_macro_case_sensitivity), &
@@ -1815,6 +1816,36 @@ contains
         end if
 
     end subroutine test_conditional_if_defined
+
+    !> Regression test for fpm#1265: indented `#if defined(MACRO)` must extract
+    !> the exact macro name, not include the trailing `)` and indent whitespace.
+    subroutine test_conditional_if_defined_indented(error)
+        type(error_t), allocatable, intent(out) :: error
+        type(srcfile_t) :: f_source
+        character(:), allocatable :: temp_file
+        integer :: unit
+        type(preprocess_config_t) :: cpp_config
+
+        temp_file = get_temp_filename()
+        open(file=temp_file, newunit=unit)
+        write(unit, '(a)') &
+            'module test_mod', &
+            '  #if defined(MY_FEATURE)', &
+            '  use feature_module', &
+            '  #endif', &
+            'end module test_mod'
+        close(unit)
+
+        call cpp_config%new([string_t('MY_FEATURE')])
+        cpp_config%name = "cpp"
+        f_source = parse_f_source(temp_file, error, preprocess=cpp_config)
+        if (allocated(error)) return
+
+        if (.not. ('feature_module' .in. f_source%modules_used)) &
+            call test_failed(error, &
+                'Indented #if defined(MY_FEATURE) skipped despite MY_FEATURE defined')
+
+    end subroutine test_conditional_if_defined_indented
 
     !> Test conditional compilation with #if MACRO == VALUE and #if MACRO != VALUE
     subroutine test_conditional_macro_comparison(error)

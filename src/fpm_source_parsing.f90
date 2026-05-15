@@ -233,8 +233,10 @@ subroutine parse_if_condition(lower_line, line, offset, heading_blanks, preproce
         start_pos = index(lower_line, 'defined(') + 8
         end_pos = index(lower_line(start_pos:), ')') - 1
 
+        ! end_pos is a length (relative to start_pos), so it must not be shifted
+        ! by heading_blanks here — only start_pos is converted to an absolute
+        ! position in `line`. See fpm#1265.
         start_pos = start_pos + heading_blanks
-        end_pos = end_pos + heading_blanks
 
         if (end_pos > 0) then
             macro_name = line(start_pos:start_pos + end_pos - 1)
