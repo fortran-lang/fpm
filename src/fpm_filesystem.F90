@@ -8,7 +8,7 @@ module fpm_filesystem
                                OS_CYGWIN, OS_SOLARIS, OS_FREEBSD, OS_OPENBSD
     use fpm_environment, only: separator, get_env, os_is_unix
     use fpm_strings, only: f_string, replace, string_t, split, split_lines_first_last, dilate, add_strings, &
-        str_begins_with_str
+        str_begins_with_str, string_cat
     use iso_c_binding, only: c_char, c_ptr, c_int, c_null_char, c_associated, c_f_pointer
     use fpm_error, only : fpm_stop, error_t, fatal_error
     use shlex_module, only: sh_split => split, ms_split
@@ -17,7 +17,7 @@ module fpm_filesystem
     public :: basename, canon_path, dirname, is_dir, join_path, number_of_rows, list_files, get_local_prefix, &
             mkdir, exists, get_temp_filename, windows_path, unix_path, getline, delete_file, fileopen, fileclose, &
             filewrite, warnwrite, parent_dir, is_hidden_file, read_lines, read_lines_expanded, which, run, &
-            os_delete_dir, is_absolute_path, get_home, execute_and_read_output, get_dos_path, &
+            run_argv, os_delete_dir, is_absolute_path, get_home, execute_and_read_output, get_dos_path, &
             command_program, command_not_found
 
 #ifndef FPM_BOOTSTRAP
@@ -51,6 +51,13 @@ module fpm_filesystem
             character(kind=c_char), intent(in) :: path(*)
             integer(kind=c_int) :: r
         end function c_is_dir
+
+        function c_run_argv(joined, argc, redirect) result(r) bind(c, name="c_run_argv")
+            import c_char, c_int
+            character(kind=c_char), intent(in) :: joined(*), redirect(*)
+            integer(kind=c_int), intent(in), value :: argc
+            integer(kind=c_int) :: r
+        end function c_run_argv
     end interface
 #endif
 
@@ -1108,6 +1115,95 @@ logical function command_not_found(cmd)
     if (len_trim(which(prog)) == 0 .and. .not. exists(prog)) command_not_found = .true.
 
 end function command_not_found
+
+subroutine run_argv(args,echo,exitstat,verbose,redirect)
+    type(string_t), intent(in) :: args(:)
+    logical,intent(in),optional  :: echo
+    integer, intent(out),optional :: exitstat
+    logical, intent(in), optional :: verbose
+    character(*), intent(in), optional :: redirect
+
+    character(:), allocatable :: command
+    character(:), allocatable :: joined
+    character(:), allocatable :: redirect_file
+    character(:), allocatable :: line
+    character(len=256) :: iomsg
+    logical :: echo_local, verbose_local
+    integer :: stat, fh, iostat, i
+
+    command = string_cat(args, " ")
+
+    if(present(echo))then
+       echo_local=echo
+    else
+       echo_local=.true.
+    end if
+
+    if(present(verbose))then
+        verbose_local=verbose
+    else
+        verbose_local=.true.
+    end if
+
+    if (present(redirect)) then
+        redirect_file = redirect
+    else
+        if(verbose_local)then
+            redirect_file = ""
+        else
+            if (os_is_unix()) then
+                redirect_file = "/dev/null"
+            else
+                redirect_file = "NUL"
+            end if
+        end if
+    end if
+
+    if(echo_local) print *, '+ ', command
+
+    if (size(args) < 1) then
+        stat = 0
+#ifndef FPM_BOOTSTRAP
+    elseif (os_is_unix()) then
+        joined = ""
+        do i = 1, size(args)
+            joined = joined//args(i)%s//c_null_char
+        end do
+        stat = c_run_argv(joined//c_null_char, int(size(args), c_int), &
+            redirect_file//c_null_char)
+#endif
+    else
+        call run(command, echo=.false., verbose=verbose_local, redirect=redirect_file, exitstat=stat)
+    end if
+
+    if (stat < 0) then
+        call run(command, echo=.false., verbose=verbose_local, redirect=redirect_file, exitstat=stat)
+    end if
+
+    if (verbose_local.and.present(redirect)) then
+
+        open(newunit=fh,file=redirect,status='old',iostat=iostat,iomsg=iomsg)
+        if(iostat == 0)then
+           do
+               call getline(fh, line, iostat)
+               if (iostat /= 0) exit
+               write(*,'(A)') trim(line)
+           end do
+        else
+           write(*,'(A)') trim(iomsg)
+        endif
+
+        close(fh)
+
+    end if
+
+    if (present(exitstat)) then
+        exitstat = stat
+    elseif (stat /= 0) then
+        call fpm_stop(stat,'*run_argv*: Command '//command//' returned a non-zero status code')
+    end if
+
+end subroutine run_argv
 
 !> Delete directory using system OS remove directory commands
 subroutine os_delete_dir(is_unix, dir, echo)

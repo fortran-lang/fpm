@@ -40,7 +40,7 @@ use fpm_environment, only: &
         OS_UNKNOWN, &
         library_filename
 use fpm_filesystem, only: join_path, basename, get_temp_filename, delete_file, unix_path, &
-    & getline, run
+    & getline, run, run_argv
 use fpm_strings, only: split, string_cat, string_t, str_ends_with, str_begins_with_str, &
     & string_array_contains, lower, add_strings
 use fpm_error, only: error_t, fatal_error, fpm_stop
@@ -1425,8 +1425,11 @@ subroutine compile_fortran(self, input, output, args, log_file, stat, table, dry
     logical, optional, intent(in) :: dry_run
 
     character(len=:), allocatable :: command
+    character(len=:), allocatable :: parts(:)
+    type(string_t), allocatable :: argv(:)
     type(error_t), allocatable :: error
-    logical :: mock
+    logical :: mock, tokenized
+    integer :: i
 
     ! Initialize intent(out) status so the mock path with no table returns
     ! a defined value.
@@ -1438,10 +1441,41 @@ subroutine compile_fortran(self, input, output, args, log_file, stat, table, dry
 
     ! Set command
     command = self%fc // " -c " // input // " " // args // " -o " // output
+    tokenized = .true.
+    !$omp critical(fpm_shlex_split)
+    parts = sh_split(self%fc, join_spaced=.false., keep_quotes=.false., success=tokenized)
+    !$omp end critical(fpm_shlex_split)
+    if (tokenized) then
+        do i = 1, size(parts)
+            if (len_trim(parts(i)) == 0) cycle
+            call add_strings(argv, string_t(clean_shlex_token(parts(i))))
+        end do
+        call add_strings(argv, string_t("-c"))
+        call add_strings(argv, string_t(input))
+    end if
+    if (tokenized .and. len_trim(args) > 0) then
+        !$omp critical(fpm_shlex_split)
+        parts = sh_split(args, join_spaced=.true., keep_quotes=.true., success=tokenized)
+        !$omp end critical(fpm_shlex_split)
+        if (tokenized) then
+            do i = 1, size(parts)
+                if (len_trim(parts(i)) == 0) cycle
+                call add_strings(argv, string_t(clean_shlex_token(parts(i))))
+            end do
+        end if
+    end if
+    if (tokenized) then
+        call add_strings(argv, string_t("-o"))
+        call add_strings(argv, string_t(output))
+    end if
 
     ! Execute command
     if (.not.mock) then
-       call run(command, echo=self%echo, verbose=self%verbose, redirect=log_file, exitstat=stat)
+       if (tokenized) then
+          call run_argv(argv, echo=self%echo, verbose=self%verbose, redirect=log_file, exitstat=stat)
+       else
+          call run(command, echo=self%echo, verbose=self%verbose, redirect=log_file, exitstat=stat)
+       end if
        if (stat/=0) return
     endif
 
@@ -1450,6 +1484,26 @@ subroutine compile_fortran(self, input, output, args, log_file, stat, table, dry
         call table%register(command, get_os_type(), error)
         stat = merge(-1,0,allocated(error))
     endif
+
+contains
+
+    function clean_shlex_token(token) result(clean)
+        character(len=*), intent(in) :: token
+        character(len=:), allocatable :: clean
+
+        integer :: j
+
+        clean = ""
+        do j = 1, len_trim(token)
+            select case (token(j:j))
+            case ("'", '"')
+                cycle
+            case default
+                clean = clean//token(j:j)
+            end select
+        end do
+        clean = trim(adjustl(clean))
+    end function clean_shlex_token
 
 end subroutine compile_fortran
 
