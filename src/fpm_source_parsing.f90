@@ -234,7 +234,6 @@ subroutine parse_if_condition(lower_line, line, offset, heading_blanks, preproce
         end_pos = index(lower_line(start_pos:), ')') - 1
 
         start_pos = start_pos + heading_blanks
-        end_pos = end_pos + heading_blanks
 
         if (end_pos > 0) then
             macro_name = line(start_pos:start_pos + end_pos - 1)
