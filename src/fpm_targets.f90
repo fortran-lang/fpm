@@ -360,32 +360,44 @@ subroutine build_target_list(targets,model,library)
         lib_name = join_path(model%package_name, &
                              library_filename(model%packages(1)%name,.false.,.false.,get_os_type()))
         
+        ! Inherit the root package's features and preprocess so the archive's
+        ! compile_flags hash tracks the active profile/macros and the archive
+        ! file lands in the same per-profile build directory as its objects.
         call add_target(targets,package=model%package_name, &
-                        type = FPM_TARGET_ARCHIVE,output_name = lib_name)
-                            
-    elseif (shared_lib .or. static_lib) then 
-        
-        ! Individual package libraries are built. 
+                        type = FPM_TARGET_ARCHIVE,output_name = lib_name, &
+                        features    = model%packages(1)%features, &
+                        preprocess  = model%packages(1)%preprocess, &
+                        version     = model%packages(1)%version)
+
+    elseif (shared_lib .or. static_lib) then
+
+        ! Individual package libraries are built.
         ! Create as many targets as the packages in the dependency tree
         do j=1,size(model%packages)
-            
+
             ! Create static library target if requested
             if (static_lib) then
                 lib_name = library_filename(model%packages(j)%name,.false.,.false.,get_os_type())
                 call add_target(targets,package=model%packages(j)%name, &
                                 type=FPM_TARGET_ARCHIVE, &
-                                output_name=lib_name)
+                                output_name=lib_name, &
+                                features    = model%packages(j)%features, &
+                                preprocess  = model%packages(j)%preprocess, &
+                                version     = model%packages(j)%version)
             end if
-            
-            ! Create shared library target if requested  
+
+            ! Create shared library target if requested
             if (shared_lib) then
                 lib_name = library_filename(model%packages(j)%name,.true.,.false.,get_os_type())
                 call add_target(targets,package=model%packages(j)%name, &
                                 type=FPM_TARGET_SHARED, &
-                                output_name=lib_name)
+                                output_name=lib_name, &
+                                features    = model%packages(j)%features, &
+                                preprocess  = model%packages(j)%preprocess, &
+                                version     = model%packages(j)%version)
             end if
         end do
-        
+
     endif
     
     do j=1,size(model%packages)
@@ -492,7 +504,10 @@ subroutine build_target_list(targets,model,library)
 
                     call add_target(targets,package=model%packages(j)%name,type = FPM_TARGET_EXECUTABLE,&
                                     link_libraries = sources(i)%link_libraries, &
-                                    output_name = join_path(exe_dir,get_exe_name_with_suffix(sources(i))))
+                                    output_name = join_path(exe_dir,get_exe_name_with_suffix(sources(i))), &
+                                    features    = model%packages(j)%features, &
+                                    preprocess  = model%packages(j)%preprocess, &
+                                    version     = model%packages(j)%version)
 
                     associate(target => targets(size(targets))%ptr)
 
@@ -1154,11 +1169,11 @@ subroutine resolve_target_linking(targets, model, library, error)
 
 
             call target%set_output_dir(get_output_dir(model%build_prefix, target%compile_flags))
-            
+
         end associate
 
     end do
-    
+
     call add_include_build_dirs(model, targets)
     call add_library_link_dirs(model, targets, shared_lib_paths)
     call library_targets_to_deps(model, targets, dep_target_ID)
