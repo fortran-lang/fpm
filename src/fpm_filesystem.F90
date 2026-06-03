@@ -1164,18 +1164,20 @@ subroutine run_argv(args,echo,exitstat,verbose,redirect)
     if (size(args) < 1) then
         stat = 0
 #ifndef FPM_BOOTSTRAP
-    elseif (os_is_unix()) then
+    else
         joined = ""
         do i = 1, size(args)
             joined = joined//args(i)%s//c_null_char
         end do
         stat = c_run_argv(joined//c_null_char, int(size(args), c_int), &
             redirect_file//c_null_char)
-#endif
+#else
     else
         call run(command, echo=.false., verbose=verbose_local, redirect=redirect_file, exitstat=stat)
+#endif
     end if
 
+    ! Fall back to the shell if the argv spawn was unavailable or failed (stat < 0).
     if (stat < 0) then
         call run(command, echo=.false., verbose=verbose_local, redirect=redirect_file, exitstat=stat)
     end if
