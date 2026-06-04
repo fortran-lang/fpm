@@ -1490,23 +1490,26 @@ contains
 
         if (.not.ok) return
 
+        ! fortran-shlex is not reentrant, and the deferred-length parts(:) result it
+        ! returns must be consumed before another thread re-enters the lexer. Hold the
+        ! lock across both the split and the readback into argv.
         !$omp critical(fpm_shlex_split)
         if (os_is_unix()) then
             parts = sh_split(str, join_spaced=join_spaced, keep_quotes=keep_quotes, success=ok)
         else
             parts = ms_split(str, success=ok)
         end if
+        if (ok) then
+            do k = 1, size(parts)
+                if (len_trim(parts(k)) == 0) cycle
+                if (os_is_unix()) then
+                    call add_strings(argv, string_t(clean_shlex_token(parts(k))))
+                else
+                    call add_strings(argv, string_t(trim(parts(k))))
+                end if
+            end do
+        end if
         !$omp end critical(fpm_shlex_split)
-        if (.not.ok) return
-
-        do k = 1, size(parts)
-            if (len_trim(parts(k)) == 0) cycle
-            if (os_is_unix()) then
-                call add_strings(argv, string_t(clean_shlex_token(parts(k))))
-            else
-                call add_strings(argv, string_t(trim(parts(k))))
-            end if
-        end do
     end subroutine split_append
 
     function clean_shlex_token(token) result(clean)
