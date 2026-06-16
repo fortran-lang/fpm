@@ -1076,20 +1076,22 @@ end subroutine run
 
 !> Return the program invoked by a command line (its first shell token), OS-aware.
 !! Uses fpm's shell lexer so quoted paths stay intact and trailing arguments
-!! (e.g. a wrapper's "mpifort -fc=gfortran") are dropped. Returns '' on failure.
+!! (e.g. a wrapper's "mpifort -fc=gfortran") are dropped. Returns '' if empty.
 function command_program(cmd) result(prog)
     character(*), intent(in) :: cmd
     character(:), allocatable :: prog
     character(len=:), allocatable :: tokens(:)
-    logical :: ok
 
     prog = ''
     if (os_is_unix()) then
-        tokens = sh_split(cmd, success=ok)               ! POSIX lexer
+        tokens = sh_split(cmd)               ! POSIX lexer
     else
-        tokens = ms_split(cmd, ucrt=.true., success=ok)  ! Windows lexer
+        tokens = ms_split(cmd, ucrt=.true.)  ! Windows lexer
     end if
-    if (ok) then
+    ! The program is always the first token. A redirection in the command (e.g. "> log
+    ! 2>&1") makes the lexer report failure but it still tokenizes, and a redirection
+    ! operator never starts the command, so the first token is reliably the program.
+    if (allocated(tokens)) then
         if (size(tokens) > 0) prog = trim(adjustl(tokens(1)))
     end if
 
