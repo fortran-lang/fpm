@@ -185,7 +185,7 @@ Add HDF5 modules as external</p>
     <tbody>
         <tr>
             <td>
-              <span class="anchor" id="variable-this~42"></span>
+              <span class="anchor" id="variable-this"></span>
               class(<a href='../type/metapackage_t.html'>metapackage_t</a>),
             </td>
 <td>intent(inout)</td>
@@ -200,7 +200,7 @@ Add HDF5 modules as external</p>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-compiler~31"></span>
+              <span class="anchor" id="variable-compiler"></span>
               type(<a href='../type/compiler_t.html'>compiler_t</a>),
             </td>
 <td>intent(in)</td>
@@ -215,7 +215,7 @@ Add HDF5 modules as external</p>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-all_meta~10"></span>
+              <span class="anchor" id="variable-all_meta"></span>
               type(<a href='../type/metapackage_request_t.html'>metapackage_request_t</a>),
             </td>
 <td>intent(in)</td>
@@ -230,7 +230,7 @@ Add HDF5 modules as external</p>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-error~238"></span>
+              <span class="anchor" id="variable-error"></span>
               type(<a href='../type/error_t.html'>error_t</a>),
             </td>
 <td>intent(out),</td>
@@ -267,10 +267,10 @@ Add HDF5 modules as external</p>
 <span class="w">        </span><span class="k">type</span><span class="p">(</span><span class="n">error_t</span><span class="p">),</span><span class="w"> </span><span class="k">allocatable</span><span class="p">,</span><span class="w"> </span><span class="k">intent</span><span class="p">(</span><span class="n">out</span><span class="p">)</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">error</span>
 
 <span class="w">        </span><span class="kt">character</span><span class="p">(</span><span class="o">*</span><span class="p">),</span><span class="w"> </span><span class="k">parameter</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">find_hl</span><span class="p">(</span><span class="o">*</span><span class="p">)</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">&amp;</span>
-<span class="w">                     </span><span class="p">[</span><span class="kt">character</span><span class="p">(</span><span class="mi">11</span><span class="p">)</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="s1">&#39;_hl_fortran&#39;</span><span class="p">,</span><span class="s1">&#39;hl_fortran&#39;</span><span class="p">,</span><span class="s1">&#39;_fortran&#39;</span><span class="p">,</span><span class="s1">&#39;_hl&#39;</span><span class="p">]</span>
+<span class="w">                     </span><span class="p">[</span><span class="kt">character</span><span class="p">(</span><span class="mi">11</span><span class="p">)</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="s1">'_hl_fortran'</span><span class="p">,</span><span class="s1">'hl_fortran'</span><span class="p">,</span><span class="s1">'_fortran'</span><span class="p">,</span><span class="s1">'_hl'</span><span class="p">]</span>
 <span class="w">        </span><span class="kt">character</span><span class="p">(</span><span class="o">*</span><span class="p">),</span><span class="w"> </span><span class="k">parameter</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">candidates</span><span class="p">(</span><span class="o">*</span><span class="p">)</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">&amp;</span>
-<span class="w">                     </span><span class="p">[</span><span class="kt">character</span><span class="p">(</span><span class="mi">15</span><span class="p">)</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="s1">&#39;hdf5_hl_fortran&#39;</span><span class="p">,</span><span class="s1">&#39;hdf5-hl-fortran&#39;</span><span class="p">,</span><span class="s1">&#39;hdf5_fortran&#39;</span><span class="p">,</span><span class="s1">&#39;hdf5-fortran&#39;</span><span class="p">,&amp;</span>
-<span class="w">                                       </span><span class="s1">&#39;hdf5_hl&#39;</span><span class="p">,</span><span class="s1">&#39;hdf5&#39;</span><span class="p">,</span><span class="s1">&#39;hdf5-serial&#39;</span><span class="p">]</span>
+<span class="w">                     </span><span class="p">[</span><span class="kt">character</span><span class="p">(</span><span class="mi">15</span><span class="p">)</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="s1">'hdf5_hl_fortran'</span><span class="p">,</span><span class="s1">'hdf5-hl-fortran'</span><span class="p">,</span><span class="s1">'hdf5_fortran'</span><span class="p">,</span><span class="s1">'hdf5-fortran'</span><span class="p">,&amp;</span>
+<span class="w">                                       </span><span class="s1">'hdf5_hl'</span><span class="p">,</span><span class="s1">'hdf5'</span><span class="p">,</span><span class="s1">'hdf5-serial'</span><span class="p">]</span>
 
 <span class="w">        </span><span class="kt">integer</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">i</span><span class="p">,</span><span class="n">j</span><span class="p">,</span><span class="n">k</span><span class="p">,</span><span class="n">l</span>
 <span class="w">        </span><span class="kt">logical</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">s</span><span class="p">,</span><span class="n">found_hl</span><span class="p">(</span><span class="n">size</span><span class="p">(</span><span class="n">find_hl</span><span class="p">)),</span><span class="n">found</span>
@@ -278,25 +278,25 @@ Add HDF5 modules as external</p>
 <span class="w">        </span><span class="k">type</span><span class="p">(</span><span class="n">string_t</span><span class="p">),</span><span class="w"> </span><span class="k">allocatable</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">libs</span><span class="p">(:),</span><span class="n">flags</span><span class="p">(:),</span><span class="n">modules</span><span class="p">(:),</span><span class="n">non_fortran</span><span class="p">(:)</span>
 <span class="w">        </span><span class="kt">character</span><span class="p">(</span><span class="nb">len</span><span class="o">=</span><span class="p">:),</span><span class="w"> </span><span class="k">allocatable</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">name</span><span class="p">,</span><span class="w"> </span><span class="n">include_flag</span><span class="p">,</span><span class="w"> </span><span class="n">libdir</span><span class="p">,</span><span class="w"> </span><span class="n">ext</span><span class="p">,</span><span class="w"> </span><span class="n">pref</span>
 
-<span class="w">        </span><span class="n">include_flag</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">get_include_flag</span><span class="p">(</span><span class="n">compiler</span><span class="p">,</span><span class="s2">&quot;&quot;</span><span class="p">)</span>
+<span class="w">        </span><span class="n">include_flag</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">get_include_flag</span><span class="p">(</span><span class="n">compiler</span><span class="p">,</span><span class="s2">""</span><span class="p">)</span>
 
 <span class="w">        </span><span class="c">!&gt; Cleanup</span>
 <span class="w">        </span><span class="k">call </span><span class="n">destroy</span><span class="p">(</span><span class="n">this</span><span class="p">)</span>
 <span class="w">        </span><span class="k">allocate</span><span class="p">(</span><span class="n">this</span><span class="p">%</span><span class="n">link_libs</span><span class="p">(</span><span class="mi">0</span><span class="p">),</span><span class="n">this</span><span class="p">%</span><span class="n">incl_dirs</span><span class="p">(</span><span class="mi">0</span><span class="p">),</span><span class="n">this</span><span class="p">%</span><span class="n">external_modules</span><span class="p">(</span><span class="mi">0</span><span class="p">),</span><span class="n">non_fortran</span><span class="p">(</span><span class="mi">0</span><span class="p">))</span>
-<span class="w">        </span><span class="n">this</span><span class="p">%</span><span class="n">link_flags</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">string_t</span><span class="p">(</span><span class="s2">&quot;&quot;</span><span class="p">)</span>
-<span class="w">        </span><span class="n">this</span><span class="p">%</span><span class="n">flags</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">string_t</span><span class="p">(</span><span class="s2">&quot;&quot;</span><span class="p">)</span>
+<span class="w">        </span><span class="n">this</span><span class="p">%</span><span class="n">link_flags</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">string_t</span><span class="p">(</span><span class="s2">""</span><span class="p">)</span>
+<span class="w">        </span><span class="n">this</span><span class="p">%</span><span class="n">flags</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">string_t</span><span class="p">(</span><span class="s2">""</span><span class="p">)</span>
 <span class="w">        </span>
 <span class="w">        </span><span class="c">!&gt; Set name</span>
-<span class="w">        </span><span class="n">this</span><span class="p">%</span><span class="n">name</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;hdf5&quot;</span>
+<span class="w">        </span><span class="n">this</span><span class="p">%</span><span class="n">name</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">"hdf5"</span>
 
 <span class="w">        </span><span class="c">!&gt; Assert pkg-config is installed</span>
 <span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(.</span><span class="nb">not</span><span class="p">.</span><span class="n">assert_pkg_config</span><span class="p">())</span><span class="w"> </span><span class="k">then</span>
-<span class="k">            call </span><span class="n">fatal_error</span><span class="p">(</span><span class="n">error</span><span class="p">,</span><span class="s1">&#39;hdf5 metapackage requires pkg-config&#39;</span><span class="p">)</span>
+<span class="k">            call </span><span class="n">fatal_error</span><span class="p">(</span><span class="n">error</span><span class="p">,</span><span class="s1">'hdf5 metapackage requires pkg-config'</span><span class="p">)</span>
 <span class="w">            </span><span class="k">return</span>
 <span class="k">        end if</span>
 
 <span class="w">        </span><span class="c">!&gt; Find pkg-config package file by priority</span>
-<span class="w">        </span><span class="n">name</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">&#39;NOT_FOUND&#39;</span>
+<span class="w">        </span><span class="n">name</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">'NOT_FOUND'</span>
 <span class="w">        </span><span class="n">find_package</span><span class="p">:</span><span class="w"> </span><span class="k">do </span><span class="n">i</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span><span class="n">size</span><span class="p">(</span><span class="n">candidates</span><span class="p">)</span>
 <span class="w">            </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">pkgcfg_has_package</span><span class="p">(</span><span class="nb">trim</span><span class="p">(</span><span class="n">candidates</span><span class="p">(</span><span class="n">i</span><span class="p">))))</span><span class="w"> </span><span class="k">then</span>
 <span class="k">                </span><span class="n">name</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">trim</span><span class="p">(</span><span class="n">candidates</span><span class="p">(</span><span class="n">i</span><span class="p">))</span>
@@ -305,26 +305,26 @@ Add HDF5 modules as external</p>
 <span class="k">        end do </span><span class="n">find_package</span>
 
 <span class="w">        </span><span class="c">!&gt; some distros put hdf5-1.2.3.pc with version number in .pc filename.</span>
-<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">name</span><span class="o">==</span><span class="s1">&#39;NOT_FOUND&#39;</span><span class="p">)</span><span class="w"> </span><span class="k">then</span>
+<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">name</span><span class="o">==</span><span class="s1">'NOT_FOUND'</span><span class="p">)</span><span class="w"> </span><span class="k">then</span>
 <span class="k">            </span><span class="n">modules</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">pkgcfg_list_all</span><span class="p">(</span><span class="n">error</span><span class="p">)</span>
 <span class="w">            </span><span class="n">find_global_package</span><span class="p">:</span><span class="w"> </span><span class="k">do </span><span class="n">i</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span><span class="n">size</span><span class="p">(</span><span class="n">modules</span><span class="p">)</span>
-<span class="w">                </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">str_begins_with_str</span><span class="p">(</span><span class="n">modules</span><span class="p">(</span><span class="n">i</span><span class="p">)%</span><span class="n">s</span><span class="p">,</span><span class="s1">&#39;hdf5&#39;</span><span class="p">))</span><span class="w"> </span><span class="k">then</span>
+<span class="w">                </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">str_begins_with_str</span><span class="p">(</span><span class="n">modules</span><span class="p">(</span><span class="n">i</span><span class="p">)%</span><span class="n">s</span><span class="p">,</span><span class="s1">'hdf5'</span><span class="p">))</span><span class="w"> </span><span class="k">then</span>
 <span class="k">                    </span><span class="n">name</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">modules</span><span class="p">(</span><span class="n">i</span><span class="p">)%</span><span class="n">s</span>
 <span class="w">                    </span><span class="k">exit </span><span class="n">find_global_package</span>
 <span class="w">                </span><span class="k">end if</span>
 <span class="k">            end do </span><span class="n">find_global_package</span>
 <span class="w">        </span><span class="k">end if</span>
 
-<span class="k">        if</span><span class="w"> </span><span class="p">(</span><span class="n">name</span><span class="o">==</span><span class="s1">&#39;NOT_FOUND&#39;</span><span class="p">)</span><span class="w"> </span><span class="k">then</span>
-<span class="k">            call </span><span class="n">fatal_error</span><span class="p">(</span><span class="n">error</span><span class="p">,</span><span class="s1">&#39;pkg-config could not find a suitable hdf5 package.&#39;</span><span class="p">)</span>
+<span class="k">        if</span><span class="w"> </span><span class="p">(</span><span class="n">name</span><span class="o">==</span><span class="s1">'NOT_FOUND'</span><span class="p">)</span><span class="w"> </span><span class="k">then</span>
+<span class="k">            call </span><span class="n">fatal_error</span><span class="p">(</span><span class="n">error</span><span class="p">,</span><span class="s1">'pkg-config could not find a suitable hdf5 package.'</span><span class="p">)</span>
 <span class="w">            </span><span class="k">return</span>
 <span class="k">        end if</span>
 
 <span class="k">        call </span><span class="n">add_pkg_config_compile_options</span><span class="p">(</span><span class="n">this</span><span class="p">,</span><span class="w"> </span><span class="n">name</span><span class="p">,</span><span class="w"> </span><span class="n">include_flag</span><span class="p">,</span><span class="w"> </span><span class="n">libdir</span><span class="p">,</span><span class="w"> </span><span class="n">error</span><span class="p">)</span>
 <span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="nb">allocated</span><span class="p">(</span><span class="n">error</span><span class="p">))</span><span class="w"> </span><span class="k">return</span>
 
-<span class="w">        </span><span class="c">! Some pkg-config hdf5.pc (e.g. Ubuntu) don&#39;t include the commonly-used HL HDF5 libraries,</span>
-<span class="w">        </span><span class="c">! so let&#39;s add them if they exist</span>
+<span class="w">        </span><span class="c">! Some pkg-config hdf5.pc (e.g. Ubuntu) don't include the commonly-used HL HDF5 libraries,</span>
+<span class="w">        </span><span class="c">! so let's add them if they exist</span>
 <span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="nb">len_trim</span><span class="p">(</span><span class="n">libdir</span><span class="p">)</span><span class="o">&gt;</span><span class="mi">0</span><span class="p">)</span><span class="w"> </span><span class="k">then</span>
 <span class="k">            do </span><span class="n">i</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span><span class="n">size</span><span class="p">(</span><span class="n">this</span><span class="p">%</span><span class="n">link_libs</span><span class="p">)</span>
 
@@ -367,27 +367,27 @@ Add HDF5 modules as external</p>
 
 <span class="w">        </span><span class="c">!&gt; Add HDF5 modules as external</span>
 <span class="w">        </span><span class="n">this</span><span class="p">%</span><span class="n">has_external_modules</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">.</span><span class="n">true</span><span class="p">.</span>
-<span class="w">        </span><span class="n">this</span><span class="p">%</span><span class="n">external_modules</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">[</span><span class="n">string_t</span><span class="p">(</span><span class="s1">&#39;h5a&#39;</span><span class="p">),</span><span class="w"> </span><span class="p">&amp;</span>
-<span class="w">                                 </span><span class="n">string_t</span><span class="p">(</span><span class="s1">&#39;h5d&#39;</span><span class="p">),</span><span class="w"> </span><span class="p">&amp;</span>
-<span class="w">                                 </span><span class="n">string_t</span><span class="p">(</span><span class="s1">&#39;h5es&#39;</span><span class="p">),</span><span class="w"> </span><span class="p">&amp;</span>
-<span class="w">                                 </span><span class="n">string_t</span><span class="p">(</span><span class="s1">&#39;h5e&#39;</span><span class="p">),</span><span class="w"> </span><span class="p">&amp;</span>
-<span class="w">                                 </span><span class="n">string_t</span><span class="p">(</span><span class="s1">&#39;h5f&#39;</span><span class="p">),</span><span class="w"> </span><span class="p">&amp;</span>
-<span class="w">                                 </span><span class="n">string_t</span><span class="p">(</span><span class="s1">&#39;h5g&#39;</span><span class="p">),</span><span class="w"> </span><span class="p">&amp;</span>
-<span class="w">                                 </span><span class="n">string_t</span><span class="p">(</span><span class="s1">&#39;h5i&#39;</span><span class="p">),</span><span class="w"> </span><span class="p">&amp;</span>
-<span class="w">                                 </span><span class="n">string_t</span><span class="p">(</span><span class="s1">&#39;h5l&#39;</span><span class="p">),</span><span class="w"> </span><span class="p">&amp;</span>
-<span class="w">                                 </span><span class="n">string_t</span><span class="p">(</span><span class="s1">&#39;h5o&#39;</span><span class="p">),</span><span class="w"> </span><span class="p">&amp;</span>
-<span class="w">                                 </span><span class="n">string_t</span><span class="p">(</span><span class="s1">&#39;h5p&#39;</span><span class="p">),</span><span class="w"> </span><span class="p">&amp;</span>
-<span class="w">                                 </span><span class="n">string_t</span><span class="p">(</span><span class="s1">&#39;h5r&#39;</span><span class="p">),</span><span class="w"> </span><span class="p">&amp;</span>
-<span class="w">                                 </span><span class="n">string_t</span><span class="p">(</span><span class="s1">&#39;h5s&#39;</span><span class="p">),</span><span class="w"> </span><span class="p">&amp;</span>
-<span class="w">                                 </span><span class="n">string_t</span><span class="p">(</span><span class="s1">&#39;h5t&#39;</span><span class="p">),</span><span class="w"> </span><span class="p">&amp;</span>
-<span class="w">                                 </span><span class="n">string_t</span><span class="p">(</span><span class="s1">&#39;h5vl&#39;</span><span class="p">),</span><span class="w"> </span><span class="p">&amp;</span>
-<span class="w">                                 </span><span class="n">string_t</span><span class="p">(</span><span class="s1">&#39;h5z&#39;</span><span class="p">),</span><span class="w"> </span><span class="p">&amp;</span>
-<span class="w">                                 </span><span class="n">string_t</span><span class="p">(</span><span class="s1">&#39;h5lt&#39;</span><span class="p">),</span><span class="w"> </span><span class="p">&amp;</span>
-<span class="w">                                 </span><span class="n">string_t</span><span class="p">(</span><span class="s1">&#39;h5lib&#39;</span><span class="p">),</span><span class="w"> </span><span class="p">&amp;</span>
-<span class="w">                                 </span><span class="n">string_t</span><span class="p">(</span><span class="s1">&#39;h5global&#39;</span><span class="p">),</span><span class="w"> </span><span class="p">&amp;</span>
-<span class="w">                                 </span><span class="n">string_t</span><span class="p">(</span><span class="s1">&#39;h5_gen&#39;</span><span class="p">),</span><span class="w"> </span><span class="p">&amp;</span>
-<span class="w">                                 </span><span class="n">string_t</span><span class="p">(</span><span class="s1">&#39;h5fortkit&#39;</span><span class="p">),</span><span class="w"> </span><span class="p">&amp;</span>
-<span class="w">                                 </span><span class="n">string_t</span><span class="p">(</span><span class="s1">&#39;hdf5&#39;</span><span class="p">)]</span>
+<span class="w">        </span><span class="n">this</span><span class="p">%</span><span class="n">external_modules</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">[</span><span class="n">string_t</span><span class="p">(</span><span class="s1">'h5a'</span><span class="p">),</span><span class="w"> </span><span class="p">&amp;</span>
+<span class="w">                                 </span><span class="n">string_t</span><span class="p">(</span><span class="s1">'h5d'</span><span class="p">),</span><span class="w"> </span><span class="p">&amp;</span>
+<span class="w">                                 </span><span class="n">string_t</span><span class="p">(</span><span class="s1">'h5es'</span><span class="p">),</span><span class="w"> </span><span class="p">&amp;</span>
+<span class="w">                                 </span><span class="n">string_t</span><span class="p">(</span><span class="s1">'h5e'</span><span class="p">),</span><span class="w"> </span><span class="p">&amp;</span>
+<span class="w">                                 </span><span class="n">string_t</span><span class="p">(</span><span class="s1">'h5f'</span><span class="p">),</span><span class="w"> </span><span class="p">&amp;</span>
+<span class="w">                                 </span><span class="n">string_t</span><span class="p">(</span><span class="s1">'h5g'</span><span class="p">),</span><span class="w"> </span><span class="p">&amp;</span>
+<span class="w">                                 </span><span class="n">string_t</span><span class="p">(</span><span class="s1">'h5i'</span><span class="p">),</span><span class="w"> </span><span class="p">&amp;</span>
+<span class="w">                                 </span><span class="n">string_t</span><span class="p">(</span><span class="s1">'h5l'</span><span class="p">),</span><span class="w"> </span><span class="p">&amp;</span>
+<span class="w">                                 </span><span class="n">string_t</span><span class="p">(</span><span class="s1">'h5o'</span><span class="p">),</span><span class="w"> </span><span class="p">&amp;</span>
+<span class="w">                                 </span><span class="n">string_t</span><span class="p">(</span><span class="s1">'h5p'</span><span class="p">),</span><span class="w"> </span><span class="p">&amp;</span>
+<span class="w">                                 </span><span class="n">string_t</span><span class="p">(</span><span class="s1">'h5r'</span><span class="p">),</span><span class="w"> </span><span class="p">&amp;</span>
+<span class="w">                                 </span><span class="n">string_t</span><span class="p">(</span><span class="s1">'h5s'</span><span class="p">),</span><span class="w"> </span><span class="p">&amp;</span>
+<span class="w">                                 </span><span class="n">string_t</span><span class="p">(</span><span class="s1">'h5t'</span><span class="p">),</span><span class="w"> </span><span class="p">&amp;</span>
+<span class="w">                                 </span><span class="n">string_t</span><span class="p">(</span><span class="s1">'h5vl'</span><span class="p">),</span><span class="w"> </span><span class="p">&amp;</span>
+<span class="w">                                 </span><span class="n">string_t</span><span class="p">(</span><span class="s1">'h5z'</span><span class="p">),</span><span class="w"> </span><span class="p">&amp;</span>
+<span class="w">                                 </span><span class="n">string_t</span><span class="p">(</span><span class="s1">'h5lt'</span><span class="p">),</span><span class="w"> </span><span class="p">&amp;</span>
+<span class="w">                                 </span><span class="n">string_t</span><span class="p">(</span><span class="s1">'h5lib'</span><span class="p">),</span><span class="w"> </span><span class="p">&amp;</span>
+<span class="w">                                 </span><span class="n">string_t</span><span class="p">(</span><span class="s1">'h5global'</span><span class="p">),</span><span class="w"> </span><span class="p">&amp;</span>
+<span class="w">                                 </span><span class="n">string_t</span><span class="p">(</span><span class="s1">'h5_gen'</span><span class="p">),</span><span class="w"> </span><span class="p">&amp;</span>
+<span class="w">                                 </span><span class="n">string_t</span><span class="p">(</span><span class="s1">'h5fortkit'</span><span class="p">),</span><span class="w"> </span><span class="p">&amp;</span>
+<span class="w">                                 </span><span class="n">string_t</span><span class="p">(</span><span class="s1">'hdf5'</span><span class="p">)]</span>
 
 <span class="w">    </span><span class="k">end subroutine </span><span class="n">init_hdf5</span>
 </pre></div>
@@ -413,7 +413,7 @@ Add HDF5 modules as external</p>
             <p class="text-end">
               Documentation generated by
               <a href="https://github.com/Fortran-FOSS-Programmers/ford">FORD</a>
- on 2026-05-25 16:42 +0000             </p>
+ on 2026-08-27 21:47 +0000             </p>
           </div>
         </div>
         <br>

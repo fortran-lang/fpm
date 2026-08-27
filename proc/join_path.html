@@ -257,7 +257,7 @@
 
       <h3>Return Value
         <small>
-          <span class="anchor" id="variable-path~8"></span>
+          <span class="anchor" id="variable-path~9"></span>
           character(len=:), allocatable
         </small>
       </h3>
@@ -283,7 +283,7 @@
 <span class="w">    </span><span class="kt">character</span><span class="p">(</span><span class="nb">len</span><span class="o">=</span><span class="p">:),</span><span class="w"> </span><span class="k">allocatable</span><span class="w">          </span><span class="kd">::</span><span class="w"> </span><span class="n">path</span>
 <span class="w">    </span><span class="kt">character</span><span class="p">(</span><span class="nb">len</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span><span class="w">                       </span><span class="kd">::</span><span class="w"> </span><span class="n">filesep</span>
 <span class="w">    </span><span class="kt">logical</span><span class="p">,</span><span class="w"> </span><span class="k">save</span><span class="w">                          </span><span class="kd">::</span><span class="w"> </span><span class="n">has_cache</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">.</span><span class="n">false</span><span class="p">.</span>
-<span class="w">    </span><span class="kt">character</span><span class="p">(</span><span class="nb">len</span><span class="o">=</span><span class="mi">1</span><span class="p">),</span><span class="w"> </span><span class="k">save</span><span class="w">                 </span><span class="kd">::</span><span class="w"> </span><span class="n">cache</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">&#39;/&#39;</span>
+<span class="w">    </span><span class="kt">character</span><span class="p">(</span><span class="nb">len</span><span class="o">=</span><span class="mi">1</span><span class="p">),</span><span class="w"> </span><span class="k">save</span><span class="w">                 </span><span class="kd">::</span><span class="w"> </span><span class="n">cache</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">'/'</span>
 <span class="w">    </span><span class="c">!$omp threadprivate(has_cache, cache)</span>
 
 <span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">has_cache</span><span class="p">)</span><span class="w"> </span><span class="k">then</span>
@@ -291,16 +291,16 @@
 <span class="w">    </span><span class="k">else</span>
 <span class="k">        select case</span><span class="w"> </span><span class="p">(</span><span class="n">get_os_type</span><span class="p">())</span>
 <span class="w">            </span><span class="k">case </span><span class="n">default</span>
-<span class="w">                </span><span class="n">filesep</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">&#39;/&#39;</span>
+<span class="w">                </span><span class="n">filesep</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">'/'</span>
 <span class="w">            </span><span class="k">case</span><span class="w"> </span><span class="p">(</span><span class="n">OS_WINDOWS</span><span class="p">)</span>
-<span class="w">                </span><span class="n">filesep</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="err">&#39;\&#39;</span>
+<span class="w">                </span><span class="n">filesep</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="err">'\'</span>
 <span class="w">        </span><span class="k">end select</span>
 
 <span class="k">        </span><span class="n">cache</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">filesep</span>
 <span class="w">        </span><span class="n">has_cache</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">.</span><span class="n">true</span><span class="p">.</span>
 <span class="w">    </span><span class="k">end if</span>
 
-<span class="k">    if</span><span class="w"> </span><span class="p">(</span><span class="n">a1</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="s2">&quot;&quot;</span><span class="p">)</span><span class="w"> </span><span class="k">then</span>
+<span class="k">    if</span><span class="w"> </span><span class="p">(</span><span class="n">a1</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="s2">""</span><span class="p">)</span><span class="w"> </span><span class="k">then</span>
 <span class="k">        </span><span class="n">path</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">a2</span>
 <span class="w">    </span><span class="k">else</span>
 <span class="k">        </span><span class="n">path</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">a1</span><span class="w"> </span><span class="o">//</span><span class="w"> </span><span class="n">filesep</span><span class="w"> </span><span class="o">//</span><span class="w"> </span><span class="n">a2</span>
@@ -348,7 +348,7 @@
             <p class="text-end">
               Documentation generated by
               <a href="https://github.com/Fortran-FOSS-Programmers/ford">FORD</a>
- on 2026-05-25 16:42 +0000             </p>
+ on 2026-08-27 21:47 +0000             </p>
           </div>
         </div>
         <br>

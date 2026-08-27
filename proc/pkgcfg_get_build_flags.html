@@ -180,7 +180,7 @@ gfortran does not look into by default)</p>
     <tbody>
         <tr>
             <td>
-              <span class="anchor" id="variable-name~20"></span>
+              <span class="anchor" id="variable-name~32"></span>
               character(len=*),
             </td>
 <td>intent(in)</td>
@@ -211,7 +211,7 @@ that doesn&rsquo;t otherwise look into them</p>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-error~83"></span>
+              <span class="anchor" id="variable-error~134"></span>
               type(<a href='../type/error_t.html'>error_t</a>),
             </td>
 <td>intent(out),</td>
@@ -229,7 +229,7 @@ that doesn&rsquo;t otherwise look into them</p>
 
       <h3>Return Value
         <small>
-          <span class="anchor" id="variable-flags~18"></span>
+          <span class="anchor" id="variable-flags~8"></span>
           type(<a href='../type/string_t.html'>string_t</a>), allocatable, (:)
         </small>
       </h3>
@@ -254,7 +254,7 @@ that doesn&rsquo;t otherwise look into them</p>
 <span class="w">    </span><span class="kt">character</span><span class="p">(</span><span class="o">*</span><span class="p">),</span><span class="w"> </span><span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">)</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">name</span>
 <span class="w">    </span>
 <span class="w">    </span><span class="c">!&gt; Should pkg-config look in system paths? This is necessary for gfortran </span>
-<span class="w">    </span><span class="c">!&gt; that doesn&#39;t otherwise look into them</span>
+<span class="w">    </span><span class="c">!&gt; that doesn't otherwise look into them</span>
 <span class="w">    </span><span class="kt">logical</span><span class="p">,</span><span class="w"> </span><span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">)</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">allow_system</span><span class="w"> </span>
 <span class="w">    </span>
 <span class="w">    </span><span class="c">!&gt; Error flag </span>
@@ -269,20 +269,20 @@ that doesn&rsquo;t otherwise look into them</p>
 <span class="w">    </span><span class="k">type</span><span class="p">(</span><span class="n">string_t</span><span class="p">)</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="nb">log</span><span class="w">    </span>
 <span class="w">    </span>
 <span class="w">    </span><span class="c">! Check if the current environment includes system flags</span>
-<span class="w">    </span><span class="n">old</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">get_env</span><span class="p">(</span><span class="s1">&#39;PKG_CONFIG_ALLOW_SYSTEM_CFLAGS&#39;</span><span class="p">,</span><span class="n">default</span><span class="o">=</span><span class="s1">&#39;ERROR&#39;</span><span class="p">)</span>
-<span class="w">    </span><span class="n">old_had</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">old</span><span class="o">/=</span><span class="s1">&#39;ERROR&#39;</span>
-<span class="w">    </span><span class="n">old_allow</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">merge</span><span class="p">(</span><span class="n">old</span><span class="o">==</span><span class="s1">&#39;1&#39;</span><span class="p">,.</span><span class="n">false</span><span class="p">.,</span><span class="n">old_had</span><span class="p">)</span>
+<span class="w">    </span><span class="n">old</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">get_env</span><span class="p">(</span><span class="s1">'PKG_CONFIG_ALLOW_SYSTEM_CFLAGS'</span><span class="p">,</span><span class="n">default</span><span class="o">=</span><span class="s1">'ERROR'</span><span class="p">)</span>
+<span class="w">    </span><span class="n">old_had</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">old</span><span class="o">/=</span><span class="s1">'ERROR'</span>
+<span class="w">    </span><span class="n">old_allow</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">merge</span><span class="p">(</span><span class="n">old</span><span class="o">==</span><span class="s1">'1'</span><span class="p">,.</span><span class="n">false</span><span class="p">.,</span><span class="n">old_had</span><span class="p">)</span>
 <span class="w">    </span>
 <span class="w">    </span><span class="c">! Set system flags</span>
-<span class="w">    </span><span class="n">success</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">set_env</span><span class="p">(</span><span class="s1">&#39;PKG_CONFIG_ALLOW_SYSTEM_CFLAGS&#39;</span><span class="p">,</span><span class="k">value</span><span class="o">=</span><span class="nb">merge</span><span class="p">(</span><span class="s1">&#39;1&#39;</span><span class="p">,</span><span class="s1">&#39;0&#39;</span><span class="p">,</span><span class="n">allow_system</span><span class="p">))</span>
+<span class="w">    </span><span class="n">success</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">set_env</span><span class="p">(</span><span class="s1">'PKG_CONFIG_ALLOW_SYSTEM_CFLAGS'</span><span class="p">,</span><span class="k">value</span><span class="o">=</span><span class="nb">merge</span><span class="p">(</span><span class="s1">'1'</span><span class="p">,</span><span class="s1">'0'</span><span class="p">,</span><span class="n">allow_system</span><span class="p">))</span>
 <span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(.</span><span class="nb">not</span><span class="p">.</span><span class="n">success</span><span class="p">)</span><span class="w"> </span><span class="k">then </span>
-<span class="k">        call </span><span class="n">fatal_error</span><span class="p">(</span><span class="n">error</span><span class="p">,</span><span class="s1">&#39;Cannot get pkg-config build flags: environment variable error.&#39;</span><span class="p">)</span>
+<span class="k">        call </span><span class="n">fatal_error</span><span class="p">(</span><span class="n">error</span><span class="p">,</span><span class="s1">'Cannot get pkg-config build flags: environment variable error.'</span><span class="p">)</span>
 <span class="w">        </span><span class="k">return</span>
 <span class="k">    end if</span>
 <span class="w">    </span>
 <span class="w">    </span><span class="c">! Now run wrapper</span>
-<span class="w">    </span><span class="k">call </span><span class="n">run_wrapper</span><span class="p">(</span><span class="n">wrapper</span><span class="o">=</span><span class="n">string_t</span><span class="p">(</span><span class="s1">&#39;pkg-config&#39;</span><span class="p">),</span><span class="w"> </span><span class="p">&amp;</span>
-<span class="w">                     </span><span class="n">args</span><span class="o">=</span><span class="p">[</span><span class="n">string_t</span><span class="p">(</span><span class="n">name</span><span class="p">),</span><span class="n">string_t</span><span class="p">(</span><span class="s1">&#39;--cflags&#39;</span><span class="p">)],</span><span class="w"> </span><span class="p">&amp;</span>
+<span class="w">    </span><span class="k">call </span><span class="n">run_wrapper</span><span class="p">(</span><span class="n">wrapper</span><span class="o">=</span><span class="n">string_t</span><span class="p">(</span><span class="s1">'pkg-config'</span><span class="p">),</span><span class="w"> </span><span class="p">&amp;</span>
+<span class="w">                     </span><span class="n">args</span><span class="o">=</span><span class="p">[</span><span class="n">string_t</span><span class="p">(</span><span class="n">name</span><span class="p">),</span><span class="n">string_t</span><span class="p">(</span><span class="s1">'--cflags'</span><span class="p">)],</span><span class="w"> </span><span class="p">&amp;</span>
 <span class="w">                     </span><span class="n">exitcode</span><span class="o">=</span><span class="n">exitcode</span><span class="p">,</span><span class="n">cmd_success</span><span class="o">=</span><span class="n">success</span><span class="p">,</span><span class="n">screen_output</span><span class="o">=</span><span class="nb">log</span><span class="p">)</span><span class="w"> </span>
 <span class="w">                     </span>
 <span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">success</span><span class="w"> </span><span class="p">.</span><span class="nb">and</span><span class="p">.</span><span class="w"> </span><span class="n">exitcode</span><span class="o">==</span><span class="mi">0</span><span class="p">)</span><span class="w"> </span><span class="k">then </span>
@@ -301,18 +301,18 @@ that doesn&rsquo;t otherwise look into them</p>
 <span class="k">    else</span>
 <span class="k">        </span>
 <span class="k">        allocate</span><span class="p">(</span><span class="n">flags</span><span class="p">(</span><span class="mi">0</span><span class="p">))</span>
-<span class="w">        </span><span class="k">call </span><span class="n">fatal_error</span><span class="p">(</span><span class="n">error</span><span class="p">,</span><span class="s1">&#39;cannot get &lt;&#39;</span><span class="o">//</span><span class="n">name</span><span class="o">//</span><span class="s1">&#39;&gt; build flags from pkg-config&#39;</span><span class="p">)</span>
+<span class="w">        </span><span class="k">call </span><span class="n">fatal_error</span><span class="p">(</span><span class="n">error</span><span class="p">,</span><span class="s1">'cannot get &lt;'</span><span class="o">//</span><span class="n">name</span><span class="o">//</span><span class="s1">'&gt; build flags from pkg-config'</span><span class="p">)</span>
 <span class="w">        </span>
 <span class="w">    </span><span class="k">end if</span><span class="w">   </span>
 
 <span class="w">    </span><span class="c">! Restore environment variable</span>
 <span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">old_had</span><span class="p">)</span><span class="w"> </span><span class="k">then </span>
-<span class="k">        </span><span class="n">success</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">set_env</span><span class="p">(</span><span class="s1">&#39;PKG_CONFIG_ALLOW_SYSTEM_CFLAGS&#39;</span><span class="p">,</span><span class="k">value</span><span class="o">=</span><span class="n">old</span><span class="p">)</span>
+<span class="k">        </span><span class="n">success</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">set_env</span><span class="p">(</span><span class="s1">'PKG_CONFIG_ALLOW_SYSTEM_CFLAGS'</span><span class="p">,</span><span class="k">value</span><span class="o">=</span><span class="n">old</span><span class="p">)</span>
 <span class="w">    </span><span class="k">else</span>
-<span class="k">        </span><span class="n">success</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">delete_env</span><span class="p">(</span><span class="s1">&#39;PKG_CONFIG_ALLOW_SYSTEM_CFLAGS&#39;</span><span class="p">)</span>
+<span class="k">        </span><span class="n">success</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">delete_env</span><span class="p">(</span><span class="s1">'PKG_CONFIG_ALLOW_SYSTEM_CFLAGS'</span><span class="p">)</span>
 <span class="w">    </span><span class="k">end if</span>
 <span class="k">    if</span><span class="w"> </span><span class="p">(.</span><span class="nb">not</span><span class="p">.</span><span class="n">success</span><span class="p">)</span><span class="w"> </span><span class="k">then </span>
-<span class="k">        call </span><span class="n">fatal_error</span><span class="p">(</span><span class="n">error</span><span class="p">,</span><span class="s1">&#39;Cannot get pkg-config build flags: environment variable error.&#39;</span><span class="p">)</span>
+<span class="k">        call </span><span class="n">fatal_error</span><span class="p">(</span><span class="n">error</span><span class="p">,</span><span class="s1">'Cannot get pkg-config build flags: environment variable error.'</span><span class="p">)</span>
 <span class="w">        </span><span class="k">return</span>
 <span class="k">    end if    </span>
 <span class="k">    </span>
@@ -341,7 +341,7 @@ that doesn&rsquo;t otherwise look into them</p>
             <p class="text-end">
               Documentation generated by
               <a href="https://github.com/Fortran-FOSS-Programmers/ford">FORD</a>
- on 2026-05-25 16:42 +0000             </p>
+ on 2026-08-27 21:47 +0000             </p>
           </div>
         </div>
         <br>

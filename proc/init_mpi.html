@@ -192,7 +192,7 @@ to the list of external modules, so they won&rsquo;t be requested as standard so
     <tbody>
         <tr>
             <td>
-              <span class="anchor" id="variable-this~11"></span>
+              <span class="anchor" id="variable-this~2"></span>
               class(<a href='../type/metapackage_t.html'>metapackage_t</a>),
             </td>
 <td>intent(inout)</td>
@@ -207,7 +207,7 @@ to the list of external modules, so they won&rsquo;t be requested as standard so
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-compiler~9"></span>
+              <span class="anchor" id="variable-compiler~2"></span>
               type(<a href='../type/compiler_t.html'>compiler_t</a>),
             </td>
 <td>intent(in)</td>
@@ -222,7 +222,7 @@ to the list of external modules, so they won&rsquo;t be requested as standard so
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-all_meta~5"></span>
+              <span class="anchor" id="variable-all_meta~2"></span>
               type(<a href='../type/metapackage_request_t.html'>metapackage_request_t</a>),
             </td>
 <td>intent(in)</td>
@@ -237,7 +237,7 @@ to the list of external modules, so they won&rsquo;t be requested as standard so
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-error~34"></span>
+              <span class="anchor" id="variable-error~2"></span>
               type(<a href='../type/error_t.html'>error_t</a>),
             </td>
 <td>intent(out),</td>
@@ -285,7 +285,7 @@ to the list of external modules, so they won&rsquo;t be requested as standard so
 <span class="w">        </span><span class="k">call </span><span class="n">destroy</span><span class="p">(</span><span class="n">this</span><span class="p">)</span>
 <span class="w">        </span>
 <span class="w">        </span><span class="c">!&gt; Set name</span>
-<span class="w">        </span><span class="n">this</span><span class="p">%</span><span class="n">name</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;mpi&quot;</span>
+<span class="w">        </span><span class="n">this</span><span class="p">%</span><span class="n">name</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">"mpi"</span>
 
 <span class="w">        </span><span class="c">!&gt; Get all candidate MPI wrappers</span>
 <span class="w">        </span><span class="k">call </span><span class="n">mpi_wrappers</span><span class="p">(</span><span class="n">compiler</span><span class="p">,</span><span class="n">fort_wrappers</span><span class="p">,</span><span class="n">c_wrappers</span><span class="p">,</span><span class="n">cpp_wrappers</span><span class="p">)</span>
@@ -301,7 +301,7 @@ to the list of external modules, so they won&rsquo;t be requested as standard so
 
 <span class="w">            </span><span class="c">!&gt; All attempts failed</span>
 <span class="w">            </span><span class="k">if</span><span class="w"> </span><span class="p">(.</span><span class="nb">not</span><span class="p">.</span><span class="n">found</span><span class="p">)</span><span class="w"> </span><span class="k">then</span>
-<span class="k">                call </span><span class="n">fatal_error</span><span class="p">(</span><span class="n">error</span><span class="p">,</span><span class="s2">&quot;cannot find MPI wrappers or libraries for &quot;</span><span class="o">//</span><span class="n">compiler</span><span class="p">%</span><span class="n">name</span><span class="p">()</span><span class="o">//</span><span class="s2">&quot; compiler&quot;</span><span class="p">)</span>
+<span class="k">                call </span><span class="n">fatal_error</span><span class="p">(</span><span class="n">error</span><span class="p">,</span><span class="s2">"cannot find MPI wrappers or libraries for "</span><span class="o">//</span><span class="n">compiler</span><span class="p">%</span><span class="n">name</span><span class="p">()</span><span class="o">//</span><span class="s2">" compiler"</span><span class="p">)</span>
 <span class="w">                </span><span class="k">return</span>
 <span class="k">            endif</span>
 
@@ -311,7 +311,7 @@ to the list of external modules, so they won&rsquo;t be requested as standard so
 <span class="w">            </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">wcfit</span><span class="p">(</span><span class="n">LANG_C</span><span class="p">)</span><span class="o">&gt;</span><span class="mi">0</span><span class="p">)</span><span class="w">       </span><span class="n">cwrap</span><span class="w">   </span><span class="o">=</span><span class="w"> </span><span class="n">c_wrappers</span><span class="w">   </span><span class="p">(</span><span class="n">wcfit</span><span class="p">(</span><span class="n">LANG_C</span><span class="p">))</span>
 <span class="w">            </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">wcfit</span><span class="p">(</span><span class="n">LANG_CXX</span><span class="p">)</span><span class="o">&gt;</span><span class="mi">0</span><span class="p">)</span><span class="w">     </span><span class="n">cxxwrap</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">cpp_wrappers</span><span class="w"> </span><span class="p">(</span><span class="n">wcfit</span><span class="p">(</span><span class="n">LANG_CXX</span><span class="p">))</span>
 
-<span class="w">            </span><span class="c">!&gt; If there&#39;s only an available Fortran wrapper, and the compiler&#39;s different than fpm&#39;s baseline</span>
+<span class="w">            </span><span class="c">!&gt; If there's only an available Fortran wrapper, and the compiler's different than fpm's baseline</span>
 <span class="w">            </span><span class="c">!&gt; fortran compiler suite, we still want to enable C language flags as that is most likely being</span>
 <span class="w">            </span><span class="c">!&gt; ABI-compatible anyways. However, issues may arise.</span>
 <span class="w">            </span><span class="c">!&gt; see e.g. Homebrew with clabng C/C++ and GNU fortran at https://gitlab.kitware.com/cmake/cmake/-/issues/18139</span>
@@ -320,9 +320,9 @@ to the list of external modules, so they won&rsquo;t be requested as standard so
 <span class="w">                </span><span class="n">cxxwrap</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">fort_wrappers</span><span class="p">(</span><span class="n">wcfit</span><span class="p">(</span><span class="n">LANG_FORTRAN</span><span class="p">))</span>
 <span class="w">            </span><span class="k">end if</span>
 
-<span class="k">            if</span><span class="w"> </span><span class="p">(</span><span class="n">verbose</span><span class="p">)</span><span class="w"> </span><span class="k">print</span><span class="w"> </span><span class="o">*</span><span class="p">,</span><span class="w"> </span><span class="s1">&#39;+ MPI fortran wrapper: &#39;</span><span class="p">,</span><span class="n">fwrap</span><span class="p">%</span><span class="n">s</span>
-<span class="w">            </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">verbose</span><span class="p">)</span><span class="w"> </span><span class="k">print</span><span class="w"> </span><span class="o">*</span><span class="p">,</span><span class="w"> </span><span class="s1">&#39;+ MPI c       wrapper: &#39;</span><span class="p">,</span><span class="n">cwrap</span><span class="p">%</span><span class="n">s</span>
-<span class="w">            </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">verbose</span><span class="p">)</span><span class="w"> </span><span class="k">print</span><span class="w"> </span><span class="o">*</span><span class="p">,</span><span class="w"> </span><span class="s1">&#39;+ MPI c++     wrapper: &#39;</span><span class="p">,</span><span class="n">cxxwrap</span><span class="p">%</span><span class="n">s</span>
+<span class="k">            if</span><span class="w"> </span><span class="p">(</span><span class="n">verbose</span><span class="p">)</span><span class="w"> </span><span class="k">print</span><span class="w"> </span><span class="o">*</span><span class="p">,</span><span class="w"> </span><span class="s1">'+ MPI fortran wrapper: '</span><span class="p">,</span><span class="n">fwrap</span><span class="p">%</span><span class="n">s</span>
+<span class="w">            </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">verbose</span><span class="p">)</span><span class="w"> </span><span class="k">print</span><span class="w"> </span><span class="o">*</span><span class="p">,</span><span class="w"> </span><span class="s1">'+ MPI c       wrapper: '</span><span class="p">,</span><span class="n">cwrap</span><span class="p">%</span><span class="n">s</span>
+<span class="w">            </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">verbose</span><span class="p">)</span><span class="w"> </span><span class="k">print</span><span class="w"> </span><span class="o">*</span><span class="p">,</span><span class="w"> </span><span class="s1">'+ MPI c++     wrapper: '</span><span class="p">,</span><span class="n">cxxwrap</span><span class="p">%</span><span class="n">s</span>
 
 <span class="w">            </span><span class="c">!&gt; Initialize MPI package from wrapper command</span>
 <span class="w">            </span><span class="k">call </span><span class="n">init_mpi_from_wrappers</span><span class="p">(</span><span class="n">this</span><span class="p">,</span><span class="n">compiler</span><span class="p">,</span><span class="n">mpilib</span><span class="p">(</span><span class="n">LANG_FORTRAN</span><span class="p">),</span><span class="n">fwrap</span><span class="p">,</span><span class="n">cwrap</span><span class="p">,</span><span class="n">cxxwrap</span><span class="p">,</span><span class="n">error</span><span class="p">)</span>
@@ -338,11 +338,11 @@ to the list of external modules, so they won&rsquo;t be requested as standard so
 <span class="k">        end if</span>
 
 <span class="w">        </span><span class="c">!&gt; Not all MPI implementations offer modules mpi and mpi_f08: hence, include them</span>
-<span class="w">        </span><span class="c">!&gt; to the list of external modules, so they won&#39;t be requested as standard source files</span>
+<span class="w">        </span><span class="c">!&gt; to the list of external modules, so they won't be requested as standard source files</span>
 <span class="w">        </span><span class="n">this</span><span class="p">%</span><span class="n">has_external_modules</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">.</span><span class="n">true</span><span class="p">.</span>
-<span class="w">        </span><span class="n">this</span><span class="p">%</span><span class="n">external_modules</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">[</span><span class="n">string_t</span><span class="p">(</span><span class="s2">&quot;mpi&quot;</span><span class="p">),</span><span class="n">string_t</span><span class="p">(</span><span class="s2">&quot;mpi_f08&quot;</span><span class="p">)]</span>
+<span class="w">        </span><span class="n">this</span><span class="p">%</span><span class="n">external_modules</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">[</span><span class="n">string_t</span><span class="p">(</span><span class="s2">"mpi"</span><span class="p">),</span><span class="n">string_t</span><span class="p">(</span><span class="s2">"mpi_f08"</span><span class="p">)]</span>
 
-<span class="w">        </span><span class="mi">1</span><span class="w"> </span><span class="k">format</span><span class="p">(</span><span class="s1">&#39;MPI wrappers found: fortran=&#39;</span><span class="p">,</span><span class="n">i0</span><span class="p">,</span><span class="s1">&#39; c=&#39;</span><span class="p">,</span><span class="n">i0</span><span class="p">,</span><span class="s1">&#39; c++=&#39;</span><span class="p">,</span><span class="n">i0</span><span class="p">)</span>
+<span class="w">        </span><span class="mi">1</span><span class="w"> </span><span class="k">format</span><span class="p">(</span><span class="s1">'MPI wrappers found: fortran='</span><span class="p">,</span><span class="n">i0</span><span class="p">,</span><span class="s1">' c='</span><span class="p">,</span><span class="n">i0</span><span class="p">,</span><span class="s1">' c++='</span><span class="p">,</span><span class="n">i0</span><span class="p">)</span>
 
 <span class="w">    </span><span class="k">end subroutine </span><span class="n">init_mpi</span>
 </pre></div>
@@ -368,7 +368,7 @@ to the list of external modules, so they won&rsquo;t be requested as standard so
             <p class="text-end">
               Documentation generated by
               <a href="https://github.com/Fortran-FOSS-Programmers/ford">FORD</a>
- on 2026-05-25 16:42 +0000             </p>
+ on 2026-08-27 21:47 +0000             </p>
           </div>
         </div>
         <br>

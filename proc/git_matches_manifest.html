@@ -183,7 +183,7 @@ So, comparing against the descriptor is not reliable</p>
     <tbody>
         <tr>
             <td>
-              <span class="anchor" id="variable-cached~4"></span>
+              <span class="anchor" id="variable-cached"></span>
               type(<a href='../type/git_target_t.html'>git_target_t</a>),
             </td>
 <td>intent(in)</td>
@@ -198,7 +198,7 @@ So, comparing against the descriptor is not reliable</p>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-manifest~4"></span>
+              <span class="anchor" id="variable-manifest~3"></span>
               type(<a href='../type/git_target_t.html'>git_target_t</a>),
             </td>
 <td>intent(in)</td>
@@ -213,7 +213,7 @@ So, comparing against the descriptor is not reliable</p>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-verbosity~8"></span>
+              <span class="anchor" id="variable-verbosity~9"></span>
               integer,
             </td>
 <td>intent(in)</td>
@@ -228,7 +228,7 @@ So, comparing against the descriptor is not reliable</p>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-iunit~6"></span>
+              <span class="anchor" id="variable-iunit~5"></span>
               integer,
             </td>
 <td>intent(in)</td>
@@ -274,19 +274,19 @@ So, comparing against the descriptor is not reliable</p>
 
 <span class="w">        </span><span class="n">git_matches_manifest</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">cached</span><span class="p">%</span><span class="n">url</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="n">manifest</span><span class="p">%</span><span class="n">url</span>
 <span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(.</span><span class="nb">not</span><span class="p">.</span><span class="n">git_matches_manifest</span><span class="p">)</span><span class="w"> </span><span class="k">then</span>
-<span class="k">            if</span><span class="w"> </span><span class="p">(</span><span class="n">verbosity</span><span class="o">&gt;</span><span class="mi">1</span><span class="p">)</span><span class="w"> </span><span class="k">write</span><span class="p">(</span><span class="n">iunit</span><span class="p">,</span><span class="n">out_fmt</span><span class="p">)</span><span class="w"> </span><span class="s2">&quot;GIT URL has changed: &quot;</span><span class="p">,</span><span class="n">cached</span><span class="p">%</span><span class="n">url</span><span class="p">,</span><span class="s2">&quot; vs. &quot;</span><span class="p">,</span><span class="w"> </span><span class="n">manifest</span><span class="p">%</span><span class="n">url</span>
+<span class="k">            if</span><span class="w"> </span><span class="p">(</span><span class="n">verbosity</span><span class="o">&gt;</span><span class="mi">1</span><span class="p">)</span><span class="w"> </span><span class="k">write</span><span class="p">(</span><span class="n">iunit</span><span class="p">,</span><span class="n">out_fmt</span><span class="p">)</span><span class="w"> </span><span class="s2">"GIT URL has changed: "</span><span class="p">,</span><span class="n">cached</span><span class="p">%</span><span class="n">url</span><span class="p">,</span><span class="s2">" vs. "</span><span class="p">,</span><span class="w"> </span><span class="n">manifest</span><span class="p">%</span><span class="n">url</span>
 <span class="w">            </span><span class="k">return</span>
 <span class="k">        endif</span>
 
-<span class="w">        </span><span class="c">!&gt; The manifest dependency only contains partial information (what&#39;s requested),</span>
-<span class="w">        </span><span class="c">!&gt; while the cached dependency always stores a commit hash because it&#39;s built</span>
+<span class="w">        </span><span class="c">!&gt; The manifest dependency only contains partial information (what's requested),</span>
+<span class="w">        </span><span class="c">!&gt; while the cached dependency always stores a commit hash because it's built</span>
 <span class="w">        </span><span class="c">!&gt; after the repo is available (saved as git_descriptor%revision==revision).</span>
 <span class="w">        </span><span class="c">!&gt; So, comparing against the descriptor is not reliable</span>
 <span class="w">        </span><span class="n">git_matches_manifest</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">allocated</span><span class="p">(</span><span class="n">cached</span><span class="p">%</span><span class="n">object</span><span class="p">)</span><span class="w"> </span><span class="p">.</span><span class="n">eqv</span><span class="p">.</span><span class="w"> </span><span class="nb">allocated</span><span class="p">(</span><span class="n">manifest</span><span class="p">%</span><span class="n">object</span><span class="p">)</span>
 <span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">git_matches_manifest</span><span class="w"> </span><span class="p">.</span><span class="nb">and</span><span class="p">.</span><span class="w"> </span><span class="nb">allocated</span><span class="p">(</span><span class="n">cached</span><span class="p">%</span><span class="n">object</span><span class="p">))</span><span class="w"> </span><span class="p">&amp;</span>
 <span class="w">        </span><span class="n">git_matches_manifest</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">cached</span><span class="p">%</span><span class="n">object</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="n">manifest</span><span class="p">%</span><span class="n">object</span>
 <span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(.</span><span class="nb">not</span><span class="p">.</span><span class="n">git_matches_manifest</span><span class="p">)</span><span class="w"> </span><span class="k">then</span>
-<span class="k">            if</span><span class="w"> </span><span class="p">(</span><span class="n">verbosity</span><span class="o">&gt;</span><span class="mi">1</span><span class="p">)</span><span class="w"> </span><span class="k">write</span><span class="p">(</span><span class="n">iunit</span><span class="p">,</span><span class="n">out_fmt</span><span class="p">)</span><span class="w"> </span><span class="s2">&quot;GIT OBJECT has changed: &quot;</span><span class="p">,</span><span class="n">cached</span><span class="p">%</span><span class="n">object</span><span class="p">,</span><span class="s2">&quot; vs. &quot;</span><span class="p">,</span><span class="w"> </span><span class="n">manifest</span><span class="p">%</span><span class="n">object</span>
+<span class="k">            if</span><span class="w"> </span><span class="p">(</span><span class="n">verbosity</span><span class="o">&gt;</span><span class="mi">1</span><span class="p">)</span><span class="w"> </span><span class="k">write</span><span class="p">(</span><span class="n">iunit</span><span class="p">,</span><span class="n">out_fmt</span><span class="p">)</span><span class="w"> </span><span class="s2">"GIT OBJECT has changed: "</span><span class="p">,</span><span class="n">cached</span><span class="p">%</span><span class="n">object</span><span class="p">,</span><span class="s2">" vs. "</span><span class="p">,</span><span class="w"> </span><span class="n">manifest</span><span class="p">%</span><span class="n">object</span>
 <span class="w">        </span><span class="k">end if</span>
 
 <span class="k">    end function </span><span class="n">git_matches_manifest</span>
@@ -313,7 +313,7 @@ So, comparing against the descriptor is not reliable</p>
             <p class="text-end">
               Documentation generated by
               <a href="https://github.com/Fortran-FOSS-Programmers/ford">FORD</a>
- on 2026-05-25 16:42 +0000             </p>
+ on 2026-08-27 21:47 +0000             </p>
           </div>
         </div>
         <br>

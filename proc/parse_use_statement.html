@@ -193,7 +193,7 @@
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-i~84"></span>
+              <span class="anchor" id="variable-i~146"></span>
               integer,
             </td>
 <td>intent(in)</td>
@@ -208,7 +208,7 @@
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-line~15"></span>
+              <span class="anchor" id="variable-line~17"></span>
               character(len=*),
             </td>
 <td>intent(in)</td>
@@ -253,7 +253,7 @@
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-module_name~4"></span>
+              <span class="anchor" id="variable-module_name~6"></span>
               character(len=:),
             </td>
 <td>intent(out),</td>
@@ -268,7 +268,7 @@
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-error~149"></span>
+              <span class="anchor" id="variable-error~217"></span>
               type(<a href='../type/error_t.html'>error_t</a>),
             </td>
 <td>intent(out),</td>
@@ -320,12 +320,12 @@
 <span class="w">    </span><span class="k">type</span><span class="p">(</span><span class="n">error_t</span><span class="p">),</span><span class="w"> </span><span class="k">allocatable</span><span class="p">,</span><span class="w"> </span><span class="k">intent</span><span class="p">(</span><span class="n">out</span><span class="p">)</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">error</span>
 
 <span class="w">    </span><span class="kt">character</span><span class="p">(</span><span class="mi">15</span><span class="p">),</span><span class="w"> </span><span class="k">parameter</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">INTRINSIC_NAMES</span><span class="p">(</span><span class="o">*</span><span class="p">)</span><span class="w"> </span><span class="o">=</span><span class="w">  </span><span class="p">&amp;</span>
-<span class="w">                                 </span><span class="p">[</span><span class="s1">&#39;iso_c_binding  &#39;</span><span class="p">,</span><span class="w"> </span><span class="p">&amp;</span>
-<span class="w">                                  </span><span class="s1">&#39;iso_fortran_env&#39;</span><span class="p">,</span><span class="w"> </span><span class="p">&amp;</span>
-<span class="w">                                  </span><span class="s1">&#39;ieee_arithmetic&#39;</span><span class="p">,</span><span class="w"> </span><span class="p">&amp;</span>
-<span class="w">                                  </span><span class="s1">&#39;ieee_exceptions&#39;</span><span class="p">,</span><span class="w"> </span><span class="p">&amp;</span>
-<span class="w">                                  </span><span class="s1">&#39;ieee_features  &#39;</span><span class="p">,</span><span class="w"> </span><span class="p">&amp;</span>
-<span class="w">                                  </span><span class="s1">&#39;omp_lib        &#39;</span><span class="p">]</span>
+<span class="w">                                 </span><span class="p">[</span><span class="s1">'iso_c_binding  '</span><span class="p">,</span><span class="w"> </span><span class="p">&amp;</span>
+<span class="w">                                  </span><span class="s1">'iso_fortran_env'</span><span class="p">,</span><span class="w"> </span><span class="p">&amp;</span>
+<span class="w">                                  </span><span class="s1">'ieee_arithmetic'</span><span class="p">,</span><span class="w"> </span><span class="p">&amp;</span>
+<span class="w">                                  </span><span class="s1">'ieee_exceptions'</span><span class="p">,</span><span class="w"> </span><span class="p">&amp;</span>
+<span class="w">                                  </span><span class="s1">'ieee_features  '</span><span class="p">,</span><span class="w"> </span><span class="p">&amp;</span>
+<span class="w">                                  </span><span class="s1">'omp_lib        '</span><span class="p">]</span>
 
 <span class="w">    </span><span class="kt">character</span><span class="p">(</span><span class="nb">len</span><span class="o">=</span><span class="p">:),</span><span class="w"> </span><span class="k">allocatable</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">temp_string</span>
 <span class="w">    </span><span class="kt">integer</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">colons</span><span class="p">,</span><span class="n">intr</span><span class="p">,</span><span class="n">nonintr</span><span class="p">,</span><span class="n">j</span><span class="p">,</span><span class="nb">stat</span>
@@ -336,47 +336,47 @@
 <span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="nb">len_trim</span><span class="p">(</span><span class="n">line</span><span class="p">)</span><span class="o">&lt;=</span><span class="mi">0</span><span class="p">)</span><span class="w"> </span><span class="k">return</span>
 
 <span class="w">    </span><span class="c">! Quick check that the line is preprocessed</span>
-<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">line</span><span class="p">(</span><span class="mi">1</span><span class="p">:</span><span class="mi">1</span><span class="p">)</span><span class="o">==</span><span class="s1">&#39; &#39;</span><span class="p">)</span><span class="w"> </span><span class="k">then</span>
-<span class="k">        call </span><span class="n">fatal_error</span><span class="p">(</span><span class="n">error</span><span class="p">,</span><span class="s1">&#39;internal_error: source file line is not trim(adjustl()) on input to parse_use_statement&#39;</span><span class="p">)</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">line</span><span class="p">(</span><span class="mi">1</span><span class="p">:</span><span class="mi">1</span><span class="p">)</span><span class="o">==</span><span class="s1">' '</span><span class="p">)</span><span class="w"> </span><span class="k">then</span>
+<span class="k">        call </span><span class="n">fatal_error</span><span class="p">(</span><span class="n">error</span><span class="p">,</span><span class="s1">'internal_error: source file line is not trim(adjustl()) on input to parse_use_statement'</span><span class="p">)</span>
 <span class="w">        </span><span class="k">return</span>
 <span class="k">    end if</span>
 
-<span class="w">    </span><span class="c">! &#39;use&#39; should be the first string in the adjustl line</span>
-<span class="w">    </span><span class="n">use_stmt</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">index</span><span class="p">(</span><span class="n">line</span><span class="p">,</span><span class="s1">&#39;use &#39;</span><span class="p">)</span><span class="o">==</span><span class="mi">1</span><span class="w"> </span><span class="p">.</span><span class="nb">or</span><span class="p">.</span><span class="w"> </span><span class="nb">index</span><span class="p">(</span><span class="n">line</span><span class="p">,</span><span class="s1">&#39;use::&#39;</span><span class="p">)</span><span class="o">==</span><span class="mi">1</span><span class="w"> </span><span class="p">.</span><span class="nb">or</span><span class="p">.</span><span class="w"> </span><span class="nb">index</span><span class="p">(</span><span class="n">line</span><span class="p">,</span><span class="s1">&#39;use,&#39;</span><span class="p">)</span><span class="o">==</span><span class="mi">1</span>
+<span class="w">    </span><span class="c">! 'use' should be the first string in the adjustl line</span>
+<span class="w">    </span><span class="n">use_stmt</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">index</span><span class="p">(</span><span class="n">line</span><span class="p">,</span><span class="s1">'use '</span><span class="p">)</span><span class="o">==</span><span class="mi">1</span><span class="w"> </span><span class="p">.</span><span class="nb">or</span><span class="p">.</span><span class="w"> </span><span class="nb">index</span><span class="p">(</span><span class="n">line</span><span class="p">,</span><span class="s1">'use::'</span><span class="p">)</span><span class="o">==</span><span class="mi">1</span><span class="w"> </span><span class="p">.</span><span class="nb">or</span><span class="p">.</span><span class="w"> </span><span class="nb">index</span><span class="p">(</span><span class="n">line</span><span class="p">,</span><span class="s1">'use,'</span><span class="p">)</span><span class="o">==</span><span class="mi">1</span>
 <span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(.</span><span class="nb">not</span><span class="p">.</span><span class="n">use_stmt</span><span class="p">)</span><span class="w"> </span><span class="k">return</span>
-<span class="k">    </span><span class="n">colons</span><span class="w">   </span><span class="o">=</span><span class="w"> </span><span class="nb">index</span><span class="p">(</span><span class="n">line</span><span class="p">,</span><span class="s1">&#39;::&#39;</span><span class="p">)</span>
+<span class="k">    </span><span class="n">colons</span><span class="w">   </span><span class="o">=</span><span class="w"> </span><span class="nb">index</span><span class="p">(</span><span class="n">line</span><span class="p">,</span><span class="s1">'::'</span><span class="p">)</span>
 <span class="w">    </span><span class="n">nonintr</span><span class="w">  </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span>
 <span class="w">    </span><span class="n">intr</span><span class="w">     </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span>
 
 <span class="w">    </span><span class="n">have_colons</span><span class="p">:</span><span class="w"> </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">colons</span><span class="o">&gt;</span><span class="mi">3</span><span class="p">)</span><span class="w"> </span><span class="k">then</span>
 
 <span class="w">        </span><span class="c">! there may be an intrinsic/non-intrinsic spec</span>
-<span class="w">        </span><span class="n">nonintr</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">index</span><span class="p">(</span><span class="n">line</span><span class="p">(</span><span class="mi">1</span><span class="p">:</span><span class="n">colons</span><span class="o">-</span><span class="mi">1</span><span class="p">),</span><span class="s1">&#39;non_intrinsic&#39;</span><span class="p">)</span>
-<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">nonintr</span><span class="o">==</span><span class="mi">0</span><span class="p">)</span><span class="w"> </span><span class="n">intr</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">index</span><span class="p">(</span><span class="n">line</span><span class="p">(</span><span class="mi">1</span><span class="p">:</span><span class="n">colons</span><span class="o">-</span><span class="mi">1</span><span class="p">),</span><span class="s1">&#39;intrinsic&#39;</span><span class="p">)</span>
+<span class="w">        </span><span class="n">nonintr</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">index</span><span class="p">(</span><span class="n">line</span><span class="p">(</span><span class="mi">1</span><span class="p">:</span><span class="n">colons</span><span class="o">-</span><span class="mi">1</span><span class="p">),</span><span class="s1">'non_intrinsic'</span><span class="p">)</span>
+<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">nonintr</span><span class="o">==</span><span class="mi">0</span><span class="p">)</span><span class="w"> </span><span class="n">intr</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">index</span><span class="p">(</span><span class="n">line</span><span class="p">(</span><span class="mi">1</span><span class="p">:</span><span class="n">colons</span><span class="o">-</span><span class="mi">1</span><span class="p">),</span><span class="s1">'intrinsic'</span><span class="p">)</span>
 
 
-<span class="w">        </span><span class="n">temp_string</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">split_n</span><span class="p">(</span><span class="n">line</span><span class="p">,</span><span class="n">delims</span><span class="o">=</span><span class="s1">&#39;:&#39;</span><span class="p">,</span><span class="n">n</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span><span class="nb">stat</span><span class="o">=</span><span class="nb">stat</span><span class="p">)</span>
+<span class="w">        </span><span class="n">temp_string</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">split_n</span><span class="p">(</span><span class="n">line</span><span class="p">,</span><span class="n">delims</span><span class="o">=</span><span class="s1">':'</span><span class="p">,</span><span class="n">n</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span><span class="nb">stat</span><span class="o">=</span><span class="nb">stat</span><span class="p">)</span>
 <span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="nb">stat</span><span class="w"> </span><span class="o">/=</span><span class="w"> </span><span class="mi">0</span><span class="p">)</span><span class="w"> </span><span class="k">then</span>
 <span class="k">            call </span><span class="n">file_parse_error</span><span class="p">(</span><span class="n">error</span><span class="p">,</span><span class="n">f_filename</span><span class="p">,</span><span class="w"> </span><span class="p">&amp;</span>
-<span class="w">                    </span><span class="s1">&#39;unable to find used module name&#39;</span><span class="p">,</span><span class="n">i</span><span class="p">,</span><span class="w"> </span><span class="p">&amp;</span>
+<span class="w">                    </span><span class="s1">'unable to find used module name'</span><span class="p">,</span><span class="n">i</span><span class="p">,</span><span class="w"> </span><span class="p">&amp;</span>
 <span class="w">                    </span><span class="n">line</span><span class="p">,</span><span class="n">colons</span><span class="p">)</span>
 <span class="w">            </span><span class="k">return</span>
 <span class="k">        end if</span>
 
-<span class="k">        </span><span class="n">module_name</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">split_n</span><span class="p">(</span><span class="n">temp_string</span><span class="p">,</span><span class="n">delims</span><span class="o">=</span><span class="s1">&#39; ,&#39;</span><span class="p">,</span><span class="n">n</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span><span class="nb">stat</span><span class="o">=</span><span class="nb">stat</span><span class="p">)</span>
+<span class="k">        </span><span class="n">module_name</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">split_n</span><span class="p">(</span><span class="n">temp_string</span><span class="p">,</span><span class="n">delims</span><span class="o">=</span><span class="s1">' ,'</span><span class="p">,</span><span class="n">n</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span><span class="nb">stat</span><span class="o">=</span><span class="nb">stat</span><span class="p">)</span>
 <span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="nb">stat</span><span class="w"> </span><span class="o">/=</span><span class="w"> </span><span class="mi">0</span><span class="p">)</span><span class="w"> </span><span class="k">then</span>
 <span class="k">            call </span><span class="n">file_parse_error</span><span class="p">(</span><span class="n">error</span><span class="p">,</span><span class="n">f_filename</span><span class="p">,</span><span class="w"> </span><span class="p">&amp;</span>
-<span class="w">                     </span><span class="s1">&#39;unable to find used module name&#39;</span><span class="p">,</span><span class="n">i</span><span class="p">,</span><span class="w"> </span><span class="p">&amp;</span>
+<span class="w">                     </span><span class="s1">'unable to find used module name'</span><span class="p">,</span><span class="n">i</span><span class="p">,</span><span class="w"> </span><span class="p">&amp;</span>
 <span class="w">                     </span><span class="n">line</span><span class="p">)</span>
 <span class="w">            </span><span class="k">return</span>
 <span class="k">        end if</span>
 
 <span class="k">    else</span>
 
-<span class="k">        </span><span class="n">module_name</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">split_n</span><span class="p">(</span><span class="n">line</span><span class="p">,</span><span class="n">n</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span><span class="n">delims</span><span class="o">=</span><span class="s1">&#39; ,&#39;</span><span class="p">,</span><span class="nb">stat</span><span class="o">=</span><span class="nb">stat</span><span class="p">)</span>
+<span class="k">        </span><span class="n">module_name</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">split_n</span><span class="p">(</span><span class="n">line</span><span class="p">,</span><span class="n">n</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span><span class="n">delims</span><span class="o">=</span><span class="s1">' ,'</span><span class="p">,</span><span class="nb">stat</span><span class="o">=</span><span class="nb">stat</span><span class="p">)</span>
 <span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="nb">stat</span><span class="w"> </span><span class="o">/=</span><span class="w"> </span><span class="mi">0</span><span class="p">)</span><span class="w"> </span><span class="k">then</span>
 <span class="k">            call </span><span class="n">file_parse_error</span><span class="p">(</span><span class="n">error</span><span class="p">,</span><span class="n">f_filename</span><span class="p">,</span><span class="w"> </span><span class="p">&amp;</span>
-<span class="w">                    </span><span class="s1">&#39;unable to find used module name&#39;</span><span class="p">,</span><span class="n">i</span><span class="p">,</span><span class="w"> </span><span class="p">&amp;</span>
+<span class="w">                    </span><span class="s1">'unable to find used module name'</span><span class="p">,</span><span class="n">i</span><span class="p">,</span><span class="w"> </span><span class="p">&amp;</span>
 <span class="w">                    </span><span class="n">line</span><span class="p">)</span>
 <span class="w">            </span><span class="k">return</span>
 <span class="k">        end if</span>
@@ -391,10 +391,10 @@
 <span class="w">        </span><span class="c">! An intrinsic module was not found. Its name could be in the next line,</span>
 <span class="w">        </span><span class="c">! in which case, we just skip this check. The compiler will do the job if the name is invalid.</span>
 
-<span class="w">        </span><span class="c">! Module name was not read: it&#39;s in the next line</span>
-<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="nb">index</span><span class="p">(</span><span class="n">module_name</span><span class="p">,</span><span class="s1">&#39;&amp;&#39;</span><span class="p">)</span><span class="o">&lt;=</span><span class="mi">0</span><span class="p">)</span><span class="w"> </span><span class="k">then</span>
+<span class="w">        </span><span class="c">! Module name was not read: it's in the next line</span>
+<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="nb">index</span><span class="p">(</span><span class="n">module_name</span><span class="p">,</span><span class="s1">'&amp;'</span><span class="p">)</span><span class="o">&lt;=</span><span class="mi">0</span><span class="p">)</span><span class="w"> </span><span class="k">then</span>
 <span class="k">            call </span><span class="n">file_parse_error</span><span class="p">(</span><span class="n">error</span><span class="p">,</span><span class="n">f_filename</span><span class="p">,</span><span class="w"> </span><span class="p">&amp;</span>
-<span class="w">                                  </span><span class="s1">&#39;module &#39;</span><span class="o">//</span><span class="n">module_name</span><span class="o">//</span><span class="s1">&#39; is declared intrinsic but it is not &#39;</span><span class="p">,</span><span class="n">i</span><span class="p">,</span><span class="w"> </span><span class="p">&amp;</span>
+<span class="w">                                  </span><span class="s1">'module '</span><span class="o">//</span><span class="n">module_name</span><span class="o">//</span><span class="s1">' is declared intrinsic but it is not '</span><span class="p">,</span><span class="n">i</span><span class="p">,</span><span class="w"> </span><span class="p">&amp;</span>
 <span class="w">                                  </span><span class="n">line</span><span class="p">)</span>
 <span class="w">            </span><span class="k">return</span>
 <span class="k">        endif</span>
@@ -428,7 +428,7 @@
             <p class="text-end">
               Documentation generated by
               <a href="https://github.com/Fortran-FOSS-Programmers/ford">FORD</a>
- on 2026-05-25 16:42 +0000             </p>
+ on 2026-08-27 21:47 +0000             </p>
           </div>
         </div>
         <br>

@@ -181,7 +181,7 @@
     <tbody>
         <tr>
             <td>
-              <span class="anchor" id="variable-self~17"></span>
+              <span class="anchor" id="variable-self~89"></span>
               class(<a href='../type/compiler_t.html'>compiler_t</a>),
             </td>
 <td>intent(in)</td>
@@ -196,7 +196,7 @@
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-language"></span>
+              <span class="anchor" id="variable-language~4"></span>
               character(len=*),
             </td>
 <td>intent(in)</td>
@@ -211,7 +211,7 @@
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-flags~8"></span>
+              <span class="anchor" id="variable-flags~16"></span>
               character(len=:),
             </td>
 <td>intent(out),</td>
@@ -246,39 +246,39 @@
 <span class="w">    </span><span class="kt">character</span><span class="p">(</span><span class="nb">len</span><span class="o">=*</span><span class="p">),</span><span class="w"> </span><span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">)</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">language</span>
 <span class="w">    </span><span class="kt">character</span><span class="p">(</span><span class="nb">len</span><span class="o">=</span><span class="p">:),</span><span class="w"> </span><span class="k">allocatable</span><span class="p">,</span><span class="w"> </span><span class="k">intent</span><span class="p">(</span><span class="n">out</span><span class="p">)</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">flags</span>
 
-<span class="w">    </span><span class="n">flags</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;&quot;</span>
+<span class="w">    </span><span class="n">flags</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">""</span>
 <span class="w">    </span><span class="k">select case</span><span class="p">(</span><span class="n">language</span><span class="p">)</span>
 
-<span class="w">    </span><span class="k">case</span><span class="p">(</span><span class="s2">&quot;fortran&quot;</span><span class="p">)</span>
-<span class="w">        </span><span class="n">flags</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;&quot;</span>
+<span class="w">    </span><span class="k">case</span><span class="p">(</span><span class="s2">"fortran"</span><span class="p">)</span>
+<span class="w">        </span><span class="n">flags</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">""</span>
 
-<span class="w">    </span><span class="k">case</span><span class="p">(</span><span class="s2">&quot;c&quot;</span><span class="p">)</span>
+<span class="w">    </span><span class="k">case</span><span class="p">(</span><span class="s2">"c"</span><span class="p">)</span>
 
 <span class="w">        </span><span class="c">! If the main program is on a C/C++ source, the Intel Fortran compiler requires option</span>
-<span class="w">        </span><span class="c">! -nofor-main to avoid &quot;duplicate main&quot; errors.</span>
+<span class="w">        </span><span class="c">! -nofor-main to avoid "duplicate main" errors.</span>
 <span class="w">        </span><span class="c">! https://stackoverflow.com/questions/36221612/p3dfft-compilation-ifort-compiler-error-multiple-definiton-of-main</span>
 <span class="w">        </span><span class="k">select case</span><span class="p">(</span><span class="n">self</span><span class="p">%</span><span class="n">id</span><span class="p">)</span>
 <span class="w">           </span><span class="k">case</span><span class="p">(</span><span class="n">id_intel_classic_nix</span><span class="p">,</span><span class="w"> </span><span class="n">id_intel_classic_mac</span><span class="p">,</span><span class="w"> </span><span class="n">id_intel_llvm_nix</span><span class="p">)</span>
-<span class="w">               </span><span class="n">flags</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">&#39;-nofor-main&#39;</span>
+<span class="w">               </span><span class="n">flags</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">'-nofor-main'</span>
 <span class="w">           </span><span class="k">case</span><span class="p">(</span><span class="n">id_intel_classic_windows</span><span class="p">,</span><span class="n">id_intel_llvm_windows</span><span class="p">)</span>
-<span class="w">               </span><span class="n">flags</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">&#39;/nofor-main&#39;</span>
+<span class="w">               </span><span class="n">flags</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">'/nofor-main'</span>
 <span class="w">           </span><span class="k">case</span><span class="w"> </span><span class="p">(</span><span class="n">id_pgi</span><span class="p">,</span><span class="n">id_nvhpc</span><span class="p">)</span>
-<span class="w">               </span><span class="n">flags</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">&#39;-Mnomain&#39;</span>
+<span class="w">               </span><span class="n">flags</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">'-Mnomain'</span>
 <span class="w">        </span><span class="k">end select</span>
 
-<span class="k">    case</span><span class="p">(</span><span class="s2">&quot;c++&quot;</span><span class="p">,</span><span class="s2">&quot;cpp&quot;</span><span class="p">,</span><span class="s2">&quot;cxx&quot;</span><span class="p">)</span>
+<span class="k">    case</span><span class="p">(</span><span class="s2">"c++"</span><span class="p">,</span><span class="s2">"cpp"</span><span class="p">,</span><span class="s2">"cxx"</span><span class="p">)</span>
 
 <span class="w">        </span><span class="k">select case</span><span class="p">(</span><span class="n">self</span><span class="p">%</span><span class="n">id</span><span class="p">)</span>
 <span class="w">           </span><span class="k">case</span><span class="p">(</span><span class="n">id_intel_classic_nix</span><span class="p">,</span><span class="w"> </span><span class="n">id_intel_classic_mac</span><span class="p">,</span><span class="w"> </span><span class="n">id_intel_llvm_nix</span><span class="p">)</span>
-<span class="w">               </span><span class="n">flags</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">&#39;-nofor-main&#39;</span>
+<span class="w">               </span><span class="n">flags</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">'-nofor-main'</span>
 <span class="w">           </span><span class="k">case</span><span class="p">(</span><span class="n">id_intel_classic_windows</span><span class="p">,</span><span class="n">id_intel_llvm_windows</span><span class="p">)</span>
-<span class="w">               </span><span class="n">flags</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">&#39;/nofor-main&#39;</span>
+<span class="w">               </span><span class="n">flags</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">'/nofor-main'</span>
 <span class="w">           </span><span class="k">case</span><span class="w"> </span><span class="p">(</span><span class="n">id_pgi</span><span class="p">,</span><span class="n">id_nvhpc</span><span class="p">)</span>
-<span class="w">               </span><span class="n">flags</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">&#39;-Mnomain&#39;</span>
+<span class="w">               </span><span class="n">flags</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">'-Mnomain'</span>
 <span class="w">        </span><span class="k">end select</span>
 
 <span class="k">    case </span><span class="n">default</span>
-<span class="w">        </span><span class="k">error stop</span><span class="w"> </span><span class="s2">&quot;Unknown language &#39;&quot;</span><span class="o">//</span><span class="n">language</span><span class="o">//</span><span class="s1">&#39;&quot;, try &quot;fortran&quot;, &quot;c&quot;, &quot;c++&quot;&#39;</span>
+<span class="w">        </span><span class="k">error stop</span><span class="w"> </span><span class="s2">"Unknown language '"</span><span class="o">//</span><span class="n">language</span><span class="o">//</span><span class="s1">'", try "fortran", "c", "c++"'</span>
 <span class="w">    </span><span class="k">end select</span>
 
 <span class="k">end subroutine </span><span class="n">get_main_flags</span>
@@ -305,7 +305,7 @@
             <p class="text-end">
               Documentation generated by
               <a href="https://github.com/Fortran-FOSS-Programmers/ford">FORD</a>
- on 2026-05-25 16:42 +0000             </p>
+ on 2026-08-27 21:47 +0000             </p>
           </div>
         </div>
         <br>

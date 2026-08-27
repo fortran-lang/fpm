@@ -172,7 +172,7 @@
       <section>
         <h2><span class="anchor" id="src"></span>Source Code</h2>
         <div class="hl codehilite"><pre><span></span><a id="ln-1" name="ln-1" href="#ln-1"></a><span class="c">!&gt;# Release parameters</span>
-<a id="ln-2" name="ln-2" href="#ln-2"></a><span class="c">!&gt; Module fpm_release contains public constants storing this build&#39;s unique version IDs</span>
+<a id="ln-2" name="ln-2" href="#ln-2"></a><span class="c">!&gt; Module fpm_release contains public constants storing this build's unique version IDs</span>
 <a id="ln-3" name="ln-3" href="#ln-3"></a><span class="k">module </span><span class="n">fpm_release</span>
 <a id="ln-4" name="ln-4" href="#ln-4"></a><span class="w">    </span><span class="k">use </span><span class="n">fpm_versioning</span><span class="p">,</span><span class="w"> </span><span class="k">only</span><span class="p">:</span><span class="w"> </span><span class="n">version_t</span><span class="p">,</span><span class="n">new_version</span>
 <a id="ln-5" name="ln-5" href="#ln-5"></a><span class="w">    </span><span class="k">use </span><span class="n">fpm_error</span><span class="p">,</span><span class="w"> </span><span class="k">only</span><span class="p">:</span><span class="w"> </span><span class="n">error_t</span><span class="p">,</span><span class="w"> </span><span class="n">fpm_stop</span>
@@ -195,11 +195,11 @@
 <a id="ln-22" name="ln-22" href="#ln-22"></a><span class="cp">#endif</span>
 <a id="ln-23" name="ln-23" href="#ln-23"></a>
 <a id="ln-24" name="ln-24" href="#ln-24"></a><span class="c">! Accept solution from https://stackoverflow.com/questions/31649691/stringify-macro-with-gnu-gfortran</span>
-<a id="ln-25" name="ln-25" href="#ln-25"></a><span class="c">! which provides the &quot;easiest&quot; way to pass a macro to a string in Fortran complying with both</span>
-<a id="ln-26" name="ln-26" href="#ln-26"></a><span class="c">! gfortran&#39;s &quot;traditional&quot; cpp and the standard cpp syntaxes</span>
+<a id="ln-25" name="ln-25" href="#ln-25"></a><span class="c">! which provides the "easiest" way to pass a macro to a string in Fortran complying with both</span>
+<a id="ln-26" name="ln-26" href="#ln-26"></a><span class="c">! gfortran's "traditional" cpp and the standard cpp syntaxes</span>
 <a id="ln-27" name="ln-27" href="#ln-27"></a><span class="cp">#ifdef __GFORTRAN__ /* traditional-cpp stringification */</span>
-<a id="ln-28" name="ln-28" href="#ln-28"></a><span class="cp">#  define STRINGIFY_START(X) &quot;&amp;</span>
-<a id="ln-29" name="ln-29" href="#ln-29"></a><span class="cp">#  define STRINGIFY_END(X) &amp;X&quot;</span>
+<a id="ln-28" name="ln-28" href="#ln-28"></a><span class="cp">#  define STRINGIFY_START(X) "&amp;</span>
+<a id="ln-29" name="ln-29" href="#ln-29"></a><span class="cp">#  define STRINGIFY_END(X) &amp;X"</span>
 <a id="ln-30" name="ln-30" href="#ln-30"></a><span class="cp">#else               /* default stringification */</span>
 <a id="ln-31" name="ln-31" href="#ln-31"></a><span class="cp">#  define STRINGIFY_(X) #X</span>
 <a id="ln-32" name="ln-32" href="#ln-32"></a><span class="cp">#  define STRINGIFY_START(X) &amp;</span>
@@ -212,7 +212,7 @@
 <a id="ln-39" name="ln-39" href="#ln-39"></a>
 <a id="ln-40" name="ln-40" href="#ln-40"></a><span class="w">        </span><span class="k">call </span><span class="n">new_version</span><span class="p">(</span><span class="n">fpm_version</span><span class="p">,</span><span class="n">ver_string</span><span class="p">,</span><span class="n">error</span><span class="p">)</span>
 <a id="ln-41" name="ln-41" href="#ln-41"></a>
-<a id="ln-42" name="ln-42" href="#ln-42"></a><span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="nb">allocated</span><span class="p">(</span><span class="n">error</span><span class="p">))</span><span class="w"> </span><span class="k">call </span><span class="n">fpm_stop</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="s1">&#39;*fpm*:internal error: cannot get version - &#39;</span><span class="o">//</span><span class="n">error</span><span class="p">%</span><span class="n">message</span><span class="p">)</span>
+<a id="ln-42" name="ln-42" href="#ln-42"></a><span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="nb">allocated</span><span class="p">(</span><span class="n">error</span><span class="p">))</span><span class="w"> </span><span class="k">call </span><span class="n">fpm_stop</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="s1">'*fpm*:internal error: cannot get version - '</span><span class="o">//</span><span class="n">error</span><span class="p">%</span><span class="n">message</span><span class="p">)</span>
 <a id="ln-43" name="ln-43" href="#ln-43"></a>
 <a id="ln-44" name="ln-44" href="#ln-44"></a><span class="w">    </span><span class="k">end function </span><span class="n">fpm_version</span>
 <a id="ln-45" name="ln-45" href="#ln-45"></a>
@@ -238,7 +238,7 @@
             <p class="text-end">
               Documentation generated by
               <a href="https://github.com/Fortran-FOSS-Programmers/ford">FORD</a>
- on 2026-05-25 16:42 +0000             </p>
+ on 2026-08-27 21:47 +0000             </p>
           </div>
         </div>
         <br>

@@ -182,7 +182,7 @@ Get optional profile name</p>
     <tbody>
         <tr>
             <td>
-              <span class="anchor" id="variable-self~209"></span>
+              <span class="anchor" id="variable-self~213"></span>
               type(<a href='../type/dependency_config_t.html'>dependency_config_t</a>),
             </td>
 <td>intent(out)</td>
@@ -197,7 +197,7 @@ Get optional profile name</p>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-table~105"></span>
+              <span class="anchor" id="variable-table~109"></span>
               type(toml_table),
             </td>
 <td>intent(inout)</td>
@@ -227,7 +227,7 @@ Get optional profile name</p>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-error~248"></span>
+              <span class="anchor" id="variable-error~245"></span>
               type(<a href='../type/error_t.html'>error_t</a>),
             </td>
 <td>intent(out),</td>
@@ -279,9 +279,9 @@ Get optional profile name</p>
 <span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="nb">allocated</span><span class="p">(</span><span class="n">error</span><span class="p">))</span><span class="w"> </span><span class="k">return</span>
 
 <span class="k">        call </span><span class="n">table</span><span class="p">%</span><span class="n">get_key</span><span class="p">(</span><span class="n">self</span><span class="p">%</span><span class="n">name</span><span class="p">)</span>
-<span class="w">        </span><span class="k">call </span><span class="n">get_value</span><span class="p">(</span><span class="n">table</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;namespace&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">self</span><span class="p">%</span><span class="n">namespace</span><span class="p">)</span>
+<span class="w">        </span><span class="k">call </span><span class="n">get_value</span><span class="p">(</span><span class="n">table</span><span class="p">,</span><span class="w"> </span><span class="s2">"namespace"</span><span class="p">,</span><span class="w"> </span><span class="n">self</span><span class="p">%</span><span class="n">namespace</span><span class="p">)</span>
 
-<span class="w">        </span><span class="k">call </span><span class="n">get_value</span><span class="p">(</span><span class="n">table</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;v&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">requested_version</span><span class="p">)</span>
+<span class="w">        </span><span class="k">call </span><span class="n">get_value</span><span class="p">(</span><span class="n">table</span><span class="p">,</span><span class="w"> </span><span class="s2">"v"</span><span class="p">,</span><span class="w"> </span><span class="n">requested_version</span><span class="p">)</span>
 <span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="nb">allocated</span><span class="p">(</span><span class="n">requested_version</span><span class="p">))</span><span class="w"> </span><span class="k">then</span>
 <span class="k">            if</span><span class="w"> </span><span class="p">(.</span><span class="nb">not</span><span class="p">.</span><span class="w"> </span><span class="nb">allocated</span><span class="p">(</span><span class="n">self</span><span class="p">%</span><span class="n">requested_version</span><span class="p">))</span><span class="w"> </span><span class="k">allocate</span><span class="w"> </span><span class="p">(</span><span class="n">self</span><span class="p">%</span><span class="n">requested_version</span><span class="p">)</span>
 <span class="w">            </span><span class="k">call </span><span class="n">new_version</span><span class="p">(</span><span class="n">self</span><span class="p">%</span><span class="n">requested_version</span><span class="p">,</span><span class="w"> </span><span class="n">requested_version</span><span class="p">,</span><span class="w"> </span><span class="n">error</span><span class="p">)</span>
@@ -289,20 +289,20 @@ Get optional profile name</p>
 <span class="k">        end if</span>
 
 <span class="w">        </span><span class="c">!&gt; Get optional preprocessor directives</span>
-<span class="w">        </span><span class="k">call </span><span class="n">get_value</span><span class="p">(</span><span class="n">table</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;preprocess&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">child</span><span class="p">,</span><span class="w"> </span><span class="n">requested</span><span class="o">=</span><span class="p">.</span><span class="n">false</span><span class="p">.)</span>
+<span class="w">        </span><span class="k">call </span><span class="n">get_value</span><span class="p">(</span><span class="n">table</span><span class="p">,</span><span class="w"> </span><span class="s2">"preprocess"</span><span class="p">,</span><span class="w"> </span><span class="n">child</span><span class="p">,</span><span class="w"> </span><span class="n">requested</span><span class="o">=</span><span class="p">.</span><span class="n">false</span><span class="p">.)</span>
 <span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="nb">associated</span><span class="p">(</span><span class="n">child</span><span class="p">))</span><span class="w"> </span><span class="k">then</span>
 <span class="k">            call </span><span class="n">new_preprocessors</span><span class="p">(</span><span class="n">self</span><span class="p">%</span><span class="n">preprocess</span><span class="p">,</span><span class="w"> </span><span class="n">child</span><span class="p">,</span><span class="w"> </span><span class="n">error</span><span class="p">)</span>
 <span class="w">            </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="nb">allocated</span><span class="p">(</span><span class="n">error</span><span class="p">))</span><span class="w"> </span><span class="k">return</span>
 <span class="k">        endif</span>
 <span class="w">        </span>
 <span class="w">        </span><span class="c">!&gt; Get optional features list</span>
-<span class="w">        </span><span class="k">call </span><span class="n">get_list</span><span class="p">(</span><span class="n">table</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;features&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">self</span><span class="p">%</span><span class="n">features</span><span class="p">,</span><span class="w"> </span><span class="n">error</span><span class="p">)</span>
+<span class="w">        </span><span class="k">call </span><span class="n">get_list</span><span class="p">(</span><span class="n">table</span><span class="p">,</span><span class="w"> </span><span class="s2">"features"</span><span class="p">,</span><span class="w"> </span><span class="n">self</span><span class="p">%</span><span class="n">features</span><span class="p">,</span><span class="w"> </span><span class="n">error</span><span class="p">)</span>
 <span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="nb">allocated</span><span class="p">(</span><span class="n">error</span><span class="p">))</span><span class="w"> </span><span class="k">return</span>
 
 <span class="w">        </span><span class="c">!&gt; Get optional profile name</span>
-<span class="w">        </span><span class="k">call </span><span class="n">get_value</span><span class="p">(</span><span class="n">table</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;profile&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">self</span><span class="p">%</span><span class="n">profile</span><span class="p">)</span>
+<span class="w">        </span><span class="k">call </span><span class="n">get_value</span><span class="p">(</span><span class="n">table</span><span class="p">,</span><span class="w"> </span><span class="s2">"profile"</span><span class="p">,</span><span class="w"> </span><span class="n">self</span><span class="p">%</span><span class="n">profile</span><span class="p">)</span>
 
-<span class="w">        </span><span class="k">call </span><span class="n">get_value</span><span class="p">(</span><span class="n">table</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;path&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">uri</span><span class="p">)</span>
+<span class="w">        </span><span class="k">call </span><span class="n">get_value</span><span class="p">(</span><span class="n">table</span><span class="p">,</span><span class="w"> </span><span class="s2">"path"</span><span class="p">,</span><span class="w"> </span><span class="n">uri</span><span class="p">)</span>
 <span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="nb">allocated</span><span class="p">(</span><span class="n">uri</span><span class="p">))</span><span class="w"> </span><span class="k">then</span>
 <span class="k">            if</span><span class="w"> </span><span class="p">(</span><span class="n">get_os_type</span><span class="p">()</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="n">OS_WINDOWS</span><span class="p">)</span><span class="w"> </span><span class="n">uri</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">windows_path</span><span class="p">(</span><span class="n">uri</span><span class="p">)</span>
 <span class="w">            </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="nb">present</span><span class="p">(</span><span class="n">root</span><span class="p">))</span><span class="w"> </span><span class="n">uri</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">join_path</span><span class="p">(</span><span class="n">root</span><span class="p">,</span><span class="n">uri</span><span class="p">)</span><span class="w">  </span><span class="c">! Relative to the fpm.toml it’s written in</span>
@@ -310,22 +310,22 @@ Get optional profile name</p>
 <span class="w">            </span><span class="k">return</span>
 <span class="k">        end if</span>
 
-<span class="k">        call </span><span class="n">get_value</span><span class="p">(</span><span class="n">table</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;git&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">uri</span><span class="p">)</span>
+<span class="k">        call </span><span class="n">get_value</span><span class="p">(</span><span class="n">table</span><span class="p">,</span><span class="w"> </span><span class="s2">"git"</span><span class="p">,</span><span class="w"> </span><span class="n">uri</span><span class="p">)</span>
 <span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="nb">allocated</span><span class="p">(</span><span class="n">uri</span><span class="p">))</span><span class="w"> </span><span class="k">then</span>
-<span class="k">            call </span><span class="n">get_value</span><span class="p">(</span><span class="n">table</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;tag&quot;</span><span class="p">,</span><span class="w"> </span><span class="k">value</span><span class="p">)</span>
+<span class="k">            call </span><span class="n">get_value</span><span class="p">(</span><span class="n">table</span><span class="p">,</span><span class="w"> </span><span class="s2">"tag"</span><span class="p">,</span><span class="w"> </span><span class="k">value</span><span class="p">)</span>
 <span class="w">            </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="nb">allocated</span><span class="p">(</span><span class="k">value</span><span class="p">))</span><span class="w"> </span><span class="k">then</span>
 <span class="k">                </span><span class="n">self</span><span class="p">%</span><span class="n">git</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">git_target_tag</span><span class="p">(</span><span class="n">uri</span><span class="p">,</span><span class="w"> </span><span class="k">value</span><span class="p">)</span>
 <span class="w">            </span><span class="k">end if</span>
 
 <span class="k">            if</span><span class="w"> </span><span class="p">(.</span><span class="nb">not</span><span class="p">.</span><span class="w"> </span><span class="nb">allocated</span><span class="p">(</span><span class="n">self</span><span class="p">%</span><span class="n">git</span><span class="p">))</span><span class="w"> </span><span class="k">then</span>
-<span class="k">                call </span><span class="n">get_value</span><span class="p">(</span><span class="n">table</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;branch&quot;</span><span class="p">,</span><span class="w"> </span><span class="k">value</span><span class="p">)</span>
+<span class="k">                call </span><span class="n">get_value</span><span class="p">(</span><span class="n">table</span><span class="p">,</span><span class="w"> </span><span class="s2">"branch"</span><span class="p">,</span><span class="w"> </span><span class="k">value</span><span class="p">)</span>
 <span class="w">                </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="nb">allocated</span><span class="p">(</span><span class="k">value</span><span class="p">))</span><span class="w"> </span><span class="k">then</span>
 <span class="k">                    </span><span class="n">self</span><span class="p">%</span><span class="n">git</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">git_target_branch</span><span class="p">(</span><span class="n">uri</span><span class="p">,</span><span class="w"> </span><span class="k">value</span><span class="p">)</span>
 <span class="w">                </span><span class="k">end if</span>
 <span class="k">            end if</span>
 
 <span class="k">            if</span><span class="w"> </span><span class="p">(.</span><span class="nb">not</span><span class="p">.</span><span class="w"> </span><span class="nb">allocated</span><span class="p">(</span><span class="n">self</span><span class="p">%</span><span class="n">git</span><span class="p">))</span><span class="w"> </span><span class="k">then</span>
-<span class="k">                call </span><span class="n">get_value</span><span class="p">(</span><span class="n">table</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;rev&quot;</span><span class="p">,</span><span class="w"> </span><span class="k">value</span><span class="p">)</span>
+<span class="k">                call </span><span class="n">get_value</span><span class="p">(</span><span class="n">table</span><span class="p">,</span><span class="w"> </span><span class="s2">"rev"</span><span class="p">,</span><span class="w"> </span><span class="k">value</span><span class="p">)</span>
 <span class="w">                </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="nb">allocated</span><span class="p">(</span><span class="k">value</span><span class="p">))</span><span class="w"> </span><span class="k">then</span>
 <span class="k">                    </span><span class="n">self</span><span class="p">%</span><span class="n">git</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">git_target_revision</span><span class="p">(</span><span class="n">uri</span><span class="p">,</span><span class="w"> </span><span class="k">value</span><span class="p">)</span>
 <span class="w">                </span><span class="k">end if</span>
@@ -361,7 +361,7 @@ Get optional profile name</p>
             <p class="text-end">
               Documentation generated by
               <a href="https://github.com/Fortran-FOSS-Programmers/ford">FORD</a>
- on 2026-05-25 16:42 +0000             </p>
+ on 2026-08-27 21:47 +0000             </p>
           </div>
         </div>
         <br>

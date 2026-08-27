@@ -180,7 +180,7 @@ found that is not part of the list, an error is allocated.</p>
     <tbody>
         <tr>
             <td>
-              <span class="anchor" id="variable-table~61"></span>
+              <span class="anchor" id="variable-table~27"></span>
               type(toml_table),
             </td>
 <td>intent(inout)</td>
@@ -195,7 +195,7 @@ found that is not part of the list, an error is allocated.</p>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-valid_keys~2"></span>
+              <span class="anchor" id="variable-valid_keys"></span>
               character(len=*),
             </td>
 <td>intent(in)</td>
@@ -210,7 +210,7 @@ found that is not part of the list, an error is allocated.</p>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-error~119"></span>
+              <span class="anchor" id="variable-error~47"></span>
               type(<a href='../type/error_t.html'>error_t</a>),
             </td>
 <td>intent(out),</td>
@@ -262,13 +262,13 @@ found that is not part of the list, an error is allocated.</p>
 <span class="w">        </span><span class="k">do </span><span class="n">ikey</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="n">size</span><span class="p">(</span><span class="n">keys</span><span class="p">)</span>
 <span class="w">            </span><span class="k">if</span><span class="w"> </span><span class="p">(.</span><span class="nb">not</span><span class="p">.</span><span class="w"> </span><span class="nb">any</span><span class="p">(</span><span class="n">keys</span><span class="p">(</span><span class="n">ikey</span><span class="p">)%</span><span class="n">key</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="n">valid_keys</span><span class="p">))</span><span class="w"> </span><span class="k">then</span>
 <span class="w">                </span><span class="c">! Generate error message</span>
-<span class="w">                </span><span class="n">valid_keys_string</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">new_line</span><span class="p">(</span><span class="s1">&#39;a&#39;</span><span class="p">)</span><span class="o">//</span><span class="nb">new_line</span><span class="p">(</span><span class="s1">&#39;a&#39;</span><span class="p">)</span>
+<span class="w">                </span><span class="n">valid_keys_string</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">new_line</span><span class="p">(</span><span class="s1">'a'</span><span class="p">)</span><span class="o">//</span><span class="nb">new_line</span><span class="p">(</span><span class="s1">'a'</span><span class="p">)</span>
 <span class="w">                </span><span class="k">do </span><span class="n">ivalid</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="n">size</span><span class="p">(</span><span class="n">valid_keys</span><span class="p">)</span>
-<span class="w">                    </span><span class="n">valid_keys_string</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">valid_keys_string</span><span class="o">//</span><span class="nb">trim</span><span class="p">(</span><span class="n">valid_keys</span><span class="p">(</span><span class="n">ivalid</span><span class="p">))</span><span class="o">//</span><span class="nb">new_line</span><span class="p">(</span><span class="s1">&#39;a&#39;</span><span class="p">)</span>
+<span class="w">                    </span><span class="n">valid_keys_string</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">valid_keys_string</span><span class="o">//</span><span class="nb">trim</span><span class="p">(</span><span class="n">valid_keys</span><span class="p">(</span><span class="n">ivalid</span><span class="p">))</span><span class="o">//</span><span class="nb">new_line</span><span class="p">(</span><span class="s1">'a'</span><span class="p">)</span>
 <span class="w">                </span><span class="k">end do</span>
 <span class="k">                allocate</span><span class="w"> </span><span class="p">(</span><span class="n">error</span><span class="p">)</span>
-<span class="w">                </span><span class="n">error</span><span class="p">%</span><span class="n">message</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;Key &#39;&quot;</span><span class="o">//</span><span class="n">keys</span><span class="p">(</span><span class="n">ikey</span><span class="p">)%</span><span class="n">key</span><span class="o">//</span><span class="s2">&quot;&#39; not allowed in the &#39;&quot;</span><span class="o">//</span><span class="w"> </span><span class="p">&amp;</span>
-<span class="w">                </span><span class="p">&amp;</span><span class="w"> </span><span class="n">name</span><span class="o">//</span><span class="s2">&quot;&#39; table.&quot;</span><span class="o">//</span><span class="nb">new_line</span><span class="p">(</span><span class="s1">&#39;a&#39;</span><span class="p">)</span><span class="o">//</span><span class="nb">new_line</span><span class="p">(</span><span class="s1">&#39;a&#39;</span><span class="p">)</span><span class="o">//</span><span class="s1">&#39;Valid keys: &#39;</span><span class="o">//</span><span class="n">valid_keys_string</span>
+<span class="w">                </span><span class="n">error</span><span class="p">%</span><span class="n">message</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">"Key '"</span><span class="o">//</span><span class="n">keys</span><span class="p">(</span><span class="n">ikey</span><span class="p">)%</span><span class="n">key</span><span class="o">//</span><span class="s2">"' not allowed in the '"</span><span class="o">//</span><span class="w"> </span><span class="p">&amp;</span>
+<span class="w">                </span><span class="p">&amp;</span><span class="w"> </span><span class="n">name</span><span class="o">//</span><span class="s2">"' table."</span><span class="o">//</span><span class="nb">new_line</span><span class="p">(</span><span class="s1">'a'</span><span class="p">)</span><span class="o">//</span><span class="nb">new_line</span><span class="p">(</span><span class="s1">'a'</span><span class="p">)</span><span class="o">//</span><span class="s1">'Valid keys: '</span><span class="o">//</span><span class="n">valid_keys_string</span>
 <span class="w">                </span><span class="k">return</span>
 <span class="k">            end if</span>
 
@@ -285,7 +285,7 @@ found that is not part of the list, an error is allocated.</p>
 
 <span class="w">                </span><span class="k">if</span><span class="w"> </span><span class="p">(.</span><span class="nb">not</span><span class="p">.</span><span class="nb">associated</span><span class="p">(</span><span class="n">child</span><span class="p">))</span><span class="w"> </span><span class="k">then</span>
 <span class="k">                    allocate</span><span class="w"> </span><span class="p">(</span><span class="n">error</span><span class="p">)</span>
-<span class="w">                    </span><span class="n">error</span><span class="p">%</span><span class="n">message</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;&#39;&quot;</span><span class="o">//</span><span class="n">name</span><span class="o">//</span><span class="s2">&quot;&#39; has an invalid &#39;&quot;</span><span class="o">//</span><span class="n">keys</span><span class="p">(</span><span class="n">ikey</span><span class="p">)%</span><span class="n">key</span><span class="o">//</span><span class="s2">&quot;&#39; entry.&quot;</span>
+<span class="w">                    </span><span class="n">error</span><span class="p">%</span><span class="n">message</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">"'"</span><span class="o">//</span><span class="n">name</span><span class="o">//</span><span class="s2">"' has an invalid '"</span><span class="o">//</span><span class="n">keys</span><span class="p">(</span><span class="n">ikey</span><span class="p">)%</span><span class="n">key</span><span class="o">//</span><span class="s2">"' entry."</span>
 <span class="w">                    </span><span class="k">return</span>
 <span class="k">                endif</span>
 <span class="k">            end if</span>
@@ -315,7 +315,7 @@ found that is not part of the list, an error is allocated.</p>
             <p class="text-end">
               Documentation generated by
               <a href="https://github.com/Fortran-FOSS-Programmers/ford">FORD</a>
- on 2026-05-25 16:42 +0000             </p>
+ on 2026-08-27 21:47 +0000             </p>
           </div>
         </div>
         <br>

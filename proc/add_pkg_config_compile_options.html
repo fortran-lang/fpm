@@ -182,7 +182,7 @@ Get compiler flags</p>
     <tbody>
         <tr>
             <td>
-              <span class="anchor" id="variable-this~14"></span>
+              <span class="anchor" id="variable-this~29"></span>
               class(<a href='../type/metapackage_t.html'>metapackage_t</a>),
             </td>
 <td>intent(inout)</td>
@@ -197,7 +197,7 @@ Get compiler flags</p>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-name~15"></span>
+              <span class="anchor" id="variable-name~37"></span>
               character(len=*),
             </td>
 <td>intent(in)</td>
@@ -212,7 +212,7 @@ Get compiler flags</p>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-include_flag~3"></span>
+              <span class="anchor" id="variable-include_flag~4"></span>
               character(len=*),
             </td>
 <td>intent(in)</td>
@@ -227,7 +227,7 @@ Get compiler flags</p>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-libdir~3"></span>
+              <span class="anchor" id="variable-libdir~7"></span>
               character(len=:),
             </td>
 <td></td>
@@ -242,7 +242,7 @@ Get compiler flags</p>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-error~47"></span>
+              <span class="anchor" id="variable-error~160"></span>
               type(<a href='../type/error_t.html'>error_t</a>),
             </td>
 <td>intent(out),</td>
@@ -296,21 +296,21 @@ Get compiler flags</p>
 <span class="w">        </span><span class="n">libs</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">pkgcfg_get_libs</span><span class="p">(</span><span class="n">name</span><span class="p">,</span><span class="w"> </span><span class="n">error</span><span class="p">)</span>
 <span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="nb">allocated</span><span class="p">(</span><span class="n">error</span><span class="p">))</span><span class="w"> </span><span class="k">return</span>
 
-<span class="k">        </span><span class="n">libdir</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;&quot;</span>
+<span class="k">        </span><span class="n">libdir</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">""</span>
 <span class="w">        </span><span class="k">do </span><span class="n">i</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="n">size</span><span class="p">(</span><span class="n">libs</span><span class="p">)</span>
-<span class="w">            </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">str_begins_with_str</span><span class="p">(</span><span class="n">libs</span><span class="p">(</span><span class="n">i</span><span class="p">)%</span><span class="n">s</span><span class="p">,</span><span class="w"> </span><span class="s1">&#39;-l&#39;</span><span class="p">))</span><span class="w"> </span><span class="k">then</span>
+<span class="w">            </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">str_begins_with_str</span><span class="p">(</span><span class="n">libs</span><span class="p">(</span><span class="n">i</span><span class="p">)%</span><span class="n">s</span><span class="p">,</span><span class="w"> </span><span class="s1">'-l'</span><span class="p">))</span><span class="w"> </span><span class="k">then</span>
 <span class="k">                </span><span class="n">current_lib</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">string_t</span><span class="p">(</span><span class="n">libs</span><span class="p">(</span><span class="n">i</span><span class="p">)%</span><span class="n">s</span><span class="p">(</span><span class="mi">3</span><span class="p">:))</span>
 <span class="w">                </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="nb">len_trim</span><span class="p">(</span><span class="n">current_lib</span><span class="p">%</span><span class="n">s</span><span class="p">)</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="mi">0</span><span class="p">)</span><span class="w"> </span><span class="k">cycle</span>
 <span class="k">                </span><span class="n">this</span><span class="p">%</span><span class="n">has_link_libraries</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">.</span><span class="n">true</span><span class="p">.</span>
 <span class="w">                </span><span class="k">call </span><span class="n">add_strings</span><span class="p">(</span><span class="n">this</span><span class="p">%</span><span class="n">link_libs</span><span class="p">,</span><span class="w"> </span><span class="n">current_lib</span><span class="p">)</span>
 <span class="w">            </span><span class="k">else</span><span class="w"> </span><span class="c">! -L and others: concatenate</span>
 <span class="w">                </span><span class="n">this</span><span class="p">%</span><span class="n">has_link_flags</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">.</span><span class="n">true</span><span class="p">.</span>
-<span class="w">                </span><span class="n">this</span><span class="p">%</span><span class="n">link_flags</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">string_t</span><span class="p">(</span><span class="nb">trim</span><span class="p">(</span><span class="n">this</span><span class="p">%</span><span class="n">link_flags</span><span class="p">%</span><span class="n">s</span><span class="p">)</span><span class="o">//</span><span class="s1">&#39; &#39;</span><span class="o">//</span><span class="n">libs</span><span class="p">(</span><span class="n">i</span><span class="p">)%</span><span class="n">s</span><span class="p">)</span>
+<span class="w">                </span><span class="n">this</span><span class="p">%</span><span class="n">link_flags</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">string_t</span><span class="p">(</span><span class="nb">trim</span><span class="p">(</span><span class="n">this</span><span class="p">%</span><span class="n">link_flags</span><span class="p">%</span><span class="n">s</span><span class="p">)</span><span class="o">//</span><span class="s1">' '</span><span class="o">//</span><span class="n">libs</span><span class="p">(</span><span class="n">i</span><span class="p">)%</span><span class="n">s</span><span class="p">)</span>
 
 <span class="w">                </span><span class="c">! Also save library dir</span>
-<span class="w">                </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">str_begins_with_str</span><span class="p">(</span><span class="n">libs</span><span class="p">(</span><span class="n">i</span><span class="p">)%</span><span class="n">s</span><span class="p">,</span><span class="w"> </span><span class="s1">&#39;-L&#39;</span><span class="p">))</span><span class="w"> </span><span class="k">then</span>
+<span class="w">                </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">str_begins_with_str</span><span class="p">(</span><span class="n">libs</span><span class="p">(</span><span class="n">i</span><span class="p">)%</span><span class="n">s</span><span class="p">,</span><span class="w"> </span><span class="s1">'-L'</span><span class="p">))</span><span class="w"> </span><span class="k">then</span>
 <span class="k">                    </span><span class="n">libdir</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">libs</span><span class="p">(</span><span class="n">i</span><span class="p">)%</span><span class="n">s</span><span class="p">(</span><span class="mi">3</span><span class="p">:)</span>
-<span class="w">                </span><span class="k">elseif</span><span class="w"> </span><span class="p">(</span><span class="n">str_begins_with_str</span><span class="p">(</span><span class="n">libs</span><span class="p">(</span><span class="n">i</span><span class="p">)%</span><span class="n">s</span><span class="p">,</span><span class="w"> </span><span class="s1">&#39;/LIBPATH&#39;</span><span class="p">))</span><span class="w"> </span><span class="k">then</span>
+<span class="w">                </span><span class="k">elseif</span><span class="w"> </span><span class="p">(</span><span class="n">str_begins_with_str</span><span class="p">(</span><span class="n">libs</span><span class="p">(</span><span class="n">i</span><span class="p">)%</span><span class="n">s</span><span class="p">,</span><span class="w"> </span><span class="s1">'/LIBPATH'</span><span class="p">))</span><span class="w"> </span><span class="k">then</span>
 <span class="k">                    </span><span class="n">libdir</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">libs</span><span class="p">(</span><span class="n">i</span><span class="p">)%</span><span class="n">s</span><span class="p">(</span><span class="mi">9</span><span class="p">:)</span>
 <span class="w">                </span><span class="k">end if</span>
 <span class="k">            end if</span>
@@ -328,7 +328,7 @@ Get compiler flags</p>
 <span class="w">                </span><span class="k">call </span><span class="n">add_strings</span><span class="p">(</span><span class="n">this</span><span class="p">%</span><span class="n">incl_dirs</span><span class="p">,</span><span class="w"> </span><span class="n">current_include_dir</span><span class="p">)</span>
 <span class="w">            </span><span class="k">else</span>
 <span class="k">                </span><span class="n">this</span><span class="p">%</span><span class="n">has_build_flags</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">.</span><span class="n">true</span><span class="p">.</span>
-<span class="w">                </span><span class="n">this</span><span class="p">%</span><span class="n">flags</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">string_t</span><span class="p">(</span><span class="nb">trim</span><span class="p">(</span><span class="n">this</span><span class="p">%</span><span class="n">flags</span><span class="p">%</span><span class="n">s</span><span class="p">)</span><span class="o">//</span><span class="s1">&#39; &#39;</span><span class="o">//</span><span class="n">flags</span><span class="p">(</span><span class="n">i</span><span class="p">)%</span><span class="n">s</span><span class="p">)</span>
+<span class="w">                </span><span class="n">this</span><span class="p">%</span><span class="n">flags</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">string_t</span><span class="p">(</span><span class="nb">trim</span><span class="p">(</span><span class="n">this</span><span class="p">%</span><span class="n">flags</span><span class="p">%</span><span class="n">s</span><span class="p">)</span><span class="o">//</span><span class="s1">' '</span><span class="o">//</span><span class="n">flags</span><span class="p">(</span><span class="n">i</span><span class="p">)%</span><span class="n">s</span><span class="p">)</span>
 <span class="w">            </span><span class="k">end if</span>
 <span class="k">        end do</span>
 <span class="k">    end subroutine </span><span class="n">add_pkg_config_compile_options</span>
@@ -355,7 +355,7 @@ Get compiler flags</p>
             <p class="text-end">
               Documentation generated by
               <a href="https://github.com/Fortran-FOSS-Programmers/ford">FORD</a>
- on 2026-05-25 16:42 +0000             </p>
+ on 2026-08-27 21:47 +0000             </p>
           </div>
         </div>
         <br>

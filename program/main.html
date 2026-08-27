@@ -132,12 +132,12 @@
       </a>
       <div id="vars-0" class="collapse">
         <div class="list-group list-group-flush">
-            <a class="list-group-item" href="../program/main.html#variable-cmd_settings">cmd_settings</a>
-            <a class="list-group-item" href="../program/main.html#variable-error~23">error</a>
+            <a class="list-group-item" href="../program/main.html#variable-cmd_settings~2">cmd_settings</a>
+            <a class="list-group-item" href="../program/main.html#variable-error~79">error</a>
             <a class="list-group-item" href="../program/main.html#variable-project_root">project_root</a>
             <a class="list-group-item" href="../program/main.html#variable-pwd_start">pwd_start</a>
             <a class="list-group-item" href="../program/main.html#variable-pwd_working">pwd_working</a>
-            <a class="list-group-item" href="../program/main.html#variable-working_dir">working_dir</a>
+            <a class="list-group-item" href="../program/main.html#variable-working_dir~3">working_dir</a>
         </div>
       </div>
     </div>
@@ -171,7 +171,7 @@
       <div id="subs-0" class="collapse">
         <div class="list-group list-group-flush">
             <a class="list-group-item" href="../program/main.html#proc-get_working_dir">get_working_dir</a>
-            <a class="list-group-item" href="../program/main.html#proc-handle_error">handle_error</a>
+            <a class="list-group-item" href="../program/main.html#proc-handle_error~2">handle_error</a>
         </div>
       </div>
     </div>
@@ -202,17 +202,17 @@
         <ul class="list-group list-group-flush">
             <li class="list-group-item">
               <ul class="list-inline">
-                  <li class="list-inline-item"><a href='http://fortranwiki.org/fortran/show/iso_fortran_env'>iso_fortran_env</a></li>
-                  <li class="list-inline-item"><a href='../module/fpm_cmd_publish.html'>fpm_cmd_publish</a></li>
                   <li class="list-inline-item"><a href='../module/fpm_cmd_new.html'>fpm_cmd_new</a></li>
-                  <li class="list-inline-item"><a href='../module/fpm_cmd_install.html'>fpm_cmd_install</a></li>
-                  <li class="list-inline-item"><a href='../module/fpm_filesystem.html'>fpm_filesystem</a></li>
-                  <li class="list-inline-item"><a href='../module/fpm.html'>fpm</a></li>
+                  <li class="list-inline-item"><a href='http://fortranwiki.org/fortran/show/iso_fortran_env'>iso_fortran_env</a></li>
+                  <li class="list-inline-item"><a href='../module/fpm_cmd_export.html'>fpm_cmd_export</a></li>
                   <li class="list-inline-item"><a href='../module/fpm_command_line.html'>fpm_command_line</a></li>
+                  <li class="list-inline-item"><a href='../module/fpm_filesystem.html'>fpm_filesystem</a></li>
+                  <li class="list-inline-item"><a href='../module/fpm_cmd_update.html'>fpm_cmd_update</a></li>
                   <li class="list-inline-item"><a href='../module/fpm_os.html'>fpm_os</a></li>
                   <li class="list-inline-item"><a href='../module/fpm_error.html'>fpm_error</a></li>
-                  <li class="list-inline-item"><a href='../module/fpm_cmd_update.html'>fpm_cmd_update</a></li>
-                  <li class="list-inline-item"><a href='../module/fpm_cmd_export.html'>fpm_cmd_export</a></li>
+                  <li class="list-inline-item"><a href='../module/fpm.html'>fpm</a></li>
+                  <li class="list-inline-item"><a href='../module/fpm_cmd_install.html'>fpm_cmd_install</a></li>
+                  <li class="list-inline-item"><a href='../module/fpm_cmd_publish.html'>fpm_cmd_publish</a></li>
               </ul>
             </li>
         </ul>
@@ -236,7 +236,7 @@
     <tbody>
         <tr>
             <td>
-              <span class="anchor" id="variable-cmd_settings"></span>
+              <span class="anchor" id="variable-cmd_settings~2"></span>
               class(<a href='../type/fpm_cmd_settings.html'>fpm_cmd_settings</a>),
             </td>
             <td>
@@ -252,7 +252,7 @@
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-error~23"></span>
+              <span class="anchor" id="variable-error~79"></span>
               type(<a href='../type/error_t.html'>error_t</a>),
             </td>
             <td>
@@ -316,7 +316,7 @@
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-working_dir"></span>
+              <span class="anchor" id="variable-working_dir~3"></span>
               character(len=:),
             </td>
             <td>
@@ -363,7 +363,7 @@
     <tbody>
         <tr>
             <td>
-              <span class="anchor" id="variable-dir~12"></span>
+              <span class="anchor" id="variable-dir~14"></span>
               character(len=*),
             </td>
 <td>intent(in)</td>
@@ -414,7 +414,7 @@
     <tbody>
         <tr>
             <td>
-              <span class="anchor" id="variable-settings"></span>
+              <span class="anchor" id="variable-settings~2"></span>
               class(<a href='../type/fpm_cmd_settings.html'>fpm_cmd_settings</a>),
             </td>
 <td>intent(in),</td>
@@ -450,7 +450,7 @@
   </div>
 
       <div class="card">
-    <div class="card-header codesum"><span class="anchor" id="proc-handle_error"></span> <h3> subroutine <a href='../proc/handle_error.html'>handle_error</a>(error_)  
+    <div class="card-header codesum"><span class="anchor" id="proc-handle_error~2"></span> <h3> subroutine <a href='../proc/handle_error~2.html'>handle_error</a>(error_)  
 </h3></div>
     <div class="card-body">
           
@@ -538,7 +538,7 @@
 
 <span class="w">        </span><span class="k">call </span><span class="n">get_current_directory</span><span class="p">(</span><span class="n">pwd_working</span><span class="p">,</span><span class="w"> </span><span class="n">error</span><span class="p">)</span>
 <span class="w">        </span><span class="k">call </span><span class="n">handle_error</span><span class="p">(</span><span class="n">error</span><span class="p">)</span>
-<span class="w">        </span><span class="k">write</span><span class="p">(</span><span class="n">output_unit</span><span class="p">,</span><span class="w"> </span><span class="s1">&#39;(*(a))&#39;</span><span class="p">)</span><span class="w"> </span><span class="s2">&quot;fpm: Entering directory &#39;&quot;</span><span class="o">//</span><span class="n">pwd_working</span><span class="o">//</span><span class="s2">&quot;&#39;&quot;</span>
+<span class="w">        </span><span class="k">write</span><span class="p">(</span><span class="n">output_unit</span><span class="p">,</span><span class="w"> </span><span class="s1">'(*(a))'</span><span class="p">)</span><span class="w"> </span><span class="s2">"fpm: Entering directory '"</span><span class="o">//</span><span class="n">pwd_working</span><span class="o">//</span><span class="s2">"'"</span>
 <span class="w">    </span><span class="k">else</span>
 <span class="k">        </span><span class="n">pwd_working</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">pwd_start</span>
 <span class="w">    </span><span class="k">end if</span>
@@ -560,7 +560,7 @@
 <span class="k">        if</span><span class="w"> </span><span class="p">(</span><span class="n">has_manifest</span><span class="p">(</span><span class="n">project_root</span><span class="p">))</span><span class="w"> </span><span class="k">then</span>
 <span class="k">            call </span><span class="n">change_directory</span><span class="p">(</span><span class="n">project_root</span><span class="p">,</span><span class="w"> </span><span class="n">error</span><span class="p">)</span>
 <span class="w">            </span><span class="k">call </span><span class="n">handle_error</span><span class="p">(</span><span class="n">error</span><span class="p">)</span>
-<span class="w">            </span><span class="k">write</span><span class="p">(</span><span class="n">output_unit</span><span class="p">,</span><span class="w"> </span><span class="s1">&#39;(*(a))&#39;</span><span class="p">)</span><span class="w"> </span><span class="s2">&quot;fpm: Entering directory &#39;&quot;</span><span class="o">//</span><span class="n">project_root</span><span class="o">//</span><span class="s2">&quot;&#39;&quot;</span>
+<span class="w">            </span><span class="k">write</span><span class="p">(</span><span class="n">output_unit</span><span class="p">,</span><span class="w"> </span><span class="s1">'(*(a))'</span><span class="p">)</span><span class="w"> </span><span class="s2">"fpm: Entering directory '"</span><span class="o">//</span><span class="n">project_root</span><span class="o">//</span><span class="s2">"'"</span>
 <span class="w">        </span><span class="k">end if</span>
 <span class="k">    end if</span>
 <span class="k">end select</span>
@@ -587,11 +587,11 @@
 <span class="k">end select</span>
 
 <span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="nb">allocated</span><span class="p">(</span><span class="n">project_root</span><span class="p">))</span><span class="w"> </span><span class="k">then</span>
-<span class="k">    write</span><span class="p">(</span><span class="n">output_unit</span><span class="p">,</span><span class="w"> </span><span class="s1">&#39;(*(a))&#39;</span><span class="p">)</span><span class="w"> </span><span class="s2">&quot;fpm: Leaving directory &#39;&quot;</span><span class="o">//</span><span class="n">project_root</span><span class="o">//</span><span class="s2">&quot;&#39;&quot;</span>
+<span class="k">    write</span><span class="p">(</span><span class="n">output_unit</span><span class="p">,</span><span class="w"> </span><span class="s1">'(*(a))'</span><span class="p">)</span><span class="w"> </span><span class="s2">"fpm: Leaving directory '"</span><span class="o">//</span><span class="n">project_root</span><span class="o">//</span><span class="s2">"'"</span>
 <span class="k">end if</span>
 
 <span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">pwd_start</span><span class="w"> </span><span class="o">/=</span><span class="w"> </span><span class="n">pwd_working</span><span class="p">)</span><span class="w"> </span><span class="k">then</span>
-<span class="k">    write</span><span class="p">(</span><span class="n">output_unit</span><span class="p">,</span><span class="w"> </span><span class="s1">&#39;(*(a))&#39;</span><span class="p">)</span><span class="w"> </span><span class="s2">&quot;fpm: Leaving directory &#39;&quot;</span><span class="o">//</span><span class="n">pwd_working</span><span class="o">//</span><span class="s2">&quot;&#39;&quot;</span>
+<span class="k">    write</span><span class="p">(</span><span class="n">output_unit</span><span class="p">,</span><span class="w"> </span><span class="s1">'(*(a))'</span><span class="p">)</span><span class="w"> </span><span class="s2">"fpm: Leaving directory '"</span><span class="o">//</span><span class="n">pwd_working</span><span class="o">//</span><span class="s2">"'"</span>
 <span class="k">end if</span>
 
 <span class="k">contains</span>
@@ -600,13 +600,13 @@
 <span class="w">        </span><span class="kt">character</span><span class="p">(</span><span class="nb">len</span><span class="o">=*</span><span class="p">),</span><span class="w"> </span><span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">)</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">dir</span>
 <span class="w">        </span><span class="kt">logical</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">has_manifest</span>
 
-<span class="w">        </span><span class="n">has_manifest</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">exists</span><span class="p">(</span><span class="n">join_path</span><span class="p">(</span><span class="n">dir</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;fpm.toml&quot;</span><span class="p">))</span>
+<span class="w">        </span><span class="n">has_manifest</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">exists</span><span class="p">(</span><span class="n">join_path</span><span class="p">(</span><span class="n">dir</span><span class="p">,</span><span class="w"> </span><span class="s2">"fpm.toml"</span><span class="p">))</span>
 <span class="w">    </span><span class="k">end function </span><span class="n">has_manifest</span>
 
 <span class="w">    </span><span class="k">subroutine </span><span class="n">handle_error</span><span class="p">(</span><span class="n">error_</span><span class="p">)</span>
 <span class="w">        </span><span class="k">type</span><span class="p">(</span><span class="n">error_t</span><span class="p">),</span><span class="w"> </span><span class="k">optional</span><span class="p">,</span><span class="w"> </span><span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">)</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">error_</span>
 <span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="nb">present</span><span class="p">(</span><span class="n">error_</span><span class="p">))</span><span class="w"> </span><span class="k">then</span>
-<span class="k">            write</span><span class="w"> </span><span class="p">(</span><span class="n">error_unit</span><span class="p">,</span><span class="w"> </span><span class="s1">&#39;(&quot;[Error]&quot;, 1x, a)&#39;</span><span class="p">)</span><span class="w"> </span><span class="n">error_</span><span class="p">%</span><span class="n">message</span>
+<span class="k">            write</span><span class="w"> </span><span class="p">(</span><span class="n">error_unit</span><span class="p">,</span><span class="w"> </span><span class="s1">'("[Error]", 1x, a)'</span><span class="p">)</span><span class="w"> </span><span class="n">error_</span><span class="p">%</span><span class="n">message</span>
 <span class="w">            </span><span class="k">stop </span><span class="mi">1</span>
 <span class="w">        </span><span class="k">end if</span>
 <span class="k">    end subroutine </span><span class="n">handle_error</span>
@@ -643,7 +643,7 @@
             <p class="text-end">
               Documentation generated by
               <a href="https://github.com/Fortran-FOSS-Programmers/ford">FORD</a>
- on 2026-05-25 16:42 +0000             </p>
+ on 2026-08-27 21:47 +0000             </p>
           </div>
         </div>
         <br>

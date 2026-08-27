@@ -160,7 +160,7 @@ looks like:</p>
 <p>We have one source file (<code>main.f90</code>) in one directory (<code>app</code>). Its contents
 are:</p>
 <div class="codehilite"><pre><span></span><code><span class="k">program </span><span class="n">main</span>
-<span class="w">    </span><span class="k">print</span><span class="w"> </span><span class="o">*</span><span class="p">,</span><span class="w"> </span><span class="s1">&#39;Hello, World!&#39;</span>
+<span class="w">    </span><span class="k">print</span><span class="w"> </span><span class="o">*</span><span class="p">,</span><span class="w"> </span><span class="s1">'Hello, World!'</span>
 <span class="k">end program </span><span class="n">main</span>
 </code></pre></div>
 
@@ -168,18 +168,18 @@ are:</p>
 <p>There’s another important file in the top-level directory, <code>fpm.toml</code>.  This is
 <em>fpm</em>’s configuration file specific to your package.  It includes all the data
 that <em>fpm</em> needs to build your app.  In our simple case, it looks like this:</p>
-<div class="codehilite"><pre><span></span><code><span class="n">name</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;hello&quot;</span>
-<span class="n">version</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;0.1.0&quot;</span>
-<span class="n">license</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;MIT&quot;</span>
-<span class="n">author</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;Jane Programmer&quot;</span>
-<span class="n">maintainer</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;jane@example.com&quot;</span>
-<span class="n">copyright</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;2020 Jane Programmer&quot;</span>
+<div class="codehilite"><pre><span></span><code><span class="n">name</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">"hello"</span>
+<span class="n">version</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">"0.1.0"</span>
+<span class="n">license</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">"MIT"</span>
+<span class="n">author</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">"Jane Programmer"</span>
+<span class="n">maintainer</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">"jane@example.com"</span>
+<span class="n">copyright</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">"2020 Jane Programmer"</span>
 </code></pre></div>
 
 <p>The preamble includes some metadata, such as <code>license</code>, <code>author</code>, and similar,
 that you may have seen in other package manager configuration files.  The one
 option that matters here right now is:</p>
-<div class="codehilite"><pre><span></span><code><span class="n">name</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;hello&quot;</span>
+<div class="codehilite"><pre><span></span><code><span class="n">name</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">"hello"</span>
 </code></pre></div>
 
 <p>This line specifies the name of your package, which determines the name of the
@@ -211,8 +211,8 @@ For example:</p>
 
 <span class="k">program </span><span class="n">main</span>
 <span class="w">    </span><span class="k">use </span><span class="n">math_constants</span><span class="p">,</span><span class="w"> </span><span class="k">only</span><span class="p">:</span><span class="w"> </span><span class="n">pi</span>
-<span class="w">    </span><span class="k">print</span><span class="w"> </span><span class="o">*</span><span class="p">,</span><span class="w"> </span><span class="s1">&#39;Hello, World!&#39;</span>
-<span class="w">    </span><span class="k">print</span><span class="w"> </span><span class="o">*</span><span class="p">,</span><span class="w"> </span><span class="s1">&#39;pi = &#39;</span><span class="p">,</span><span class="w"> </span><span class="n">pi</span>
+<span class="w">    </span><span class="k">print</span><span class="w"> </span><span class="o">*</span><span class="p">,</span><span class="w"> </span><span class="s1">'Hello, World!'</span>
+<span class="w">    </span><span class="k">print</span><span class="w"> </span><span class="o">*</span><span class="p">,</span><span class="w"> </span><span class="s1">'pi = '</span><span class="p">,</span><span class="w"> </span><span class="n">pi</span>
 <span class="k">end program </span><span class="n">main</span>
 </code></pre></div>
 
@@ -382,9 +382,9 @@ the previous example actually worked.</p>
 <div class="codehilite"><pre><span></span><code><span class="err">$</span><span class="w"> </span><span class="n">cat</span><span class="w"> </span><span class="n">app</span><span class="o">/</span><span class="n">main</span><span class="p">.</span><span class="n">f90</span>
 <span class="k">program </span><span class="n">main</span>
 <span class="w">    </span><span class="k">use </span><span class="n">math_constants</span><span class="p">,</span><span class="w"> </span><span class="k">only</span><span class="p">:</span><span class="w"> </span><span class="n">e</span><span class="p">,</span><span class="w"> </span><span class="n">pi</span>
-<span class="w">    </span><span class="k">print</span><span class="w"> </span><span class="o">*</span><span class="p">,</span><span class="w"> </span><span class="s1">&#39;math_constants library demo&#39;</span>
-<span class="w">    </span><span class="k">print</span><span class="w"> </span><span class="o">*</span><span class="p">,</span><span class="w"> </span><span class="s1">&#39;pi = &#39;</span><span class="p">,</span><span class="w"> </span><span class="n">pi</span>
-<span class="w">    </span><span class="k">print</span><span class="w"> </span><span class="o">*</span><span class="p">,</span><span class="w"> </span><span class="s1">&#39;e = &#39;</span><span class="p">,</span><span class="w"> </span><span class="n">e</span>
+<span class="w">    </span><span class="k">print</span><span class="w"> </span><span class="o">*</span><span class="p">,</span><span class="w"> </span><span class="s1">'math_constants library demo'</span>
+<span class="w">    </span><span class="k">print</span><span class="w"> </span><span class="o">*</span><span class="p">,</span><span class="w"> </span><span class="s1">'pi = '</span><span class="p">,</span><span class="w"> </span><span class="n">pi</span>
+<span class="w">    </span><span class="k">print</span><span class="w"> </span><span class="o">*</span><span class="p">,</span><span class="w"> </span><span class="s1">'e = '</span><span class="p">,</span><span class="w"> </span><span class="n">e</span>
 <span class="k">end program </span><span class="n">main</span>
 </code></pre></div>
 
@@ -455,11 +455,11 @@ previous example.</p>
 <span class="err">$</span><span class="w"> </span><span class="n">cat</span><span class="w"> </span><span class="n">app</span><span class="o">/</span><span class="n">main</span><span class="p">.</span><span class="n">f90</span>
 <span class="k">program </span><span class="n">main</span>
 <span class="w">    </span><span class="k">use </span><span class="n">math_constants</span><span class="p">,</span><span class="w"> </span><span class="k">only</span><span class="p">:</span><span class="w"> </span><span class="n">e</span><span class="p">,</span><span class="w"> </span><span class="n">pi</span><span class="p">,</span><span class="w"> </span><span class="n">half_pi</span><span class="p">,</span><span class="w"> </span><span class="n">two_pi</span>
-<span class="w">    </span><span class="k">print</span><span class="w"> </span><span class="o">*</span><span class="p">,</span><span class="w"> </span><span class="s1">&#39;math_constants library demo&#39;</span>
-<span class="w">    </span><span class="k">print</span><span class="w"> </span><span class="o">*</span><span class="p">,</span><span class="w"> </span><span class="s1">&#39;pi = &#39;</span><span class="p">,</span><span class="w"> </span><span class="n">pi</span>
-<span class="w">    </span><span class="k">print</span><span class="w"> </span><span class="o">*</span><span class="p">,</span><span class="w"> </span><span class="s1">&#39;2*pi = &#39;</span><span class="p">,</span><span class="w"> </span><span class="n">two_pi</span>
-<span class="w">    </span><span class="k">print</span><span class="w"> </span><span class="o">*</span><span class="p">,</span><span class="w"> </span><span class="s1">&#39;pi/2 = &#39;</span><span class="p">,</span><span class="w"> </span><span class="n">half_pi</span>
-<span class="w">    </span><span class="k">print</span><span class="w"> </span><span class="o">*</span><span class="p">,</span><span class="w"> </span><span class="s1">&#39;e = &#39;</span><span class="p">,</span><span class="w"> </span><span class="n">e</span>
+<span class="w">    </span><span class="k">print</span><span class="w"> </span><span class="o">*</span><span class="p">,</span><span class="w"> </span><span class="s1">'math_constants library demo'</span>
+<span class="w">    </span><span class="k">print</span><span class="w"> </span><span class="o">*</span><span class="p">,</span><span class="w"> </span><span class="s1">'pi = '</span><span class="p">,</span><span class="w"> </span><span class="n">pi</span>
+<span class="w">    </span><span class="k">print</span><span class="w"> </span><span class="o">*</span><span class="p">,</span><span class="w"> </span><span class="s1">'2*pi = '</span><span class="p">,</span><span class="w"> </span><span class="n">two_pi</span>
+<span class="w">    </span><span class="k">print</span><span class="w"> </span><span class="o">*</span><span class="p">,</span><span class="w"> </span><span class="s1">'pi/2 = '</span><span class="p">,</span><span class="w"> </span><span class="n">half_pi</span>
+<span class="w">    </span><span class="k">print</span><span class="w"> </span><span class="o">*</span><span class="p">,</span><span class="w"> </span><span class="s1">'e = '</span><span class="p">,</span><span class="w"> </span><span class="n">e</span>
 <span class="k">end program </span><span class="n">main</span>
 </code></pre></div>
 
@@ -509,20 +509,20 @@ executable will be, and some other things. But we can be more explicit about it,
 and make some changes to those things.</p>
 <p>Let’s look at what the <code>fpm.toml</code> file from our last example would look like if
 we specified everything.</p>
-<div class="codehilite"><pre><span></span><code><span class="n">name</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;math_constants&quot;</span>
-<span class="n">version</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;0.1.0&quot;</span>
-<span class="n">license</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;MIT&quot;</span>
-<span class="n">author</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;Jane Programmer&quot;</span>
-<span class="n">maintainer</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;jane@example.com&quot;</span>
-<span class="n">copyright</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;2020 Jane Programmer&quot;</span>
+<div class="codehilite"><pre><span></span><code><span class="n">name</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">"math_constants"</span>
+<span class="n">version</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">"0.1.0"</span>
+<span class="n">license</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">"MIT"</span>
+<span class="n">author</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">"Jane Programmer"</span>
+<span class="n">maintainer</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">"jane@example.com"</span>
+<span class="n">copyright</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">"2020 Jane Programmer"</span>
 
 <span class="k">[library]</span>
-<span class="n">source-dir</span><span class="o">=</span><span class="s2">&quot;src&quot;</span>
+<span class="n">source-dir</span><span class="o">=</span><span class="s2">"src"</span>
 
 <span class="k">[[</span><span class="w"> </span><span class="k">executable</span><span class="w"> </span><span class="k">]]</span>
-<span class="n">name</span><span class="o">=</span><span class="s2">&quot;math_constants&quot;</span>
-<span class="n">source-dir</span><span class="o">=</span><span class="s2">&quot;app&quot;</span>
-<span class="n">main</span><span class="o">=</span><span class="s2">&quot;main.f90&quot;</span>
+<span class="n">name</span><span class="o">=</span><span class="s2">"math_constants"</span>
+<span class="n">source-dir</span><span class="o">=</span><span class="s2">"app"</span>
+<span class="n">main</span><span class="o">=</span><span class="s2">"main.f90"</span>
 </code></pre></div>
 
 <p>You can see that by making these explicit in the <code>fpm.toml</code> we are able to
@@ -536,31 +536,31 @@ program in <code>test/main.f90</code> which it will compile and execute with the
 Let’s define one explicitly in our <code>fpm.toml</code> file. We’ll make sure that our
 definition of <code>pi</code> satisfies the property <code>sin(pi) == 0.0</code>. Here’s the
 <code>fpm.toml</code> file:</p>
-<div class="codehilite"><pre><span></span><code><span class="n">name</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;math_constants&quot;</span>
-<span class="n">version</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;0.1.0&quot;</span>
-<span class="n">license</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;MIT&quot;</span>
-<span class="n">author</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;Jane Programmer&quot;</span>
-<span class="n">maintainer</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;jane@example.com&quot;</span>
-<span class="n">copyright</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;2020 Jane Programmer&quot;</span>
+<div class="codehilite"><pre><span></span><code><span class="n">name</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">"math_constants"</span>
+<span class="n">version</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">"0.1.0"</span>
+<span class="n">license</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">"MIT"</span>
+<span class="n">author</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">"Jane Programmer"</span>
+<span class="n">maintainer</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">"jane@example.com"</span>
+<span class="n">copyright</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">"2020 Jane Programmer"</span>
 
 <span class="k">[library]</span>
-<span class="n">source-dir</span><span class="o">=</span><span class="s2">&quot;src&quot;</span>
+<span class="n">source-dir</span><span class="o">=</span><span class="s2">"src"</span>
 
 <span class="k">[[</span><span class="w"> </span><span class="k">executable</span><span class="w"> </span><span class="k">]]</span>
-<span class="n">name</span><span class="o">=</span><span class="s2">&quot;math_constants&quot;</span>
-<span class="n">source-dir</span><span class="o">=</span><span class="s2">&quot;app&quot;</span>
-<span class="n">main</span><span class="o">=</span><span class="s2">&quot;main.f90&quot;</span>
+<span class="n">name</span><span class="o">=</span><span class="s2">"math_constants"</span>
+<span class="n">source-dir</span><span class="o">=</span><span class="s2">"app"</span>
+<span class="n">main</span><span class="o">=</span><span class="s2">"main.f90"</span>
 
 <span class="k">[[</span><span class="w"> </span><span class="k">test</span><span class="w"> </span><span class="k">]]</span>
-<span class="n">name</span><span class="o">=</span><span class="s2">&quot;runTests&quot;</span>
-<span class="n">source-dir</span><span class="o">=</span><span class="s2">&quot;test&quot;</span>
-<span class="n">main</span><span class="o">=</span><span class="s2">&quot;main.f90&quot;</span>
+<span class="n">name</span><span class="o">=</span><span class="s2">"runTests"</span>
+<span class="n">source-dir</span><span class="o">=</span><span class="s2">"test"</span>
+<span class="n">main</span><span class="o">=</span><span class="s2">"main.f90"</span>
 </code></pre></div>
 
 <p>where the contents of the <code>main.f90</code> file are</p>
 <div class="codehilite"><pre><span></span><code><span class="k">program </span><span class="n">main</span>
 <span class="w">    </span><span class="k">use </span><span class="n">math_constants</span><span class="p">,</span><span class="w"> </span><span class="k">only</span><span class="p">:</span><span class="w"> </span><span class="n">pi</span>
-<span class="w">    </span><span class="k">print</span><span class="w"> </span><span class="o">*</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;sin(pi) = &quot;</span><span class="p">,</span><span class="w"> </span><span class="nb">sin</span><span class="p">(</span><span class="n">pi</span><span class="p">)</span>
+<span class="w">    </span><span class="k">print</span><span class="w"> </span><span class="o">*</span><span class="p">,</span><span class="w"> </span><span class="s2">"sin(pi) = "</span><span class="p">,</span><span class="w"> </span><span class="nb">sin</span><span class="p">(</span><span class="n">pi</span><span class="p">)</span>
 <span class="k">end program </span><span class="n">main</span>
 </code></pre></div>
 
@@ -585,28 +585,28 @@ fpm makes this incredibly simple, by taking care of fetching and compiling your
 dependencies for you. You just tell it what your dependencies are, and where to
 find them. Let’s add a dependency to our library. Now our <code>fpm.toml</code> file looks
 like this:</p>
-<div class="codehilite"><pre><span></span><code><span class="n">name</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;math_constants&quot;</span>
-<span class="n">version</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;0.1.0&quot;</span>
-<span class="n">license</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;MIT&quot;</span>
-<span class="n">author</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;Jane Programmer&quot;</span>
-<span class="n">maintainer</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;jane@example.com&quot;</span>
-<span class="n">copyright</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;2020 Jane Programmer&quot;</span>
+<div class="codehilite"><pre><span></span><code><span class="n">name</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">"math_constants"</span>
+<span class="n">version</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">"0.1.0"</span>
+<span class="n">license</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">"MIT"</span>
+<span class="n">author</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">"Jane Programmer"</span>
+<span class="n">maintainer</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">"jane@example.com"</span>
+<span class="n">copyright</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">"2020 Jane Programmer"</span>
 
 <span class="k">[library]</span>
-<span class="n">source-dir</span><span class="o">=</span><span class="s2">&quot;src&quot;</span>
+<span class="n">source-dir</span><span class="o">=</span><span class="s2">"src"</span>
 
 <span class="k">[dependencies]</span>
-<span class="n">helloff</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">git</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="s2">&quot;https://gitlab.com/everythingfunctional/helloff.git&quot;</span><span class="w"> </span><span class="p">}</span>
+<span class="n">helloff</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">git</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="s2">"https://gitlab.com/everythingfunctional/helloff.git"</span><span class="w"> </span><span class="p">}</span>
 
 <span class="k">[[</span><span class="w"> </span><span class="k">executable</span><span class="w"> </span><span class="k">]]</span>
-<span class="n">name</span><span class="o">=</span><span class="s2">&quot;math_constants&quot;</span>
-<span class="n">source-dir</span><span class="o">=</span><span class="s2">&quot;app&quot;</span>
-<span class="n">main</span><span class="o">=</span><span class="s2">&quot;main.f90&quot;</span>
+<span class="n">name</span><span class="o">=</span><span class="s2">"math_constants"</span>
+<span class="n">source-dir</span><span class="o">=</span><span class="s2">"app"</span>
+<span class="n">main</span><span class="o">=</span><span class="s2">"main.f90"</span>
 
 <span class="k">[[</span><span class="w"> </span><span class="k">test</span><span class="w"> </span><span class="k">]]</span>
-<span class="n">name</span><span class="o">=</span><span class="s2">&quot;runTests&quot;</span>
-<span class="n">source-dir</span><span class="o">=</span><span class="s2">&quot;test&quot;</span>
-<span class="n">main</span><span class="o">=</span><span class="s2">&quot;main.f90&quot;</span>
+<span class="n">name</span><span class="o">=</span><span class="s2">"runTests"</span>
+<span class="n">source-dir</span><span class="o">=</span><span class="s2">"test"</span>
+<span class="n">main</span><span class="o">=</span><span class="s2">"main.f90"</span>
 </code></pre></div>
 
 <p>Now you can use any modules from this library anywhere in your code. Just like
@@ -614,12 +614,12 @@ this:</p>
 <div class="codehilite"><pre><span></span><code><span class="k">program </span><span class="n">main</span>
 <span class="w">    </span><span class="k">use </span><span class="n">helloff</span><span class="p">,</span><span class="w"> </span><span class="k">only</span><span class="p">:</span><span class="w"> </span><span class="n">create_greeting</span>
 <span class="w">    </span><span class="k">use </span><span class="n">math_constants</span><span class="p">,</span><span class="w"> </span><span class="k">only</span><span class="p">:</span><span class="w"> </span><span class="n">e</span><span class="p">,</span><span class="w"> </span><span class="n">pi</span><span class="p">,</span><span class="w"> </span><span class="n">half_pi</span><span class="p">,</span><span class="w"> </span><span class="n">two_pi</span>
-<span class="w">    </span><span class="k">print</span><span class="w"> </span><span class="o">*</span><span class="p">,</span><span class="w"> </span><span class="s1">&#39;math_constants library demo&#39;</span>
-<span class="w">    </span><span class="k">print</span><span class="w"> </span><span class="o">*</span><span class="p">,</span><span class="w"> </span><span class="s1">&#39;pi = &#39;</span><span class="p">,</span><span class="w"> </span><span class="n">pi</span>
-<span class="w">    </span><span class="k">print</span><span class="w"> </span><span class="o">*</span><span class="p">,</span><span class="w"> </span><span class="s1">&#39;2*pi = &#39;</span><span class="p">,</span><span class="w"> </span><span class="n">two_pi</span>
-<span class="w">    </span><span class="k">print</span><span class="w"> </span><span class="o">*</span><span class="p">,</span><span class="w"> </span><span class="s1">&#39;pi/2 = &#39;</span><span class="p">,</span><span class="w"> </span><span class="n">half_pi</span>
-<span class="w">    </span><span class="k">print</span><span class="w"> </span><span class="o">*</span><span class="p">,</span><span class="w"> </span><span class="s1">&#39;e = &#39;</span><span class="p">,</span><span class="w"> </span><span class="n">e</span>
-<span class="w">    </span><span class="k">print</span><span class="w"> </span><span class="o">*</span><span class="p">,</span><span class="w"> </span><span class="n">create_greeting</span><span class="p">(</span><span class="s2">&quot;fpm&quot;</span><span class="p">)</span>
+<span class="w">    </span><span class="k">print</span><span class="w"> </span><span class="o">*</span><span class="p">,</span><span class="w"> </span><span class="s1">'math_constants library demo'</span>
+<span class="w">    </span><span class="k">print</span><span class="w"> </span><span class="o">*</span><span class="p">,</span><span class="w"> </span><span class="s1">'pi = '</span><span class="p">,</span><span class="w"> </span><span class="n">pi</span>
+<span class="w">    </span><span class="k">print</span><span class="w"> </span><span class="o">*</span><span class="p">,</span><span class="w"> </span><span class="s1">'2*pi = '</span><span class="p">,</span><span class="w"> </span><span class="n">two_pi</span>
+<span class="w">    </span><span class="k">print</span><span class="w"> </span><span class="o">*</span><span class="p">,</span><span class="w"> </span><span class="s1">'pi/2 = '</span><span class="p">,</span><span class="w"> </span><span class="n">half_pi</span>
+<span class="w">    </span><span class="k">print</span><span class="w"> </span><span class="o">*</span><span class="p">,</span><span class="w"> </span><span class="s1">'e = '</span><span class="p">,</span><span class="w"> </span><span class="n">e</span>
+<span class="w">    </span><span class="k">print</span><span class="w"> </span><span class="o">*</span><span class="p">,</span><span class="w"> </span><span class="n">create_greeting</span><span class="p">(</span><span class="s2">"fpm"</span><span class="p">)</span>
 <span class="k">end program </span><span class="n">main</span>
 </code></pre></div>
 
@@ -637,55 +637,55 @@ dependencies too. So if you don’t need that dependency for the library, like i
 the above example, then you can specify it for the specific executable like
 below. Then fpm will still fetch and compile it when building your executable,
 but users of your library won’t have to.</p>
-<div class="codehilite"><pre><span></span><code><span class="n">name</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;math_constants&quot;</span>
-<span class="n">version</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;0.1.0&quot;</span>
-<span class="n">license</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;MIT&quot;</span>
-<span class="n">author</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;Jane Programmer&quot;</span>
-<span class="n">maintainer</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;jane@example.com&quot;</span>
-<span class="n">copyright</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;2020 Jane Programmer&quot;</span>
+<div class="codehilite"><pre><span></span><code><span class="n">name</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">"math_constants"</span>
+<span class="n">version</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">"0.1.0"</span>
+<span class="n">license</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">"MIT"</span>
+<span class="n">author</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">"Jane Programmer"</span>
+<span class="n">maintainer</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">"jane@example.com"</span>
+<span class="n">copyright</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">"2020 Jane Programmer"</span>
 
 <span class="k">[library]</span>
-<span class="n">source-dir</span><span class="o">=</span><span class="s2">&quot;src&quot;</span>
+<span class="n">source-dir</span><span class="o">=</span><span class="s2">"src"</span>
 
 <span class="k">[[</span><span class="w"> </span><span class="k">executable</span><span class="w"> </span><span class="k">]]</span>
-<span class="n">name</span><span class="o">=</span><span class="s2">&quot;math_constants&quot;</span>
-<span class="n">source-dir</span><span class="o">=</span><span class="s2">&quot;app&quot;</span>
-<span class="n">main</span><span class="o">=</span><span class="s2">&quot;main.f90&quot;</span>
+<span class="n">name</span><span class="o">=</span><span class="s2">"math_constants"</span>
+<span class="n">source-dir</span><span class="o">=</span><span class="s2">"app"</span>
+<span class="n">main</span><span class="o">=</span><span class="s2">"main.f90"</span>
 <span class="k">[executable.dependencies]</span>
-<span class="n">helloff</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">git</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="s2">&quot;https://gitlab.com/everythingfunctional/helloff.git&quot;</span><span class="w"> </span><span class="p">}</span>
+<span class="n">helloff</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">git</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="s2">"https://gitlab.com/everythingfunctional/helloff.git"</span><span class="w"> </span><span class="p">}</span>
 
 <span class="k">[[</span><span class="w"> </span><span class="k">test</span><span class="w"> </span><span class="k">]]</span>
-<span class="n">name</span><span class="o">=</span><span class="s2">&quot;runTests&quot;</span>
-<span class="n">source-dir</span><span class="o">=</span><span class="s2">&quot;test&quot;</span>
-<span class="n">main</span><span class="o">=</span><span class="s2">&quot;main.f90&quot;</span>
+<span class="n">name</span><span class="o">=</span><span class="s2">"runTests"</span>
+<span class="n">source-dir</span><span class="o">=</span><span class="s2">"test"</span>
+<span class="n">main</span><span class="o">=</span><span class="s2">"main.f90"</span>
 </code></pre></div>
 
 <p>You can also specify dependencies for your tests in a similar way, with
 <code>[test.dependencies]</code> instead of <code>[executable.dependencies]</code>. There’s also
 another option for test dependencies. The below example makes the dependencies
 available for all the tests, but again your users won’t depend on these.</p>
-<div class="codehilite"><pre><span></span><code><span class="n">name</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;math_constants&quot;</span>
-<span class="n">version</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;0.1.0&quot;</span>
-<span class="n">license</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;MIT&quot;</span>
-<span class="n">author</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;Jane Programmer&quot;</span>
-<span class="n">maintainer</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;jane@example.com&quot;</span>
-<span class="n">copyright</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;2020 Jane Programmer&quot;</span>
+<div class="codehilite"><pre><span></span><code><span class="n">name</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">"math_constants"</span>
+<span class="n">version</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">"0.1.0"</span>
+<span class="n">license</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">"MIT"</span>
+<span class="n">author</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">"Jane Programmer"</span>
+<span class="n">maintainer</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">"jane@example.com"</span>
+<span class="n">copyright</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">"2020 Jane Programmer"</span>
 
 <span class="k">[library]</span>
-<span class="n">source-dir</span><span class="o">=</span><span class="s2">&quot;src&quot;</span>
+<span class="n">source-dir</span><span class="o">=</span><span class="s2">"src"</span>
 
 <span class="k">[dev-dependencies]</span>
-<span class="n">helloff</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">git</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="s2">&quot;https://gitlab.com/everythingfunctional/helloff.git&quot;</span><span class="w"> </span><span class="p">}</span>
+<span class="n">helloff</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">git</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="s2">"https://gitlab.com/everythingfunctional/helloff.git"</span><span class="w"> </span><span class="p">}</span>
 
 <span class="k">[[</span><span class="w"> </span><span class="k">executable</span><span class="w"> </span><span class="k">]]</span>
-<span class="n">name</span><span class="o">=</span><span class="s2">&quot;math_constants&quot;</span>
-<span class="n">source-dir</span><span class="o">=</span><span class="s2">&quot;app&quot;</span>
-<span class="n">main</span><span class="o">=</span><span class="s2">&quot;main.f90&quot;</span>
+<span class="n">name</span><span class="o">=</span><span class="s2">"math_constants"</span>
+<span class="n">source-dir</span><span class="o">=</span><span class="s2">"app"</span>
+<span class="n">main</span><span class="o">=</span><span class="s2">"main.f90"</span>
 
 <span class="k">[[</span><span class="w"> </span><span class="k">test</span><span class="w"> </span><span class="k">]]</span>
-<span class="n">name</span><span class="o">=</span><span class="s2">&quot;runTests&quot;</span>
-<span class="n">source-dir</span><span class="o">=</span><span class="s2">&quot;test&quot;</span>
-<span class="n">main</span><span class="o">=</span><span class="s2">&quot;main.f90&quot;</span>
+<span class="n">name</span><span class="o">=</span><span class="s2">"runTests"</span>
+<span class="n">source-dir</span><span class="o">=</span><span class="s2">"test"</span>
+<span class="n">main</span><span class="o">=</span><span class="s2">"main.f90"</span>
 </code></pre></div>
 
 <p>You can also be specific about which version of a dependency you’d like. You can
@@ -706,8 +706,8 @@ script to build the library.</p>
 <p>To specify a build script to be used, put it in the library section of your
 <code>fpm.toml</code> file, like:</p>
 <div class="codehilite"><pre><span></span><code><span class="k">[library]</span>
-<span class="n">source-dir</span><span class="o">=</span><span class="s2">&quot;src&quot;</span>
-<span class="n">build-script</span><span class="o">=</span><span class="s2">&quot;my_build_script&quot;</span>
+<span class="n">source-dir</span><span class="o">=</span><span class="s2">"src"</span>
+<span class="n">build-script</span><span class="o">=</span><span class="s2">"my_build_script"</span>
 </code></pre></div>
 
 <p><em>fpm</em> will set the following environment variables to specify some parameters to
@@ -746,7 +746,7 @@ path.</p>
             <p class="text-end">
               Documentation generated by
               <a href="https://github.com/Fortran-FOSS-Programmers/ford">FORD</a>
- on 2026-05-25 16:42 +0000             </p>
+ on 2026-08-27 21:47 +0000             </p>
           </div>
         </div>
         <br>

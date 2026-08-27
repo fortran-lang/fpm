@@ -134,10 +134,10 @@
       </a>
       <div id="vars-0" class="collapse">
         <div class="list-group list-group-flush">
-            <a class="list-group-item" href="../proc/cct_write.html#variable-array~2">array</a>
-            <a class="list-group-item" href="../proc/cct_write.html#variable-cfg">cfg</a>
-            <a class="list-group-item" href="../proc/cct_write.html#variable-lun~4">lun</a>
-            <a class="list-group-item" href="../proc/cct_write.html#variable-stat~20">stat</a>
+            <a class="list-group-item" href="../proc/cct_write.html#variable-array~4">array</a>
+            <a class="list-group-item" href="../proc/cct_write.html#variable-cfg~4">cfg</a>
+            <a class="list-group-item" href="../proc/cct_write.html#variable-lun~5">lun</a>
+            <a class="list-group-item" href="../proc/cct_write.html#variable-stat~31">stat</a>
         </div>
       </div>
     </div>
@@ -196,7 +196,7 @@ create a custom json here.</p>
     <tbody>
         <tr>
             <td>
-              <span class="anchor" id="variable-self~53"></span>
+              <span class="anchor" id="variable-self~66"></span>
               class(<a href='../type/compile_command_table_t.html'>compile_command_table_t</a>),
             </td>
 <td>intent(inout)</td>
@@ -211,7 +211,7 @@ create a custom json here.</p>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-filename~7"></span>
+              <span class="anchor" id="variable-filename~9"></span>
               character(len=*),
             </td>
 <td>intent(in)</td>
@@ -226,7 +226,7 @@ create a custom json here.</p>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-error~18"></span>
+              <span class="anchor" id="variable-error~116"></span>
               type(<a href='../type/error_t.html'>error_t</a>),
             </td>
 <td>intent(out),</td>
@@ -259,7 +259,7 @@ create a custom json here.</p>
     <tbody>
         <tr>
             <td>
-              <span class="anchor" id="variable-array~2"></span>
+              <span class="anchor" id="variable-array~4"></span>
               type(toml_array),
             </td>
               <td>public</td>
@@ -276,7 +276,7 @@ create a custom json here.</p>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-cfg"></span>
+              <span class="anchor" id="variable-cfg~4"></span>
               type(json_ser_config),
             </td>
               <td>public</td>
@@ -293,7 +293,7 @@ create a custom json here.</p>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-lun~4"></span>
+              <span class="anchor" id="variable-lun~5"></span>
               integer,
             </td>
               <td>public</td>
@@ -310,7 +310,7 @@ create a custom json here.</p>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-stat~20"></span>
+              <span class="anchor" id="variable-stat~31"></span>
               integer,
             </td>
               <td>public</td>
@@ -364,21 +364,21 @@ create a custom json here.</p>
 <span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="nb">allocated</span><span class="p">(</span><span class="n">error</span><span class="p">))</span><span class="w"> </span><span class="k">return</span>
 <span class="w">        </span>
 <span class="w">        </span><span class="c">! Open file and write to it</span>
-<span class="w">        </span><span class="k">open</span><span class="p">(</span><span class="n">newunit</span><span class="o">=</span><span class="n">lun</span><span class="p">,</span><span class="k">file</span><span class="o">=</span><span class="n">filename</span><span class="p">,</span><span class="n">form</span><span class="o">=</span><span class="s1">&#39;formatted&#39;</span><span class="p">,</span><span class="n">action</span><span class="o">=</span><span class="s1">&#39;write&#39;</span><span class="p">,</span><span class="n">status</span><span class="o">=</span><span class="s1">&#39;replace&#39;</span><span class="p">,</span><span class="n">iostat</span><span class="o">=</span><span class="nb">stat</span><span class="p">)</span>
+<span class="w">        </span><span class="k">open</span><span class="p">(</span><span class="n">newunit</span><span class="o">=</span><span class="n">lun</span><span class="p">,</span><span class="k">file</span><span class="o">=</span><span class="n">filename</span><span class="p">,</span><span class="n">form</span><span class="o">=</span><span class="s1">'formatted'</span><span class="p">,</span><span class="n">action</span><span class="o">=</span><span class="s1">'write'</span><span class="p">,</span><span class="n">status</span><span class="o">=</span><span class="s1">'replace'</span><span class="p">,</span><span class="n">iostat</span><span class="o">=</span><span class="nb">stat</span><span class="p">)</span>
 <span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="nb">stat</span><span class="o">/=</span><span class="mi">0</span><span class="p">)</span><span class="w"> </span><span class="k">then </span>
-<span class="k">            call </span><span class="n">fatal_error</span><span class="p">(</span><span class="n">error</span><span class="p">,</span><span class="w"> </span><span class="s1">&#39;cannot open file &#39;</span><span class="o">//</span><span class="n">filename</span><span class="o">//</span><span class="s1">&#39; for writing&#39;</span><span class="p">)</span>
+<span class="k">            call </span><span class="n">fatal_error</span><span class="p">(</span><span class="n">error</span><span class="p">,</span><span class="w"> </span><span class="s1">'cannot open file '</span><span class="o">//</span><span class="n">filename</span><span class="o">//</span><span class="s1">' for writing'</span><span class="p">)</span>
 <span class="w">            </span><span class="k">return</span>
 <span class="k">        end if</span>
 <span class="w">        </span>
 <span class="w">        </span><span class="c">! Ensure the array has no key</span>
 <span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="nb">allocated</span><span class="p">(</span><span class="k">array</span><span class="p">%</span><span class="n">key</span><span class="p">))</span><span class="w"> </span><span class="k">deallocate</span><span class="p">(</span><span class="k">array</span><span class="p">%</span><span class="n">key</span><span class="p">)</span>
 <span class="w">        </span>
-<span class="w">        </span><span class="n">cfg</span><span class="p">%</span><span class="n">indent</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">repeat</span><span class="p">(</span><span class="s1">&#39; &#39;</span><span class="p">,</span><span class="mi">3</span><span class="p">)</span>
-<span class="w">        </span><span class="k">write</span><span class="w"> </span><span class="p">(</span><span class="n">lun</span><span class="p">,</span><span class="w"> </span><span class="s1">&#39;(A)&#39;</span><span class="p">,</span><span class="w"> </span><span class="n">iostat</span><span class="o">=</span><span class="nb">stat</span><span class="p">,</span><span class="w"> </span><span class="n">err</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span><span class="w"> </span><span class="n">json_serialize</span><span class="p">(</span><span class="k">array</span><span class="p">,</span><span class="w"> </span><span class="n">cfg</span><span class="p">)</span><span class="w">                </span>
+<span class="w">        </span><span class="n">cfg</span><span class="p">%</span><span class="n">indent</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">repeat</span><span class="p">(</span><span class="s1">' '</span><span class="p">,</span><span class="mi">3</span><span class="p">)</span>
+<span class="w">        </span><span class="k">write</span><span class="w"> </span><span class="p">(</span><span class="n">lun</span><span class="p">,</span><span class="w"> </span><span class="s1">'(A)'</span><span class="p">,</span><span class="w"> </span><span class="n">iostat</span><span class="o">=</span><span class="nb">stat</span><span class="p">,</span><span class="w"> </span><span class="n">err</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span><span class="w"> </span><span class="n">json_serialize</span><span class="p">(</span><span class="k">array</span><span class="p">,</span><span class="w"> </span><span class="n">cfg</span><span class="p">)</span><span class="w">                </span>
 <span class="w">        </span><span class="k">close</span><span class="p">(</span><span class="n">lun</span><span class="p">,</span><span class="n">iostat</span><span class="o">=</span><span class="nb">stat</span><span class="p">)</span>
 <span class="w">        </span>
 <span class="w">        </span><span class="mi">1</span><span class="w"> </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="nb">stat</span><span class="o">/=</span><span class="mi">0</span><span class="p">)</span><span class="w"> </span><span class="k">then </span>
-<span class="k">            call </span><span class="n">fatal_error</span><span class="p">(</span><span class="n">error</span><span class="p">,</span><span class="w"> </span><span class="s1">&#39;cannot close file &#39;</span><span class="o">//</span><span class="n">filename</span><span class="o">//</span><span class="s1">&#39; after writing&#39;</span><span class="p">)</span>
+<span class="k">            call </span><span class="n">fatal_error</span><span class="p">(</span><span class="n">error</span><span class="p">,</span><span class="w"> </span><span class="s1">'cannot close file '</span><span class="o">//</span><span class="n">filename</span><span class="o">//</span><span class="s1">' after writing'</span><span class="p">)</span>
 <span class="w">            </span><span class="k">return</span>
 <span class="k">        end if</span>
 
@@ -406,7 +406,7 @@ create a custom json here.</p>
             <p class="text-end">
               Documentation generated by
               <a href="https://github.com/Fortran-FOSS-Programmers/ford">FORD</a>
- on 2026-05-25 16:42 +0000             </p>
+ on 2026-08-27 21:47 +0000             </p>
           </div>
         </div>
         <br>

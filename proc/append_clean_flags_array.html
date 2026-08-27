@@ -134,7 +134,7 @@
       </a>
       <div id="vars-0" class="collapse">
         <div class="list-group list-group-flush">
-            <a class="list-group-item" href="../proc/append_clean_flags_array.html#variable-i~5">i</a>
+            <a class="list-group-item" href="../proc/append_clean_flags_array.html#variable-i~104">i</a>
         </div>
       </div>
     </div>
@@ -238,7 +238,7 @@
     <tbody>
         <tr>
             <td>
-              <span class="anchor" id="variable-i~5"></span>
+              <span class="anchor" id="variable-i~104"></span>
               integer,
             </td>
               <td>public</td>
@@ -278,12 +278,12 @@
 <span class="w">    </span><span class="k">do </span><span class="n">i</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="n">size</span><span class="p">(</span><span class="n">new_flags_array</span><span class="p">)</span>
 <span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">string_array_contains</span><span class="p">(</span><span class="n">new_flags_array</span><span class="p">(</span><span class="n">i</span><span class="p">)%</span><span class="n">s</span><span class="p">,</span><span class="w"> </span><span class="n">flags_array</span><span class="p">))</span><span class="w"> </span><span class="k">cycle</span>
 <span class="w">        </span><span class="c">! Filter out empty flags and arguments</span>
-<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">new_flags_array</span><span class="p">(</span><span class="n">i</span><span class="p">)%</span><span class="n">s</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="s2">&quot;&quot;</span><span class="p">)</span><span class="w"> </span><span class="k">cycle</span>
-<span class="k">        if</span><span class="w"> </span><span class="p">(</span><span class="nb">trim</span><span class="p">(</span><span class="n">new_flags_array</span><span class="p">(</span><span class="n">i</span><span class="p">)%</span><span class="n">s</span><span class="p">)</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="s2">&quot;-l&quot;</span><span class="p">)</span><span class="w"> </span><span class="k">cycle</span>
-<span class="k">        if</span><span class="w"> </span><span class="p">(</span><span class="nb">trim</span><span class="p">(</span><span class="n">new_flags_array</span><span class="p">(</span><span class="n">i</span><span class="p">)%</span><span class="n">s</span><span class="p">)</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="s2">&quot;-L&quot;</span><span class="p">)</span><span class="w"> </span><span class="k">cycle</span>
-<span class="k">        if</span><span class="w"> </span><span class="p">(</span><span class="nb">trim</span><span class="p">(</span><span class="n">new_flags_array</span><span class="p">(</span><span class="n">i</span><span class="p">)%</span><span class="n">s</span><span class="p">)</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="s2">&quot;-I&quot;</span><span class="p">)</span><span class="w"> </span><span class="k">cycle</span>
-<span class="k">        if</span><span class="w"> </span><span class="p">(</span><span class="nb">trim</span><span class="p">(</span><span class="n">new_flags_array</span><span class="p">(</span><span class="n">i</span><span class="p">)%</span><span class="n">s</span><span class="p">)</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="s2">&quot;-J&quot;</span><span class="p">)</span><span class="w"> </span><span class="k">cycle</span>
-<span class="k">        if</span><span class="w"> </span><span class="p">(</span><span class="nb">trim</span><span class="p">(</span><span class="n">new_flags_array</span><span class="p">(</span><span class="n">i</span><span class="p">)%</span><span class="n">s</span><span class="p">)</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="s2">&quot;-M&quot;</span><span class="p">)</span><span class="w"> </span><span class="k">cycle</span>
+<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">new_flags_array</span><span class="p">(</span><span class="n">i</span><span class="p">)%</span><span class="n">s</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="s2">""</span><span class="p">)</span><span class="w"> </span><span class="k">cycle</span>
+<span class="k">        if</span><span class="w"> </span><span class="p">(</span><span class="nb">trim</span><span class="p">(</span><span class="n">new_flags_array</span><span class="p">(</span><span class="n">i</span><span class="p">)%</span><span class="n">s</span><span class="p">)</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="s2">"-l"</span><span class="p">)</span><span class="w"> </span><span class="k">cycle</span>
+<span class="k">        if</span><span class="w"> </span><span class="p">(</span><span class="nb">trim</span><span class="p">(</span><span class="n">new_flags_array</span><span class="p">(</span><span class="n">i</span><span class="p">)%</span><span class="n">s</span><span class="p">)</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="s2">"-L"</span><span class="p">)</span><span class="w"> </span><span class="k">cycle</span>
+<span class="k">        if</span><span class="w"> </span><span class="p">(</span><span class="nb">trim</span><span class="p">(</span><span class="n">new_flags_array</span><span class="p">(</span><span class="n">i</span><span class="p">)%</span><span class="n">s</span><span class="p">)</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="s2">"-I"</span><span class="p">)</span><span class="w"> </span><span class="k">cycle</span>
+<span class="k">        if</span><span class="w"> </span><span class="p">(</span><span class="nb">trim</span><span class="p">(</span><span class="n">new_flags_array</span><span class="p">(</span><span class="n">i</span><span class="p">)%</span><span class="n">s</span><span class="p">)</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="s2">"-J"</span><span class="p">)</span><span class="w"> </span><span class="k">cycle</span>
+<span class="k">        if</span><span class="w"> </span><span class="p">(</span><span class="nb">trim</span><span class="p">(</span><span class="n">new_flags_array</span><span class="p">(</span><span class="n">i</span><span class="p">)%</span><span class="n">s</span><span class="p">)</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="s2">"-M"</span><span class="p">)</span><span class="w"> </span><span class="k">cycle</span>
 <span class="k">        call </span><span class="n">add_strings</span><span class="p">(</span><span class="n">flags_array</span><span class="p">,</span><span class="w"> </span><span class="n">new_flags_array</span><span class="p">(</span><span class="n">i</span><span class="p">))</span>
 <span class="w">    </span><span class="k">end do</span>
 <span class="k">end subroutine </span><span class="n">append_clean_flags_array</span>
@@ -310,7 +310,7 @@
             <p class="text-end">
               Documentation generated by
               <a href="https://github.com/Fortran-FOSS-Programmers/ford">FORD</a>
- on 2026-05-25 16:42 +0000             </p>
+ on 2026-08-27 21:47 +0000             </p>
           </div>
         </div>
         <br>

@@ -178,7 +178,7 @@
     <tbody>
         <tr>
             <td>
-              <span class="anchor" id="variable-compiler~5"></span>
+              <span class="anchor" id="variable-compiler~24"></span>
               character(len=*),
             </td>
 <td>intent(in)</td>
@@ -196,7 +196,7 @@
 
       <h3>Return Value
         <small>
-          <span class="anchor" id="variable-id~9"></span>
+          <span class="anchor" id="variable-id~10"></span>
           integer(kind=compiler_enum)
         </small>
       </h3>
@@ -219,22 +219,22 @@
 <span class="w">    </span><span class="kt">character</span><span class="p">(</span><span class="nb">len</span><span class="o">=*</span><span class="p">),</span><span class="w"> </span><span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">)</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">compiler</span>
 <span class="w">    </span><span class="kt">integer</span><span class="p">(</span><span class="nb">kind</span><span class="o">=</span><span class="n">compiler_enum</span><span class="p">)</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">id</span>
 
-<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">check_compiler</span><span class="p">(</span><span class="n">compiler</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;gfortran&quot;</span><span class="p">))</span><span class="w"> </span><span class="k">then</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">check_compiler</span><span class="p">(</span><span class="n">compiler</span><span class="p">,</span><span class="w"> </span><span class="s2">"gfortran"</span><span class="p">))</span><span class="w"> </span><span class="k">then</span>
 <span class="k">        </span><span class="n">id</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">id_gcc</span>
 <span class="w">        </span><span class="k">return</span>
 <span class="k">    end if</span>
 
-<span class="k">    if</span><span class="w"> </span><span class="p">(</span><span class="n">check_compiler</span><span class="p">(</span><span class="n">compiler</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;f95&quot;</span><span class="p">))</span><span class="w"> </span><span class="k">then</span>
+<span class="k">    if</span><span class="w"> </span><span class="p">(</span><span class="n">check_compiler</span><span class="p">(</span><span class="n">compiler</span><span class="p">,</span><span class="w"> </span><span class="s2">"f95"</span><span class="p">))</span><span class="w"> </span><span class="k">then</span>
 <span class="k">        </span><span class="n">id</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">id_f95</span>
 <span class="w">        </span><span class="k">return</span>
 <span class="k">    end if</span>
 
-<span class="k">    if</span><span class="w"> </span><span class="p">(</span><span class="n">check_compiler</span><span class="p">(</span><span class="n">compiler</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;caf&quot;</span><span class="p">))</span><span class="w"> </span><span class="k">then</span>
+<span class="k">    if</span><span class="w"> </span><span class="p">(</span><span class="n">check_compiler</span><span class="p">(</span><span class="n">compiler</span><span class="p">,</span><span class="w"> </span><span class="s2">"caf"</span><span class="p">))</span><span class="w"> </span><span class="k">then</span>
 <span class="k">        </span><span class="n">id</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">id_caf</span>
 <span class="w">        </span><span class="k">return</span>
 <span class="k">    end if</span>
 
-<span class="k">    if</span><span class="w"> </span><span class="p">(</span><span class="n">check_compiler</span><span class="p">(</span><span class="n">compiler</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;ifort&quot;</span><span class="p">))</span><span class="w"> </span><span class="k">then</span>
+<span class="k">    if</span><span class="w"> </span><span class="p">(</span><span class="n">check_compiler</span><span class="p">(</span><span class="n">compiler</span><span class="p">,</span><span class="w"> </span><span class="s2">"ifort"</span><span class="p">))</span><span class="w"> </span><span class="k">then</span>
 <span class="k">        select case</span><span class="w"> </span><span class="p">(</span><span class="n">get_os_type</span><span class="p">())</span>
 <span class="w">        </span><span class="k">case </span><span class="n">default</span>
 <span class="w">            </span><span class="n">id</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">id_intel_classic_nix</span>
@@ -246,7 +246,7 @@
 <span class="k">        return</span>
 <span class="k">    end if</span>
 
-<span class="k">    if</span><span class="w"> </span><span class="p">(</span><span class="n">check_compiler</span><span class="p">(</span><span class="n">compiler</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;ifx&quot;</span><span class="p">))</span><span class="w"> </span><span class="k">then</span>
+<span class="k">    if</span><span class="w"> </span><span class="p">(</span><span class="n">check_compiler</span><span class="p">(</span><span class="n">compiler</span><span class="p">,</span><span class="w"> </span><span class="s2">"ifx"</span><span class="p">))</span><span class="w"> </span><span class="k">then</span>
 <span class="k">        select case</span><span class="w"> </span><span class="p">(</span><span class="n">get_os_type</span><span class="p">())</span>
 <span class="w">        </span><span class="k">case </span><span class="n">default</span>
 <span class="w">            </span><span class="n">id</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">id_intel_llvm_nix</span>
@@ -256,65 +256,65 @@
 <span class="k">        return</span>
 <span class="k">    end if</span>
 
-<span class="k">    if</span><span class="w"> </span><span class="p">(</span><span class="n">check_compiler</span><span class="p">(</span><span class="n">compiler</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;nvfortran&quot;</span><span class="p">))</span><span class="w"> </span><span class="k">then</span>
+<span class="k">    if</span><span class="w"> </span><span class="p">(</span><span class="n">check_compiler</span><span class="p">(</span><span class="n">compiler</span><span class="p">,</span><span class="w"> </span><span class="s2">"nvfortran"</span><span class="p">))</span><span class="w"> </span><span class="k">then</span>
 <span class="k">        </span><span class="n">id</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">id_nvhpc</span>
 <span class="w">        </span><span class="k">return</span>
 <span class="k">    end if</span>
 
-<span class="k">    if</span><span class="w"> </span><span class="p">(</span><span class="n">check_compiler</span><span class="p">(</span><span class="n">compiler</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;pgfortran&quot;</span><span class="p">)</span><span class="w"> </span><span class="p">&amp;</span>
-<span class="w">        </span><span class="p">&amp;</span><span class="w"> </span><span class="p">.</span><span class="nb">or</span><span class="p">.</span><span class="w"> </span><span class="n">check_compiler</span><span class="p">(</span><span class="n">compiler</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;pgf90&quot;</span><span class="p">)</span><span class="w"> </span><span class="p">&amp;</span>
-<span class="w">        </span><span class="p">&amp;</span><span class="w"> </span><span class="p">.</span><span class="nb">or</span><span class="p">.</span><span class="w"> </span><span class="n">check_compiler</span><span class="p">(</span><span class="n">compiler</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;pgf95&quot;</span><span class="p">))</span><span class="w"> </span><span class="k">then</span>
+<span class="k">    if</span><span class="w"> </span><span class="p">(</span><span class="n">check_compiler</span><span class="p">(</span><span class="n">compiler</span><span class="p">,</span><span class="w"> </span><span class="s2">"pgfortran"</span><span class="p">)</span><span class="w"> </span><span class="p">&amp;</span>
+<span class="w">        </span><span class="p">&amp;</span><span class="w"> </span><span class="p">.</span><span class="nb">or</span><span class="p">.</span><span class="w"> </span><span class="n">check_compiler</span><span class="p">(</span><span class="n">compiler</span><span class="p">,</span><span class="w"> </span><span class="s2">"pgf90"</span><span class="p">)</span><span class="w"> </span><span class="p">&amp;</span>
+<span class="w">        </span><span class="p">&amp;</span><span class="w"> </span><span class="p">.</span><span class="nb">or</span><span class="p">.</span><span class="w"> </span><span class="n">check_compiler</span><span class="p">(</span><span class="n">compiler</span><span class="p">,</span><span class="w"> </span><span class="s2">"pgf95"</span><span class="p">))</span><span class="w"> </span><span class="k">then</span>
 <span class="k">        </span><span class="n">id</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">id_pgi</span>
 <span class="w">        </span><span class="k">return</span>
 <span class="k">    end if</span>
 
-<span class="k">    if</span><span class="w"> </span><span class="p">(</span><span class="n">check_compiler</span><span class="p">(</span><span class="n">compiler</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;nagfor&quot;</span><span class="p">))</span><span class="w"> </span><span class="k">then</span>
+<span class="k">    if</span><span class="w"> </span><span class="p">(</span><span class="n">check_compiler</span><span class="p">(</span><span class="n">compiler</span><span class="p">,</span><span class="w"> </span><span class="s2">"nagfor"</span><span class="p">))</span><span class="w"> </span><span class="k">then</span>
 <span class="k">        </span><span class="n">id</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">id_nag</span>
 <span class="w">        </span><span class="k">return</span>
 <span class="k">    end if</span>
 
-<span class="k">    if</span><span class="w"> </span><span class="p">(</span><span class="n">check_compiler</span><span class="p">(</span><span class="n">compiler</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;flang-classic&quot;</span><span class="p">))</span><span class="w"> </span><span class="k">then</span>
+<span class="k">    if</span><span class="w"> </span><span class="p">(</span><span class="n">check_compiler</span><span class="p">(</span><span class="n">compiler</span><span class="p">,</span><span class="w"> </span><span class="s2">"flang-classic"</span><span class="p">))</span><span class="w"> </span><span class="k">then</span>
 <span class="k">        </span><span class="n">id</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">id_flang_classic</span>
 <span class="w">        </span><span class="k">return</span>
 <span class="k">    end if</span>
 
-<span class="k">    if</span><span class="w"> </span><span class="p">(</span><span class="n">check_compiler</span><span class="p">(</span><span class="n">compiler</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;flang-new&quot;</span><span class="p">)</span><span class="w"> </span><span class="p">.</span><span class="nb">or</span><span class="p">.</span><span class="w"> </span><span class="n">check_compiler</span><span class="p">(</span><span class="n">compiler</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;flang&quot;</span><span class="p">))</span><span class="w"> </span><span class="k">then</span>
+<span class="k">    if</span><span class="w"> </span><span class="p">(</span><span class="n">check_compiler</span><span class="p">(</span><span class="n">compiler</span><span class="p">,</span><span class="w"> </span><span class="s2">"flang-new"</span><span class="p">)</span><span class="w"> </span><span class="p">.</span><span class="nb">or</span><span class="p">.</span><span class="w"> </span><span class="n">check_compiler</span><span class="p">(</span><span class="n">compiler</span><span class="p">,</span><span class="w"> </span><span class="s2">"flang"</span><span class="p">))</span><span class="w"> </span><span class="k">then</span>
 <span class="k">        </span><span class="n">id</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">id_flang</span>
 <span class="w">        </span><span class="k">return</span>
 <span class="k">    end if</span>
 
-<span class="k">    if</span><span class="w"> </span><span class="p">(</span><span class="n">check_compiler</span><span class="p">(</span><span class="n">compiler</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;amdflang&quot;</span><span class="p">))</span><span class="w"> </span><span class="k">then</span>
+<span class="k">    if</span><span class="w"> </span><span class="p">(</span><span class="n">check_compiler</span><span class="p">(</span><span class="n">compiler</span><span class="p">,</span><span class="w"> </span><span class="s2">"amdflang"</span><span class="p">))</span><span class="w"> </span><span class="k">then</span>
 <span class="k">        </span><span class="n">id</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">id_amdflang</span>
 <span class="w">        </span><span class="k">return</span>
 <span class="k">    end if</span>
 
-<span class="k">    if</span><span class="w"> </span><span class="p">(</span><span class="n">check_compiler</span><span class="p">(</span><span class="n">compiler</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;f18&quot;</span><span class="p">))</span><span class="w"> </span><span class="k">then</span>
+<span class="k">    if</span><span class="w"> </span><span class="p">(</span><span class="n">check_compiler</span><span class="p">(</span><span class="n">compiler</span><span class="p">,</span><span class="w"> </span><span class="s2">"f18"</span><span class="p">))</span><span class="w"> </span><span class="k">then</span>
 <span class="k">        </span><span class="n">id</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">id_f18</span>
 <span class="w">        </span><span class="k">return</span>
 <span class="k">    end if</span>
 
-<span class="k">    if</span><span class="w"> </span><span class="p">(</span><span class="n">check_compiler</span><span class="p">(</span><span class="n">compiler</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;xlf90&quot;</span><span class="p">))</span><span class="w"> </span><span class="k">then</span>
+<span class="k">    if</span><span class="w"> </span><span class="p">(</span><span class="n">check_compiler</span><span class="p">(</span><span class="n">compiler</span><span class="p">,</span><span class="w"> </span><span class="s2">"xlf90"</span><span class="p">))</span><span class="w"> </span><span class="k">then</span>
 <span class="k">        </span><span class="n">id</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">id_ibmxl</span>
 <span class="w">        </span><span class="k">return</span>
 <span class="k">    end if</span>
 
-<span class="k">    if</span><span class="w"> </span><span class="p">(</span><span class="n">check_compiler</span><span class="p">(</span><span class="n">compiler</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;crayftn&quot;</span><span class="p">))</span><span class="w"> </span><span class="k">then</span>
+<span class="k">    if</span><span class="w"> </span><span class="p">(</span><span class="n">check_compiler</span><span class="p">(</span><span class="n">compiler</span><span class="p">,</span><span class="w"> </span><span class="s2">"crayftn"</span><span class="p">))</span><span class="w"> </span><span class="k">then</span>
 <span class="k">        </span><span class="n">id</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">id_cray</span>
 <span class="w">        </span><span class="k">return</span>
 <span class="k">    end if</span>
 
-<span class="k">    if</span><span class="w"> </span><span class="p">(</span><span class="n">check_compiler</span><span class="p">(</span><span class="n">compiler</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;lfc&quot;</span><span class="p">))</span><span class="w"> </span><span class="k">then</span>
+<span class="k">    if</span><span class="w"> </span><span class="p">(</span><span class="n">check_compiler</span><span class="p">(</span><span class="n">compiler</span><span class="p">,</span><span class="w"> </span><span class="s2">"lfc"</span><span class="p">))</span><span class="w"> </span><span class="k">then</span>
 <span class="k">        </span><span class="n">id</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">id_lahey</span>
 <span class="w">        </span><span class="k">return</span>
 <span class="k">    end if</span>
 
-<span class="k">    if</span><span class="w"> </span><span class="p">(</span><span class="n">check_compiler</span><span class="p">(</span><span class="n">compiler</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;lfortran&quot;</span><span class="p">))</span><span class="w"> </span><span class="k">then</span>
+<span class="k">    if</span><span class="w"> </span><span class="p">(</span><span class="n">check_compiler</span><span class="p">(</span><span class="n">compiler</span><span class="p">,</span><span class="w"> </span><span class="s2">"lfortran"</span><span class="p">))</span><span class="w"> </span><span class="k">then</span>
 <span class="k">        </span><span class="n">id</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">id_lfortran</span>
 <span class="w">        </span><span class="k">return</span>
 <span class="k">    end if</span>
 
 
-<span class="k">    if</span><span class="w"> </span><span class="p">(</span><span class="n">check_compiler</span><span class="p">(</span><span class="n">compiler</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;all&quot;</span><span class="p">))</span><span class="w"> </span><span class="k">then</span>
+<span class="k">    if</span><span class="w"> </span><span class="p">(</span><span class="n">check_compiler</span><span class="p">(</span><span class="n">compiler</span><span class="p">,</span><span class="w"> </span><span class="s2">"all"</span><span class="p">))</span><span class="w"> </span><span class="k">then</span>
 <span class="k">        </span><span class="n">id</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">id_all</span>
 <span class="w">        </span><span class="k">return</span>
 <span class="k">    end if</span>
@@ -345,7 +345,7 @@
             <p class="text-end">
               Documentation generated by
               <a href="https://github.com/Fortran-FOSS-Programmers/ford">FORD</a>
- on 2026-05-25 16:42 +0000             </p>
+ on 2026-08-27 21:47 +0000             </p>
           </div>
         </div>
         <br>

@@ -171,7 +171,7 @@
 </code></pre></div>
 
 <h2 id="synopsis">SYNOPSIS</h2>
-<div class="codehilite"><pre><span></span><code><span class="k">function</span><span class="w"> </span><span class="nf">dilate(INSTR) result</span><span class="p">(</span>OUTSTR<span class="p">)</span>
+<div class="codehilite"><pre><span></span><code><span class="k">function</span><span class="w"> </span><span class="nf">dilate</span><span class="p">(</span>INSTR<span class="p">)</span><span class="w"> </span><span class="n">result</span><span class="p">(</span><span class="n">OUTSTR</span><span class="p">)</span>
 
 <span class="w"> </span><span class="n">character</span><span class="p">(</span><span class="n">len</span><span class="p">=</span><span class="o">*</span><span class="p">),</span><span class="n">intent</span><span class="p">=(</span><span class="n">in</span><span class="p">)</span><span class="w">  </span><span class="p">::</span><span class="w"> </span><span class="n">INSTR</span>
 <span class="w"> </span><span class="n">character</span><span class="p">(</span><span class="n">len</span><span class="p">=:),</span><span class="n">allocatable</span><span class="w">  </span><span class="p">::</span><span class="w"> </span><span class="n">OUTSTR</span>
@@ -201,12 +201,12 @@
 <span class="nx">implicit</span><span class="w"> </span><span class="nx">none</span>
 <span class="nx">character</span><span class="p">(</span><span class="nx">len</span><span class="p">=:),</span><span class="nx">allocatable</span><span class="w"> </span><span class="o">::</span><span class="w"> </span><span class="k">in</span>
 <span class="nx">integer</span><span class="w">                      </span><span class="o">::</span><span class="w"> </span><span class="nx">i</span>
-<span class="w">   </span><span class="k">in</span><span class="p">=</span><span class="err">&#39;</span><span class="w">  </span><span class="nx">this</span><span class="w"> </span><span class="k">is</span><span class="w"> </span><span class="nx">my</span><span class="w"> </span><span class="kt">string</span><span class="w">  </span><span class="err">&#39;</span>
+<span class="w">   </span><span class="k">in</span><span class="p">=</span><span class="err">'</span><span class="w">  </span><span class="nx">this</span><span class="w"> </span><span class="k">is</span><span class="w"> </span><span class="nx">my</span><span class="w"> </span><span class="kt">string</span><span class="w">  </span><span class="err">'</span>
 <span class="w">   </span><span class="p">!</span><span class="w"> </span><span class="nx">change</span><span class="w"> </span><span class="nx">spaces</span><span class="w"> </span><span class="nx">to</span><span class="w"> </span><span class="nx">tabs</span><span class="w"> </span><span class="nx">to</span><span class="w"> </span><span class="nx">make</span><span class="w"> </span><span class="nx">a</span><span class="w"> </span><span class="nx">sample</span><span class="w"> </span><span class="nx">input</span>
 <span class="w">   </span><span class="nx">do</span><span class="w"> </span><span class="nx">i</span><span class="p">=</span><span class="mi">1</span><span class="p">,</span><span class="nx">len</span><span class="p">(</span><span class="k">in</span><span class="p">)</span>
-<span class="w">      </span><span class="k">if</span><span class="p">(</span><span class="k">in</span><span class="p">(</span><span class="nx">i</span><span class="p">:</span><span class="nx">i</span><span class="p">)</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="sc">&#39; &#39;</span><span class="p">)</span><span class="k">in</span><span class="p">(</span><span class="nx">i</span><span class="p">:</span><span class="nx">i</span><span class="p">)=</span><span class="nx">char</span><span class="p">(</span><span class="mi">9</span><span class="p">)</span>
+<span class="w">      </span><span class="k">if</span><span class="p">(</span><span class="k">in</span><span class="p">(</span><span class="nx">i</span><span class="p">:</span><span class="nx">i</span><span class="p">)</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="sc">' '</span><span class="p">)</span><span class="k">in</span><span class="p">(</span><span class="nx">i</span><span class="p">:</span><span class="nx">i</span><span class="p">)=</span><span class="nx">char</span><span class="p">(</span><span class="mi">9</span><span class="p">)</span>
 <span class="w">   </span><span class="nx">enddo</span>
-<span class="w">   </span><span class="nx">write</span><span class="p">(</span><span class="o">*</span><span class="p">,</span><span class="err">&#39;</span><span class="p">(</span><span class="nx">a</span><span class="p">)</span><span class="err">&#39;</span><span class="p">)</span><span class="k">in</span><span class="p">,</span><span class="nx">dilate</span><span class="p">(</span><span class="k">in</span><span class="p">)</span>
+<span class="w">   </span><span class="nx">write</span><span class="p">(</span><span class="o">*</span><span class="p">,</span><span class="err">'</span><span class="p">(</span><span class="nx">a</span><span class="p">)</span><span class="err">'</span><span class="p">)</span><span class="k">in</span><span class="p">,</span><span class="nx">dilate</span><span class="p">(</span><span class="k">in</span><span class="p">)</span>
 <span class="nx">end</span><span class="w"> </span><span class="nx">program</span><span class="w"> </span><span class="nx">demo_dilate</span>
 </code></pre></div>
 
@@ -300,7 +300,7 @@
             <p class="text-end">
               Documentation generated by
               <a href="https://github.com/Fortran-FOSS-Programmers/ford">FORD</a>
- on 2026-05-25 16:42 +0000             </p>
+ on 2026-08-27 21:47 +0000             </p>
           </div>
         </div>
         <br>

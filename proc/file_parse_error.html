@@ -179,7 +179,7 @@
     <tbody>
         <tr>
             <td>
-              <span class="anchor" id="variable-error~247"></span>
+              <span class="anchor" id="variable-error~166"></span>
               type(<a href='../type/error_t.html'>error_t</a>),
             </td>
 <td>intent(out),</td>
@@ -209,7 +209,7 @@
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-message~9"></span>
+              <span class="anchor" id="variable-message~8"></span>
               character(len=*),
             </td>
 <td>intent(in)</td>
@@ -308,15 +308,15 @@
 <span class="w">        </span><span class="kt">character</span><span class="p">(</span><span class="mi">50</span><span class="p">)</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">temp_string</span>
 
 <span class="w">        </span><span class="k">allocate</span><span class="p">(</span><span class="n">error</span><span class="p">)</span>
-<span class="w">        </span><span class="n">error</span><span class="p">%</span><span class="n">message</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">&#39;Parse error: &#39;</span><span class="o">//</span><span class="n">message</span><span class="o">//</span><span class="nb">new_line</span><span class="p">(</span><span class="s1">&#39;a&#39;</span><span class="p">)</span>
+<span class="w">        </span><span class="n">error</span><span class="p">%</span><span class="n">message</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">'Parse error: '</span><span class="o">//</span><span class="n">message</span><span class="o">//</span><span class="nb">new_line</span><span class="p">(</span><span class="s1">'a'</span><span class="p">)</span>
 
 <span class="w">        </span><span class="n">error</span><span class="p">%</span><span class="n">message</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">error</span><span class="p">%</span><span class="n">message</span><span class="o">//</span><span class="n">file_name</span>
 
 <span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="nb">present</span><span class="p">(</span><span class="n">line_num</span><span class="p">))</span><span class="w"> </span><span class="k">then</span>
 
-<span class="k">            write</span><span class="p">(</span><span class="n">temp_string</span><span class="p">,</span><span class="s1">&#39;(I0)&#39;</span><span class="p">)</span><span class="w"> </span><span class="n">line_num</span>
+<span class="k">            write</span><span class="p">(</span><span class="n">temp_string</span><span class="p">,</span><span class="s1">'(I0)'</span><span class="p">)</span><span class="w"> </span><span class="n">line_num</span>
 
-<span class="w">            </span><span class="n">error</span><span class="p">%</span><span class="n">message</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">error</span><span class="p">%</span><span class="n">message</span><span class="o">//</span><span class="s1">&#39;:&#39;</span><span class="o">//</span><span class="nb">trim</span><span class="p">(</span><span class="n">temp_string</span><span class="p">)</span>
+<span class="w">            </span><span class="n">error</span><span class="p">%</span><span class="n">message</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">error</span><span class="p">%</span><span class="n">message</span><span class="o">//</span><span class="s1">':'</span><span class="o">//</span><span class="nb">trim</span><span class="p">(</span><span class="n">temp_string</span><span class="p">)</span>
 
 <span class="w">        </span><span class="k">end if</span>
 
@@ -324,8 +324,8 @@
 
 <span class="k">            if</span><span class="w"> </span><span class="p">(</span><span class="n">line_col</span><span class="w"> </span><span class="o">&gt;</span><span class="w"> </span><span class="mi">0</span><span class="p">)</span><span class="w"> </span><span class="k">then</span>
 
-<span class="k">                write</span><span class="p">(</span><span class="n">temp_string</span><span class="p">,</span><span class="s1">&#39;(I0)&#39;</span><span class="p">)</span><span class="w"> </span><span class="n">line_col</span>
-<span class="w">                </span><span class="n">error</span><span class="p">%</span><span class="n">message</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">error</span><span class="p">%</span><span class="n">message</span><span class="o">//</span><span class="s1">&#39;:&#39;</span><span class="o">//</span><span class="nb">trim</span><span class="p">(</span><span class="n">temp_string</span><span class="p">)</span>
+<span class="k">                write</span><span class="p">(</span><span class="n">temp_string</span><span class="p">,</span><span class="s1">'(I0)'</span><span class="p">)</span><span class="w"> </span><span class="n">line_col</span>
+<span class="w">                </span><span class="n">error</span><span class="p">%</span><span class="n">message</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">error</span><span class="p">%</span><span class="n">message</span><span class="o">//</span><span class="s1">':'</span><span class="o">//</span><span class="nb">trim</span><span class="p">(</span><span class="n">temp_string</span><span class="p">)</span>
 
 <span class="w">            </span><span class="k">end if</span>
 
@@ -333,15 +333,15 @@
 
 <span class="k">        if</span><span class="w"> </span><span class="p">(</span><span class="nb">present</span><span class="p">(</span><span class="n">line_string</span><span class="p">))</span><span class="w"> </span><span class="k">then</span>
 
-<span class="k">            </span><span class="n">error</span><span class="p">%</span><span class="n">message</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">error</span><span class="p">%</span><span class="n">message</span><span class="o">//</span><span class="nb">new_line</span><span class="p">(</span><span class="s1">&#39;a&#39;</span><span class="p">)</span>
-<span class="w">            </span><span class="n">error</span><span class="p">%</span><span class="n">message</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">error</span><span class="p">%</span><span class="n">message</span><span class="o">//</span><span class="s1">&#39;   | &#39;</span><span class="o">//</span><span class="n">line_string</span>
+<span class="k">            </span><span class="n">error</span><span class="p">%</span><span class="n">message</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">error</span><span class="p">%</span><span class="n">message</span><span class="o">//</span><span class="nb">new_line</span><span class="p">(</span><span class="s1">'a'</span><span class="p">)</span>
+<span class="w">            </span><span class="n">error</span><span class="p">%</span><span class="n">message</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">error</span><span class="p">%</span><span class="n">message</span><span class="o">//</span><span class="s1">'   | '</span><span class="o">//</span><span class="n">line_string</span>
 
 <span class="w">            </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="nb">present</span><span class="p">(</span><span class="n">line_col</span><span class="p">))</span><span class="w"> </span><span class="k">then</span>
 
 <span class="k">                if</span><span class="w"> </span><span class="p">(</span><span class="n">line_col</span><span class="w"> </span><span class="o">&gt;</span><span class="w"> </span><span class="mi">0</span><span class="p">)</span><span class="w"> </span><span class="k">then</span>
 
-<span class="k">                    </span><span class="n">error</span><span class="p">%</span><span class="n">message</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">error</span><span class="p">%</span><span class="n">message</span><span class="o">//</span><span class="nb">new_line</span><span class="p">(</span><span class="s1">&#39;a&#39;</span><span class="p">)</span>
-<span class="w">                    </span><span class="n">error</span><span class="p">%</span><span class="n">message</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">error</span><span class="p">%</span><span class="n">message</span><span class="o">//</span><span class="s1">&#39;   | &#39;</span><span class="o">//</span><span class="nb">repeat</span><span class="p">(</span><span class="s1">&#39; &#39;</span><span class="p">,</span><span class="n">line_col</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span><span class="o">//</span><span class="s1">&#39;^&#39;</span>
+<span class="k">                    </span><span class="n">error</span><span class="p">%</span><span class="n">message</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">error</span><span class="p">%</span><span class="n">message</span><span class="o">//</span><span class="nb">new_line</span><span class="p">(</span><span class="s1">'a'</span><span class="p">)</span>
+<span class="w">                    </span><span class="n">error</span><span class="p">%</span><span class="n">message</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">error</span><span class="p">%</span><span class="n">message</span><span class="o">//</span><span class="s1">'   | '</span><span class="o">//</span><span class="nb">repeat</span><span class="p">(</span><span class="s1">' '</span><span class="p">,</span><span class="n">line_col</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span><span class="o">//</span><span class="s1">'^'</span>
 
 <span class="w">                </span><span class="k">end if</span>
 
@@ -373,7 +373,7 @@
             <p class="text-end">
               Documentation generated by
               <a href="https://github.com/Fortran-FOSS-Programmers/ford">FORD</a>
- on 2026-05-25 16:42 +0000             </p>
+ on 2026-08-27 21:47 +0000             </p>
           </div>
         </div>
         <br>

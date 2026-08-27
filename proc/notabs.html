@@ -207,10 +207,10 @@ use fpm_strings, only : notabs
 character(len=1024) :: in,out
 integer             :: ios,iout
    do
-      read(*,&#39;(A)&#39;,iostat=ios)in
+      read(*,'(A)',iostat=ios)in
       if(ios /= 0) exit
       call notabs(in,out,iout)
-      write(*,&#39;(a)&#39;)out(:iout)
+      write(*,'(a)')out(:iout)
    enddo
 end program demo_notabs
 </code></pre></div>
@@ -294,7 +294,7 @@ end program demo_notabs
     <h2><span class="anchor" id="src"></span>Source Code</h2>
     <div class="hl codehilite"><pre><span></span><span class="k">elemental impure subroutine </span><span class="n">notabs</span><span class="p">(</span><span class="n">instr</span><span class="p">,</span><span class="n">outstr</span><span class="p">,</span><span class="n">ilen</span><span class="p">)</span>
 
-<span class="c">! ident_31=&quot;@(#)fpm_strings::notabs(3f): convert tabs to spaces while maintaining columns, remove CRLF chars&quot;</span>
+<span class="c">! ident_31="@(#)fpm_strings::notabs(3f): convert tabs to spaces while maintaining columns, remove CRLF chars"</span>
 
 <span class="kt">character</span><span class="p">(</span><span class="nb">len</span><span class="o">=*</span><span class="p">),</span><span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">)</span><span class="w">   </span><span class="kd">::</span><span class="w"> </span><span class="n">instr</span><span class="w">        </span><span class="c">! input line to scan for tab characters</span>
 <span class="kt">character</span><span class="p">(</span><span class="nb">len</span><span class="o">=*</span><span class="p">),</span><span class="k">intent</span><span class="p">(</span><span class="n">out</span><span class="p">)</span><span class="w">  </span><span class="kd">::</span><span class="w"> </span><span class="n">outstr</span><span class="w">       </span><span class="c">! tab-expanded version of INSTR produced</span>
@@ -312,7 +312,7 @@ end program demo_notabs
 <span class="w">   </span><span class="n">ipos</span><span class="o">=</span><span class="mi">1</span><span class="w">                                     </span><span class="c">! where to put next character in output string OUTSTR</span>
 <span class="w">   </span><span class="n">lenin</span><span class="o">=</span><span class="nb">len_trim</span><span class="p">(</span><span class="n">instr</span><span class="p">(</span><span class="w"> </span><span class="mi">1</span><span class="p">:</span><span class="nb">len</span><span class="p">(</span><span class="n">instr</span><span class="p">)</span><span class="w"> </span><span class="p">))</span><span class="w">      </span><span class="c">! length of INSTR trimmed of trailing spaces</span>
 <span class="w">   </span><span class="n">lenout</span><span class="o">=</span><span class="nb">len</span><span class="p">(</span><span class="n">outstr</span><span class="p">)</span><span class="w">                         </span><span class="c">! number of characters output string OUTSTR can hold</span>
-<span class="w">   </span><span class="n">outstr</span><span class="o">=</span><span class="s2">&quot; &quot;</span><span class="w">                                 </span><span class="c">! this SHOULD blank-fill string, a buggy machine required a loop to set all characters</span>
+<span class="w">   </span><span class="n">outstr</span><span class="o">=</span><span class="s2">" "</span><span class="w">                                 </span><span class="c">! this SHOULD blank-fill string, a buggy machine required a loop to set all characters</span>
 
 <span class="w">      </span><span class="n">SCAN_LINE</span><span class="p">:</span><span class="w"> </span><span class="k">do </span><span class="n">istep</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span><span class="n">lenin</span><span class="w">             </span><span class="c">! look through input string one character at a time</span>
 <span class="w">         </span><span class="n">c</span><span class="o">=</span><span class="n">instr</span><span class="p">(</span><span class="n">istep</span><span class="p">:</span><span class="n">istep</span><span class="p">)</span><span class="w">                 </span><span class="c">! get next character</span>
@@ -324,7 +324,7 @@ end program demo_notabs
 <span class="w">            </span><span class="n">ipos</span><span class="o">=</span><span class="n">ipos</span><span class="o">+</span><span class="mi">1</span>
 <span class="w">         </span><span class="k">case </span><span class="n">default</span><span class="w">                         </span><span class="c">! c is anything else other than a tab,newline,or return  insert it in output string</span>
 <span class="w">            </span><span class="k">if</span><span class="p">(</span><span class="n">ipos</span><span class="w"> </span><span class="o">&gt;</span><span class="w"> </span><span class="n">lenout</span><span class="p">)</span><span class="k">then</span>
-<span class="k">               write</span><span class="p">(</span><span class="n">stderr</span><span class="p">,</span><span class="o">*</span><span class="p">)</span><span class="s2">&quot;*notabs* output string overflow&quot;</span>
+<span class="k">               write</span><span class="p">(</span><span class="n">stderr</span><span class="p">,</span><span class="o">*</span><span class="p">)</span><span class="s2">"*notabs* output string overflow"</span>
 <span class="w">               </span><span class="k">exit</span>
 <span class="k">            else</span>
 <span class="k">               </span><span class="n">outstr</span><span class="p">(</span><span class="n">ipos</span><span class="p">:</span><span class="n">ipos</span><span class="p">)</span><span class="o">=</span><span class="n">c</span>
@@ -360,7 +360,7 @@ end program demo_notabs
             <p class="text-end">
               Documentation generated by
               <a href="https://github.com/Fortran-FOSS-Programmers/ford">FORD</a>
- on 2026-05-25 16:42 +0000             </p>
+ on 2026-08-27 21:47 +0000             </p>
           </div>
         </div>
         <br>

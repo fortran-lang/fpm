@@ -255,7 +255,7 @@
     <tbody>
         <tr>
             <td>
-              <span class="anchor" id="variable-str~5"></span>
+              <span class="anchor" id="variable-str~7"></span>
               character(len=*),
             </td>
 <td>intent(in)</td>
@@ -270,7 +270,7 @@
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-sep~2"></span>
+              <span class="anchor" id="variable-sep"></span>
               character(len=*),
             </td>
 <td>intent(in),</td>
@@ -393,11 +393,11 @@
 <span class="kt">character</span><span class="p">(</span><span class="nb">len</span><span class="o">=</span><span class="p">:),</span><span class="k">allocatable</span><span class="w">         </span><span class="kd">::</span><span class="w"> </span><span class="n">string</span>
 <span class="kt">logical</span><span class="w">                              </span><span class="kd">::</span><span class="w"> </span><span class="n">trm_local</span>
 <span class="kt">integer</span><span class="w">                              </span><span class="kd">::</span><span class="w"> </span><span class="n">i</span>
-<span class="w">   </span><span class="k">if</span><span class="p">(</span><span class="nb">present</span><span class="p">(</span><span class="n">sep</span><span class="p">))</span><span class="k">then</span><span class="w">   </span><span class="p">;</span><span class="w"> </span><span class="n">sep_local</span><span class="o">=</span><span class="n">sep</span><span class="w">     </span><span class="p">;</span><span class="w"> </span><span class="k">else</span><span class="w"> </span><span class="p">;</span><span class="w"> </span><span class="n">sep_local</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="w">     </span><span class="p">;</span><span class="w"> </span><span class="k">endif</span>
+<span class="w">   </span><span class="k">if</span><span class="p">(</span><span class="nb">present</span><span class="p">(</span><span class="n">sep</span><span class="p">))</span><span class="k">then</span><span class="w">   </span><span class="p">;</span><span class="w"> </span><span class="n">sep_local</span><span class="o">=</span><span class="n">sep</span><span class="w">     </span><span class="p">;</span><span class="w"> </span><span class="k">else</span><span class="w"> </span><span class="p">;</span><span class="w"> </span><span class="n">sep_local</span><span class="o">=</span><span class="s1">''</span><span class="w">     </span><span class="p">;</span><span class="w"> </span><span class="k">endif</span>
 <span class="k">   if</span><span class="p">(</span><span class="nb">present</span><span class="p">(</span><span class="n">trm</span><span class="p">))</span><span class="k">then</span><span class="w">   </span><span class="p">;</span><span class="w"> </span><span class="n">trm_local</span><span class="o">=</span><span class="n">trm</span><span class="w">     </span><span class="p">;</span><span class="w"> </span><span class="k">else</span><span class="w"> </span><span class="p">;</span><span class="w"> </span><span class="n">trm_local</span><span class="o">=</span><span class="p">.</span><span class="n">true</span><span class="p">.</span><span class="w"> </span><span class="p">;</span><span class="w"> </span><span class="k">endif</span>
-<span class="k">   if</span><span class="p">(</span><span class="nb">present</span><span class="p">(</span><span class="n">left</span><span class="p">))</span><span class="k">then</span><span class="w">  </span><span class="p">;</span><span class="w"> </span><span class="n">left_local</span><span class="o">=</span><span class="n">left</span><span class="w">   </span><span class="p">;</span><span class="w"> </span><span class="k">else</span><span class="w"> </span><span class="p">;</span><span class="w"> </span><span class="n">left_local</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="w">    </span><span class="p">;</span><span class="w"> </span><span class="k">endif</span>
-<span class="k">   if</span><span class="p">(</span><span class="nb">present</span><span class="p">(</span><span class="n">right</span><span class="p">))</span><span class="k">then</span><span class="w"> </span><span class="p">;</span><span class="w"> </span><span class="n">right_local</span><span class="o">=</span><span class="n">right</span><span class="w"> </span><span class="p">;</span><span class="w"> </span><span class="k">else</span><span class="w"> </span><span class="p">;</span><span class="w"> </span><span class="n">right_local</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="w">   </span><span class="p">;</span><span class="w"> </span><span class="k">endif</span>
-<span class="k">   </span><span class="n">string</span><span class="o">=</span><span class="s1">&#39;&#39;</span>
+<span class="k">   if</span><span class="p">(</span><span class="nb">present</span><span class="p">(</span><span class="n">left</span><span class="p">))</span><span class="k">then</span><span class="w">  </span><span class="p">;</span><span class="w"> </span><span class="n">left_local</span><span class="o">=</span><span class="n">left</span><span class="w">   </span><span class="p">;</span><span class="w"> </span><span class="k">else</span><span class="w"> </span><span class="p">;</span><span class="w"> </span><span class="n">left_local</span><span class="o">=</span><span class="s1">''</span><span class="w">    </span><span class="p">;</span><span class="w"> </span><span class="k">endif</span>
+<span class="k">   if</span><span class="p">(</span><span class="nb">present</span><span class="p">(</span><span class="n">right</span><span class="p">))</span><span class="k">then</span><span class="w"> </span><span class="p">;</span><span class="w"> </span><span class="n">right_local</span><span class="o">=</span><span class="n">right</span><span class="w"> </span><span class="p">;</span><span class="w"> </span><span class="k">else</span><span class="w"> </span><span class="p">;</span><span class="w"> </span><span class="n">right_local</span><span class="o">=</span><span class="s1">''</span><span class="w">   </span><span class="p">;</span><span class="w"> </span><span class="k">endif</span>
+<span class="k">   </span><span class="n">string</span><span class="o">=</span><span class="s1">''</span>
 <span class="w">   </span><span class="k">if</span><span class="p">(</span><span class="n">size</span><span class="p">(</span><span class="n">str</span><span class="p">)</span><span class="o">==</span><span class="mi">0</span><span class="p">)</span><span class="k">then</span>
 <span class="k">      </span><span class="n">string</span><span class="o">=</span><span class="n">string</span><span class="o">//</span><span class="n">left_local</span><span class="o">//</span><span class="n">right_local</span>
 <span class="w">   </span><span class="k">else</span>
@@ -440,7 +440,7 @@
             <p class="text-end">
               Documentation generated by
               <a href="https://github.com/Fortran-FOSS-Programmers/ford">FORD</a>
- on 2026-05-25 16:42 +0000             </p>
+ on 2026-08-27 21:47 +0000             </p>
           </div>
         </div>
         <br>

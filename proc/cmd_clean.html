@@ -180,7 +180,7 @@ to clear the registry cache.</p>
     <tbody>
         <tr>
             <td>
-              <span class="anchor" id="variable-settings~14"></span>
+              <span class="anchor" id="variable-settings~8"></span>
               class(<a href='../type/fpm_clean_settings.html'>fpm_clean_settings</a>),
             </td>
 <td>intent(inout)</td>
@@ -228,33 +228,33 @@ to clear the registry cache.</p>
 
 <span class="w">    </span><span class="c">! Handle target-specific cleaning</span>
 <span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="nb">any</span><span class="p">([</span><span class="n">settings</span><span class="p">%</span><span class="n">clean_test</span><span class="p">,</span><span class="w"> </span><span class="n">settings</span><span class="p">%</span><span class="n">clean_apps</span><span class="p">,</span><span class="w"> </span><span class="n">settings</span><span class="p">%</span><span class="n">clean_examples</span><span class="p">]))</span><span class="w"> </span><span class="k">then</span>
-<span class="k">        if</span><span class="w"> </span><span class="p">(.</span><span class="nb">not</span><span class="p">.</span><span class="w"> </span><span class="n">is_dir</span><span class="p">(</span><span class="s1">&#39;build&#39;</span><span class="p">))</span><span class="w"> </span><span class="k">then</span>
-<span class="k">            write</span><span class="w"> </span><span class="p">(</span><span class="n">stdout</span><span class="p">,</span><span class="w"> </span><span class="s1">&#39;(A)&#39;</span><span class="p">)</span><span class="w"> </span><span class="s2">&quot;fpm: No build directory found.&quot;</span>
+<span class="k">        if</span><span class="w"> </span><span class="p">(.</span><span class="nb">not</span><span class="p">.</span><span class="w"> </span><span class="n">is_dir</span><span class="p">(</span><span class="s1">'build'</span><span class="p">))</span><span class="w"> </span><span class="k">then</span>
+<span class="k">            write</span><span class="w"> </span><span class="p">(</span><span class="n">stdout</span><span class="p">,</span><span class="w"> </span><span class="s1">'(A)'</span><span class="p">)</span><span class="w"> </span><span class="s2">"fpm: No build directory found."</span>
 <span class="w">            </span><span class="k">return</span>
 <span class="k">        end if</span>
 <span class="k">        call </span><span class="n">delete_targets</span><span class="p">(</span><span class="n">settings</span><span class="p">,</span><span class="w"> </span><span class="n">error</span><span class="p">)</span>
 <span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="nb">allocated</span><span class="p">(</span><span class="n">error</span><span class="p">))</span><span class="w"> </span><span class="k">then</span>
-<span class="k">            write</span><span class="p">(</span><span class="n">stderr</span><span class="p">,</span><span class="w"> </span><span class="s1">&#39;(A)&#39;</span><span class="p">)</span><span class="w"> </span><span class="s1">&#39;Error: &#39;</span><span class="w"> </span><span class="o">//</span><span class="w"> </span><span class="n">error</span><span class="p">%</span><span class="n">message</span>
+<span class="k">            write</span><span class="p">(</span><span class="n">stderr</span><span class="p">,</span><span class="w"> </span><span class="s1">'(A)'</span><span class="p">)</span><span class="w"> </span><span class="s1">'Error: '</span><span class="w"> </span><span class="o">//</span><span class="w"> </span><span class="n">error</span><span class="p">%</span><span class="n">message</span>
 <span class="w">            </span><span class="k">return</span>
 <span class="k">        end if</span>
 <span class="k">        return</span>
 <span class="k">    end if</span>
 
-<span class="k">    if</span><span class="w"> </span><span class="p">(</span><span class="n">is_dir</span><span class="p">(</span><span class="s1">&#39;build&#39;</span><span class="p">))</span><span class="w"> </span><span class="k">then</span>
+<span class="k">    if</span><span class="w"> </span><span class="p">(</span><span class="n">is_dir</span><span class="p">(</span><span class="s1">'build'</span><span class="p">))</span><span class="w"> </span><span class="k">then</span>
 <span class="w">        </span><span class="c">! Remove the entire build directory</span>
 <span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">settings</span><span class="p">%</span><span class="n">clean_all</span><span class="p">)</span><span class="w"> </span><span class="k">then</span>
-<span class="k">            call </span><span class="n">os_delete_dir</span><span class="p">(</span><span class="n">os_is_unix</span><span class="p">(),</span><span class="w"> </span><span class="s1">&#39;build&#39;</span><span class="p">);</span><span class="w"> </span><span class="k">return</span>
+<span class="k">            call </span><span class="n">os_delete_dir</span><span class="p">(</span><span class="n">os_is_unix</span><span class="p">(),</span><span class="w"> </span><span class="s1">'build'</span><span class="p">);</span><span class="w"> </span><span class="k">return</span>
 <span class="w">        </span><span class="c">! Remove the build directory but skip dependencies</span>
 <span class="w">        </span><span class="k">else if</span><span class="w"> </span><span class="p">(</span><span class="n">settings</span><span class="p">%</span><span class="n">clean_skip</span><span class="p">)</span><span class="w"> </span><span class="k">then</span>
 <span class="k">            call </span><span class="n">delete_skip</span><span class="p">(</span><span class="n">os_is_unix</span><span class="p">());</span><span class="w"> </span><span class="k">return</span>
 <span class="k">        end if</span>
 
 <span class="w">        </span><span class="c">! Prompt to remove the build directory but skip dependencies</span>
-<span class="w">        </span><span class="k">write</span><span class="p">(</span><span class="n">stdout</span><span class="p">,</span><span class="w"> </span><span class="s1">&#39;(A)&#39;</span><span class="p">,</span><span class="w"> </span><span class="n">advance</span><span class="o">=</span><span class="s1">&#39;no&#39;</span><span class="p">)</span><span class="w"> </span><span class="s2">&quot;Delete build, excluding dependencies (y/n)? &quot;</span>
-<span class="w">        </span><span class="k">read</span><span class="p">(</span><span class="n">stdin</span><span class="p">,</span><span class="w"> </span><span class="s1">&#39;(A1)&#39;</span><span class="p">)</span><span class="w"> </span><span class="n">user_response</span>
-<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">lower</span><span class="p">(</span><span class="n">user_response</span><span class="p">)</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="s1">&#39;y&#39;</span><span class="p">)</span><span class="w"> </span><span class="k">call </span><span class="n">delete_skip</span><span class="p">(</span><span class="n">os_is_unix</span><span class="p">())</span>
+<span class="w">        </span><span class="k">write</span><span class="p">(</span><span class="n">stdout</span><span class="p">,</span><span class="w"> </span><span class="s1">'(A)'</span><span class="p">,</span><span class="w"> </span><span class="n">advance</span><span class="o">=</span><span class="s1">'no'</span><span class="p">)</span><span class="w"> </span><span class="s2">"Delete build, excluding dependencies (y/n)? "</span>
+<span class="w">        </span><span class="k">read</span><span class="p">(</span><span class="n">stdin</span><span class="p">,</span><span class="w"> </span><span class="s1">'(A1)'</span><span class="p">)</span><span class="w"> </span><span class="n">user_response</span>
+<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">lower</span><span class="p">(</span><span class="n">user_response</span><span class="p">)</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="s1">'y'</span><span class="p">)</span><span class="w"> </span><span class="k">call </span><span class="n">delete_skip</span><span class="p">(</span><span class="n">os_is_unix</span><span class="p">())</span>
 <span class="w">    </span><span class="k">else</span>
-<span class="k">        write</span><span class="w"> </span><span class="p">(</span><span class="n">stdout</span><span class="p">,</span><span class="w"> </span><span class="s1">&#39;(A)&#39;</span><span class="p">)</span><span class="w"> </span><span class="s2">&quot;fpm: No build directory found.&quot;</span>
+<span class="k">        write</span><span class="w"> </span><span class="p">(</span><span class="n">stdout</span><span class="p">,</span><span class="w"> </span><span class="s1">'(A)'</span><span class="p">)</span><span class="w"> </span><span class="s2">"fpm: No build directory found."</span>
 <span class="w">    </span><span class="k">end if</span>
 <span class="k">end subroutine </span><span class="n">cmd_clean</span>
 </pre></div>
@@ -280,7 +280,7 @@ to clear the registry cache.</p>
             <p class="text-end">
               Documentation generated by
               <a href="https://github.com/Fortran-FOSS-Programmers/ford">FORD</a>
- on 2026-05-25 16:42 +0000             </p>
+ on 2026-08-27 21:47 +0000             </p>
           </div>
         </div>
         <br>

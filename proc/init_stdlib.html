@@ -185,7 +185,7 @@ If an external BLAS is available, deploy appropriate macros    </p>
     <tbody>
         <tr>
             <td>
-              <span class="anchor" id="variable-this~2"></span>
+              <span class="anchor" id="variable-this~22"></span>
               class(<a href='../type/metapackage_t.html'>metapackage_t</a>),
             </td>
 <td>intent(inout)</td>
@@ -200,7 +200,7 @@ If an external BLAS is available, deploy appropriate macros    </p>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-compiler~3"></span>
+              <span class="anchor" id="variable-compiler~22"></span>
               type(<a href='../type/compiler_t.html'>compiler_t</a>),
             </td>
 <td>intent(in)</td>
@@ -215,7 +215,7 @@ If an external BLAS is available, deploy appropriate macros    </p>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-all_meta"></span>
+              <span class="anchor" id="variable-all_meta~5"></span>
               type(<a href='../type/metapackage_request_t.html'>metapackage_request_t</a>),
             </td>
 <td>intent(in)</td>
@@ -230,7 +230,7 @@ If an external BLAS is available, deploy appropriate macros    </p>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-error~3"></span>
+              <span class="anchor" id="variable-error~135"></span>
               type(<a href='../type/error_t.html'>error_t</a>),
             </td>
 <td>intent(out),</td>
@@ -273,7 +273,7 @@ If an external BLAS is available, deploy appropriate macros    </p>
 <span class="w">        </span><span class="k">call </span><span class="n">destroy</span><span class="p">(</span><span class="n">this</span><span class="p">)</span>
 <span class="w">        </span>
 <span class="w">        </span><span class="c">!&gt; Set name</span>
-<span class="w">        </span><span class="n">this</span><span class="p">%</span><span class="n">name</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;stdlib&quot;</span>
+<span class="w">        </span><span class="n">this</span><span class="p">%</span><span class="n">name</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">"stdlib"</span>
 <span class="w">        </span>
 <span class="w">        </span><span class="c">!&gt; Stdlib is queried as a dependency from the official repository</span>
 <span class="w">        </span><span class="n">this</span><span class="p">%</span><span class="n">has_dependencies</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">.</span><span class="n">true</span><span class="p">.</span>
@@ -281,18 +281,18 @@ If an external BLAS is available, deploy appropriate macros    </p>
 <span class="w">        </span><span class="k">allocate</span><span class="p">(</span><span class="n">this</span><span class="p">%</span><span class="n">dependency</span><span class="p">(</span><span class="mi">2</span><span class="p">))</span>
 
 <span class="w">        </span><span class="c">!&gt; 1) Test-drive</span>
-<span class="w">        </span><span class="n">this</span><span class="p">%</span><span class="n">dependency</span><span class="p">(</span><span class="mi">1</span><span class="p">)%</span><span class="n">name</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;test-drive&quot;</span>
-<span class="w">        </span><span class="n">this</span><span class="p">%</span><span class="n">dependency</span><span class="p">(</span><span class="mi">1</span><span class="p">)%</span><span class="n">git</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">git_target_branch</span><span class="p">(</span><span class="s2">&quot;https://github.com/fortran-lang/test-drive&quot;</span><span class="p">,</span><span class="s2">&quot;v0.4.0&quot;</span><span class="p">)</span>
+<span class="w">        </span><span class="n">this</span><span class="p">%</span><span class="n">dependency</span><span class="p">(</span><span class="mi">1</span><span class="p">)%</span><span class="n">name</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">"test-drive"</span>
+<span class="w">        </span><span class="n">this</span><span class="p">%</span><span class="n">dependency</span><span class="p">(</span><span class="mi">1</span><span class="p">)%</span><span class="n">git</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">git_target_branch</span><span class="p">(</span><span class="s2">"https://github.com/fortran-lang/test-drive"</span><span class="p">,</span><span class="s2">"v0.4.0"</span><span class="p">)</span>
 <span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(.</span><span class="nb">not</span><span class="p">.</span><span class="nb">allocated</span><span class="p">(</span><span class="n">this</span><span class="p">%</span><span class="n">dependency</span><span class="p">(</span><span class="mi">1</span><span class="p">)%</span><span class="n">git</span><span class="p">))</span><span class="w"> </span><span class="k">then</span>
-<span class="k">            call </span><span class="n">fatal_error</span><span class="p">(</span><span class="n">error</span><span class="p">,</span><span class="s1">&#39;cannot initialize test-drive git dependency for stdlib metapackage&#39;</span><span class="p">)</span>
+<span class="k">            call </span><span class="n">fatal_error</span><span class="p">(</span><span class="n">error</span><span class="p">,</span><span class="s1">'cannot initialize test-drive git dependency for stdlib metapackage'</span><span class="p">)</span>
 <span class="w">            </span><span class="k">return</span>
 <span class="k">        end if</span>
 
 <span class="w">        </span><span class="c">!&gt; 2) stdlib</span>
-<span class="w">        </span><span class="n">this</span><span class="p">%</span><span class="n">dependency</span><span class="p">(</span><span class="mi">2</span><span class="p">)%</span><span class="n">name</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;stdlib&quot;</span>
-<span class="w">        </span><span class="n">this</span><span class="p">%</span><span class="n">dependency</span><span class="p">(</span><span class="mi">2</span><span class="p">)%</span><span class="n">git</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">git_target_branch</span><span class="p">(</span><span class="s2">&quot;https://github.com/fortran-lang/stdlib&quot;</span><span class="p">,</span><span class="s2">&quot;stdlib-fpm&quot;</span><span class="p">)</span>
+<span class="w">        </span><span class="n">this</span><span class="p">%</span><span class="n">dependency</span><span class="p">(</span><span class="mi">2</span><span class="p">)%</span><span class="n">name</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">"stdlib"</span>
+<span class="w">        </span><span class="n">this</span><span class="p">%</span><span class="n">dependency</span><span class="p">(</span><span class="mi">2</span><span class="p">)%</span><span class="n">git</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">git_target_branch</span><span class="p">(</span><span class="s2">"https://github.com/fortran-lang/stdlib"</span><span class="p">,</span><span class="s2">"stdlib-fpm"</span><span class="p">)</span>
 <span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(.</span><span class="nb">not</span><span class="p">.</span><span class="nb">allocated</span><span class="p">(</span><span class="n">this</span><span class="p">%</span><span class="n">dependency</span><span class="p">(</span><span class="mi">2</span><span class="p">)%</span><span class="n">git</span><span class="p">))</span><span class="w"> </span><span class="k">then</span>
-<span class="k">            call </span><span class="n">fatal_error</span><span class="p">(</span><span class="n">error</span><span class="p">,</span><span class="s1">&#39;cannot initialize git repo dependency for stdlib metapackage&#39;</span><span class="p">)</span>
+<span class="k">            call </span><span class="n">fatal_error</span><span class="p">(</span><span class="n">error</span><span class="p">,</span><span class="s1">'cannot initialize git repo dependency for stdlib metapackage'</span><span class="p">)</span>
 <span class="w">            </span><span class="k">return</span>
 <span class="k">        end if</span>
 <span class="w">        </span>
@@ -300,14 +300,14 @@ If an external BLAS is available, deploy appropriate macros    </p>
 <span class="w">        </span><span class="n">with_blas</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">external_blas</span><span class="p">(</span><span class="n">all_meta</span><span class="p">)</span>
 <span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">with_blas</span><span class="p">)</span><span class="w"> </span><span class="k">then </span>
 <span class="k">            allocate</span><span class="p">(</span><span class="n">this</span><span class="p">%</span><span class="n">preprocess</span><span class="p">)</span>
-<span class="w">            </span><span class="k">call </span><span class="n">this</span><span class="p">%</span><span class="n">preprocess</span><span class="p">%</span><span class="n">new</span><span class="p">([</span><span class="n">string_t</span><span class="p">(</span><span class="s1">&#39;STDLIB_EXTERNAL_BLAS&#39;</span><span class="p">),</span><span class="n">string_t</span><span class="p">(</span><span class="s1">&#39;STDLIB_EXTERNAL_LAPACK&#39;</span><span class="p">)])</span>
+<span class="w">            </span><span class="k">call </span><span class="n">this</span><span class="p">%</span><span class="n">preprocess</span><span class="p">%</span><span class="n">new</span><span class="p">([</span><span class="n">string_t</span><span class="p">(</span><span class="s1">'STDLIB_EXTERNAL_BLAS'</span><span class="p">),</span><span class="n">string_t</span><span class="p">(</span><span class="s1">'STDLIB_EXTERNAL_LAPACK'</span><span class="p">)])</span>
 <span class="w">            </span><span class="k">call </span><span class="n">this</span><span class="p">%</span><span class="n">dependency</span><span class="p">(</span><span class="mi">2</span><span class="p">)%</span><span class="n">add_preprocess</span><span class="p">(</span><span class="n">this</span><span class="p">%</span><span class="n">preprocess</span><span class="p">)</span>
 <span class="w">        </span><span class="k">end if</span>
 
 <span class="w">        </span><span class="c">! Stdlib is not 100% thread safe. print a warning to the user</span>
 <span class="w">        </span><span class="k">do </span><span class="n">i</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span><span class="n">size</span><span class="p">(</span><span class="n">all_meta</span><span class="p">)</span>
-<span class="w">            </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">all_meta</span><span class="p">(</span><span class="n">i</span><span class="p">)%</span><span class="n">name</span><span class="o">==</span><span class="s2">&quot;openmp&quot;</span><span class="p">)</span><span class="w"> </span><span class="k">then </span>
-<span class="k">                write</span><span class="p">(</span><span class="n">stdout</span><span class="p">,</span><span class="s1">&#39;(a)&#39;</span><span class="p">)</span><span class="s1">&#39;&lt;WARNING&gt; both openmp and stdlib requested: some functions may not be thread-safe!&#39;</span>
+<span class="w">            </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">all_meta</span><span class="p">(</span><span class="n">i</span><span class="p">)%</span><span class="n">name</span><span class="o">==</span><span class="s2">"openmp"</span><span class="p">)</span><span class="w"> </span><span class="k">then </span>
+<span class="k">                write</span><span class="p">(</span><span class="n">stdout</span><span class="p">,</span><span class="s1">'(a)'</span><span class="p">)</span><span class="s1">'&lt;WARNING&gt; both openmp and stdlib requested: some functions may not be thread-safe!'</span>
 <span class="w">            </span><span class="k">end if                </span>
 <span class="k">        end do</span>
 
@@ -335,7 +335,7 @@ If an external BLAS is available, deploy appropriate macros    </p>
             <p class="text-end">
               Documentation generated by
               <a href="https://github.com/Fortran-FOSS-Programmers/ford">FORD</a>
- on 2026-05-25 16:42 +0000             </p>
+ on 2026-08-27 21:47 +0000             </p>
           </div>
         </div>
         <br>

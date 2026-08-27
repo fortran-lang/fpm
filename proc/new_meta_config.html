@@ -181,7 +181,7 @@ the &ldquo;new_dependencies&rdquo; check</p>
     <tbody>
         <tr>
             <td>
-              <span class="anchor" id="variable-self~64"></span>
+              <span class="anchor" id="variable-self~167"></span>
               type(<a href='../type/metapackage_config_t.html'>metapackage_config_t</a>),
             </td>
 <td>intent(out)</td>
@@ -196,7 +196,7 @@ the &ldquo;new_dependencies&rdquo; check</p>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-table~17"></span>
+              <span class="anchor" id="variable-table~91"></span>
               type(toml_table),
             </td>
 <td>intent(inout)</td>
@@ -226,7 +226,7 @@ the &ldquo;new_dependencies&rdquo; check</p>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-error~29"></span>
+              <span class="anchor" id="variable-error~192"></span>
               type(<a href='../type/error_t.html'>error_t</a>),
             </td>
 <td>intent(out),</td>
@@ -273,26 +273,26 @@ the &ldquo;new_dependencies&rdquo; check</p>
 <span class="w">        </span><span class="kt">integer</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="nb">stat</span>
 
 <span class="w">        </span><span class="c">!&gt; The toml table is not checked here because it already passed</span>
-<span class="w">        </span><span class="c">!&gt; the &quot;new_dependencies&quot; check</span>
-<span class="w">        </span><span class="k">call </span><span class="n">new_meta_request</span><span class="p">(</span><span class="n">self</span><span class="p">%</span><span class="n">openmp</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;openmp&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">table</span><span class="p">,</span><span class="w"> </span><span class="n">meta_allowed</span><span class="p">,</span><span class="w"> </span><span class="n">error</span><span class="p">)</span>
+<span class="w">        </span><span class="c">!&gt; the "new_dependencies" check</span>
+<span class="w">        </span><span class="k">call </span><span class="n">new_meta_request</span><span class="p">(</span><span class="n">self</span><span class="p">%</span><span class="n">openmp</span><span class="p">,</span><span class="w"> </span><span class="s2">"openmp"</span><span class="p">,</span><span class="w"> </span><span class="n">table</span><span class="p">,</span><span class="w"> </span><span class="n">meta_allowed</span><span class="p">,</span><span class="w"> </span><span class="n">error</span><span class="p">)</span>
 <span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="nb">allocated</span><span class="p">(</span><span class="n">error</span><span class="p">))</span><span class="w"> </span><span class="k">return</span>
 
-<span class="k">        call </span><span class="n">new_meta_request</span><span class="p">(</span><span class="n">self</span><span class="p">%</span><span class="n">stdlib</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;stdlib&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">table</span><span class="p">,</span><span class="w"> </span><span class="n">meta_allowed</span><span class="p">,</span><span class="w"> </span><span class="n">error</span><span class="p">)</span>
+<span class="k">        call </span><span class="n">new_meta_request</span><span class="p">(</span><span class="n">self</span><span class="p">%</span><span class="n">stdlib</span><span class="p">,</span><span class="w"> </span><span class="s2">"stdlib"</span><span class="p">,</span><span class="w"> </span><span class="n">table</span><span class="p">,</span><span class="w"> </span><span class="n">meta_allowed</span><span class="p">,</span><span class="w"> </span><span class="n">error</span><span class="p">)</span>
 <span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="nb">allocated</span><span class="p">(</span><span class="n">error</span><span class="p">))</span><span class="w"> </span><span class="k">return</span>
 
-<span class="k">        call </span><span class="n">new_meta_request</span><span class="p">(</span><span class="n">self</span><span class="p">%</span><span class="n">minpack</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;minpack&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">table</span><span class="p">,</span><span class="w"> </span><span class="n">meta_allowed</span><span class="p">,</span><span class="w"> </span><span class="n">error</span><span class="p">)</span>
+<span class="k">        call </span><span class="n">new_meta_request</span><span class="p">(</span><span class="n">self</span><span class="p">%</span><span class="n">minpack</span><span class="p">,</span><span class="w"> </span><span class="s2">"minpack"</span><span class="p">,</span><span class="w"> </span><span class="n">table</span><span class="p">,</span><span class="w"> </span><span class="n">meta_allowed</span><span class="p">,</span><span class="w"> </span><span class="n">error</span><span class="p">)</span>
 <span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="nb">allocated</span><span class="p">(</span><span class="n">error</span><span class="p">))</span><span class="w"> </span><span class="k">return</span>
 
-<span class="k">        call </span><span class="n">new_meta_request</span><span class="p">(</span><span class="n">self</span><span class="p">%</span><span class="n">mpi</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;mpi&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">table</span><span class="p">,</span><span class="w"> </span><span class="n">meta_allowed</span><span class="p">,</span><span class="w"> </span><span class="n">error</span><span class="p">)</span>
+<span class="k">        call </span><span class="n">new_meta_request</span><span class="p">(</span><span class="n">self</span><span class="p">%</span><span class="n">mpi</span><span class="p">,</span><span class="w"> </span><span class="s2">"mpi"</span><span class="p">,</span><span class="w"> </span><span class="n">table</span><span class="p">,</span><span class="w"> </span><span class="n">meta_allowed</span><span class="p">,</span><span class="w"> </span><span class="n">error</span><span class="p">)</span>
 <span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="nb">allocated</span><span class="p">(</span><span class="n">error</span><span class="p">))</span><span class="w"> </span><span class="k">return</span>
 
-<span class="k">        call </span><span class="n">new_meta_request</span><span class="p">(</span><span class="n">self</span><span class="p">%</span><span class="n">hdf5</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;hdf5&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">table</span><span class="p">,</span><span class="w"> </span><span class="n">meta_allowed</span><span class="p">,</span><span class="w"> </span><span class="n">error</span><span class="p">)</span>
+<span class="k">        call </span><span class="n">new_meta_request</span><span class="p">(</span><span class="n">self</span><span class="p">%</span><span class="n">hdf5</span><span class="p">,</span><span class="w"> </span><span class="s2">"hdf5"</span><span class="p">,</span><span class="w"> </span><span class="n">table</span><span class="p">,</span><span class="w"> </span><span class="n">meta_allowed</span><span class="p">,</span><span class="w"> </span><span class="n">error</span><span class="p">)</span>
 <span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="nb">allocated</span><span class="p">(</span><span class="n">error</span><span class="p">))</span><span class="w"> </span><span class="k">return</span>
 
-<span class="k">        call </span><span class="n">new_meta_request</span><span class="p">(</span><span class="n">self</span><span class="p">%</span><span class="n">netcdf</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;netcdf&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">table</span><span class="p">,</span><span class="w"> </span><span class="n">meta_allowed</span><span class="p">,</span><span class="w"> </span><span class="n">error</span><span class="p">)</span>
+<span class="k">        call </span><span class="n">new_meta_request</span><span class="p">(</span><span class="n">self</span><span class="p">%</span><span class="n">netcdf</span><span class="p">,</span><span class="w"> </span><span class="s2">"netcdf"</span><span class="p">,</span><span class="w"> </span><span class="n">table</span><span class="p">,</span><span class="w"> </span><span class="n">meta_allowed</span><span class="p">,</span><span class="w"> </span><span class="n">error</span><span class="p">)</span>
 <span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="nb">allocated</span><span class="p">(</span><span class="n">error</span><span class="p">))</span><span class="w"> </span><span class="k">return</span>
 
-<span class="k">        call </span><span class="n">new_meta_request</span><span class="p">(</span><span class="n">self</span><span class="p">%</span><span class="n">blas</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;blas&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">table</span><span class="p">,</span><span class="w"> </span><span class="n">meta_allowed</span><span class="p">,</span><span class="w"> </span><span class="n">error</span><span class="p">)</span>
+<span class="k">        call </span><span class="n">new_meta_request</span><span class="p">(</span><span class="n">self</span><span class="p">%</span><span class="n">blas</span><span class="p">,</span><span class="w"> </span><span class="s2">"blas"</span><span class="p">,</span><span class="w"> </span><span class="n">table</span><span class="p">,</span><span class="w"> </span><span class="n">meta_allowed</span><span class="p">,</span><span class="w"> </span><span class="n">error</span><span class="p">)</span>
 <span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="nb">allocated</span><span class="p">(</span><span class="n">error</span><span class="p">))</span><span class="w"> </span><span class="k">return</span>
 <span class="k">        </span>
 <span class="k">    end subroutine </span><span class="n">new_meta_config</span>
@@ -319,7 +319,7 @@ the &ldquo;new_dependencies&rdquo; check</p>
             <p class="text-end">
               Documentation generated by
               <a href="https://github.com/Fortran-FOSS-Programmers/ford">FORD</a>
- on 2026-05-25 16:42 +0000             </p>
+ on 2026-08-27 21:47 +0000             </p>
           </div>
         </div>
         <br>

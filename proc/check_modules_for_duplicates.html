@@ -178,7 +178,7 @@
     <tbody>
         <tr>
             <td>
-              <span class="anchor" id="variable-model~18"></span>
+              <span class="anchor" id="variable-model~15"></span>
               type(<a href='../type/fpm_model_t.html'>fpm_model_t</a>),
             </td>
 <td>intent(in)</td>
@@ -253,8 +253,8 @@
 <span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="nb">allocated</span><span class="p">(</span><span class="n">model</span><span class="p">%</span><span class="n">packages</span><span class="p">(</span><span class="n">k</span><span class="p">)%</span><span class="n">sources</span><span class="p">(</span><span class="n">l</span><span class="p">)%</span><span class="n">modules_provided</span><span class="p">))</span><span class="w"> </span><span class="k">then</span>
 <span class="k">          do </span><span class="n">m</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span><span class="n">size</span><span class="p">(</span><span class="n">model</span><span class="p">%</span><span class="n">packages</span><span class="p">(</span><span class="n">k</span><span class="p">)%</span><span class="n">sources</span><span class="p">(</span><span class="n">l</span><span class="p">)%</span><span class="n">modules_provided</span><span class="p">)</span>
 <span class="w">            </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">model</span><span class="p">%</span><span class="n">packages</span><span class="p">(</span><span class="n">k</span><span class="p">)%</span><span class="n">sources</span><span class="p">(</span><span class="n">l</span><span class="p">)%</span><span class="n">modules_provided</span><span class="p">(</span><span class="n">m</span><span class="p">)%</span><span class="n">s</span><span class="p">.</span><span class="n">in</span><span class="p">.</span><span class="n">modules</span><span class="p">(:</span><span class="n">modi</span><span class="o">-</span><span class="mi">1</span><span class="p">))</span><span class="w"> </span><span class="k">then</span>
-<span class="k">              write</span><span class="p">(</span><span class="n">stderr</span><span class="p">,</span><span class="w"> </span><span class="o">*</span><span class="p">)</span><span class="w"> </span><span class="s2">&quot;Warning: Module &quot;</span><span class="p">,</span><span class="n">model</span><span class="p">%</span><span class="n">packages</span><span class="p">(</span><span class="n">k</span><span class="p">)%</span><span class="n">sources</span><span class="p">(</span><span class="n">l</span><span class="p">)%</span><span class="n">modules_provided</span><span class="p">(</span><span class="n">m</span><span class="p">)%</span><span class="n">s</span><span class="p">,</span><span class="w"> </span><span class="p">&amp;</span>
-<span class="w">                </span><span class="s2">&quot; in &quot;</span><span class="p">,</span><span class="n">model</span><span class="p">%</span><span class="n">packages</span><span class="p">(</span><span class="n">k</span><span class="p">)%</span><span class="n">sources</span><span class="p">(</span><span class="n">l</span><span class="p">)%</span><span class="n">file_name</span><span class="p">,</span><span class="s2">&quot; is a duplicate&quot;</span>
+<span class="k">              write</span><span class="p">(</span><span class="n">stderr</span><span class="p">,</span><span class="w"> </span><span class="o">*</span><span class="p">)</span><span class="w"> </span><span class="s2">"Warning: Module "</span><span class="p">,</span><span class="n">model</span><span class="p">%</span><span class="n">packages</span><span class="p">(</span><span class="n">k</span><span class="p">)%</span><span class="n">sources</span><span class="p">(</span><span class="n">l</span><span class="p">)%</span><span class="n">modules_provided</span><span class="p">(</span><span class="n">m</span><span class="p">)%</span><span class="n">s</span><span class="p">,</span><span class="w"> </span><span class="p">&amp;</span>
+<span class="w">                </span><span class="s2">" in "</span><span class="p">,</span><span class="n">model</span><span class="p">%</span><span class="n">packages</span><span class="p">(</span><span class="n">k</span><span class="p">)%</span><span class="n">sources</span><span class="p">(</span><span class="n">l</span><span class="p">)%</span><span class="n">file_name</span><span class="p">,</span><span class="s2">" is a duplicate"</span>
 <span class="w">              </span><span class="n">duplicates_found</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">.</span><span class="n">true</span><span class="p">.</span>
 <span class="w">            </span><span class="k">else</span>
 <span class="k">              </span><span class="n">modules</span><span class="p">(</span><span class="n">modi</span><span class="p">)</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">model</span><span class="p">%</span><span class="n">packages</span><span class="p">(</span><span class="n">k</span><span class="p">)%</span><span class="n">sources</span><span class="p">(</span><span class="n">l</span><span class="p">)%</span><span class="n">modules_provided</span><span class="p">(</span><span class="n">m</span><span class="p">)</span>
@@ -288,7 +288,7 @@
             <p class="text-end">
               Documentation generated by
               <a href="https://github.com/Fortran-FOSS-Programmers/ford">FORD</a>
- on 2026-05-25 16:42 +0000             </p>
+ on 2026-08-27 21:47 +0000             </p>
           </div>
         </div>
         <br>

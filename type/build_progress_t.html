@@ -134,7 +134,7 @@
       </a>
       <div id="vars-0" class="collapse">
         <div class="list-group list-group-flush">
-            <a class="list-group-item" href="../type/build_progress_t.html#variable-build_dir~2">build_dir</a>
+            <a class="list-group-item" href="../type/build_progress_t.html#variable-build_dir~5">build_dir</a>
             <a class="list-group-item" href="../type/build_progress_t.html#variable-compile_commands">compile_commands</a>
             <a class="list-group-item" href="../type/build_progress_t.html#variable-console~3">console</a>
             <a class="list-group-item" href="../type/build_progress_t.html#variable-n_complete">n_complete</a>
@@ -182,7 +182,7 @@
             <a class="list-group-item" href="../type/build_progress_t.html#boundprocedure-compiling_status">compiling_status</a>
             <a class="list-group-item" href="../type/build_progress_t.html#boundprocedure-completed_status">completed_status</a>
             <a class="list-group-item" href="../type/build_progress_t.html#boundprocedure-dump_commands">dump_commands</a>
-            <a class="list-group-item" href="../type/build_progress_t.html#boundprocedure-success~14">success</a>
+            <a class="list-group-item" href="../type/build_progress_t.html#boundprocedure-success~16">success</a>
         </div>
       </div>
     </div>
@@ -221,7 +221,7 @@
     <tbody>
         <tr>
             <td>
-              <span class="anchor" id="variable-build_dir~2"></span>
+              <span class="anchor" id="variable-build_dir~5"></span>
               character(len=:),
             </td>
               <td>public,</td>
@@ -423,7 +423,7 @@
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-build_dir~3"></span>
+              <span class="anchor" id="variable-build_dir~6"></span>
               character(len=*),
             </td>
 <td>intent(in),</td>
@@ -689,7 +689,7 @@
           <div class="row">
               <div class="card mt-3">
     <div class="card-header codesum">
-      <span class="anchor" id="boundprocedure-success~14"></span>
+      <span class="anchor" id="boundprocedure-success~16"></span>
       <h3>
           procedure, public ::
   <strong>success</strong> => output_progress_success
@@ -754,7 +754,7 @@
 <span class="w">    </span><span class="kt">integer</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">n_complete</span>
 <span class="w">    </span><span class="c">!&gt; Total number of targets scheduled</span>
 <span class="w">    </span><span class="kt">integer</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">n_target</span>
-<span class="w">    </span><span class="c">!&gt; &#39;Plain&#39; output (no colors or updating)</span>
+<span class="w">    </span><span class="c">!&gt; 'Plain' output (no colors or updating)</span>
 <span class="w">    </span><span class="kt">logical</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">plain_mode</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">.</span><span class="n">true</span><span class="p">.</span>
 <span class="w">    </span><span class="c">!&gt; Store needed when updating previous console lines</span>
 <span class="w">    </span><span class="kt">integer</span><span class="p">,</span><span class="w"> </span><span class="k">allocatable</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">output_lines</span><span class="p">(:)</span>
@@ -765,13 +765,13 @@
 <span class="w">    </span><span class="c">!&gt; The compile_commands.json table</span>
 <span class="w">    </span><span class="k">type</span><span class="p">(</span><span class="n">compile_command_table_t</span><span class="p">)</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">compile_commands</span>
 <span class="k">contains</span>
-<span class="w">    </span><span class="c">!&gt; Output &#39;compiling&#39; status for build target</span>
+<span class="w">    </span><span class="c">!&gt; Output 'compiling' status for build target</span>
 <span class="w">    </span><span class="k">procedure</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">compiling_status</span><span class="w"> </span><span class="o">=&gt;</span><span class="w"> </span><span class="n">output_status_compiling</span>
-<span class="w">    </span><span class="c">!&gt; Output &#39;complete&#39; status for build target</span>
+<span class="w">    </span><span class="c">!&gt; Output 'complete' status for build target</span>
 <span class="w">    </span><span class="k">procedure</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">completed_status</span><span class="w"> </span><span class="o">=&gt;</span><span class="w"> </span><span class="n">output_status_complete</span>
 <span class="w">    </span><span class="c">!&gt; Output finished status for whole package</span>
 <span class="w">    </span><span class="k">procedure</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">success</span><span class="w"> </span><span class="o">=&gt;</span><span class="w"> </span><span class="n">output_progress_success</span>
-<span class="w">    </span><span class="c">!&gt; Output &#39;compile_commands.json&#39; to build/ folder</span>
+<span class="w">    </span><span class="c">!&gt; Output 'compile_commands.json' to build/ folder</span>
 <span class="w">    </span><span class="k">procedure</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">dump_commands</span><span class="w"> </span><span class="o">=&gt;</span><span class="w"> </span><span class="n">output_write_compile_commands</span>
 <span class="k">end type </span><span class="n">build_progress_t</span>
 </pre></div>
@@ -796,7 +796,7 @@
             <p class="text-end">
               Documentation generated by
               <a href="https://github.com/Fortran-FOSS-Programmers/ford">FORD</a>
- on 2026-05-25 16:42 +0000             </p>
+ on 2026-08-27 21:47 +0000             </p>
           </div>
         </div>
         <br>

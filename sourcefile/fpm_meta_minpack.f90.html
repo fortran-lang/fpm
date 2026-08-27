@@ -197,7 +197,7 @@
 <a id="ln-24" name="ln-24" href="#ln-24"></a><span class="w">        </span><span class="k">call </span><span class="n">destroy</span><span class="p">(</span><span class="n">this</span><span class="p">)</span>
 <a id="ln-25" name="ln-25" href="#ln-25"></a><span class="w">        </span>
 <a id="ln-26" name="ln-26" href="#ln-26"></a><span class="w">        </span><span class="c">!&gt; Set name</span>
-<a id="ln-27" name="ln-27" href="#ln-27"></a><span class="w">        </span><span class="n">this</span><span class="p">%</span><span class="n">name</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;minpack&quot;</span>
+<a id="ln-27" name="ln-27" href="#ln-27"></a><span class="w">        </span><span class="n">this</span><span class="p">%</span><span class="n">name</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">"minpack"</span>
 <a id="ln-28" name="ln-28" href="#ln-28"></a>
 <a id="ln-29" name="ln-29" href="#ln-29"></a><span class="w">        </span><span class="c">!&gt; minpack is queried as a dependency from the official repository</span>
 <a id="ln-30" name="ln-30" href="#ln-30"></a><span class="w">        </span><span class="n">this</span><span class="p">%</span><span class="n">has_dependencies</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">.</span><span class="n">true</span><span class="p">.</span>
@@ -205,10 +205,10 @@
 <a id="ln-32" name="ln-32" href="#ln-32"></a><span class="w">        </span><span class="k">allocate</span><span class="p">(</span><span class="n">this</span><span class="p">%</span><span class="n">dependency</span><span class="p">(</span><span class="mi">1</span><span class="p">))</span>
 <a id="ln-33" name="ln-33" href="#ln-33"></a>
 <a id="ln-34" name="ln-34" href="#ln-34"></a><span class="w">        </span><span class="c">!&gt; 1) minpack. There are no true releases currently. Fetch HEAD</span>
-<a id="ln-35" name="ln-35" href="#ln-35"></a><span class="w">        </span><span class="n">this</span><span class="p">%</span><span class="n">dependency</span><span class="p">(</span><span class="mi">1</span><span class="p">)%</span><span class="n">name</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;minpack&quot;</span>
-<a id="ln-36" name="ln-36" href="#ln-36"></a><span class="w">        </span><span class="n">this</span><span class="p">%</span><span class="n">dependency</span><span class="p">(</span><span class="mi">1</span><span class="p">)%</span><span class="n">git</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">git_target_tag</span><span class="p">(</span><span class="s2">&quot;https://github.com/fortran-lang/minpack&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;v2.0.0-rc.1&quot;</span><span class="p">)</span>
+<a id="ln-35" name="ln-35" href="#ln-35"></a><span class="w">        </span><span class="n">this</span><span class="p">%</span><span class="n">dependency</span><span class="p">(</span><span class="mi">1</span><span class="p">)%</span><span class="n">name</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">"minpack"</span>
+<a id="ln-36" name="ln-36" href="#ln-36"></a><span class="w">        </span><span class="n">this</span><span class="p">%</span><span class="n">dependency</span><span class="p">(</span><span class="mi">1</span><span class="p">)%</span><span class="n">git</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">git_target_tag</span><span class="p">(</span><span class="s2">"https://github.com/fortran-lang/minpack"</span><span class="p">,</span><span class="w"> </span><span class="s2">"v2.0.0-rc.1"</span><span class="p">)</span>
 <a id="ln-37" name="ln-37" href="#ln-37"></a><span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(.</span><span class="nb">not</span><span class="p">.</span><span class="nb">allocated</span><span class="p">(</span><span class="n">this</span><span class="p">%</span><span class="n">dependency</span><span class="p">(</span><span class="mi">1</span><span class="p">)%</span><span class="n">git</span><span class="p">))</span><span class="w"> </span><span class="k">then</span>
-<a id="ln-38" name="ln-38" href="#ln-38"></a><span class="k">            call </span><span class="n">fatal_error</span><span class="p">(</span><span class="n">error</span><span class="p">,</span><span class="s1">&#39;cannot initialize git repo dependency for minpack metapackage&#39;</span><span class="p">)</span>
+<a id="ln-38" name="ln-38" href="#ln-38"></a><span class="k">            call </span><span class="n">fatal_error</span><span class="p">(</span><span class="n">error</span><span class="p">,</span><span class="s1">'cannot initialize git repo dependency for minpack metapackage'</span><span class="p">)</span>
 <a id="ln-39" name="ln-39" href="#ln-39"></a><span class="w">            </span><span class="k">return</span>
 <a id="ln-40" name="ln-40" href="#ln-40"></a><span class="k">        end if</span>
 <a id="ln-41" name="ln-41" href="#ln-41"></a>
@@ -235,7 +235,7 @@
             <p class="text-end">
               Documentation generated by
               <a href="https://github.com/Fortran-FOSS-Programmers/ford">FORD</a>
- on 2026-05-25 16:42 +0000             </p>
+ on 2026-08-27 21:47 +0000             </p>
           </div>
         </div>
         <br>

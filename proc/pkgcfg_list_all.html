@@ -180,7 +180,7 @@
     <tbody>
         <tr>
             <td>
-              <span class="anchor" id="variable-error~82"></span>
+              <span class="anchor" id="variable-error~133"></span>
               type(<a href='../type/error_t.html'>error_t</a>),
             </td>
 <td>intent(out),</td>
@@ -213,7 +213,7 @@
 
       <h3>Return Value
         <small>
-          <span class="anchor" id="variable-modules"></span>
+          <span class="anchor" id="variable-modules~4"></span>
           type(<a href='../type/string_t.html'>string_t</a>), allocatable, (:)
         </small>
       </h3>
@@ -248,14 +248,14 @@
 <span class="w">    </span><span class="kt">character</span><span class="p">(</span><span class="nb">len</span><span class="o">=</span><span class="p">:),</span><span class="w"> </span><span class="k">allocatable</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">lines</span><span class="p">(:)</span>
 <span class="w">    </span><span class="k">type</span><span class="p">(</span><span class="n">string_t</span><span class="p">)</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="nb">log    </span>
 <span class="nb">    </span><span class="k">type</span><span class="p">(</span><span class="n">string_t</span><span class="p">),</span><span class="w"> </span><span class="k">allocatable</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">mods</span><span class="p">(:),</span><span class="n">descr</span><span class="p">(:)</span>
-<span class="w">    </span><span class="kt">character</span><span class="p">(</span><span class="o">*</span><span class="p">),</span><span class="w"> </span><span class="k">parameter</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">CRLF</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">achar</span><span class="p">(</span><span class="mi">13</span><span class="p">)</span><span class="o">//</span><span class="nb">new_line</span><span class="p">(</span><span class="s1">&#39;a&#39;</span><span class="p">)</span>
+<span class="w">    </span><span class="kt">character</span><span class="p">(</span><span class="o">*</span><span class="p">),</span><span class="w"> </span><span class="k">parameter</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">CRLF</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">achar</span><span class="p">(</span><span class="mi">13</span><span class="p">)</span><span class="o">//</span><span class="nb">new_line</span><span class="p">(</span><span class="s1">'a'</span><span class="p">)</span>
 <span class="w">        </span>
-<span class="w">    </span><span class="k">call </span><span class="n">run_wrapper</span><span class="p">(</span><span class="n">wrapper</span><span class="o">=</span><span class="n">string_t</span><span class="p">(</span><span class="s1">&#39;pkg-config&#39;</span><span class="p">),</span><span class="w"> </span><span class="p">&amp;</span>
-<span class="w">                     </span><span class="n">args</span><span class="o">=</span><span class="p">[</span><span class="n">string_t</span><span class="p">(</span><span class="s1">&#39;--list-all&#39;</span><span class="p">)],</span><span class="w"> </span><span class="p">&amp;</span>
+<span class="w">    </span><span class="k">call </span><span class="n">run_wrapper</span><span class="p">(</span><span class="n">wrapper</span><span class="o">=</span><span class="n">string_t</span><span class="p">(</span><span class="s1">'pkg-config'</span><span class="p">),</span><span class="w"> </span><span class="p">&amp;</span>
+<span class="w">                     </span><span class="n">args</span><span class="o">=</span><span class="p">[</span><span class="n">string_t</span><span class="p">(</span><span class="s1">'--list-all'</span><span class="p">)],</span><span class="w"> </span><span class="p">&amp;</span>
 <span class="w">                     </span><span class="n">exitcode</span><span class="o">=</span><span class="n">exitcode</span><span class="p">,</span><span class="n">cmd_success</span><span class="o">=</span><span class="n">success</span><span class="p">,</span><span class="n">screen_output</span><span class="o">=</span><span class="nb">log</span><span class="p">)</span><span class="w"> </span>
 <span class="w">                     </span>
 <span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(.</span><span class="nb">not</span><span class="p">.(</span><span class="n">success</span><span class="w"> </span><span class="p">.</span><span class="nb">and</span><span class="p">.</span><span class="w"> </span><span class="n">exitcode</span><span class="o">==</span><span class="mi">0</span><span class="p">))</span><span class="w"> </span><span class="k">then </span>
-<span class="k">        call </span><span class="n">fatal_error</span><span class="p">(</span><span class="n">error</span><span class="p">,</span><span class="s1">&#39;cannot get pkg-config modules&#39;</span><span class="p">)</span>
+<span class="k">        call </span><span class="n">fatal_error</span><span class="p">(</span><span class="n">error</span><span class="p">,</span><span class="s1">'cannot get pkg-config modules'</span><span class="p">)</span>
 <span class="w">        </span><span class="k">allocate</span><span class="p">(</span><span class="n">modules</span><span class="p">(</span><span class="mi">0</span><span class="p">))</span>
 <span class="w">        </span><span class="k">return</span>
 <span class="k">    end if</span>
@@ -267,7 +267,7 @@
 <span class="w">    </span><span class="k">do </span><span class="n">i</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span><span class="n">size</span><span class="p">(</span><span class="n">lines</span><span class="p">)</span>
 <span class="w">        </span>
 <span class="w">        </span><span class="c">! Module names have no spaces</span>
-<span class="w">        </span><span class="n">spc</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">index</span><span class="p">(</span><span class="n">lines</span><span class="p">(</span><span class="n">i</span><span class="p">),</span><span class="s1">&#39; &#39;</span><span class="p">)</span>
+<span class="w">        </span><span class="n">spc</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">index</span><span class="p">(</span><span class="n">lines</span><span class="p">(</span><span class="n">i</span><span class="p">),</span><span class="s1">' '</span><span class="p">)</span>
 <span class="w">        </span>
 <span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">spc</span><span class="o">&gt;</span><span class="mi">0</span><span class="p">)</span><span class="w"> </span><span class="k">then </span>
 <span class="k">            </span>
@@ -277,7 +277,7 @@
 <span class="w">        </span><span class="k">else</span>
 <span class="k">            </span>
 <span class="k">            </span><span class="n">mods</span><span class="p">(</span><span class="n">i</span><span class="p">)</span><span class="w">  </span><span class="o">=</span><span class="w"> </span><span class="n">string_t</span><span class="p">(</span><span class="nb">trim</span><span class="p">(</span><span class="nb">adjustl</span><span class="p">(</span><span class="n">lines</span><span class="p">(</span><span class="n">i</span><span class="p">))))</span>
-<span class="w">            </span><span class="n">descr</span><span class="p">(</span><span class="n">i</span><span class="p">)</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">string_t</span><span class="p">(</span><span class="s2">&quot;&quot;</span><span class="p">)</span>
+<span class="w">            </span><span class="n">descr</span><span class="p">(</span><span class="n">i</span><span class="p">)</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">string_t</span><span class="p">(</span><span class="s2">""</span><span class="p">)</span>
 <span class="w">            </span>
 <span class="w">        </span><span class="k">end if</span>
 <span class="k">        </span>
@@ -310,7 +310,7 @@
             <p class="text-end">
               Documentation generated by
               <a href="https://github.com/Fortran-FOSS-Programmers/ford">FORD</a>
- on 2026-05-25 16:42 +0000             </p>
+ on 2026-08-27 21:47 +0000             </p>
           </div>
         </div>
         <br>

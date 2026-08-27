@@ -193,7 +193,7 @@
     <tbody>
         <tr>
             <td>
-              <span class="anchor" id="variable-self~23"></span>
+              <span class="anchor" id="variable-self~95"></span>
               class(<a href='../type/compiler_t.html'>compiler_t</a>),
             </td>
 <td>intent(in)</td>
@@ -322,7 +322,7 @@
 
 <span class="w">    </span><span class="c">! Only apply on Windows</span>
 <span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">get_os_type</span><span class="p">()</span><span class="w"> </span><span class="o">/=</span><span class="w"> </span><span class="n">OS_WINDOWS</span><span class="p">)</span><span class="w"> </span><span class="k">then</span>
-<span class="k">        </span><span class="n">export_flags</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;&quot;</span>
+<span class="k">        </span><span class="n">export_flags</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">""</span>
 <span class="w">        </span><span class="k">return</span>
 <span class="k">    end if</span>
 
@@ -330,23 +330,23 @@
 
 <span class="w">    </span><span class="k">case</span><span class="w"> </span><span class="p">(</span><span class="n">id_gcc</span><span class="p">,</span><span class="w"> </span><span class="n">id_caf</span><span class="p">,</span><span class="w"> </span><span class="n">id_f95</span><span class="p">)</span>
 <span class="w">        </span><span class="c">! GNU-based: emit both import library and def file</span>
-<span class="w">        </span><span class="n">implib_path</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">quote</span><span class="p">(</span><span class="n">join_path</span><span class="p">(</span><span class="n">target_dir</span><span class="p">,</span><span class="w"> </span><span class="n">target_name</span><span class="w"> </span><span class="o">//</span><span class="w"> </span><span class="s2">&quot;.dll.a&quot;</span><span class="p">)</span><span class="w"> </span><span class="p">,</span><span class="w"> </span><span class="n">for_cmd</span><span class="o">=</span><span class="p">.</span><span class="n">true</span><span class="p">.)</span>
-<span class="w">        </span><span class="n">def_path</span><span class="w">    </span><span class="o">=</span><span class="w"> </span><span class="n">quote</span><span class="p">(</span><span class="n">join_path</span><span class="p">(</span><span class="n">target_dir</span><span class="p">,</span><span class="w"> </span><span class="n">target_name</span><span class="w"> </span><span class="o">//</span><span class="w"> </span><span class="s2">&quot;.def&quot;</span><span class="w"> </span><span class="p">)</span><span class="w"> </span><span class="p">,</span><span class="w"> </span><span class="n">for_cmd</span><span class="o">=</span><span class="p">.</span><span class="n">true</span><span class="p">.)</span>
+<span class="w">        </span><span class="n">implib_path</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">quote</span><span class="p">(</span><span class="n">join_path</span><span class="p">(</span><span class="n">target_dir</span><span class="p">,</span><span class="w"> </span><span class="n">target_name</span><span class="w"> </span><span class="o">//</span><span class="w"> </span><span class="s2">".dll.a"</span><span class="p">)</span><span class="w"> </span><span class="p">,</span><span class="w"> </span><span class="n">for_cmd</span><span class="o">=</span><span class="p">.</span><span class="n">true</span><span class="p">.)</span>
+<span class="w">        </span><span class="n">def_path</span><span class="w">    </span><span class="o">=</span><span class="w"> </span><span class="n">quote</span><span class="p">(</span><span class="n">join_path</span><span class="p">(</span><span class="n">target_dir</span><span class="p">,</span><span class="w"> </span><span class="n">target_name</span><span class="w"> </span><span class="o">//</span><span class="w"> </span><span class="s2">".def"</span><span class="w"> </span><span class="p">)</span><span class="w"> </span><span class="p">,</span><span class="w"> </span><span class="n">for_cmd</span><span class="o">=</span><span class="p">.</span><span class="n">true</span><span class="p">.)</span>
 
-<span class="w">        </span><span class="n">export_flags</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot; -Wl,--out-implib,&quot;</span><span class="w"> </span><span class="o">//</span><span class="w"> </span><span class="n">implib_path</span><span class="w"> </span><span class="o">//</span><span class="w"> </span><span class="p">&amp;</span>
-<span class="w">                       </span><span class="s2">&quot; -Wl,--output-def,&quot;</span><span class="w"> </span><span class="o">//</span><span class="w"> </span><span class="n">def_path</span>
+<span class="w">        </span><span class="n">export_flags</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">" -Wl,--out-implib,"</span><span class="w"> </span><span class="o">//</span><span class="w"> </span><span class="n">implib_path</span><span class="w"> </span><span class="o">//</span><span class="w"> </span><span class="p">&amp;</span>
+<span class="w">                       </span><span class="s2">" -Wl,--output-def,"</span><span class="w"> </span><span class="o">//</span><span class="w"> </span><span class="n">def_path</span>
 
 <span class="w">    </span><span class="k">case</span><span class="w"> </span><span class="p">(</span><span class="n">id_intel_classic_windows</span><span class="p">,</span><span class="w"> </span><span class="n">id_intel_llvm_windows</span><span class="p">)</span>
 <span class="w">        </span><span class="c">! Intel/MSVC-style</span>
-<span class="w">        </span><span class="n">implib_path</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">quote</span><span class="p">(</span><span class="n">join_path</span><span class="p">(</span><span class="n">target_dir</span><span class="p">,</span><span class="w"> </span><span class="n">target_name</span><span class="w"> </span><span class="o">//</span><span class="w"> </span><span class="s2">&quot;.lib&quot;</span><span class="p">)</span><span class="w"> </span><span class="p">,</span><span class="w"> </span><span class="n">for_cmd</span><span class="o">=</span><span class="p">.</span><span class="n">true</span><span class="p">.)</span>
-<span class="w">        </span><span class="n">def_path</span><span class="w">    </span><span class="o">=</span><span class="w"> </span><span class="n">quote</span><span class="p">(</span><span class="n">join_path</span><span class="p">(</span><span class="n">target_dir</span><span class="p">,</span><span class="w"> </span><span class="n">target_name</span><span class="w"> </span><span class="o">//</span><span class="w"> </span><span class="s2">&quot;.def&quot;</span><span class="p">)</span><span class="w"> </span><span class="p">,</span><span class="w"> </span><span class="n">for_cmd</span><span class="o">=</span><span class="p">.</span><span class="n">true</span><span class="p">.)</span>
+<span class="w">        </span><span class="n">implib_path</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">quote</span><span class="p">(</span><span class="n">join_path</span><span class="p">(</span><span class="n">target_dir</span><span class="p">,</span><span class="w"> </span><span class="n">target_name</span><span class="w"> </span><span class="o">//</span><span class="w"> </span><span class="s2">".lib"</span><span class="p">)</span><span class="w"> </span><span class="p">,</span><span class="w"> </span><span class="n">for_cmd</span><span class="o">=</span><span class="p">.</span><span class="n">true</span><span class="p">.)</span>
+<span class="w">        </span><span class="n">def_path</span><span class="w">    </span><span class="o">=</span><span class="w"> </span><span class="n">quote</span><span class="p">(</span><span class="n">join_path</span><span class="p">(</span><span class="n">target_dir</span><span class="p">,</span><span class="w"> </span><span class="n">target_name</span><span class="w"> </span><span class="o">//</span><span class="w"> </span><span class="s2">".def"</span><span class="p">)</span><span class="w"> </span><span class="p">,</span><span class="w"> </span><span class="n">for_cmd</span><span class="o">=</span><span class="p">.</span><span class="n">true</span><span class="p">.)</span>
 
-<span class="w">        </span><span class="n">export_flags</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot; /IMPLIB:&quot;</span><span class="w"> </span><span class="o">//</span><span class="w"> </span><span class="n">implib_path</span><span class="w"> </span><span class="o">//</span><span class="w"> </span><span class="p">&amp;</span>
-<span class="w">                       </span><span class="s2">&quot; /DEF:&quot;</span><span class="w"> </span><span class="o">//</span><span class="w"> </span><span class="n">def_path</span>
+<span class="w">        </span><span class="n">export_flags</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">" /IMPLIB:"</span><span class="w"> </span><span class="o">//</span><span class="w"> </span><span class="n">implib_path</span><span class="w"> </span><span class="o">//</span><span class="w"> </span><span class="p">&amp;</span>
+<span class="w">                       </span><span class="s2">" /DEF:"</span><span class="w"> </span><span class="o">//</span><span class="w"> </span><span class="n">def_path</span>
 
 <span class="w">    </span><span class="k">case </span><span class="n">default</span>
 
-<span class="w">        </span><span class="n">export_flags</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;&quot;</span><span class="w">  </span><span class="c">! Do nothing elsewhere</span>
+<span class="w">        </span><span class="n">export_flags</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">""</span><span class="w">  </span><span class="c">! Do nothing elsewhere</span>
 
 <span class="w">    </span><span class="k">end select</span>
 
@@ -374,7 +374,7 @@
             <p class="text-end">
               Documentation generated by
               <a href="https://github.com/Fortran-FOSS-Programmers/ford">FORD</a>
- on 2026-05-25 16:42 +0000             </p>
+ on 2026-08-27 21:47 +0000             </p>
           </div>
         </div>
         <br>

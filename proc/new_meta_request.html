@@ -180,7 +180,7 @@ Set name</p>
     <tbody>
         <tr>
             <td>
-              <span class="anchor" id="variable-self~63"></span>
+              <span class="anchor" id="variable-self~166"></span>
               type(<a href='../type/metapackage_request_t.html'>metapackage_request_t</a>),
             </td>
 <td>intent(out)</td>
@@ -195,7 +195,7 @@ Set name</p>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-key~2"></span>
+              <span class="anchor" id="variable-key~16"></span>
               character(len=*),
             </td>
 <td>intent(in)</td>
@@ -210,7 +210,7 @@ Set name</p>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-table~16"></span>
+              <span class="anchor" id="variable-table~90"></span>
               type(toml_table),
             </td>
 <td>intent(inout)</td>
@@ -240,7 +240,7 @@ Set name</p>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-error~28"></span>
+              <span class="anchor" id="variable-error~191"></span>
               type(<a href='../type/error_t.html'>error_t</a>),
             </td>
 <td>intent(out),</td>
@@ -295,7 +295,7 @@ Set name</p>
 <span class="w">        </span><span class="c">!&gt; Set name</span>
 <span class="w">        </span><span class="n">self</span><span class="p">%</span><span class="n">name</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">key</span>
 <span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(.</span><span class="nb">not</span><span class="p">.</span><span class="n">is_meta_package</span><span class="p">(</span><span class="n">key</span><span class="p">))</span><span class="w"> </span><span class="k">then</span>
-<span class="k">            call </span><span class="n">fatal_error</span><span class="p">(</span><span class="n">error</span><span class="p">,</span><span class="s2">&quot;Error reading fpm.toml: &lt;&quot;</span><span class="o">//</span><span class="n">key</span><span class="o">//</span><span class="s2">&quot;&gt; is not a valid metapackage name&quot;</span><span class="p">)</span>
+<span class="k">            call </span><span class="n">fatal_error</span><span class="p">(</span><span class="n">error</span><span class="p">,</span><span class="s2">"Error reading fpm.toml: &lt;"</span><span class="o">//</span><span class="n">key</span><span class="o">//</span><span class="s2">"&gt; is not a valid metapackage name"</span><span class="p">)</span>
 <span class="w">            </span><span class="k">return</span>
 <span class="k">        end if</span>
 
@@ -303,7 +303,7 @@ Set name</p>
 
 <span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="nb">present</span><span class="p">(</span><span class="n">meta_allowed</span><span class="p">))</span><span class="w"> </span><span class="k">then</span>
 <span class="k">            if</span><span class="w"> </span><span class="p">(</span><span class="n">size</span><span class="p">(</span><span class="n">meta_allowed</span><span class="p">)</span><span class="o">/=</span><span class="n">size</span><span class="p">(</span><span class="n">keys</span><span class="p">))</span><span class="w"> </span><span class="k">then</span>
-<span class="k">                 call </span><span class="n">fatal_error</span><span class="p">(</span><span class="n">error</span><span class="p">,</span><span class="s2">&quot;Internal error: list of metapackage-enable entries does not match table size&quot;</span><span class="p">)</span>
+<span class="k">                 call </span><span class="n">fatal_error</span><span class="p">(</span><span class="n">error</span><span class="p">,</span><span class="s2">"Internal error: list of metapackage-enable entries does not match table size"</span><span class="p">)</span>
 <span class="w">                 </span><span class="k">return</span>
 <span class="k">            end if</span>
 <span class="k">            </span><span class="n">allow_meta</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">meta_allowed</span>
@@ -316,7 +316,7 @@ Set name</p>
 <span class="k">            if</span><span class="w"> </span><span class="p">(</span><span class="n">keys</span><span class="p">(</span><span class="n">i</span><span class="p">)%</span><span class="n">key</span><span class="o">==</span><span class="n">key</span><span class="p">)</span><span class="w"> </span><span class="k">then</span>
 <span class="k">                call </span><span class="n">get_value</span><span class="p">(</span><span class="n">table</span><span class="p">,</span><span class="w"> </span><span class="n">key</span><span class="p">,</span><span class="w"> </span><span class="k">value</span><span class="p">)</span>
 <span class="w">                </span><span class="k">if</span><span class="w"> </span><span class="p">(.</span><span class="nb">not</span><span class="p">.</span><span class="w"> </span><span class="nb">allocated</span><span class="p">(</span><span class="k">value</span><span class="p">))</span><span class="w"> </span><span class="k">then</span>
-<span class="k">                    call </span><span class="n">syntax_error</span><span class="p">(</span><span class="n">error</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;Could not retrieve version string for metapackage key &lt;&quot;</span><span class="o">//</span><span class="n">key</span><span class="o">//</span><span class="s2">&quot;&gt;. Check syntax&quot;</span><span class="p">)</span>
+<span class="k">                    call </span><span class="n">syntax_error</span><span class="p">(</span><span class="n">error</span><span class="p">,</span><span class="w"> </span><span class="s2">"Could not retrieve version string for metapackage key &lt;"</span><span class="o">//</span><span class="n">key</span><span class="o">//</span><span class="s2">"&gt;. Check syntax"</span><span class="p">)</span>
 <span class="w">                    </span><span class="k">return</span>
 <span class="k">                else</span>
 <span class="k">                    call </span><span class="n">request_parse</span><span class="p">(</span><span class="n">self</span><span class="p">,</span><span class="w"> </span><span class="k">value</span><span class="p">,</span><span class="w"> </span><span class="n">error</span><span class="p">)</span>
@@ -349,7 +349,7 @@ Set name</p>
             <p class="text-end">
               Documentation generated by
               <a href="https://github.com/Fortran-FOSS-Programmers/ford">FORD</a>
- on 2026-05-25 16:42 +0000             </p>
+ on 2026-08-27 21:47 +0000             </p>
           </div>
         </div>
         <br>

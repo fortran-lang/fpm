@@ -134,9 +134,9 @@
       </a>
       <div id="vars-0" class="collapse">
         <div class="list-group list-group-flush">
-            <a class="list-group-item" href="../proc/is_cxx_gnu_based.html#variable-io">io</a>
-            <a class="list-group-item" href="../proc/is_cxx_gnu_based.html#variable-output_file">output_file</a>
-            <a class="list-group-item" href="../proc/is_cxx_gnu_based.html#variable-stat">stat</a>
+            <a class="list-group-item" href="../proc/is_cxx_gnu_based.html#variable-io~2">io</a>
+            <a class="list-group-item" href="../proc/is_cxx_gnu_based.html#variable-output_file~2">output_file</a>
+            <a class="list-group-item" href="../proc/is_cxx_gnu_based.html#variable-stat~38">stat</a>
             <a class="list-group-item" href="../proc/is_cxx_gnu_based.html#variable-version_output">version_output</a>
         </div>
       </div>
@@ -193,7 +193,7 @@
     <tbody>
         <tr>
             <td>
-              <span class="anchor" id="variable-self~18"></span>
+              <span class="anchor" id="variable-self~90"></span>
               class(<a href='../type/compiler_t.html'>compiler_t</a>),
             </td>
 <td>intent(in)</td>
@@ -233,7 +233,7 @@
     <tbody>
         <tr>
             <td>
-              <span class="anchor" id="variable-io"></span>
+              <span class="anchor" id="variable-io~2"></span>
               integer,
             </td>
               <td>public</td>
@@ -250,7 +250,7 @@
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-output_file"></span>
+              <span class="anchor" id="variable-output_file~2"></span>
               character(len=:),
             </td>
               <td>public,</td>
@@ -267,7 +267,7 @@
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-stat"></span>
+              <span class="anchor" id="variable-stat~38"></span>
               integer,
             </td>
               <td>public</td>
@@ -330,7 +330,7 @@
 <span class="w">    </span><span class="n">output_file</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">get_temp_filename</span><span class="p">()</span>
 
 <span class="w">    </span><span class="c">! Run compiler with --version to get version info</span>
-<span class="w">    </span><span class="k">call </span><span class="n">run</span><span class="p">(</span><span class="n">self</span><span class="p">%</span><span class="n">cxx</span><span class="o">//</span><span class="s2">&quot; --version &gt; &quot;</span><span class="o">//</span><span class="n">output_file</span><span class="o">//</span><span class="s2">&quot; 2&gt;&amp;1&quot;</span><span class="p">,</span><span class="w"> </span><span class="p">&amp;</span>
+<span class="w">    </span><span class="k">call </span><span class="n">run</span><span class="p">(</span><span class="n">self</span><span class="p">%</span><span class="n">cxx</span><span class="o">//</span><span class="s2">" --version &gt; "</span><span class="o">//</span><span class="n">output_file</span><span class="o">//</span><span class="s2">" 2&gt;&amp;1"</span><span class="p">,</span><span class="w"> </span><span class="p">&amp;</span>
 <span class="w">             </span><span class="n">echo</span><span class="o">=</span><span class="p">.</span><span class="n">false</span><span class="p">.,</span><span class="w"> </span><span class="n">exitstat</span><span class="o">=</span><span class="nb">stat</span><span class="p">)</span>
 
 <span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="nb">stat</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="mi">0</span><span class="p">)</span><span class="w"> </span><span class="k">then</span>
@@ -342,16 +342,16 @@
 
 <span class="w">            </span><span class="c">! Check if output contains GNU indicators</span>
 <span class="w">            </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="nb">allocated</span><span class="p">(</span><span class="n">version_output</span><span class="p">))</span><span class="w"> </span><span class="k">then</span>
-<span class="k">                </span><span class="n">is_gnu</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">index</span><span class="p">(</span><span class="n">version_output</span><span class="p">,</span><span class="w"> </span><span class="s1">&#39;gcc&#39;</span><span class="p">)</span><span class="w"> </span><span class="o">&gt;</span><span class="w"> </span><span class="mi">0</span><span class="w"> </span><span class="p">.</span><span class="nb">or</span><span class="p">.</span><span class="w"> </span><span class="p">&amp;</span>
-<span class="w">                         </span><span class="nb">index</span><span class="p">(</span><span class="n">version_output</span><span class="p">,</span><span class="w"> </span><span class="s1">&#39;GCC&#39;</span><span class="p">)</span><span class="w"> </span><span class="o">&gt;</span><span class="w"> </span><span class="mi">0</span><span class="w"> </span><span class="p">.</span><span class="nb">or</span><span class="p">.</span><span class="w"> </span><span class="p">&amp;</span>
-<span class="w">                         </span><span class="nb">index</span><span class="p">(</span><span class="n">version_output</span><span class="p">,</span><span class="w"> </span><span class="s1">&#39;GNU&#39;</span><span class="p">)</span><span class="w"> </span><span class="o">&gt;</span><span class="w"> </span><span class="mi">0</span><span class="w"> </span><span class="p">.</span><span class="nb">or</span><span class="p">.</span><span class="w"> </span><span class="p">&amp;</span>
-<span class="w">                         </span><span class="nb">index</span><span class="p">(</span><span class="n">version_output</span><span class="p">,</span><span class="w"> </span><span class="s1">&#39;Free Software Foundation&#39;</span><span class="p">)</span><span class="w"> </span><span class="o">&gt;</span><span class="w"> </span><span class="mi">0</span>
+<span class="k">                </span><span class="n">is_gnu</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">index</span><span class="p">(</span><span class="n">version_output</span><span class="p">,</span><span class="w"> </span><span class="s1">'gcc'</span><span class="p">)</span><span class="w"> </span><span class="o">&gt;</span><span class="w"> </span><span class="mi">0</span><span class="w"> </span><span class="p">.</span><span class="nb">or</span><span class="p">.</span><span class="w"> </span><span class="p">&amp;</span>
+<span class="w">                         </span><span class="nb">index</span><span class="p">(</span><span class="n">version_output</span><span class="p">,</span><span class="w"> </span><span class="s1">'GCC'</span><span class="p">)</span><span class="w"> </span><span class="o">&gt;</span><span class="w"> </span><span class="mi">0</span><span class="w"> </span><span class="p">.</span><span class="nb">or</span><span class="p">.</span><span class="w"> </span><span class="p">&amp;</span>
+<span class="w">                         </span><span class="nb">index</span><span class="p">(</span><span class="n">version_output</span><span class="p">,</span><span class="w"> </span><span class="s1">'GNU'</span><span class="p">)</span><span class="w"> </span><span class="o">&gt;</span><span class="w"> </span><span class="mi">0</span><span class="w"> </span><span class="p">.</span><span class="nb">or</span><span class="p">.</span><span class="w"> </span><span class="p">&amp;</span>
+<span class="w">                         </span><span class="nb">index</span><span class="p">(</span><span class="n">version_output</span><span class="p">,</span><span class="w"> </span><span class="s1">'Free Software Foundation'</span><span class="p">)</span><span class="w"> </span><span class="o">&gt;</span><span class="w"> </span><span class="mi">0</span>
 <span class="w">            </span><span class="k">end if</span>
 <span class="k">        end if</span>
 <span class="k">    end if</span>
 
 <span class="w">    </span><span class="c">! Clean up temporary file</span>
-<span class="w">    </span><span class="k">call </span><span class="n">run</span><span class="p">(</span><span class="s2">&quot;rm -f &quot;</span><span class="o">//</span><span class="n">output_file</span><span class="p">,</span><span class="w"> </span><span class="n">echo</span><span class="o">=</span><span class="p">.</span><span class="n">false</span><span class="p">.,</span><span class="w"> </span><span class="n">exitstat</span><span class="o">=</span><span class="nb">stat</span><span class="p">)</span>
+<span class="w">    </span><span class="k">call </span><span class="n">run</span><span class="p">(</span><span class="s2">"rm -f "</span><span class="o">//</span><span class="n">output_file</span><span class="p">,</span><span class="w"> </span><span class="n">echo</span><span class="o">=</span><span class="p">.</span><span class="n">false</span><span class="p">.,</span><span class="w"> </span><span class="n">exitstat</span><span class="o">=</span><span class="nb">stat</span><span class="p">)</span>
 
 <span class="k">end function </span><span class="n">is_cxx_gnu_based</span>
 </pre></div>
@@ -377,7 +377,7 @@
             <p class="text-end">
               Documentation generated by
               <a href="https://github.com/Fortran-FOSS-Programmers/ford">FORD</a>
- on 2026-05-25 16:42 +0000             </p>
+ on 2026-08-27 21:47 +0000             </p>
           </div>
         </div>
         <br>

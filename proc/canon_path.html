@@ -183,7 +183,7 @@
     <tbody>
         <tr>
             <td>
-              <span class="anchor" id="variable-path~5"></span>
+              <span class="anchor" id="variable-path~6"></span>
               character(len=*),
             </td>
 <td>intent(in)</td>
@@ -233,37 +233,37 @@
 <span class="w">    </span><span class="n">istart</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span>
 <span class="w">    </span><span class="n">nn</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span>
 <span class="w">    </span><span class="n">iend</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span>
-<span class="w">    </span><span class="n">absolute</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">nixpath</span><span class="p">(</span><span class="mi">1</span><span class="p">:</span><span class="mi">1</span><span class="p">)</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="s2">&quot;/&quot;</span>
+<span class="w">    </span><span class="n">absolute</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">nixpath</span><span class="p">(</span><span class="mi">1</span><span class="p">:</span><span class="mi">1</span><span class="p">)</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="s2">"/"</span>
 <span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">absolute</span><span class="p">)</span><span class="w"> </span><span class="k">then</span>
-<span class="k">        </span><span class="n">canon_path</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;/&quot;</span>
+<span class="k">        </span><span class="n">canon_path</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">"/"</span>
 <span class="w">    </span><span class="k">else</span>
-<span class="k">        </span><span class="n">canon_path</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;&quot;</span>
+<span class="k">        </span><span class="n">canon_path</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">""</span>
 <span class="w">    </span><span class="k">end if</span>
 
 <span class="k">    do while</span><span class="p">(</span><span class="n">iend</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="nb">len</span><span class="p">(</span><span class="n">nixpath</span><span class="p">))</span>
 <span class="w">        </span><span class="k">call </span><span class="n">next</span><span class="p">(</span><span class="n">nixpath</span><span class="p">,</span><span class="w"> </span><span class="n">istart</span><span class="p">,</span><span class="w"> </span><span class="n">iend</span><span class="p">,</span><span class="w"> </span><span class="n">is_path</span><span class="p">)</span>
 <span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">is_path</span><span class="p">)</span><span class="w"> </span><span class="k">then</span>
 <span class="k">            select case</span><span class="p">(</span><span class="n">nixpath</span><span class="p">(</span><span class="n">istart</span><span class="p">:</span><span class="n">iend</span><span class="p">))</span>
-<span class="w">            </span><span class="k">case</span><span class="p">(</span><span class="s2">&quot;.&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;&quot;</span><span class="p">)</span><span class="w"> </span><span class="c">! always drop empty paths</span>
-<span class="w">            </span><span class="k">case</span><span class="p">(</span><span class="s2">&quot;..&quot;</span><span class="p">)</span>
+<span class="w">            </span><span class="k">case</span><span class="p">(</span><span class="s2">"."</span><span class="p">,</span><span class="w"> </span><span class="s2">""</span><span class="p">)</span><span class="w"> </span><span class="c">! always drop empty paths</span>
+<span class="w">            </span><span class="k">case</span><span class="p">(</span><span class="s2">".."</span><span class="p">)</span>
 <span class="w">                </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">nn</span><span class="w"> </span><span class="o">&gt;</span><span class="w"> </span><span class="mi">0</span><span class="p">)</span><span class="w"> </span><span class="k">then</span>
-<span class="k">                    </span><span class="n">last</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">scan</span><span class="p">(</span><span class="n">canon_path</span><span class="p">(:</span><span class="nb">len</span><span class="p">(</span><span class="n">canon_path</span><span class="p">)</span><span class="o">-</span><span class="mi">1</span><span class="p">),</span><span class="w"> </span><span class="s2">&quot;/&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">back</span><span class="o">=</span><span class="p">.</span><span class="n">true</span><span class="p">.)</span>
+<span class="k">                    </span><span class="n">last</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">scan</span><span class="p">(</span><span class="n">canon_path</span><span class="p">(:</span><span class="nb">len</span><span class="p">(</span><span class="n">canon_path</span><span class="p">)</span><span class="o">-</span><span class="mi">1</span><span class="p">),</span><span class="w"> </span><span class="s2">"/"</span><span class="p">,</span><span class="w"> </span><span class="n">back</span><span class="o">=</span><span class="p">.</span><span class="n">true</span><span class="p">.)</span>
 <span class="w">                    </span><span class="n">canon_path</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">canon_path</span><span class="p">(:</span><span class="n">last</span><span class="p">)</span>
 <span class="w">                    </span><span class="n">nn</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">nn</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="mi">1</span>
 <span class="w">                </span><span class="k">else</span>
 <span class="k">                    if</span><span class="w"> </span><span class="p">(.</span><span class="nb">not</span><span class="p">.</span><span class="w"> </span><span class="n">absolute</span><span class="p">)</span><span class="w"> </span><span class="k">then</span>
-<span class="k">                        </span><span class="n">canon_path</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">canon_path</span><span class="w"> </span><span class="o">//</span><span class="w"> </span><span class="n">nixpath</span><span class="p">(</span><span class="n">istart</span><span class="p">:</span><span class="n">iend</span><span class="p">)</span><span class="w"> </span><span class="o">//</span><span class="w"> </span><span class="s2">&quot;/&quot;</span>
+<span class="k">                        </span><span class="n">canon_path</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">canon_path</span><span class="w"> </span><span class="o">//</span><span class="w"> </span><span class="n">nixpath</span><span class="p">(</span><span class="n">istart</span><span class="p">:</span><span class="n">iend</span><span class="p">)</span><span class="w"> </span><span class="o">//</span><span class="w"> </span><span class="s2">"/"</span>
 <span class="w">                    </span><span class="k">end if</span>
 <span class="k">                end if</span>
 <span class="k">            case </span><span class="n">default</span>
 <span class="w">                </span><span class="n">nn</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">nn</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="mi">1</span>
-<span class="w">                </span><span class="n">canon_path</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">canon_path</span><span class="w"> </span><span class="o">//</span><span class="w"> </span><span class="n">nixpath</span><span class="p">(</span><span class="n">istart</span><span class="p">:</span><span class="n">iend</span><span class="p">)</span><span class="w"> </span><span class="o">//</span><span class="w"> </span><span class="s2">&quot;/&quot;</span>
+<span class="w">                </span><span class="n">canon_path</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">canon_path</span><span class="w"> </span><span class="o">//</span><span class="w"> </span><span class="n">nixpath</span><span class="p">(</span><span class="n">istart</span><span class="p">:</span><span class="n">iend</span><span class="p">)</span><span class="w"> </span><span class="o">//</span><span class="w"> </span><span class="s2">"/"</span>
 <span class="w">            </span><span class="k">end select</span>
 <span class="k">        end if</span>
 <span class="k">    end do</span>
 
-<span class="k">    if</span><span class="w"> </span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">canon_path</span><span class="p">)</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="mi">0</span><span class="p">)</span><span class="w"> </span><span class="n">canon_path</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;.&quot;</span>
-<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">canon_path</span><span class="p">)</span><span class="w"> </span><span class="o">&gt;</span><span class="w"> </span><span class="mi">1</span><span class="w"> </span><span class="p">.</span><span class="nb">and</span><span class="p">.</span><span class="w"> </span><span class="n">canon_path</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">canon_path</span><span class="p">):)</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="s2">&quot;/&quot;</span><span class="p">)</span><span class="w"> </span><span class="k">then</span>
+<span class="k">    if</span><span class="w"> </span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">canon_path</span><span class="p">)</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="mi">0</span><span class="p">)</span><span class="w"> </span><span class="n">canon_path</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">"."</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">canon_path</span><span class="p">)</span><span class="w"> </span><span class="o">&gt;</span><span class="w"> </span><span class="mi">1</span><span class="w"> </span><span class="p">.</span><span class="nb">and</span><span class="p">.</span><span class="w"> </span><span class="n">canon_path</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">canon_path</span><span class="p">):)</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="s2">"/"</span><span class="p">)</span><span class="w"> </span><span class="k">then</span>
 <span class="k">        </span><span class="n">canon_path</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">canon_path</span><span class="p">(:</span><span class="nb">len</span><span class="p">(</span><span class="n">canon_path</span><span class="p">)</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span>
 <span class="w">    </span><span class="k">end if</span>
 
@@ -289,7 +289,7 @@
 <span class="k">        </span><span class="n">ii</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">min</span><span class="p">(</span><span class="n">iend</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="n">nn</span><span class="p">)</span>
 <span class="w">        </span><span class="n">tok</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">string</span><span class="p">(</span><span class="n">ii</span><span class="p">:</span><span class="n">ii</span><span class="p">)</span>
 
-<span class="w">        </span><span class="n">is_path</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">tok</span><span class="w"> </span><span class="o">/=</span><span class="w"> </span><span class="s1">&#39;/&#39;</span>
+<span class="w">        </span><span class="n">is_path</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">tok</span><span class="w"> </span><span class="o">/=</span><span class="w"> </span><span class="s1">'/'</span>
 
 <span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(.</span><span class="nb">not</span><span class="p">.</span><span class="n">is_path</span><span class="p">)</span><span class="w"> </span><span class="k">then</span>
 <span class="k">            </span><span class="n">is_path</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">.</span><span class="n">false</span><span class="p">.</span>
@@ -302,7 +302,7 @@
 <span class="w">        </span><span class="k">do </span><span class="n">ii</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">min</span><span class="p">(</span><span class="n">iend</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="n">nn</span><span class="p">),</span><span class="w"> </span><span class="n">nn</span>
 <span class="w">            </span><span class="n">tok</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">string</span><span class="p">(</span><span class="n">ii</span><span class="p">:</span><span class="n">ii</span><span class="p">)</span>
 <span class="w">            </span><span class="k">select case</span><span class="p">(</span><span class="n">tok</span><span class="p">)</span>
-<span class="w">            </span><span class="k">case</span><span class="p">(</span><span class="s1">&#39;/&#39;</span><span class="p">)</span>
+<span class="w">            </span><span class="k">case</span><span class="p">(</span><span class="s1">'/'</span><span class="p">)</span>
 <span class="w">                </span><span class="k">exit</span>
 <span class="k">            case </span><span class="n">default</span>
 <span class="w">                </span><span class="n">iend</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">ii</span>
@@ -335,7 +335,7 @@
             <p class="text-end">
               Documentation generated by
               <a href="https://github.com/Fortran-FOSS-Programmers/ford">FORD</a>
- on 2026-05-25 16:42 +0000             </p>
+ on 2026-08-27 21:47 +0000             </p>
           </div>
         </div>
         <br>

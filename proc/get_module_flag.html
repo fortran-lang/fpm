@@ -180,7 +180,7 @@
     <tbody>
         <tr>
             <td>
-              <span class="anchor" id="variable-self~14"></span>
+              <span class="anchor" id="variable-self~86"></span>
               class(<a href='../type/compiler_t.html'>compiler_t</a>),
             </td>
 <td>intent(in)</td>
@@ -195,7 +195,7 @@
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-path~2"></span>
+              <span class="anchor" id="variable-path~16"></span>
               character(len=*),
             </td>
 <td>intent(in)</td>
@@ -213,7 +213,7 @@
 
       <h3>Return Value
         <small>
-          <span class="anchor" id="variable-flags~6"></span>
+          <span class="anchor" id="variable-flags~14"></span>
           character(len=:), allocatable
         </small>
       </h3>
@@ -239,32 +239,32 @@
 
 <span class="w">    </span><span class="k">select case</span><span class="p">(</span><span class="n">self</span><span class="p">%</span><span class="n">id</span><span class="p">)</span>
 <span class="w">    </span><span class="k">case </span><span class="n">default</span>
-<span class="w">        </span><span class="n">flags</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;-module &quot;</span><span class="o">//</span><span class="n">path</span>
+<span class="w">        </span><span class="n">flags</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">"-module "</span><span class="o">//</span><span class="n">path</span>
 
 <span class="w">    </span><span class="k">case</span><span class="p">(</span><span class="n">id_caf</span><span class="p">,</span><span class="w"> </span><span class="n">id_gcc</span><span class="p">,</span><span class="w"> </span><span class="n">id_f95</span><span class="p">,</span><span class="w"> </span><span class="n">id_cray</span><span class="p">,</span><span class="w"> </span><span class="n">id_lfortran</span><span class="p">)</span>
-<span class="w">        </span><span class="n">flags</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;-J &quot;</span><span class="o">//</span><span class="n">path</span>
+<span class="w">        </span><span class="n">flags</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">"-J "</span><span class="o">//</span><span class="n">path</span>
 
 <span class="w">    </span><span class="k">case</span><span class="p">(</span><span class="n">id_nvhpc</span><span class="p">,</span><span class="w"> </span><span class="n">id_pgi</span><span class="p">,</span><span class="w"> </span><span class="n">id_flang_classic</span><span class="p">)</span>
-<span class="w">        </span><span class="n">flags</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;-module &quot;</span><span class="o">//</span><span class="n">path</span>
+<span class="w">        </span><span class="n">flags</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">"-module "</span><span class="o">//</span><span class="n">path</span>
 
 <span class="w">    </span><span class="k">case</span><span class="p">(</span><span class="n">id_flang</span><span class="p">,</span><span class="w"> </span><span class="n">id_f18</span><span class="p">,</span><span class="w"> </span><span class="n">id_amdflang</span><span class="p">)</span>
-<span class="w">        </span><span class="n">flags</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;-module-dir &quot;</span><span class="o">//</span><span class="n">path</span>
+<span class="w">        </span><span class="n">flags</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">"-module-dir "</span><span class="o">//</span><span class="n">path</span>
 
 <span class="w">    </span><span class="k">case</span><span class="p">(</span><span class="n">id_intel_classic_nix</span><span class="p">,</span><span class="w"> </span><span class="n">id_intel_classic_mac</span><span class="p">,</span><span class="w"> </span><span class="p">&amp;</span>
 <span class="w">        </span><span class="p">&amp;</span><span class="w"> </span><span class="n">id_intel_llvm_nix</span><span class="p">)</span>
-<span class="w">        </span><span class="n">flags</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;-module &quot;</span><span class="o">//</span><span class="n">path</span>
+<span class="w">        </span><span class="n">flags</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">"-module "</span><span class="o">//</span><span class="n">path</span>
 
 <span class="w">    </span><span class="k">case</span><span class="p">(</span><span class="n">id_intel_classic_windows</span><span class="p">,</span><span class="w"> </span><span class="n">id_intel_llvm_windows</span><span class="p">)</span>
-<span class="w">        </span><span class="n">flags</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;/module:&quot;</span><span class="o">//</span><span class="n">path</span>
+<span class="w">        </span><span class="n">flags</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">"/module:"</span><span class="o">//</span><span class="n">path</span>
 
 <span class="w">    </span><span class="k">case</span><span class="p">(</span><span class="n">id_lahey</span><span class="p">)</span>
-<span class="w">        </span><span class="n">flags</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;-M &quot;</span><span class="o">//</span><span class="n">path</span>
+<span class="w">        </span><span class="n">flags</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">"-M "</span><span class="o">//</span><span class="n">path</span>
 
 <span class="w">    </span><span class="k">case</span><span class="p">(</span><span class="n">id_nag</span><span class="p">)</span>
-<span class="w">        </span><span class="n">flags</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;-mdir &quot;</span><span class="o">//</span><span class="n">path</span>
+<span class="w">        </span><span class="n">flags</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">"-mdir "</span><span class="o">//</span><span class="n">path</span>
 
 <span class="w">    </span><span class="k">case</span><span class="p">(</span><span class="n">id_ibmxl</span><span class="p">)</span>
-<span class="w">        </span><span class="n">flags</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;-qmoddir &quot;</span><span class="o">//</span><span class="n">path</span>
+<span class="w">        </span><span class="n">flags</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">"-qmoddir "</span><span class="o">//</span><span class="n">path</span>
 
 <span class="w">    </span><span class="k">end select</span>
 
@@ -292,7 +292,7 @@
             <p class="text-end">
               Documentation generated by
               <a href="https://github.com/Fortran-FOSS-Programmers/ford">FORD</a>
- on 2026-05-25 16:42 +0000             </p>
+ on 2026-08-27 21:47 +0000             </p>
           </div>
         </div>
         <br>

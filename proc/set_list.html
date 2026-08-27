@@ -181,7 +181,7 @@ String array</p>
     <tbody>
         <tr>
             <td>
-              <span class="anchor" id="variable-table~49"></span>
+              <span class="anchor" id="variable-table~15"></span>
               type(toml_table),
             </td>
 <td>intent(inout)</td>
@@ -196,7 +196,7 @@ String array</p>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-key~6"></span>
+              <span class="anchor" id="variable-key~3"></span>
               character(len=*),
             </td>
 <td>intent(in)</td>
@@ -211,7 +211,7 @@ String array</p>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-list~14"></span>
+              <span class="anchor" id="variable-list~7"></span>
               type(<a href='../type/string_t.html'>string_t</a>),
             </td>
 <td>intent(in),</td>
@@ -226,7 +226,7 @@ String array</p>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-error~107"></span>
+              <span class="anchor" id="variable-error~35"></span>
               type(<a href='../type/error_t.html'>error_t</a>),
             </td>
 <td>intent(out),</td>
@@ -280,7 +280,7 @@ String array</p>
 
 <span class="w">        </span><span class="c">!&gt; Check the key is not empty</span>
 <span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="nb">len_trim</span><span class="p">(</span><span class="n">key</span><span class="p">)</span><span class="o">&lt;=</span><span class="mi">0</span><span class="p">)</span><span class="w"> </span><span class="k">then</span>
-<span class="k">            call </span><span class="n">fatal_error</span><span class="p">(</span><span class="n">error</span><span class="p">,</span><span class="w"> </span><span class="s1">&#39;key is empty dumping string array to TOML table&#39;</span><span class="p">)</span>
+<span class="k">            call </span><span class="n">fatal_error</span><span class="p">(</span><span class="n">error</span><span class="p">,</span><span class="w"> </span><span class="s1">'key is empty dumping string array to TOML table'</span><span class="p">)</span>
 <span class="w">            </span><span class="k">return</span>
 <span class="k">        end if</span>
 
@@ -289,14 +289,14 @@ String array</p>
 <span class="w">            </span><span class="c">!&gt; String array</span>
 <span class="w">            </span><span class="k">call </span><span class="n">add_array</span><span class="p">(</span><span class="n">table</span><span class="p">,</span><span class="w"> </span><span class="n">key</span><span class="p">,</span><span class="w"> </span><span class="n">children</span><span class="p">,</span><span class="w"> </span><span class="nb">stat</span><span class="p">)</span>
 <span class="w">            </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="nb">stat</span><span class="w"> </span><span class="o">/=</span><span class="w"> </span><span class="n">toml_stat</span><span class="p">%</span><span class="n">success</span><span class="p">)</span><span class="w"> </span><span class="k">then</span>
-<span class="k">                call </span><span class="n">fatal_error</span><span class="p">(</span><span class="n">error</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;Cannot set array table in &quot;</span><span class="o">//</span><span class="n">key</span><span class="o">//</span><span class="s2">&quot; field&quot;</span><span class="p">)</span>
+<span class="k">                call </span><span class="n">fatal_error</span><span class="p">(</span><span class="n">error</span><span class="p">,</span><span class="w"> </span><span class="s2">"Cannot set array table in "</span><span class="o">//</span><span class="n">key</span><span class="o">//</span><span class="s2">" field"</span><span class="p">)</span>
 <span class="w">                </span><span class="k">return</span>
 <span class="k">            end if</span>
 
 <span class="k">            do </span><span class="n">ilist</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="n">size</span><span class="p">(</span><span class="n">list</span><span class="p">)</span>
 <span class="w">                  </span><span class="k">call </span><span class="n">set_value</span><span class="p">(</span><span class="n">children</span><span class="p">,</span><span class="w"> </span><span class="n">ilist</span><span class="p">,</span><span class="w"> </span><span class="n">list</span><span class="p">(</span><span class="n">ilist</span><span class="p">)%</span><span class="n">s</span><span class="p">,</span><span class="w"> </span><span class="nb">stat</span><span class="o">=</span><span class="nb">stat</span><span class="p">)</span>
 <span class="w">                  </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="nb">stat</span><span class="w"> </span><span class="o">/=</span><span class="w"> </span><span class="n">toml_stat</span><span class="p">%</span><span class="n">success</span><span class="p">)</span><span class="w"> </span><span class="k">then</span>
-<span class="k">                      call </span><span class="n">fatal_error</span><span class="p">(</span><span class="n">error</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;Cannot store array entry in &quot;</span><span class="o">//</span><span class="n">key</span><span class="o">//</span><span class="s2">&quot; field&quot;</span><span class="p">)</span>
+<span class="k">                      call </span><span class="n">fatal_error</span><span class="p">(</span><span class="n">error</span><span class="p">,</span><span class="w"> </span><span class="s2">"Cannot store array entry in "</span><span class="o">//</span><span class="n">key</span><span class="o">//</span><span class="s2">" field"</span><span class="p">)</span>
 <span class="w">                      </span><span class="k">return</span>
 <span class="k">                  end if</span>
 <span class="k">            end do</span>
@@ -307,7 +307,7 @@ String array</p>
 <span class="w">            </span><span class="k">call </span><span class="n">set_value</span><span class="p">(</span><span class="n">table</span><span class="p">,</span><span class="w"> </span><span class="n">key</span><span class="p">,</span><span class="w"> </span><span class="n">list</span><span class="p">(</span><span class="mi">1</span><span class="p">)%</span><span class="n">s</span><span class="p">,</span><span class="w"> </span><span class="nb">stat</span><span class="o">=</span><span class="nb">stat</span><span class="p">)</span>
 
 <span class="w">            </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="nb">stat</span><span class="w"> </span><span class="o">/=</span><span class="w"> </span><span class="n">toml_stat</span><span class="p">%</span><span class="n">success</span><span class="p">)</span><span class="w"> </span><span class="p">&amp;</span>
-<span class="w">            </span><span class="k">call </span><span class="n">fatal_error</span><span class="p">(</span><span class="n">error</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;Cannot store entry in &quot;</span><span class="o">//</span><span class="n">key</span><span class="o">//</span><span class="s2">&quot; field&quot;</span><span class="p">)</span>
+<span class="w">            </span><span class="k">call </span><span class="n">fatal_error</span><span class="p">(</span><span class="n">error</span><span class="p">,</span><span class="w"> </span><span class="s2">"Cannot store entry in "</span><span class="o">//</span><span class="n">key</span><span class="o">//</span><span class="s2">" field"</span><span class="p">)</span>
 
 <span class="w">            </span><span class="k">return</span>
 <span class="k">        end if</span>
@@ -336,7 +336,7 @@ String array</p>
             <p class="text-end">
               Documentation generated by
               <a href="https://github.com/Fortran-FOSS-Programmers/ford">FORD</a>
- on 2026-05-25 16:42 +0000             </p>
+ on 2026-08-27 21:47 +0000             </p>
           </div>
         </div>
         <br>

@@ -197,7 +197,7 @@
 
       <h3>Return Value
         <small>
-          <span class="anchor" id="variable-msg~2"></span>
+          <span class="anchor" id="variable-msg"></span>
           character(len=:), allocatable
         </small>
       </h3>
@@ -221,13 +221,13 @@
 <span class="k">   </span><span class="kt">character</span><span class="p">(:),</span><span class="w"> </span><span class="k">allocatable</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">msg</span>
 
 <span class="w">   </span><span class="k">select case</span><span class="w"> </span><span class="p">(</span><span class="k">type</span><span class="p">)</span>
-<span class="w">      </span><span class="k">case</span><span class="w"> </span><span class="p">(</span><span class="n">FPM_TARGET_ARCHIVE</span><span class="p">);</span><span class="w">    </span><span class="n">msg</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">&#39;Archive&#39;</span>
-<span class="w">      </span><span class="k">case</span><span class="w"> </span><span class="p">(</span><span class="n">FPM_TARGET_SHARED</span><span class="p">);</span><span class="w">     </span><span class="n">msg</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">&#39;Shared library&#39;</span>
-<span class="w">      </span><span class="k">case</span><span class="w"> </span><span class="p">(</span><span class="n">FPM_TARGET_CPP_OBJECT</span><span class="p">);</span><span class="w"> </span><span class="n">msg</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">&#39;C++ object&#39;</span>
-<span class="w">      </span><span class="k">case</span><span class="w"> </span><span class="p">(</span><span class="n">FPM_TARGET_C_OBJECT</span><span class="p">);</span><span class="w">   </span><span class="n">msg</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">&#39;C Object&#39;</span>
-<span class="w">      </span><span class="k">case</span><span class="w"> </span><span class="p">(</span><span class="n">FPM_TARGET_EXECUTABLE</span><span class="p">);</span><span class="w"> </span><span class="n">msg</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">&#39;Executable&#39;</span>
-<span class="w">      </span><span class="k">case</span><span class="w"> </span><span class="p">(</span><span class="n">FPM_TARGET_OBJECT</span><span class="p">);</span><span class="w">     </span><span class="n">msg</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">&#39;Object&#39;</span><span class="w">      </span>
-<span class="w">      </span><span class="k">case </span><span class="n">default</span><span class="p">;</span><span class="w">                 </span><span class="n">msg</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">&#39;Unknown&#39;</span>
+<span class="w">      </span><span class="k">case</span><span class="w"> </span><span class="p">(</span><span class="n">FPM_TARGET_ARCHIVE</span><span class="p">);</span><span class="w">    </span><span class="n">msg</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">'Archive'</span>
+<span class="w">      </span><span class="k">case</span><span class="w"> </span><span class="p">(</span><span class="n">FPM_TARGET_SHARED</span><span class="p">);</span><span class="w">     </span><span class="n">msg</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">'Shared library'</span>
+<span class="w">      </span><span class="k">case</span><span class="w"> </span><span class="p">(</span><span class="n">FPM_TARGET_CPP_OBJECT</span><span class="p">);</span><span class="w"> </span><span class="n">msg</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">'C++ object'</span>
+<span class="w">      </span><span class="k">case</span><span class="w"> </span><span class="p">(</span><span class="n">FPM_TARGET_C_OBJECT</span><span class="p">);</span><span class="w">   </span><span class="n">msg</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">'C Object'</span>
+<span class="w">      </span><span class="k">case</span><span class="w"> </span><span class="p">(</span><span class="n">FPM_TARGET_EXECUTABLE</span><span class="p">);</span><span class="w"> </span><span class="n">msg</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">'Executable'</span>
+<span class="w">      </span><span class="k">case</span><span class="w"> </span><span class="p">(</span><span class="n">FPM_TARGET_OBJECT</span><span class="p">);</span><span class="w">     </span><span class="n">msg</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">'Object'</span><span class="w">      </span>
+<span class="w">      </span><span class="k">case </span><span class="n">default</span><span class="p">;</span><span class="w">                 </span><span class="n">msg</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">'Unknown'</span>
 <span class="w">   </span><span class="k">end select</span>
 
 <span class="k">end function </span><span class="n">FPM_TARGET_NAME</span>
@@ -254,7 +254,7 @@
             <p class="text-end">
               Documentation generated by
               <a href="https://github.com/Fortran-FOSS-Programmers/ford">FORD</a>
- on 2026-05-25 16:42 +0000             </p>
+ on 2026-08-27 21:47 +0000             </p>
           </div>
         </div>
         <br>

@@ -135,13 +135,13 @@
       <div id="vars-0" class="collapse">
         <div class="list-group list-group-flush">
             <a class="list-group-item" href="../proc/check_fortran_source_runs.html#variable-exe">exe</a>
-            <a class="list-group-item" href="../proc/check_fortran_source_runs.html#variable-flags~11">flags</a>
-            <a class="list-group-item" href="../proc/check_fortran_source_runs.html#variable-ldflags">ldflags</a>
+            <a class="list-group-item" href="../proc/check_fortran_source_runs.html#variable-flags~19">flags</a>
+            <a class="list-group-item" href="../proc/check_fortran_source_runs.html#variable-ldflags~2">ldflags</a>
             <a class="list-group-item" href="../proc/check_fortran_source_runs.html#variable-logf">logf</a>
-            <a class="list-group-item" href="../proc/check_fortran_source_runs.html#variable-object">object</a>
-            <a class="list-group-item" href="../proc/check_fortran_source_runs.html#variable-source">source</a>
-            <a class="list-group-item" href="../proc/check_fortran_source_runs.html#variable-stat~9">stat</a>
-            <a class="list-group-item" href="../proc/check_fortran_source_runs.html#variable-unit~3">unit</a>
+            <a class="list-group-item" href="../proc/check_fortran_source_runs.html#variable-object~5">object</a>
+            <a class="list-group-item" href="../proc/check_fortran_source_runs.html#variable-source~9">source</a>
+            <a class="list-group-item" href="../proc/check_fortran_source_runs.html#variable-stat~46">stat</a>
+            <a class="list-group-item" href="../proc/check_fortran_source_runs.html#variable-unit~22">unit</a>
         </div>
       </div>
     </div>
@@ -208,7 +208,7 @@ Run and retrieve exit code</p>
     <tbody>
         <tr>
             <td>
-              <span class="anchor" id="variable-self~41"></span>
+              <span class="anchor" id="variable-self~113"></span>
               class(<a href='../type/compiler_t.html'>compiler_t</a>),
             </td>
 <td>intent(in)</td>
@@ -223,7 +223,7 @@ Run and retrieve exit code</p>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-input~4"></span>
+              <span class="anchor" id="variable-input~7"></span>
               character(len=*),
             </td>
 <td>intent(in)</td>
@@ -238,7 +238,7 @@ Run and retrieve exit code</p>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-compile_flags"></span>
+              <span class="anchor" id="variable-compile_flags~3"></span>
               character(len=*),
             </td>
 <td>intent(in),</td>
@@ -253,7 +253,7 @@ Run and retrieve exit code</p>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-link_flags"></span>
+              <span class="anchor" id="variable-link_flags~3"></span>
               character(len=*),
             </td>
 <td>intent(in),</td>
@@ -271,7 +271,7 @@ Run and retrieve exit code</p>
 
       <h3>Return Value
         <small>
-          <span class="anchor" id="variable-success"></span>
+          <span class="anchor" id="variable-success~12"></span>
           logical
         </small>
       </h3>
@@ -310,7 +310,7 @@ Run and retrieve exit code</p>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-flags~11"></span>
+              <span class="anchor" id="variable-flags~19"></span>
               character(len=:),
             </td>
               <td>public,</td>
@@ -327,7 +327,7 @@ Run and retrieve exit code</p>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-ldflags"></span>
+              <span class="anchor" id="variable-ldflags~2"></span>
               character(len=:),
             </td>
               <td>public,</td>
@@ -361,7 +361,7 @@ Run and retrieve exit code</p>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-object"></span>
+              <span class="anchor" id="variable-object~5"></span>
               character(len=:),
             </td>
               <td>public,</td>
@@ -378,7 +378,7 @@ Run and retrieve exit code</p>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-source"></span>
+              <span class="anchor" id="variable-source~9"></span>
               character(len=:),
             </td>
               <td>public,</td>
@@ -395,7 +395,7 @@ Run and retrieve exit code</p>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-stat~9"></span>
+              <span class="anchor" id="variable-stat~46"></span>
               integer,
             </td>
               <td>public</td>
@@ -412,7 +412,7 @@ Run and retrieve exit code</p>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-unit~3"></span>
+              <span class="anchor" id="variable-unit~22"></span>
               integer,
             </td>
               <td>public</td>
@@ -458,10 +458,10 @@ Run and retrieve exit code</p>
 
 <span class="w">    </span><span class="c">!&gt; Create temporary source file</span>
 <span class="w">    </span><span class="n">exe</span><span class="w">    </span><span class="o">=</span><span class="w"> </span><span class="n">get_temp_filename</span><span class="p">()</span>
-<span class="w">    </span><span class="n">source</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">exe</span><span class="o">//</span><span class="s1">&#39;.f90&#39;</span>
-<span class="w">    </span><span class="n">object</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">exe</span><span class="o">//</span><span class="s1">&#39;.o&#39;</span>
-<span class="w">    </span><span class="n">logf</span><span class="w">   </span><span class="o">=</span><span class="w"> </span><span class="n">exe</span><span class="o">//</span><span class="s1">&#39;.log&#39;</span>
-<span class="w">    </span><span class="k">open</span><span class="p">(</span><span class="n">newunit</span><span class="o">=</span><span class="n">unit</span><span class="p">,</span><span class="w"> </span><span class="k">file</span><span class="o">=</span><span class="n">source</span><span class="p">,</span><span class="w"> </span><span class="n">action</span><span class="o">=</span><span class="s1">&#39;readwrite&#39;</span><span class="p">,</span><span class="w"> </span><span class="n">iostat</span><span class="o">=</span><span class="nb">stat</span><span class="p">)</span>
+<span class="w">    </span><span class="n">source</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">exe</span><span class="o">//</span><span class="s1">'.f90'</span>
+<span class="w">    </span><span class="n">object</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">exe</span><span class="o">//</span><span class="s1">'.o'</span>
+<span class="w">    </span><span class="n">logf</span><span class="w">   </span><span class="o">=</span><span class="w"> </span><span class="n">exe</span><span class="o">//</span><span class="s1">'.log'</span>
+<span class="w">    </span><span class="k">open</span><span class="p">(</span><span class="n">newunit</span><span class="o">=</span><span class="n">unit</span><span class="p">,</span><span class="w"> </span><span class="k">file</span><span class="o">=</span><span class="n">source</span><span class="p">,</span><span class="w"> </span><span class="n">action</span><span class="o">=</span><span class="s1">'readwrite'</span><span class="p">,</span><span class="w"> </span><span class="n">iostat</span><span class="o">=</span><span class="nb">stat</span><span class="p">)</span>
 <span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="nb">stat</span><span class="o">/=</span><span class="mi">0</span><span class="p">)</span><span class="w"> </span><span class="k">return</span>
 
 <span class="w">    </span><span class="c">!&gt; Write contents</span>
@@ -472,22 +472,22 @@ Run and retrieve exit code</p>
 <span class="w">    </span><span class="n">flags</span><span class="w">    </span><span class="o">=</span><span class="w"> </span><span class="n">self</span><span class="p">%</span><span class="n">get_default_flags</span><span class="p">(</span><span class="n">release</span><span class="o">=</span><span class="p">.</span><span class="n">false</span><span class="p">.)</span>
 <span class="w">    </span><span class="n">ldflags</span><span class="w">  </span><span class="o">=</span><span class="w"> </span><span class="n">self</span><span class="p">%</span><span class="n">get_default_flags</span><span class="p">(</span><span class="n">release</span><span class="o">=</span><span class="p">.</span><span class="n">false</span><span class="p">.)</span>
 
-<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="nb">present</span><span class="p">(</span><span class="n">compile_flags</span><span class="p">))</span><span class="w"> </span><span class="n">flags</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">flags</span><span class="o">//</span><span class="s2">&quot; &quot;</span><span class="o">//</span><span class="n">compile_flags</span>
-<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="nb">present</span><span class="p">(</span><span class="n">link_flags</span><span class="p">))</span><span class="w"> </span><span class="n">ldflags</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">ldflags</span><span class="o">//</span><span class="s2">&quot; &quot;</span><span class="o">//</span><span class="n">link_flags</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="nb">present</span><span class="p">(</span><span class="n">compile_flags</span><span class="p">))</span><span class="w"> </span><span class="n">flags</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">flags</span><span class="o">//</span><span class="s2">" "</span><span class="o">//</span><span class="n">compile_flags</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="nb">present</span><span class="p">(</span><span class="n">link_flags</span><span class="p">))</span><span class="w"> </span><span class="n">ldflags</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">ldflags</span><span class="o">//</span><span class="s2">" "</span><span class="o">//</span><span class="n">link_flags</span>
 
 <span class="w">    </span><span class="c">!&gt; Intel: Needs -warn last for error on unknown command line arguments to work</span>
 <span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">self</span><span class="p">%</span><span class="n">id</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="n">id_intel_llvm_nix</span><span class="p">)</span><span class="w"> </span><span class="k">then</span>
-<span class="k">        </span><span class="n">flags</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">flags</span><span class="o">//</span><span class="s2">&quot; &quot;</span><span class="o">//</span><span class="n">flag_intel_warn</span>
-<span class="w">        </span><span class="n">ldflags</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">ldflags</span><span class="o">//</span><span class="s2">&quot; &quot;</span><span class="o">//</span><span class="n">flag_intel_warn</span>
+<span class="k">        </span><span class="n">flags</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">flags</span><span class="o">//</span><span class="s2">" "</span><span class="o">//</span><span class="n">flag_intel_warn</span>
+<span class="w">        </span><span class="n">ldflags</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">ldflags</span><span class="o">//</span><span class="s2">" "</span><span class="o">//</span><span class="n">flag_intel_warn</span>
 <span class="w">    </span><span class="k">elseif</span><span class="w"> </span><span class="p">(</span><span class="n">self</span><span class="p">%</span><span class="n">id</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="n">id_intel_llvm_windows</span><span class="p">)</span><span class="w"> </span><span class="k">then</span>
-<span class="k">        </span><span class="n">flags</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">flags</span><span class="o">//</span><span class="s2">&quot; &quot;</span><span class="o">//</span><span class="n">flag_intel_warn_win</span>
-<span class="w">        </span><span class="n">ldflags</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">ldflags</span><span class="o">//</span><span class="s2">&quot; &quot;</span><span class="o">//</span><span class="n">flag_intel_warn_win</span>
+<span class="k">        </span><span class="n">flags</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">flags</span><span class="o">//</span><span class="s2">" "</span><span class="o">//</span><span class="n">flag_intel_warn_win</span>
+<span class="w">        </span><span class="n">ldflags</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">ldflags</span><span class="o">//</span><span class="s2">" "</span><span class="o">//</span><span class="n">flag_intel_warn_win</span>
 <span class="w">    </span><span class="k">end if</span>
 
 <span class="w">    </span><span class="c">!&gt; Compile and link program</span>
 <span class="w">    </span><span class="k">call </span><span class="n">self</span><span class="p">%</span><span class="n">compile_fortran</span><span class="p">(</span><span class="n">source</span><span class="p">,</span><span class="w"> </span><span class="n">object</span><span class="p">,</span><span class="w"> </span><span class="n">flags</span><span class="p">,</span><span class="w"> </span><span class="n">logf</span><span class="p">,</span><span class="w"> </span><span class="nb">stat</span><span class="p">)</span>
 <span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="nb">stat</span><span class="o">==</span><span class="mi">0</span><span class="p">)</span><span class="w"> </span><span class="p">&amp;</span>
-<span class="w">    </span><span class="k">call </span><span class="n">self</span><span class="p">%</span><span class="nb">link</span><span class="p">(</span><span class="n">exe</span><span class="p">,</span><span class="w"> </span><span class="n">ldflags</span><span class="o">//</span><span class="s2">&quot; &quot;</span><span class="o">//</span><span class="n">object</span><span class="p">,</span><span class="w"> </span><span class="n">logf</span><span class="p">,</span><span class="w"> </span><span class="nb">stat</span><span class="p">)</span>
+<span class="w">    </span><span class="k">call </span><span class="n">self</span><span class="p">%</span><span class="nb">link</span><span class="p">(</span><span class="n">exe</span><span class="p">,</span><span class="w"> </span><span class="n">ldflags</span><span class="o">//</span><span class="s2">" "</span><span class="o">//</span><span class="n">object</span><span class="p">,</span><span class="w"> </span><span class="n">logf</span><span class="p">,</span><span class="w"> </span><span class="nb">stat</span><span class="p">)</span>
 
 <span class="w">    </span><span class="c">!&gt; Run and retrieve exit code</span>
 <span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="nb">stat</span><span class="o">==</span><span class="mi">0</span><span class="p">)</span><span class="w"> </span><span class="p">&amp;</span>
@@ -497,14 +497,14 @@ Run and retrieve exit code</p>
 <span class="w">    </span><span class="n">success</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">stat</span><span class="o">==</span><span class="mi">0</span>
 
 <span class="w">    </span><span class="c">!&gt; Delete files</span>
-<span class="w">    </span><span class="k">open</span><span class="p">(</span><span class="n">newunit</span><span class="o">=</span><span class="n">unit</span><span class="p">,</span><span class="w"> </span><span class="k">file</span><span class="o">=</span><span class="n">source</span><span class="p">,</span><span class="w"> </span><span class="n">action</span><span class="o">=</span><span class="s1">&#39;readwrite&#39;</span><span class="p">,</span><span class="w"> </span><span class="n">iostat</span><span class="o">=</span><span class="nb">stat</span><span class="p">)</span>
-<span class="w">    </span><span class="k">close</span><span class="p">(</span><span class="n">unit</span><span class="p">,</span><span class="n">status</span><span class="o">=</span><span class="s1">&#39;delete&#39;</span><span class="p">)</span>
-<span class="w">    </span><span class="k">open</span><span class="p">(</span><span class="n">newunit</span><span class="o">=</span><span class="n">unit</span><span class="p">,</span><span class="w"> </span><span class="k">file</span><span class="o">=</span><span class="n">object</span><span class="p">,</span><span class="w"> </span><span class="n">action</span><span class="o">=</span><span class="s1">&#39;readwrite&#39;</span><span class="p">,</span><span class="w"> </span><span class="n">iostat</span><span class="o">=</span><span class="nb">stat</span><span class="p">)</span>
-<span class="w">    </span><span class="k">close</span><span class="p">(</span><span class="n">unit</span><span class="p">,</span><span class="n">status</span><span class="o">=</span><span class="s1">&#39;delete&#39;</span><span class="p">)</span>
-<span class="w">    </span><span class="k">open</span><span class="p">(</span><span class="n">newunit</span><span class="o">=</span><span class="n">unit</span><span class="p">,</span><span class="w"> </span><span class="k">file</span><span class="o">=</span><span class="n">logf</span><span class="p">,</span><span class="w"> </span><span class="n">action</span><span class="o">=</span><span class="s1">&#39;readwrite&#39;</span><span class="p">,</span><span class="w"> </span><span class="n">iostat</span><span class="o">=</span><span class="nb">stat</span><span class="p">)</span>
-<span class="w">    </span><span class="k">close</span><span class="p">(</span><span class="n">unit</span><span class="p">,</span><span class="n">status</span><span class="o">=</span><span class="s1">&#39;delete&#39;</span><span class="p">)</span>
-<span class="w">    </span><span class="k">open</span><span class="p">(</span><span class="n">newunit</span><span class="o">=</span><span class="n">unit</span><span class="p">,</span><span class="w"> </span><span class="k">file</span><span class="o">=</span><span class="n">exe</span><span class="p">,</span><span class="w"> </span><span class="n">action</span><span class="o">=</span><span class="s1">&#39;readwrite&#39;</span><span class="p">,</span><span class="w"> </span><span class="n">iostat</span><span class="o">=</span><span class="nb">stat</span><span class="p">)</span>
-<span class="w">    </span><span class="k">close</span><span class="p">(</span><span class="n">unit</span><span class="p">,</span><span class="n">status</span><span class="o">=</span><span class="s1">&#39;delete&#39;</span><span class="p">)</span>
+<span class="w">    </span><span class="k">open</span><span class="p">(</span><span class="n">newunit</span><span class="o">=</span><span class="n">unit</span><span class="p">,</span><span class="w"> </span><span class="k">file</span><span class="o">=</span><span class="n">source</span><span class="p">,</span><span class="w"> </span><span class="n">action</span><span class="o">=</span><span class="s1">'readwrite'</span><span class="p">,</span><span class="w"> </span><span class="n">iostat</span><span class="o">=</span><span class="nb">stat</span><span class="p">)</span>
+<span class="w">    </span><span class="k">close</span><span class="p">(</span><span class="n">unit</span><span class="p">,</span><span class="n">status</span><span class="o">=</span><span class="s1">'delete'</span><span class="p">)</span>
+<span class="w">    </span><span class="k">open</span><span class="p">(</span><span class="n">newunit</span><span class="o">=</span><span class="n">unit</span><span class="p">,</span><span class="w"> </span><span class="k">file</span><span class="o">=</span><span class="n">object</span><span class="p">,</span><span class="w"> </span><span class="n">action</span><span class="o">=</span><span class="s1">'readwrite'</span><span class="p">,</span><span class="w"> </span><span class="n">iostat</span><span class="o">=</span><span class="nb">stat</span><span class="p">)</span>
+<span class="w">    </span><span class="k">close</span><span class="p">(</span><span class="n">unit</span><span class="p">,</span><span class="n">status</span><span class="o">=</span><span class="s1">'delete'</span><span class="p">)</span>
+<span class="w">    </span><span class="k">open</span><span class="p">(</span><span class="n">newunit</span><span class="o">=</span><span class="n">unit</span><span class="p">,</span><span class="w"> </span><span class="k">file</span><span class="o">=</span><span class="n">logf</span><span class="p">,</span><span class="w"> </span><span class="n">action</span><span class="o">=</span><span class="s1">'readwrite'</span><span class="p">,</span><span class="w"> </span><span class="n">iostat</span><span class="o">=</span><span class="nb">stat</span><span class="p">)</span>
+<span class="w">    </span><span class="k">close</span><span class="p">(</span><span class="n">unit</span><span class="p">,</span><span class="n">status</span><span class="o">=</span><span class="s1">'delete'</span><span class="p">)</span>
+<span class="w">    </span><span class="k">open</span><span class="p">(</span><span class="n">newunit</span><span class="o">=</span><span class="n">unit</span><span class="p">,</span><span class="w"> </span><span class="k">file</span><span class="o">=</span><span class="n">exe</span><span class="p">,</span><span class="w"> </span><span class="n">action</span><span class="o">=</span><span class="s1">'readwrite'</span><span class="p">,</span><span class="w"> </span><span class="n">iostat</span><span class="o">=</span><span class="nb">stat</span><span class="p">)</span>
+<span class="w">    </span><span class="k">close</span><span class="p">(</span><span class="n">unit</span><span class="p">,</span><span class="n">status</span><span class="o">=</span><span class="s1">'delete'</span><span class="p">)</span>
 
 <span class="k">end function </span><span class="n">check_fortran_source_runs</span>
 </pre></div>
@@ -530,7 +530,7 @@ Run and retrieve exit code</p>
             <p class="text-end">
               Documentation generated by
               <a href="https://github.com/Fortran-FOSS-Programmers/ford">FORD</a>
- on 2026-05-25 16:42 +0000             </p>
+ on 2026-08-27 21:47 +0000             </p>
           </div>
         </div>
         <br>

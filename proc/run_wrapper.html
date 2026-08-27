@@ -194,7 +194,7 @@
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-args~9"></span>
+              <span class="anchor" id="variable-args~5"></span>
               type(<a href='../type/string_t.html'>string_t</a>),
             </td>
 <td>intent(in),</td>
@@ -209,7 +209,7 @@
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-verbose~14"></span>
+              <span class="anchor" id="variable-verbose~18"></span>
               logical,
             </td>
 <td>intent(in),</td>
@@ -306,21 +306,21 @@
 <span class="w">    </span><span class="c">! No redirection and non-verbose output</span>
 <span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="nb">present</span><span class="p">(</span><span class="n">screen_output</span><span class="p">))</span><span class="w"> </span><span class="k">then</span>
 <span class="k">        </span><span class="n">redirect</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">get_temp_filename</span><span class="p">()</span>
-<span class="w">        </span><span class="n">redirect_str</span><span class="w"> </span><span class="o">=</span><span class="w">  </span><span class="s2">&quot;&gt;&quot;</span><span class="o">//</span><span class="n">redirect</span><span class="o">//</span><span class="s2">&quot; 2&gt;&amp;1&quot;</span>
+<span class="w">        </span><span class="n">redirect_str</span><span class="w"> </span><span class="o">=</span><span class="w">  </span><span class="s2">"&gt;"</span><span class="o">//</span><span class="n">redirect</span><span class="o">//</span><span class="s2">" 2&gt;&amp;1"</span>
 <span class="w">    </span><span class="k">else</span>
 <span class="k">        if</span><span class="w"> </span><span class="p">(</span><span class="n">os_is_unix</span><span class="p">())</span><span class="w"> </span><span class="k">then</span>
-<span class="k">            </span><span class="n">redirect_str</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot; &gt;/dev/null 2&gt;&amp;1&quot;</span>
+<span class="k">            </span><span class="n">redirect_str</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">" &gt;/dev/null 2&gt;&amp;1"</span>
 <span class="w">        </span><span class="k">else</span>
-<span class="k">            </span><span class="n">redirect_str</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot; &gt;NUL 2&gt;&amp;1&quot;</span>
+<span class="k">            </span><span class="n">redirect_str</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">" &gt;NUL 2&gt;&amp;1"</span>
 <span class="w">        </span><span class="k">end if</span>
 <span class="k">    end if</span>
 
 <span class="w">    </span><span class="c">! Empty command</span>
 <span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="nb">len_trim</span><span class="p">(</span><span class="n">wrapper</span><span class="p">)</span><span class="o">&lt;=</span><span class="mi">0</span><span class="p">)</span><span class="w"> </span><span class="k">then</span>
-<span class="k">        if</span><span class="w"> </span><span class="p">(</span><span class="n">echo_local</span><span class="p">)</span><span class="w"> </span><span class="k">print</span><span class="w"> </span><span class="o">*</span><span class="p">,</span><span class="w"> </span><span class="s1">&#39;+ &lt;EMPTY COMMAND&gt;&#39;</span>
+<span class="k">        if</span><span class="w"> </span><span class="p">(</span><span class="n">echo_local</span><span class="p">)</span><span class="w"> </span><span class="k">print</span><span class="w"> </span><span class="o">*</span><span class="p">,</span><span class="w"> </span><span class="s1">'+ &lt;EMPTY COMMAND&gt;'</span>
 <span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="nb">present</span><span class="p">(</span><span class="n">exitcode</span><span class="p">))</span><span class="w"> </span><span class="n">exitcode</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span>
 <span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="nb">present</span><span class="p">(</span><span class="n">cmd_success</span><span class="p">))</span><span class="w"> </span><span class="n">cmd_success</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">.</span><span class="n">true</span><span class="p">.</span>
-<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="nb">present</span><span class="p">(</span><span class="n">screen_output</span><span class="p">))</span><span class="w"> </span><span class="n">screen_output</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">string_t</span><span class="p">(</span><span class="s2">&quot;&quot;</span><span class="p">)</span>
+<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="nb">present</span><span class="p">(</span><span class="n">screen_output</span><span class="p">))</span><span class="w"> </span><span class="n">screen_output</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">string_t</span><span class="p">(</span><span class="s2">""</span><span class="p">)</span>
 <span class="w">        </span><span class="k">return</span>
 <span class="k">    end if</span>
 
@@ -330,11 +330,11 @@
 <span class="w">    </span><span class="n">add_arguments</span><span class="p">:</span><span class="w"> </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="nb">present</span><span class="p">(</span><span class="n">args</span><span class="p">))</span><span class="w"> </span><span class="k">then</span>
 <span class="k">        do </span><span class="n">iarg</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span><span class="n">size</span><span class="p">(</span><span class="n">args</span><span class="p">)</span>
 <span class="w">            </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="nb">len_trim</span><span class="p">(</span><span class="n">args</span><span class="p">(</span><span class="n">iarg</span><span class="p">))</span><span class="o">&lt;=</span><span class="mi">0</span><span class="p">)</span><span class="w"> </span><span class="k">cycle</span>
-<span class="k">            </span><span class="n">command</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">trim</span><span class="p">(</span><span class="n">command</span><span class="p">)</span><span class="o">//</span><span class="s1">&#39; &#39;</span><span class="o">//</span><span class="n">args</span><span class="p">(</span><span class="n">iarg</span><span class="p">)%</span><span class="n">s</span>
+<span class="k">            </span><span class="n">command</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">trim</span><span class="p">(</span><span class="n">command</span><span class="p">)</span><span class="o">//</span><span class="s1">' '</span><span class="o">//</span><span class="n">args</span><span class="p">(</span><span class="n">iarg</span><span class="p">)%</span><span class="n">s</span>
 <span class="w">        </span><span class="k">end do</span>
 <span class="k">    endif </span><span class="n">add_arguments</span>
 
-<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">echo_local</span><span class="p">)</span><span class="w"> </span><span class="k">print</span><span class="w"> </span><span class="o">*</span><span class="p">,</span><span class="w"> </span><span class="s1">&#39;+ &#39;</span><span class="p">,</span><span class="w"> </span><span class="n">command</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">echo_local</span><span class="p">)</span><span class="w"> </span><span class="k">print</span><span class="w"> </span><span class="o">*</span><span class="p">,</span><span class="w"> </span><span class="s1">'+ '</span><span class="p">,</span><span class="w"> </span><span class="n">command</span>
 
 <span class="w">    </span><span class="c">! Test command</span>
 <span class="w">    </span><span class="k">call </span><span class="nb">execute_command_line</span><span class="p">(</span><span class="n">command</span><span class="o">//</span><span class="n">redirect_str</span><span class="p">,</span><span class="n">exitstat</span><span class="o">=</span><span class="nb">stat</span><span class="p">,</span><span class="n">cmdstat</span><span class="o">=</span><span class="n">cmdstat</span><span class="p">)</span>
@@ -350,22 +350,22 @@
 
 <span class="k">        allocate</span><span class="p">(</span><span class="kt">character</span><span class="p">(</span><span class="nb">len</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">screen_output</span><span class="p">%</span><span class="n">s</span><span class="p">)</span>
 
-<span class="w">        </span><span class="k">open</span><span class="p">(</span><span class="n">newunit</span><span class="o">=</span><span class="n">iunit</span><span class="p">,</span><span class="k">file</span><span class="o">=</span><span class="n">redirect</span><span class="p">,</span><span class="n">status</span><span class="o">=</span><span class="s1">&#39;old&#39;</span><span class="p">,</span><span class="n">iostat</span><span class="o">=</span><span class="nb">stat</span><span class="p">)</span>
+<span class="w">        </span><span class="k">open</span><span class="p">(</span><span class="n">newunit</span><span class="o">=</span><span class="n">iunit</span><span class="p">,</span><span class="k">file</span><span class="o">=</span><span class="n">redirect</span><span class="p">,</span><span class="n">status</span><span class="o">=</span><span class="s1">'old'</span><span class="p">,</span><span class="n">iostat</span><span class="o">=</span><span class="nb">stat</span><span class="p">)</span>
 <span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="nb">stat</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="mi">0</span><span class="p">)</span><span class="k">then</span>
 <span class="k">           do</span>
 <span class="k">               call </span><span class="n">getline</span><span class="p">(</span><span class="n">iunit</span><span class="p">,</span><span class="w"> </span><span class="n">line</span><span class="p">,</span><span class="w"> </span><span class="nb">stat</span><span class="p">)</span>
 <span class="w">               </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="nb">stat</span><span class="w"> </span><span class="o">/=</span><span class="w"> </span><span class="mi">0</span><span class="p">)</span><span class="w"> </span><span class="k">exit</span>
 
-<span class="k">               </span><span class="n">screen_output</span><span class="p">%</span><span class="n">s</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">screen_output</span><span class="p">%</span><span class="n">s</span><span class="o">//</span><span class="nb">new_line</span><span class="p">(</span><span class="s1">&#39;a&#39;</span><span class="p">)</span><span class="o">//</span><span class="n">line</span>
+<span class="k">               </span><span class="n">screen_output</span><span class="p">%</span><span class="n">s</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">screen_output</span><span class="p">%</span><span class="n">s</span><span class="o">//</span><span class="nb">new_line</span><span class="p">(</span><span class="s1">'a'</span><span class="p">)</span><span class="o">//</span><span class="n">line</span>
 
-<span class="w">               </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">echo_local</span><span class="p">)</span><span class="w"> </span><span class="k">write</span><span class="p">(</span><span class="o">*</span><span class="p">,</span><span class="s1">&#39;(A)&#39;</span><span class="p">)</span><span class="w"> </span><span class="nb">trim</span><span class="p">(</span><span class="n">line</span><span class="p">)</span>
+<span class="w">               </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">echo_local</span><span class="p">)</span><span class="w"> </span><span class="k">write</span><span class="p">(</span><span class="o">*</span><span class="p">,</span><span class="s1">'(A)'</span><span class="p">)</span><span class="w"> </span><span class="nb">trim</span><span class="p">(</span><span class="n">line</span><span class="p">)</span>
 <span class="w">           </span><span class="k">end do</span>
 
 <span class="w">           </span><span class="c">! Close and delete file</span>
-<span class="w">           </span><span class="k">close</span><span class="p">(</span><span class="n">iunit</span><span class="p">,</span><span class="n">status</span><span class="o">=</span><span class="s1">&#39;delete&#39;</span><span class="p">)</span>
+<span class="w">           </span><span class="k">close</span><span class="p">(</span><span class="n">iunit</span><span class="p">,</span><span class="n">status</span><span class="o">=</span><span class="s1">'delete'</span><span class="p">)</span>
 
 <span class="w">        </span><span class="k">else</span>
-<span class="k">           call </span><span class="n">fpm_stop</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="s1">&#39;cannot read temporary file from successful command: &#39;</span><span class="o">//</span><span class="n">command</span><span class="p">)</span>
+<span class="k">           call </span><span class="n">fpm_stop</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="s1">'cannot read temporary file from successful command: '</span><span class="o">//</span><span class="n">command</span><span class="p">)</span>
 <span class="w">        </span><span class="k">endif</span>
 
 <span class="k">    end if</span>
@@ -394,7 +394,7 @@
             <p class="text-end">
               Documentation generated by
               <a href="https://github.com/Fortran-FOSS-Programmers/ford">FORD</a>
- on 2026-05-25 16:42 +0000             </p>
+ on 2026-08-27 21:47 +0000             </p>
           </div>
         </div>
         <br>

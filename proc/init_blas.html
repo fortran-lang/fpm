@@ -182,7 +182,7 @@ Set name</p>
     <tbody>
         <tr>
             <td>
-              <span class="anchor" id="variable-this~32"></span>
+              <span class="anchor" id="variable-this~9"></span>
               class(<a href='../type/metapackage_t.html'>metapackage_t</a>),
             </td>
 <td>intent(inout)</td>
@@ -197,7 +197,7 @@ Set name</p>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-compiler~28"></span>
+              <span class="anchor" id="variable-compiler~18"></span>
               type(<a href='../type/compiler_t.html'>compiler_t</a>),
             </td>
 <td>intent(in)</td>
@@ -212,7 +212,7 @@ Set name</p>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-all_meta~9"></span>
+              <span class="anchor" id="variable-all_meta~4"></span>
               type(<a href='../type/metapackage_request_t.html'>metapackage_request_t</a>),
             </td>
 <td>intent(in)</td>
@@ -227,7 +227,7 @@ Set name</p>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-error~210"></span>
+              <span class="anchor" id="variable-error~70"></span>
               type(<a href='../type/error_t.html'>error_t</a>),
             </td>
 <td>intent(out),</td>
@@ -266,42 +266,42 @@ Set name</p>
 <span class="w">        </span><span class="kt">integer</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">i</span>
 <span class="w">        </span><span class="kt">character</span><span class="p">(</span><span class="nb">len</span><span class="o">=</span><span class="p">:),</span><span class="w"> </span><span class="k">allocatable</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">include_flag</span><span class="p">,</span><span class="w"> </span><span class="n">libdir</span>
 <span class="w">        </span><span class="kt">character</span><span class="p">(</span><span class="o">*</span><span class="p">),</span><span class="w"> </span><span class="k">parameter</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">candidates</span><span class="p">(</span><span class="o">*</span><span class="p">)</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">&amp;</span>
-<span class="w">                                   </span><span class="p">[</span><span class="kt">character</span><span class="p">(</span><span class="mi">20</span><span class="p">)</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="s1">&#39;mkl-dynamic-lp64-tbb&#39;</span><span class="p">,</span><span class="w"> </span><span class="s1">&#39;openblas&#39;</span><span class="p">,</span><span class="w"> </span><span class="s1">&#39;blas&#39;</span><span class="p">,</span><span class="w"> </span><span class="s1">&#39;flexiblas&#39;</span><span class="p">]</span>
+<span class="w">                                   </span><span class="p">[</span><span class="kt">character</span><span class="p">(</span><span class="mi">20</span><span class="p">)</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="s1">'mkl-dynamic-lp64-tbb'</span><span class="p">,</span><span class="w"> </span><span class="s1">'openblas'</span><span class="p">,</span><span class="w"> </span><span class="s1">'blas'</span><span class="p">,</span><span class="w"> </span><span class="s1">'flexiblas'</span><span class="p">]</span>
 
-<span class="w">        </span><span class="n">include_flag</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">get_include_flag</span><span class="p">(</span><span class="n">compiler</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;&quot;</span><span class="p">)</span>
+<span class="w">        </span><span class="n">include_flag</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">get_include_flag</span><span class="p">(</span><span class="n">compiler</span><span class="p">,</span><span class="w"> </span><span class="s2">""</span><span class="p">)</span>
 
 <span class="w">        </span><span class="c">!&gt; Cleanup</span>
 <span class="w">        </span><span class="k">call </span><span class="n">destroy</span><span class="p">(</span><span class="n">this</span><span class="p">)</span>
 <span class="w">        </span><span class="k">allocate</span><span class="w"> </span><span class="p">(</span><span class="n">this</span><span class="p">%</span><span class="n">link_libs</span><span class="p">(</span><span class="mi">0</span><span class="p">),</span><span class="w"> </span><span class="n">this</span><span class="p">%</span><span class="n">incl_dirs</span><span class="p">(</span><span class="mi">0</span><span class="p">),</span><span class="w"> </span><span class="n">this</span><span class="p">%</span><span class="n">external_modules</span><span class="p">(</span><span class="mi">0</span><span class="p">))</span>
-<span class="w">        </span><span class="n">this</span><span class="p">%</span><span class="n">link_flags</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">string_t</span><span class="p">(</span><span class="s2">&quot;&quot;</span><span class="p">)</span>
-<span class="w">        </span><span class="n">this</span><span class="p">%</span><span class="n">flags</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">string_t</span><span class="p">(</span><span class="s2">&quot;&quot;</span><span class="p">)</span>
+<span class="w">        </span><span class="n">this</span><span class="p">%</span><span class="n">link_flags</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">string_t</span><span class="p">(</span><span class="s2">""</span><span class="p">)</span>
+<span class="w">        </span><span class="n">this</span><span class="p">%</span><span class="n">flags</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">string_t</span><span class="p">(</span><span class="s2">""</span><span class="p">)</span>
 <span class="w">        </span><span class="n">this</span><span class="p">%</span><span class="n">has_external_modules</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">.</span><span class="n">false</span><span class="p">.</span>
 <span class="w">        </span>
 <span class="w">        </span><span class="c">!&gt; Set name</span>
-<span class="w">        </span><span class="n">this</span><span class="p">%</span><span class="n">name</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;&quot;</span>
+<span class="w">        </span><span class="n">this</span><span class="p">%</span><span class="n">name</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">""</span>
 
 <span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">get_os_type</span><span class="p">()</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="n">OS_MACOS</span><span class="p">)</span><span class="w"> </span><span class="k">then</span>
-<span class="k">            if</span><span class="w"> </span><span class="p">(</span><span class="n">compile_and_link_flags_supported</span><span class="p">(</span><span class="n">compiler</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;-framework Accelerate&quot;</span><span class="p">))</span><span class="w"> </span><span class="k">then</span>
-<span class="k">                call </span><span class="n">set_compile_and_link_flags</span><span class="p">(</span><span class="n">this</span><span class="p">,</span><span class="w"> </span><span class="n">compiler</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;-framework Accelerate&quot;</span><span class="p">)</span>
+<span class="k">            if</span><span class="w"> </span><span class="p">(</span><span class="n">compile_and_link_flags_supported</span><span class="p">(</span><span class="n">compiler</span><span class="p">,</span><span class="w"> </span><span class="s2">"-framework Accelerate"</span><span class="p">))</span><span class="w"> </span><span class="k">then</span>
+<span class="k">                call </span><span class="n">set_compile_and_link_flags</span><span class="p">(</span><span class="n">this</span><span class="p">,</span><span class="w"> </span><span class="n">compiler</span><span class="p">,</span><span class="w"> </span><span class="s2">"-framework Accelerate"</span><span class="p">)</span>
 <span class="w">                </span><span class="k">return</span>
 <span class="k">            end if</span>
 <span class="k">        end if</span>
 
 <span class="k">        if</span><span class="w"> </span><span class="p">(</span><span class="n">compiler</span><span class="p">%</span><span class="n">is_intel</span><span class="p">())</span><span class="w"> </span><span class="k">then</span>
 <span class="k">            if</span><span class="w"> </span><span class="p">(</span><span class="n">get_os_type</span><span class="p">()</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="n">OS_WINDOWS</span><span class="p">)</span><span class="w"> </span><span class="k">then</span>
-<span class="k">                if</span><span class="w"> </span><span class="p">(</span><span class="n">compile_and_link_flags_supported</span><span class="p">(</span><span class="n">compiler</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;/Qmkl&quot;</span><span class="p">))</span><span class="w"> </span><span class="k">then</span>
-<span class="k">                    call </span><span class="n">set_compile_and_link_flags</span><span class="p">(</span><span class="n">this</span><span class="p">,</span><span class="w"> </span><span class="n">compiler</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;/Qmkl&quot;</span><span class="p">)</span>
+<span class="k">                if</span><span class="w"> </span><span class="p">(</span><span class="n">compile_and_link_flags_supported</span><span class="p">(</span><span class="n">compiler</span><span class="p">,</span><span class="w"> </span><span class="s2">"/Qmkl"</span><span class="p">))</span><span class="w"> </span><span class="k">then</span>
+<span class="k">                    call </span><span class="n">set_compile_and_link_flags</span><span class="p">(</span><span class="n">this</span><span class="p">,</span><span class="w"> </span><span class="n">compiler</span><span class="p">,</span><span class="w"> </span><span class="s2">"/Qmkl"</span><span class="p">)</span>
 <span class="w">                    </span><span class="k">return</span>
 <span class="k">                end if</span>
-<span class="k">            else if</span><span class="w"> </span><span class="p">(</span><span class="n">compile_and_link_flags_supported</span><span class="p">(</span><span class="n">compiler</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;-qmkl&quot;</span><span class="p">))</span><span class="w"> </span><span class="k">then</span>
-<span class="k">                call </span><span class="n">set_compile_and_link_flags</span><span class="p">(</span><span class="n">this</span><span class="p">,</span><span class="w"> </span><span class="n">compiler</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;-qmkl&quot;</span><span class="p">)</span>
+<span class="k">            else if</span><span class="w"> </span><span class="p">(</span><span class="n">compile_and_link_flags_supported</span><span class="p">(</span><span class="n">compiler</span><span class="p">,</span><span class="w"> </span><span class="s2">"-qmkl"</span><span class="p">))</span><span class="w"> </span><span class="k">then</span>
+<span class="k">                call </span><span class="n">set_compile_and_link_flags</span><span class="p">(</span><span class="n">this</span><span class="p">,</span><span class="w"> </span><span class="n">compiler</span><span class="p">,</span><span class="w"> </span><span class="s2">"-qmkl"</span><span class="p">)</span>
 <span class="w">                </span><span class="k">return</span>
 <span class="k">            endif</span>
 <span class="k">        end if</span>
 
 <span class="w">        </span><span class="c">!&gt; Assert pkg-config is installed</span>
 <span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(.</span><span class="nb">not</span><span class="p">.</span><span class="w"> </span><span class="n">assert_pkg_config</span><span class="p">())</span><span class="w"> </span><span class="k">then</span>
-<span class="k">            call </span><span class="n">fatal_error</span><span class="p">(</span><span class="n">error</span><span class="p">,</span><span class="w"> </span><span class="s1">&#39;blas metapackage requires pkg-config to continue lookup&#39;</span><span class="p">)</span>
+<span class="k">            call </span><span class="n">fatal_error</span><span class="p">(</span><span class="n">error</span><span class="p">,</span><span class="w"> </span><span class="s1">'blas metapackage requires pkg-config to continue lookup'</span><span class="p">)</span>
 <span class="w">            </span><span class="k">return</span>
 <span class="k">        end if</span>
 
@@ -309,12 +309,12 @@ Set name</p>
 <span class="w">            </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">pkgcfg_has_package</span><span class="p">(</span><span class="nb">trim</span><span class="p">(</span><span class="n">candidates</span><span class="p">(</span><span class="n">i</span><span class="p">))))</span><span class="w"> </span><span class="k">then</span>
 <span class="k">                call </span><span class="n">add_pkg_config_compile_options</span><span class="p">(</span><span class="w"> </span><span class="p">&amp;</span>
 <span class="w">                    </span><span class="n">this</span><span class="p">,</span><span class="w"> </span><span class="nb">trim</span><span class="p">(</span><span class="n">candidates</span><span class="p">(</span><span class="n">i</span><span class="p">)),</span><span class="w"> </span><span class="n">include_flag</span><span class="p">,</span><span class="w"> </span><span class="n">libdir</span><span class="p">,</span><span class="w"> </span><span class="n">error</span><span class="p">)</span>
-<span class="w">                </span><span class="k">print</span><span class="w"> </span><span class="o">*</span><span class="p">,</span><span class="w"> </span><span class="s1">&#39;found blas package: &#39;</span><span class="p">,</span><span class="w"> </span><span class="nb">trim</span><span class="p">(</span><span class="n">candidates</span><span class="p">(</span><span class="n">i</span><span class="p">))</span>
+<span class="w">                </span><span class="k">print</span><span class="w"> </span><span class="o">*</span><span class="p">,</span><span class="w"> </span><span class="s1">'found blas package: '</span><span class="p">,</span><span class="w"> </span><span class="nb">trim</span><span class="p">(</span><span class="n">candidates</span><span class="p">(</span><span class="n">i</span><span class="p">))</span>
 <span class="w">                </span><span class="k">return</span>
 <span class="k">            end if</span>
 <span class="k">        end do</span>
 
-<span class="k">        call </span><span class="n">fatal_error</span><span class="p">(</span><span class="n">error</span><span class="p">,</span><span class="w"> </span><span class="s1">&#39;pkg-config could not find a suitable blas package.&#39;</span><span class="p">)</span>
+<span class="k">        call </span><span class="n">fatal_error</span><span class="p">(</span><span class="n">error</span><span class="p">,</span><span class="w"> </span><span class="s1">'pkg-config could not find a suitable blas package.'</span><span class="p">)</span>
 <span class="w">    </span><span class="k">end subroutine </span><span class="n">init_blas</span>
 </pre></div>
 
@@ -339,7 +339,7 @@ Set name</p>
             <p class="text-end">
               Documentation generated by
               <a href="https://github.com/Fortran-FOSS-Programmers/ford">FORD</a>
- on 2026-05-25 16:42 +0000             </p>
+ on 2026-08-27 21:47 +0000             </p>
           </div>
         </div>
         <br>

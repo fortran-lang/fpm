@@ -134,9 +134,9 @@
       </a>
       <div id="vars-0" class="collapse">
         <div class="list-group list-group-flush">
-            <a class="list-group-item" href="../proc/compile_fortran.html#variable-command~2">command</a>
-            <a class="list-group-item" href="../proc/compile_fortran.html#variable-error~4">error</a>
-            <a class="list-group-item" href="../proc/compile_fortran.html#variable-mock">mock</a>
+            <a class="list-group-item" href="../proc/compile_fortran.html#variable-command~14">command</a>
+            <a class="list-group-item" href="../proc/compile_fortran.html#variable-error~136">error</a>
+            <a class="list-group-item" href="../proc/compile_fortran.html#variable-mock~2">mock</a>
         </div>
       </div>
     </div>
@@ -194,7 +194,7 @@
     <tbody>
         <tr>
             <td>
-              <span class="anchor" id="variable-self~28"></span>
+              <span class="anchor" id="variable-self~100"></span>
               class(<a href='../type/compiler_t.html'>compiler_t</a>),
             </td>
 <td>intent(in)</td>
@@ -209,7 +209,7 @@
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-input"></span>
+              <span class="anchor" id="variable-input~4"></span>
               character(len=*),
             </td>
 <td>intent(in)</td>
@@ -224,7 +224,7 @@
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-output~2"></span>
+              <span class="anchor" id="variable-output~5"></span>
               character(len=*),
             </td>
 <td>intent(in)</td>
@@ -239,7 +239,7 @@
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-args"></span>
+              <span class="anchor" id="variable-args~6"></span>
               character(len=*),
             </td>
 <td>intent(in)</td>
@@ -269,7 +269,7 @@
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-stat~3"></span>
+              <span class="anchor" id="variable-stat~40"></span>
               integer,
             </td>
 <td>intent(out)</td>
@@ -284,7 +284,7 @@
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-table~3"></span>
+              <span class="anchor" id="variable-table~60"></span>
               type(<a href='../type/compile_command_table_t.html'>compile_command_table_t</a>),
             </td>
 <td>intent(inout),</td>
@@ -299,7 +299,7 @@
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-dry_run"></span>
+              <span class="anchor" id="variable-dry_run~4"></span>
               logical,
             </td>
 <td>intent(in),</td>
@@ -332,7 +332,7 @@
     <tbody>
         <tr>
             <td>
-              <span class="anchor" id="variable-command~2"></span>
+              <span class="anchor" id="variable-command~14"></span>
               character(len=:),
             </td>
               <td>public,</td>
@@ -349,7 +349,7 @@
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-error~4"></span>
+              <span class="anchor" id="variable-error~136"></span>
               type(<a href='../type/error_t.html'>error_t</a>),
             </td>
               <td>public,</td>
@@ -366,7 +366,7 @@
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-mock"></span>
+              <span class="anchor" id="variable-mock~2"></span>
               logical,
             </td>
               <td>public</td>
@@ -423,12 +423,12 @@
 <span class="w">    </span><span class="c">! a defined value.</span>
 <span class="w">    </span><span class="nb">stat</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span>
 
-<span class="w">    </span><span class="c">! Check if we&#39;re actually building this file</span>
+<span class="w">    </span><span class="c">! Check if we're actually building this file</span>
 <span class="w">    </span><span class="n">mock</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">.</span><span class="n">false</span><span class="p">.</span>
 <span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="nb">present</span><span class="p">(</span><span class="n">dry_run</span><span class="p">))</span><span class="w"> </span><span class="n">mock</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">dry_run</span>
 
 <span class="w">    </span><span class="c">! Set command</span>
-<span class="w">    </span><span class="n">command</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">self</span><span class="p">%</span><span class="n">fc</span><span class="w"> </span><span class="o">//</span><span class="w"> </span><span class="s2">&quot; -c &quot;</span><span class="w"> </span><span class="o">//</span><span class="w"> </span><span class="n">input</span><span class="w"> </span><span class="o">//</span><span class="w"> </span><span class="s2">&quot; &quot;</span><span class="w"> </span><span class="o">//</span><span class="w"> </span><span class="n">args</span><span class="w"> </span><span class="o">//</span><span class="w"> </span><span class="s2">&quot; -o &quot;</span><span class="w"> </span><span class="o">//</span><span class="w"> </span><span class="n">output</span>
+<span class="w">    </span><span class="n">command</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">self</span><span class="p">%</span><span class="n">fc</span><span class="w"> </span><span class="o">//</span><span class="w"> </span><span class="s2">" -c "</span><span class="w"> </span><span class="o">//</span><span class="w"> </span><span class="n">input</span><span class="w"> </span><span class="o">//</span><span class="w"> </span><span class="s2">" "</span><span class="w"> </span><span class="o">//</span><span class="w"> </span><span class="n">args</span><span class="w"> </span><span class="o">//</span><span class="w"> </span><span class="s2">" -o "</span><span class="w"> </span><span class="o">//</span><span class="w"> </span><span class="n">output</span>
 
 <span class="w">    </span><span class="c">! Execute command</span>
 <span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(.</span><span class="nb">not</span><span class="p">.</span><span class="n">mock</span><span class="p">)</span><span class="w"> </span><span class="k">then</span>
@@ -466,7 +466,7 @@
             <p class="text-end">
               Documentation generated by
               <a href="https://github.com/Fortran-FOSS-Programmers/ford">FORD</a>
- on 2026-05-25 16:42 +0000             </p>
+ on 2026-08-27 21:47 +0000             </p>
           </div>
         </div>
         <br>
