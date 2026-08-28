@@ -418,14 +418,17 @@ contains
         call self%blas%dump_to_toml(ptr, error); if (allocated(error)) return
     end subroutine meta_config_dump
     
-    ! Ensure the names of all packages are always defined
-    subroutine meta_config_final(self)
+    ! Ensure the names of all packages are always defined.
+    ! Both are pure so that a derived type carrying this one can still be a local
+    ! variable of a pure/elemental procedure: finalization of such a variable must
+    ! not invoke an impure procedure (NAG rejects it; most compilers do not check).
+    pure subroutine meta_config_final(self)
         type(metapackage_config_t), intent(inout) :: self    
         call meta_config_reset(self)            
     end subroutine meta_config_final
 
     ! Ensure the names of all packages are always defined
-    subroutine meta_config_reset(self)
+    pure subroutine meta_config_reset(self)
         class(metapackage_config_t), intent(inout) :: self
         
         call request_destroy(self%openmp); self%openmp%name = "openmp"
