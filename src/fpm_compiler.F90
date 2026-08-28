@@ -1301,14 +1301,12 @@ function get_headerpad_flags(self) result(flags)
     class(compiler_t), intent(in) :: self
     character(len=:), allocatable :: flags
 
-    if (get_os_type() /= OS_MACOS) then
+    if (get_os_type() /= OS_MACOS .or. self%id == id_nag) then
         flags = ""
         return
     end if
-
     ! Reserve enough space in the Mach-O header to safely add two install_name or rpath later
     flags = " -Wl,-headerpad,0x200"
-
 end function get_headerpad_flags
 
 !> Create new compiler instance
