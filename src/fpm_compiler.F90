@@ -306,8 +306,12 @@ function get_default_flags(self, release) result(flags)
     select case (self%id)
     case (id_gcc, id_f95, id_caf, id_flang_classic, id_amdflang, id_f18, id_lfortran, &
           id_intel_classic_nix, id_intel_classic_mac, id_intel_llvm_nix, &
-          id_intel_llvm_unknown, id_pgi, id_nvhpc, id_nag, id_cray, id_ibmxl)
+          id_intel_llvm_unknown, id_pgi, id_nvhpc, id_cray, id_ibmxl)
         pic_flag = " -fPIC"
+    case (id_nag)
+        ! NAG spells this `-PIC` and rejects `-fPIC` outright
+        ! ("Option error: Unrecognised option -fPIC"), which fails every source probe
+        pic_flag = flag_nag_pic
     case (id_flang)
         ! LLVM Flang doesn't support -fPIC on Windows MSVC target
         if (get_os_type() == OS_WINDOWS) then
