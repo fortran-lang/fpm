@@ -2170,14 +2170,19 @@ subroutine append_clean_flags(flags, new_flags)
     character(*), intent(in) :: new_flags
 
     type(string_t), allocatable :: flags_array(:), new_flags_array(:)
-    integer :: i
+    integer :: i, n_old
 
     call tokenize_flags(flags, flags_array)
     call tokenize_flags(new_flags, new_flags_array)
 
+    ! `flags_array` starts out holding the flags already in `flags`, and
+    ! `append_clean_flags_array` only ever appends: re-emitting the whole array
+    ! would repeat every one of them on each call
+    n_old = size(flags_array)
+
     call append_clean_flags_array(flags_array, new_flags_array)
 
-    do i = 1, size(flags_array)
+    do i = n_old + 1, size(flags_array)
         flags = flags // " " // flags_array(i)%s
     end do
 end subroutine append_clean_flags
