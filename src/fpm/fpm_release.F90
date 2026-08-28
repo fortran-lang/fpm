@@ -21,6 +21,13 @@ module fpm_release
 #  define FPM_RELEASE_VERSION 0.13.0
 #endif
 
+! NAG's fpp implements neither stringification idiom below, so it cannot turn the
+! unquoted FPM_RELEASE_VERSION token into a character literal: use a pre-quoted
+! literal instead. Keep in sync with the fallback above and with fpm.toml.
+#ifdef NAGFOR
+#  define FPM_RELEASE_VERSION_STRING "0.13.0"
+#endif
+
 ! Accept solution from https://stackoverflow.com/questions/31649691/stringify-macro-with-gnu-gfortran
 ! which provides the "easiest" way to pass a macro to a string in Fortran complying with both
 ! gfortran's "traditional" cpp and the standard cpp syntaxes
@@ -34,8 +41,12 @@ module fpm_release
 #endif
 
         character (len=:), allocatable :: ver_string
+#ifdef NAGFOR
+        ver_string = FPM_RELEASE_VERSION_STRING
+#else
         ver_string = STRINGIFY_START(FPM_RELEASE_VERSION)
         STRINGIFY_END(FPM_RELEASE_VERSION)
+#endif
 
         call new_version(fpm_version,ver_string,error)
 
