@@ -1212,9 +1212,11 @@ function enumerate_libraries(self, prefix, libs) result(r)
         r = trim(prefix) // " " // trim(joined)
 
     case (id_nag, id_ibmxl)
-        ! NAG and IBMXL need -Wl, wrapper around linker flags
-        joined = string_cat(libs, " -Wl,")
-        r = trim(prefix) // " -Wl," // trim(joined)
+        ! NAG and IBMXL need the -Wl, wrapper around linker flags, but the payload
+        ! must still be a `-l<name>` option: a bare library name is read as an input
+        ! file name by the linker driver they forward to
+        joined = string_cat(libs, " -Wl,-l")
+        r = trim(prefix) // " -Wl,-l" // trim(joined)
 
     case default
         ! Generic Unix-style linker flags: use `-lfoo`
