@@ -96,9 +96,25 @@ jobs:
     - name: Checkout code
       uses: actions/checkout@v6
 
-    - name: Setup Fortran compiler
+    - name: Setup Fortran compiler (Windows, first attempt)
+      if: matrix.os == 'windows-latest'
+      id: setup-fortran-windows-attempt-1
+      continue-on-error: true
       uses: fortran-lang/setup-fortran@v1.9.0
-      id: setup-fortran
+      with:
+        compiler: ${{ matrix.toolchain.compiler }}
+        version: ${{ matrix.toolchain.version }}
+
+    - name: Setup Fortran compiler (Windows, retry)
+      if: matrix.os == 'windows-latest' && steps.setup-fortran-windows-attempt-1.outcome == 'failure'
+      uses: fortran-lang/setup-fortran@v1.9.0
+      with:
+        compiler: ${{ matrix.toolchain.compiler }}
+        version: ${{ matrix.toolchain.version }}
+
+    - name: Setup Fortran compiler
+      if: matrix.os != 'windows-latest'
+      uses: fortran-lang/setup-fortran@v1.9.0
       with:
         compiler: ${{ matrix.toolchain.compiler }}
         version: ${{ matrix.toolchain.version }}
