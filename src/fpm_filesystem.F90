@@ -11,12 +11,14 @@ module fpm_filesystem
         str_begins_with_str
     use iso_c_binding, only: c_char, c_ptr, c_int, c_null_char, c_associated, c_f_pointer
     use fpm_error, only : fpm_stop, error_t, fatal_error
+    use shlex_module, only: sh_split => split, ms_split
     implicit none
     private
     public :: basename, canon_path, dirname, is_dir, join_path, number_of_rows, list_files, get_local_prefix, &
             mkdir, exists, get_temp_filename, windows_path, unix_path, getline, delete_file, fileopen, fileclose, &
             filewrite, warnwrite, parent_dir, is_hidden_file, read_lines, read_lines_expanded, which, run, &
-            os_delete_dir, is_absolute_path, get_home, execute_and_read_output, get_dos_path
+            os_delete_dir, is_absolute_path, get_home, execute_and_read_output, get_dos_path, &
+            command_program, command_not_found
 
 #ifndef FPM_BOOTSTRAP
     interface
@@ -1029,11 +1031,23 @@ subroutine run(cmd,echo,exitstat,verbose,redirect)
 
     if(echo_local) print *, '+ ', cmd !//redirect_str
 
+    stat = 0
     call execute_command_line(cmd//redirect_str, exitstat=stat,cmdstat=cmdstat,cmdmsg=cmdmsg)
-    if(cmdstat /= 0)then
-        write(*,'(a)')'<ERROR>:failed command '//cmd//redirect_str
-        call fpm_stop(1,'*run*:'//trim(cmdmsg))
-    endif
+
+    ! On failure only (so the success path pays nothing), distinguish a missing program
+    ! -- Unix cmdstat/=0 "Invalid command line", Windows cmdstat==0 but exit 9009 -- from
+    ! a found-but-unrunnable one. Nested ifs: Fortran does not mandate short-circuit .and.
+    if (cmdstat /= 0 .or. stat /= 0) then
+        if (command_not_found(cmd)) then
+            write(*,'(a)')'<ERROR>:failed command '//cmd//redirect_str
+            call fpm_stop(1, "Could not execute '"//command_program(cmd)//"': program not found on PATH."//new_line('a')// &
+                "  Check that it is installed and on your PATH, or set it explicitly with"//new_line('a')// &
+                "  --compiler / FPM_FC (use FPM_CC / FPM_AR for the C compiler / archiver).")
+        else if (cmdstat /= 0) then
+            write(*,'(a)')'<ERROR>:failed command '//cmd//redirect_str
+            call fpm_stop(1,'*run*:'//trim(cmdmsg))
+        end if
+    end if
 
     if (verbose_local.and.present(redirect)) then
 
@@ -1059,6 +1073,42 @@ subroutine run(cmd,echo,exitstat,verbose,redirect)
     end if
 
 end subroutine run
+
+!> Return the program invoked by a command line (its first shell token), OS-aware.
+!! Uses fpm's shell lexer so quoted paths stay intact and trailing arguments
+!! (e.g. a wrapper's "mpifort -fc=gfortran") are dropped. Returns '' if empty.
+function command_program(cmd) result(prog)
+    character(*), intent(in) :: cmd
+    character(:), allocatable :: prog
+    character(len=:), allocatable :: tokens(:)
+
+    prog = ''
+    if (os_is_unix()) then
+        tokens = sh_split(cmd)               ! POSIX lexer
+    else
+        tokens = ms_split(cmd, ucrt=.true.)  ! Windows lexer
+    end if
+    ! The program is always the first token. A redirection in the command (e.g. "> log
+    ! 2>&1") makes the lexer report failure but it still tokenizes, and a redirection
+    ! operator never starts the command, so the first token is reliably the program.
+    if (allocated(tokens)) then
+        if (size(tokens) > 0) prog = trim(adjustl(tokens(1)))
+    end if
+
+end function command_program
+
+!> True when the program invoked by `cmd` cannot be located on PATH (nor as a
+!! direct path). Cross-platform via which()/exists().
+logical function command_not_found(cmd)
+    character(*), intent(in) :: cmd
+    character(:), allocatable :: prog
+
+    command_not_found = .false.
+    prog = command_program(cmd)
+    if (len_trim(prog) == 0) return
+    if (len_trim(which(prog)) == 0 .and. .not. exists(prog)) command_not_found = .true.
+
+end function command_not_found
 
 !> Delete directory using system OS remove directory commands
 subroutine os_delete_dir(is_unix, dir, echo)
