@@ -312,7 +312,10 @@ subroutine run_wrapper(wrapper,args,verbose,exitcode,cmd_success,screen_output)
     ! Test command
     call execute_command_line(command//redirect_str,exitstat=stat,cmdstat=cmdstat)
 
-    ! Command successful?
+    ! Command launched successfully? Note this is not the command's exit status:
+    ! `cmdstat` is zero whenever the program started, whatever it went on to exit
+    ! with. Callers that need the command to have *succeeded* must check `exitcode`
+    ! as well, which every call site in fpm does.
     if (present(cmd_success)) cmd_success = cmdstat==0
 
     ! Program exit code?

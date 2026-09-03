@@ -891,13 +891,23 @@ contains
 
         if (len_trim(wrapper)<=0) return
 
-        ! Run mpi wrapper first
+        ! Check the wrapper can be launched at all. `cmd_success` only reports that
+        ! the command started, not that it succeeded, and that is what is wanted here:
+        ! a wrapper invoked with no arguments exits non-zero ("no input files"), so its
+        ! exit status cannot be used to decide whether it exists.
         call run_wrapper(wrapper,verbose=verbose,cmd_success=is_mpi_wrapper)
 
         if (is_mpi_wrapper) then
 
+            ! Intel MPI is MPICH-derived and answers '-show', so it has to be identified
+            ! before the MPICH probe below. Probe it rather than trusting the launch
+            ! check: that check is only "this command exists", which is equally true of
+            ! a plain compiler, so on an Intel toolchain any runnable wrapper was being
+            ! reported as Intel MPI without ever being asked.
             if (compiler%is_intel()) then
-                which_mpi_library = MPI_TYPE_INTEL
+                call run_wrapper(wrapper,[string_t('-show')],verbose,&
+                                     exitcode=stat,cmd_success=is_mpi_wrapper)
+                if (stat==0 .and. is_mpi_wrapper) which_mpi_library = MPI_TYPE_INTEL
                 return
             end if
 

@@ -3,6 +3,8 @@ module test_os
     use fpm_filesystem, only: join_path, mkdir, os_delete_dir, is_dir, get_local_prefix, get_home
     use fpm_environment, only: os_is_unix, get_env, set_env, delete_env
     use fpm_os, only: get_absolute_path, get_absolute_path_by_cd, get_current_directory
+    use fpm_pkg_config, only: run_wrapper
+    use fpm_strings, only: string_t
 
     implicit none
     private
@@ -31,10 +33,48 @@ contains
         & new_unittest('abs-path-home', abs_path_home), &
         & new_unittest('abs-path-cd-root', abs_path_home), &
         & new_unittest('abs-path-cd-home', abs_path_cd_home), &
-        & new_unittest('abs-path-cd-current', abs_path_cd_current) &
+        & new_unittest('abs-path-cd-current', abs_path_cd_current), &
+        & new_unittest('wrapper-launch-is-not-exit-status', wrapper_launch_is_not_exit_status) &
         ]
 
     end subroutine collect_os
+
+    !> `run_wrapper` must report *launching* and *exiting* separately.
+    !>
+    !> `cmd_success` comes from `cmdstat`, which is zero as soon as the command
+    !> starts, whatever it then exits with; the exit status arrives separately in
+    !> `exitcode`. fpm depends on the two being distinct: MPI wrappers exit
+    !> non-zero when invoked with no arguments, so the launch check is the only way
+    !> to ask whether a wrapper exists, while deciding *which* MPI library it is
+    !> requires the exit status of a probe flag.
+    !>
+    !> Collapsing the two -- reporting cmd_success only when the command also
+    !> exited zero -- would silently disable MPI detection, so pin it here.
+    subroutine wrapper_launch_is_not_exit_status(error)
+        type(error_t), allocatable, intent(out) :: error
+
+        logical :: success
+        integer :: code
+        character(len=64) :: msg
+
+        !> Needs a POSIX shell to produce a chosen exit status.
+        if (.not. os_is_unix()) return
+
+        call run_wrapper(string_t('sh'), [string_t("-c 'exit 7'")], &
+                         exitcode=code, cmd_success=success)
+
+        if (.not. success) then
+            call test_failed(error, 'a command that started was reported as failing to launch')
+            return
+        end if
+
+        if (code /= 7) then
+            write (msg, '(a,i0)') 'expected the command exit status 7, got ', code
+            call test_failed(error, trim(msg))
+            return
+        end if
+
+    end subroutine wrapper_launch_is_not_exit_status
 
     subroutine delete_tmp_folder
         if (is_dir(tmp_folder)) call os_delete_dir(os_is_unix(), tmp_folder)
