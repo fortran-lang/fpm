@@ -153,7 +153,7 @@ module fpm_manifest_feature_collection
     end subroutine feature_collection_load
         
     ! helper: append a variant to self%variants
-    elemental subroutine push_variant(self,variant)
+    impure elemental subroutine push_variant(self,variant)
         class(feature_collection_t), intent(inout) :: self
         type(feature_config_t), intent(in) :: variant
         
