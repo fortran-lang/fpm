@@ -214,8 +214,13 @@ logical function is_dir(dir)
     select case (get_os_type())
 
     case (OS_UNKNOWN, OS_LINUX, OS_MACOS, OS_CYGWIN, OS_SOLARIS, OS_FREEBSD, OS_OPENBSD)
+#ifndef FPM_BOOTSTRAP
+        is_dir = c_is_dir(dir(1:len_trim(dir))//c_null_char) /= 0
+        return
+#else
         call run( "test -d " // dir , &
                 & exitstat=stat,echo=.false.,verbose=.false.)
+#endif
 
     case (OS_WINDOWS)
         call run('cmd /c "if not exist ' // windows_path(dir) // '\ exit /B 1"', &
