@@ -426,6 +426,31 @@ contains
             if (.not.git_matches_manifest(cached%git,manifest%git,verbosity,iunit)) return
         end if
 
+        !> A different feature set (or profile) means different macros and
+        !> possibly different dependencies, so it is a different build of the
+        !> same revision -- the git checks above cannot see that.
+        if (allocated(cached%features).neqv.allocated(manifest%features)) then
+            if (verbosity>1) write(iunit,out_fmt) "FEATURES presence has changed. "
+            return
+        endif
+        if (allocated(cached%features)) then
+            if (.not.(cached%features==manifest%features)) then
+                if (verbosity>1) write(iunit,out_fmt) "FEATURES have changed. "
+                return
+            end if
+        end if
+        if (allocated(cached%profile).neqv.allocated(manifest%profile)) then
+            if (verbosity>1) write(iunit,out_fmt) "PROFILE presence has changed. "
+            return
+        endif
+        if (allocated(cached%profile)) then
+            if (.not.(cached%profile==manifest%profile)) then
+                if (verbosity>1) write(iunit,out_fmt) &
+                    "PROFILE has changed: "//cached%profile//" vs. "//manifest%profile
+                return
+            end if
+        end if
+
         !> All checks passed! The two instances are equal
         has_changed = .false.
 
