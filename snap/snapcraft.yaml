@@ -1,0 +1,73 @@
+name: fortran-fpm
+adopt-info: fortran-fpm
+summary: Fortran Package Manager
+description: |
+  Fortran Package Manager (fpm) is a package manager and build system for Fortran. 
+  Its key goal is to improve the user experience of Fortran programmers. 
+  It does so by making it easier to build your Fortran program or library, 
+  run the executables, tests, and examples, and distribute it as a dependency 
+  to other Fortran projects. Fpm's user interface is modeled after Rust's Cargo, 
+  so if you're familiar with that tool, you will feel at home with fpm. 
+  Fpm's long term vision is to nurture and grow the ecosystem of modern Fortran 
+  applications and libraries.
+  
+  Fpm is an early prototype and is evolving rapidly. You can use it to build and 
+  package your Fortran projects, as well as to use existing fpm packages as dependencies. 
+  Fpm's behavior and user interface may change as it evolves, however as fpm matures 
+  and we enter production, we will aim to stay backwards compatible. Please follow 
+  the issues to contribute and/or stay up to date with the development. 
+  Before opening a bug report or a feature suggestion, please read our Contributor Guide. 
+  You can also discuss your ideas and queries with the community in fpm discussions, 
+  or more broadly on Fortran-Lang Discourse. 
+  
+  Fortran Package Manager is not to be confused with Jordan Sissel's fpm, a more general, 
+  non-Fortran related package manager.
+  
+  Website: https://fpm.fortran-lang.org/
+  
+license: MIT
+source-code: https://github.com/fortran-lang/fpm
+issues: https://github.com/kz6fittycent/fpm/issues
+contact: https://github.com/kz6fittycent/fpm
+icon: snap/local/fpm.png
+
+base: core24
+grade: stable
+confinement: strict
+compression: lzo
+
+platforms:
+  amd64:
+    build-on: [amd64]
+    build-for: [amd64]
+
+apps:
+  fortran-fpm:
+    command: usr/bin/fpm
+    plugs: 
+      - home
+      
+parts:
+  fortran-fpm:
+    source: https://github.com/fortran-lang/fpm
+    source-type: git
+    plugin: dump
+    build-packages:
+      - wget
+      - curl
+      
+    override-build: |
+      #VARS
+      ################################
+      LATEST=$(curl -s https://api.github.com/repos/fortran-lang/fpm/releases/latest | grep '"tag_name":' | cut -d ":" -f2 | sed -E 's/.*"([^"]+)".*/\1/' | sed -E 's/^v//')
+      ################################
+      
+      mkdir -p $CRAFT_PART_INSTALL/usr/bin/
+      cd $CRAFT_PART_INSTALL/usr/bin/
+      wget -O fpm "https://github.com/fortran-lang/fpm/releases/download/v${LATEST}/fpm-${LATEST}-linux-x86_64"
+      chmod a+x fpm
+               
+    override-pull: |
+      craftctl default
+      craftctl set version="$(curl -s https://api.github.com/repos/fortran-lang/fpm/releases/latest | grep '"tag_name":' | cut -d ":" -f2 | sed -E 's/.*"([^"]+)".*/\1/' | sed -E 's/^v//')"
+
