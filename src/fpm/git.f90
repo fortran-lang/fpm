@@ -224,7 +224,7 @@ contains
             return
         end if
 
-        call execute_command_line("git "//workdir//" fetch --depth=1 "// &
+        call execute_command_line("git "//workdir//" fetch --depth=1 --recursive "// &
                                   self%url//" "//object, exitstat=stat)
 
         if (stat /= 0) then
