@@ -15,6 +15,7 @@ program fpm_testing
     use test_settings, only : collect_settings
     use test_os, only: collect_os
     use test_features, only : collect_features
+    use test_cmake, only : collect_cmake
 
     implicit none
     integer :: stat, is
@@ -37,7 +38,8 @@ program fpm_testing
         & new_testsuite("fpm_versioning", collect_versioning), &
         & new_testsuite("fpm_settings", collect_settings), &
         & new_testsuite("fpm_os", collect_os), &
-        & new_testsuite("fpm_compiler", collect_compiler) &
+        & new_testsuite("fpm_compiler", collect_compiler), &
+        & new_testsuite("fpm_cmake", collect_cmake) &
         & ]
 
     call get_argument(1, suite_name)

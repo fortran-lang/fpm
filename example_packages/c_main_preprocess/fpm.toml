@@ -2,6 +2,10 @@ name = "c_main_preprocess"
 [library]
 include-dir = ["src"]
 
+[preprocess]
+[preprocess.cpp]
+macros = ["VAL"]
+
 [[executable]]
 name="main-c"
 main="main.c"

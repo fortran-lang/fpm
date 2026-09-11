@@ -17,10 +17,16 @@ implicit none
 private
 public :: add_sources_from_dir, add_executable_sources
 public :: get_exe_name_with_suffix, add_srcfile
+public :: fortran_suffixes, c_source_suffixes, cpp_source_suffixes, c_header_suffixes
 
 character(4), parameter :: fortran_suffixes(2) = [".f90", &
                                                   ".f  "]
 character(4), parameter :: c_suffixes(4) = [".c  ", ".h  ", ".cpp", ".hpp"]
+
+! C and C++ source file suffixes (for language detection)
+character(2), parameter :: c_source_suffixes(1) = [".c"]
+character(4), parameter :: cpp_source_suffixes(1) = [".cpp"]
+character(4), parameter :: c_header_suffixes(2) = [".h  ", ".hpp"]
 
 !> Add one or multiple source files to a source file array (gcc-15 bug workaround)
 interface add_srcfile
