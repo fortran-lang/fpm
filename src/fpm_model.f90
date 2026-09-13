@@ -227,6 +227,9 @@ type, extends(serializable_t) :: fpm_model_t
     !> Target operating system
     integer :: target_os = OS_ALL
 
+    !> User-specified Fortran standard (e.g., "2018")
+    character(:), allocatable :: fortran_standard
+
     contains
     
         !> Get target link flags
