@@ -16,7 +16,8 @@ module fpm_filesystem
     public :: basename, canon_path, dirname, is_dir, join_path, number_of_rows, list_files, get_local_prefix, &
             mkdir, exists, get_temp_filename, windows_path, unix_path, getline, delete_file, fileopen, fileclose, &
             filewrite, warnwrite, parent_dir, is_hidden_file, read_lines, read_lines_expanded, which, run, &
-            os_delete_dir, is_absolute_path, get_home, execute_and_read_output, get_dos_path
+            os_delete_dir, is_absolute_path, get_home, execute_and_read_output, get_dos_path, &
+           set_executable
 
 #ifndef FPM_BOOTSTRAP
     interface
@@ -25,6 +26,13 @@ module fpm_filesystem
             character(kind=c_char), intent(in) :: dir(*)
             type(c_ptr) :: r
         end function c_opendir
+
+        function c_chmod(path, mode) result(r) bind(c, name="chmod")
+            import c_char, c_int
+            character(kind=c_char), intent(in) :: path(*)
+            integer(kind=c_int), value :: mode
+            integer(kind=c_int) :: r
+        end function c_chmod
 
         function c_readdir(dir) result(r) bind(c, name="c_readdir")
             import c_ptr
@@ -1253,5 +1261,29 @@ end subroutine os_delete_dir
         if (last>1 .and. get_dos_path(last:last)=='/' .or. get_dos_path(last:last)=='\') get_dos_path = get_dos_path(1:last-1)
 
     end function get_dos_path
+
+    !> Set executable permissions (chmod +x on Unix, no-op on Windows)
+    subroutine set_executable(filename)
+        character(len=*), intent(in) :: filename
+        integer :: stat
+
+        if (.not. os_is_unix()) return
+
+#ifndef FPM_BOOTSTRAP
+        ! Use C library chmod (faster, standard)
+        ! o'755' is octal for rwxr-xr-x
+        stat = c_chmod(filename // c_null_char, int(o'755', c_int))
+        if (stat /= 0) then
+            write(stderr, *) "Warning: Failed to set executable permissions on: ", filename
+        end if
+#else
+        ! Fallback using shell command
+        call run("chmod +x " // filename, echo=.false., verbose=.false., exitstat=stat)
+        if (stat /= 0) then
+            write(stderr, *) "Warning: Failed to set executable permissions on: ", filename
+        end if
+#endif
+
+    end subroutine set_executable
 
 end module fpm_filesystem
