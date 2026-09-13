@@ -38,9 +38,10 @@ use fpm_environment, only: &
         OS_FREEBSD, &
         OS_OPENBSD, &
         OS_UNKNOWN, &
+        os_is_unix, &
         library_filename
 use fpm_filesystem, only: join_path, basename, get_temp_filename, delete_file, unix_path, &
-    & getline, run
+    & getline, run, run_argv
 use fpm_strings, only: split, string_cat, string_t, str_ends_with, str_begins_with_str, &
     & string_array_contains, lower, add_strings
 use fpm_error, only: error_t, fatal_error, fpm_stop
@@ -1425,8 +1426,9 @@ subroutine compile_fortran(self, input, output, args, log_file, stat, table, dry
     logical, optional, intent(in) :: dry_run
 
     character(len=:), allocatable :: command
+    type(string_t), allocatable :: argv(:)
     type(error_t), allocatable :: error
-    logical :: mock
+    logical :: mock, tokenized
 
     ! Initialize intent(out) status so the mock path with no table returns
     ! a defined value.
@@ -1436,12 +1438,32 @@ subroutine compile_fortran(self, input, output, args, log_file, stat, table, dry
     mock = .false.
     if (present(dry_run)) mock = dry_run
 
-    ! Set command
+    ! Set command (shell fallback string) and build the argv token list. The
+    ! command is split with the OS-native lexer (POSIX on Unix, Windows rules
+    ! otherwise) so quoting and backslash paths survive on both platforms.
     command = self%fc // " -c " // input // " " // args // " -o " // output
+
+    tokenized = .true.
+    call split_append(argv, self%fc, .false., .false., tokenized)
+    if (tokenized) then
+        call add_strings(argv, string_t("-c"))
+        call add_strings(argv, string_t(input))
+    end if
+    if (tokenized .and. len_trim(args) > 0) then
+        call split_append(argv, args, .true., .true., tokenized)
+    end if
+    if (tokenized) then
+        call add_strings(argv, string_t("-o"))
+        call add_strings(argv, string_t(output))
+    end if
 
     ! Execute command
     if (.not.mock) then
-       call run(command, echo=self%echo, verbose=self%verbose, redirect=log_file, exitstat=stat)
+       if (tokenized) then
+          call run_argv(argv, echo=self%echo, verbose=self%verbose, redirect=log_file, exitstat=stat)
+       else
+          call run(command, echo=self%echo, verbose=self%verbose, redirect=log_file, exitstat=stat)
+       end if
        if (stat/=0) return
     endif
 
@@ -1450,6 +1472,60 @@ subroutine compile_fortran(self, input, output, args, log_file, stat, table, dry
         call table%register(command, get_os_type(), error)
         stat = merge(-1,0,allocated(error))
     endif
+
+contains
+
+    !> Split a command fragment into argv tokens with the OS-native lexer and
+    !> append them to argv. fortran-shlex is not reentrant, so the split runs
+    !> in a critical region. join_spaced/keep_quotes apply to the POSIX lexer;
+    !> the Windows lexer already returns final argv tokens.
+    subroutine split_append(argv, str, join_spaced, keep_quotes, ok)
+        type(string_t), allocatable, intent(inout) :: argv(:)
+        character(len=*), intent(in) :: str
+        logical, intent(in) :: join_spaced, keep_quotes
+        logical, intent(inout) :: ok
+
+        character(len=:), allocatable :: parts(:)
+        integer :: k
+
+        if (.not.ok) return
+
+        !$omp critical(fpm_shlex_split)
+        if (os_is_unix()) then
+            parts = sh_split(str, join_spaced=join_spaced, keep_quotes=keep_quotes, success=ok)
+        else
+            parts = ms_split(str, success=ok)
+        end if
+        !$omp end critical(fpm_shlex_split)
+        if (.not.ok) return
+
+        do k = 1, size(parts)
+            if (len_trim(parts(k)) == 0) cycle
+            if (os_is_unix()) then
+                call add_strings(argv, string_t(clean_shlex_token(parts(k))))
+            else
+                call add_strings(argv, string_t(trim(parts(k))))
+            end if
+        end do
+    end subroutine split_append
+
+    function clean_shlex_token(token) result(clean)
+        character(len=*), intent(in) :: token
+        character(len=:), allocatable :: clean
+
+        integer :: j
+
+        clean = ""
+        do j = 1, len_trim(token)
+            select case (token(j:j))
+            case ("'", '"')
+                cycle
+            case default
+                clean = clean//token(j:j)
+            end select
+        end do
+        clean = trim(adjustl(clean))
+    end function clean_shlex_token
 
 end subroutine compile_fortran
 
