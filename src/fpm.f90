@@ -579,8 +579,8 @@ if(settings%list)then
 endif
 if (settings%show_model) then
     call show_model(model)
-else
-    call build_package(targets,model,verbose=settings%verbose,dry_run=settings%list)
+else if (.not.settings%list) then
+    call build_package(targets,model,verbose=settings%verbose,dry_run=.false.)
 endif
 
 end subroutine cmd_build
