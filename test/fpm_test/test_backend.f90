@@ -2,13 +2,14 @@
 module test_backend
     use testsuite, only : new_unittest, unittest_t, error_t, test_failed
     use test_module_dependencies, only: operator(.in.)
-    use fpm_filesystem, only: exists, mkdir, get_temp_filename
+    use fpm_filesystem, only: exists, mkdir, get_temp_filename, delete_file
     use fpm_targets, only: build_target_t, build_target_ptr, &
                             FPM_TARGET_OBJECT, FPM_TARGET_ARCHIVE, FPM_TARGET_SHARED, &
                            add_target, add_dependency
-    use fpm_backend, only: sort_target, schedule_targets
+    use fpm_backend, only: sort_target, schedule_targets, object_can_skip, deps_fingerprint
     use fpm_strings, only: string_t
     use fpm_environment, only: OS_LINUX
+    use, intrinsic :: iso_fortran_env, only: int64
     use fpm_compile_commands, only: compile_command_t, compile_command_table_t
     implicit none
     private
@@ -31,6 +32,7 @@ contains
             & new_unittest("target-shared-sort", test_target_shared), &
             & new_unittest("schedule-targets", test_schedule_targets), &
             & new_unittest("schedule-targets-empty", test_schedule_empty), &
+            & new_unittest("interface-aware-prune", test_interface_prune), &
             & new_unittest("serialize-compile-commands", compile_commands_roundtrip), &
             & new_unittest("compile-commands-write", compile_commands_register_from_cmd), &
             & new_unittest("compile-commands-register-string", compile_commands_register_from_string) &
@@ -329,6 +331,85 @@ contains
         end do
 
     end subroutine test_schedule_empty
+
+
+    !> Check interface-aware pruning of a cascade victim: an object whose source is
+    !> unchanged and whose dependencies' module interfaces are unchanged can be skipped
+    !> even though a dependency was rebuilt.
+    subroutine test_interface_prune(error)
+
+        !> Error handling
+        type(error_t), allocatable, intent(out) :: error
+
+        type(build_target_ptr), allocatable :: targets(:)
+        integer(int64) :: depfp
+        logical :: ok
+
+        ! Two objects: a provider and a consumer that depends on it
+        call add_target(targets,'test-package',FPM_TARGET_OBJECT,get_temp_filename())
+        call add_target(targets,'test-package',FPM_TARGET_OBJECT,get_temp_filename())
+        call add_dependency(targets(2)%ptr,targets(1)%ptr)
+
+        ! Consumer source unchanged: it is only in the queue as a cascade victim
+        allocate(targets(2)%ptr%source)
+        targets(2)%ptr%source%digest = 42_int64
+        targets(2)%ptr%digest_cached = 42_int64
+
+        ! Provider has a recorded module-interface fingerprint on disk
+        call write_int(targets(1)%ptr%output_file//'.mod-digest', 12345_int64)
+
+        ! Record the consumer's dependency fingerprint as it stands now
+        depfp = deps_fingerprint(targets(2)%ptr, ok)
+        if (.not.ok) then
+            call test_failed(error,"deps_fingerprint should succeed when dependency fingerprint exists")
+            return
+        end if
+        call write_int(targets(2)%ptr%output_file//'.dep-mods', depfp)
+
+        ! Interface unchanged: consumer can be pruned
+        if (.not.object_can_skip(targets(2)%ptr)) then
+            call test_failed(error,"consumer should be prunable when dependency interface is unchanged")
+            return
+        end if
+
+        ! Dependency interface changes: consumer must rebuild
+        call write_int(targets(1)%ptr%output_file//'.mod-digest', 99999_int64)
+        if (object_can_skip(targets(2)%ptr)) then
+            call test_failed(error,"consumer should rebuild when dependency interface changes")
+            return
+        end if
+
+        ! Restore the match, but the consumer's own source changed: must rebuild
+        call write_int(targets(1)%ptr%output_file//'.mod-digest', 12345_int64)
+        targets(2)%ptr%source%digest = 43_int64
+        if (object_can_skip(targets(2)%ptr)) then
+            call test_failed(error,"consumer should rebuild when its own source changes")
+            return
+        end if
+
+        ! Missing dependency fingerprint: rebuild (safe default)
+        targets(2)%ptr%source%digest = 42_int64
+        call delete_file(targets(1)%ptr%output_file//'.mod-digest')
+        if (object_can_skip(targets(2)%ptr)) then
+            call test_failed(error,"consumer should rebuild when a dependency fingerprint is missing")
+            return
+        end if
+
+        call delete_file(targets(2)%ptr%output_file//'.dep-mods')
+
+    end subroutine test_interface_prune
+
+
+    !> Write a single integer digest to a sidecar file (test helper)
+    subroutine write_int(path, value)
+        character(len=*), intent(in) :: path
+        integer(int64), intent(in) :: value
+        integer :: fh
+
+        open(newunit=fh,file=path,status='unknown')
+        write(fh,*) value
+        close(fh)
+    end subroutine write_int
 
 
     !> Helper to generate target objects with dependencies

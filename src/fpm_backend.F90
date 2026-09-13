@@ -27,11 +27,13 @@
 !>
 module fpm_backend
 
-use,intrinsic :: iso_fortran_env, only : stdin=>input_unit, stdout=>output_unit, stderr=>error_unit
+use,intrinsic :: iso_fortran_env, only : stdin=>input_unit, stdout=>output_unit, stderr=>error_unit, int64
 use fpm_error, only : fpm_stop, error_t
-use fpm_filesystem, only: basename, dirname, join_path, exists, mkdir, run, getline
+use fpm_filesystem, only: basename, dirname, join_path, exists, mkdir, run, getline, &
+                          read_text_file
 use fpm_model, only: fpm_model_t
-use fpm_strings, only: string_t, operator(.in.)
+use fpm_strings, only: string_t, operator(.in.), fnv_1a
+use fpm_compiler, only: id_gcc
 use fpm_targets, only: build_target_t, build_target_ptr, FPM_TARGET_OBJECT, &
                        FPM_TARGET_C_OBJECT, FPM_TARGET_ARCHIVE, FPM_TARGET_EXECUTABLE, &
                        FPM_TARGET_CPP_OBJECT, FPM_TARGET_SHARED
@@ -40,7 +42,7 @@ use fpm_compile_commands, only: compile_command_table_t
 implicit none
 
 private
-public :: build_package, sort_target, schedule_targets
+public :: build_package, sort_target, schedule_targets, object_can_skip, deps_fingerprint
 
 #ifndef FPM_BOOTSTRAP
 interface
@@ -325,13 +327,26 @@ subroutine build_target(model,target,verbose,dry_run,table,stat)
     type(compile_command_table_t), intent(inout) :: table
     integer, intent(out) :: stat
 
-    integer :: fh
+    integer(int64) :: fp
+    logical :: fp_ok
 
     !$omp critical
     if (.not.exists(dirname(target%output_file)) .and. .not.dry_run) then
         call mkdir(dirname(target%output_file),verbose)
     end if
     !$omp end critical
+
+    ! Interface-aware incremental rebuild: skip recompiling an object whose source
+    ! is unchanged and whose dependencies' module interfaces are unchanged, even if
+    ! a dependency was recompiled. Only gfortran .mod files are a stable interface
+    ! signal, so other compilers keep the conservative dependency cascade.
+    if (.not.dry_run .and. model%compiler%id == id_gcc &
+        & .and. target%target_type == FPM_TARGET_OBJECT) then
+        if (object_can_skip(target)) then
+            stat = 0
+            return
+        end if
+    end if
 
     select case(target%target_type)
 
@@ -363,12 +378,144 @@ subroutine build_target(model,target,verbose,dry_run,table,stat)
     end select
 
     if (stat == 0 .and. allocated(target%source) .and. .not.dry_run) then
-        open(newunit=fh,file=target%output_file//'.digest',status='unknown')
-        write(fh,*) target%source%digest
-        close(fh)
+        call write_digest(target%output_file//'.digest', target%source%digest)
+    end if
+
+    ! Cache this object's module-interface fingerprint and the fingerprints of its
+    ! dependencies, so the next build can prune it when those interfaces are stable.
+    if (stat == 0 .and. .not.dry_run .and. model%compiler%id == id_gcc &
+        & .and. target%target_type == FPM_TARGET_OBJECT .and. allocated(target%source)) then
+        fp = module_fingerprint(target, fp_ok)
+        if (fp_ok) call write_digest(target%output_file//'.mod-digest', fp)
+        fp = deps_fingerprint(target, fp_ok)
+        if (fp_ok) call write_digest(target%output_file//'.dep-mods', fp)
     end if
 
 end subroutine build_target
+
+
+!> Whether an object target can be skipped despite a dependency having been
+!> rebuilt: true only if its own source is unchanged and the recorded interface
+!> fingerprints of its dependencies match their current on-disk values.
+function object_can_skip(target) result(can_skip)
+    type(build_target_t), intent(in) :: target
+    logical :: can_skip
+
+    integer(int64) :: current, recorded
+    logical :: ok, have
+
+    can_skip = .false.
+    if (.not.allocated(target%source)) return
+    if (.not.allocated(target%digest_cached)) return
+    if (target%digest_cached /= target%source%digest) return
+
+    current = deps_fingerprint(target, ok)
+    if (.not.ok) return
+
+    call read_digest(target%output_file//'.dep-mods', recorded, have)
+    if (.not.have) return
+
+    can_skip = (current == recorded)
+end function object_can_skip
+
+
+!> Combined hash of the bytes of every module file (`.mod`) an object provides.
+!> `ok` is false if the object provides no modules or any `.mod` is unreadable.
+function module_fingerprint(target, ok) result(fp)
+    type(build_target_t), intent(in) :: target
+    logical, intent(out) :: ok
+    integer(int64) :: fp
+
+    character(:), allocatable :: bytes, modfile
+    logical :: first
+    integer :: i
+
+    fp = 0_int64
+    ok = .false.
+    first = .true.
+    if (.not.allocated(target%source)) return
+    if (.not.allocated(target%source%modules_provided)) return
+    do i=1,size(target%source%modules_provided)
+        modfile = join_path(target%output_dir, &
+            & target%source%modules_provided(i)%s)//'.mod'
+        if (.not.exists(modfile)) return
+        bytes = read_text_file(modfile)
+        if (first) then
+            fp = fnv_1a(bytes)
+            first = .false.
+        else
+            fp = fnv_1a(bytes, fp)
+        end if
+    end do
+    ok = .not.first
+end function module_fingerprint
+
+
+!> Combine the recorded interface fingerprints of an object target's object
+!> dependencies. `ok` is false if any object dependency has no fingerprint on disk.
+function deps_fingerprint(target, ok) result(fp)
+    type(build_target_t), intent(in) :: target
+    logical, intent(out) :: ok
+    integer(int64) :: fp
+
+    integer(int64) :: dval
+    character(len=8) :: buf
+    logical :: have, first
+    integer :: i
+
+    fp = 0_int64
+    ok = .true.
+    first = .true.
+    if (.not.allocated(target%dependencies)) return
+    do i=1,size(target%dependencies)
+        associate(dep => target%dependencies(i)%ptr)
+            if (dep%target_type /= FPM_TARGET_OBJECT) cycle
+            call read_digest(dep%output_file//'.mod-digest', dval, have)
+            if (.not.have) then
+                ok = .false.
+                return
+            end if
+            buf = transfer(dval, buf)
+            if (first) then
+                fp = fnv_1a(buf)
+                first = .false.
+            else
+                fp = fnv_1a(buf, fp)
+            end if
+        end associate
+    end do
+end function deps_fingerprint
+
+
+!> Write a single integer digest to a sidecar file, mirroring the `.digest` idiom.
+subroutine write_digest(path, value)
+    character(len=*), intent(in) :: path
+    integer(int64), intent(in) :: value
+    integer :: fh
+
+    open(newunit=fh,file=path,status='unknown')
+    write(fh,*) value
+    close(fh)
+end subroutine write_digest
+
+
+!> Read a single integer digest from a sidecar file. `ok` is false if the file is
+!> missing or unreadable, so a missing record forces a rebuild.
+subroutine read_digest(path, value, ok)
+    character(len=*), intent(in) :: path
+    integer(int64), intent(out) :: value
+    logical, intent(out) :: ok
+    integer :: fh, ios
+
+    value = 0_int64
+    ok = .false.
+    if (.not.exists(path)) return
+    open(newunit=fh,file=path,status='old',iostat=ios)
+    if (ios /= 0) return
+    read(fh,*,iostat=ios) value
+    close(fh)
+    ok = (ios == 0)
+end subroutine read_digest
 
 
 !> Read and print the build log for target
