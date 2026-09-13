@@ -35,7 +35,10 @@ module fpm_manifest_feature_collection
         
         ! Features shared by specific platform/compiler configurations
         type(feature_config_t), allocatable :: variants(:)
-        
+
+        ! Auto-apply this feature when no explicit --features list is given
+        logical :: is_default = .false.
+
         contains
         
             procedure :: serializable_is_same => feature_collection_same
@@ -66,6 +69,7 @@ module fpm_manifest_feature_collection
         feature_collection_same = .false.
         select type (other => that)
         type is (feature_collection_t)
+            if (this%is_default .neqv. other%is_default) return
             if (.not.(this%base == other%base)) return
             if (allocated(this%variants) .neqv. allocated(other%variants)) return
             if (allocated(this%variants)) then
@@ -89,6 +93,9 @@ module fpm_manifest_feature_collection
         type(toml_table), pointer :: ptr_base, ptr_vars, ptr
         integer :: i
         character(len=32) :: key
+
+        ! default flag
+        call set_value(table, "default", self%is_default)
 
         ! base
         call add_table(table, "base", ptr_base)
@@ -123,6 +130,9 @@ module fpm_manifest_feature_collection
         type(toml_table), pointer :: ptr_base, ptr_vars, ptr
         type(toml_key),  allocatable :: keys(:)
         integer :: i
+
+        ! default flag
+        call get_value(table, "default", self%is_default, .false.)
 
         ! base (required)
         call get_value(table, "base", ptr_base)
@@ -234,16 +244,21 @@ module fpm_manifest_feature_collection
         character(*), intent(in) :: name
         type(error_t), allocatable, intent(out) :: error
         
-        integer :: i
+        integer :: i, stat
         type(platform_config_t) :: default_platform
         type(toml_key), allocatable :: keys(:)
-        
+        logical :: default_val
+
         default_platform = platform_config_t(id_all,OS_ALL)
-        
+
         ! Initialize base feature
         self%base%name = name
         self%base%platform = default_platform
-        
+
+        ! Parse optional "default" key
+        call get_value(table, "default", default_val, .false., stat=stat)
+        if (stat == toml_stat%success) self%is_default = default_val
+
         ! Traverse the table hierarchy to find variants
         call traverse_feature_table(self, table, name, default_platform, error)
         if (allocated(error)) return
@@ -277,7 +292,10 @@ module fpm_manifest_feature_collection
         
         ! First pass: check what types of keys we have
         do i = 1, size(keys)
-            
+
+            ! Skip collection-level keys handled by the caller
+            if (keys(i)%key == "default") cycle
+
             ! Check if this key is a valid OS name
             os_type = match_os_type(keys(i)%key)
             if (os_type /= OS_UNKNOWN) then

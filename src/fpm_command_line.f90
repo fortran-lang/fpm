@@ -1663,9 +1663,16 @@ contains
             call fpm_stop(1, 'Error: --profile and --features cannot be used together')
         end if
         
-        ! Parse comma-separated features and profiles
-        if (specified('features') .and. len_trim(feats) > 0) then
-            call parse_features(feats, self%features)
+        ! Parse comma-separated features and profiles.
+        ! --features "openmp,mpi" → apply listed features (no auto-defaults).
+        ! --features ""            → explicit empty list (no auto-defaults).
+        ! (not specified)          → auto-default features apply.
+        if (specified('features')) then
+            if (len_trim(feats) > 0) then
+                call parse_features(feats, self%features)
+            else
+                allocate(self%features(0))
+            end if
         else
             if (allocated(self%features)) deallocate(self%features)
         end if
