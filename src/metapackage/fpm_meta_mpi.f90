@@ -586,7 +586,7 @@ contains
 
         ! Request to use libs in arbitrary order
         if (this%has_link_flags .and. compiler%is_gnu() .and. os_is_unix() .and. get_os_type()/=OS_MACOS) then
-            this%link_flags = string_t(' -Wl,--start-group '//this%link_flags%s)
+            this%link_flags = string_t(' -Wl,--start-group '//this%link_flags%s//' -Wl,--end-group')
         end if
 
         ! Add language-specific flags
