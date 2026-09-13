@@ -88,6 +88,8 @@ contains
             & new_unittest("macro-parsing", test_macro_parsing, should_fail=.false.), &
             & new_unittest("macro-parsing-dependency", &
             &              test_macro_parsing_dependency, should_fail=.false.), &
+            & new_unittest("preprocess-external", test_preprocess_external), &
+            & new_unittest("preprocess-backward-compat", test_preprocess_backward_compat), &
             & new_unittest("features-demo-serialization", test_features_demo_serialization) &
             & ]
 
@@ -1936,6 +1938,177 @@ contains
         call get_package_data(package, temp_file, error)
 
     end subroutine test_dependency_profile_features_conflict
+
+
+    !> Test that a non-CPP preprocessor with all new fields is parsed correctly
+    subroutine test_preprocess_external(error)
+        use fpm_manifest_preprocess, only: preprocess_config_t
+
+        !> Error handling
+        type(error_t), allocatable, intent(out) :: error
+
+        type(package_config_t) :: package
+        character(:), allocatable :: temp_file
+        integer :: unit
+
+        allocate(temp_file, source=get_temp_filename())
+
+        open(file=temp_file, newunit=unit)
+        write(unit, '(a)') &
+            & 'name = "example"', &
+            & '[preprocess]', &
+            & '[preprocess.fypp]', &
+            & 'suffixes = ["fypp"]', &
+            & 'command = "fypp"', &
+            & 'macros = ["WITH_QP", "MAXRANK=4"]', &
+            & 'arguments = ["--line-marker", "--strict"]', &
+            & 'output-suffix = ".f90"', &
+            & 'depfile = true'
+        close(unit)
+
+        call get_package_data(package, temp_file, error)
+
+        open(file=temp_file, newunit=unit)
+        close(unit, status='delete')
+
+        if (allocated(error)) return
+
+        if (.not.allocated(package%preprocess)) then
+            call test_failed(error, "Preprocessor is not present in package data")
+            return
+        end if
+
+        if (size(package%preprocess) /= 1) then
+            call test_failed(error, "Number of preprocessors should be one")
+            return
+        end if
+
+        ! Check name
+        if (package%preprocess(1)%name /= "fypp") then
+            call test_failed(error, "Preprocessor name should be 'fypp'")
+            return
+        end if
+
+        ! Check command (activation key)
+        if (.not.allocated(package%preprocess(1)%command)) then
+            call test_failed(error, "Preprocessor command should be allocated")
+            return
+        end if
+        if (package%preprocess(1)%command /= "fypp") then
+            call test_failed(error, "Preprocessor command should be 'fypp'")
+            return
+        end if
+
+        ! Check is_external
+        if (.not.package%preprocess(1)%is_external()) then
+            call test_failed(error, "Preprocessor with command should be external")
+            return
+        end if
+
+        ! Check suffixes
+        if (.not.allocated(package%preprocess(1)%suffixes)) then
+            call test_failed(error, "Preprocessor suffixes should be allocated")
+            return
+        end if
+        if (size(package%preprocess(1)%suffixes) /= 1) then
+            call test_failed(error, "Number of suffixes should be one")
+            return
+        end if
+
+        ! Check macros
+        if (.not.allocated(package%preprocess(1)%macros)) then
+            call test_failed(error, "Preprocessor macros should be allocated")
+            return
+        end if
+        if (size(package%preprocess(1)%macros) /= 2) then
+            call test_failed(error, "Number of macros should be two")
+            return
+        end if
+
+        ! Check arguments
+        if (.not.allocated(package%preprocess(1)%arguments)) then
+            call test_failed(error, "Preprocessor arguments should be allocated")
+            return
+        end if
+        if (size(package%preprocess(1)%arguments) /= 2) then
+            call test_failed(error, "Number of arguments should be two")
+            return
+        end if
+
+        ! Check output_suffix
+        if (.not.allocated(package%preprocess(1)%output_suffix)) then
+            call test_failed(error, "output_suffix should be allocated")
+            return
+        end if
+        if (package%preprocess(1)%output_suffix /= ".f90") then
+            call test_failed(error, "output_suffix should be '.f90'")
+            return
+        end if
+
+        ! Check depfile
+        if (.not.package%preprocess(1)%depfile) then
+            call test_failed(error, "depfile should be .true.")
+            return
+        end if
+
+        ! Test serialization roundtrip
+        call package%test_serialization('test_preprocess_external', error)
+        if (allocated(error)) return
+
+    end subroutine test_preprocess_external
+
+
+    !> Verify that [preprocess.fypp] without command is silently ignored (backward compat)
+    subroutine test_preprocess_backward_compat(error)
+        use fpm_manifest_preprocess, only: preprocess_config_t
+
+        !> Error handling
+        type(error_t), allocatable, intent(out) :: error
+
+        type(package_config_t) :: package
+        character(:), allocatable :: temp_file
+        integer :: unit
+
+        allocate(temp_file, source=get_temp_filename())
+
+        open(file=temp_file, newunit=unit)
+        write(unit, '(a)') &
+            & 'name = "example"', &
+            & '[preprocess]', &
+            & '[preprocess.fypp]', &
+            & 'suffixes = [".fypp"]', &
+            & 'macros = ["WITH_QP"]'
+        close(unit)
+
+        call get_package_data(package, temp_file, error)
+
+        open(file=temp_file, newunit=unit)
+        close(unit, status='delete')
+
+        if (allocated(error)) return
+
+        if (.not.allocated(package%preprocess)) then
+            call test_failed(error, "Preprocessor should be present")
+            return
+        end if
+
+        ! command should NOT be allocated — no external execution triggered
+        if (allocated(package%preprocess(1)%command)) then
+            call test_failed(error, "command should not be allocated when not specified")
+            return
+        end if
+
+        ! is_external() must return .false.
+        if (package%preprocess(1)%is_external()) then
+            call test_failed(error, "is_external() should be .false. without command field")
+            return
+        end if
+
+        ! Test serialization roundtrip
+        call package%test_serialization('test_preprocess_backward_compat', error)
+        if (allocated(error)) return
+
+    end subroutine test_preprocess_backward_compat
 
 
 end module test_manifest
