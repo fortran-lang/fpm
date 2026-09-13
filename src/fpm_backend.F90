@@ -135,7 +135,7 @@ subroutine build_package(targets,model,verbose,dry_run)
                 if (.not.dry_run) call progress%completed_status(j,stat(j))
             end if
 
-            ! Set global flag if this target failed to build
+            ! Set global flag if this target build failed
             if (stat(j) /= 0) then
                 !$omp atomic write
                 build_failed = .true.
@@ -153,10 +153,10 @@ subroutine build_package(targets,model,verbose,dry_run)
             end do
             do j=1,size(stat)
                 if (stat(j) /= 0) then
-                    write(stderr,'(*(g0:,1x))') '<ERROR> Compilation failed for object "',basename(queue(j)%ptr%output_file),'"'
+                    write(stderr,'(*(g0:,1x))') '<ERROR> compilation failed for object "',basename(queue(j)%ptr%output_file),'"'
                 end if
             end do
-            call fpm_stop(1,'stopping due to failed compilation')
+            call fpm_stop(1,'compilation failed')
         end if
 
     end do
