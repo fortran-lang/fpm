@@ -488,6 +488,7 @@ logical function delete_env(name) result(success)
    end interface
    
    !> C strings
+   cerr = 0_c_int
    call f2cs(name,c_name)
    
    !> Call setenv
