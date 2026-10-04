@@ -22,7 +22,8 @@ contains
     integer :: ii
     character(len=:), allocatable :: cache, build_dir
 
-    call get_package_data(package, "fpm.toml", error, apply_defaults=.true.)
+    call get_package_data(package, "fpm.toml", error, &
+        apply_defaults=.not.settings%fetch_only)
     call handle_error(error)
 
     ! Get build directory from environment variable or use default
