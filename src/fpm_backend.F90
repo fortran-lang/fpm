@@ -5,8 +5,10 @@
 !> The package build process (`[[build_package]]`) comprises three steps:
 !>
 !> 1. __Target sorting:__ topological sort of the target dependency graph (`[[sort_target]]`)
-!> 2. __Target scheduling:__ group targets into schedule regions based on the sorting (`[[schedule_targets]]`)
-!> 3. __Target building:__ generate targets by compilation or linking
+!> 2. __Target scheduling:__ group targets into schedule regions based on the sorting (`[[schedule_targets]]`),
+!>    and link the queued targets to the ones waiting on them (`[[schedule_graph]]`)
+!> 3. __Target building:__ generate targets by compilation or linking, each as soon as
+!>    the targets it depends on are built
 !>
 !> @note If compiled with OpenMP, targets will be build in parallel where possible.
 !>
@@ -41,7 +43,7 @@ use fpm_compile_commands, only: compile_command_table_t
 implicit none
 
 private
-public :: build_package, sort_target, schedule_targets
+public :: build_package, sort_target, schedule_targets, schedule_graph, take_ready_target
 
 #ifndef FPM_BOOTSTRAP
 interface
@@ -49,6 +51,11 @@ interface
         use, intrinsic :: iso_c_binding, only: c_int
         integer(c_int) :: c_isatty
     end function
+
+    subroutine c_sleep_ms(ms) bind(C, name = 'c_sleep_ms')
+        use, intrinsic :: iso_c_binding, only: c_int
+        integer(c_int), value :: ms
+    end subroutine
 end interface
 #endif
 
@@ -64,10 +71,11 @@ subroutine build_package(targets,model,verbose,dry_run)
     !> is still created
     logical, intent(in) :: dry_run
  
-    integer :: i, j
+    integer :: i, j, k, n_ready, n_running
     type(build_target_ptr), allocatable :: queue(:)
     integer, allocatable :: schedule_ptr(:), stat(:)
-    logical :: build_failed, skip_current
+    integer, allocatable :: n_waiting(:), next_ptr(:), next_idx(:), height(:), ready(:)
+    logical :: build_failed, finished
     type(string_t), allocatable :: build_dirs(:)
     type(string_t) :: temp
     type(error_t), allocatable :: error
@@ -118,49 +126,80 @@ subroutine build_package(targets,model,verbose,dry_run)
 
     progress = build_progress_t(queue,plain_output,model%build_dir)
 
-    ! Loop over parallel schedule regions
-    do i=1,size(schedule_ptr)-1
+    ! Build each target as soon as the targets it depends on are built. Building one
+    ! schedule region at a time would hold every region open for its slowest target,
+    ! while targets of later regions whose own dependencies are done could already run.
+    call schedule_graph(queue, schedule_ptr, n_waiting, next_ptr, next_idx, height)
 
-        ! Build targets in schedule region i
-        !$omp parallel do default(shared) private(skip_current) schedule(dynamic,1)
-        do j=schedule_ptr(i),(schedule_ptr(i+1)-1)
+    allocate(ready(size(queue)))
+    n_ready = 0
+    do j = 1, size(queue)
+        if (n_waiting(j) == 0) then
+            n_ready = n_ready + 1
+            ready(n_ready) = j
+        end if
+    end do
+    n_running = 0
 
-            ! Check if build already failed
-            !$omp atomic read
-            skip_current = build_failed
+    !$omp parallel default(shared) private(j, k, finished)
+    do
 
-            if (.not.skip_current) then
-                if (.not.dry_run) call progress%compiling_status(j)
-                call build_target(model,queue(j)%ptr,verbose,dry_run, &
-                                  progress%compile_commands,stat(j))
-                if (.not.dry_run) call progress%completed_status(j,stat(j))
-            end if
+        ! Take the ready target to build next; after a failure, start no more
+        !$omp critical (fpm_build_schedule)
+        j = 0
+        if (.not.build_failed) call take_ready_target(ready, n_ready, height, j)
+        if (j > 0) n_running = n_running + 1
+        finished = j == 0 .and. (build_failed .or. n_running == 0)
+        !$omp end critical (fpm_build_schedule)
 
-            ! Set global flag if this target failed to build
-            if (stat(j) /= 0) then
-                !$omp atomic write
-                build_failed = .true.
-            end if
+        if (finished) exit
 
-        end do
-
-        ! Check if this schedule region failed: exit with message if failed
-        if (build_failed) then
-            write(*,*)
-            do j=1,size(stat)
-                if (stat(j) /= 0) Then
-                    call print_build_log(queue(j)%ptr)
-                end if
-            end do
-            do j=1,size(stat)
-                if (stat(j) /= 0) then
-                    write(stderr,'(*(g0:,1x))') '<ERROR> Compilation failed for object "',basename(queue(j)%ptr%output_file),'"'
-                end if
-            end do
-            call fpm_stop(1,'stopping due to failed compilation')
+        ! Nothing is ready yet: a running target will release the ones waiting on it
+        if (j == 0) then
+            call wait_for_ready_target()
+            cycle
         end if
 
+        if (.not.dry_run) call progress%compiling_status(j)
+        call build_target(model,queue(j)%ptr,verbose,dry_run, &
+                          progress%compile_commands,stat(j))
+        if (.not.dry_run) call progress%completed_status(j,stat(j))
+
+        ! Count this target as built for the targets waiting on it, and release
+        ! those for which it was the last one
+        !$omp critical (fpm_build_schedule)
+        n_running = n_running - 1
+        if (stat(j) /= 0) then
+            build_failed = .true.
+        else
+            do k = next_ptr(j), next_ptr(j+1) - 1
+                n_waiting(next_idx(k)) = n_waiting(next_idx(k)) - 1
+                if (n_waiting(next_idx(k)) == 0) then
+                    n_ready = n_ready + 1
+                    ready(n_ready) = next_idx(k)
+                end if
+            end do
+        end if
+        !$omp end critical (fpm_build_schedule)
+
     end do
+    !$omp end parallel
+
+    ! Exit with a message if any target failed
+    if (build_failed) then
+        write(*,*)
+        do j=1,size(stat)
+            if (stat(j) /= 0) Then
+                call print_build_log(queue(j)%ptr)
+            end if
+        end do
+        do j=1,size(stat)
+            if (stat(j) /= 0) then
+                write(stderr,'(*(g0:,1x))') '<ERROR> Compilation failed for object "',basename(queue(j)%ptr%output_file),'"'
+            end if
+        end do
+        call fpm_stop(1,'stopping due to failed compilation')
+    end if
 
     if (.not.dry_run) call progress%success()
     call progress%dump_commands(error)
@@ -311,6 +350,165 @@ subroutine schedule_targets(queue, schedule_ptr, targets)
     end do
 
 end subroutine schedule_targets
+
+
+!> Link each queued target to the queued targets waiting on it, for building every
+!> target as soon as the targets it depends on are built.
+!>
+!> `queue` and `schedule_ptr` are as returned by `[[schedule_targets]]`. A dependency that
+!> is up to date was never queued and is already satisfied, so `n_waiting(j)` counts only
+!> the queued dependencies of `queue(j)`. The targets waiting on `queue(j)` are
+!> `queue(next_idx(next_ptr(j):next_ptr(j+1)-1))`, all later in the queue than `j`.
+!> `height(j)` is the number of targets in the longest chain of queued targets that starts
+!> at `queue(j)` and runs through the targets waiting on it: building the ready target
+!> with the largest height first keeps the longest chains moving.
+subroutine schedule_graph(queue, schedule_ptr, n_waiting, next_ptr, next_idx, height)
+    !> Build queue
+    type(build_target_ptr), intent(in) :: queue(:)
+    !> Start of each schedule region in `queue`, and one past its end
+    integer, intent(in) :: schedule_ptr(:)
+    !> Number of queued dependencies of each queued target
+    integer, allocatable, intent(out) :: n_waiting(:)
+    !> Start of each target's waiting targets in `next_idx`, and one past the last
+    integer, allocatable, intent(out) :: next_ptr(:)
+    !> Queue positions of the targets waiting on each target
+    integer, allocatable, intent(out) :: next_idx(:)
+    !> Length of the longest chain of queued targets starting at each target
+    integer, allocatable, intent(out) :: height(:)
+
+    integer :: i, j, k, n_edge
+    integer, allocatable :: edge_from(:), edge_to(:), fill(:)
+
+    ! Find the queue position of every queued dependency once
+    n_edge = 0
+    do j = 1, size(queue)
+        n_edge = n_edge + size(queue(j)%ptr%dependencies)
+    end do
+    allocate(edge_from(n_edge), edge_to(n_edge))
+
+    n_edge = 0
+    do j = 1, size(queue)
+        do i = 1, size(queue(j)%ptr%dependencies)
+            k = queue_position(queue, schedule_ptr, queue(j)%ptr%dependencies(i))
+            if (k == 0) cycle
+            n_edge = n_edge + 1
+            edge_from(n_edge) = k
+            edge_to(n_edge) = j
+        end do
+    end do
+
+    ! Group the edges by the target they start from
+    allocate(n_waiting(size(queue)), source=0)
+    allocate(next_ptr(size(queue)+1), source=0)
+    do i = 1, n_edge
+        n_waiting(edge_to(i)) = n_waiting(edge_to(i)) + 1
+        next_ptr(edge_from(i)+1) = next_ptr(edge_from(i)+1) + 1
+    end do
+    next_ptr(1) = 1
+    do j = 1, size(queue)
+        next_ptr(j+1) = next_ptr(j+1) + next_ptr(j)
+    end do
+
+    allocate(next_idx(n_edge))
+    fill = next_ptr(1:size(queue))
+    do i = 1, n_edge
+        next_idx(fill(edge_from(i))) = edge_to(i)
+        fill(edge_from(i)) = fill(edge_from(i)) + 1
+    end do
+
+    ! A waiting target is in a later schedule region, so later in the queue
+    allocate(height(size(queue)))
+    do j = size(queue), 1, -1
+        height(j) = 1
+        do k = next_ptr(j), next_ptr(j+1) - 1
+            height(j) = max(height(j), height(next_idx(k)) + 1)
+        end do
+    end do
+
+end subroutine schedule_graph
+
+
+!> Position of target `dep` in the build queue, or 0 when it is not queued.
+!>
+!> A queued target sits in the schedule region numbered by its `schedule`, so only
+!> that region is searched.
+function queue_position(queue, schedule_ptr, dep) result(k)
+    !> Build queue
+    type(build_target_ptr), intent(in) :: queue(:)
+    !> Start of each schedule region in `queue`, and one past its end
+    integer, intent(in) :: schedule_ptr(:)
+    !> Target to look for
+    type(build_target_ptr), intent(in) :: dep
+    !> Position of `dep` in `queue`, or 0
+    integer :: k
+
+    integer :: s
+
+    k = 0
+    if (.not.dep%ptr%sorted) return
+
+    s = dep%ptr%schedule
+    if (s < 1 .or. s >= size(schedule_ptr)) return
+
+    do k = schedule_ptr(s), schedule_ptr(s+1) - 1
+        if (associated(queue(k)%ptr, dep%ptr)) return
+    end do
+    k = 0
+
+end function queue_position
+
+
+!> Remove from `ready` the target to build next and return its queue position in `j`,
+!> or 0 when no target is ready.
+!>
+!> The target chosen has the largest `height` (the longest chain of targets waiting on
+!> it), and is the earliest in the queue among those with that height.
+subroutine take_ready_target(ready, n_ready, height, j)
+    !> Queue positions of the targets ready to build, in `ready(1:n_ready)`
+    integer, intent(inout) :: ready(:)
+    !> Number of targets ready to build
+    integer, intent(inout) :: n_ready
+    !> Length of the longest chain of queued targets starting at each target
+    integer, intent(in) :: height(:)
+    !> Queue position of the target taken, or 0
+    integer, intent(out) :: j
+
+    integer :: i, best
+
+    j = 0
+    if (n_ready < 1) return
+
+    best = 1
+    do i = 2, n_ready
+        if (height(ready(i)) > height(ready(best))) then
+            best = i
+        else if (height(ready(i)) == height(ready(best))) then
+            if (ready(i) < ready(best)) best = i
+        end if
+    end do
+
+    j = ready(best)
+    ready(best) = ready(n_ready)
+    n_ready = n_ready - 1
+
+end subroutine take_ready_target
+
+
+!> Pause a worker that found no target ready to build, until a running target may
+!> have released the ones waiting on it.
+!>
+!> The bootstrap build has no C helpers: it does not pause, which is harmless when it
+!> is built without OpenMP and so has a single worker that never waits.
+subroutine wait_for_ready_target()
+#ifndef FPM_BOOTSTRAP
+    use, intrinsic :: iso_c_binding, only: c_int
+
+    !> Milliseconds to pause between looks at the ready targets
+    integer(c_int), parameter :: pause_ms = 2_c_int
+
+    call c_sleep_ms(pause_ms)
+#endif
+end subroutine wait_for_ready_target
 
 
 !> Call compile/link command for a single target.

@@ -1,9 +1,12 @@
-#ifndef _WIN32
+#ifdef _WIN32
+#include <windows.h>
+#else
 #include <errno.h>
 #include <signal.h>
 #include <spawn.h>
 #include <sys/types.h>
 #include <sys/wait.h>
+#include <time.h>
 #ifdef __APPLE__
 #include <crt_externs.h>
 #define FPM_ENVIRON (*_NSGetEnviron())
@@ -65,5 +68,25 @@ int c_run_command(const char *cmd, int *exitstat)
 
     *exitstat = WIFEXITED(status) ? WEXITSTATUS(status) : status;
     return 0;
+#endif
+}
+
+/// @brief Pause the calling thread for `ms` milliseconds.
+///
+/// Used by the build scheduler when a worker finds no target ready to build,
+/// so that it waits for a running target to finish without spinning.
+///
+/// @param ms Milliseconds to pause.
+void c_sleep_ms(int ms)
+{
+#ifdef _WIN32
+    Sleep((DWORD)ms);
+#else
+    struct timespec ts;
+
+    ts.tv_sec = ms / 1000;
+    ts.tv_nsec = (long)(ms % 1000) * 1000000L;
+    while (nanosleep(&ts, &ts) == -1 && errno == EINTR) {
+    }
 #endif
 }
