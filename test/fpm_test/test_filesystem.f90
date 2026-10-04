@@ -2,7 +2,7 @@ module test_filesystem
     use testsuite, only: new_unittest, unittest_t, error_t, test_failed
     use fpm_filesystem, only: canon_path, is_dir, mkdir, os_delete_dir, &
                               join_path, is_absolute_path, get_home, &
-                              delete_file, read_lines, get_temp_filename
+                              delete_file, read_lines, get_temp_filename, file_stamp
     use fpm_environment, only: OS_WINDOWS, get_os_type, os_is_unix
     use fpm_strings, only: string_t, split_lines_first_last
     implicit none
@@ -24,7 +24,8 @@ contains
             & new_unittest("test-is-absolute-path", test_is_absolute_path), &
             & new_unittest("test-get-home", test_get_home), &
             & new_unittest("test-split-lines-first-last", test_split_lines_first_last), &
-            & new_unittest("test-crlf-lines", test_dir_with_crlf) &
+            & new_unittest("test-crlf-lines", test_dir_with_crlf), &
+            & new_unittest("test-file-stamp", test_file_stamp) &
             ]
 
     end subroutine collect_filesystem
@@ -429,5 +430,50 @@ contains
         
     end subroutine test_dir_with_crlf
     
+
+    !> A file's stamp holds its size, follows its contents, and is empty for a missing file
+    subroutine test_file_stamp(error)
+
+        !> Error handling
+        type(error_t), allocatable, intent(out) :: error
+
+        character(:), allocatable :: path, before, after
+        integer :: unit
+
+        path = get_temp_filename()
+        open (newunit=unit, file=path, status='replace', access='stream', action='write')
+        write (unit) "abc"
+        close (unit)
+
+        before = file_stamp(path)
+        if (len(before) == 0) then
+            call test_failed(error, "an existing file should have a stamp")
+            return
+        end if
+        if (index(before, "3:") /= 1) then
+            call test_failed(error, "the stamp should start with the file's size, 3 bytes: "//before)
+            return
+        end if
+        if (file_stamp(path) /= before) then
+            call test_failed(error, "an unchanged file should keep its stamp")
+            return
+        end if
+
+        open (newunit=unit, file=path, status='replace', access='stream', action='write')
+        write (unit) "abcdef"
+        close (unit)
+        after = file_stamp(path)
+        if (after == before) then
+            call test_failed(error, "a rewritten file of another size should change its stamp")
+            return
+        end if
+
+        call delete_file(path)
+        if (len(file_stamp(path)) /= 0) then
+            call test_failed(error, "a missing file should have an empty stamp")
+            return
+        end if
+
+    end subroutine test_file_stamp
 
 end module test_filesystem

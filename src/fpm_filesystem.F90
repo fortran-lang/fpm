@@ -9,14 +9,14 @@ module fpm_filesystem
     use fpm_environment, only: separator, get_env, os_is_unix
     use fpm_strings, only: f_string, replace, string_t, split, split_lines_first_last, dilate, add_strings, &
         str_begins_with_str
-    use iso_c_binding, only: c_char, c_ptr, c_int, c_null_char, c_associated, c_f_pointer
+    use iso_c_binding, only: c_char, c_ptr, c_int, c_long_long, c_null_char, c_associated, c_f_pointer
     use fpm_error, only : fpm_stop, error_t, fatal_error
     implicit none
     private
     public :: basename, canon_path, dirname, is_dir, join_path, number_of_rows, list_files, get_local_prefix, &
             mkdir, exists, get_temp_filename, windows_path, unix_path, getline, delete_file, fileopen, fileclose, &
             filewrite, warnwrite, parent_dir, is_hidden_file, read_lines, read_lines_expanded, which, run, &
-            os_delete_dir, is_absolute_path, get_home, execute_and_read_output, get_dos_path
+            os_delete_dir, is_absolute_path, get_home, execute_and_read_output, get_dos_path, file_stamp
 
 #ifndef FPM_BOOTSTRAP
     interface
@@ -56,6 +56,13 @@ module fpm_filesystem
             integer(kind=c_int), intent(out) :: exitstat
             integer(kind=c_int) :: r
         end function c_run_command
+
+        function c_file_stamp(path, size, mtime) result(r) bind(c, name="c_file_stamp")
+            import c_char, c_int, c_long_long
+            character(kind=c_char), intent(in) :: path(*)
+            integer(kind=c_long_long), intent(out) :: size, mtime
+            integer(kind=c_int) :: r
+        end function c_file_stamp
     end interface
 #endif
 
@@ -927,6 +934,29 @@ integer                         :: i, j
       end select
    enddo SEARCH
 end function which
+
+!> A file's size and modification time as `"<size>:<mtime>"`, following symbolic links:
+!> two calls answer the same text while the file is unchanged. Empty when the file cannot
+!> be stat'ed, and always empty in a bootstrap build, which has no C helpers -- so a
+!> caller keying a cache on it must treat an empty stamp as "do not cache".
+function file_stamp(path) result(stamp)
+    !> Path of the file
+    character(len=*), intent(in) :: path
+    !> `"<size>:<mtime>"`, or empty when unknown
+    character(len=:), allocatable :: stamp
+#ifndef FPM_BOOTSTRAP
+    integer(kind=c_long_long) :: nbytes, mtime
+    character(len=48) :: buffer
+
+    stamp = ''
+    if (c_file_stamp(trim(path)//c_null_char, nbytes, mtime) /= 0) return
+    write(buffer, '(i0,":",i0)') nbytes, mtime
+    stamp = trim(buffer)
+#else
+    ! No C helpers to stat `path` with in a bootstrap build
+    stamp = ''
+#endif
+end function file_stamp
 
 !>AUTHOR: fpm(1) contributors
 !!LICENSE: MIT

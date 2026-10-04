@@ -17,7 +17,7 @@
 module fpm_source_parsing
 use fpm_error, only: error_t, file_parse_error, fatal_error, file_not_found_error
 use fpm_strings, only: string_t, string_cat, len_trim, split, lower, str_ends_with, fnv_1a, &
-    is_fortran_name, operator(.in.), operator(==)
+    is_fortran_name, operator(.in.), operator(==), str_begins_with_str
 use fpm_model, only: srcfile_t, &
                     FPM_UNIT_UNKNOWN, FPM_UNIT_PROGRAM, FPM_UNIT_MODULE, &
                     FPM_UNIT_SUBMODULE, FPM_UNIT_SUBPROGRAM, &
@@ -87,14 +87,14 @@ subroutine is_include_line(line, is_include, include_name)
     line_lower = adjustl(lower(line))
 
     ! Check for CPP #include directive: #include "file"
-    if (index(line_lower, '#include') == 1 .and. index(line, '"') > 0) then
+    if (str_begins_with_str(line_lower,'#include') .and. index(line, '"') > 0) then
         include_name = split_n(line, n=2, delims='"', stat=stat)
         if (stat == 0 .and. len_trim(include_name) > 0) is_include = .true.
         return
     end if
 
     ! Check for Fortran include statement: include "file" or include 'file'
-    if (index(line_lower, 'include') == 1) then
+    if (str_begins_with_str(line_lower,'include')) then
         ic = verify(line, ' ')  ! Position of first non-space (where 'include' starts)
         if (ic == 0) return
         stat = verify(line(ic+7:), ' ')  ! Find first non-space after 'include'
@@ -404,7 +404,7 @@ function parse_define_directive(line) result(macro)
     macro = ""
     line_lower = adjustl(lower(line))
 
-    if (index(line_lower, '#define') /= 1) return
+    if (.not. str_begins_with_str(line_lower,'#define')) return
 
     ! Extract macro name and optional value
     ! Format: #define NAME or #define NAME VALUE
@@ -559,23 +559,23 @@ subroutine parse_cpp_condition(lower_line, line, preprocess, is_active, macro_na
     end do
 
     ! There are macros: test if active
-    if (index(lower_line, '#ifdef') == 1) then
+    if (str_begins_with_str(lower_line,'#ifdef')) then
         start_pos = index(lower_line, ' ') + heading_blanks + 1
         macro_name = trim(adjustl(line(start_pos:)))
         is_active = macro_in_list(macro_name, preprocess%macros) .or. &
                     macro_in_list(macro_name, defined_macros)
 
-    elseif (index(lower_line, '#ifndef') == 1) then
+    elseif (str_begins_with_str(lower_line,'#ifndef')) then
         start_pos = index(lower_line, ' ') + heading_blanks + 1
         macro_name = trim(adjustl(line(start_pos:)))
         is_active = .not. (macro_in_list(macro_name, preprocess%macros) .or. &
                            macro_in_list(macro_name, defined_macros))
 
-    elseif (index(lower_line, '#if ') == 1) then
+    elseif (str_begins_with_str(lower_line,'#if ')) then
         call parse_if_condition(lower_line, line, 4, heading_blanks, &
                                 preprocess%macros, defined_macros, is_active, macro_name)
 
-    elseif (index(lower_line, '#elif') == 1) then
+    elseif (str_begins_with_str(lower_line,'#elif')) then
         call parse_if_condition(lower_line, line, 6, heading_blanks, &
                                 preprocess%macros, defined_macros, is_active, macro_name)
     else
@@ -674,40 +674,40 @@ function parse_f_source(f_filename,error,preprocess) result(f_source)
         file_loop: do i=1,size(file_lines_lower)
 
             ! Skip comment lines and empty lines
-            if (index(file_lines_lower(i)%s,'!') == 1 .or. &
+            if (str_begins_with_str(file_lines_lower(i)%s,'!') .or. &
                 len_trim(file_lines_lower(i)%s) < 1) then
                 cycle
             end if
 
             ! Handle preprocessor directives 
-            if (index(file_lines_lower(i)%s,'#') == 1) then
+            if (str_begins_with_str(file_lines_lower(i)%s,'#')) then
                 
                 ! If conditional parsing is enabled, track preprocessor blocks
                 if (cpp_conditional_parsing) then
                     
                     ! Check for conditional compilation directives
-                    if (index(file_lines_lower(i)%s,'#ifdef') == 1 .or. &
-                        index(file_lines_lower(i)%s,'#ifndef') == 1 .or. &
-                        index(file_lines_lower(i)%s,'#if ') == 1) then
+                    if (str_begins_with_str(file_lines_lower(i)%s,'#ifdef') .or. &
+                        str_begins_with_str(file_lines_lower(i)%s,'#ifndef') .or. &
+                        str_begins_with_str(file_lines_lower(i)%s,'#if ')) then
 
                         ! Determine if this conditional block should be active
                         call start_cpp_block(cpp_blk, file_lines_lower(i)%s, file_lines(i)%s, preprocess, defined_macros)
 
-                    elseif (index(file_lines_lower(i)%s,'#endif') == 1) then
+                    elseif (str_begins_with_str(file_lines_lower(i)%s,'#endif')) then
 
                         call end_cpp_block(cpp_blk)
 
-                    elseif (index(file_lines_lower(i)%s,'#else') == 1) then
+                    elseif (str_begins_with_str(file_lines_lower(i)%s,'#else')) then
 
                         call handle_else_block(cpp_blk)
 
-                    elseif (index(file_lines_lower(i)%s,'#elif') == 1) then
+                    elseif (str_begins_with_str(file_lines_lower(i)%s,'#elif')) then
 
                         ! Treat #elif as #else followed by #if
                         call handle_else_block(cpp_blk)
                         call start_cpp_block(cpp_blk, file_lines_lower(i)%s, file_lines(i)%s, preprocess, defined_macros)
 
-                    elseif (index(file_lines_lower(i)%s,'#define') == 1) then
+                    elseif (str_begins_with_str(file_lines_lower(i)%s,'#define')) then
 
                         ! Parse #define and add to defined_macros (only if not in inactive block)
                         if (.not. cpp_blk%inside_inactive_block) then
@@ -772,7 +772,7 @@ function parse_f_source(f_filename,error,preprocess) result(f_source)
             end if
 
             ! Detect beginning of interface block
-            if (index(file_lines_lower(i)%s,'interface') == 1 &
+            if (str_begins_with_str(file_lines_lower(i)%s,'interface') &
                 .or. parse_sequence(file_lines_lower(i)%s,'abstract','interface')) then
 
                 inside_interface = .true.
@@ -822,7 +822,7 @@ function parse_f_source(f_filename,error,preprocess) result(f_source)
             endif
 
             ! Process 'INCLUDE' statements
-            if (index(file_lines_lower(i)%s,'include') == 1) then
+            if (str_begins_with_str(file_lines_lower(i)%s,'include')) then
                 ic = verify(file_lines(i)%s, ' ')  ! Position of first non-space (where 'include' starts)
                 if (ic == 0) cycle
                 j = verify(file_lines(i)%s(ic+7:), ' ')  ! Find first non-space after 'include'
@@ -849,7 +849,7 @@ function parse_f_source(f_filename,error,preprocess) result(f_source)
             end if
 
             ! Extract name of module if is module
-            if (index(file_lines_lower(i)%s,'module ') == 1) then
+            if (str_begins_with_str(file_lines_lower(i)%s,'module ')) then
 
                 ! Remove any trailing comments
                 ic = index(file_lines_lower(i)%s,'!')-1
@@ -906,7 +906,7 @@ function parse_f_source(f_filename,error,preprocess) result(f_source)
             end if
 
             ! Extract name of submodule if is submodule
-            if (index(file_lines_lower(i)%s,'submodule') == 1) then
+            if (str_begins_with_str(file_lines_lower(i)%s,'submodule')) then
 
                 mod_name = split_n(file_lines_lower(i)%s,n=3,delims='()',stat=stat)
                 if (stat /= 0) then
@@ -970,7 +970,7 @@ function parse_f_source(f_filename,error,preprocess) result(f_source)
             ! Detect if contains a program
             ! - no modules allowed after program def
             ! - program header may be missing (only "end program" statement present)
-            if (index(file_lines_lower(i)%s,'program ')==1 .or. &
+            if (str_begins_with_str(file_lines_lower(i)%s,'program ') .or. &
                 parse_sequence(file_lines_lower(i)%s,'end','program')) then
 
                 temp_string = split_n(file_lines_lower(i)%s,n=2,delims=' ',stat=stat)
@@ -1292,7 +1292,7 @@ subroutine parse_use_statement(f_filename,i,line,use_stmt,is_intrinsic,module_na
     end if
 
     ! 'use' should be the first string in the adjustl line
-    use_stmt = index(line,'use ')==1 .or. index(line,'use::')==1 .or. index(line,'use,')==1
+    use_stmt = str_begins_with_str(line,'use ') .or. str_begins_with_str(line,'use::') .or. str_begins_with_str(line,'use,')
     if (.not.use_stmt) return
     colons   = index(line,'::')
     nonintr  = 0

@@ -10,6 +10,7 @@ module fpm_meta_openmp
     use fpm_error, only: error_t, fatal_error
     use fpm_manifest_metapackages, only: metapackage_request_t
     use iso_fortran_env, only: stdout => output_unit
+    use fpm_meta_probe_cache, only: probe_key, probe_lookup, probe_record
 
     implicit none
 
@@ -20,14 +21,20 @@ module fpm_meta_openmp
     contains
 
     !> Initialize OpenMP metapackage for the current system
-    subroutine init_openmp(this,compiler,all_meta,error)
+    !>
+    !> Each language's probe runs at most once per fpm call, and a passed one is remembered in
+    !> `build_dir` for later calls (`fpm_meta_probe_cache`).
+    subroutine init_openmp(this,compiler,all_meta,error,build_dir)
         class(metapackage_t), intent(inout) :: this
         type(compiler_t), intent(in) :: compiler
         type(metapackage_request_t), intent(in) :: all_meta(:)
         type(error_t), allocatable, intent(out) :: error
+        !> Build directory that keeps the record of passed probes; absent means none
+        character(*), intent(in), optional :: build_dir
 
         !> Local variables for OpenMP testing
-        character(:), allocatable :: openmp_flag, link_flag
+        character(:), allocatable :: openmp_flag, link_flag, key, dir
+        logical :: disk, found, passed
         character(len=*), parameter :: openmp_test_fortran = &
             "use omp_lib; if (omp_get_max_threads() <= 0) stop 1; end"
         character(len=*), parameter :: openmp_test_c = &
@@ -84,26 +91,48 @@ module fpm_meta_openmp
 
         end select which_compiler
 
+        dir = ''
+        if (present(build_dir)) dir = build_dir
+
         !> Test Fortran OpenMP support
-        if (compiler%check_fortran_source_runs(openmp_test_fortran, openmp_flag, link_flag)) then
-            this%has_fortran_flags = .true.
-            this%fflags = string_t(openmp_flag)
-        else
+        call probe_key('openmp-fortran', openmp_flag//' '//link_flag, compiler%fc, key, disk)
+        call probe_lookup(dir, key, disk, found, passed)
+        if (.not. found) then
+            passed = compiler%check_fortran_source_runs(openmp_test_fortran, openmp_flag, link_flag)
+            call probe_record(dir, key, disk, passed)
             !> The OpenMP runtime is linked below regardless, so a failed probe would
             !> otherwise produce a silently serial build: every directive compiled out
-            !> and `_OPENMP` undefined, with no diagnostic
+            !> and `_OPENMP` undefined, with no diagnostic. Said once per call, where the
+            !> probe ran.
+            if (.not. passed) &
             write(stdout,'(a)') '<WARNING> compiler '//compiler%name()//' failed the OpenMP probe with "'// &
                                 trim(openmp_flag)//'": Fortran sources will be built WITHOUT OpenMP'
+        end if
+        if (passed) then
+            this%has_fortran_flags = .true.
+            this%fflags = string_t(openmp_flag)
         endif
 
         !> Test C OpenMP support
-        if (compiler%check_c_source_runs(openmp_test_c, openmp_flag, link_flag)) then
+        call probe_key('openmp-c', openmp_flag//' '//link_flag, compiler%cc, key, disk)
+        call probe_lookup(dir, key, disk, found, passed)
+        if (.not. found) then
+            passed = compiler%check_c_source_runs(openmp_test_c, openmp_flag, link_flag)
+            call probe_record(dir, key, disk, passed)
+        end if
+        if (passed) then
             this%has_c_flags = .true.
             this%cflags = string_t(openmp_flag)
         endif
 
-        !> Test C++ OpenMP support  
-        if (compiler%check_cxx_source_runs(openmp_test_cxx, openmp_flag, link_flag)) then
+        !> Test C++ OpenMP support
+        call probe_key('openmp-cxx', openmp_flag//' '//link_flag, compiler%cxx, key, disk)
+        call probe_lookup(dir, key, disk, found, passed)
+        if (.not. found) then
+            passed = compiler%check_cxx_source_runs(openmp_test_cxx, openmp_flag, link_flag)
+            call probe_record(dir, key, disk, passed)
+        end if
+        if (passed) then
             this%has_cxx_flags = .true.
             this%cxxflags = string_t(openmp_flag)
         endif

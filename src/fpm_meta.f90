@@ -52,17 +52,19 @@ module fpm_meta
     contains
 
     !> Initialize a metapackage from the given name
-    subroutine init_from_request(this,request,compiler,all_meta,error)
+    subroutine init_from_request(this,request,compiler,all_meta,error,build_dir)
         class(metapackage_t), intent(inout) :: this
         type(metapackage_request_t), intent(in) :: request
         type(compiler_t), intent(in) :: compiler
         !> Pass a list of all metapackage requests so dependencies can be sorted out
         type(metapackage_request_t), intent(in) :: all_meta(:)
         type(error_t), allocatable, intent(out) :: error
+        !> Build directory, where a metapackage may keep what it probed; absent means none
+        character(*), intent(in), optional :: build_dir
 
         !> Initialize metapackage by name
         select case(request%name)
-            case("openmp");  call init_openmp (this,compiler,all_meta,error)
+            case("openmp");  call init_openmp (this,compiler,all_meta,error,build_dir)
             case("stdlib");  call init_stdlib (this,compiler,all_meta,error)
             case("minpack"); call init_minpack(this,compiler,all_meta,error)
             case("mpi");     call init_mpi    (this,compiler,all_meta,error)
@@ -151,7 +153,11 @@ module fpm_meta
 
         do i = 1, size(requested)
 
-            call init_from_request(meta, requested(i), model%compiler, requested, error)
+            if (allocated(model%build_dir)) then
+                call init_from_request(meta, requested(i), model%compiler, requested, error, model%build_dir)
+            else
+                call init_from_request(meta, requested(i), model%compiler, requested, error)
+            end if
             if (allocated(error)) return
 
             call add_metapackage_model(model, package, settings, meta, error)
