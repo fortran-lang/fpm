@@ -49,6 +49,13 @@ module fpm_filesystem
             character(kind=c_char), intent(in) :: path(*)
             integer(kind=c_int) :: r
         end function c_is_dir
+
+        function c_run_command(cmd, exitstat) result(r) bind(c, name="c_run_command")
+            import c_char, c_int
+            character(kind=c_char), intent(in) :: cmd(*)
+            integer(kind=c_int), intent(out) :: exitstat
+            integer(kind=c_int) :: r
+        end function c_run_command
     end interface
 #endif
 
@@ -1029,7 +1036,7 @@ subroutine run(cmd,echo,exitstat,verbose,redirect)
 
     if(echo_local) print *, '+ ', cmd !//redirect_str
 
-    call execute_command_line(cmd//redirect_str, exitstat=stat,cmdstat=cmdstat,cmdmsg=cmdmsg)
+    call execute_shell_command(cmd//redirect_str, stat, cmdstat, cmdmsg)
     if(cmdstat /= 0)then
         write(*,'(a)')'<ERROR>:failed command '//cmd//redirect_str
         call fpm_stop(1,'*run*:'//trim(cmdmsg))
@@ -1059,6 +1066,50 @@ subroutine run(cmd,echo,exitstat,verbose,redirect)
     end if
 
 end subroutine run
+
+!> Run a command through the shell and wait for it, reporting as
+!> `execute_command_line(command, exitstat=, cmdstat=, cmdmsg=)` does.
+!>
+!> On Unix the command is started with posix_spawn (`c_run_command`) rather than
+!> `execute_command_line`, whose system(3) holds a process-wide lock on macOS: there
+!> every target of a parallel build would wait for the one before it. Windows and the
+!> bootstrap build keep `execute_command_line`.
+subroutine execute_shell_command(command, exitstat, cmdstat, cmdmsg)
+    !> Command line handed to the shell
+    character(len=*), intent(in) :: command
+    !> Exit status of the command
+    integer, intent(out) :: exitstat
+    !> Nonzero when the command could not be run
+    integer, intent(out) :: cmdstat
+    !> Message describing a nonzero `cmdstat`
+    character(len=*), intent(inout) :: cmdmsg
+
+#ifndef FPM_BOOTSTRAP
+    integer(kind=c_int) :: r, c_exitstat
+
+    r = c_run_command(command//c_null_char, c_exitstat)
+    select case (r)
+    case (0)
+        exitstat = c_exitstat
+        ! As libgfortran does: the shell's 126 and 127 mean it could not run the command
+        if (exitstat == 126 .or. exitstat == 127) then
+            cmdstat = 3
+            cmdmsg = 'Invalid command line'
+        else
+            cmdstat = 0
+        end if
+        return
+    case (1)
+        exitstat = -1
+        cmdstat = 2
+        cmdmsg = 'Could not start /bin/sh'
+        return
+    end select
+#endif
+
+    call execute_command_line(command, exitstat=exitstat, cmdstat=cmdstat, cmdmsg=cmdmsg)
+
+end subroutine execute_shell_command
 
 !> Delete directory using system OS remove directory commands
 subroutine os_delete_dir(is_unix, dir, echo)
