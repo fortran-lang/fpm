@@ -284,12 +284,17 @@ module fpm_compile_commands
             return
         end if
 
-        ! Tokenize the input command into args(:)
-        if (target_os==OS_WINDOWS) then 
+        ! Tokenize the input command into args(:). Every compile registers its command
+        ! from a build thread, and fortran-shlex's splitters have a deferred-length
+        ! character result, whose length gfortran keeps in a static variable that every
+        ! thread shares: serialize them as tokenize_flags (fpm_compiler) does
+        !$omp critical (fpm_char_result)
+        if (target_os==OS_WINDOWS) then
             args = ms_split(command, ucrt=.true., success=sh_success)
         else
             args = sh_split(command, join_spaced=.false., keep_quotes=.true., success=sh_success)
         end if
+        !$omp end critical (fpm_char_result)
         n = size(args)
         
         if (n==0 .or. .not.sh_success) then 

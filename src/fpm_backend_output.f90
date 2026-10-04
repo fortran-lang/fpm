@@ -98,11 +98,14 @@ contains
 
         associate(target=>progress%target_queue(queue_index)%ptr)
 
+            ! Called from the build threads: see tokenize_flags (fpm_compiler)
+            !$omp critical (fpm_char_result)
             if (allocated(target%source)) then
                 target_name = basename(target%source%file_name)
             else
                 target_name = basename(target%output_file)
             end if
+            !$omp end critical (fpm_char_result)
 
             write(overall_progress,'(A,I3,A)') '[',100*progress%n_complete/progress%n_target,'%] '
 
@@ -145,11 +148,14 @@ contains
 
         associate(target=>progress%target_queue(queue_index)%ptr)
 
+            ! Called from the build threads: see tokenize_flags (fpm_compiler)
+            !$omp critical (fpm_char_result)
             if (allocated(target%source)) then
                 target_name = basename(target%source%file_name)
             else
                 target_name = basename(target%output_file)
             end if
+            !$omp end critical (fpm_char_result)
 
             if (build_stat == 0) then
                 write(output_string,'(A,T40,A,A)') target_name,COLOR_GREEN//'done.'//COLOR_RESET

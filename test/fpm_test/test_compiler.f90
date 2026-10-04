@@ -3,7 +3,7 @@ module test_compiler
     use testsuite, only : new_unittest, unittest_t, error_t, test_failed, &
         & check_string
     use fpm_environment, only : OS_WINDOWS, OS_LINUX
-    use fpm_compiler   , only : compiler_t, new_compiler, tokenize_flags
+    use fpm_compiler   , only : compiler_t, new_compiler, tokenize_flags, append_clean_flags
     use fpm_strings    , only : string_t, operator(==)
     use fpm_command_line, only: get_fpm_env
     use fpm_compile_commands, only: compile_command_table_t
@@ -25,6 +25,8 @@ contains
             & new_unittest("check-c-source-runs", test_check_c_source_runs), &
             & new_unittest("check-cxx-source-runs", test_check_cxx_source_runs), &
             & new_unittest("tokenize-flags", test_tokenize_flags), &
+            & new_unittest("append-clean-flags-concurrent", test_append_clean_flags_concurrent), &
+            & new_unittest("compile-commands-concurrent", test_register_compile_command_concurrent), &
             & new_unittest("compile-commands-unix", test_register_compile_command_unix), &
             & new_unittest("compile-commands-windows", test_register_compile_command_windows), &
             & new_unittest("get-default-flags-pic", test_get_default_flags_pic)]
@@ -247,6 +249,147 @@ contains
         end if
 
     end subroutine test_tokenize_flags
+
+    !> Link lines are assembled with `append_clean_flags` by several build threads at
+    !> once: every concurrent call must give the result a single thread gives. Without
+    !> OpenMP the loop runs serially and the test checks nothing beyond that.
+    subroutine test_append_clean_flags_concurrent(error)
+        type(error_t), allocatable, intent(out) :: error
+
+        integer, parameter :: n_case = 64, n_call = 20000
+        type(string_t) :: base(n_case), extra(n_case), expected(n_case)
+        logical :: ok(n_call)
+        integer :: i, j
+
+        do i = 1, n_case
+            base(i)%s = '-O2 -fopenmp -I/include/' // repeat('i', i)
+            extra(i)%s = '-fopenmp'
+            do j = 1, 1 + mod(7*i, 40)
+                extra(i)%s = extra(i)%s // ' build/obj_' // repeat('o', mod(i*j, 50)) // '.o'
+            end do
+            extra(i)%s = extra(i)%s // ' -l' // repeat('l', i)
+            expected(i)%s = base(i)%s
+            call append_clean_flags(expected(i)%s, extra(i)%s)
+        end do
+
+        !$omp parallel do schedule(dynamic, 16)
+        do j = 1, n_call
+            block
+                character(:), allocatable :: flags
+                integer :: k
+                k = 1 + mod(j, n_case)
+                flags = base(k)%s
+                call append_clean_flags(flags, extra(k)%s)
+                ok(j) = flags == expected(k)%s
+            end block
+        end do
+        !$omp end parallel do
+
+        if (.not.all(ok)) then
+            call test_failed(error, "append_clean_flags gave a different result when called concurrently")
+            return
+        end if
+
+    end subroutine test_append_clean_flags_concurrent
+
+    !> Every compile registers its command with the compile command table, from several
+    !> build threads at once: each must be tokenized as a single thread tokenizes it.
+    !> Without OpenMP the loop runs serially and the test checks nothing beyond that.
+    subroutine test_register_compile_command_concurrent(error)
+        type(error_t), allocatable, intent(out) :: error
+
+        integer, parameter :: n_command = 2000
+        type(compile_command_table_t) :: table
+        type(string_t) :: command(n_command)
+        logical :: registered(n_command), found(n_command)
+        integer :: i, k
+
+        do i = 1, n_command
+            command(i)%s = 'gfortran -c src/file_' // repeat('f', mod(i, 23)) // '_' // itoa(i) // &
+                           '.f90 -I/include/' // repeat('i', mod(i, 37)) // ' -O2 ' // &
+                           repeat('-Wall ', mod(i, 5)) // '-o build/file_' // itoa(i) // '.o'
+        end do
+
+        !$omp parallel do schedule(dynamic, 8)
+        do i = 1, n_command
+            block
+                type(error_t), allocatable :: register_error
+                call table%register(command(i)%s, OS_LINUX, register_error)
+                registered(i) = .not.allocated(register_error)
+            end block
+        end do
+        !$omp end parallel do
+
+        if (.not.all(registered)) then
+            call test_failed(error, "A compile command failed to register when registered concurrently")
+            return
+        end if
+        if (size(table%command) /= n_command) then
+            call test_failed(error, "Wrong number of compile commands registered concurrently")
+            return
+        end if
+
+        ! Each entry must be one of the commands, tokenized as a single thread tokenizes it
+        found = .false.
+        do i = 1, size(table%command)
+            k = command_index(table%command(i)%file%s)
+            if (k == 0) then
+                call test_failed(error, "Compile command registered with a corrupted file name: "// &
+                                 table%command(i)%file%s)
+                return
+            end if
+            if (string_cat_args(table%command(i)%arguments) /= command(k)%s) then
+                call test_failed(error, "Compile command tokenized wrongly when registered concurrently: "// &
+                                 string_cat_args(table%command(i)%arguments))
+                return
+            end if
+            found(k) = .true.
+        end do
+        if (.not.all(found)) then
+            call test_failed(error, "A compile command is missing from the table")
+            return
+        end if
+
+    contains
+
+        !> Index of the command compiling `file`, or 0
+        integer function command_index(file)
+            character(*), intent(in) :: file
+            integer :: j, start
+            start = index(file, '_', back=.true.) + 1
+            command_index = 0
+            if (start < 2 .or. len(file) < start + 4) return
+            read(file(start:len(file)-4), *, iostat=j) command_index
+            if (j /= 0) command_index = 0
+            if (command_index < 1 .or. command_index > n_command) then
+                command_index = 0
+                return
+            end if
+            if (index(command(command_index)%s, file) == 0) command_index = 0
+        end function command_index
+
+        !> Arguments joined by single spaces
+        function string_cat_args(args) result(s)
+            type(string_t), intent(in) :: args(:)
+            character(:), allocatable :: s
+            integer :: j
+            s = ''
+            do j = 1, size(args)
+                if (j > 1) s = s // ' '
+                s = s // args(j)%s
+            end do
+        end function string_cat_args
+
+        !> Decimal text of `n`
+        function itoa(n) result(s)
+            integer, intent(in) :: n
+            character(:), allocatable :: s
+            character(12) :: buf
+            write(buf, '(i0)') n
+            s = trim(buf)
+        end function itoa
+
+    end subroutine test_register_compile_command_concurrent
 
     subroutine test_register_compile_command_unix(error)
         type(error_t), allocatable, intent(out) :: error

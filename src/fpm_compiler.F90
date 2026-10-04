@@ -1622,7 +1622,10 @@ subroutine link_shared(self, output, args, log_file, stat, dry_run)
     mock = .false.
     if (present(dry_run)) mock = dry_run
 
+    ! A deferred-length character result, called from the build threads: see tokenize_flags
+    !$omp critical (fpm_char_result)
     shared_flag = get_shared_flag(self)
+    !$omp end critical (fpm_char_result)
 
     command = self%fc // " " // shared_flag // " " // args // " -o " // output
 
@@ -2222,7 +2225,13 @@ subroutine tokenize_flags(flags, flags_array)
     integer :: i
     logical :: success
 
+    ! Link lines are tokenized by several build threads at once. A function with a
+    ! deferred-length character result, as fortran-shlex's splitters are, has its
+    ! length kept by gfortran in a static variable that every thread shares, so every
+    ! call reachable from the build threads goes through this one critical section
+    !$omp critical (fpm_char_result)
     flags_char_array = sh_split(flags, join_spaced=.true., keep_quotes=.true., success=success)
+    !$omp end critical (fpm_char_result)
     if (.not. success) then
         allocate(flags_array(0))
         return
