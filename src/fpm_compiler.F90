@@ -1313,7 +1313,16 @@ function get_headerpad_flags(self) result(flags)
     end if
 
     ! Reserve enough space in the Mach-O header to safely add two install_name or rpath later
-    flags = " -Wl,-headerpad,0x200"
+    select case (self%id)
+    case (id_nag)
+        ! nagfor hands each comma-separated piece of a -Wl, option to the C compiler it
+        ! links with as an argument of its own, so `-Wl,-headerpad,0x200` reaches clang
+        ! as `-headerpad 0x200`, which clang rejects ("unknown argument: '-headerpad'");
+        ! -Xlinker passes each piece on to the linker instead
+        flags = " -Wl,-Xlinker,-headerpad,-Xlinker,0x200"
+    case default
+        flags = " -Wl,-headerpad,0x200"
+    end select
 
 end function get_headerpad_flags
 

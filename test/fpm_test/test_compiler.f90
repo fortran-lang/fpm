@@ -2,7 +2,7 @@
 module test_compiler
     use testsuite, only : new_unittest, unittest_t, error_t, test_failed, &
         & check_string
-    use fpm_environment, only : OS_WINDOWS, OS_LINUX
+    use fpm_environment, only : OS_WINDOWS, OS_LINUX, OS_MACOS, get_os_type
     use fpm_compiler   , only : compiler_t, new_compiler, tokenize_flags, append_link_flags
     use fpm_strings    , only : string_t, operator(==)
     use fpm_command_line, only: get_fpm_env
@@ -31,7 +31,8 @@ contains
             & new_unittest("compile-commands-concurrent", test_register_compile_command_concurrent), &
             & new_unittest("compile-commands-unix", test_register_compile_command_unix), &
             & new_unittest("compile-commands-windows", test_register_compile_command_windows), &
-            & new_unittest("get-default-flags-pic", test_get_default_flags_pic)]
+            & new_unittest("get-default-flags-pic", test_get_default_flags_pic), &
+            & new_unittest("get-headerpad-flags", test_get_headerpad_flags)]
 
     end subroutine collect_compiler
 
@@ -536,6 +537,36 @@ contains
         end if
 
     end subroutine test_get_default_flags_pic
+
+    !> On macOS every link reserves Mach-O header room for the two rpaths `fpm install` adds,
+    !> spelled so that it reaches the linker: nagfor hands each comma-separated piece of a -Wl,
+    !> option to the C compiler as an argument of its own, so it needs -Xlinker before each
+    subroutine test_get_headerpad_flags(error)
+        !> Error handling
+        type(error_t), allocatable, intent(out) :: error
+
+        type(compiler_t) :: gnu, nag
+        character(:), allocatable :: gnu_flags, nag_flags
+
+        call new_compiler(gnu, "gfortran", "gcc", "g++", echo=.false., verbose=.false.)
+        call new_compiler(nag, "nagfor", "gcc", "g++", echo=.false., verbose=.false.)
+        gnu_flags = gnu%get_headerpad_flags()
+        nag_flags = nag%get_headerpad_flags()
+
+        if (get_os_type() /= OS_MACOS) then
+            if (len(gnu_flags) /= 0 .or. len(nag_flags) /= 0) then
+                call test_failed(error, "Header padding is a macOS link option, got: '"// &
+                    & gnu_flags//"' and '"//nag_flags//"'")
+            end if
+            return
+        end if
+
+        call check_string(error, gnu_flags, " -Wl,-headerpad,0x200", "gfortran header padding")
+        if (allocated(error)) return
+
+        call check_string(error, nag_flags, " -Wl,-Xlinker,-headerpad,-Xlinker,0x200", "nagfor header padding")
+
+    end subroutine test_get_headerpad_flags
 
 
 end module test_compiler
