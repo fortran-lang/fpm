@@ -51,7 +51,7 @@ use fpm_versioning, only: version_t
 use shlex_module, only: sh_split => split, ms_split, quote => ms_quote
 implicit none
 public :: compiler_t, new_compiler, archiver_t, new_archiver, get_macros
-public :: append_clean_flags, append_clean_flags_array
+public :: append_clean_flags, append_clean_flags_array, append_link_flags
 public :: debug
 public :: id_gcc,id_all
 public :: match_compiler_type, compiler_id_name, validate_compiler_name, is_cxx_gnu_based
@@ -2215,6 +2215,64 @@ subroutine append_clean_flags_array(flags_array, new_flags_array)
         call add_strings(flags_array, new_flags_array(i))
     end do
 end subroutine append_clean_flags_array
+
+!> Append an executable's link flags to the compile flags it is linked with
+!>
+!> A metapackage legitimately gives the same option to both (OpenMP sets a compile flag
+!> and a link flag), and a strict compiler rejects it given twice: NAG and a repeated
+!> `-openmp`. A link token that repeats one of `flags` is therefore left out, but only a
+!> compiler option standing alone. Every other token is kept in its place, repeats
+!> included, because on a link line repetition and position carry meaning. A static
+!> archive serves only the references made before it, so a library named again after
+!> the objects that need it must stay: fpm names `stdc++` after the package's archive
+!> even when the environment's link flags named it first, and a toolchain may keep part
+!> of its runtime in a static archive (RHEL's gcc-toolset keeps the newer half of
+!> libstdc++ in one). Both halves of a keyword pair (`-framework X`, `-Xlinker x`) must
+!> stay too: either one alone names something else.
+subroutine append_link_flags(flags, link_flags)
+    character(:), intent(inout), allocatable :: flags
+    character(*), intent(in) :: link_flags
+
+    !> Options that take the next token as their argument
+    character(len=*), parameter :: keywords(*) = [character(len=15) :: '-Xlinker', &
+        & '-framework', '-weak_framework', '-arch', '-isysroot', '-target', '-rpath', &
+        & '-l', '-L', '-u', '-T', '-z']
+
+    type(string_t), allocatable :: compile_array(:), link_array(:)
+    integer :: i
+    logical :: argument
+
+    call tokenize_flags(flags, compile_array)
+    call tokenize_flags(link_flags, link_array)
+
+    ! Whether the token at hand is the argument of the keyword before it
+    argument = .false.
+    do i = 1, size(link_array)
+        if (len(link_array(i)%s) == 0) cycle
+        if (.not. argument .and. lone_option(link_array(i)%s)) then
+            if (string_array_contains(link_array(i)%s, compile_array)) cycle
+        end if
+        flags = flags // " " // link_array(i)%s
+        argument = any(link_array(i)%s == keywords)
+    end do
+
+contains
+
+    !> Whether `token` is a compiler option standing alone: not an input file, a library,
+    !> a library path, a flag handed on to the linker, or a keyword whose argument follows
+    logical function lone_option(token)
+        character(*), intent(in) :: token
+
+        lone_option = .false.
+        if (len(token) < 2) return
+        if (token(1:1) /= '-') return
+        if (any(token == keywords)) return
+        if (token(1:2) == '-l' .or. token(1:2) == '-L') return
+        if (index(token, '-Wl,') == 1) return
+        lone_option = .true.
+    end function lone_option
+
+end subroutine append_link_flags
 
 !> Tokenize a string into an array of compiler flags
 subroutine tokenize_flags(flags, flags_array)

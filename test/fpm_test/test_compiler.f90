@@ -3,7 +3,7 @@ module test_compiler
     use testsuite, only : new_unittest, unittest_t, error_t, test_failed, &
         & check_string
     use fpm_environment, only : OS_WINDOWS, OS_LINUX
-    use fpm_compiler   , only : compiler_t, new_compiler, tokenize_flags, append_clean_flags
+    use fpm_compiler   , only : compiler_t, new_compiler, tokenize_flags, append_link_flags
     use fpm_strings    , only : string_t, operator(==)
     use fpm_command_line, only: get_fpm_env
     use fpm_compile_commands, only: compile_command_table_t
@@ -25,7 +25,9 @@ contains
             & new_unittest("check-c-source-runs", test_check_c_source_runs), &
             & new_unittest("check-cxx-source-runs", test_check_cxx_source_runs), &
             & new_unittest("tokenize-flags", test_tokenize_flags), &
-            & new_unittest("append-clean-flags-concurrent", test_append_clean_flags_concurrent), &
+            & new_unittest("append-link-flags-keeps-libraries", test_append_link_flags_libraries), &
+            & new_unittest("append-link-flags-keeps-pairs", test_append_link_flags_pairs), &
+            & new_unittest("append-link-flags-concurrent", test_append_link_flags_concurrent), &
             & new_unittest("compile-commands-concurrent", test_register_compile_command_concurrent), &
             & new_unittest("compile-commands-unix", test_register_compile_command_unix), &
             & new_unittest("compile-commands-windows", test_register_compile_command_windows), &
@@ -250,10 +252,44 @@ contains
 
     end subroutine test_tokenize_flags
 
-    !> Link lines are assembled with `append_clean_flags` by several build threads at
+    !> An executable is linked with its compile flags followed by its link flags. An option
+    !> both give is passed once (NAG rejects a repeated `-openmp`), but a library is kept
+    !> wherever it is named: named again after the objects and archives that need it is
+    !> how a static archive reaches them, whether the earlier naming came from the link
+    !> flags themselves or from the compile flags
+    subroutine test_append_link_flags_libraries(error)
+        type(error_t), allocatable, intent(out) :: error
+
+        character(:), allocatable :: flags
+
+        flags = '-O2 -fopenmp -lsharp'
+        call append_link_flags(flags, '-lstdc++ -L/opt/lib -fopenmp build/main.o ' // &
+            & 'build/libpkg.a -larrow -lsharp -lstdc++')
+        call check_string(error, flags, '-O2 -fopenmp -lsharp -lstdc++ -L/opt/lib ' // &
+            & 'build/main.o build/libpkg.a -larrow -lsharp -lstdc++', 'link line')
+
+    end subroutine test_append_link_flags_libraries
+
+    !> A keyword's argument is the token after it, so both are kept however often the pair
+    !> recurs and whatever the compile flags already hold: either half alone names
+    !> something else
+    subroutine test_append_link_flags_pairs(error)
+        type(error_t), allocatable, intent(out) :: error
+
+        character(:), allocatable :: flags
+
+        flags = '-O1 -isysroot /sdk'
+        call append_link_flags(flags, '-isysroot /sdk -framework Accelerate ' // &
+            & '-framework Foundation -Xlinker -O1 build/main.o')
+        call check_string(error, flags, '-O1 -isysroot /sdk -isysroot /sdk ' // &
+            & '-framework Accelerate -framework Foundation -Xlinker -O1 build/main.o', 'link line')
+
+    end subroutine test_append_link_flags_pairs
+
+    !> Link lines are assembled with `append_link_flags` by several build threads at
     !> once: every concurrent call must give the result a single thread gives. Without
     !> OpenMP the loop runs serially and the test checks nothing beyond that.
-    subroutine test_append_clean_flags_concurrent(error)
+    subroutine test_append_link_flags_concurrent(error)
         type(error_t), allocatable, intent(out) :: error
 
         integer, parameter :: n_case = 64, n_call = 20000
@@ -269,7 +305,7 @@ contains
             end do
             extra(i)%s = extra(i)%s // ' -l' // repeat('l', i)
             expected(i)%s = base(i)%s
-            call append_clean_flags(expected(i)%s, extra(i)%s)
+            call append_link_flags(expected(i)%s, extra(i)%s)
         end do
 
         !$omp parallel do schedule(dynamic, 16)
@@ -279,18 +315,18 @@ contains
                 integer :: k
                 k = 1 + mod(j, n_case)
                 flags = base(k)%s
-                call append_clean_flags(flags, extra(k)%s)
+                call append_link_flags(flags, extra(k)%s)
                 ok(j) = flags == expected(k)%s
             end block
         end do
         !$omp end parallel do
 
         if (.not.all(ok)) then
-            call test_failed(error, "append_clean_flags gave a different result when called concurrently")
+            call test_failed(error, "append_link_flags gave a different result when called concurrently")
             return
         end if
 
-    end subroutine test_append_clean_flags_concurrent
+    end subroutine test_append_link_flags_concurrent
 
     !> Every compile registers its command with the compile command table, from several
     !> build threads at once: each must be tokenized as a single thread tokenizes it.

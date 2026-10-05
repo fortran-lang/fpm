@@ -33,7 +33,7 @@ use,intrinsic :: iso_fortran_env, only : stdin=>input_unit, stdout=>output_unit,
 use fpm_error, only : fpm_stop, error_t
 use fpm_filesystem, only: basename, dirname, join_path, exists, mkdir, run, getline, is_newer
 use fpm_model, only: fpm_model_t
-use fpm_compiler, only: append_clean_flags
+use fpm_compiler, only: append_link_flags
 use fpm_strings, only: string_t, operator(.in.)
 use fpm_targets, only: build_target_t, build_target_ptr, FPM_TARGET_OBJECT, &
                        FPM_TARGET_C_OBJECT, FPM_TARGET_ARCHIVE, FPM_TARGET_EXECUTABLE, &
@@ -562,10 +562,11 @@ subroutine build_target(model,target,verbose,dry_run,table,stat)
     case (FPM_TARGET_EXECUTABLE)
         ! Executables link with the compile and link flags combined, and a metapackage
         ! legitimately contributes the same flag to both (OpenMP sets a compile flag and
-        ! a link flag). Merge them cleanly so a strict compiler is not handed the option
-        ! twice: NAG rejects a repeated `-openmp` outright
+        ! a link flag). `append_link_flags` hands a strict compiler such an option once
+        ! (NAG rejects a repeated `-openmp` outright) and keeps the rest of the link
+        ! part as it is: there a library named twice is named twice on purpose
         exe_flags = target%compile_flags
-        call append_clean_flags(exe_flags, target%link_flags)
+        call append_link_flags(exe_flags, target%link_flags)
         call model%compiler%link(target%output_file, &
             & exe_flags, target%output_log_file, stat, dry_run)
 
