@@ -51,7 +51,7 @@ use fpm_versioning, only: version_t
 use shlex_module, only: sh_split => split, ms_split, quote => ms_quote
 implicit none
 public :: compiler_t, new_compiler, archiver_t, new_archiver, get_macros
-public :: append_clean_flags, append_clean_flags_array
+public :: append_clean_flags, append_clean_flags_array, append_link_flags
 public :: debug
 public :: id_gcc,id_all
 public :: match_compiler_type, compiler_id_name, validate_compiler_name, is_cxx_gnu_based
@@ -306,8 +306,12 @@ function get_default_flags(self, release) result(flags)
     select case (self%id)
     case (id_gcc, id_f95, id_caf, id_flang_classic, id_amdflang, id_f18, id_lfortran, &
           id_intel_classic_nix, id_intel_classic_mac, id_intel_llvm_nix, &
-          id_intel_llvm_unknown, id_pgi, id_nvhpc, id_nag, id_cray, id_ibmxl)
+          id_intel_llvm_unknown, id_pgi, id_nvhpc, id_cray, id_ibmxl)
         pic_flag = " -fPIC"
+    case (id_nag)
+        ! NAG spells this `-PIC` and rejects `-fPIC` outright
+        ! ("Option error: Unrecognised option -fPIC"), which fails every source probe
+        pic_flag = flag_nag_pic
     case (id_flang)
         ! LLVM Flang doesn't support -fPIC on Windows MSVC target
         if (get_os_type() == OS_WINDOWS) then
@@ -1212,9 +1216,11 @@ function enumerate_libraries(self, prefix, libs) result(r)
         r = trim(prefix) // " " // trim(joined)
 
     case (id_nag, id_ibmxl)
-        ! NAG and IBMXL need -Wl, wrapper around linker flags
-        joined = string_cat(libs, " -Wl,")
-        r = trim(prefix) // " -Wl," // trim(joined)
+        ! NAG and IBMXL need the -Wl, wrapper around linker flags, but the payload
+        ! must still be a `-l<name>` option: a bare library name is read as an input
+        ! file name by the linker driver they forward to
+        joined = string_cat(libs, " -Wl,-l")
+        r = trim(prefix) // " -Wl,-l" // trim(joined)
 
     case default
         ! Generic Unix-style linker flags: use `-lfoo`
@@ -1614,7 +1620,10 @@ subroutine link_shared(self, output, args, log_file, stat, dry_run)
     mock = .false.
     if (present(dry_run)) mock = dry_run
 
+    ! A deferred-length character result, called from the build threads: see tokenize_flags
+    !$omp critical (fpm_char_result)
     shared_flag = get_shared_flag(self)
+    !$omp end critical (fpm_char_result)
 
     command = self%fc // " " // shared_flag // " " // args // " -o " // output
 
@@ -2168,14 +2177,19 @@ subroutine append_clean_flags(flags, new_flags)
     character(*), intent(in) :: new_flags
 
     type(string_t), allocatable :: flags_array(:), new_flags_array(:)
-    integer :: i
+    integer :: i, n_old
 
     call tokenize_flags(flags, flags_array)
     call tokenize_flags(new_flags, new_flags_array)
 
+    ! `flags_array` starts out holding the flags already in `flags`, and
+    ! `append_clean_flags_array` only ever appends: re-emitting the whole array
+    ! would repeat every one of them on each call
+    n_old = size(flags_array)
+
     call append_clean_flags_array(flags_array, new_flags_array)
 
-    do i = 1, size(flags_array)
+    do i = n_old + 1, size(flags_array)
         flags = flags // " " // flags_array(i)%s
     end do
 end subroutine append_clean_flags
@@ -2200,6 +2214,64 @@ subroutine append_clean_flags_array(flags_array, new_flags_array)
     end do
 end subroutine append_clean_flags_array
 
+!> Append an executable's link flags to the compile flags it is linked with
+!>
+!> A metapackage legitimately gives the same option to both (OpenMP sets a compile flag
+!> and a link flag), and a strict compiler rejects it given twice: NAG and a repeated
+!> `-openmp`. A link token that repeats one of `flags` is therefore left out, but only a
+!> compiler option standing alone. Every other token is kept in its place, repeats
+!> included, because on a link line repetition and position carry meaning. A static
+!> archive serves only the references made before it, so a library named again after
+!> the objects that need it must stay: fpm names `stdc++` after the package's archive
+!> even when the environment's link flags named it first, and a toolchain may keep part
+!> of its runtime in a static archive (RHEL's gcc-toolset keeps the newer half of
+!> libstdc++ in one). Both halves of a keyword pair (`-framework X`, `-Xlinker x`) must
+!> stay too: either one alone names something else.
+subroutine append_link_flags(flags, link_flags)
+    character(:), intent(inout), allocatable :: flags
+    character(*), intent(in) :: link_flags
+
+    !> Options that take the next token as their argument
+    character(len=*), parameter :: keywords(*) = [character(len=15) :: '-Xlinker', &
+        & '-framework', '-weak_framework', '-arch', '-isysroot', '-target', '-rpath', &
+        & '-l', '-L', '-u', '-T', '-z']
+
+    type(string_t), allocatable :: compile_array(:), link_array(:)
+    integer :: i
+    logical :: argument
+
+    call tokenize_flags(flags, compile_array)
+    call tokenize_flags(link_flags, link_array)
+
+    ! Whether the token at hand is the argument of the keyword before it
+    argument = .false.
+    do i = 1, size(link_array)
+        if (len(link_array(i)%s) == 0) cycle
+        if (.not. argument .and. lone_option(link_array(i)%s)) then
+            if (string_array_contains(link_array(i)%s, compile_array)) cycle
+        end if
+        flags = flags // " " // link_array(i)%s
+        argument = any(link_array(i)%s == keywords)
+    end do
+
+contains
+
+    !> Whether `token` is a compiler option standing alone: not an input file, a library,
+    !> a library path, a flag handed on to the linker, or a keyword whose argument follows
+    logical function lone_option(token)
+        character(*), intent(in) :: token
+
+        lone_option = .false.
+        if (len(token) < 2) return
+        if (token(1:1) /= '-') return
+        if (any(token == keywords)) return
+        if (token(1:2) == '-l' .or. token(1:2) == '-L') return
+        if (index(token, '-Wl,') == 1) return
+        lone_option = .true.
+    end function lone_option
+
+end subroutine append_link_flags
+
 !> Tokenize a string into an array of compiler flags
 subroutine tokenize_flags(flags, flags_array)
     character(*), intent(in) :: flags
@@ -2209,7 +2281,13 @@ subroutine tokenize_flags(flags, flags_array)
     integer :: i
     logical :: success
 
+    ! Link lines are tokenized by several build threads at once. A function with a
+    ! deferred-length character result, as fortran-shlex's splitters are, has its
+    ! length kept by gfortran in a static variable that every thread shares, so every
+    ! call reachable from the build threads goes through this one critical section
+    !$omp critical (fpm_char_result)
     flags_char_array = sh_split(flags, join_spaced=.true., keep_quotes=.true., success=success)
+    !$omp end critical (fpm_char_result)
     if (.not. success) then
         allocate(flags_array(0))
         return

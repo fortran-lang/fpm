@@ -9,14 +9,14 @@ module fpm_filesystem
     use fpm_environment, only: separator, get_env, os_is_unix
     use fpm_strings, only: f_string, replace, string_t, split, split_lines_first_last, dilate, add_strings, &
         str_begins_with_str
-    use iso_c_binding, only: c_char, c_ptr, c_int, c_null_char, c_associated, c_f_pointer
+    use iso_c_binding, only: c_char, c_ptr, c_int, c_long_long, c_null_char, c_associated, c_f_pointer
     use fpm_error, only : fpm_stop, error_t, fatal_error
     implicit none
     private
     public :: basename, canon_path, dirname, is_dir, join_path, number_of_rows, list_files, get_local_prefix, &
             mkdir, exists, get_temp_filename, windows_path, unix_path, getline, delete_file, fileopen, fileclose, &
             filewrite, warnwrite, parent_dir, is_hidden_file, read_lines, read_lines_expanded, which, run, &
-            os_delete_dir, is_absolute_path, get_home, execute_and_read_output, get_dos_path
+            os_delete_dir, is_absolute_path, get_home, execute_and_read_output, get_dos_path, file_stamp, is_newer
 
 #ifndef FPM_BOOTSTRAP
     interface
@@ -49,6 +49,27 @@ module fpm_filesystem
             character(kind=c_char), intent(in) :: path(*)
             integer(kind=c_int) :: r
         end function c_is_dir
+
+        function c_run_command(cmd, exitstat) result(r) bind(c, name="c_run_command")
+            import c_char, c_int
+            character(kind=c_char), intent(in) :: cmd(*)
+            integer(kind=c_int), intent(out) :: exitstat
+            integer(kind=c_int) :: r
+        end function c_run_command
+
+        function c_file_stamp(path, size, mtime) result(r) bind(c, name="c_file_stamp")
+            import c_char, c_int, c_long_long
+            character(kind=c_char), intent(in) :: path(*)
+            integer(kind=c_long_long), intent(out) :: size, mtime
+            integer(kind=c_int) :: r
+        end function c_file_stamp
+
+        function c_file_mtime(path, sec, nsec) result(r) bind(c, name="c_file_mtime")
+            import c_char, c_int, c_long_long
+            character(kind=c_char), intent(in) :: path(*)
+            integer(kind=c_long_long), intent(out) :: sec, nsec
+            integer(kind=c_int) :: r
+        end function c_file_mtime
     end interface
 #endif
 
@@ -921,6 +942,54 @@ integer                         :: i, j
    enddo SEARCH
 end function which
 
+!> A file's size and modification time as `"<size>:<mtime>"`, following symbolic links:
+!> two calls answer the same text while the file is unchanged. Empty when the file cannot
+!> be stat'ed, and always empty in a bootstrap build, which has no C helpers -- so a
+!> caller keying a cache on it must treat an empty stamp as "do not cache".
+function file_stamp(path) result(stamp)
+    !> Path of the file
+    character(len=*), intent(in) :: path
+    !> `"<size>:<mtime>"`, or empty when unknown
+    character(len=:), allocatable :: stamp
+#ifndef FPM_BOOTSTRAP
+    integer(kind=c_long_long) :: nbytes, mtime
+    character(len=48) :: buffer
+
+    stamp = ''
+    if (c_file_stamp(trim(path)//c_null_char, nbytes, mtime) /= 0) return
+    write(buffer, '(i0,":",i0)') nbytes, mtime
+    stamp = trim(buffer)
+#else
+    ! No C helpers to stat `path` with in a bootstrap build
+    stamp = ''
+#endif
+end function file_stamp
+
+!> Whether file `path` was modified after file `than`, to the nanosecond where the platform
+!> records it. False when either cannot be stat'ed, and always false in a bootstrap build,
+!> which has no C helpers.
+logical function is_newer(path, than)
+    !> The file that may be newer
+    character(len=*), intent(in) :: path
+    !> The file it is compared with
+    character(len=*), intent(in) :: than
+#ifndef FPM_BOOTSTRAP
+    integer(kind=c_long_long) :: sec, nsec, than_sec, than_nsec
+
+    is_newer = .false.
+    if (c_file_mtime(trim(path)//c_null_char, sec, nsec) /= 0) return
+    if (c_file_mtime(trim(than)//c_null_char, than_sec, than_nsec) /= 0) return
+    if (sec /= than_sec) then
+        is_newer = sec > than_sec
+    else
+        is_newer = nsec > than_nsec
+    end if
+#else
+    ! No C helpers to stat the files with in a bootstrap build
+    is_newer = .false.
+#endif
+end function is_newer
+
 !>AUTHOR: fpm(1) contributors
 !!LICENSE: MIT
 !>
@@ -1029,7 +1098,7 @@ subroutine run(cmd,echo,exitstat,verbose,redirect)
 
     if(echo_local) print *, '+ ', cmd !//redirect_str
 
-    call execute_command_line(cmd//redirect_str, exitstat=stat,cmdstat=cmdstat,cmdmsg=cmdmsg)
+    call execute_shell_command(cmd//redirect_str, stat, cmdstat, cmdmsg)
     if(cmdstat /= 0)then
         write(*,'(a)')'<ERROR>:failed command '//cmd//redirect_str
         call fpm_stop(1,'*run*:'//trim(cmdmsg))
@@ -1059,6 +1128,50 @@ subroutine run(cmd,echo,exitstat,verbose,redirect)
     end if
 
 end subroutine run
+
+!> Run a command through the shell and wait for it, reporting as
+!> `execute_command_line(command, exitstat=, cmdstat=, cmdmsg=)` does.
+!>
+!> On Unix the command is started with posix_spawn (`c_run_command`) rather than
+!> `execute_command_line`, whose system(3) holds a process-wide lock on macOS: there
+!> every target of a parallel build would wait for the one before it. Windows and the
+!> bootstrap build keep `execute_command_line`.
+subroutine execute_shell_command(command, exitstat, cmdstat, cmdmsg)
+    !> Command line handed to the shell
+    character(len=*), intent(in) :: command
+    !> Exit status of the command
+    integer, intent(out) :: exitstat
+    !> Nonzero when the command could not be run
+    integer, intent(out) :: cmdstat
+    !> Message describing a nonzero `cmdstat`
+    character(len=*), intent(inout) :: cmdmsg
+
+#ifndef FPM_BOOTSTRAP
+    integer(kind=c_int) :: r, c_exitstat
+
+    r = c_run_command(command//c_null_char, c_exitstat)
+    select case (r)
+    case (0)
+        exitstat = c_exitstat
+        ! As libgfortran does: the shell's 126 and 127 mean it could not run the command
+        if (exitstat == 126 .or. exitstat == 127) then
+            cmdstat = 3
+            cmdmsg = 'Invalid command line'
+        else
+            cmdstat = 0
+        end if
+        return
+    case (1)
+        exitstat = -1
+        cmdstat = 2
+        cmdmsg = 'Could not start /bin/sh'
+        return
+    end select
+#endif
+
+    call execute_command_line(command, exitstat=exitstat, cmdstat=cmdstat, cmdmsg=cmdmsg)
+
+end subroutine execute_shell_command
 
 !> Delete directory using system OS remove directory commands
 subroutine os_delete_dir(is_unix, dir, echo)

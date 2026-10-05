@@ -227,6 +227,13 @@ else
    end block debugit
    !=============================================
    call parse()
+   ! The namelist group is declared in this program, so write it here rather than
+   ! from inside parse(): NAG 7.2 generates invalid C for a namelist write of a
+   ! host-associated group from an internal procedure ("use of undeclared
+   ! identifier 'host'"). The read at the top of this program is already in scope.
+   open(file='_test_cli',newunit=lun,delim='quote')
+   write(lun,nml=act_cli,delim='quote')
+   close(unit=lun)
 endif
 
 contains
@@ -317,10 +324,6 @@ type is (fpm_publish_settings)
     act_dry_run=settings%is_dry_run
     act_token=settings%token
 end select
-
-open(file='_test_cli',newunit=lun,delim='quote')
-write(lun,nml=act_cli,delim='quote')
-close(unit=lun)
 
 end subroutine parse
 
