@@ -31,7 +31,7 @@ module fpm_backend
 
 use,intrinsic :: iso_fortran_env, only : stdin=>input_unit, stdout=>output_unit, stderr=>error_unit
 use fpm_error, only : fpm_stop, error_t
-use fpm_filesystem, only: basename, dirname, join_path, exists, mkdir, run, getline
+use fpm_filesystem, only: basename, dirname, join_path, exists, mkdir, run, getline, is_newer
 use fpm_model, only: fpm_model_t
 use fpm_compiler, only: append_clean_flags
 use fpm_strings, only: string_t, operator(.in.)
@@ -212,7 +212,10 @@ end subroutine build_package
 !>  recursing over its dependencies.
 !>
 !> Checks disk-cached source hashes to determine if objects are
-!>  up-to-date. Up-to-date sources are tagged as skipped.
+!>  up-to-date. Up-to-date sources are tagged as skipped. A target is
+!>  rebuilt nonetheless when the output of one of its dependencies is
+!>  newer than its own: a dependency rebuilt by an earlier call that left
+!>  this target out.
 !>
 !> On completion, `target` should either be marked as
 !> sorted (`target%sorted=.true.`) or skipped (`target%skip=.true.`)
@@ -290,6 +293,15 @@ recursive subroutine sort_target(target, mock)
 
             ! Set target schedule after all of its dependencies
             target%schedule = max(target%schedule,target%dependencies(i)%ptr%schedule+1)
+
+        elseif (target%skip) then
+
+            ! Nor if a dependency's output is newer than this target's: an earlier call rebuilt
+            ! the dependency without this target -- `fpm build`, which leaves the tests out,
+            ! before `fpm test` -- and skipping would leave this target linked or compiled
+            ! against the old one
+            if (is_newer(target%dependencies(i)%ptr%output_file, target%output_file)) &
+                target%skip = .false.
 
         end if
 

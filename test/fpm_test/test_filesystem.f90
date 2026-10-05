@@ -2,7 +2,7 @@ module test_filesystem
     use testsuite, only: new_unittest, unittest_t, error_t, test_failed
     use fpm_filesystem, only: canon_path, is_dir, mkdir, os_delete_dir, &
                               join_path, is_absolute_path, get_home, &
-                              delete_file, read_lines, get_temp_filename, file_stamp
+                              delete_file, read_lines, get_temp_filename, file_stamp, is_newer
     use fpm_environment, only: OS_WINDOWS, get_os_type, os_is_unix
     use fpm_strings, only: string_t, split_lines_first_last
     implicit none
@@ -25,7 +25,8 @@ contains
             & new_unittest("test-get-home", test_get_home), &
             & new_unittest("test-split-lines-first-last", test_split_lines_first_last), &
             & new_unittest("test-crlf-lines", test_dir_with_crlf), &
-            & new_unittest("test-file-stamp", test_file_stamp) &
+            & new_unittest("test-file-stamp", test_file_stamp), &
+            & new_unittest("test-is-newer", test_is_newer) &
             ]
 
     end subroutine collect_filesystem
@@ -475,5 +476,49 @@ contains
         end if
 
     end subroutine test_file_stamp
+
+    !> A file modified later is newer; a missing file is neither newer nor older
+    subroutine test_is_newer(error)
+
+        !> Error handling
+        type(error_t), allocatable, intent(out) :: error
+
+        character(:), allocatable :: old, new
+        integer :: unit, estat, cstat
+
+        if (.not. os_is_unix()) return
+        old = get_temp_filename()
+        new = get_temp_filename()
+        open (newunit=unit, file=old, status='replace', action='write')
+        close (unit)
+        open (newunit=unit, file=new, status='replace', action='write')
+        close (unit)
+        call execute_command_line("touch -t 202001010000 "//old, wait=.true., exitstat=estat, cmdstat=cstat)
+        if (estat /= 0 .or. cstat /= 0) then
+            call test_failed(error, "could not set the older file's modification time")
+            return
+        end if
+
+        if (.not. is_newer(new, old)) then
+            call test_failed(error, "a file modified later should be newer")
+            return
+        end if
+        if (is_newer(old, new)) then
+            call test_failed(error, "a file modified earlier should not be newer")
+            return
+        end if
+        if (is_newer(new, new)) then
+            call test_failed(error, "a file should not be newer than itself")
+            return
+        end if
+
+        call delete_file(old)
+        if (is_newer(new, old) .or. is_newer(old, new)) then
+            call test_failed(error, "a comparison with a missing file should be false")
+            return
+        end if
+        call delete_file(new)
+
+    end subroutine test_is_newer
 
 end module test_filesystem

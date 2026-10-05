@@ -8,7 +8,7 @@ module test_backend
                            add_target, add_dependency
     use fpm_backend, only: sort_target, schedule_targets, schedule_graph, take_ready_target
     use fpm_strings, only: string_t
-    use fpm_environment, only: OS_LINUX
+    use fpm_environment, only: OS_LINUX, os_is_unix
     use fpm_compile_commands, only: compile_command_t, compile_command_table_t
     implicit none
     private
@@ -28,6 +28,9 @@ contains
             & new_unittest("target-sort", test_target_sort), &
             & new_unittest("target-sort-skip-all", test_target_sort_skip_all), &
             & new_unittest("target-sort-rebuild-all", test_target_sort_rebuild_all), &
+            & new_unittest("target-sort-relink-newer-object", test_target_sort_relink_newer), &
+            & new_unittest("target-sort-skip-older-objects", test_target_sort_skip_older), &
+            & new_unittest("target-sort-recompile-newer-module", test_target_sort_recompile_newer), &
             & new_unittest("target-shared-sort", test_target_shared), &
             & new_unittest("schedule-targets", test_schedule_targets), &
             & new_unittest("schedule-targets-empty", test_schedule_empty), &
@@ -213,6 +216,154 @@ contains
         end do
 
     end subroutine test_target_sort_rebuild_all
+
+
+    !> Check incremental rebuild for an archive older than its objects
+    !>  all sources are unmodified, but an earlier call rebuilt the objects without the archive:
+    !>  the objects should be skipped and the archive rebuilt
+    subroutine test_target_sort_relink_newer(error)
+
+        !> Error handling
+        type(error_t), allocatable, intent(out) :: error
+
+        type(build_target_ptr), allocatable :: targets(:)
+
+        integer :: i
+
+        if (.not. os_is_unix()) return
+        targets = unmodified_package()
+        if (.not. set_mtime(targets(1)%ptr%output_file, "202001010000")) then
+            call test_failed(error, "could not set the archive's modification time")
+            return
+        end if
+
+        do i=1,size(targets)
+            call sort_target(targets(i)%ptr)
+        end do
+
+        do i=2,size(targets)
+            if (.not.targets(i)%ptr%skip) then
+                call test_failed(error, "An unmodified object should be skipped")
+                return
+            end if
+        end do
+        if (targets(1)%ptr%skip .or. .not.targets(1)%ptr%sorted) then
+            call test_failed(error, "An archive older than its objects should be rebuilt")
+            return
+        end if
+
+    end subroutine test_target_sort_relink_newer
+
+
+    !> Check incremental rebuild for an archive newer than its objects
+    !>  all sources are unmodified and every output is older than the target using it:
+    !>  everything should be skipped
+    subroutine test_target_sort_skip_older(error)
+
+        !> Error handling
+        type(error_t), allocatable, intent(out) :: error
+
+        type(build_target_ptr), allocatable :: targets(:)
+
+        integer :: i
+
+        if (.not. os_is_unix()) return
+        targets = unmodified_package()
+        do i=2,size(targets)
+            if (.not. set_mtime(targets(i)%ptr%output_file, "202001010000")) then
+                call test_failed(error, "could not set an object's modification time")
+                return
+            end if
+        end do
+
+        do i=1,size(targets)
+            call sort_target(targets(i)%ptr)
+        end do
+
+        do i=1,size(targets)
+            if (.not.targets(i)%ptr%skip) then
+                call test_failed(error, "Outputs older than their users should not cause a rebuild")
+                return
+            end if
+        end do
+
+    end subroutine test_target_sort_skip_older
+
+
+    !> Check incremental rebuild for objects older than a module they use
+    !>  all sources are unmodified, but an earlier call recompiled the module's object without
+    !>  the objects using it: those should be recompiled, and the archive with them
+    subroutine test_target_sort_recompile_newer(error)
+
+        !> Error handling
+        type(error_t), allocatable, intent(out) :: error
+
+        type(build_target_ptr), allocatable :: targets(:)
+
+        integer :: i
+
+        if (.not. os_is_unix()) return
+        targets = unmodified_package()
+        ! Targets 2 and 3 use the module of target 4, which is newer than both
+        if (.not. (set_mtime(targets(2)%ptr%output_file, "202001010000") .and. &
+                   set_mtime(targets(3)%ptr%output_file, "202001010000") .and. &
+                   set_mtime(targets(4)%ptr%output_file, "202101010000") .and. &
+                   set_mtime(targets(1)%ptr%output_file, "202201010000"))) then
+            call test_failed(error, "could not set an object's modification time")
+            return
+        end if
+
+        do i=1,size(targets)
+            call sort_target(targets(i)%ptr)
+        end do
+
+        if (.not.targets(4)%ptr%skip) then
+            call test_failed(error, "The unmodified module object should be skipped")
+            return
+        end if
+        do i=1,3
+            if (targets(i)%ptr%skip .or. .not.targets(i)%ptr%sorted) then
+                call test_failed(error, "Targets older than a module object they use should be rebuilt")
+                return
+            end if
+        end do
+
+    end subroutine test_target_sort_recompile_newer
+
+
+    !> `new_test_package` with unmodified sources and every output written, all with the same
+    !> modification time -- written one after another they would differ by nanoseconds, which is
+    !> what the tests using it set on purpose
+    function unmodified_package() result(targets)
+
+        type(build_target_ptr), allocatable :: targets(:)
+        integer :: fh, i
+        logical :: ok
+
+        targets = new_test_package()
+        do i=2,size(targets)
+            allocate(targets(i)%ptr%source)
+            targets(i)%ptr%source%digest = i
+            targets(i)%ptr%digest_cached = i
+        end do
+        do i=1,size(targets)
+            open(newunit=fh,file=targets(i)%ptr%output_file,status="unknown")
+            close(fh)
+            ok = set_mtime(targets(i)%ptr%output_file, "202101010000")
+        end do
+
+    end function unmodified_package
+
+
+    !> Set a file's modification time, as `touch -t` takes it (`[[CC]YY]MMDDhhmm[.ss]`)
+    logical function set_mtime(path, stamp)
+        character(*), intent(in) :: path, stamp
+        integer :: estat, cstat
+
+        call execute_command_line("touch -t "//stamp//" "//path, wait=.true., exitstat=estat, cmdstat=cstat)
+        set_mtime = estat == 0 .and. cstat == 0
+
+    end function set_mtime
 
 
     !> Check construction of target queue and schedule

@@ -16,7 +16,7 @@ module fpm_filesystem
     public :: basename, canon_path, dirname, is_dir, join_path, number_of_rows, list_files, get_local_prefix, &
             mkdir, exists, get_temp_filename, windows_path, unix_path, getline, delete_file, fileopen, fileclose, &
             filewrite, warnwrite, parent_dir, is_hidden_file, read_lines, read_lines_expanded, which, run, &
-            os_delete_dir, is_absolute_path, get_home, execute_and_read_output, get_dos_path, file_stamp
+            os_delete_dir, is_absolute_path, get_home, execute_and_read_output, get_dos_path, file_stamp, is_newer
 
 #ifndef FPM_BOOTSTRAP
     interface
@@ -63,6 +63,13 @@ module fpm_filesystem
             integer(kind=c_long_long), intent(out) :: size, mtime
             integer(kind=c_int) :: r
         end function c_file_stamp
+
+        function c_file_mtime(path, sec, nsec) result(r) bind(c, name="c_file_mtime")
+            import c_char, c_int, c_long_long
+            character(kind=c_char), intent(in) :: path(*)
+            integer(kind=c_long_long), intent(out) :: sec, nsec
+            integer(kind=c_int) :: r
+        end function c_file_mtime
     end interface
 #endif
 
@@ -957,6 +964,31 @@ function file_stamp(path) result(stamp)
     stamp = ''
 #endif
 end function file_stamp
+
+!> Whether file `path` was modified after file `than`, to the nanosecond where the platform
+!> records it. False when either cannot be stat'ed, and always false in a bootstrap build,
+!> which has no C helpers.
+logical function is_newer(path, than)
+    !> The file that may be newer
+    character(len=*), intent(in) :: path
+    !> The file it is compared with
+    character(len=*), intent(in) :: than
+#ifndef FPM_BOOTSTRAP
+    integer(kind=c_long_long) :: sec, nsec, than_sec, than_nsec
+
+    is_newer = .false.
+    if (c_file_mtime(trim(path)//c_null_char, sec, nsec) /= 0) return
+    if (c_file_mtime(trim(than)//c_null_char, than_sec, than_nsec) /= 0) return
+    if (sec /= than_sec) then
+        is_newer = sec > than_sec
+    else
+        is_newer = nsec > than_nsec
+    end if
+#else
+    ! No C helpers to stat the files with in a bootstrap build
+    is_newer = .false.
+#endif
+end function is_newer
 
 !>AUTHOR: fpm(1) contributors
 !!LICENSE: MIT
