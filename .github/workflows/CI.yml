@@ -55,12 +55,15 @@ jobs:
           # os-arch is independent of toolchain version
           - os: ubuntu-latest
             os-arch: linux-x86_64
+          # macOS: link the GCC runtimes statically so the artifact does not
+          # reference the builder's Homebrew gcc@N dylibs (see issue #1319).
+          # On Darwin -static-libgcc also selects libgomp.a.
           - os: macos-14
             os-arch: macos-arm64
-            release-flags: --features openmp --flag '-g -fbacktrace -O3'
+            release-flags: --features openmp --flag '-g -fbacktrace -O3 -static-libgcc -static-libgfortran -static-libquadmath -static-libstdc++'
           - os: macos-15-intel
             os-arch: macos-x86_64
-            release-flags: --features openmp --flag '-g -fbacktrace -O3'
+            release-flags: --features openmp --flag '-g -fbacktrace -O3 -static-libgcc -static-libgfortran -static-libquadmath -static-libstdc++'
           - os: windows-latest
             os-arch: windows-x86_64
             release-flags: --features openmp --flag '--static -g -fbacktrace -O3'
@@ -91,6 +94,16 @@ jobs:
           - os: macos-14
             toolchain: {compiler: gcc, version: 15}
             release-flags: --flag '-g -fbacktrace -Og -fcheck=all,no-recursion -Wno-external-argument-mismatch'
+          # -static-libquadmath exists from gcc 13 on; older gcc keep libquadmath dynamic.
+          - os: macos-14
+            toolchain: {compiler: gcc, version: 12}
+            release-flags: --features openmp --flag '-g -fbacktrace -O3 -static-libgcc -static-libgfortran -static-libstdc++'
+          - os: macos-15-intel
+            toolchain: {compiler: gcc, version: 11}
+            release-flags: --features openmp --flag '-g -fbacktrace -O3 -static-libgcc -static-libgfortran -static-libstdc++'
+          - os: macos-15-intel
+            toolchain: {compiler: gcc, version: 12}
+            release-flags: --features openmp --flag '-g -fbacktrace -O3 -static-libgcc -static-libgfortran -static-libstdc++'
 
     steps:
     - name: Checkout code
@@ -283,6 +296,20 @@ jobs:
         echo "FPM_RELEASE=${{ env.EXE }}" >> $GITHUB_ENV
       env:
         EXE: fpm-${{ env.VERSION }}-${{ matrix.os-arch }}-gcc-${{ matrix.toolchain.version }}${{ matrix.exe }}
+
+    - name: Check macOS release runtime linkage
+      if: contains(matrix.os, 'macos') && contains(matrix.release-flags, '-static-libgfortran')
+      shell: bash
+      run: |
+        otool -L "${{ env.FPM_RELEASE }}"
+        # Only system libraries may remain; gcc < 13 cannot link libquadmath statically.
+        allow='^/usr/lib/|^/System/'
+        if [ "${{ matrix.toolchain.version }}" -lt 13 ]; then allow="$allow|/libquadmath\."; fi
+        deps=$(otool -L "${{ env.FPM_RELEASE }}" | tail -n +2 | awk '{print $1}' | grep -Ev "$allow" || true)
+        if [ -n "$deps" ]; then
+          echo "::error::release binary depends on non-system dylibs:" $deps
+          exit 1
+        fi
 
     - name: Run release version
       shell: bash
