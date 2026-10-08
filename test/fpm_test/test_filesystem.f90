@@ -21,6 +21,7 @@ contains
         tests = [ &
             & new_unittest("canon-path", test_canon_path), &
             & new_unittest("create-delete-directory", test_mkdir_rmdir), &
+            & new_unittest("directory-with-spaces", test_directory_with_spaces), &
             & new_unittest("test-is-absolute-path", test_is_absolute_path), &
             & new_unittest("test-get-home", test_get_home), &
             & new_unittest("test-split-lines-first-last", test_split_lines_first_last), &
@@ -120,6 +121,36 @@ contains
         if (allocated(error)) return
 
     end subroutine test_mkdir_rmdir
+
+    subroutine test_directory_with_spaces(error)
+        type(error_t), allocatable, intent(out) :: error
+        character(:), allocatable :: marker, directory
+        integer :: stat, unit
+        logical :: valid
+
+        marker = get_temp_filename()
+        directory = marker//' directory with spaces'
+        call execute_command_line('mkdir "'//directory//'"', exitstat=stat)
+        if (stat /= 0) then
+            call test_failed(error, 'cannot create directory-with-spaces fixture')
+            return
+        end if
+        valid = is_dir(directory)
+        valid = valid .and. .not. is_dir(directory//'/missing')
+        valid = valid .and. .not. is_dir('')
+        open(newunit=unit, file=directory//'/ordinary-file', status='new')
+        close(unit)
+        valid = valid .and. .not. is_dir(directory//'/ordinary-file')
+        open(newunit=unit, file=directory//'/ordinary-file', status='old')
+        close(unit, status='delete')
+        call execute_command_line('rmdir "'//directory//'"', exitstat=stat)
+        if (stat /= 0) then
+            call test_failed(error, 'cannot remove directory-with-spaces fixture')
+        else if (.not. valid) then
+            call test_failed(error, &
+                'directory checks distinguish spaced directories, files and missing paths')
+        end if
+    end subroutine test_directory_with_spaces
 
     !> Create a directory and verify its existence
     subroutine check_mkdir(error, path)
