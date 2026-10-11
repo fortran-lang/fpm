@@ -30,6 +30,8 @@ implicit none
 private
 public :: parse_f_source, parse_c_source, parse_use_statement
 
+integer, parameter :: MAX_CPP_DEPTH = 64
+
 type :: cpp_block
     ! Nested block total depth
     integer :: depth = 0
@@ -37,6 +39,8 @@ type :: cpp_block
     logical :: inside_inactive_block = .false.
     ! Depth at which we became inactive (0 if active)
     integer :: inactive_depth = 0
+    ! Track whether a branch was taken at each depth
+    logical :: branch_taken(MAX_CPP_DEPTH) = .false.
     ! Current macro
     character(:), allocatable :: name
 end type cpp_block
@@ -473,22 +477,31 @@ subroutine start_cpp_block(blk, lower_line, line, preprocess, defined_macros)
 
     logical :: is_active
     character(:), allocatable :: macro_name
+    logical :: parent_active
+
+    parent_active = .not. blk%inside_inactive_block
 
     call parse_cpp_condition(lower_line, line, preprocess, is_active, macro_name, defined_macros)
     
     blk%depth = blk%depth + 1
-    
-    ! If we're not already in an inactive block, check this condition
-    enter_inactive: if (.not. blk%inside_inactive_block) then
+
+    if (blk%depth <= MAX_CPP_DEPTH) then
+        blk%branch_taken(blk%depth) = .false.
+    end if
+
+    if (parent_active) then
         blk%name = macro_name    
-        if (.not. is_active) then
-            ! This condition is false, so we enter an inactive block
+        if (is_active) then
+            if (blk%depth <= MAX_CPP_DEPTH) then
+                blk%branch_taken(blk%depth) = .true.
+            end if
+            blk%inside_inactive_block = .false.
+            blk%inactive_depth = 0
+        else
             blk%inside_inactive_block = .true.
             blk%inactive_depth = blk%depth            
         end if
-    end if enter_inactive
-    
-    ! If we're already in an inactive block, stay inactive regardless of this condition
+    end if
         
 end subroutine start_cpp_block
 
@@ -496,32 +509,83 @@ end subroutine start_cpp_block
 subroutine end_cpp_block(blk)
     type(cpp_block), intent(inout) :: blk
     
+    if (blk%depth <= 0) return
+
     ! If we're ending the block where we became inactive, reactivate
     if (blk%inside_inactive_block .and. blk%depth == blk%inactive_depth) then
         blk%inside_inactive_block = .false.
         blk%inactive_depth = 0
     end if
-    
+
+    if (blk%depth <= MAX_CPP_DEPTH) then
+        blk%branch_taken(blk%depth) = .false.
+    end if
+
     blk%depth = max(0, blk%depth - 1)
         
 end subroutine end_cpp_block
 
-!> Handle #else directive by flipping the current condition
+!> Handle #else directive in CPP conditional block
 subroutine handle_else_block(blk)
     type(cpp_block), intent(inout) :: blk
-    
-    ! #else only matters if we're at the same level where we became inactive
-    if (blk%inside_inactive_block .and. blk%depth == blk%inactive_depth) then
-        ! We're in an inactive block at this level, #else makes it active
-        blk%inside_inactive_block = .false.
-        blk%inactive_depth = 0
-    elseif (.not. blk%inside_inactive_block .and. blk%depth > 0) then
-        ! We're in an active block at this level, #else makes it inactive
-        blk%inside_inactive_block = .true.
-        blk%inactive_depth = blk%depth
+
+    logical :: parent_active
+
+    if (blk%depth <= 0) return
+
+    parent_active = (.not. blk%inside_inactive_block) .or. (blk%depth == blk%inactive_depth)
+
+    if (parent_active) then
+        if (blk%depth <= MAX_CPP_DEPTH .and. blk%branch_taken(blk%depth)) then
+            blk%inside_inactive_block = .true.
+            blk%inactive_depth = blk%depth
+        else
+            if (blk%depth <= MAX_CPP_DEPTH) then
+                blk%branch_taken(blk%depth) = .true.
+            end if
+            blk%inside_inactive_block = .false.
+            blk%inactive_depth = 0
+        end if
     end if
          
 end subroutine handle_else_block
+
+!> Handle #elif directive in CPP conditional block
+subroutine handle_elif_block(blk, lower_line, line, preprocess, defined_macros)
+    type(cpp_block), intent(inout) :: blk
+    character(*), intent(in) :: lower_line, line
+    type(preprocess_config_t), optional, intent(in) :: preprocess
+    type(string_t), optional, intent(in) :: defined_macros(:)
+
+    logical :: is_active
+    character(:), allocatable :: macro_name
+    logical :: parent_active
+
+    if (blk%depth <= 0) return
+
+    parent_active = (.not. blk%inside_inactive_block) .or. (blk%depth == blk%inactive_depth)
+
+    if (parent_active) then
+        if (blk%depth <= MAX_CPP_DEPTH .and. blk%branch_taken(blk%depth)) then
+            blk%inside_inactive_block = .true.
+            blk%inactive_depth = blk%depth
+        else
+            call parse_cpp_condition(lower_line, line, preprocess, is_active, macro_name, defined_macros)
+            blk%name = macro_name
+            if (is_active) then
+                if (blk%depth <= MAX_CPP_DEPTH) then
+                    blk%branch_taken(blk%depth) = .true.
+                end if
+                blk%inside_inactive_block = .false.
+                blk%inactive_depth = 0
+            else
+                blk%inside_inactive_block = .true.
+                blk%inactive_depth = blk%depth
+            end if
+        end if
+    end if
+
+end subroutine handle_elif_block
 
 !> Parse CPP conditional directive and determine if block should be active
 !> defined_macros: optional additional macros from #define directives in source/includes
@@ -703,9 +767,7 @@ function parse_f_source(f_filename,error,preprocess) result(f_source)
 
                     elseif (index(file_lines_lower(i)%s,'#elif') == 1) then
 
-                        ! Treat #elif as #else followed by #if
-                        call handle_else_block(cpp_blk)
-                        call start_cpp_block(cpp_blk, file_lines_lower(i)%s, file_lines(i)%s, preprocess, defined_macros)
+                        call handle_elif_block(cpp_blk, file_lines_lower(i)%s, file_lines(i)%s, preprocess, defined_macros)
 
                     elseif (index(file_lines_lower(i)%s,'#define') == 1) then
 
