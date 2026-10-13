@@ -16,7 +16,7 @@ applications and libraries.
 
 Fpm is an early prototype and is evolving rapidly.
 You can use it to build and package your Fortran projects, as well as to use
-[existing fpm packages](https://github.com/fortran-lang/fpm-registry) as dependencies.
+[existing fpm packages](https://registry.fortran-lang.org) as dependencies.
 Fpm's behavior and user interface may change as it evolves, however as fpm
 matures and we enter production, we will aim to stay backwards compatible.
 Please follow the [issues](https://github.com/fortran-lang/fpm/issues) to

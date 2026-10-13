@@ -84,8 +84,8 @@ character(len=*),parameter           :: tests(*)= [ character(len=512) :: &
 'CMD="test proj1 p2 project3 --profile release -- arg1 -x ""and a long one""", &
    &NAME="proj1","p2","project3",profile="release",ARGS="""arg1"" ""-x"" ""and a long one""",                         ', &
 
-'CMD="search", QUERY="", PAGE="1", REGISTRY="https://github.com/fortran-lang/' // &
-'fpm-registry", NAMESPACE="*", PACKAGE_VERSION="*", LICENSE="", ' // &
+'CMD="search", QUERY="", PAGE="1", REGISTRY="https://registry.fortran-lang.org", ' // &
+'NAMESPACE="*", PACKAGE_VERSION="*", LICENSE="", ' // &
 'LIMIT="10", SORT_BY="name", SORT="asc",', &
 'CMD="search --query mpi --registry https://example.org --namespace fortran-lang ' // &
 '--package_version 0.1.0 --license MIT --page 2 --limit 25 ' // &

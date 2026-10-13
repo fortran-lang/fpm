@@ -73,21 +73,65 @@ module fpm_cmd_search
         end if
     end subroutine cmd_search
 
-    pure function build_query_url(settings) result(query_url)
+    !> Build the `/packages_cli` query URL, percent-encoding every value so that
+    !> spaces, `&`, `#` and other query delimiters survive the round trip.
+    function build_query_url(settings) result(query_url)
         class(fpm_search_settings), intent(in) :: settings
         character(len=:), allocatable :: query_url
 
-        query_url = trim(settings%registry)//'/packages_cli' &
-            // '?query='//trim(settings%query) &
-            // '&page='//trim(settings%page) &
-            // '&package='//trim(settings%package) &
-            // '&namespace='//trim(settings%namespace) &
-            // '&version='//trim(settings%version) &
-            // '&license='//trim(settings%license) &
-            // '&limit='//trim(settings%limit) &
-            // '&sort_by='//trim(settings%sort_by) &
-            // '&sort='//trim(settings%sort)
+        query_url = strip_trailing_slash(trim(settings%registry))//'/packages_cli' &
+            // '?query='//url_encode(trim(settings%query)) &
+            // '&page='//url_encode(trim(settings%page)) &
+            // '&package='//url_encode(trim(settings%package)) &
+            // '&namespace='//url_encode(trim(settings%namespace)) &
+            // '&version='//url_encode(trim(settings%version)) &
+            // '&license='//url_encode(trim(settings%license)) &
+            // '&limit='//url_encode(trim(settings%limit)) &
+            // '&sort_by='//url_encode(trim(settings%sort_by)) &
+            // '&sort='//url_encode(trim(settings%sort))
     end function build_query_url
+
+    !> Remove trailing slashes so `url//'/path'` never yields `//path`.
+    pure function strip_trailing_slash(value) result(stripped)
+        character(*), intent(in) :: value
+        character(len=:), allocatable :: stripped
+
+        integer :: last
+
+        last = len_trim(value)
+        do while (last > 0)
+            if (value(last:last) /= '/') exit
+            last = last - 1
+        end do
+        if (last <= 0) then
+            stripped = ''
+        else
+            stripped = value(:last)
+        end if
+    end function strip_trailing_slash
+
+    !> Percent-encode a value for use inside a URL query parameter.
+    pure function url_encode(value) result(encoded)
+        character(*), intent(in) :: value
+        character(len=:), allocatable :: encoded
+
+        character(*), parameter :: unreserved = &
+            & 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_.~*'
+        character(*), parameter :: hex = '0123456789ABCDEF'
+        integer :: i, c, hi, lo
+
+        encoded = ''
+        do i = 1, len_trim(value)
+            c = iachar(value(i:i))
+            if (index(unreserved, value(i:i)) > 0) then
+                encoded = encoded//value(i:i)
+            else
+                hi = c/16 + 1
+                lo = mod(c, 16) + 1
+                encoded = encoded//'%'//hex(hi:hi)//hex(lo:lo)
+            end if
+        end do
+    end function url_encode
 
     subroutine print_local_matches(global_settings, settings, error)
         type(fpm_global_settings), intent(in) :: global_settings
@@ -158,9 +202,24 @@ module fpm_cmd_search
         type(toml_array), pointer :: packages
         type(json_object), pointer :: package
         character(len=:), allocatable :: name, namespace, description, version
-        integer :: i, stat
+        integer :: i, stat, code
 
         if (.not. json%has_key('packages')) then
+            ! `/packages_cli` answers an empty result with HTTP 404 and a JSON
+            ! body rather than an empty list (its legacy contract). Read that as
+            ! "nothing found" instead of a failure, so a search that matches
+            ! nothing still exits successfully.
+            stat = 1
+            if (json%has_key('code')) call get_value(json, 'code', code, stat=stat)
+            if (stat == 0 .and. code == 404) then
+                print *
+                print *, 'Searching packages in remote registry:'
+                print *
+                print *, 'No packages found in the registry.'
+                print *
+                return
+            end if
+
             call fatal_error(error, 'Invalid package data returned')
             return
         end if

@@ -11,7 +11,15 @@ module fpm_settings
   private
   public :: fpm_global_settings, get_global_settings, get_registry_settings, official_registry_base_url
 
-  character(*), parameter :: official_registry_base_url = 'https://fpm-registry.vercel.app'
+  !> Public base URL of the official fpm registry.
+  !>
+  !> This is the serverless registry served by the `worker` in the
+  !> fortran-lang/registry repository (see its `wrangler.jsonc` `HOST` and the
+  !> frontend's `REACT_APP_REGISTRY_API_URL`). Pointing the CLI here makes
+  !> `fpm search`, registry dependencies and `fpm publish` talk to the same
+  !> backend the website does. Override per machine with `[registry] url` in
+  !> the global config file, or per invocation with `--registry`.
+  character(*), parameter :: official_registry_base_url = 'https://registry.fortran-lang.org'
   character(*), parameter :: default_config_file_name = 'config.toml'
 
   type :: fpm_global_settings

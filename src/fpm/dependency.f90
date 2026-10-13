@@ -803,7 +803,8 @@ contains
     if (allocated(error)) return
 
     ! Verify package data and read relevant information.
-    call check_and_read_pkg_data(json, self, target_url, version, error)
+    call check_and_read_pkg_data(json, self, target_url, version, error, &
+      & global_settings%registry_settings%url)
     if (allocated(error)) return
 
     ! Open new tmp file for downloading the actual package.
@@ -833,12 +834,16 @@ contains
 
   end subroutine get_from_registry
 
-  subroutine check_and_read_pkg_data(json, node, download_url, version, error)
+  subroutine check_and_read_pkg_data(json, node, download_url, version, error, registry_url)
     type(json_object), intent(inout) :: json
     class(dependency_node_t), intent(in) :: node
     character(:), allocatable, intent(out) :: download_url
     type(version_t), intent(out) :: version
     type(error_t), allocatable, intent(out) :: error
+
+    !> Base URL of the registry the metadata came from. Optional so existing
+    !> callers and tests keep the official registry as the fallback.
+    character(*), intent(in), optional :: registry_url
 
     integer :: code, stat
     type(json_object), pointer :: p, q
@@ -907,7 +912,18 @@ contains
       call fatal_error(error, "Failed to read download url for '"//join_path(namespace, name)//"'."); return
     end if
 
-    download_url = official_registry_base_url//download_url
+    ! The registry answers with a root-relative `download_url` (e.g.
+    ! `/tarballs/ns/pkg/ver`). Prefix it with the registry we actually queried
+    ! rather than a hardcoded one, otherwise a custom registry (global config
+    ! `[registry] url`) would serve metadata but the tarball would be fetched
+    ! from the official registry. Absolute URLs are left untouched.
+    if (len(download_url) > 0 .and. download_url(1:1) == '/') then
+      if (present(registry_url)) then
+        download_url = strip_trailing_slash(trim(registry_url))//download_url
+      else
+        download_url = official_registry_base_url//download_url
+      end if
+    end if
 
     if (.not. q%has_key('version')) then
       call fatal_error(error, "Failed to download '"//join_path(namespace, name)//"': No version found."); return
@@ -924,6 +940,24 @@ contains
       & join_path(namespace, name)//"'."); return
     end if
   end subroutine
+
+  !> Remove trailing slashes so `base//'/path'` never yields `//path`.
+  pure function strip_trailing_slash(value) result(stripped)
+    character(*), intent(in) :: value
+    character(len=:), allocatable :: stripped
+    integer :: last
+
+    last = len_trim(value)
+    do while (last > 0)
+      if (value(last:last) /= '/') exit
+      last = last - 1
+    end do
+    if (last <= 0) then
+      stripped = ''
+    else
+      stripped = value(:last)
+    end if
+  end function strip_trailing_slash
 
   !> Get the dependency from a local registry.
   subroutine get_from_local_registry(self, target_dir, registry_path, error)

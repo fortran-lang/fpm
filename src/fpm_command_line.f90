@@ -160,6 +160,7 @@ type, extends(fpm_build_settings) :: fpm_publish_settings
     logical :: show_upload_data = .false.
     logical :: is_dry_run = .false.
     character(len=:), allocatable :: token
+    character(len=:), allocatable :: registry
 end type
 
 character(len=:),allocatable :: name
@@ -779,6 +780,7 @@ contains
             & --show-upload-data F &
             & --dry-run F &
             & --token " " &
+            & --registry " " &
             & --list F &
             & --show-model F &
             & --tests F &
@@ -799,6 +801,8 @@ contains
                 pub%show_upload_data     = lget('show-upload-data')
                 pub%is_dry_run           = lget('dry-run')
                 pub%token                = token_s
+                call get_char_arg(registry, 'registry')
+                if (allocated(registry)) pub%registry = registry
 
             end select
 
@@ -1611,15 +1615,16 @@ contains
     ' publish(1) - publish package to the registry', &
     '', &
     'SYNOPSIS', &
-    ' fpm publish [--token TOKEN] [--show-package-version] [--show-upload-data]', &
-    '             [--dry-run] [--verbose] [--config-file PATH]', &
+    ' fpm publish [--token TOKEN] [--registry URL] [--show-package-version]', &
+    '             [--show-upload-data] [--dry-run] [--verbose]', &
+    '             [--config-file PATH]', &
     '', &
     ' fpm publish --help|--version', &
     '', &
     'DESCRIPTION', &
     ' Follow the steps to create a tarball and upload a package to the registry:', &
     '', &
-    '  1. Register on the website (TODO: registry url).', &
+    '  1. Register on the website at https://registry.fortran-lang.org .', &
     '  2. Create a namespace. Uploaded packages must be assigned to a unique', &
     '     namespace to avoid conflicts among packages with similar names. A', &
     '     namespace can accommodate multiple packages.', &
@@ -1639,6 +1644,9 @@ contains
     ' https://fpm.fortran-lang.org/spec/manifest.html#dependencies-from-a-registry', &
     '', &
     'OPTIONS', &
+    ' --token TOKEN            token for the namespace to publish to', &
+    ' --registry URL           registry to publish to', &
+    '                          (default: the official registry)', &
     ' --show-package-version   show package version without publishing', &
     ' --show-upload-data       show upload data without publishing', &
     ' --dry-run                perform dry run without publishing', &
