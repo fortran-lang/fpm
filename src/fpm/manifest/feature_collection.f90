@@ -850,7 +850,14 @@ module fpm_manifest_feature_collection
             ' -fPIC', &
             ' -fPIC'))
             
-        call collection%push_variant(default_variant('debug', id_intel_classic_nix, OS_ALL, &
+        ! Unix-style Intel flags must not reach Windows, where the variants below
+        ! are added to them instead of replacing them
+        call collection%push_variant(default_variant('debug', id_intel_classic_nix, OS_LINUX, &
+            ' -warn all -check all -error-limit 1 -O0 -g -assume byterecl -traceback', &
+            ' -fPIC', &
+            ' -fPIC'))
+
+        call collection%push_variant(default_variant('debug', id_intel_classic_mac, OS_MACOS, &
             ' -warn all -check all -error-limit 1 -O0 -g -assume byterecl -traceback', &
             ' -fPIC', &
             ' -fPIC'))
@@ -859,7 +866,7 @@ module fpm_manifest_feature_collection
             ' /warn:all /check:all /error-limit:1&
             & /Od /Z7 /assume:byterecl /traceback'))
             
-        call collection%push_variant(default_variant('debug', id_intel_llvm_nix, OS_ALL, &
+        call collection%push_variant(default_variant('debug', id_intel_llvm_nix, OS_LINUX, &
             ' -warn all -check all -error-limit 1 -O0 -g -assume byterecl -traceback', &
             ' -fPIC', &
             ' -fPIC'))
