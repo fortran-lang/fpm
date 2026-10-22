@@ -97,6 +97,10 @@ jobs:
           - os: ubuntu-latest
             os-arch: linux-x86_64
             toolchain: {compiler: flang, version: 23}
+          - os: windows-latest
+            os-arch: windows-x86_64
+            exe: .exe
+            toolchain: {compiler: flang, version: 23}
 
     steps:
     - name: Checkout code
@@ -116,20 +120,45 @@ jobs:
       uses: ./.github/actions/setup-gcc16
 
     # setup-fortran does not provide LLVM Flang: install it from apt.llvm.org
-    - name: Setup LLVM Flang
-      if: matrix.toolchain.compiler == 'flang'
+    # on Linux, and from MSYS2's CLANG64 environment on Windows
+    - name: Setup LLVM Flang (Linux)
+      if: matrix.toolchain.compiler == 'flang' && runner.os == 'Linux'
       run: |
         wget -q https://apt.llvm.org/llvm.sh
         sudo bash llvm.sh ${{ matrix.toolchain.version }}
         sudo apt-get install -y flang-${{ matrix.toolchain.version }} \
                                 libomp-${{ matrix.toolchain.version }}-dev
         echo "/usr/lib/llvm-${{ matrix.toolchain.version }}/bin" >> $GITHUB_PATH
+
+    - name: Setup MSYS2 CLANG64 (Windows)
+      if: matrix.toolchain.compiler == 'flang' && runner.os == 'Windows'
+      id: msys2
+      uses: msys2/setup-msys2@v2
+      with:
+        msystem: CLANG64
+        # The runner image's package database is stale: without an update it
+        # installs an older LLVM, whose EXECUTE_COMMAND_LINE fails on Windows
+        update: true
+        install: >-
+          mingw-w64-clang-x86_64-flang
+          mingw-w64-clang-x86_64-llvm-openmp
+
+    - name: Setup LLVM Flang (Windows)
+      if: matrix.toolchain.compiler == 'flang' && runner.os == 'Windows'
+      shell: bash
+      run: echo "${{ steps.msys2.outputs.msys2-location }}\clang64\bin" >> $GITHUB_PATH
+
+    - name: Set LLVM Flang environment
+      if: matrix.toolchain.compiler == 'flang'
+      shell: bash
+      run: |
         echo "FC=flang" >> $GITHUB_ENV
         echo "CC=clang" >> $GITHUB_ENV
         echo "CXX=clang++" >> $GITHUB_ENV
         echo "FPM_FC=flang" >> $GITHUB_ENV
         echo "FPM_CC=clang" >> $GITHUB_ENV
         echo "FPM_CXX=clang++" >> $GITHUB_ENV
+        flang --version
 
     # Phase 1: Bootstrap fpm with existing version
     - name: Install fpm
