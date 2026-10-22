@@ -95,6 +95,7 @@ contains
         character(:), allocatable :: target_name
         character(100) :: output_string
         character(7) :: overall_progress
+        integer :: n_done
 
         associate(target=>progress%target_queue(queue_index)%ptr)
 
@@ -104,7 +105,9 @@ contains
                 target_name = basename(target%output_file)
             end if
 
-            write(overall_progress,'(A,I3,A)') '[',100*progress%n_complete/progress%n_target,'%] '
+            !$omp atomic read
+            n_done = progress%n_complete
+            write(overall_progress,'(A,I3,A)') '[',100*n_done/progress%n_target,'%] '
 
             if (progress%plain_mode) then ! Plain output
 
@@ -116,9 +119,12 @@ contains
 
                 write(output_string,'(A,T40,A,A)') target_name, COLOR_YELLOW//'compiling...'//COLOR_RESET
 
+                ! Keep a target's two-line update atomic so concurrent threads do
+                ! not interleave it and corrupt the console's relative cursor math.
+                !$omp critical(fpm_progress)
                 call progress%console%write_line(trim(output_string),progress%output_lines(queue_index))
-
                 call progress%console%write_line(overall_progress//'Compiling...',advance=.false.)
+                !$omp end critical(fpm_progress)
 
             end if
 
@@ -138,10 +144,12 @@ contains
         character(:), allocatable :: target_name
         character(100) :: output_string
         character(7) :: overall_progress
+        integer :: n_done
 
-        !$omp critical 
+        !$omp atomic capture
         progress%n_complete = progress%n_complete + 1
-        !$omp end critical
+        n_done = progress%n_complete
+        !$omp end atomic
 
         associate(target=>progress%target_queue(queue_index)%ptr)
 
@@ -157,7 +165,7 @@ contains
                 write(output_string,'(A,T40,A,A)') target_name,COLOR_RED//'failed.'//COLOR_RESET
             end if
 
-            write(overall_progress,'(A,I3,A)') '[',100*progress%n_complete/progress%n_target,'%] '
+            write(overall_progress,'(A,I3,A)') '[',100*n_done/progress%n_target,'%] '
 
             if (progress%plain_mode) then  ! Plain output
 
@@ -167,9 +175,10 @@ contains
 
             else ! Pretty output
 
+                !$omp critical(fpm_progress)
                 call progress%console%update_line(progress%output_lines(queue_index),trim(output_string))
-
                 call progress%console%write_line(overall_progress//'Compiling...',advance=.false.)
+                !$omp end critical(fpm_progress)
 
             end if
 
