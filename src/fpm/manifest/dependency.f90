@@ -46,7 +46,7 @@ module fpm_manifest_dependency
     private
 
     public :: dependency_config_t, new_dependency, new_dependencies, manifest_has_changed, &
-        & dependency_destroy, resize
+        & dependency_destroy, resize_dependency_config
 
     !> Configuration meta data for a dependency
     type, extends(serializable_t) :: dependency_config_t
@@ -67,7 +67,7 @@ module fpm_manifest_dependency
         type(version_t), allocatable :: requested_version
 
         !> Requested macros for the dependency
-        type(preprocess_config_t), allocatable :: preprocess(:)
+        class(preprocess_config_t), allocatable :: preprocess(:)
         
         !> Requested features for the dependency
         type(string_t), allocatable :: features(:)
@@ -95,10 +95,6 @@ module fpm_manifest_dependency
 
     !> Common output format for writing to the command line
     character(len=*), parameter :: out_fmt = '("#", *(1x, g0))'
-
-    interface resize
-        module procedure resize_dependency_config
-    end interface resize
 
 contains
 
@@ -278,7 +274,7 @@ contains
     subroutine new_dependencies(deps, table, root, meta, error)
 
         !> Instance of the dependency configuration
-        type(dependency_config_t), allocatable, intent(out) :: deps(:)
+        class(dependency_config_t), allocatable, intent(inout) :: deps(:)
 
         !> (optional) metapackages
         type(metapackage_config_t), optional, intent(out) :: meta
@@ -294,11 +290,13 @@ contains
 
         type(toml_table), pointer :: node
         type(toml_key), allocatable :: list(:)
-        type(dependency_config_t), allocatable :: all_deps(:)
+        class(dependency_config_t), allocatable :: all_deps(:)
         type(metapackage_request_t) :: meta_request
         logical, allocatable :: is_meta(:)
         logical :: metapackages_allowed
         integer :: idep, stat, ndep
+
+        if (allocated(deps)) deallocate(deps)
 
         call table%get_keys(list)
         ! An empty table is okay
@@ -346,11 +344,14 @@ contains
         ! Finalize standard dependencies
         allocate(deps(ndep))
         ndep = 0
-        do idep = 1, size(list)
-            if (is_meta(idep)) cycle
-            ndep = ndep+1
-            deps(ndep) = all_deps(idep)
-        end do
+        select type (deps)
+        type is (dependency_config_t)
+            do idep = 1, size(list)
+                if (is_meta(idep)) cycle
+                ndep = ndep+1
+                deps(ndep) = all_deps(idep)
+            end do
+        end select
 
         ! Finalize meta dependencies
         if (metapackages_allowed) call new_meta_config(meta,table,is_meta,error)
@@ -588,13 +589,13 @@ contains
     end subroutine load_from_toml
 
     !> Reallocate a list of dependencies
-    pure subroutine resize_dependency_config(var, n)
+    subroutine resize_dependency_config(var, n)
         !> Instance of the array to be resized
-        type(dependency_config_t), allocatable, intent(inout) :: var(:)
+        class(dependency_config_t), allocatable, intent(inout) :: var(:)
         !> Dimension of the final array size
         integer, intent(in), optional :: n
 
-        type(dependency_config_t), allocatable :: tmp(:)
+        class(dependency_config_t), allocatable :: tmp(:)
         integer :: this_size, new_size
         integer, parameter :: initial_size = 16
 
@@ -615,7 +616,10 @@ contains
 
         if (allocated(tmp)) then
           this_size = min(size(tmp, 1), size(var, 1))
-          var(:this_size) = tmp(:this_size)
+          select type (var)
+          type is (dependency_config_t)
+            var(:this_size) = tmp(:this_size)
+          end select
           deallocate (tmp)
         end if
 
@@ -628,7 +632,7 @@ contains
         type(preprocess_config_t), intent(in) :: preprocess
         
         integer :: i,n
-        type(preprocess_config_t), allocatable :: new_preprocess(:)
+        class(preprocess_config_t), allocatable :: new_preprocess(:)
         
         if (allocated(dep%preprocess)) then 
             
@@ -648,8 +652,11 @@ contains
                 
                 ! Similar preprocessor config not found: add a new one
                 allocate(new_preprocess(n+1))
-                new_preprocess(1:n) = dep%preprocess
-                new_preprocess(n+1) = preprocess
+                select type (new_preprocess)
+                type is (preprocess_config_t)
+                    new_preprocess(1:n) = dep%preprocess
+                    new_preprocess(n+1) = preprocess
+                end select
                 call move_alloc(from=new_preprocess,to=dep%preprocess)
                 
             end if

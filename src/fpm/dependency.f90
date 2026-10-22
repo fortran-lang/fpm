@@ -1098,7 +1098,7 @@ contains
       type(error_t), allocatable, intent(out) :: error
       
       integer :: nreq,k,id
-      type(dependency_config_t), allocatable :: dependency(:)
+      class(dependency_config_t), allocatable :: dependency(:)
       type(package_config_t) :: manifest
       logical :: required(tree%ndep),main
       
@@ -1433,7 +1433,7 @@ contains
   end subroutine dump_cache_to_toml
 
   !> Reallocate a list of dependencies
-  pure subroutine resize_dependency_node(var, n)
+  subroutine resize_dependency_node(var, n)
     !> Instance of the array to be resized
     type(dependency_node_t), allocatable, intent(inout) :: var(:)
     !> Dimension of the final array size
