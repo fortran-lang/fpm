@@ -2,9 +2,12 @@
 module test_package_dependencies
   use fpm_filesystem, only: get_temp_filename
   use testsuite, only: new_unittest, unittest_t, error_t, test_failed
-  use fpm_filesystem, only: is_dir, join_path, filewrite, mkdir, os_delete_dir, exists
+  use fpm_filesystem, only: is_dir, join_path, filewrite, mkdir, os_delete_dir, &
+      exists, unix_path
   use fpm_environment, only: os_is_unix
-  use fpm_os, only: get_current_directory
+  use fpm_os, only: get_current_directory, change_directory
+  use fpm_command_line, only: fpm_update_settings
+  use fpm_cmd_update, only: cmd_update
   use fpm_dependency
   use fpm_manifest_dependency
   use fpm_manifest_metapackages, only: metapackage_config_t
@@ -48,6 +51,8 @@ contains
         & new_unittest("status-after-load", test_status), &
         & new_unittest("add-dependencies", test_add_dependencies), &
         & new_unittest("update-dependencies", test_update_dependencies), &
+        & new_unittest("fetch-only-test-project", &
+                       test_fetch_only_test_project), &
         & new_unittest("metapackage-override", test_metapackage_override), &
         & new_unittest("do-not-update-dependencies", test_non_updated_dependencies), &
         & new_unittest("registry-dir-not-found", registry_dir_not_found, should_fail=.true.), &
@@ -423,6 +428,126 @@ contains
     end if
 
   end subroutine test_update_dependencies
+
+
+  subroutine test_fetch_only_test_project(error)
+
+    type(error_t), allocatable, intent(out) :: error
+
+    type(fpm_update_settings) :: settings
+    type(package_config_t) :: package
+    type(error_t), allocatable :: cleanup_error
+    character(len=:), allocatable :: work_dir, repo_dir, consumer_dir, old_dir
+    character(len=:), allocatable :: git_prefix, repo_url, fetched_manifest
+    character(len=128) :: source_line
+    integer :: stat, command_stat, unit
+    logical :: changed_directory
+
+    changed_directory = .false.
+    call get_current_directory(old_dir, error)
+    if (allocated(error)) return
+    work_dir = get_temp_filename()
+    repo_dir = join_path(work_dir, "local-dep")
+    consumer_dir = join_path(work_dir, "consumer")
+    git_prefix = 'git -C "'//repo_dir//'" '
+    repo_url = unix_path(repo_dir)
+    call mkdir(work_dir)
+    call mkdir(repo_dir)
+    call mkdir(consumer_dir)
+    call mkdir(join_path(consumer_dir, "test"))
+    call mkdir(join_path(repo_dir, "src"))
+
+    call filewrite(join_path(repo_dir, "fpm.toml"), [character(len=80) :: &
+        'name = "local_dep"', 'version = "0.1.0"', '[library]', 'source-dir = "src"'])
+    call filewrite(join_path(repo_dir, "src", "local_dep.f90"), [character(len=80) :: &
+        'module local_dep', 'integer, parameter :: fetched_value = 1329', &
+        'end module local_dep'])
+
+    stat = 1
+    call execute_command_line(git_prefix//"init -q", exitstat=stat, cmdstat=command_stat)
+    if (command_stat /= 0 .or. stat /= 0) then
+      call test_failed(error, "Could not initialize local Git dependency")
+      goto 900
+    end if
+    stat = 1
+    call execute_command_line(git_prefix//"add fpm.toml src/local_dep.f90", &
+        exitstat=stat, cmdstat=command_stat)
+    if (command_stat /= 0 .or. stat /= 0) then
+      call test_failed(error, "Could not stage local Git dependency")
+      goto 900
+    end if
+    stat = 1
+    call execute_command_line(git_prefix// &
+        "-c user.email=fpm-test@example.invalid -c user.name=fpm-test commit -qm fixture", &
+        exitstat=stat, cmdstat=command_stat)
+    if (command_stat /= 0 .or. stat /= 0) then
+      call test_failed(error, "Could not commit local Git dependency")
+      goto 900
+    end if
+
+    call filewrite(join_path(consumer_dir, "fpm.toml"), [character(len=512) :: &
+        'name = "fetch_only_consumer"', 'version = "0.1.0"', '[dependencies]', &
+        'local_dep = { git = "'//repo_url//'" }'])
+    call filewrite(join_path(consumer_dir, "test", "check_dep.f90"), &
+        [character(len=80) :: 'program check_dep', 'use local_dep', &
+        'if (fetched_value /= 1329) stop 1', 'end program check_dep'])
+    call change_directory(consumer_dir, error)
+    if (allocated(error)) goto 900
+    changed_directory = .true.
+
+    settings%fetch_only = .true.
+    settings%clean = .false.
+    settings%verbose = .false.
+    settings%name = [character(len=1) ::]
+    settings%dump = ""
+    call cmd_update(settings)
+
+    fetched_manifest = join_path(consumer_dir, "build", "dependencies", &
+        "local_dep", "fpm.toml")
+    call get_package_data(package, fetched_manifest, error, apply_defaults=.true.)
+    if (allocated(error)) goto 900
+    if (package%name /= "local_dep") then
+      call test_failed(error, "Fetch-only update materialized the wrong dependency")
+      goto 900
+    end if
+    source_line = ""
+    open(newunit=unit, file=join_path(join_path(consumer_dir, "build", &
+        "dependencies", "local_dep"), "src", "local_dep.f90"), &
+        status="old", iostat=stat)
+    if (stat /= 0) then
+      call test_failed(error, "Fetch-only update did not materialize dependency source")
+      goto 900
+    end if
+    read(unit, '(a)', iostat=stat) source_line
+    if (stat == 0) read(unit, '(a)', iostat=stat) source_line
+    close(unit)
+    if (stat /= 0 .or. trim(source_line) /= "integer, parameter :: fetched_value = 1329") then
+      call test_failed(error, "Fetch-only update did not preserve dependency source")
+      goto 900
+    end if
+
+    call get_package_data(package, "fpm.toml", error, apply_defaults=.true.)
+    if (.not. allocated(error)) then
+      call test_failed(error, "Ordinary target validation accepted a dependency-only project")
+      goto 900
+    end if
+    if (index(error%message, "Neither library nor executable found") == 0) then
+      deallocate(error)
+      call test_failed(error, "Ordinary target validation failed for an unexpected reason")
+    else
+      deallocate(error)
+    end if
+
+900 if (changed_directory) then
+      call change_directory(old_dir, cleanup_error)
+      if (allocated(cleanup_error)) then
+        if (.not. allocated(error)) call test_failed(error, cleanup_error%message)
+        return
+      end if
+    end if
+    if (is_dir(work_dir)) call os_delete_dir(os_is_unix(), work_dir)
+
+  end subroutine test_fetch_only_test_project
 
 
   !> Test that a metapackage is overridden if a regular dependency is provided
