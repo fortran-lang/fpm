@@ -15,7 +15,8 @@ module fpm_filesystem
     private
     public :: basename, canon_path, dirname, is_dir, join_path, number_of_rows, list_files, get_local_prefix, &
             mkdir, exists, get_temp_filename, windows_path, unix_path, getline, delete_file, fileopen, fileclose, &
-            filewrite, warnwrite, parent_dir, is_hidden_file, read_lines, read_lines_expanded, which, run, &
+            filewrite, warnwrite, parent_dir, is_hidden_file, read_lines, read_lines_expanded, &
+            read_text_file, which, run, &
             os_delete_dir, is_absolute_path, get_home, execute_and_read_output, get_dos_path
 
 #ifndef FPM_BOOTSTRAP
