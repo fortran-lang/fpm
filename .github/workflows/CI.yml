@@ -92,13 +92,18 @@ jobs:
             os-arch: macos26-arm64
             toolchain: {compiler: gcc, version: 16}
             release-flags: --features openmp --flag '-g -fbacktrace -O3'
+          # LLVM Flang, test only: fpm is built with flang, and the flang-built
+          # fpm then runs the test suite and all example packages with flang.
+          - os: ubuntu-latest
+            os-arch: linux-x86_64
+            toolchain: {compiler: flang, version: 23}
 
     steps:
     - name: Checkout code
       uses: actions/checkout@v6
 
     - name: Setup Fortran compiler
-      if: ${{ !(matrix.toolchain.compiler == 'gcc' && matrix.toolchain.version == 16) }}
+      if: ${{ matrix.toolchain.compiler != 'flang' && !(matrix.toolchain.compiler == 'gcc' && matrix.toolchain.version == 16) }}
       uses: fortran-lang/setup-fortran@v1.10.0
       id: setup-fortran
       with:
@@ -109,6 +114,22 @@ jobs:
     - name: Setup gcc 16
       if: matrix.toolchain.compiler == 'gcc' && matrix.toolchain.version == 16
       uses: ./.github/actions/setup-gcc16
+
+    # setup-fortran does not provide LLVM Flang: install it from apt.llvm.org
+    - name: Setup LLVM Flang
+      if: matrix.toolchain.compiler == 'flang'
+      run: |
+        wget -q https://apt.llvm.org/llvm.sh
+        sudo bash llvm.sh ${{ matrix.toolchain.version }}
+        sudo apt-get install -y flang-${{ matrix.toolchain.version }} \
+                                libomp-${{ matrix.toolchain.version }}-dev
+        echo "/usr/lib/llvm-${{ matrix.toolchain.version }}/bin" >> $GITHUB_PATH
+        echo "FC=flang" >> $GITHUB_ENV
+        echo "CC=clang" >> $GITHUB_ENV
+        echo "CXX=clang++" >> $GITHUB_ENV
+        echo "FPM_FC=flang" >> $GITHUB_ENV
+        echo "FPM_CC=clang" >> $GITHUB_ENV
+        echo "FPM_CXX=clang++" >> $GITHUB_ENV
 
     # Phase 1: Bootstrap fpm with existing version
     - name: Install fpm
@@ -227,7 +248,12 @@ jobs:
     - name: Test Fortran fpm (bootstrap)
       shell: bash
       run: |
-        ${{ env.BOOTSTRAP }} test --flag " -Wno-external-argument-mismatch"
+        if [ "${{ matrix.toolchain.compiler }}" = flang ]; then
+          # flang rejects unknown warning options
+          ${{ env.BOOTSTRAP }} test
+        else
+          ${{ env.BOOTSTRAP }} test --flag " -Wno-external-argument-mismatch"
+        fi
 
     - name: Install Fortran fpm (bootstrap)
       shell: bash
@@ -289,7 +315,7 @@ jobs:
         rm -v ${{ env.FPM }}
         echo "FPM_RELEASE=${{ env.EXE }}" >> $GITHUB_ENV
       env:
-        EXE: fpm-${{ env.VERSION }}-${{ matrix.os-arch }}-gcc-${{ matrix.toolchain.version }}${{ matrix.exe }}
+        EXE: fpm-${{ env.VERSION }}-${{ matrix.os-arch }}-${{ matrix.toolchain.compiler }}-${{ matrix.toolchain.version }}${{ matrix.exe }}
 
     - name: Run release version
       shell: bash
