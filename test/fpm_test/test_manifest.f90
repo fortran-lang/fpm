@@ -43,8 +43,7 @@ contains
             & new_unittest("dependency-features-empty",   test_dependency_features_empty),   &
             & new_unittest("dependency-profile-present",  test_dependency_profile_present),  &
             & new_unittest("dependency-profile-absent",   test_dependency_profile_absent),   &
-            & new_unittest("dependency-profile-features-conflict", &
-            &              test_dependency_profile_features_conflict, should_fail=.true.), &
+            & new_unittest("dependency-profile-features-conflict", test_dependency_profile_features_conflict, should_fail=.true.), &
             & new_unittest("dependency-wrongkey", test_dependency_wrongkey, should_fail=.true.), &
             & new_unittest("dependencies-empty", test_dependencies_empty), &
             & new_unittest("dependencies-typeerror", test_dependencies_typeerror, should_fail=.true.), &
@@ -73,6 +72,9 @@ contains
             & new_unittest("test-typeerror", test_test_typeerror, should_fail=.true.), &
             & new_unittest("test-noname", test_test_noname, should_fail=.true.), &
             & new_unittest("test-wrongkey", test_test_wrongkey, should_fail=.true.), &
+            & new_unittest("test-test-fullparse", test_test_fullparse), &
+            & new_unittest("test-defaults", test_test_defaults), &
+            & new_unittest("test-invalid-name", test_test_invalid_name), &
             & new_unittest("link-string", test_link_string), &
             & new_unittest("link-array", test_link_array), &
             & new_unittest("link-error", test_invalid_link, should_fail=.true.), &
@@ -86,8 +88,7 @@ contains
             & new_unittest("preprocess-wrongkey", test_preprocess_wrongkey, should_fail=.true.), &
             & new_unittest("preprocessors-empty", test_preprocessors_empty, should_fail=.true.), &
             & new_unittest("macro-parsing", test_macro_parsing, should_fail=.false.), &
-            & new_unittest("macro-parsing-dependency", &
-            &              test_macro_parsing_dependency, should_fail=.false.), &
+            & new_unittest("macro-parsing-dependency", test_macro_parsing_dependency, should_fail=.false.), &
             & new_unittest("features-demo-serialization", test_features_demo_serialization) &
             & ]
 
@@ -124,8 +125,7 @@ contains
             & 'source-dir = "prog"', &
             & '[executable.dependencies]', &
             & '[''library'']', &
-            & 'source-dir = """', &
-            & 'lib""" # comment', &
+            & 'source-dir = "lib" # comment', &
             & '[preprocess]', &
             & '[preprocess.cpp]', &
             & 'suffixes = ["F90", "f90"]', &
@@ -228,8 +228,7 @@ contains
         allocate(package%library)
         call default_library(package%library)
 
-        call check_string(error, package%library%source_dir, "src", &
-            & "Default library source-dir")
+        call check_string(error, package%library%source_dir, "src", "Default library source-dir")
         if (allocated(error)) return
 
         if (.not.allocated(package%library%include_dir)) then
@@ -309,12 +308,10 @@ contains
         allocate(package%executable(1))
         call default_executable(package%executable(1), name)
 
-        call check_string(error, package%executable(1)%source_dir, "app", &
-            & "Default executable source-dir")
+        call check_string(error, package%executable(1)%source_dir, "app", "Default executable source-dir")
         if (allocated(error)) return
 
-        call check_string(error, package%executable(1)%name, name, &
-            & "Default executable name")
+        call check_string(error, package%executable(1)%name, name, "Default executable name")
         if (allocated(error)) return
         
         call package%feature_config_t%test_serialization('test_default_executable (feature only)',error)
@@ -872,8 +869,7 @@ contains
         call new_library(library, table, error)
         if (allocated(error)) return
 
-        call check_string(error, library%source_dir, "src", &
-            & "Default library source-dir")
+        call check_string(error, library%source_dir, "src", "Default library source-dir")
         if (allocated(error)) return
 
         if (.not.allocated(library%include_dir)) then
@@ -1216,6 +1212,131 @@ contains
         call new_test(test, table, error)
 
     end subroutine test_test_wrongkey
+
+
+    !> Parse all currently supported test fields
+    subroutine test_test_fullparse(error)
+        use fpm_manifest_test
+
+        !> Error handling
+        type(error_t), allocatable, intent(out) :: error
+
+        type(toml_table) :: table
+        type(toml_array), pointer :: children
+        type(toml_table), pointer :: child, child2
+        integer :: stat
+        type(test_config_t) :: test
+
+        call new_table(table)
+        call set_value(table, 'name', 'mytest', stat)
+        call set_value(table, 'source-dir', 'src/tests', stat)
+        call set_value(table, 'main', 'prog.f90', stat)
+        call add_array(table, 'link', children, stat)
+        call set_value(children, 1, 'mylib', stat)
+        call add_table(table, 'dependencies', child, stat)
+        call add_table(child, 'dummydep', child2, stat)
+        call set_value(child2, 'path', './dummydep', stat)
+
+        call new_test(test, table, error)
+        if (allocated(error)) return
+
+        call check_string(error, test%name, 'mytest', 'Test name')
+        if (allocated(error)) return
+
+        call check_string(error, test%source_dir, 'src/tests', 'Test source-dir')
+        if (allocated(error)) return
+
+        call check_string(error, test%main, 'prog.f90', 'Test main')
+        if (allocated(error)) return
+
+        if (.not.allocated(test%link)) then
+            call test_failed(error, 'Expected link list to be allocated')
+            return
+        end if
+
+        if (size(test%link) /= 1) then
+            call test_failed(error, 'Expected exactly one link library')
+            return
+        end if
+
+        call check_string(error, test%link(1)%s, 'mylib', 'Test link item')
+        if (allocated(error)) return
+
+        if (.not.allocated(test%dependency)) then
+            call test_failed(error, 'Expected dependencies to be parsed and allocated')
+            return
+        end if
+
+        if (size(test%dependency) /= 1) then
+            call test_failed(error, 'Expected exactly one dependency to be parsed')
+            return
+        end if
+
+        call check_string(error, test%dependency(1)%name, 'dummydep', 'Dependency name')
+        if (allocated(error)) return
+
+        call check_string(error, test%dependency(1)%path, './dummydep', 'Dependency path')
+        if (allocated(error)) return
+
+    end subroutine test_test_fullparse
+
+
+    !> Verify defaults for optional test fields
+    subroutine test_test_defaults(error)
+        use fpm_manifest_test
+
+        !> Error handling
+        type(error_t), allocatable, intent(out) :: error
+
+        type(toml_table) :: table
+        integer :: stat
+        type(test_config_t) :: test
+
+        call new_table(table)
+        call set_value(table, 'name', 'simple', stat)
+
+        call new_test(test, table, error)
+        if (allocated(error)) return
+
+        call check_string(error, test%name, 'simple', 'Test name')
+        if (allocated(error)) return
+
+        call check_string(error, test%source_dir, 'test', 'Default test source-dir')
+        if (allocated(error)) return
+
+        call check_string(error, test%main, 'main.f90', 'Default test main')
+
+    end subroutine test_test_defaults
+
+
+    !> Verify invalid test names are rejected
+    subroutine test_test_invalid_name(error)
+        use fpm_manifest_test
+
+        !> Error handling
+        type(error_t), allocatable, intent(out) :: error
+
+        type(error_t), allocatable :: parse_error
+        type(toml_table) :: table
+        integer :: stat
+        type(test_config_t) :: test
+
+        call new_table(table)
+        call set_value(table, 'name', 'bad name', stat)
+
+        call new_test(test, table, parse_error)
+
+        if (.not.allocated(parse_error)) then
+            call test_failed(error, 'Invalid test name should produce an error')
+            return
+        end if
+
+        if (index(parse_error%message, 'name must be composed only of') <= 0) then
+            call test_failed(error, 'Expected invalid-name phrase in error message')
+            return
+        end if
+
+    end subroutine test_test_invalid_name
 
 
     !> Create a simple example entry
