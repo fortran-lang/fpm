@@ -92,7 +92,7 @@
 
             <li class="list-inline-item" id="statements"><i class="fa fa-list-ol"></i>
               <a data-bs-toggle="tooltip" data-bs-placement="bottom" data-bs-html="true"
-                 title=" 0.8% of total for procedures.">60 statements</a>
+                 title=" 0.8% of total for procedures.">61 statements</a>
             </li>
 
             <li class="list-inline-item" id="source-file">
@@ -178,7 +178,7 @@
     <tbody>
         <tr>
             <td>
-              <span class="anchor" id="variable-package~7"></span>
+              <span class="anchor" id="variable-package~20"></span>
               type(<a href='../type/package_config_t.html'>package_config_t</a>),
             </td>
 <td>intent(in)</td>
@@ -193,7 +193,7 @@
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-main"></span>
+              <span class="anchor" id="variable-main~5"></span>
               logical,
             </td>
 <td>intent(in)</td>
@@ -208,10 +208,10 @@
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-deps~2"></span>
-              type(<a href='../type/dependency_config_t.html'>dependency_config_t</a>),
+              <span class="anchor" id="variable-deps~5"></span>
+              class(<a href='../type/dependency_config_t.html'>dependency_config_t</a>),
             </td>
-<td>intent(out),</td>
+<td>intent(inout),</td>
               <td></td>            <td>
               allocatable
             </td>
@@ -247,10 +247,12 @@
 <span class="w">        </span><span class="kt">logical</span><span class="p">,</span><span class="w"> </span><span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">)</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">main</span><span class="w">        </span>
 <span class="w">        </span>
 <span class="w">        </span><span class="c">!&gt; Unprocessed list of all dependencies listed in this manifest</span>
-<span class="w">        </span><span class="k">type</span><span class="p">(</span><span class="n">dependency_config_t</span><span class="p">),</span><span class="w"> </span><span class="k">allocatable</span><span class="p">,</span><span class="w"> </span><span class="k">intent</span><span class="p">(</span><span class="n">out</span><span class="p">)</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">deps</span><span class="p">(:)</span>
+<span class="w">        </span><span class="k">class</span><span class="p">(</span><span class="n">dependency_config_t</span><span class="p">),</span><span class="w"> </span><span class="k">allocatable</span><span class="p">,</span><span class="w"> </span><span class="k">intent</span><span class="p">(</span><span class="n">inout</span><span class="p">)</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">deps</span><span class="p">(:)</span>
 <span class="w">        </span>
 <span class="w">        </span><span class="kt">integer</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">ndeps</span><span class="p">,</span><span class="n">k</span>
 <span class="w">        </span>
+<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="nb">allocated</span><span class="p">(</span><span class="n">deps</span><span class="p">))</span><span class="w"> </span><span class="k">deallocate</span><span class="p">(</span><span class="n">deps</span><span class="p">)</span>
+
 <span class="w">        </span><span class="n">ndeps</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span>
 <span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="nb">allocated</span><span class="p">(</span><span class="n">package</span><span class="p">%</span><span class="n">dependency</span><span class="p">))</span><span class="w"> </span><span class="p">&amp;</span>
 <span class="w">        </span><span class="n">ndeps</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">ndeps</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">size</span><span class="p">(</span><span class="n">package</span><span class="p">%</span><span class="n">dependency</span><span class="p">)</span>
@@ -323,7 +325,7 @@
 <span class="k">      contains</span>
 <span class="w">      </span>
 <span class="w">         </span><span class="c">! Add dependencies to the list      </span>
-<span class="w">         </span><span class="k">pure subroutine </span><span class="n">collect</span><span class="p">(</span><span class="n">list</span><span class="p">,</span><span class="w"> </span><span class="n">nreq</span><span class="p">,</span><span class="w"> </span><span class="n">new_deps</span><span class="p">)</span>
+<span class="w">         </span><span class="k">subroutine </span><span class="n">collect</span><span class="p">(</span><span class="n">list</span><span class="p">,</span><span class="w"> </span><span class="n">nreq</span><span class="p">,</span><span class="w"> </span><span class="n">new_deps</span><span class="p">)</span>
 <span class="w">            </span><span class="k">type</span><span class="p">(</span><span class="n">dependency_config_t</span><span class="p">),</span><span class="w"> </span><span class="k">intent</span><span class="p">(</span><span class="n">inout</span><span class="p">)</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">list</span><span class="p">(:)</span>
 <span class="w">            </span><span class="kt">integer</span><span class="p">,</span><span class="w">                   </span><span class="k">intent</span><span class="p">(</span><span class="n">inout</span><span class="p">)</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">nreq</span>
 <span class="w">            </span><span class="k">type</span><span class="p">(</span><span class="n">dependency_config_t</span><span class="p">),</span><span class="w"> </span><span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">)</span><span class="w">    </span><span class="kd">::</span><span class="w"> </span><span class="n">new_deps</span><span class="p">(:)</span>
@@ -359,7 +361,7 @@
             <p class="text-end">
               Documentation generated by
               <a href="https://github.com/Fortran-FOSS-Programmers/ford">FORD</a>
- on 2026-10-22 12:24 +0000             </p>
+ on 2026-10-22 17:21 +0000             </p>
           </div>
         </div>
         <br>

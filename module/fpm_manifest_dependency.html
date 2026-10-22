@@ -92,7 +92,7 @@
 
             <li class="list-inline-item" id="statements"><i class="fa fa-list-ol"></i>
               <a data-bs-toggle="tooltip" data-bs-placement="bottom" data-bs-html="true"
-                 title=" 2.2% of total for modules and submodules.">394 statements</a>
+                 title=" 2.2% of total for modules and submodules.">401 statements</a>
             </li>
 
             <li class="list-inline-item" id="source-file">
@@ -104,7 +104,7 @@
       <div class="col">
         <nav aria-label="breadcrumb">
           <ol class="breadcrumb justify-content-end mb-0">
-                <li class="breadcrumb-item"><a href='../sourcefile/dependency.f90.html'>dependency.f90</a></li>
+                <li class="breadcrumb-item"><a href='../sourcefile/dependency.f90~2.html'>dependency.f90</a></li>
             <li class="breadcrumb-item active" aria-current="page">fpm_manifest_dependency</li>
           </ol>
         </nav>
@@ -133,18 +133,7 @@
   
   
   
-      <div class="card mb-4">
-      <a data-bs-toggle="collapse" href="#inters-0"
-         aria-expanded="false" aria-controls="inters-0">
-         <h4 class="card-header bg-primary text-white">Interfaces</h4>
-      </a>
-      <div id="inters-0" class="collapse">
-        <div class="list-group list-group-flush">
-            <a class="list-group-item" href="../module/fpm_manifest_dependency.html#interface-resize">resize</a>
-        </div>
-      </div>
-    </div>
-
+  
   
       <div class="card mb-4">
       <a data-bs-toggle="collapse" href="#types-0"
@@ -180,6 +169,7 @@
             <a class="list-group-item" href="../module/fpm_manifest_dependency.html#proc-dependency_destroy">dependency_destroy</a>
             <a class="list-group-item" href="../module/fpm_manifest_dependency.html#proc-new_dependencies">new_dependencies</a>
             <a class="list-group-item" href="../module/fpm_manifest_dependency.html#proc-new_dependency">new_dependency</a>
+            <a class="list-group-item" href="../module/fpm_manifest_dependency.html#proc-resize_dependency_config">resize_dependency_config</a>
         </div>
       </div>
     </div>
@@ -229,16 +219,16 @@
         <ul class="list-group list-group-flush">
             <li class="list-group-item">
               <ul class="list-inline">
-                  <li class="list-inline-item"><a href='fpm_error.html'>fpm_error</a></li>
-                  <li class="list-inline-item"><a href='fpm_filesystem.html'>fpm_filesystem</a></li>
-                  <li class="list-inline-item"><a href='https://toml-f.github.io/toml-f'>tomlf</a></li>
                   <li class="list-inline-item"><a href='fpm_versioning.html'>fpm_versioning</a></li>
-                  <li class="list-inline-item"><a href='fpm_git.html'>fpm_git</a></li>
-                  <li class="list-inline-item"><a href='fpm_strings.html'>fpm_strings</a></li>
+                  <li class="list-inline-item"><a href='https://toml-f.github.io/toml-f'>tomlf</a></li>
                   <li class="list-inline-item"><a href='fpm_manifest_preprocess.html'>fpm_manifest_preprocess</a></li>
-                  <li class="list-inline-item"><a href='fpm_environment.html'>fpm_environment</a></li>
-                  <li class="list-inline-item"><a href='fpm_toml.html'>fpm_toml</a></li>
+                  <li class="list-inline-item"><a href='fpm_git.html'>fpm_git</a></li>
+                  <li class="list-inline-item"><a href='fpm_filesystem.html'>fpm_filesystem</a></li>
                   <li class="list-inline-item"><a href='fpm_manifest_metapackages.html'>fpm_manifest_metapackages</a></li>
+                  <li class="list-inline-item"><a href='fpm_toml.html'>fpm_toml</a></li>
+                  <li class="list-inline-item"><a href='fpm_error.html'>fpm_error</a></li>
+                  <li class="list-inline-item"><a href='fpm_strings.html'>fpm_strings</a></li>
+                  <li class="list-inline-item"><a href='fpm_environment.html'>fpm_environment</a></li>
               </ul>
             </li>
         </ul>
@@ -251,73 +241,6 @@
 
 
 
-        <section>
-          <h2>Interfaces</h2>
-              <div class="card">
-    <div class="card-header bg-light codesum">
-      <span class="anchor" id="interface-resize"></span>
-      <h3>public        interface <a href='../interface/resize.html'>resize</a> 
-      </h3>
-    </div>
-    <ul class="list-group">
-          <li class="list-group-item">
-                <h3>
-    private pure subroutine resize_dependency_config(var, n)  
-
-    </h3>
-  <p>Reallocate a list of dependencies</p>
-
-  <h4>Arguments</h4>
-      <table class="table table-striped varlist">
-    <thead>
-      <tr>
-        <th scope="col">Type</th>
-<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
-        <th scope="col"></th>
-        <th scope="col">Name</th>
-        <th scope="col"></th>
-    </thead>
-    <tbody>
-        <tr>
-            <td>
-              <span class="anchor" id="variable-var"></span>
-              type(<a href='../type/dependency_config_t.html'>dependency_config_t</a>),
-            </td>
-<td>intent(inout),</td>
-              <td></td>            <td>
-              allocatable
-            </td>
-            <td>::</td>
-            <td><strong>var</strong>(:)</td>
-            <td>
-                <p>Instance of the array to be resized</p>
-            </td>
-        </tr>
-        <tr>
-            <td>
-              <span class="anchor" id="variable-n~2"></span>
-              integer,
-            </td>
-<td>intent(in),</td>
-              <td>optional</td>            <td>
-              
-            </td>
-            <td>::</td>
-            <td><strong>n</strong></td>
-            <td>
-                <p>Dimension of the final array size</p>
-            </td>
-        </tr>
-    </tbody>
-  </table>
-
-
-          </li>
-    </ul>
-  </div>
-
-        </section>
-        <br>
 
 
         <section>
@@ -347,7 +270,7 @@
     <tbody>
         <tr>
             <td>
-              <span class="anchor" id="variable-features~3"></span>
+              <span class="anchor" id="variable-features~13"></span>
               type(<a href='../type/string_t.html'>string_t</a>),
             </td>
               <td>public,</td>
@@ -381,7 +304,7 @@
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-name~12"></span>
+              <span class="anchor" id="variable-name~41"></span>
               character(len=:),
             </td>
               <td>public,</td>
@@ -398,7 +321,7 @@
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-namespace"></span>
+              <span class="anchor" id="variable-namespace~2"></span>
               character(len=:),
             </td>
               <td>public,</td>
@@ -417,7 +340,7 @@ Required for dependencies that are obtained via the official registry.</p>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-path~3"></span>
+              <span class="anchor" id="variable-path~19"></span>
               character(len=:),
             </td>
               <td>public,</td>
@@ -434,8 +357,8 @@ Required for dependencies that are obtained via the official registry.</p>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-preprocess"></span>
-              type(<a href='../type/preprocess_config_t.html'>preprocess_config_t</a>),
+              <span class="anchor" id="variable-preprocess~9"></span>
+              class(<a href='../type/preprocess_config_t.html'>preprocess_config_t</a>),
             </td>
               <td>public,</td>
             <td>
@@ -451,7 +374,7 @@ Required for dependencies that are obtained via the official registry.</p>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-profile"></span>
+              <span class="anchor" id="variable-profile~3"></span>
               character(len=:),
             </td>
               <td>public,</td>
@@ -500,37 +423,37 @@ The latest version is used if not specified.</p>
               </tr>
               <tr>
                 <td>  generic, public ::
-  <strong><a href='../type/dependency_config_t.html#boundprocedure-dump~12'>dump</a></strong> => <a href='/home/runner/work/fpm/fpm/fpm-doc/type/srcfile_t.html#boundprocedure-dump_to_toml~18'>dump_to_toml</a>, dump_to_file, dump_to_unit</td>
+  <strong><a href='../type/dependency_config_t.html#boundprocedure-dump~26'>dump</a></strong> => <a href='/home/runner/work/fpm/fpm/fpm-doc/type/srcfile_t.html#boundprocedure-dump_to_toml~7'>dump_to_toml</a>, dump_to_file, dump_to_unit</td>
                   <td></td>
               </tr>
               <tr>
                 <td>  procedure, public ::
-  <strong><a href='../type/dependency_config_t.html#boundprocedure-dump_to_toml~8'>dump_to_toml</a></strong></td>
+  <strong><a href='../type/dependency_config_t.html#boundprocedure-dump_to_toml~21'>dump_to_toml</a></strong></td>
                   <td></td>
               </tr>
               <tr>
                 <td>  procedure, public ::
-  <strong><a href='../type/dependency_config_t.html#boundprocedure-info~5'>info</a></strong></td>
+  <strong><a href='../type/dependency_config_t.html#boundprocedure-info~13'>info</a></strong></td>
                   <td><p>Print information on this instance</p></td>
               </tr>
               <tr>
                 <td>  generic, public ::
-  <strong><a href='../type/dependency_config_t.html#boundprocedure-load~9'>load</a></strong> => <a href='/home/runner/work/fpm/fpm/fpm-doc/type/srcfile_t.html#boundprocedure-load_from_toml~18'>load_from_toml</a>, load_from_file, load_from_unit</td>
+  <strong><a href='../type/dependency_config_t.html#boundprocedure-load~23'>load</a></strong> => <a href='/home/runner/work/fpm/fpm/fpm-doc/type/srcfile_t.html#boundprocedure-load_from_toml~7'>load_from_toml</a>, load_from_file, load_from_unit</td>
                   <td></td>
               </tr>
               <tr>
                 <td>  procedure, public ::
-  <strong><a href='../type/dependency_config_t.html#boundprocedure-load_from_toml~8'>load_from_toml</a></strong></td>
+  <strong><a href='../type/dependency_config_t.html#boundprocedure-load_from_toml~21'>load_from_toml</a></strong></td>
                   <td></td>
               </tr>
               <tr>
                 <td>  generic, public ::
-  <strong><a href='../type/dependency_config_t.html#boundprocedure-operator%28%3D%3D%29~10'>operator(==)</a></strong> => <a href='/home/runner/work/fpm/fpm/fpm-doc/type/srcfile_t.html#boundprocedure-serializable_is_same~18'>serializable_is_same</a></td>
+  <strong><a href='../type/dependency_config_t.html#boundprocedure-operator%28%3D%3D%29~24'>operator(==)</a></strong> => <a href='/home/runner/work/fpm/fpm/fpm-doc/type/srcfile_t.html#boundprocedure-serializable_is_same~7'>serializable_is_same</a></td>
                   <td></td>
               </tr>
               <tr>
                 <td>  procedure, public ::
-  <strong><a href='../type/dependency_config_t.html#boundprocedure-serializable_is_same~8'>serializable_is_same</a></strong> => dependency_is_same</td>
+  <strong><a href='../type/dependency_config_t.html#boundprocedure-serializable_is_same~21'>serializable_is_same</a></strong> => dependency_is_same</td>
                   <td><p>Serialization interface</p></td>
               </tr>
               <tr>
@@ -568,7 +491,7 @@ The latest version is used if not specified.</p>
     <tbody>
         <tr>
             <td>
-              <span class="anchor" id="variable-cached"></span>
+              <span class="anchor" id="variable-cached~5"></span>
               class(<a href='../type/dependency_config_t.html'>dependency_config_t</a>),
             </td>
 <td>intent(in)</td>
@@ -583,7 +506,7 @@ The latest version is used if not specified.</p>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-manifest"></span>
+              <span class="anchor" id="variable-manifest~6"></span>
               class(<a href='../type/dependency_config_t.html'>dependency_config_t</a>),
             </td>
 <td>intent(in)</td>
@@ -598,7 +521,7 @@ The latest version is used if not specified.</p>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-verbosity~6"></span>
+              <span class="anchor" id="variable-verbosity~20"></span>
               integer,
             </td>
 <td>intent(in)</td>
@@ -613,7 +536,7 @@ The latest version is used if not specified.</p>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-iunit"></span>
+              <span class="anchor" id="variable-iunit~7"></span>
               integer,
             </td>
 <td>intent(in)</td>
@@ -663,7 +586,7 @@ The latest version is used if not specified.</p>
     <tbody>
         <tr>
             <td>
-              <span class="anchor" id="variable-self~79"></span>
+              <span class="anchor" id="variable-self~157"></span>
               class(<a href='../type/dependency_config_t.html'>dependency_config_t</a>),
             </td>
 <td>intent(inout)</td>
@@ -703,10 +626,10 @@ The latest version is used if not specified.</p>
     <tbody>
         <tr>
             <td>
-              <span class="anchor" id="variable-deps"></span>
-              type(<a href='../type/dependency_config_t.html'>dependency_config_t</a>),
+              <span class="anchor" id="variable-deps~4"></span>
+              class(<a href='../type/dependency_config_t.html'>dependency_config_t</a>),
             </td>
-<td>intent(out),</td>
+<td>intent(inout),</td>
               <td></td>            <td>
               allocatable
             </td>
@@ -718,7 +641,7 @@ The latest version is used if not specified.</p>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-table~28"></span>
+              <span class="anchor" id="variable-table~75"></span>
               type(toml_table),
             </td>
 <td>intent(inout)</td>
@@ -733,7 +656,7 @@ The latest version is used if not specified.</p>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-root~2"></span>
+              <span class="anchor" id="variable-root~12"></span>
               character(len=*),
             </td>
 <td>intent(in),</td>
@@ -748,7 +671,7 @@ The latest version is used if not specified.</p>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-meta"></span>
+              <span class="anchor" id="variable-meta~3"></span>
               type(<a href='../type/metapackage_config_t.html'>metapackage_config_t</a>),
             </td>
 <td>intent(out),</td>
@@ -763,7 +686,7 @@ The latest version is used if not specified.</p>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-error~49"></span>
+              <span class="anchor" id="variable-error~193"></span>
               type(<a href='../type/error_t.html'>error_t</a>),
             </td>
 <td>intent(out),</td>
@@ -803,7 +726,7 @@ The latest version is used if not specified.</p>
     <tbody>
         <tr>
             <td>
-              <span class="anchor" id="variable-self~77"></span>
+              <span class="anchor" id="variable-self~155"></span>
               type(<a href='../type/dependency_config_t.html'>dependency_config_t</a>),
             </td>
 <td>intent(out)</td>
@@ -818,7 +741,7 @@ The latest version is used if not specified.</p>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-table~26"></span>
+              <span class="anchor" id="variable-table~73"></span>
               type(toml_table),
             </td>
 <td>intent(inout)</td>
@@ -833,7 +756,7 @@ The latest version is used if not specified.</p>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-root"></span>
+              <span class="anchor" id="variable-root~11"></span>
               character(len=*),
             </td>
 <td>intent(in),</td>
@@ -848,7 +771,7 @@ The latest version is used if not specified.</p>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-error~47"></span>
+              <span class="anchor" id="variable-error~191"></span>
               type(<a href='../type/error_t.html'>error_t</a>),
             </td>
 <td>intent(out),</td>
@@ -859,6 +782,61 @@ The latest version is used if not specified.</p>
             <td><strong>error</strong></td>
             <td>
 <p>Error handling</p>
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+
+    </div>
+  </div>
+
+              <div class="card">
+    <div class="card-header codesum"><span class="anchor" id="proc-resize_dependency_config"></span> <h3>public  subroutine <a href='../proc/resize_dependency_config.html'>resize_dependency_config</a>(var, n)  
+</h3></div>
+    <div class="card-body">
+          
+  <p>Reallocate a list of dependencies</p>
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-var~3"></span>
+              class(<a href='../type/dependency_config_t.html'>dependency_config_t</a>),
+            </td>
+<td>intent(inout),</td>
+              <td></td>            <td>
+              allocatable
+            </td>
+            <td>::</td>
+            <td><strong>var</strong>(:)</td>
+            <td>
+<p>Instance of the array to be resized</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-n~26"></span>
+              integer,
+            </td>
+<td>intent(in),</td>
+              <td>optional</td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>n</strong></td>
+            <td>
+<p>Dimension of the final array size</p>
             </td>
         </tr>
     </tbody>
@@ -891,7 +869,7 @@ The latest version is used if not specified.</p>
             <p class="text-end">
               Documentation generated by
               <a href="https://github.com/Fortran-FOSS-Programmers/ford">FORD</a>
- on 2026-10-22 12:24 +0000             </p>
+ on 2026-10-22 17:21 +0000             </p>
           </div>
         </div>
         <br>

@@ -184,7 +184,7 @@
 <a id="ln-11" name="ln-11" href="#ln-11"></a><span class="c">!&gt;[executable.dependencies]</span>
 <a id="ln-12" name="ln-12" href="#ln-12"></a><span class="c">!&gt;```</span>
 <a id="ln-13" name="ln-13" href="#ln-13"></a><span class="k">module </span><span class="n">fpm_manifest_executable</span>
-<a id="ln-14" name="ln-14" href="#ln-14"></a><span class="w">    </span><span class="k">use </span><span class="n">fpm_manifest_dependency</span><span class="p">,</span><span class="w"> </span><span class="k">only</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="n">dependency_config_t</span><span class="p">,</span><span class="w"> </span><span class="n">new_dependencies</span><span class="p">,</span><span class="w"> </span><span class="n">resize</span>
+<a id="ln-14" name="ln-14" href="#ln-14"></a><span class="w">    </span><span class="k">use </span><span class="n">fpm_manifest_dependency</span><span class="p">,</span><span class="w"> </span><span class="k">only</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="n">dependency_config_t</span><span class="p">,</span><span class="w"> </span><span class="n">new_dependencies</span><span class="p">,</span><span class="w"> </span><span class="n">resize_dependency_config</span>
 <a id="ln-15" name="ln-15" href="#ln-15"></a><span class="w">    </span><span class="k">use </span><span class="n">fpm_error</span><span class="p">,</span><span class="w"> </span><span class="k">only</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="n">error_t</span><span class="p">,</span><span class="w"> </span><span class="n">syntax_error</span><span class="p">,</span><span class="w"> </span><span class="n">bad_name_error</span><span class="p">,</span><span class="w"> </span><span class="n">fatal_error</span>
 <a id="ln-16" name="ln-16" href="#ln-16"></a><span class="w">    </span><span class="k">use </span><span class="n">fpm_strings</span><span class="p">,</span><span class="w"> </span><span class="k">only</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="n">string_t</span><span class="p">,</span><span class="w"> </span><span class="n">operator</span><span class="p">(</span><span class="o">==</span><span class="p">)</span>
 <a id="ln-17" name="ln-17" href="#ln-17"></a><span class="w">    </span><span class="k">use </span><span class="n">tomlf</span><span class="p">,</span><span class="w"> </span><span class="k">only</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="n">toml_table</span><span class="p">,</span><span class="w"> </span><span class="n">toml_key</span><span class="p">,</span><span class="w"> </span><span class="n">toml_stat</span>
@@ -209,7 +209,7 @@
 <a id="ln-36" name="ln-36" href="#ln-36"></a><span class="w">        </span><span class="kt">character</span><span class="p">(</span><span class="nb">len</span><span class="o">=</span><span class="p">:),</span><span class="w"> </span><span class="k">allocatable</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">main</span>
 <a id="ln-37" name="ln-37" href="#ln-37"></a>
 <a id="ln-38" name="ln-38" href="#ln-38"></a><span class="w">        </span><span class="c">!&gt; Dependency meta data for this executable</span>
-<a id="ln-39" name="ln-39" href="#ln-39"></a><span class="w">        </span><span class="k">type</span><span class="p">(</span><span class="n">dependency_config_t</span><span class="p">),</span><span class="w"> </span><span class="k">allocatable</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">dependency</span><span class="p">(:)</span>
+<a id="ln-39" name="ln-39" href="#ln-39"></a><span class="w">        </span><span class="k">class</span><span class="p">(</span><span class="n">dependency_config_t</span><span class="p">),</span><span class="w"> </span><span class="k">allocatable</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">dependency</span><span class="p">(:)</span>
 <a id="ln-40" name="ln-40" href="#ln-40"></a>
 <a id="ln-41" name="ln-41" href="#ln-41"></a><span class="w">        </span><span class="c">!&gt; Libraries to link against</span>
 <a id="ln-42" name="ln-42" href="#ln-42"></a><span class="w">        </span><span class="k">type</span><span class="p">(</span><span class="n">string_t</span><span class="p">),</span><span class="w"> </span><span class="k">allocatable</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="nb">link</span><span class="p">(:)</span>
@@ -508,7 +508,7 @@
 <a id="ln-335" name="ln-335" href="#ln-335"></a>
 <a id="ln-336" name="ln-336" href="#ln-336"></a><span class="w">               </span><span class="c">!&gt; Read all dependencies</span>
 <a id="ln-337" name="ln-337" href="#ln-337"></a><span class="w">               </span><span class="k">call </span><span class="n">ptr_deps</span><span class="p">%</span><span class="n">get_keys</span><span class="p">(</span><span class="n">dep_keys</span><span class="p">)</span>
-<a id="ln-338" name="ln-338" href="#ln-338"></a><span class="w">               </span><span class="k">call </span><span class="n">resize</span><span class="p">(</span><span class="n">self</span><span class="p">%</span><span class="n">dependency</span><span class="p">,</span><span class="w"> </span><span class="n">size</span><span class="p">(</span><span class="n">dep_keys</span><span class="p">))</span>
+<a id="ln-338" name="ln-338" href="#ln-338"></a><span class="w">               </span><span class="k">call </span><span class="n">resize_dependency_config</span><span class="p">(</span><span class="n">self</span><span class="p">%</span><span class="n">dependency</span><span class="p">,</span><span class="w"> </span><span class="n">size</span><span class="p">(</span><span class="n">dep_keys</span><span class="p">))</span>
 <a id="ln-339" name="ln-339" href="#ln-339"></a>
 <a id="ln-340" name="ln-340" href="#ln-340"></a><span class="w">               </span><span class="k">do </span><span class="n">jj</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="n">size</span><span class="p">(</span><span class="n">dep_keys</span><span class="p">)</span>
 <a id="ln-341" name="ln-341" href="#ln-341"></a>
@@ -548,7 +548,7 @@
             <p class="text-end">
               Documentation generated by
               <a href="https://github.com/Fortran-FOSS-Programmers/ford">FORD</a>
- on 2026-10-22 12:24 +0000             </p>
+ on 2026-10-22 17:21 +0000             </p>
           </div>
         </div>
         <br>

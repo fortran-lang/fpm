@@ -92,7 +92,7 @@
 
             <li class="list-inline-item" id="statements"><i class="fa fa-list-ol"></i>
               <a data-bs-toggle="tooltip" data-bs-placement="bottom" data-bs-html="true"
-                 title=" 1.1% of total for source files.">202 statements</a>
+                 title=" 1.2% of total for source files.">208 statements</a>
             </li>
 
             <li class="list-inline-item" id="source-file">
@@ -220,14 +220,14 @@
 <a id="ln-47" name="ln-47" href="#ln-47"></a><span class="w">        </span><span class="k">type</span><span class="p">(</span><span class="n">string_t</span><span class="p">),</span><span class="w"> </span><span class="k">allocatable</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">external_modules</span><span class="p">(:)</span>
 <a id="ln-48" name="ln-48" href="#ln-48"></a>
 <a id="ln-49" name="ln-49" href="#ln-49"></a><span class="w">        </span><span class="c">!&gt; Special fortran features</span>
-<a id="ln-50" name="ln-50" href="#ln-50"></a><span class="w">        </span><span class="k">type</span><span class="p">(</span><span class="n">fortran_config_t</span><span class="p">),</span><span class="w"> </span><span class="k">allocatable</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">fortran</span>
+<a id="ln-50" name="ln-50" href="#ln-50"></a><span class="w">        </span><span class="k">class</span><span class="p">(</span><span class="n">fortran_config_t</span><span class="p">),</span><span class="w"> </span><span class="k">allocatable</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">fortran</span>
 <a id="ln-51" name="ln-51" href="#ln-51"></a><span class="w">        </span>
 <a id="ln-52" name="ln-52" href="#ln-52"></a><span class="w">        </span><span class="c">!&gt; Preprocessor configuration</span>
-<a id="ln-53" name="ln-53" href="#ln-53"></a><span class="w">        </span><span class="k">type</span><span class="p">(</span><span class="n">preprocess_config_t</span><span class="p">),</span><span class="w"> </span><span class="k">allocatable</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">preprocess</span>
+<a id="ln-53" name="ln-53" href="#ln-53"></a><span class="w">        </span><span class="k">class</span><span class="p">(</span><span class="n">preprocess_config_t</span><span class="p">),</span><span class="w"> </span><span class="k">allocatable</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">preprocess</span>
 <a id="ln-54" name="ln-54" href="#ln-54"></a>
 <a id="ln-55" name="ln-55" href="#ln-55"></a><span class="w">        </span><span class="c">!&gt; List of Development dependency meta data.</span>
 <a id="ln-56" name="ln-56" href="#ln-56"></a><span class="w">        </span><span class="c">!&gt; Metapackage dependencies are never exported from the model</span>
-<a id="ln-57" name="ln-57" href="#ln-57"></a><span class="w">        </span><span class="k">type</span><span class="p">(</span><span class="n">dependency_config_t</span><span class="p">),</span><span class="w"> </span><span class="k">allocatable</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">dependency</span><span class="p">(:)</span>
+<a id="ln-57" name="ln-57" href="#ln-57"></a><span class="w">        </span><span class="k">class</span><span class="p">(</span><span class="n">dependency_config_t</span><span class="p">),</span><span class="w"> </span><span class="k">allocatable</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">dependency</span><span class="p">(:)</span>
 <a id="ln-58" name="ln-58" href="#ln-58"></a>
 <a id="ln-59" name="ln-59" href="#ln-59"></a><span class="w">        </span><span class="k">contains</span>
 <a id="ln-60" name="ln-60" href="#ln-60"></a>
@@ -250,7 +250,7 @@
 <a id="ln-77" name="ln-77" href="#ln-77"></a>
 <a id="ln-78" name="ln-78" href="#ln-78"></a><span class="w">    </span><span class="k">contains</span>
 <a id="ln-79" name="ln-79" href="#ln-79"></a>
-<a id="ln-80" name="ln-80" href="#ln-80"></a><span class="k">    elemental subroutine </span><span class="n">destroy</span><span class="p">(</span><span class="n">this</span><span class="p">)</span>
+<a id="ln-80" name="ln-80" href="#ln-80"></a><span class="k">    impure elemental subroutine </span><span class="n">destroy</span><span class="p">(</span><span class="n">this</span><span class="p">)</span>
 <a id="ln-81" name="ln-81" href="#ln-81"></a><span class="w">        </span><span class="k">class</span><span class="p">(</span><span class="n">metapackage_t</span><span class="p">),</span><span class="w"> </span><span class="k">intent</span><span class="p">(</span><span class="n">inout</span><span class="p">)</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">this</span>
 <a id="ln-82" name="ln-82" href="#ln-82"></a><span class="w">        </span><span class="n">this</span><span class="p">%</span><span class="n">has_link_libraries</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">.</span><span class="n">false</span><span class="p">.</span>
 <a id="ln-83" name="ln-83" href="#ln-83"></a><span class="w">        </span><span class="n">this</span><span class="p">%</span><span class="n">has_link_flags</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">.</span><span class="n">false</span><span class="p">.</span>
@@ -415,12 +415,12 @@
 <a id="ln-242" name="ln-242" href="#ln-242"></a><span class="w">    </span><span class="k">end subroutine </span><span class="n">resolve_package_config</span>
 <a id="ln-243" name="ln-243" href="#ln-243"></a>
 <a id="ln-244" name="ln-244" href="#ln-244"></a><span class="w">    </span><span class="c">!&gt; Add one dependency to array with a loop (gcc-15 bug on array initializer)</span>
-<a id="ln-245" name="ln-245" href="#ln-245"></a><span class="w">    </span><span class="k">pure subroutine </span><span class="n">add_dependency_config_one</span><span class="p">(</span><span class="n">list</span><span class="p">,</span><span class="n">new</span><span class="p">)</span>
-<a id="ln-246" name="ln-246" href="#ln-246"></a><span class="w">        </span><span class="k">type</span><span class="p">(</span><span class="n">dependency_config_t</span><span class="p">),</span><span class="w"> </span><span class="k">allocatable</span><span class="p">,</span><span class="w"> </span><span class="k">intent</span><span class="p">(</span><span class="n">inout</span><span class="p">)</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">list</span><span class="p">(:)</span>
+<a id="ln-245" name="ln-245" href="#ln-245"></a><span class="w">    </span><span class="k">subroutine </span><span class="n">add_dependency_config_one</span><span class="p">(</span><span class="n">list</span><span class="p">,</span><span class="n">new</span><span class="p">)</span>
+<a id="ln-246" name="ln-246" href="#ln-246"></a><span class="w">        </span><span class="k">class</span><span class="p">(</span><span class="n">dependency_config_t</span><span class="p">),</span><span class="w"> </span><span class="k">allocatable</span><span class="p">,</span><span class="w"> </span><span class="k">intent</span><span class="p">(</span><span class="n">inout</span><span class="p">)</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">list</span><span class="p">(:)</span>
 <a id="ln-247" name="ln-247" href="#ln-247"></a><span class="w">        </span><span class="k">type</span><span class="p">(</span><span class="n">dependency_config_t</span><span class="p">),</span><span class="w"> </span><span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">)</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">new</span>
 <a id="ln-248" name="ln-248" href="#ln-248"></a>
 <a id="ln-249" name="ln-249" href="#ln-249"></a><span class="w">        </span><span class="kt">integer</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">i</span><span class="p">,</span><span class="n">n</span>
-<a id="ln-250" name="ln-250" href="#ln-250"></a><span class="w">        </span><span class="k">type</span><span class="p">(</span><span class="n">dependency_config_t</span><span class="p">),</span><span class="w"> </span><span class="k">allocatable</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">tmp</span><span class="p">(:)</span>
+<a id="ln-250" name="ln-250" href="#ln-250"></a><span class="w">        </span><span class="k">class</span><span class="p">(</span><span class="n">dependency_config_t</span><span class="p">),</span><span class="w"> </span><span class="k">allocatable</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">tmp</span><span class="p">(:)</span>
 <a id="ln-251" name="ln-251" href="#ln-251"></a>
 <a id="ln-252" name="ln-252" href="#ln-252"></a><span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="nb">allocated</span><span class="p">(</span><span class="n">list</span><span class="p">))</span><span class="w"> </span><span class="k">then</span>
 <a id="ln-253" name="ln-253" href="#ln-253"></a><span class="k">           </span><span class="n">n</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">size</span><span class="p">(</span><span class="n">list</span><span class="p">)</span>
@@ -429,43 +429,49 @@
 <a id="ln-256" name="ln-256" href="#ln-256"></a><span class="w">        </span><span class="k">end if</span>
 <a id="ln-257" name="ln-257" href="#ln-257"></a>
 <a id="ln-258" name="ln-258" href="#ln-258"></a><span class="k">        allocate</span><span class="p">(</span><span class="n">tmp</span><span class="p">(</span><span class="n">n</span><span class="o">+</span><span class="mi">1</span><span class="p">))</span>
-<a id="ln-259" name="ln-259" href="#ln-259"></a><span class="w">        </span><span class="k">do </span><span class="n">i</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span><span class="n">n</span>
-<a id="ln-260" name="ln-260" href="#ln-260"></a><span class="w">           </span><span class="n">tmp</span><span class="p">(</span><span class="n">i</span><span class="p">)</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">list</span><span class="p">(</span><span class="n">i</span><span class="p">)</span>
-<a id="ln-261" name="ln-261" href="#ln-261"></a><span class="w">        </span><span class="k">end do</span>
-<a id="ln-262" name="ln-262" href="#ln-262"></a><span class="k">        </span><span class="n">tmp</span><span class="p">(</span><span class="n">n</span><span class="o">+</span><span class="mi">1</span><span class="p">)</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">new</span>
-<a id="ln-263" name="ln-263" href="#ln-263"></a><span class="w">        </span><span class="k">call </span><span class="nb">move_alloc</span><span class="p">(</span><span class="n">from</span><span class="o">=</span><span class="n">tmp</span><span class="p">,</span><span class="n">to</span><span class="o">=</span><span class="n">list</span><span class="p">)</span>
-<a id="ln-264" name="ln-264" href="#ln-264"></a>
-<a id="ln-265" name="ln-265" href="#ln-265"></a><span class="w">    </span><span class="k">end subroutine </span><span class="n">add_dependency_config_one</span>
-<a id="ln-266" name="ln-266" href="#ln-266"></a>
-<a id="ln-267" name="ln-267" href="#ln-267"></a><span class="w">    </span><span class="c">!&gt; Add multiple dependencies to array with a loop (gcc-15 bug on array initializer)</span>
-<a id="ln-268" name="ln-268" href="#ln-268"></a><span class="w">    </span><span class="k">pure subroutine </span><span class="n">add_dependency_config_many</span><span class="p">(</span><span class="n">list</span><span class="p">,</span><span class="n">new</span><span class="p">)</span>
-<a id="ln-269" name="ln-269" href="#ln-269"></a><span class="w">        </span><span class="k">type</span><span class="p">(</span><span class="n">dependency_config_t</span><span class="p">),</span><span class="w"> </span><span class="k">allocatable</span><span class="p">,</span><span class="w"> </span><span class="k">intent</span><span class="p">(</span><span class="n">inout</span><span class="p">)</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">list</span><span class="p">(:)</span>
-<a id="ln-270" name="ln-270" href="#ln-270"></a><span class="w">        </span><span class="k">type</span><span class="p">(</span><span class="n">dependency_config_t</span><span class="p">),</span><span class="w"> </span><span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">)</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">new</span><span class="p">(:)</span>
-<a id="ln-271" name="ln-271" href="#ln-271"></a>
-<a id="ln-272" name="ln-272" href="#ln-272"></a><span class="w">        </span><span class="kt">integer</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">i</span><span class="p">,</span><span class="n">n</span><span class="p">,</span><span class="n">add</span>
-<a id="ln-273" name="ln-273" href="#ln-273"></a><span class="w">        </span><span class="k">type</span><span class="p">(</span><span class="n">dependency_config_t</span><span class="p">),</span><span class="w"> </span><span class="k">allocatable</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">tmp</span><span class="p">(:)</span>
+<a id="ln-259" name="ln-259" href="#ln-259"></a><span class="w">        </span><span class="k">select type</span><span class="w"> </span><span class="p">(</span><span class="n">tmp</span><span class="p">)</span>
+<a id="ln-260" name="ln-260" href="#ln-260"></a><span class="w">        </span><span class="k">type is</span><span class="w"> </span><span class="p">(</span><span class="n">dependency_config_t</span><span class="p">)</span>
+<a id="ln-261" name="ln-261" href="#ln-261"></a><span class="w">           </span><span class="k">do </span><span class="n">i</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span><span class="n">n</span>
+<a id="ln-262" name="ln-262" href="#ln-262"></a><span class="w">              </span><span class="n">tmp</span><span class="p">(</span><span class="n">i</span><span class="p">)</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">list</span><span class="p">(</span><span class="n">i</span><span class="p">)</span>
+<a id="ln-263" name="ln-263" href="#ln-263"></a><span class="w">           </span><span class="k">end do</span>
+<a id="ln-264" name="ln-264" href="#ln-264"></a><span class="k">           </span><span class="n">tmp</span><span class="p">(</span><span class="n">n</span><span class="o">+</span><span class="mi">1</span><span class="p">)</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">new</span>
+<a id="ln-265" name="ln-265" href="#ln-265"></a><span class="w">        </span><span class="k">end select</span>
+<a id="ln-266" name="ln-266" href="#ln-266"></a><span class="k">        call </span><span class="nb">move_alloc</span><span class="p">(</span><span class="n">from</span><span class="o">=</span><span class="n">tmp</span><span class="p">,</span><span class="n">to</span><span class="o">=</span><span class="n">list</span><span class="p">)</span>
+<a id="ln-267" name="ln-267" href="#ln-267"></a>
+<a id="ln-268" name="ln-268" href="#ln-268"></a><span class="w">    </span><span class="k">end subroutine </span><span class="n">add_dependency_config_one</span>
+<a id="ln-269" name="ln-269" href="#ln-269"></a>
+<a id="ln-270" name="ln-270" href="#ln-270"></a><span class="w">    </span><span class="c">!&gt; Add multiple dependencies to array with a loop (gcc-15 bug on array initializer)</span>
+<a id="ln-271" name="ln-271" href="#ln-271"></a><span class="w">    </span><span class="k">subroutine </span><span class="n">add_dependency_config_many</span><span class="p">(</span><span class="n">list</span><span class="p">,</span><span class="n">new</span><span class="p">)</span>
+<a id="ln-272" name="ln-272" href="#ln-272"></a><span class="w">        </span><span class="k">class</span><span class="p">(</span><span class="n">dependency_config_t</span><span class="p">),</span><span class="w"> </span><span class="k">allocatable</span><span class="p">,</span><span class="w"> </span><span class="k">intent</span><span class="p">(</span><span class="n">inout</span><span class="p">)</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">list</span><span class="p">(:)</span>
+<a id="ln-273" name="ln-273" href="#ln-273"></a><span class="w">        </span><span class="k">type</span><span class="p">(</span><span class="n">dependency_config_t</span><span class="p">),</span><span class="w"> </span><span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">)</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">new</span><span class="p">(:)</span>
 <a id="ln-274" name="ln-274" href="#ln-274"></a>
-<a id="ln-275" name="ln-275" href="#ln-275"></a><span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="nb">allocated</span><span class="p">(</span><span class="n">list</span><span class="p">))</span><span class="w"> </span><span class="k">then</span>
-<a id="ln-276" name="ln-276" href="#ln-276"></a><span class="k">           </span><span class="n">n</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">size</span><span class="p">(</span><span class="n">list</span><span class="p">)</span>
-<a id="ln-277" name="ln-277" href="#ln-277"></a><span class="w">        </span><span class="k">else</span>
-<a id="ln-278" name="ln-278" href="#ln-278"></a><span class="k">           </span><span class="n">n</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span>
-<a id="ln-279" name="ln-279" href="#ln-279"></a><span class="w">        </span><span class="k">end if</span>
-<a id="ln-280" name="ln-280" href="#ln-280"></a>
-<a id="ln-281" name="ln-281" href="#ln-281"></a><span class="k">        </span><span class="n">add</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">size</span><span class="p">(</span><span class="n">new</span><span class="p">)</span>
-<a id="ln-282" name="ln-282" href="#ln-282"></a><span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">add</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="mi">0</span><span class="p">)</span><span class="w"> </span><span class="k">return</span>
+<a id="ln-275" name="ln-275" href="#ln-275"></a><span class="w">        </span><span class="kt">integer</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">i</span><span class="p">,</span><span class="n">n</span><span class="p">,</span><span class="n">add</span>
+<a id="ln-276" name="ln-276" href="#ln-276"></a><span class="w">        </span><span class="k">class</span><span class="p">(</span><span class="n">dependency_config_t</span><span class="p">),</span><span class="w"> </span><span class="k">allocatable</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">tmp</span><span class="p">(:)</span>
+<a id="ln-277" name="ln-277" href="#ln-277"></a>
+<a id="ln-278" name="ln-278" href="#ln-278"></a><span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="nb">allocated</span><span class="p">(</span><span class="n">list</span><span class="p">))</span><span class="w"> </span><span class="k">then</span>
+<a id="ln-279" name="ln-279" href="#ln-279"></a><span class="k">           </span><span class="n">n</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">size</span><span class="p">(</span><span class="n">list</span><span class="p">)</span>
+<a id="ln-280" name="ln-280" href="#ln-280"></a><span class="w">        </span><span class="k">else</span>
+<a id="ln-281" name="ln-281" href="#ln-281"></a><span class="k">           </span><span class="n">n</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span>
+<a id="ln-282" name="ln-282" href="#ln-282"></a><span class="w">        </span><span class="k">end if</span>
 <a id="ln-283" name="ln-283" href="#ln-283"></a>
-<a id="ln-284" name="ln-284" href="#ln-284"></a><span class="k">        allocate</span><span class="p">(</span><span class="n">tmp</span><span class="p">(</span><span class="n">n</span><span class="o">+</span><span class="n">add</span><span class="p">))</span>
-<a id="ln-285" name="ln-285" href="#ln-285"></a><span class="w">        </span><span class="k">do </span><span class="n">i</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span><span class="n">n</span>
-<a id="ln-286" name="ln-286" href="#ln-286"></a><span class="w">           </span><span class="n">tmp</span><span class="p">(</span><span class="n">i</span><span class="p">)</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">list</span><span class="p">(</span><span class="n">i</span><span class="p">)</span>
-<a id="ln-287" name="ln-287" href="#ln-287"></a><span class="w">        </span><span class="k">end do</span>
-<a id="ln-288" name="ln-288" href="#ln-288"></a><span class="k">        do </span><span class="n">i</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span><span class="n">add</span>
-<a id="ln-289" name="ln-289" href="#ln-289"></a><span class="w">           </span><span class="n">tmp</span><span class="p">(</span><span class="n">n</span><span class="o">+</span><span class="n">i</span><span class="p">)</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">new</span><span class="p">(</span><span class="n">i</span><span class="p">)</span>
-<a id="ln-290" name="ln-290" href="#ln-290"></a><span class="w">        </span><span class="k">end do</span>
-<a id="ln-291" name="ln-291" href="#ln-291"></a><span class="k">        call </span><span class="nb">move_alloc</span><span class="p">(</span><span class="n">from</span><span class="o">=</span><span class="n">tmp</span><span class="p">,</span><span class="n">to</span><span class="o">=</span><span class="n">list</span><span class="p">)</span>
-<a id="ln-292" name="ln-292" href="#ln-292"></a>
-<a id="ln-293" name="ln-293" href="#ln-293"></a><span class="w">    </span><span class="k">end subroutine </span><span class="n">add_dependency_config_many</span>
-<a id="ln-294" name="ln-294" href="#ln-294"></a>
-<a id="ln-295" name="ln-295" href="#ln-295"></a><span class="k">end module </span><span class="n">fpm_meta_base</span>
+<a id="ln-284" name="ln-284" href="#ln-284"></a><span class="k">        </span><span class="n">add</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">size</span><span class="p">(</span><span class="n">new</span><span class="p">)</span>
+<a id="ln-285" name="ln-285" href="#ln-285"></a><span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">add</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="mi">0</span><span class="p">)</span><span class="w"> </span><span class="k">return</span>
+<a id="ln-286" name="ln-286" href="#ln-286"></a>
+<a id="ln-287" name="ln-287" href="#ln-287"></a><span class="k">        allocate</span><span class="p">(</span><span class="n">tmp</span><span class="p">(</span><span class="n">n</span><span class="o">+</span><span class="n">add</span><span class="p">))</span>
+<a id="ln-288" name="ln-288" href="#ln-288"></a><span class="w">        </span><span class="k">select type</span><span class="w"> </span><span class="p">(</span><span class="n">tmp</span><span class="p">)</span>
+<a id="ln-289" name="ln-289" href="#ln-289"></a><span class="w">        </span><span class="k">type is</span><span class="w"> </span><span class="p">(</span><span class="n">dependency_config_t</span><span class="p">)</span>
+<a id="ln-290" name="ln-290" href="#ln-290"></a><span class="w">           </span><span class="k">do </span><span class="n">i</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span><span class="n">n</span>
+<a id="ln-291" name="ln-291" href="#ln-291"></a><span class="w">              </span><span class="n">tmp</span><span class="p">(</span><span class="n">i</span><span class="p">)</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">list</span><span class="p">(</span><span class="n">i</span><span class="p">)</span>
+<a id="ln-292" name="ln-292" href="#ln-292"></a><span class="w">           </span><span class="k">end do</span>
+<a id="ln-293" name="ln-293" href="#ln-293"></a><span class="k">           do </span><span class="n">i</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span><span class="n">add</span>
+<a id="ln-294" name="ln-294" href="#ln-294"></a><span class="w">              </span><span class="n">tmp</span><span class="p">(</span><span class="n">n</span><span class="o">+</span><span class="n">i</span><span class="p">)</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">new</span><span class="p">(</span><span class="n">i</span><span class="p">)</span>
+<a id="ln-295" name="ln-295" href="#ln-295"></a><span class="w">           </span><span class="k">end do</span>
+<a id="ln-296" name="ln-296" href="#ln-296"></a><span class="k">        end select</span>
+<a id="ln-297" name="ln-297" href="#ln-297"></a><span class="k">        call </span><span class="nb">move_alloc</span><span class="p">(</span><span class="n">from</span><span class="o">=</span><span class="n">tmp</span><span class="p">,</span><span class="n">to</span><span class="o">=</span><span class="n">list</span><span class="p">)</span>
+<a id="ln-298" name="ln-298" href="#ln-298"></a>
+<a id="ln-299" name="ln-299" href="#ln-299"></a><span class="w">    </span><span class="k">end subroutine </span><span class="n">add_dependency_config_many</span>
+<a id="ln-300" name="ln-300" href="#ln-300"></a>
+<a id="ln-301" name="ln-301" href="#ln-301"></a><span class="k">end module </span><span class="n">fpm_meta_base</span>
 </pre></div>
 
       </section>
@@ -487,7 +493,7 @@
             <p class="text-end">
               Documentation generated by
               <a href="https://github.com/Fortran-FOSS-Programmers/ford">FORD</a>
- on 2026-10-22 12:24 +0000             </p>
+ on 2026-10-22 17:21 +0000             </p>
           </div>
         </div>
         <br>

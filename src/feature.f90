@@ -62,34 +62,34 @@ module fpm_manifest_feature
         type(platform_config_t) :: platform
         
         !> Build configuration
-        type(build_config_t), allocatable :: build
+        class(build_config_t), allocatable :: build
         
         !> Installation configuration
-        type(install_config_t), allocatable :: install
+        class(install_config_t), allocatable :: install
         
         !> Fortran configuration
-        type(fortran_config_t), allocatable :: fortran
+        class(fortran_config_t), allocatable :: fortran
         
         !> Library configuration
-        type(library_config_t), allocatable :: library
+        class(library_config_t), allocatable :: library
         
         !> Executable configurations
-        type(executable_config_t), allocatable :: executable(:)
+        class(executable_config_t), allocatable :: executable(:)
         
         !> Dependencies
-        type(dependency_config_t), allocatable :: dependency(:)
+        class(dependency_config_t), allocatable :: dependency(:)
         
         !> Development dependencies
-        type(dependency_config_t), allocatable :: dev_dependency(:)
+        class(dependency_config_t), allocatable :: dev_dependency(:)
         
         !> Examples
-        type(example_config_t), allocatable :: example(:)
+        class(example_config_t), allocatable :: example(:)
         
         !> Tests
-        type(test_config_t), allocatable :: test(:)
+        class(test_config_t), allocatable :: test(:)
         
         !> Preprocessor configuration
-        type(preprocess_config_t), allocatable :: preprocess(:)
+        class(preprocess_config_t), allocatable :: preprocess(:)
         
         !> Metapackage data
         type(metapackage_config_t) :: meta        
