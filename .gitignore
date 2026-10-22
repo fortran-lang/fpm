@@ -9,3 +9,6 @@ project/
 # Temporary files
 *.swp
 
+# Local AI agent instruction files
+AGENTS.md
+CLAUDE.md
