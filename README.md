@@ -16,7 +16,7 @@ applications and libraries.
 
 Fpm is an early prototype and is evolving rapidly.
 You can use it to build and package your Fortran projects, as well as to use
-[existing fpm packages](https://github.com/fortran-lang/fpm-registry) as dependencies.
+[existing fpm packages](https://registry.fortran-lang.org) as dependencies.
 Fpm's behavior and user interface may change as it evolves, however as fpm
 matures and we enter production, we will aim to stay backwards compatible.
 Please follow the [issues](https://github.com/fortran-lang/fpm/issues) to
@@ -110,12 +110,19 @@ with the following contents and initialized as a git repository.
 * `fpm build` – build your library, executables and tests
 * `fpm run` – run executables
 * `fpm test` – run tests
+* `fpm search` – search the local or remote registry
 * `fpm install` - installs the executables locally
 
 The command `fpm run` can optionally accept the name of the specific executable
 to run, as can `fpm test`; like `fpm run specific_executable`. Command line
 arguments can also be passed to the executable(s) or test(s) with the option
 `-- some arguments`.
+
+Sample queries:
+
+* `fpm search --query mpi`
+* `fpm search --namespace fortran-lang --package stdlib`
+* `fpm search --license MIT --sort-by name --sort asc`
 
 See additional instructions in the [Packaging guide](PACKAGING.md) or
 the [manifest reference](https://fpm.fortran-lang.org/spec/manifest.html).

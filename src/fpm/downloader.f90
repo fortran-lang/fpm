@@ -62,10 +62,10 @@ contains
 
     if (which('curl') /= '') then
       print *, "Downloading '"//url//"' -> '"//tmp_pkg_file//"'"
-      call execute_command_line('curl '//url//' -s -o '//tmp_pkg_file, exitstat=stat)
+      call execute_command_line('curl "'//url//'" -s -o '//tmp_pkg_file, exitstat=stat)
     else if (which('wget') /= '') then
       print *, "Downloading '"//url//"' -> '"//tmp_pkg_file//"'"
-      call execute_command_line('wget '//url//' -q -O '//tmp_pkg_file, exitstat=stat)
+      call execute_command_line('wget "'//url//'" -q -O '//tmp_pkg_file, exitstat=stat)
     else
       call fatal_error(error, "Neither 'curl' nor 'wget' installed."); return
     end if
@@ -96,14 +96,18 @@ contains
 
     if (which('curl') /= '') then
       print *, 'Uploading package ...'
-      call run('curl -X POST -H "Content-Type: multipart/form-data" '// &
+      ! `--fail-with-body` makes curl exit non-zero on an HTTP error while still
+      ! printing the response body. Without it curl returns 0 for 4xx/5xx, so a
+      ! rejected upload (bad token, invalid license, ...) looked like a success.
+      ! Requires curl >= 7.76, which every supported platform ships.
+      call run('curl -X POST --fail-with-body -H "Content-Type: multipart/form-data" '// &
       & form_data_str//endpoint, exitstat=stat, echo=verbose)
     else
       call fatal_error(error, "'curl' not installed."); return
     end if
 
     if (stat /= 0) then
-      call fatal_error(error, "Error uploading package to registry."); return
+      call fatal_error(error, "Error uploading package to registry (HTTP error, see response above)."); return
     end if
   end
 
