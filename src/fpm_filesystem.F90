@@ -49,6 +49,12 @@ module fpm_filesystem
             character(kind=c_char), intent(in) :: path(*)
             integer(kind=c_int) :: r
         end function c_is_dir
+
+        function c_mkdir_p(path) result(r) bind(c, name="c_mkdir_p")
+            import c_char, c_int
+            character(kind=c_char), intent(in) :: path(*)
+            integer(kind=c_int) :: r
+        end function c_mkdir_p
     end interface
 #endif
 
@@ -380,7 +386,14 @@ subroutine mkdir(dir, echo)
 
     select case (get_os_type())
         case (OS_UNKNOWN, OS_LINUX, OS_MACOS, OS_CYGWIN, OS_SOLARIS, OS_FREEBSD, OS_OPENBSD)
+#ifndef FPM_BOOTSTRAP
+            if (present(echo)) then
+                if (echo) print *, '+ mkdir -p ', dir
+            end if
+            stat = c_mkdir_p(dir(1:len_trim(dir))//c_null_char)
+#else
             call run('mkdir -p ' // dir, exitstat=stat,echo=echo,verbose=.false.)
+#endif
 
         case (OS_WINDOWS)
             call run("mkdir " // windows_path(dir), &
