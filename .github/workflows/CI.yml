@@ -79,6 +79,12 @@ jobs:
           - os: macos-15
             toolchain: {compiler: gcc, version: 15}
             release-flags: --flag '-g -fbacktrace -Og -fcheck=all,no-recursion -Wno-external-argument-mismatch'
+          # Newest macOS image, test only: release artifacts stay on the oldest
+          # supported image (macos-15) so that they run on older macOS versions.
+          - os: macos-26
+            os-arch: macos26-arm64
+            toolchain: {compiler: gcc, version: 15}
+            release-flags: --features openmp --flag '-g -fbacktrace -O3'
 
     steps:
     - name: Checkout code

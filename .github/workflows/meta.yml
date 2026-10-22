@@ -25,6 +25,10 @@ env:
   HOMEBREW_NO_GITHUB_API: 1
   HOMEBREW_NO_INSTALL_CLEANUP: 1
   HOMEBREW_NO_INSTALLED_DEPENDENTS_CHECK: 1
+  # Some runner VMs expose an InfiniBand device that UCX cannot use
+  # (ibv_create_srq fails in MPI_Init): single-node tests only need
+  # shared memory and TCP.
+  UCX_TLS: self,sm,tcp
 
 jobs:
 
