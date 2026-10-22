@@ -63,9 +63,10 @@ subroutine build_package(targets,model,verbose,dry_run)
     !> is still created
     logical, intent(in) :: dry_run
  
-    integer :: i, j
+    integer :: i, j, e, kk, n_ready, n_completed, n_done
     type(build_target_ptr), allocatable :: queue(:)
     integer, allocatable :: schedule_ptr(:), stat(:)
+    integer, allocatable :: n_unmet(:), rdep_ptr(:), rdep_idx(:), ready(:)
     logical :: build_failed, skip_current
     type(string_t), allocatable :: build_dirs(:)
     type(string_t) :: temp
@@ -95,7 +96,9 @@ subroutine build_package(targets,model,verbose,dry_run)
 
     end do
 
-    ! Construct build schedule queue
+    ! Construct the (topologically ordered) build queue. schedule_ptr (region
+    ! boundaries) is retained only to satisfy schedule_targets' intent(out); the
+    ! dependency-driven scheduler below does not use regions.
     call schedule_targets(queue, schedule_ptr, targets)
 
     ! Check if queue is empty
@@ -117,49 +120,93 @@ subroutine build_package(targets,model,verbose,dry_run)
 
     progress = build_progress_t(queue,plain_output,model%build_dir)
 
-    ! Loop over parallel schedule regions
-    do i=1,size(schedule_ptr)-1
+    ! Dependency-driven schedule: a target becomes ready as soon as its own
+    ! dependencies are built, with no per-region barrier. Workers pop ready
+    ! targets, build them, then release any dependent that now has all of its
+    ! dependencies satisfied.
+    call build_dependency_graph(queue, n_unmet, rdep_ptr, rdep_idx)
 
-        ! Build targets in schedule region i
-        !$omp parallel do default(shared) private(skip_current) schedule(dynamic,1)
-        do j=schedule_ptr(i),(schedule_ptr(i+1)-1)
+    allocate(ready(size(queue)))
+    n_ready = 0
+    do j = 1, size(queue)
+        if (n_unmet(j) == 0) then
+            n_ready = n_ready + 1
+            ready(n_ready) = j
+        end if
+    end do
+    n_completed = 0
 
-            ! Check if build already failed
+    !$omp parallel default(shared) private(j, skip_current, e, kk)
+    do
+
+        ! Pop a ready target
+        j = 0
+        !$omp critical(fpm_sched)
+        if (n_ready > 0) then
+            j = ready(n_ready)
+            n_ready = n_ready - 1
+        end if
+        !$omp end critical(fpm_sched)
+
+        if (j == 0) then
+            ! No ready work: stop once every target is accounted for, else other
+            ! threads are still building and will release more dependents. This
+            ! is a busy-wait on the scheduler lock; a yield/backoff would be
+            ! cleaner but compile time dominates in practice.
             !$omp atomic read
-            skip_current = build_failed
-
-            if (.not.skip_current) then
-                if (.not.dry_run) call progress%compiling_status(j)
-                call build_target(model,queue(j)%ptr,verbose,dry_run, &
-                                  progress%compile_commands,stat(j))
-                if (.not.dry_run) call progress%completed_status(j,stat(j))
-            end if
-
-            ! Set global flag if this target failed to build
-            if (stat(j) /= 0) then
-                !$omp atomic write
-                build_failed = .true.
-            end if
-
-        end do
-
-        ! Check if this schedule region failed: exit with message if failed
-        if (build_failed) then
-            write(*,*)
-            do j=1,size(stat)
-                if (stat(j) /= 0) Then
-                    call print_build_log(queue(j)%ptr)
-                end if
-            end do
-            do j=1,size(stat)
-                if (stat(j) /= 0) then
-                    write(stderr,'(*(g0:,1x))') '<ERROR> Compilation failed for object "',basename(queue(j)%ptr%output_file),'"'
-                end if
-            end do
-            call fpm_stop(1,'stopping due to failed compilation')
+            n_done = n_completed
+            if (n_done >= size(queue)) exit
+            cycle
         end if
 
+        ! Check if build already failed
+        !$omp atomic read
+        skip_current = build_failed
+
+        if (.not.skip_current) then
+            if (.not.dry_run) call progress%compiling_status(j)
+            call build_target(model,queue(j)%ptr,verbose,dry_run, &
+                              progress%compile_commands,stat(j))
+            if (.not.dry_run) call progress%completed_status(j,stat(j))
+        end if
+
+        ! Set global flag if this target failed to build
+        if (stat(j) /= 0) then
+            !$omp atomic write
+            build_failed = .true.
+        end if
+
+        ! Mark complete and release dependents
+        !$omp critical(fpm_sched)
+        n_completed = n_completed + 1
+        do e = rdep_ptr(j), rdep_ptr(j+1)-1
+            kk = rdep_idx(e)
+            n_unmet(kk) = n_unmet(kk) - 1
+            if (n_unmet(kk) == 0) then
+                n_ready = n_ready + 1
+                ready(n_ready) = kk
+            end if
+        end do
+        !$omp end critical(fpm_sched)
+
     end do
+    !$omp end parallel
+
+    ! Report any failure after the parallel region
+    if (build_failed) then
+        write(*,*)
+        do j=1,size(stat)
+            if (stat(j) /= 0) then
+                call print_build_log(queue(j)%ptr)
+            end if
+        end do
+        do j=1,size(stat)
+            if (stat(j) /= 0) then
+                write(stderr,'(*(g0:,1x))') '<ERROR> Compilation failed for object "',basename(queue(j)%ptr%output_file),'"'
+            end if
+        end do
+        call fpm_stop(1,'stopping due to failed compilation')
+    end if
 
     if (.not.dry_run) call progress%success()
     call progress%dump_commands(error)
@@ -310,6 +357,83 @@ subroutine schedule_targets(queue, schedule_ptr, targets)
     end do
 
 end subroutine schedule_targets
+
+
+!> Build the reverse dependency graph over the queued targets.
+!>
+!> `n_unmet(j)` is the number of target `j`'s dependencies that are also in the
+!> queue (and so must build first). The dependents of each target `m` are stored
+!> in compressed-sparse-row form: `rdep_idx(rdep_ptr(m):rdep_ptr(m+1)-1)`.
+subroutine build_dependency_graph(queue, n_unmet, rdep_ptr, rdep_idx)
+    type(build_target_ptr), intent(in) :: queue(:)
+    integer, allocatable, intent(out) :: n_unmet(:), rdep_ptr(:), rdep_idx(:)
+
+    integer :: n, k, d, m, e, n_edges
+    integer, allocatable :: edge_k(:), edge_m(:), rdeg(:), fillp(:)
+
+    n = size(queue)
+    allocate(n_unmet(n), source=0)
+
+    ! Count edges (target k depends on target m, both queued)
+    n_edges = 0
+    do k = 1, n
+        do d = 1, size(queue(k)%ptr%dependencies)
+            if (queue_index(queue, queue(k)%ptr%dependencies(d)%ptr) > 0) n_edges = n_edges + 1
+        end do
+    end do
+
+    allocate(edge_k(n_edges), edge_m(n_edges))
+    e = 0
+    do k = 1, n
+        do d = 1, size(queue(k)%ptr%dependencies)
+            m = queue_index(queue, queue(k)%ptr%dependencies(d)%ptr)
+            if (m > 0) then
+                e = e + 1
+                edge_k(e) = k
+                edge_m(e) = m
+                n_unmet(k) = n_unmet(k) + 1
+            end if
+        end do
+    end do
+
+    ! Compressed-sparse-row reverse adjacency, grouped by dependency m
+    allocate(rdeg(n), source=0)
+    do e = 1, n_edges
+        rdeg(edge_m(e)) = rdeg(edge_m(e)) + 1
+    end do
+    allocate(rdep_ptr(n+1))
+    rdep_ptr(1) = 1
+    do k = 1, n
+        rdep_ptr(k+1) = rdep_ptr(k) + rdeg(k)
+    end do
+    allocate(rdep_idx(n_edges))
+    allocate(fillp(n))
+    fillp = rdep_ptr(1:n)
+    do e = 1, n_edges
+        m = edge_m(e)
+        rdep_idx(fillp(m)) = edge_k(e)
+        fillp(m) = fillp(m) + 1
+    end do
+
+end subroutine build_dependency_graph
+
+
+!> Index of a target within the queue, or 0 if it is not queued.
+integer function queue_index(queue, target) result(idx)
+    type(build_target_ptr), intent(in) :: queue(:)
+    type(build_target_t), intent(in), target :: target
+
+    integer :: i
+
+    idx = 0
+    do i = 1, size(queue)
+        if (associated(queue(i)%ptr, target)) then
+            idx = i
+            return
+        end if
+    end do
+
+end function queue_index
 
 
 !> Call compile/link command for a single target.
