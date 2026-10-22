@@ -8,6 +8,13 @@
 !> suffixes = ["F90", "f90"]
 !> directories = ["src/feature1", "src/models"]
 !> macros = []
+!>
+!> [preprocess.fypp]
+!> command    = "fypp"
+!> suffixes   = [".fypp"]
+!> macros     = ["WITH_QP", "MAXRANK=4"]
+!> arguments  = ["--line-marker", "--strict"]
+!> depfile    = true
 !> ```
 
 module fpm_manifest_preprocess
@@ -37,6 +44,20 @@ module fpm_manifest_preprocess
       !> Macros to be defined for the preprocessor
       type(string_t), allocatable :: macros(:)
 
+      !> Command to invoke the preprocessor (e.g. "fypp", "cpp")
+      !> Presence of this field is the activation key for external execution.
+      character(len=:), allocatable :: command
+
+      !> Additional CLI arguments passed to the preprocessor
+      type(string_t), allocatable :: arguments(:)
+
+      !> Output file suffix (default: ".f90")
+      character(len=:), allocatable :: output_suffix
+
+      !> Whether this tool supports --depfile for transitive include tracking.
+      !> Opt-in; default .false. so custom tools are not passed unsupported flags.
+      logical :: depfile = .false.
+
    contains
 
       !> Print information on this instance
@@ -59,6 +80,7 @@ module fpm_manifest_preprocess
       !> Properties
       procedure :: is_cpp
       procedure :: is_fypp
+      procedure :: is_external
 
    end type preprocess_config_t
 
@@ -115,6 +137,15 @@ contains
       call get_list(table, "macros", self%macros, error)
       if (allocated(error)) return
 
+      call get_value(table, "command", self%command)
+
+      call get_list(table, "arguments", self%arguments, error)
+      if (allocated(error)) return
+
+      call get_value(table, "output-suffix", self%output_suffix)
+
+      call get_value(table, "depfile", self%depfile, .false.)
+
    end subroutine new_preprocess_config
 
    !> Check local schema for allowed entries
@@ -136,7 +167,7 @@ contains
       do ikey = 1, size(list)
          select case(list(ikey)%key)
          !> Valid keys.
-         case("suffixes", "directories", "macros")
+         case("suffixes", "directories", "macros", "command", "arguments", "output-suffix", "depfile")
          case default
             call syntax_error(error, "Key '"//list(ikey)%key//"' not allowed in preprocessor '"//name//"'."); exit
          end select
@@ -224,6 +255,21 @@ contains
             write(unit, fmt) "   - " // self%macros(ilink)%s
          end do
       end if
+      if (allocated(self%command)) then
+         write(unit, fmt) "- command", self%command
+      end if
+      if (allocated(self%arguments)) then
+         write(unit, fmt) " - arguments"
+         do ilink = 1, size(self%arguments)
+            write(unit, fmt) "   - " // self%arguments(ilink)%s
+         end do
+      end if
+      if (allocated(self%output_suffix)) then
+         write(unit, fmt) "- output-suffix", self%output_suffix
+      end if
+      if (self%depfile) then
+         write(unit, fmt) "- depfile", "true"
+      end if
 
    end subroutine info
 
@@ -245,6 +291,20 @@ contains
             if (.not.(this%suffixes==other%suffixes)) return
             if (.not.(this%directories==other%directories)) return
             if (.not.(this%macros==other%macros)) return
+
+            if (allocated(this%command).neqv.allocated(other%command)) return
+            if (allocated(this%command)) then
+                if (.not.(this%command==other%command)) return
+            endif
+
+            if (.not.(this%arguments==other%arguments)) return
+
+            if (allocated(this%output_suffix).neqv.allocated(other%output_suffix)) return
+            if (allocated(this%output_suffix)) then
+                if (.not.(this%output_suffix==other%output_suffix)) return
+            endif
+
+            if (.not.(this%depfile.eqv.other%depfile)) return
 
          class default
             ! Not the same type
@@ -276,6 +336,14 @@ contains
        if (allocated(error)) return
        call set_list(table, "macros", self%macros, error)
        if (allocated(error)) return
+       call set_string(table, "command", self%command, error)
+       if (allocated(error)) return
+       call set_list(table, "arguments", self%arguments, error)
+       if (allocated(error)) return
+       call set_string(table, "output-suffix", self%output_suffix, error)
+       if (allocated(error)) return
+       call set_value(table, "depfile", self%depfile, error, class_name)
+       if (allocated(error)) return
 
      end subroutine dump_to_toml
 
@@ -298,6 +366,11 @@ contains
         if (allocated(error)) return
         call get_list(table, "macros", self%macros, error)
         if (allocated(error)) return
+        call get_value(table, "command", self%command)
+        call get_list(table, "arguments", self%arguments, error)
+        if (allocated(error)) return
+        call get_value(table, "output-suffix", self%output_suffix)
+        call get_value(table, "depfile", self%depfile, .false.)
 
      end subroutine load_from_toml
 
@@ -309,6 +382,10 @@ contains
        if (allocated(this%suffixes))deallocate(this%suffixes)
        if (allocated(this%directories))deallocate(this%directories)
        if (allocated(this%macros))deallocate(this%macros)
+       if (allocated(this%command))deallocate(this%command)
+       if (allocated(this%arguments))deallocate(this%arguments)
+       if (allocated(this%output_suffix))deallocate(this%output_suffix)
+       this%depfile = .false.
 
     end subroutine destroy
 
@@ -317,11 +394,7 @@ contains
        class(preprocess_config_t), intent(inout) :: this
         type(preprocess_config_t), intent(in) :: that
 
-        if (.not.that%is_cpp()) then
-            write(stderr, '(a)') 'Warning: Preprocessor ' // that%name // &
-                                 ' is not supported; will ignore it'
-            return
-        end if
+        ! Accept any preprocessor name (cpp, fypp, or user-defined)
 
         if (.not.allocated(this%name)) this%name = that%name
 
@@ -337,6 +410,23 @@ contains
         if (allocated(that%directories)) &
         call add_strings(this%directories, that%directories)
 
+        ! Set command if provided
+        if (allocated(that%command)) then
+            if (.not.allocated(this%command)) this%command = that%command
+        end if
+
+        ! Add arguments
+        if (allocated(that%arguments)) &
+        call add_strings(this%arguments, that%arguments)
+
+        ! Set output_suffix if provided
+        if (allocated(that%output_suffix)) then
+            if (.not.allocated(this%output_suffix)) this%output_suffix = that%output_suffix
+        end if
+
+        ! Set depfile if source enables it
+        if (that%depfile) this%depfile = .true.
+
     end subroutine add_config
 
     ! Check cpp
@@ -346,11 +436,18 @@ contains
        if (allocated(this%name)) is_cpp = this%name == "cpp"
     end function is_cpp
 
-    ! Check cpp
+    ! Check fypp
     logical function is_fypp(this)
        class(preprocess_config_t), intent(in) :: this
        is_fypp = .false.
        if (allocated(this%name)) is_fypp = this%name == "fypp"
     end function is_fypp
+
+    ! Check if this preprocessor requires external execution
+    ! Returns .true. when the command field is allocated (the activation key)
+    elemental logical function is_external(this)
+       class(preprocess_config_t), intent(in) :: this
+       is_external = allocated(this%command)
+    end function is_external
 
 end module fpm_manifest_preprocess
