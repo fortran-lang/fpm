@@ -692,11 +692,10 @@ subroutine cmd_run(settings,test)
 
     end if
 
-    call build_package(targets,model,verbose=settings%verbose,dry_run=settings%list)
-
     if (settings%list) then
          call compact_list()
     else
+        call build_package(targets,model,verbose=settings%verbose,dry_run=.false.)
 
         ! Save current library path and set a new one that includes the local 
         ! dynamic library folders
