@@ -158,6 +158,11 @@ jobs:
         echo "FPM_FC=flang" >> $GITHUB_ENV
         echo "FPM_CC=clang" >> $GITHUB_ENV
         echo "FPM_CXX=clang++" >> $GITHUB_ENV
+        if [ "$RUNNER_OS" = Windows ]; then
+          # Flang may keep string temporaries on the stack across loop iterations
+          # (llvm/llvm-project#194828): reserve 8 MB as on Linux, not 1 MB
+          echo "FPM_LDFLAGS=-Wl,--stack,8388608" >> $GITHUB_ENV
+        fi
         flang --version
 
     # Phase 1: Bootstrap fpm with existing version
