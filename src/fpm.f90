@@ -594,12 +594,12 @@ subroutine cmd_run(settings,test)
     type(error_t), allocatable :: error
     type(package_config_t), allocatable :: package
     type(fpm_model_t), allocatable :: model
-    type(build_target_ptr), allocatable :: targets(:)
+    type(build_target_ptr), allocatable :: targets(:), build_targets(:)
     type(string_t) :: exe_cmd
     type(string_t), allocatable :: executables(:)
     type(build_target_t), pointer :: exe_target
     type(srcfile_t), pointer :: exe_source
-    integer :: run_scope,firsterror
+    integer :: run_scope,firsterror,n_build_targets
     integer, allocatable :: stat(:),target_ID(:)
     character(len=:),allocatable :: line,run_cmd,library_path
     
@@ -630,7 +630,8 @@ subroutine cmd_run(settings,test)
     ! Enumerate executable targets to run
     col_width = -1
     found(:) = .false.
-    allocate(executables(size(targets)),target_ID(size(targets)))
+    allocate(executables(size(targets)),target_ID(size(targets)),build_targets(size(targets)))
+    n_build_targets = 0
     enumerate: do i=1,size(targets)
         exe_target => targets(i)%ptr
         if (should_be_run(settings,run_scope,exe_target)) then  
@@ -646,6 +647,7 @@ subroutine cmd_run(settings,test)
             
             exe_cmd%s      = exe_target%output_file
             executables(i) = exe_cmd
+            call add_target_closure(build_targets,n_build_targets,exe_target)
             
         else
             target_ID(i)   = huge(target_ID(i))
@@ -692,7 +694,7 @@ subroutine cmd_run(settings,test)
 
     end if
 
-    call build_package(targets,model,verbose=settings%verbose,dry_run=settings%list)
+    call build_package(build_targets(:n_build_targets),model,verbose=settings%verbose,dry_run=settings%list)
 
     if (settings%list) then
          call compact_list()
@@ -783,6 +785,25 @@ subroutine cmd_run(settings,test)
         end do
         write(stderr,*)
     end subroutine compact_list
+
+    recursive subroutine add_target_closure(selected,n_selected,target)
+        type(build_target_ptr), intent(inout) :: selected(:)
+        integer, intent(inout) :: n_selected
+        type(build_target_t), pointer, intent(in) :: target
+
+        integer :: ii
+
+        do ii=1,n_selected
+            if (associated(selected(ii)%ptr,target)) return
+        end do
+
+        do ii=1,size(target%dependencies)
+            call add_target_closure(selected,n_selected,target%dependencies(ii)%ptr)
+        end do
+
+        n_selected = n_selected + 1
+        selected(n_selected)%ptr => target
+    end subroutine add_target_closure
 
 end subroutine cmd_run
 
