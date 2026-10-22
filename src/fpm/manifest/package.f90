@@ -623,6 +623,16 @@ contains
                 call apply_default_features(self, self%profiles(idx), cfg, platform, verbose, error)
                 if (allocated(error)) return
             end if
+
+            ! Apply features marked default = true in the manifest.
+            if (allocated(self%features)) then
+                do i = 1, size(self%features)
+                    if (self%features(i)%is_default) then
+                        call self%features(i)%merge_into_package(cfg, platform, error)
+                        if (allocated(error)) return
+                    end if
+                end do
+            end if
         end if
 
         ! Then apply the requested features on top

@@ -210,7 +210,7 @@ contains
                 exit
 
             ! Keys
-            case("description", "platform", "flags", "c-flags", &
+            case("default", "description", "platform", "flags", "c-flags", &
                  "cxx-flags", "link-time-flags", "preprocessor", "requires", &
                  "build", "install", "fortran", "library", "dependencies", &
                  "dev-dependencies", "executable", "example", "test", "preprocess")
