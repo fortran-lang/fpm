@@ -768,16 +768,23 @@ character(len=*),intent(in) :: data(:)
 end subroutine warnwrite
 
 !> procedure to open filename as a sequential "text" file
-subroutine fileopen(filename,lun,ier)
+subroutine fileopen(filename,lun,ier,file_status)
 
 character(len=*),intent(in)   :: filename
 integer,intent(out)           :: lun
 integer,intent(out),optional  :: ier
+character(len=*),intent(in),optional :: file_status
 integer                       :: ios
 character(len=256)            :: message
+character(len=:),allocatable  :: status_arg
 
     message=' '
     ios=0
+    if(present(file_status))then
+        status_arg = file_status
+    else
+        status_arg = 'new'
+    endif
     if(filename/=' ')then
         open(file=filename, &
         & newunit=lun, &
@@ -785,7 +792,7 @@ character(len=256)            :: message
         & access='sequential', & ! ACCESS  = SEQUENTIAL| DIRECT | STREAM
         & action='write', &      ! ACTION  = READ|WRITE| READWRITE
         & position='rewind', &   ! POSITION= ASIS      | REWIND | APPEND
-        & status='new', &        ! STATUS  = NEW| REPLACE| OLD| SCRATCH| UNKNOWN
+        & status=status_arg, &   ! STATUS  = NEW| REPLACE| OLD| SCRATCH| UNKNOWN
         & iostat=ios, &
         & iomsg=message)
     else
@@ -798,6 +805,10 @@ character(len=256)            :: message
            ier=ios
         else
            call fpm_stop(3,'*fileopen*:'//filename//':'//trim(message))
+        endif
+    else
+        if(present(ier))then
+           ier=0
         endif
     endif
 
