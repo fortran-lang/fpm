@@ -21,7 +21,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-latest, macos-14, macos-15-intel, windows-latest]
+        os: [ubuntu-latest, macos-15, macos-15-intel, windows-latest]
         toolchain:
           - {compiler: gcc, version: 12}
           - {compiler: gcc, version: 13}
@@ -30,9 +30,9 @@ jobs:
           - {compiler: intel, version: '2025.2'}
           - {compiler: intel, version: '2026.1'}
         exclude:
-          - os: macos-14  # Intel compiler does not support ARM (macos-14)
+          - os: macos-15  # Intel compiler does not support ARM (macos-15)
             toolchain: {compiler: intel, version: '2025.2'}
-          - os: macos-14
+          - os: macos-15
             toolchain: {compiler: intel, version: '2026.1'}
           - os: macos-15-intel  # Intel compiler not available on macOS
             toolchain: {compiler: intel, version: '2025.2'}
@@ -46,7 +46,7 @@ jobs:
           # os-arch is independent of toolchain version
           - os: ubuntu-latest
             os-arch: linux-x86_64
-          - os: macos-14
+          - os: macos-15
             os-arch: macos-arm64
             release-flags: --features openmp --flag '-g -fbacktrace -O3'
           - os: macos-15-intel
@@ -76,7 +76,7 @@ jobs:
           - os: ubuntu-latest
             toolchain: {compiler: intel, version: '2026.1'}
             release-flags: --flag '--static -g -fbacktrace -O3'
-          - os: macos-14
+          - os: macos-15
             toolchain: {compiler: gcc, version: 15}
             release-flags: --flag '-g -fbacktrace -Og -fcheck=all,no-recursion -Wno-external-argument-mismatch'
 
