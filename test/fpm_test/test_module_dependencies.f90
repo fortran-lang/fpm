@@ -67,7 +67,17 @@ contains
             & new_unittest("custom-module-prefixes", &
                             check_valid_custom_prefix, should_fail=.false.), &
             & new_unittest("custom-prefixed-module-names", &
-                            check_custom_prefixed_modules, should_fail=.false.) &
+                            check_custom_prefixed_modules, should_fail=.false.), &
+            & new_unittest("submodule-before-program", &
+                            test_submodule_before_program, should_fail=.false.), &
+            & new_unittest("submodule-transitive-dep", &
+                            test_submodule_transitive_dependency, should_fail=.false.), &
+            & new_unittest("submodule-app-scope", &
+                            test_submodule_app_scope, should_fail=.false.), &
+            & new_unittest("submodule-multi-program", &
+                            test_submodule_multi_program, should_fail=.false.), &
+            & new_unittest("submodule-tree-shake", &
+                            test_submodule_tree_shake, should_fail=.false.) &
             ]
 
     end subroutine collect_module_dependencies
@@ -737,13 +747,303 @@ contains
 
     end subroutine test_invalid_subdirectory_module_use
 
+    !> Test: program with library submodule gets dependency edge (issue #1252)
+    subroutine test_submodule_before_program(error)
+        type(error_t), allocatable, intent(out) :: error
+
+        type(fpm_model_t) :: model
+        type(build_target_ptr), allocatable :: targets(:)
+
+        allocate(model%external_modules(0))
+        allocate(model%packages(1))
+        allocate(model%packages(1)%sources(3))
+
+        model%package_name = "test_submodule_order"
+        model%build_prefix = ""
+        model%packages(1)%name = "package1"
+
+        ! Library module with interface
+        model%packages(1)%sources(1) = new_test_source(FPM_UNIT_MODULE, &
+            file_name="src/parent.f90", scope=FPM_SCOPE_LIB, &
+            provides=[string_t('parent')])
+
+        ! Submodule implementing the interface
+        model%packages(1)%sources(2) = new_test_source(FPM_UNIT_SUBMODULE, &
+            file_name="src/child.f90", scope=FPM_SCOPE_LIB, &
+            provides=[string_t('child')], &
+            uses=[string_t('parent')], &
+            parents=[string_t('parent')])
+
+        ! Program that uses the parent module
+        model%packages(1)%sources(3) = new_test_source(FPM_UNIT_PROGRAM, &
+            file_name="app/main.f90", scope=FPM_SCOPE_APP, &
+            uses=[string_t('parent')])
+
+        call targets_from_sources(targets,model,.false.,error=error)
+        if (allocated(error)) return
+
+        ! targets: archive(1), parent_obj(2), child_obj(3), prog_obj(4), exe(5)
+        if (size(targets) /= 5) then
+            call test_failed(error,'Incorrect number of targets - expecting five')
+            return
+        end if
+
+        ! Program object should depend on both parent module AND submodule (blanket rule)
+        call check_target(targets(4)%ptr, type=FPM_TARGET_OBJECT, n_depends=2, &
+            deps=[targets(2),targets(3)], source=model%packages(1)%sources(3), error=error)
+        if (allocated(error)) return
+
+    end subroutine test_submodule_before_program
+
+
+    !> Test: transitive submodule dependency (program -> mod_A -> mod_B -> submod_B)
+    subroutine test_submodule_transitive_dependency(error)
+        type(error_t), allocatable, intent(out) :: error
+
+        type(fpm_model_t) :: model
+        type(build_target_ptr), allocatable :: targets(:)
+
+        allocate(model%external_modules(0))
+        allocate(model%packages(1))
+        allocate(model%packages(1)%sources(4))
+
+        model%package_name = "test_submod_transitive"
+        model%build_prefix = ""
+        model%packages(1)%name = "package1"
+
+        ! module_b: has interface implemented by submodule
+        model%packages(1)%sources(1) = new_test_source(FPM_UNIT_MODULE, &
+            file_name="src/module_b.f90", scope=FPM_SCOPE_LIB, &
+            provides=[string_t('module_b')])
+
+        ! submodule_b: implements module_b's interface
+        model%packages(1)%sources(2) = new_test_source(FPM_UNIT_SUBMODULE, &
+            file_name="src/submodule_b.f90", scope=FPM_SCOPE_LIB, &
+            provides=[string_t('submodule_b')], &
+            uses=[string_t('module_b')], &
+            parents=[string_t('module_b')])
+
+        ! module_a: uses module_b
+        model%packages(1)%sources(3) = new_test_source(FPM_UNIT_MODULE, &
+            file_name="src/module_a.f90", scope=FPM_SCOPE_LIB, &
+            provides=[string_t('module_a')], &
+            uses=[string_t('module_b')])
+
+        ! program: uses module_a (NOT module_b directly)
+        model%packages(1)%sources(4) = new_test_source(FPM_UNIT_PROGRAM, &
+            file_name="app/main.f90", scope=FPM_SCOPE_APP, &
+            uses=[string_t('module_a')])
+
+        call targets_from_sources(targets,model,.false.,error=error)
+        if (allocated(error)) return
+
+        ! targets: archive(1), mod_b_obj(2), submod_b_obj(3), mod_a_obj(4), prog_obj(5), exe(6)
+        if (size(targets) /= 6) then
+            call test_failed(error,'Incorrect number of targets - expecting six')
+            return
+        end if
+
+        ! Program object should depend on module_a AND submodule_b (blanket rule)
+        ! Even though program doesn't directly use module_b
+        call check_target(targets(5)%ptr, type=FPM_TARGET_OBJECT, n_depends=2, &
+            deps=[targets(4),targets(3)], source=model%packages(1)%sources(4), error=error)
+        if (allocated(error)) return
+
+    end subroutine test_submodule_transitive_dependency
+
+
+    !> Test: submodule in same app directory still gets dependency edge
+    subroutine test_submodule_app_scope(error)
+        type(error_t), allocatable, intent(out) :: error
+
+        type(fpm_model_t) :: model
+        type(build_target_ptr), allocatable :: targets(:)
+        integer :: i, j
+        logical :: found_submod_dep
+
+        allocate(model%external_modules(0))
+        allocate(model%packages(1))
+        allocate(model%packages(1)%sources(3))
+
+        model%package_name = "test_submod_app"
+        model%build_prefix = ""
+        model%packages(1)%name = "package1"
+
+        ! Library module
+        model%packages(1)%sources(1) = new_test_source(FPM_UNIT_MODULE, &
+            file_name="src/parent.f90", scope=FPM_SCOPE_LIB, &
+            provides=[string_t('parent')])
+
+        ! Submodule in app directory
+        model%packages(1)%sources(2) = new_test_source(FPM_UNIT_SUBMODULE, &
+            file_name="app/child.f90", scope=FPM_SCOPE_APP, &
+            provides=[string_t('child')], &
+            uses=[string_t('parent')], &
+            parents=[string_t('parent')])
+
+        ! Program in same app directory
+        model%packages(1)%sources(3) = new_test_source(FPM_UNIT_PROGRAM, &
+            file_name="app/main.f90", scope=FPM_SCOPE_APP, &
+            uses=[string_t('parent')])
+
+        call targets_from_sources(targets,model,.false.,error=error)
+        if (allocated(error)) return
+
+        ! Find the program object target and verify it has the submodule as dependency
+        found_submod_dep = .false.
+        do i=1,size(targets)
+            if (.not.allocated(targets(i)%ptr%source)) cycle
+            if (targets(i)%ptr%source%unit_type == FPM_UNIT_PROGRAM) then
+                ! The program object target should have the submodule target as a dependency
+                ! (either via collect_exe_link_dependencies or via blanket rule)
+                do j=1,size(targets(i)%ptr%dependencies)
+                    if (.not.allocated(targets(i)%ptr%dependencies(j)%ptr%source)) cycle
+                    if (targets(i)%ptr%dependencies(j)%ptr%source%unit_type == FPM_UNIT_SUBMODULE) then
+                        found_submod_dep = .true.
+                        exit
+                    end if
+                end do
+            end if
+        end do
+
+        if (.not.found_submod_dep) then
+            call test_failed(error,'Program target missing submodule dependency (app-scope)')
+            return
+        end if
+
+    end subroutine test_submodule_app_scope
+
+
+    !> Test: multiple programs all get dependency on every submodule
+    subroutine test_submodule_multi_program(error)
+        type(error_t), allocatable, intent(out) :: error
+
+        type(fpm_model_t) :: model
+        type(build_target_ptr), allocatable :: targets(:)
+        integer :: i, j, n_progs_with_submod_dep
+
+        allocate(model%external_modules(0))
+        allocate(model%packages(1))
+        allocate(model%packages(1)%sources(4))
+
+        model%package_name = "test_submod_multi"
+        model%build_prefix = ""
+        model%packages(1)%name = "package1"
+
+        ! Library module
+        model%packages(1)%sources(1) = new_test_source(FPM_UNIT_MODULE, &
+            file_name="src/parent.f90", scope=FPM_SCOPE_LIB, &
+            provides=[string_t('parent')])
+
+        ! Library submodule
+        model%packages(1)%sources(2) = new_test_source(FPM_UNIT_SUBMODULE, &
+            file_name="src/child.f90", scope=FPM_SCOPE_LIB, &
+            provides=[string_t('child')], &
+            uses=[string_t('parent')], &
+            parents=[string_t('parent')])
+
+        ! Program 1
+        model%packages(1)%sources(3) = new_test_source(FPM_UNIT_PROGRAM, &
+            file_name="app/prog1.f90", scope=FPM_SCOPE_APP, &
+            uses=[string_t('parent')])
+
+        ! Program 2 (test scope)
+        model%packages(1)%sources(4) = new_test_source(FPM_UNIT_PROGRAM, &
+            file_name="test/test1.f90", scope=FPM_SCOPE_TEST, &
+            uses=[string_t('parent')])
+
+        call targets_from_sources(targets,model,.false.,error=error)
+        if (allocated(error)) return
+
+        ! Both program targets should have the submodule as a dependency
+        n_progs_with_submod_dep = 0
+        do i=1,size(targets)
+            if (.not.allocated(targets(i)%ptr%source)) cycle
+            if (targets(i)%ptr%source%unit_type /= FPM_UNIT_PROGRAM) cycle
+
+            do j=1,size(targets(i)%ptr%dependencies)
+                if (.not.allocated(targets(i)%ptr%dependencies(j)%ptr%source)) cycle
+                if (targets(i)%ptr%dependencies(j)%ptr%source%unit_type == FPM_UNIT_SUBMODULE) then
+                    n_progs_with_submod_dep = n_progs_with_submod_dep + 1
+                    exit  ! Found at least one submodule dependency for this program
+                end if
+            end do
+        end do
+
+        if (n_progs_with_submod_dep /= 2) then
+            call test_failed(error,'Expected both program targets to depend on submodule')
+            return
+        end if
+
+    end subroutine test_submodule_multi_program
+
+
+    !> Test: tree-shaking still removes unused submodules even with blanket rule
+    subroutine test_submodule_tree_shake(error)
+        type(error_t), allocatable, intent(out) :: error
+
+        type(fpm_model_t) :: model
+        type(build_target_ptr), allocatable :: targets(:)
+        integer :: i
+        logical :: has_unused_submod
+
+        allocate(model%external_modules(0))
+        allocate(model%packages(1))
+        allocate(model%packages(1)%sources(4))
+
+        model%package_name = "test_submod_shake"
+        model%build_prefix = ""
+        model%packages(1)%name = "package1"
+
+        ! Used module
+        model%packages(1)%sources(1) = new_test_source(FPM_UNIT_MODULE, &
+            file_name="src/used_mod.f90", scope=FPM_SCOPE_LIB, &
+            provides=[string_t('used_mod')])
+
+        ! Unused module with submodule — both should be pruned
+        model%packages(1)%sources(2) = new_test_source(FPM_UNIT_MODULE, &
+            file_name="src/unused_mod.f90", scope=FPM_SCOPE_LIB, &
+            provides=[string_t('unused_mod')])
+
+        model%packages(1)%sources(3) = new_test_source(FPM_UNIT_SUBMODULE, &
+            file_name="src/unused_submod.f90", scope=FPM_SCOPE_LIB, &
+            provides=[string_t('unused_submod')], &
+            uses=[string_t('unused_mod')], &
+            parents=[string_t('unused_mod')])
+
+        ! Program uses only used_mod
+        model%packages(1)%sources(4) = new_test_source(FPM_UNIT_PROGRAM, &
+            file_name="app/main.f90", scope=FPM_SCOPE_APP, &
+            uses=[string_t('used_mod')])
+
+        call targets_from_sources(targets,model,prune=.true.,error=error)
+        if (allocated(error)) return
+
+        ! Check that unused_submod was pruned
+        has_unused_submod = .false.
+        do i=1,size(targets)
+            if (.not.allocated(targets(i)%ptr%source)) cycle
+            if (targets(i)%ptr%source%file_name == "src/unused_submod.f90") then
+                has_unused_submod = .true.
+            end if
+        end do
+
+        if (has_unused_submod) then
+            call test_failed(error,'Unused submodule was not pruned by tree-shaking')
+            return
+        end if
+
+    end subroutine test_submodule_tree_shake
+
+
     !> Helper to create a new srcfile_t
-    function new_test_source(type,file_name, scope, uses, provides) result(src)
+    function new_test_source(type,file_name, scope, uses, provides, parents) result(src)
         integer, intent(in) :: type
         character(*), intent(in) :: file_name
         integer, intent(in) :: scope
         type(string_t), intent(in), optional :: uses(:)
         type(string_t), intent(in), optional :: provides(:)
+        type(string_t), intent(in), optional :: parents(:)
         type(srcfile_t) :: src
 
         src%file_name = file_name
@@ -760,6 +1060,12 @@ contains
             src%modules_used = uses
         else
             allocate(src%modules_used(0))
+        end if
+
+        if (present(parents)) then
+            src%parent_modules = parents
+        else
+            allocate(src%parent_modules(0))
         end if
 
         allocate(src%include_dependencies(0))
