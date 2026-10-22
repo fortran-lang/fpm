@@ -7,8 +7,9 @@ on:
       - 'src/*meta*.f90'
       - 'src/fpm/*meta*.f90'
       - 'src/fpm/manifest/*meta*.f90'
-      - 'src/ci/meta_tests.sh'
-      - 'src/.github/workflows/meta.yml'
+      - 'src/metapackage/**'
+      - 'ci/meta_tests.sh'
+      - '.github/workflows/meta.yml'
   # Always run on PR or release
   pull_request:
   release:
@@ -200,7 +201,7 @@ jobs:
     - name: (macOS) Set up Homebrew
       if: contains(matrix.os,'macos')
       id: set-up-homebrew
-      uses: Homebrew/actions/setup-homebrew@master
+      uses: Homebrew/actions/setup-homebrew@main
 
     - name: (macOS) Install Homebrew gfortran
       if: contains(matrix.os, 'macos')
