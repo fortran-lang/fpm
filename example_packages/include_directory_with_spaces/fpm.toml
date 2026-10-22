@@ -1,0 +1,3 @@
+name = "include_directory_spaces"
+[library]
+include-dir = ["headers one"]

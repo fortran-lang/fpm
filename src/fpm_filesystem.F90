@@ -10,6 +10,7 @@ module fpm_filesystem
     use fpm_strings, only: f_string, replace, string_t, split, split_lines_first_last, dilate, add_strings, &
         str_begins_with_str
     use iso_c_binding, only: c_char, c_ptr, c_int, c_null_char, c_associated, c_f_pointer
+    use shlex_module, only: quote => ms_quote
     use fpm_error, only : fpm_stop, error_t, fatal_error
     implicit none
     private
@@ -211,14 +212,16 @@ logical function is_dir(dir)
     character(*), intent(in) :: dir
     integer :: stat
 
+    is_dir = .false.
+    if (len_trim(dir) == 0) return
     select case (get_os_type())
 
     case (OS_UNKNOWN, OS_LINUX, OS_MACOS, OS_CYGWIN, OS_SOLARIS, OS_FREEBSD, OS_OPENBSD)
-        call run( "test -d " // dir , &
+        call run( "test -d " // quote(trim(dir)) , &
                 & exitstat=stat,echo=.false.,verbose=.false.)
 
     case (OS_WINDOWS)
-        call run('cmd /c "if not exist ' // windows_path(dir) // '\ exit /B 1"', &
+        call run('cmd /d /c if not exist "' // windows_path(trim(dir)) // '\" exit /B 1', &
                 & exitstat=stat,echo=.false.,verbose=.false.)
 
     end select
