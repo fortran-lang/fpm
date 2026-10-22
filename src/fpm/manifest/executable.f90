@@ -11,7 +11,7 @@
 !>[executable.dependencies]
 !>```
 module fpm_manifest_executable
-    use fpm_manifest_dependency, only : dependency_config_t, new_dependencies, resize
+    use fpm_manifest_dependency, only : dependency_config_t, new_dependencies, resize_dependency_config
     use fpm_error, only : error_t, syntax_error, bad_name_error, fatal_error
     use fpm_strings, only : string_t, operator(==)
     use tomlf, only : toml_table, toml_key, toml_stat
@@ -36,7 +36,7 @@ module fpm_manifest_executable
         character(len=:), allocatable :: main
 
         !> Dependency meta data for this executable
-        type(dependency_config_t), allocatable :: dependency(:)
+        class(dependency_config_t), allocatable :: dependency(:)
 
         !> Libraries to link against
         type(string_t), allocatable :: link(:)
@@ -335,7 +335,7 @@ contains
 
                !> Read all dependencies
                call ptr_deps%get_keys(dep_keys)
-               call resize(self%dependency, size(dep_keys))
+               call resize_dependency_config(self%dependency, size(dep_keys))
 
                do jj = 1, size(dep_keys)
 
