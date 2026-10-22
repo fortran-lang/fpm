@@ -146,7 +146,12 @@ jobs:
     - name: Setup LLVM Flang (Windows)
       if: matrix.toolchain.compiler == 'flang' && runner.os == 'Windows'
       shell: bash
-      run: echo "${{ steps.msys2.outputs.msys2-location }}\clang64\bin" >> $GITHUB_PATH
+      run: |
+        echo "${{ steps.msys2.outputs.msys2-location }}\clang64\bin" >> $GITHUB_PATH
+        # LLVM's OpenMP runtime also implements GCC's libgomp interface: provide
+        # it as gomp for the link_executable example, as there is no GCC here
+        lib="$(cygpath -u '${{ steps.msys2.outputs.msys2-location }}')/clang64/lib"
+        cp "$lib/libomp.dll.a" "$lib/libgomp.dll.a"
 
     - name: Set LLVM Flang environment
       if: matrix.toolchain.compiler == 'flang'
