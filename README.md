@@ -40,6 +40,18 @@ webpage for a list of **[All Supported Installations](https://fpm.fortran-lang.o
 
 The easiest installation routes are shown below.
 
+### [Snap](https://snapcraft.io/fortran-fpm) 
+
+[![fortran-fpm](https://snapcraft.io/fortran-fpm/badge.svg)](https://snapcraft.io/fortran-fpm)
+
+[![🧪 Snap Builds](https://github.com/kz6fittycent/fpm/actions/workflows/test-snap-can-build.yml/badge.svg?branch=main)](https://github.com/kz6fittycent/fpm/actions/workflows/test-snap-can-build.yml)
+
+**Note:** Linux only
+
+```
+sudo snap install fortran-fpm
+```
+
 ### [Binary](https://github.com/fortran-lang/fpm/releases)
 
 Binaries for the latest stable release are available [to download](https://github.com/fortran-lang/fpm/releases/latest) for Windows, MacOS, and Linux.
