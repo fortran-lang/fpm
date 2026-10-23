@@ -661,8 +661,7 @@ contains
             deallocate(dep%preprocess)
         end if
 
-        ! Copy configuration. Not via allocate(..., source=preprocess): for a class(...)
-        ! array, gfortran 15 and 16 then leave its rank unset, and finalization reads garbage
+        ! Replace allocate(..., source=preprocess) for a class(...): gfortran 15/16 finalization bug 
         allocate(dep%preprocess(1))
         select type (list => dep%preprocess)
         type is (preprocess_config_t)
