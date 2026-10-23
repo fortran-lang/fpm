@@ -119,56 +119,12 @@ jobs:
       if: matrix.toolchain.compiler == 'gcc' && matrix.toolchain.version == 16
       uses: ./.github/actions/setup-gcc16
 
-    # setup-fortran does not provide LLVM Flang: install it from apt.llvm.org
-    # on Linux, and from MSYS2's CLANG64 environment on Windows
-    - name: Setup LLVM Flang (Linux)
-      if: matrix.toolchain.compiler == 'flang' && runner.os == 'Linux'
-      run: |
-        wget -q https://apt.llvm.org/llvm.sh
-        sudo bash llvm.sh ${{ matrix.toolchain.version }}
-        sudo apt-get install -y flang-${{ matrix.toolchain.version }} \
-                                libomp-${{ matrix.toolchain.version }}-dev
-        echo "/usr/lib/llvm-${{ matrix.toolchain.version }}/bin" >> $GITHUB_PATH
-
-    - name: Setup MSYS2 CLANG64 (Windows)
-      if: matrix.toolchain.compiler == 'flang' && runner.os == 'Windows'
-      id: msys2
-      uses: msys2/setup-msys2@v2
-      with:
-        msystem: CLANG64
-        # The runner image's package database is stale: without an update it
-        # installs an older LLVM, whose EXECUTE_COMMAND_LINE fails on Windows
-        update: true
-        install: >-
-          mingw-w64-clang-x86_64-flang
-          mingw-w64-clang-x86_64-llvm-openmp
-
-    - name: Setup LLVM Flang (Windows)
-      if: matrix.toolchain.compiler == 'flang' && runner.os == 'Windows'
-      shell: bash
-      run: |
-        echo "${{ steps.msys2.outputs.msys2-location }}\clang64\bin" >> $GITHUB_PATH
-        # LLVM's OpenMP runtime also implements GCC's libgomp interface: provide
-        # it as gomp for the link_executable example, as there is no GCC here
-        lib="$(cygpath -u '${{ steps.msys2.outputs.msys2-location }}')/clang64/lib"
-        cp "$lib/libomp.dll.a" "$lib/libgomp.dll.a"
-
-    - name: Set LLVM Flang environment
+    # setup-fortran v1.10.0 does not provide LLVM Flang
+    - name: Setup LLVM Flang
       if: matrix.toolchain.compiler == 'flang'
-      shell: bash
-      run: |
-        echo "FC=flang" >> $GITHUB_ENV
-        echo "CC=clang" >> $GITHUB_ENV
-        echo "CXX=clang++" >> $GITHUB_ENV
-        echo "FPM_FC=flang" >> $GITHUB_ENV
-        echo "FPM_CC=clang" >> $GITHUB_ENV
-        echo "FPM_CXX=clang++" >> $GITHUB_ENV
-        if [ "$RUNNER_OS" = Windows ]; then
-          # Flang may keep string temporaries on the stack across loop iterations
-          # (llvm/llvm-project#194828): reserve 8 MB as on Linux, not 1 MB
-          echo "FPM_LDFLAGS=-Wl,--stack,8388608" >> $GITHUB_ENV
-        fi
-        flang --version
+      uses: ./.github/actions/setup-flang
+      with:
+        version: ${{ matrix.toolchain.version }}
 
     # Phase 1: Bootstrap fpm with existing version
     - name: Install fpm
