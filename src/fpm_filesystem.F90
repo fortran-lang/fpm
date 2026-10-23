@@ -63,6 +63,7 @@ function basename(path,suffix) result (base)
 
     character(:), allocatable :: file_parts(:)
     logical :: with_suffix
+    integer :: idot
 
     if (.not.present(suffix)) then
         with_suffix = .true.
@@ -77,9 +78,10 @@ function basename(path,suffix) result (base)
        base = ''
     endif
     if(.not.with_suffix)then
-        call split(base,file_parts,delimiters='.')
-        if(size(file_parts)>=2)then
-           base = trim(file_parts(size(file_parts)-1))
+        ! Only remove the last suffix: "my.prog.f90" -> "my.prog"
+        idot = index(base, '.', back=.true.)
+        if(idot>1)then
+           base = base(:idot-1)
         endif
     endif
 

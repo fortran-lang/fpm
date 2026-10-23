@@ -1,6 +1,6 @@
 module test_filesystem
     use testsuite, only: new_unittest, unittest_t, error_t, test_failed
-    use fpm_filesystem, only: canon_path, is_dir, mkdir, os_delete_dir, &
+    use fpm_filesystem, only: basename, canon_path, is_dir, mkdir, os_delete_dir, &
                               join_path, is_absolute_path, get_home, &
                               delete_file, read_lines, get_temp_filename
     use fpm_environment, only: OS_WINDOWS, get_os_type, os_is_unix
@@ -20,6 +20,7 @@ contains
 
         tests = [ &
             & new_unittest("canon-path", test_canon_path), &
+            & new_unittest("basename", test_basename), &
             & new_unittest("create-delete-directory", test_mkdir_rmdir), &
             & new_unittest("test-is-absolute-path", test_is_absolute_path), &
             & new_unittest("test-get-home", test_get_home), &
@@ -174,6 +175,37 @@ contains
         end if
 
     end subroutine check_rmdir
+
+    subroutine test_basename(error)
+        type(error_t), allocatable, intent(out) :: error
+
+        call check_basename(error, "app/main.f90", .true., "main.f90")
+        if (allocated(error)) return
+        call check_basename(error, "app/main.f90", .false., "main")
+        if (allocated(error)) return
+        call check_basename(error, "app/my.prog.f90", .false., "my.prog")
+        if (allocated(error)) return
+        call check_basename(error, "archive.tar.gz", .false., "archive.tar")
+        if (allocated(error)) return
+        call check_basename(error, "src/noext", .false., "noext")
+        if (allocated(error)) return
+        call check_basename(error, "dir/.hidden", .false., ".hidden")
+
+    end subroutine test_basename
+
+    subroutine check_basename(error, path, suffix, expected)
+        type(error_t), allocatable, intent(out) :: error
+        character(len=*), intent(in) :: path, expected
+        logical, intent(in) :: suffix
+        character(len=:), allocatable :: base
+
+        base = basename(path, suffix=suffix)
+        if (base /= expected) then
+            call test_failed(error, "basename('"//path//"') returned '"//base// &
+                & "' instead of '"//expected//"'")
+        end if
+
+    end subroutine check_basename
 
     subroutine test_is_absolute_path(error)
         type(error_t), allocatable, intent(out) :: error
