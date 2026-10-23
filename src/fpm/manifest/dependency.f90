@@ -637,12 +637,9 @@ contains
         if (allocated(dep%preprocess)) then 
             
             n = size(dep%preprocess)
-            
-            if (n<1) then 
-                deallocate(dep%preprocess)
-                allocate(dep%preprocess(1),source=preprocess)
-            else
-                
+
+            if (n>0) then
+
                 find_similar: do i=1,n
                     if (dep%preprocess(i)%name==dep%name) then                             
                         call dep%preprocess(i)%add_config(preprocess)
@@ -658,15 +655,20 @@ contains
                     new_preprocess(n+1) = preprocess
                 end select
                 call move_alloc(from=new_preprocess,to=dep%preprocess)
-                
+                return
+
             end if
-        else
-            
-            ! Copy configuration
-            allocate(dep%preprocess(1),source=preprocess)
-            
-        end if                
-               
+            deallocate(dep%preprocess)
+        end if
+
+        ! Copy configuration. Not via allocate(..., source=preprocess): for a class(...)
+        ! array, gfortran 15 and 16 then leave its rank unset, and finalization reads garbage
+        allocate(dep%preprocess(1))
+        select type (list => dep%preprocess)
+        type is (preprocess_config_t)
+            list(1) = preprocess
+        end select
+
     end subroutine add_preprocess
 
 
