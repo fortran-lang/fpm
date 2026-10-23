@@ -27,6 +27,7 @@ jobs:
           - {compiler: gcc, version: 13}
           - {compiler: gcc, version: 14}
           - {compiler: gcc, version: 15}
+          - {compiler: gcc, version: 16}
           - {compiler: intel, version: '2025.2'}
           - {compiler: intel, version: '2026.1'}
         exclude:
@@ -38,6 +39,8 @@ jobs:
             toolchain: {compiler: intel, version: '2025.2'}
           - os: macos-15-intel
             toolchain: {compiler: intel, version: '2026.1'}
+          - os: macos-15-intel  # Homebrew has no x86_64 macOS bottle for gcc 16
+            toolchain: {compiler: gcc, version: 16}
           - os: windows-latest  # Doesn't pass build and tests yet
             toolchain: {compiler: intel, version: '2025.2'}
           - os: windows-latest
@@ -85,17 +88,27 @@ jobs:
             os-arch: macos26-arm64
             toolchain: {compiler: gcc, version: 15}
             release-flags: --features openmp --flag '-g -fbacktrace -O3'
+          - os: macos-26
+            os-arch: macos26-arm64
+            toolchain: {compiler: gcc, version: 16}
+            release-flags: --features openmp --flag '-g -fbacktrace -O3'
 
     steps:
     - name: Checkout code
       uses: actions/checkout@v6
 
     - name: Setup Fortran compiler
+      if: ${{ !(matrix.toolchain.compiler == 'gcc' && matrix.toolchain.version == 16) }}
       uses: fortran-lang/setup-fortran@v1.10.0
       id: setup-fortran
       with:
         compiler: ${{ matrix.toolchain.compiler }}
         version: ${{ matrix.toolchain.version }}
+
+    # setup-fortran v1.10.0 does not support gcc 16 yet
+    - name: Setup gcc 16
+      if: matrix.toolchain.compiler == 'gcc' && matrix.toolchain.version == 16
+      uses: ./.github/actions/setup-gcc16
 
     # Phase 1: Bootstrap fpm with existing version
     - name: Install fpm
