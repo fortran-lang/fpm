@@ -55,6 +55,7 @@ contains
             & new_unittest("conditional-compilation", test_conditional_compilation), &
             & new_unittest("conditional-compilation-elif", test_conditional_compilation_elif), &
             & new_unittest("conditional-compilation-elif-else", test_conditional_compilation_elif_else), &
+            & new_unittest("conditional-compilation-post-elif", test_conditional_compilation_post_elif), &
             & new_unittest("conditional-compilation_ifdef_else", test_conditional_compilation_ifdef_else), &
             & new_unittest("conditional-if-defined", test_conditional_if_defined), &
             & new_unittest("conditional-if-defined-indented", test_conditional_if_defined_indented), &
@@ -1613,6 +1614,130 @@ contains
         end if
 
     end subroutine test_conditional_compilation_elif_else
+
+    subroutine test_conditional_compilation_post_elif(error)
+
+        !> Error handling
+        type(error_t), allocatable, intent(out) :: error
+
+        type(srcfile_t) :: f_source
+        character(:), allocatable :: temp_file
+        integer :: unit
+        type(preprocess_config_t) :: cpp_config
+
+        ! Test 1: Module declared AFTER #if (true) / #elif / #else / #endif block
+        temp_file = get_temp_filename()
+
+        open(file=temp_file, newunit=unit)
+        write(unit, '(a)') &
+            '#if FEATURE_A == 1', &
+            '  use dep_a', &
+            '#elif FEATURE_B == 1', &
+            '  use dep_b', &
+            '#else', &
+            '  use dep_c', &
+            '#endif', &
+            'module test_mod_post_if', &
+            '  implicit none', &
+            'end module test_mod_post_if'
+        close(unit)
+
+        call cpp_config%new([string_t("FEATURE_A=1")])
+        cpp_config%name = "cpp"
+
+        f_source = parse_f_source(temp_file, error, preprocess=cpp_config)
+        if (allocated(error)) return
+
+        if (f_source%unit_type /= FPM_UNIT_MODULE) then
+            call test_failed(error, 'Expected module unit type when declared after active #if / #elif block')
+            return
+        end if
+
+        if (size(f_source%modules_provided) /= 1) then
+            call test_failed(error, 'Expected 1 provided module after active #if / #elif block')
+            return
+        end if
+
+        if (f_source%modules_provided(1)%s /= 'test_mod_post_if') then
+            call test_failed(error, 'Expected test_mod_post_if, got: '//f_source%modules_provided(1)%s)
+            return
+        end if
+
+        if (size(f_source%modules_used) /= 1) then
+            call test_failed(error, 'Expected 1 module used from active #if branch')
+            return
+        end if
+
+        if (f_source%modules_used(1)%s /= 'dep_a') then
+            call test_failed(error, 'Expected dep_a, got: '//f_source%modules_used(1)%s)
+            return
+        end if
+
+        ! Test 2: Module declared AFTER #if (false) / #elif (true) / #else / #endif block
+        call cpp_config%new([string_t("FEATURE_B=1")])
+        cpp_config%name = "cpp"
+
+        f_source = parse_f_source(temp_file, error, preprocess=cpp_config)
+        if (allocated(error)) return
+
+        if (f_source%unit_type /= FPM_UNIT_MODULE) then
+            call test_failed(error, 'Expected module unit type when declared after active #elif block')
+            return
+        end if
+
+        if (size(f_source%modules_provided) /= 1) then
+            call test_failed(error, 'Expected 1 provided module after active #elif block')
+            return
+        end if
+
+        if (f_source%modules_provided(1)%s /= 'test_mod_post_if') then
+            call test_failed(error, 'Expected test_mod_post_if, got: '//f_source%modules_provided(1)%s)
+            return
+        end if
+
+        if (size(f_source%modules_used) /= 1) then
+            call test_failed(error, 'Expected 1 module used from active #elif branch')
+            return
+        end if
+
+        if (f_source%modules_used(1)%s /= 'dep_b') then
+            call test_failed(error, 'Expected dep_b, got: '//f_source%modules_used(1)%s)
+            return
+        end if
+
+        ! Test 3: Module declared AFTER #if (false) / #elif (false) / #else (true) / #endif block
+        call cpp_config%new([string_t("FEATURE_OTHER=1")])
+        cpp_config%name = "cpp"
+
+        f_source = parse_f_source(temp_file, error, preprocess=cpp_config)
+        if (allocated(error)) return
+
+        if (f_source%unit_type /= FPM_UNIT_MODULE) then
+            call test_failed(error, 'Expected module unit type when declared after #else block')
+            return
+        end if
+
+        if (size(f_source%modules_provided) /= 1) then
+            call test_failed(error, 'Expected 1 provided module after #else block')
+            return
+        end if
+
+        if (f_source%modules_provided(1)%s /= 'test_mod_post_if') then
+            call test_failed(error, 'Expected test_mod_post_if, got: '//f_source%modules_provided(1)%s)
+            return
+        end if
+
+        if (size(f_source%modules_used) /= 1) then
+            call test_failed(error, 'Expected 1 module used from active #else branch')
+            return
+        end if
+
+        if (f_source%modules_used(1)%s /= 'dep_c') then
+            call test_failed(error, 'Expected dep_c, got: '//f_source%modules_used(1)%s)
+            return
+        end if
+
+    end subroutine test_conditional_compilation_post_elif
 
    subroutine test_conditional_compilation_ifdef_else(error)
 
