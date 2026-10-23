@@ -2,7 +2,8 @@ module test_filesystem
     use testsuite, only: new_unittest, unittest_t, error_t, test_failed
     use fpm_filesystem, only: canon_path, is_dir, mkdir, os_delete_dir, &
                               join_path, is_absolute_path, get_home, &
-                              delete_file, read_lines, get_temp_filename
+                              delete_file, read_lines, get_temp_filename, &
+                              command_program, command_not_found
     use fpm_environment, only: OS_WINDOWS, get_os_type, os_is_unix
     use fpm_strings, only: string_t, split_lines_first_last
     implicit none
@@ -24,7 +25,10 @@ contains
             & new_unittest("test-is-absolute-path", test_is_absolute_path), &
             & new_unittest("test-get-home", test_get_home), &
             & new_unittest("test-split-lines-first-last", test_split_lines_first_last), &
-            & new_unittest("test-crlf-lines", test_dir_with_crlf) &
+            & new_unittest("test-crlf-lines", test_dir_with_crlf), &
+            & new_unittest("command-program-standard", test_command_program_standard), &
+            & new_unittest("command-not-found-missing", test_command_not_found_missing), &
+            & new_unittest("command-not-found-present", test_command_not_found_present) &
             ]
 
     end subroutine collect_filesystem
@@ -428,6 +432,94 @@ contains
         1 format("Failed reading file with CRLF: ",a,:,i0,:,a,:,i0)
         
     end subroutine test_dir_with_crlf
-    
+
+    !> Pin command_program against the real command shapes fpm emits, so it always
+    !> returns the invoked program and never a flag/path fragment (which would risk a
+    !> false "program not found" abort on a healthy build). Assertions are chosen to
+    !> hold under both the POSIX (sh_split) and Windows (ms_split) lexers.
+    subroutine test_command_program_standard(error)
+        type(error_t), allocatable, intent(out) :: error
+
+        ! The exact forum regression line: a normal gfortran compile -> 'gfortran'
+        call check_string(error, command_program( &
+            'gfortran -c ./src/first_steps.f90 -Wall -Wextra -fPIC -fmax-errors=1 -g '// &
+            '-fcheck=bounds -fcheck=array-temps -fbacktrace -fcoarray=single -fimplicit-none '// &
+            '-Werror=implicit-interface -ffree-form -J build/x -Ibuild/x -o build/x/a.o'), 'gfortran')
+        if (allocated(error)) return
+
+        call check_string(error, command_program('gcc -c foo.c -o foo.o'), 'gcc')
+        if (allocated(error)) return
+
+        call check_string(error, command_program('gfortran foo.o -o app'), 'gfortran')
+        if (allocated(error)) return
+
+        call check_string(error, command_program('ar -rs libfoo.a foo.o'), 'ar')
+        if (allocated(error)) return
+
+        call check_string(error, command_program('gfortran-mp-15 -c foo.f90'), 'gfortran-mp-15')
+        if (allocated(error)) return
+
+        ! Compiler wrapper carrying its own arguments -> the wrapper itself
+        call check_string(error, command_program('mpifort -fc=gfortran -c foo.f90'), 'mpifort')
+        if (allocated(error)) return
+
+        ! The compiler-id probe shape (redirection appended) -> still the wrapper
+        call check_string(error, command_program('mpifort -show > /tmp/out 2>&1'), 'mpifort')
+        if (allocated(error)) return
+
+        call check_string(error, command_program('/usr/bin/gfortran -c foo.f90'), '/usr/bin/gfortran')
+        if (allocated(error)) return
+
+        ! Quoted path with spaces -> a single, unquoted token (keep_quotes defaults to .false.)
+        call check_string(error, command_program('"/opt/my tools/gfortran" -c foo.f90'), '/opt/my tools/gfortran')
+        if (allocated(error)) return
+
+        ! Graceful on empty / blank input
+        call check_string(error, command_program(''), '')
+        if (allocated(error)) return
+
+        call check_string(error, command_program('   '), '')
+        if (allocated(error)) return
+
+    end subroutine test_command_program_standard
+
+    !> A program that is absent from PATH must be flagged (this drives the new message).
+    subroutine test_command_not_found_missing(error)
+        type(error_t), allocatable, intent(out) :: error
+
+        if (.not. command_not_found('a_missing_prog_xyz123 -c foo.f90')) then
+            call test_failed(error, &
+                "command_not_found should be .true. for a program absent from PATH")
+        end if
+
+    end subroutine test_command_not_found_missing
+
+    !> An existing program (here a temp file used as a stand-in, just like a present
+    !> compiler or wrapper) must NOT be flagged -> no false abort.
+    subroutine test_command_not_found_present(error)
+        type(error_t), allocatable, intent(out) :: error
+
+        character(len=:), allocatable :: temp_file
+        integer :: unit, ios
+
+        temp_file = get_temp_filename()
+        open(newunit=unit, file=temp_file, access='stream', action='write', iostat=ios)
+        if (ios /= 0) then
+            call test_failed(error, "could not create temp file for present-program test")
+            return
+        end if
+        write(unit, iostat=ios) "x"
+        close(unit)
+
+        ! Quote the path so a temp dir containing spaces tokenizes to a single program.
+        if (command_not_found('"'//temp_file//'" --version')) then
+            call test_failed(error, &
+                "command_not_found should be .false. for an existing program path")
+        end if
+
+        call delete_file(temp_file)
+
+    end subroutine test_command_not_found_present
+
 
 end module test_filesystem
