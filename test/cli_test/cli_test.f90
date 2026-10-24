@@ -318,7 +318,9 @@ type is (fpm_publish_settings)
     act_token=settings%token
 end select
 
-open(file='_test_cli',newunit=lun,delim='quote')
+! A long record keeps the group on one line: LLVM Flang may otherwise split a
+! doubled quote across records, which it then cannot read back.
+open(file='_test_cli',newunit=lun,delim='quote',recl=4096)
 write(lun,nml=act_cli,delim='quote')
 close(unit=lun)
 

@@ -37,6 +37,7 @@ release.flags = "-O3"  # Base optimization for ALL compilers (applied first)
 release.gfortran.flags = "-mtune=generic -funroll-loops"
 release.ifort.flags = "-unroll"     # Unix/Linux/macOS Intel
 release.ifx.flags = "-unroll"       # Intel oneAPI
+release.flang.flags = "-funroll-loops"  # LLVM Flang
 
 # Verbose feature for enhanced diagnostics (applies to all compilers)
 verbose.flags = "-v"
@@ -46,10 +47,12 @@ fast.flags = "-O3"  # Base fast optimization for ALL compilers (applied first)
 fast.gfortran.flags = "-Ofast -ffast-math"
 fast.ifort.flags = "-fp-model fast"
 fast.ifx.flags = "-fp-model fast"
+fast.flang.flags = "-ffast-math"
 
 # Strict feature with base standard compliance, then per-compiler extensions
 strict.flags = "-std=f2018"  # Base standard compliance for ALL compilers (applied first)
 strict.gfortran.flags = "-Wpedantic -Werror"
 strict.ifort.flags = "-stand f18 -warn errors"
 strict.ifx.flags = "-stand f18 -warn errors"
+strict.flang.flags = "-pedantic -Werror"
 
