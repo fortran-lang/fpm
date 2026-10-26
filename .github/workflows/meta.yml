@@ -69,7 +69,13 @@ jobs:
     - name: (Ubuntu) setup gcc version
       if: contains(matrix.os,'ubuntu')
       run: |
-        echo "GCC_V=14" >> $GITHUB_ENV
+        # The MPI and HDF5 .mod files from apt only load with the gfortran
+        # that built them: 15 on ubuntu-26.04. ubuntu-24.04 (Intel) keeps 14.
+        if [ "$(lsb_release -rs)" = "24.04" ]; then
+          echo "GCC_V=14" >> $GITHUB_ENV
+        else
+          echo "GCC_V=15" >> $GITHUB_ENV
+        fi
 
     - name: (macOS) setup gcc version
       if: contains(matrix.os,'macos')
