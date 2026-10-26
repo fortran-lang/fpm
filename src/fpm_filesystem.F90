@@ -1034,19 +1034,22 @@ subroutine run(cmd,echo,exitstat,verbose,redirect)
     stat = 0
     call execute_command_line(cmd//redirect_str, exitstat=stat,cmdstat=cmdstat,cmdmsg=cmdmsg)
 
-    ! On failure only (so the success path pays nothing), distinguish a missing program
-    ! -- Unix cmdstat/=0 "Invalid command line", Windows cmdstat==0 but exit 9009 -- from
-    ! a found-but-unrunnable one. Nested ifs: Fortran does not mandate short-circuit .and.
-    if (cmdstat /= 0 .or. stat /= 0) then
+    ! Explain a missing program only when the command could not be launched -- Unix
+    ! cmdstat/=0 "Invalid command line", Windows cmdstat==0 but cmd.exe exit 9009 -- and
+    ! only where fpm stops anyway: a program that ran and failed is never looked up, and
+    ! a caller passing exitstat still gets the status back. Nested ifs: Fortran does not
+    ! mandate short-circuit .and.
+    if (cmdstat /= 0 .or. (stat == 9009 .and. .not.os_is_unix() .and. .not.present(exitstat))) then
         if (command_not_found(cmd)) then
             write(*,'(a)')'<ERROR>:failed command '//cmd//redirect_str
             call fpm_stop(1, "Could not execute '"//command_program(cmd)//"': program not found on PATH."//new_line('a')// &
                 "  Check that it is installed and on your PATH, or set it explicitly with"//new_line('a')// &
                 "  --compiler / FPM_FC (use FPM_CC / FPM_AR for the C compiler / archiver).")
-        else if (cmdstat /= 0) then
-            write(*,'(a)')'<ERROR>:failed command '//cmd//redirect_str
-            call fpm_stop(1,'*run*:'//trim(cmdmsg))
         end if
+    end if
+    if (cmdstat /= 0) then
+        write(*,'(a)')'<ERROR>:failed command '//cmd//redirect_str
+        call fpm_stop(1,'*run*:'//trim(cmdmsg))
     end if
 
     if (verbose_local.and.present(redirect)) then
