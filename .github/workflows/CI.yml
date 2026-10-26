@@ -45,6 +45,10 @@ jobs:
             toolchain: {compiler: intel, version: '2025.2'}
           - os: windows-latest
             toolchain: {compiler: intel, version: '2026.1'}
+          - os: ubuntu-latest  # Intel runs on ubuntu-24.04, see include
+            toolchain: {compiler: intel, version: '2025.2'}
+          - os: ubuntu-latest
+            toolchain: {compiler: intel, version: '2026.1'}
         include:
           # os-arch is independent of toolchain version
           - os: ubuntu-latest
@@ -73,10 +77,15 @@ jobs:
           - os: ubuntu-latest
             toolchain: {compiler: gcc, version: 14}
             release-flags: --features openmp --flag '--static -g -fbacktrace -O3'
-          - os: ubuntu-latest
+          # setup-fortran v1.10.0 installs Intel with apt-key, which
+          # ubuntu-26.04 (ubuntu-latest) no longer has
+          # (fortran-lang/setup-fortran#298).
+          - os: ubuntu-24.04
+            os-arch: linux-x86_64
             toolchain: {compiler: intel, version: '2025.2'}
             release-flags: --flag '--static -g -fbacktrace -O3'
-          - os: ubuntu-latest
+          - os: ubuntu-24.04
+            os-arch: linux-x86_64
             toolchain: {compiler: intel, version: '2026.1'}
             release-flags: --flag '--static -g -fbacktrace -O3'
           - os: macos-15

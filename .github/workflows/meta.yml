@@ -50,11 +50,14 @@ jobs:
           - os: macos-15
             mpi: mpich
             release-flags: --flag ' -Wno-external-argument-mismatch'
-          - os: ubuntu-latest
+          # setup-fortran v1.10.0 installs Intel with apt-key, which
+          # ubuntu-26.04 (ubuntu-latest) no longer has
+          # (fortran-lang/setup-fortran#298).
+          - os: ubuntu-24.04
             mpi: intel
             intel_version: "2024.1.0"
             release-flags: ""            # override: no GCC flags
-          - os: ubuntu-latest
+          - os: ubuntu-24.04
             mpi: intel
             intel_version: "2025.0"
             release-flags: ""            # override: no GCC flags
@@ -101,13 +104,13 @@ jobs:
       run: |
         sudo apt-get update
         sudo apt install -y -q openmpi-bin libopenmpi-dev hwloc fabric libhdf5-dev \
-          libhdf5-fortran-102 libnetcdf-dev libnetcdff-dev libopenblas-dev
+          libnetcdf-dev libnetcdff-dev libopenblas-dev
 
     - name: (Ubuntu) Install MPICH
       if: contains(matrix.os,'ubuntu') && contains(matrix.mpi,'mpich')
       run: |
         sudo apt-get update
-        sudo apt install -y -q mpich hwloc fabric libhdf5-dev libhdf5-fortran-102 \
+        sudo apt install -y -q mpich hwloc fabric libhdf5-dev \
           libnetcdf-dev libnetcdff-dev libopenblas-dev
 
     # Intel
