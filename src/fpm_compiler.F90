@@ -1628,7 +1628,7 @@ end subroutine link_shared
 
 
 !> Create an archive
-!> @todo For Windows OS, use the local `delete_file_win32` in stead of `delete_file`.
+!> @todo For Windows OS, use the local `delete_file_safe` in stead of `delete_file`.
 !> This may be related to a bug in Mingw64-openmp and is expected to be resolved in the future,
 !> see issue #707, #708 and #808.
 subroutine make_archive(self, output, args, log_file, stat, dry_run)
@@ -1656,13 +1656,21 @@ subroutine make_archive(self, output, args, log_file, stat, dry_run)
 
     if (mock) return
 
+    ! Always start from an empty archive: `ar -rs` updates an existing one in place,
+    ! and would keep members of objects no longer listed (e.g. from a moved source)
+    call delete_file_safe(output, stat)
+    if (stat /= 0) then
+        write(stderr, '(a)') '<ERROR> Cannot remove outdated archive '//output
+        return
+    end if
+
     if (self%use_response_file) then
         call write_response_file(output//".resp" , args)
         !$omp critical (run_command)
         call run(self%ar // output // " @" // output//".resp", echo=self%echo, &
             &  verbose=self%verbose, redirect=log_file, exitstat=stat)
         !$omp end critical (run_command)
-        call delete_file_win32(output//".resp")
+        call delete_file_safe(output//".resp")
 
     else
         !$omp critical (run_command)
@@ -1672,16 +1680,19 @@ subroutine make_archive(self, output, args, log_file, stat, dry_run)
     end if
 
     contains
-        subroutine delete_file_win32(file)
+        subroutine delete_file_safe(file, stat)
             character(len=*), intent(in) :: file
+            integer, optional, intent(out) :: stat
             logical :: exist
             integer :: unit, iostat
+            iostat = 0
             inquire(file=file, exist=exist)
             if (exist) then
-                open(file=file, newunit=unit)
-                close(unit, status='delete', iostat=iostat)
+                open(file=file, newunit=unit, iostat=iostat)
+                if (iostat == 0) close(unit, status='delete', iostat=iostat)
             end if
-        end subroutine delete_file_win32
+            if (present(stat)) stat = iostat
+        end subroutine delete_file_safe
 end subroutine make_archive
 
 

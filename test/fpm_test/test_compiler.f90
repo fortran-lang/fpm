@@ -2,8 +2,9 @@
 module test_compiler
     use testsuite, only : new_unittest, unittest_t, error_t, test_failed, &
         & check_string
-    use fpm_environment, only : OS_WINDOWS, OS_LINUX
-    use fpm_compiler   , only : compiler_t, new_compiler, tokenize_flags
+    use fpm_environment, only : OS_WINDOWS, OS_LINUX, os_is_unix
+    use fpm_compiler   , only : compiler_t, new_compiler, tokenize_flags, archiver_t, new_archiver
+    use fpm_filesystem , only : get_temp_filename, mkdir, join_path, filewrite, run, os_delete_dir
     use fpm_strings    , only : string_t, operator(==)
     use fpm_command_line, only: get_fpm_env
     use fpm_compile_commands, only: compile_command_table_t
@@ -27,9 +28,72 @@ contains
             & new_unittest("tokenize-flags", test_tokenize_flags), &
             & new_unittest("compile-commands-unix", test_register_compile_command_unix), &
             & new_unittest("compile-commands-windows", test_register_compile_command_windows), &
-            & new_unittest("get-default-flags-pic", test_get_default_flags_pic)]
+            & new_unittest("get-default-flags-pic", test_get_default_flags_pic), &
+            & new_unittest("archive-drops-stale-members", test_archive_drops_stale_members)]
 
     end subroutine collect_compiler
+
+    !> Rebuilding an archive must drop members whose objects are no longer listed
+    !> (e.g. the object of a moved source file), otherwise they shadow the new ones
+    subroutine test_archive_drops_stale_members(error)
+        !> Error handling
+        type(error_t), allocatable, intent(out) :: error
+
+        type(compiler_t) :: compiler
+        type(archiver_t) :: archiver
+        character(:), allocatable :: dir, archive, exe, log
+        integer :: stat
+
+        call new_compiler(compiler, get_fpm_env("FC", default="gfortran"), &
+            & get_fpm_env("CC", default=" "), get_fpm_env("CXX", default=" "), &
+            & echo=.false., verbose=.false.)
+        call new_archiver(archiver, get_fpm_env("AR", default=""), echo=.false., verbose=.false.)
+
+        dir = get_temp_filename()
+        call mkdir(dir, echo=.false.)
+        archive = join_path(dir, "libprobe.a")
+        exe = join_path(dir, "probe.exe")
+        log = join_path(dir, "build.log")
+
+        !> Two objects providing the same procedure
+        call filewrite(join_path(dir, "old.f90"), [character(32) :: &
+            & "integer function probe()", "probe = 11", "end function probe"])
+        call filewrite(join_path(dir, "new.f90"), [character(32) :: &
+            & "integer function probe()", "probe = 22", "end function probe"])
+        call filewrite(join_path(dir, "main.f90"), [character(32) :: &
+            & "program main", "integer, external :: probe", &
+            & "if (probe() /= 22) stop 1", "end program main"])
+
+        call compiler%compile_fortran(join_path(dir, "old.f90"), join_path(dir, "old.o"), "", log, stat)
+        if (stat == 0) call compiler%compile_fortran(join_path(dir, "new.f90"), join_path(dir, "new.o"), "", log, stat)
+        if (stat /= 0) then
+            call test_failed(error, "Cannot compile archive members")
+            return
+        end if
+
+        !> Archive the old object, then rebuild the same archive from the new one only
+        call archiver%make_archive(archive, [string_t(join_path(dir, "old.o"))], log, stat)
+        if (stat == 0) call archiver%make_archive(archive, [string_t(join_path(dir, "new.o"))], log, stat)
+        if (stat /= 0) then
+            call test_failed(error, "Cannot create archive")
+            return
+        end if
+
+        call compiler%link(exe, join_path(dir, "main.f90")//" "//archive, log, stat)
+        if (stat /= 0) then
+            call test_failed(error, "Cannot link against archive")
+            return
+        end if
+
+        call run(exe, echo=.false., verbose=.false., exitstat=stat)
+        if (stat /= 0) then
+            call test_failed(error, "Rebuilt archive still provides a stale member")
+            return
+        end if
+
+        call os_delete_dir(os_is_unix(), dir, echo=.false.)
+
+    end subroutine test_archive_drops_stale_members
 
     subroutine test_check_fortran_source_runs(error)
         !> Error handling
