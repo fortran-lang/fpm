@@ -594,6 +594,9 @@ contains
             & 'interface g', &
             & '  module procedure::g1', &
             & '  module procedure::g2,g3 ! A trailing comment', &
+            & '  module procedure :: g4 ', &
+            & '  module procedure:: g5', &
+            & '  module procedure ::g6', &
             & 'end interface', &
             & 'integer :: program', &
             & 'program = 1', &
