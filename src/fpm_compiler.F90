@@ -1681,16 +1681,21 @@ subroutine make_archive(self, output, args, log_file, stat, dry_run)
 
     contains
         subroutine delete_file_safe(file, stat)
+            use, intrinsic :: iso_c_binding, only: c_char, c_int, c_null_char
             character(len=*), intent(in) :: file
             integer, optional, intent(out) :: stat
+            interface
+                ! Not `close(status='delete')`: LLVM Flang silently keeps the file on Windows
+                integer(c_int) function c_remove(path) bind(C, name="remove")
+                    import :: c_char, c_int
+                    character(kind=c_char), intent(in) :: path(*)
+                end function c_remove
+            end interface
             logical :: exist
-            integer :: unit, iostat
+            integer :: iostat
             iostat = 0
             inquire(file=file, exist=exist)
-            if (exist) then
-                open(file=file, newunit=unit, iostat=iostat)
-                if (iostat == 0) close(unit, status='delete', iostat=iostat)
-            end if
+            if (exist) iostat = c_remove(file//c_null_char)
             if (present(stat)) stat = iostat
         end subroutine delete_file_safe
 end subroutine make_archive
