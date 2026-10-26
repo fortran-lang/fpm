@@ -591,6 +591,10 @@ contains
             & 'interface', &
             & '  module subroutine f() bind(C)', &
             & 'end interface', &
+            & 'interface g', &
+            & '  module procedure::g1', &
+            & '  module procedure::g2,g3 ! A trailing comment', &
+            & 'end interface', &
             & 'integer :: program', &
             & 'program = 1', &
             & 'program= 1', &
