@@ -1036,9 +1036,7 @@ subroutine run(cmd,echo,exitstat,verbose,redirect)
 
     ! Explain a missing program only when the command could not be launched -- Unix
     ! cmdstat/=0 "Invalid command line", Windows cmdstat==0 but cmd.exe exit 9009 -- and
-    ! only where fpm stops anyway: a program that ran and failed is never looked up, and
-    ! a caller passing exitstat still gets the status back. Nested ifs: Fortran does not
-    ! mandate short-circuit .and.
+    ! only where fpm stops anyway.
     if (cmdstat /= 0 .or. (stat == 9009 .and. .not.os_is_unix() .and. .not.present(exitstat))) then
         if (command_not_found(cmd)) then
             write(*,'(a)')'<ERROR>:failed command '//cmd//redirect_str
