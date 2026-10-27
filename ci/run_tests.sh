@@ -378,5 +378,8 @@ bash "../ci/test_custom_build_dir.sh" "$fpm" hello_world
 echo "=== Testing FPM Features Functionality ==="
 bash "../ci/test_features.sh" "$fpm"
 
+# Test incremental rebuilds after failed or partial builds
+bash "../ci/test_incremental_rebuild.sh" "$fpm"
+
 # Cleanup
 rm -rf ./*/build
