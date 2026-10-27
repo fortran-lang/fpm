@@ -94,7 +94,7 @@
 
             <li class="list-inline-item" id="statements"><i class="fa fa-list-ol"></i>
               <a data-bs-toggle="tooltip" data-bs-placement="bottom" data-bs-html="true"
-                 title=" 0.8% of total for procedures.">64 statements</a>
+                 title=" 0.9% of total for procedures.">71 statements</a>
             </li>
 
             <li class="list-inline-item" id="source-file">
@@ -151,7 +151,7 @@
     <div class="card card-primary">
       <div class="card-header text-left"><h3 class="card-title">Source Code</h3></div>
       <div class="list-group">
-        <a class="list-group-item" href="../proc/run~2.html#src">run</a>
+        <a class="list-group-item" href="../proc/run.html#src">run</a>
       </div>
     </div>
 
@@ -236,7 +236,7 @@ command and output to a file and/or stdout.
     <tbody>
         <tr>
             <td>
-              <span class="anchor" id="variable-cmd~5"></span>
+              <span class="anchor" id="variable-cmd"></span>
               character(len=*),
             </td>
 <td>intent(in)</td>
@@ -251,7 +251,7 @@ command and output to a file and/or stdout.
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-echo~7"></span>
+              <span class="anchor" id="variable-echo~2"></span>
               logical,
             </td>
 <td>intent(in),</td>
@@ -281,7 +281,7 @@ command and output to a file and/or stdout.
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-verbose~21"></span>
+              <span class="anchor" id="variable-verbose"></span>
               logical,
             </td>
 <td>intent(in),</td>
@@ -296,7 +296,7 @@ command and output to a file and/or stdout.
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-redirect~2"></span>
+              <span class="anchor" id="variable-redirect"></span>
               character(len=*),
             </td>
 <td>intent(in),</td>
@@ -374,11 +374,24 @@ command and output to a file and/or stdout.
 
 <span class="k">    if</span><span class="p">(</span><span class="n">echo_local</span><span class="p">)</span><span class="w"> </span><span class="k">print</span><span class="w"> </span><span class="o">*</span><span class="p">,</span><span class="w"> </span><span class="s1">'+ '</span><span class="p">,</span><span class="w"> </span><span class="n">cmd</span><span class="w"> </span><span class="c">!//redirect_str</span>
 
+<span class="w">    </span><span class="nb">stat</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span>
 <span class="w">    </span><span class="k">call </span><span class="nb">execute_command_line</span><span class="p">(</span><span class="n">cmd</span><span class="o">//</span><span class="n">redirect_str</span><span class="p">,</span><span class="w"> </span><span class="n">exitstat</span><span class="o">=</span><span class="nb">stat</span><span class="p">,</span><span class="n">cmdstat</span><span class="o">=</span><span class="n">cmdstat</span><span class="p">,</span><span class="n">cmdmsg</span><span class="o">=</span><span class="n">cmdmsg</span><span class="p">)</span>
-<span class="w">    </span><span class="k">if</span><span class="p">(</span><span class="n">cmdstat</span><span class="w"> </span><span class="o">/=</span><span class="w"> </span><span class="mi">0</span><span class="p">)</span><span class="k">then</span>
+
+<span class="w">    </span><span class="c">! Explain a missing program only when the command could not be launched -- Unix</span>
+<span class="w">    </span><span class="c">! cmdstat/=0 "Invalid command line", Windows cmdstat==0 but cmd.exe exit 9009 -- and</span>
+<span class="w">    </span><span class="c">! only where fpm stops anyway.</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">cmdstat</span><span class="w"> </span><span class="o">/=</span><span class="w"> </span><span class="mi">0</span><span class="w"> </span><span class="p">.</span><span class="nb">or</span><span class="p">.</span><span class="w"> </span><span class="p">(</span><span class="nb">stat</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="mi">9009</span><span class="w"> </span><span class="p">.</span><span class="nb">and</span><span class="p">.</span><span class="w"> </span><span class="p">.</span><span class="nb">not</span><span class="p">.</span><span class="n">os_is_unix</span><span class="p">()</span><span class="w"> </span><span class="p">.</span><span class="nb">and</span><span class="p">.</span><span class="w"> </span><span class="p">.</span><span class="nb">not</span><span class="p">.</span><span class="nb">present</span><span class="p">(</span><span class="n">exitstat</span><span class="p">)))</span><span class="w"> </span><span class="k">then</span>
+<span class="k">        if</span><span class="w"> </span><span class="p">(</span><span class="n">command_not_found</span><span class="p">(</span><span class="n">cmd</span><span class="p">))</span><span class="w"> </span><span class="k">then</span>
+<span class="k">            write</span><span class="p">(</span><span class="o">*</span><span class="p">,</span><span class="s1">'(a)'</span><span class="p">)</span><span class="s1">'&lt;ERROR&gt;:failed command '</span><span class="o">//</span><span class="n">cmd</span><span class="o">//</span><span class="n">redirect_str</span>
+<span class="w">            </span><span class="k">call </span><span class="n">fpm_stop</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="s2">"Could not execute '"</span><span class="o">//</span><span class="n">command_program</span><span class="p">(</span><span class="n">cmd</span><span class="p">)</span><span class="o">//</span><span class="s2">"': program not found on PATH."</span><span class="o">//</span><span class="nb">new_line</span><span class="p">(</span><span class="s1">'a'</span><span class="p">)</span><span class="o">//</span><span class="w"> </span><span class="p">&amp;</span>
+<span class="w">                </span><span class="s2">"  Check that it is installed and on your PATH, or set it explicitly with"</span><span class="o">//</span><span class="nb">new_line</span><span class="p">(</span><span class="s1">'a'</span><span class="p">)</span><span class="o">//</span><span class="w"> </span><span class="p">&amp;</span>
+<span class="w">                </span><span class="s2">"  --compiler / FPM_FC (use FPM_CC / FPM_AR for the C compiler / archiver)."</span><span class="p">)</span>
+<span class="w">        </span><span class="k">end if</span>
+<span class="k">    end if</span>
+<span class="k">    if</span><span class="w"> </span><span class="p">(</span><span class="n">cmdstat</span><span class="w"> </span><span class="o">/=</span><span class="w"> </span><span class="mi">0</span><span class="p">)</span><span class="w"> </span><span class="k">then</span>
 <span class="k">        write</span><span class="p">(</span><span class="o">*</span><span class="p">,</span><span class="s1">'(a)'</span><span class="p">)</span><span class="s1">'&lt;ERROR&gt;:failed command '</span><span class="o">//</span><span class="n">cmd</span><span class="o">//</span><span class="n">redirect_str</span>
 <span class="w">        </span><span class="k">call </span><span class="n">fpm_stop</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="s1">'*run*:'</span><span class="o">//</span><span class="nb">trim</span><span class="p">(</span><span class="n">cmdmsg</span><span class="p">))</span>
-<span class="w">    </span><span class="k">endif</span>
+<span class="w">    </span><span class="k">end if</span>
 
 <span class="k">    if</span><span class="w"> </span><span class="p">(</span><span class="n">verbose_local</span><span class="p">.</span><span class="nb">and</span><span class="p">.</span><span class="nb">present</span><span class="p">(</span><span class="n">redirect</span><span class="p">))</span><span class="w"> </span><span class="k">then</span>
 
@@ -427,7 +440,7 @@ command and output to a file and/or stdout.
             <p class="text-end">
               Documentation generated by
               <a href="https://github.com/Fortran-FOSS-Programmers/ford">FORD</a>
- on 2026-10-27 07:44 +0000             </p>
+ on 2026-10-27 14:09 +0000             </p>
           </div>
         </div>
         <br>

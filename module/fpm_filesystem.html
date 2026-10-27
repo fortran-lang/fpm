@@ -92,7 +92,7 @@
 
             <li class="list-inline-item" id="statements"><i class="fa fa-list-ol"></i>
               <a data-bs-toggle="tooltip" data-bs-placement="bottom" data-bs-html="true"
-                 title=" 4.1% of total for modules and submodules.">728 statements</a>
+                 title=" 4.2% of total for modules and submodules.">758 statements</a>
             </li>
 
             <li class="list-inline-item" id="source-file">
@@ -145,6 +145,8 @@
         <div class="list-group list-group-flush">
             <a class="list-group-item" href="../module/fpm_filesystem.html#proc-basename">basename</a>
             <a class="list-group-item" href="../module/fpm_filesystem.html#proc-canon_path">canon_path</a>
+            <a class="list-group-item" href="../module/fpm_filesystem.html#proc-command_not_found">command_not_found</a>
+            <a class="list-group-item" href="../module/fpm_filesystem.html#proc-command_program">command_program</a>
             <a class="list-group-item" href="../module/fpm_filesystem.html#proc-dirname">dirname</a>
             <a class="list-group-item" href="../module/fpm_filesystem.html#proc-exists">exists</a>
             <a class="list-group-item" href="../module/fpm_filesystem.html#proc-get_dos_path">get_dos_path</a>
@@ -182,7 +184,7 @@
             <a class="list-group-item" href="../module/fpm_filesystem.html#proc-list_files">list_files</a>
             <a class="list-group-item" href="../module/fpm_filesystem.html#proc-mkdir">mkdir</a>
             <a class="list-group-item" href="../module/fpm_filesystem.html#proc-os_delete_dir">os_delete_dir</a>
-            <a class="list-group-item" href="../module/fpm_filesystem.html#proc-run~2">run</a>
+            <a class="list-group-item" href="../module/fpm_filesystem.html#proc-run">run</a>
             <a class="list-group-item" href="../module/fpm_filesystem.html#proc-warnwrite">warnwrite</a>
         </div>
       </div>
@@ -210,11 +212,12 @@
         <ul class="list-group list-group-flush">
             <li class="list-group-item">
               <ul class="list-inline">
-                  <li class="list-inline-item"><a href='fpm_error.html'>fpm_error</a></li>
-                  <li class="list-inline-item"><a href='fpm_environment.html'>fpm_environment</a></li>
                   <li class="list-inline-item"><a href='http://fortranwiki.org/fortran/show/iso_c_binding'>iso_c_binding</a></li>
-                  <li class="list-inline-item"><a href='fpm_strings.html'>fpm_strings</a></li>
+                  <li class="list-inline-item"><a href='fpm_environment.html'>fpm_environment</a></li>
                   <li class="list-inline-item"><a href='http://fortranwiki.org/fortran/show/iso_fortran_env'>iso_fortran_env</a></li>
+                  <li class="list-inline-item"><a href='fpm_error.html'>fpm_error</a></li>
+                  <li class="list-inline-item">shlex_module</li>
+                  <li class="list-inline-item"><a href='fpm_strings.html'>fpm_strings</a></li>
               </ul>
             </li>
         </ul>
@@ -252,7 +255,7 @@
     <tbody>
         <tr>
             <td>
-              <span class="anchor" id="variable-path~26"></span>
+              <span class="anchor" id="variable-path~2"></span>
               character(len=*),
             </td>
 <td>intent(in)</td>
@@ -267,7 +270,7 @@
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-suffix~2"></span>
+              <span class="anchor" id="variable-suffix"></span>
               logical,
             </td>
 <td>intent(in),</td>
@@ -314,7 +317,7 @@
     <tbody>
         <tr>
             <td>
-              <span class="anchor" id="variable-path~27"></span>
+              <span class="anchor" id="variable-path~3"></span>
               character(len=*),
             </td>
 <td>intent(in)</td>
@@ -323,6 +326,99 @@
             </td>
             <td>::</td>
             <td><strong>path</strong></td>
+            <td>
+
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+    <h4>
+    Return Value
+    <small>character(len=:), allocatable</small>
+    </h4>
+    
+
+    </div>
+  </div>
+
+              <div class="card">
+    <div class="card-header codesum"><span class="anchor" id="proc-command_not_found"></span> <h3>public  function <a href='../proc/command_not_found.html'>command_not_found</a>(cmd)  
+</h3></div>
+    <div class="card-body">
+          
+  <p>True when the program invoked by <code>cmd</code> cannot be located on PATH (nor as a
+direct path). Cross-platform via which()/exists().</p>
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-cmd~3"></span>
+              character(len=*),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>cmd</strong></td>
+            <td>
+
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+    <h4>
+    Return Value
+    <small>logical</small>
+    </h4>
+    
+
+    </div>
+  </div>
+
+              <div class="card">
+    <div class="card-header codesum"><span class="anchor" id="proc-command_program"></span> <h3>public  function <a href='../proc/command_program.html'>command_program</a>(cmd) result(prog)  
+</h3></div>
+    <div class="card-body">
+          
+  <p>Return the program invoked by a command line (its first shell token), OS-aware.
+Uses fpm&rsquo;s shell lexer so quoted paths stay intact and trailing arguments
+(e.g. a wrapper&rsquo;s &ldquo;mpifort -fc=gfortran&rdquo;) are dropped. Returns &lsquo;&rsquo; if empty.</p>
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-cmd~2"></span>
+              character(len=*),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>cmd</strong></td>
             <td>
 
             </td>
@@ -359,7 +455,7 @@
     <tbody>
         <tr>
             <td>
-              <span class="anchor" id="variable-path~28"></span>
+              <span class="anchor" id="variable-path~4"></span>
               character(len=*),
             </td>
 <td>intent(in)</td>
@@ -404,7 +500,7 @@
     <tbody>
         <tr>
             <td>
-              <span class="anchor" id="variable-filename~9"></span>
+              <span class="anchor" id="variable-filename~4"></span>
               character(len=*),
             </td>
 <td>intent(in)</td>
@@ -450,7 +546,7 @@ No need to convert if there are no spaces</p><a href="../proc/get_dos_path.html"
     <tbody>
         <tr>
             <td>
-              <span class="anchor" id="variable-path~34"></span>
+              <span class="anchor" id="variable-path~10"></span>
               character(len=*),
             </td>
 <td>intent(in)</td>
@@ -465,7 +561,7 @@ No need to convert if there are no spaces</p><a href="../proc/get_dos_path.html"
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-error~252"></span>
+              <span class="anchor" id="variable-error~3"></span>
               type(<a href='../type/error_t.html'>error_t</a>),
             </td>
 <td>intent(out),</td>
@@ -510,7 +606,7 @@ No need to convert if there are no spaces</p><a href="../proc/get_dos_path.html"
     <tbody>
         <tr>
             <td>
-              <span class="anchor" id="variable-os~4"></span>
+              <span class="anchor" id="variable-os"></span>
               integer,
             </td>
 <td>intent(in),</td>
@@ -577,7 +673,7 @@ Works with MinGW</p>
     <tbody>
         <tr>
             <td>
-              <span class="anchor" id="variable-path~33"></span>
+              <span class="anchor" id="variable-path~9"></span>
               character(len=*),
             </td>
 <td>intent(in)</td>
@@ -592,7 +688,7 @@ Works with MinGW</p>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-is_unix~4"></span>
+              <span class="anchor" id="variable-is_unix~2"></span>
               logical,
             </td>
 <td>intent(in),</td>
@@ -637,7 +733,7 @@ Works with MinGW</p>
     <tbody>
         <tr>
             <td>
-              <span class="anchor" id="variable-dir~11"></span>
+              <span class="anchor" id="variable-dir~7"></span>
               character(len=*),
             </td>
 <td>intent(in)</td>
@@ -832,7 +928,7 @@ Works with MinGW</p>
     <tbody>
         <tr>
             <td>
-              <span class="anchor" id="variable-s~26"></span>
+              <span class="anchor" id="variable-s"></span>
               integer,
             </td>
 <td>intent(in)</td>
@@ -877,7 +973,7 @@ Works with MinGW</p>
     <tbody>
         <tr>
             <td>
-              <span class="anchor" id="variable-path~29"></span>
+              <span class="anchor" id="variable-path~5"></span>
               character(len=*),
             </td>
 <td>intent(in)</td>
@@ -922,7 +1018,7 @@ Works with MinGW</p>
     <tbody>
         <tr>
             <td>
-              <span class="anchor" id="variable-filename~7"></span>
+              <span class="anchor" id="variable-filename~2"></span>
               character(len=*),
             </td>
 <td>intent(in)</td>
@@ -967,7 +1063,7 @@ Works with MinGW</p>
     <tbody>
         <tr>
             <td>
-              <span class="anchor" id="variable-filename~6"></span>
+              <span class="anchor" id="variable-filename"></span>
               character(len=*),
             </td>
 <td>intent(in)</td>
@@ -1012,7 +1108,7 @@ Works with MinGW</p>
     <tbody>
         <tr>
             <td>
-              <span class="anchor" id="variable-path~32"></span>
+              <span class="anchor" id="variable-path~8"></span>
               character(len=*),
             </td>
 <td>intent(in)</td>
@@ -1061,7 +1157,7 @@ Works with MinGW</p>
     <tbody>
         <tr>
             <td>
-              <span class="anchor" id="variable-command~18"></span>
+              <span class="anchor" id="variable-command"></span>
               character(len=*),
             </td>
 <td>intent(in)</td>
@@ -1106,7 +1202,7 @@ Works with MinGW</p>
     <tbody>
         <tr>
             <td>
-              <span class="anchor" id="variable-path~31"></span>
+              <span class="anchor" id="variable-path~7"></span>
               character(len=*),
             </td>
 <td>intent(in)</td>
@@ -1156,7 +1252,7 @@ Works with MinGW</p>
     <tbody>
         <tr>
             <td>
-              <span class="anchor" id="variable-file~9"></span>
+              <span class="anchor" id="variable-file"></span>
               character(len=*),
             </td>
 <td>intent(in)</td>
@@ -1196,7 +1292,7 @@ Works with MinGW</p>
     <tbody>
         <tr>
             <td>
-              <span class="anchor" id="variable-cmd~6"></span>
+              <span class="anchor" id="variable-cmd~4"></span>
               character(len=*),
             </td>
 <td>intent(in)</td>
@@ -1211,7 +1307,7 @@ Works with MinGW</p>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-output~10"></span>
+              <span class="anchor" id="variable-output"></span>
               character(len=:),
             </td>
 <td>intent(out),</td>
@@ -1226,7 +1322,7 @@ Works with MinGW</p>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-error~251"></span>
+              <span class="anchor" id="variable-error~2"></span>
               type(<a href='../type/error_t.html'>error_t</a>),
             </td>
 <td>intent(out),</td>
@@ -1241,7 +1337,7 @@ Works with MinGW</p>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-verbose~22"></span>
+              <span class="anchor" id="variable-verbose~2"></span>
               logical,
             </td>
 <td>intent(in),</td>
@@ -1281,7 +1377,7 @@ Works with MinGW</p>
     <tbody>
         <tr>
             <td>
-              <span class="anchor" id="variable-lun~4"></span>
+              <span class="anchor" id="variable-lun~2"></span>
               integer,
             </td>
 <td>intent(in)</td>
@@ -1336,7 +1432,7 @@ Works with MinGW</p>
     <tbody>
         <tr>
             <td>
-              <span class="anchor" id="variable-filename~10"></span>
+              <span class="anchor" id="variable-filename~5"></span>
               character(len=*),
             </td>
 <td>intent(in)</td>
@@ -1351,7 +1447,7 @@ Works with MinGW</p>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-lun~3"></span>
+              <span class="anchor" id="variable-lun"></span>
               integer,
             </td>
 <td>intent(out)</td>
@@ -1406,7 +1502,7 @@ Works with MinGW</p>
     <tbody>
         <tr>
             <td>
-              <span class="anchor" id="variable-filename~11"></span>
+              <span class="anchor" id="variable-filename~6"></span>
               character(len=*),
             </td>
 <td>intent(in)</td>
@@ -1461,7 +1557,7 @@ Works with MinGW</p>
     <tbody>
         <tr>
             <td>
-              <span class="anchor" id="variable-home~3"></span>
+              <span class="anchor" id="variable-home~2"></span>
               character(len=:),
             </td>
 <td>intent(out),</td>
@@ -1476,7 +1572,7 @@ Works with MinGW</p>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-error~250"></span>
+              <span class="anchor" id="variable-error"></span>
               type(<a href='../type/error_t.html'>error_t</a>),
             </td>
 <td>intent(out),</td>
@@ -1520,7 +1616,7 @@ Works with MinGW</p>
     <tbody>
         <tr>
             <td>
-              <span class="anchor" id="variable-unit~35"></span>
+              <span class="anchor" id="variable-unit"></span>
               integer,
             </td>
 <td>intent(in)</td>
@@ -1535,7 +1631,7 @@ Works with MinGW</p>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-line~15"></span>
+              <span class="anchor" id="variable-line"></span>
               character(len=:),
             </td>
 <td>intent(out),</td>
@@ -1550,7 +1646,7 @@ Works with MinGW</p>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-iostat~3"></span>
+              <span class="anchor" id="variable-iostat"></span>
               integer,
             </td>
 <td>intent(out)</td>
@@ -1565,7 +1661,7 @@ Works with MinGW</p>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-iomsg~3"></span>
+              <span class="anchor" id="variable-iomsg"></span>
               character(len=:),
             </td>
 <td></td>
@@ -1605,7 +1701,7 @@ Works with MinGW</p>
     <tbody>
         <tr>
             <td>
-              <span class="anchor" id="variable-dir~13"></span>
+              <span class="anchor" id="variable-dir~9"></span>
               character(len=*),
             </td>
 <td>intent(in)</td>
@@ -1620,7 +1716,7 @@ Works with MinGW</p>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-files~3"></span>
+              <span class="anchor" id="variable-files"></span>
               type(<a href='../type/string_t.html'>string_t</a>),
             </td>
 <td>intent(out),</td>
@@ -1635,7 +1731,7 @@ Works with MinGW</p>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-recurse~2"></span>
+              <span class="anchor" id="variable-recurse"></span>
               logical,
             </td>
 <td>intent(in),</td>
@@ -1675,7 +1771,7 @@ Works with MinGW</p>
     <tbody>
         <tr>
             <td>
-              <span class="anchor" id="variable-dir~12"></span>
+              <span class="anchor" id="variable-dir~8"></span>
               character(len=*),
             </td>
 <td>intent(in)</td>
@@ -1690,7 +1786,7 @@ Works with MinGW</p>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-echo~6"></span>
+              <span class="anchor" id="variable-echo"></span>
               logical,
             </td>
 <td>intent(in),</td>
@@ -1730,7 +1826,7 @@ Works with MinGW</p>
     <tbody>
         <tr>
             <td>
-              <span class="anchor" id="variable-is_unix~3"></span>
+              <span class="anchor" id="variable-is_unix"></span>
               logical,
             </td>
 <td>intent(in)</td>
@@ -1745,7 +1841,7 @@ Works with MinGW</p>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-dir~15"></span>
+              <span class="anchor" id="variable-dir~11"></span>
               character(len=*),
             </td>
 <td>intent(in)</td>
@@ -1760,7 +1856,7 @@ Works with MinGW</p>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-echo~8"></span>
+              <span class="anchor" id="variable-echo~3"></span>
               logical,
             </td>
 <td>intent(in),</td>
@@ -1781,7 +1877,7 @@ Works with MinGW</p>
   </div>
 
               <div class="card">
-    <div class="card-header codesum"><span class="anchor" id="proc-run~2"></span> <h3>public  subroutine <a href='../proc/run~2.html'>run</a>(cmd, echo, exitstat, verbose, redirect)  
+    <div class="card-header codesum"><span class="anchor" id="proc-run"></span> <h3>public  subroutine <a href='../proc/run.html'>run</a>(cmd, echo, exitstat, verbose, redirect)  
 </h3></div>
     <div class="card-body">
               <dl class="dl-horizontal">
@@ -1789,7 +1885,7 @@ Works with MinGW</p>
         <dt>License</dt><dd>MIT</dd>
     </dl>
 
-  <p>Execute the specified system command. Optionally</p><a href="../proc/run~2.html" class="pull-right"><emph>Read more&hellip;</emph></a>
+  <p>Execute the specified system command. Optionally</p><a href="../proc/run.html" class="pull-right"><emph>Read more&hellip;</emph></a>
 
   <h4>Arguments</h4>
       <table class="table table-striped varlist">
@@ -1804,7 +1900,7 @@ Works with MinGW</p>
     <tbody>
         <tr>
             <td>
-              <span class="anchor" id="variable-cmd~5"></span>
+              <span class="anchor" id="variable-cmd"></span>
               character(len=*),
             </td>
 <td>intent(in)</td>
@@ -1819,7 +1915,7 @@ Works with MinGW</p>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-echo~7"></span>
+              <span class="anchor" id="variable-echo~2"></span>
               logical,
             </td>
 <td>intent(in),</td>
@@ -1849,7 +1945,7 @@ Works with MinGW</p>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-verbose~21"></span>
+              <span class="anchor" id="variable-verbose"></span>
               logical,
             </td>
 <td>intent(in),</td>
@@ -1864,7 +1960,7 @@ Works with MinGW</p>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-redirect~2"></span>
+              <span class="anchor" id="variable-redirect"></span>
               character(len=*),
             </td>
 <td>intent(in),</td>
@@ -1962,7 +2058,7 @@ Works with MinGW</p>
             <p class="text-end">
               Documentation generated by
               <a href="https://github.com/Fortran-FOSS-Programmers/ford">FORD</a>
- on 2026-10-27 07:44 +0000             </p>
+ on 2026-10-27 14:09 +0000             </p>
           </div>
         </div>
         <br>
