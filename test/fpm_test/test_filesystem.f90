@@ -183,6 +183,11 @@ contains
         type(error_t), allocatable, intent(out) :: error
 
         ! Unix tests
+        if (is_absolute_path('', is_unix=.true.)) then
+            call test_failed(error, "Empty path isn't absolute")
+            return
+        end if
+
         if (is_absolute_path('.', is_unix=.true.)) then
             call test_failed(error, "Path '.' isn't absolute")
             return
