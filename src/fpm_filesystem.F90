@@ -1171,7 +1171,7 @@ end subroutine os_delete_dir
         end if
 
         if (is_unix_os) then
-            is_absolute_path = path(1:1) == '/'
+            is_absolute_path = index(path, '/') == 1
         else
             if (len(path) < 2) then
                 is_absolute_path = .false.
