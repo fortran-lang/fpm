@@ -329,22 +329,21 @@ contains
         type(build_target_ptr), allocatable :: targets(:)
 
         integer :: i
+        integer, parameter :: n = 20
 
         call add_target(targets,'test-package',FPM_TARGET_ARCHIVE,get_temp_filename())
         call add_target(targets,'test-package',FPM_TARGET_ARCHIVE,get_temp_filename())
-        call add_target(targets,'test-package',FPM_TARGET_OBJECT,get_temp_filename())
-        call add_target(targets,'test-package',FPM_TARGET_OBJECT,get_temp_filename())
-
-        do i=3,4
-            allocate(targets(i)%ptr%source)
-            targets(i)%ptr%source%digest = i
+        do i=1,n
+            call add_target(targets,'test-package',FPM_TARGET_OBJECT,get_temp_filename())
+            allocate(targets(2+i)%ptr%source)
+            targets(2+i)%ptr%source%digest = mod(37*i,101)
         end do
 
-        call add_dependency(targets(1)%ptr,targets(3)%ptr)
-        call add_dependency(targets(1)%ptr,targets(4)%ptr)
-
-        call add_dependency(targets(2)%ptr,targets(4)%ptr)
-        call add_dependency(targets(2)%ptr,targets(3)%ptr)
+        ! Same objects, added in order and shuffled
+        do i=1,n
+            call add_dependency(targets(1)%ptr,targets(2+i)%ptr)
+            call add_dependency(targets(2)%ptr,targets(3+mod(7*i,n))%ptr)
+        end do
 
         do i=1,size(targets)
             call sort_target(targets(i)%ptr)

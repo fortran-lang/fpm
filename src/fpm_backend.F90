@@ -228,6 +228,7 @@ recursive subroutine sort_target(target, mock)
     ! earlier run that did not rebuild this target (it stopped early, or did not
     ! include it, as `fpm build` does with tests)
     target%digest = target_digest(target)
+    target%skip = .false.
     if (allocated(target%digest_cached) .and. .not.dry_run) then
         target%skip = target%digest_cached == target%digest
     end if
@@ -260,34 +261,68 @@ pure function target_digest(target) result(digest)
     type(build_target_t), intent(in) :: target
     integer(int64) :: digest
 
-    integer :: i, j
-    integer(int64) :: key
+    integer :: i
     integer(int64), allocatable :: dep_digests(:)
-    character(16) :: hex
+    character(8) :: bytes
 
     digest = 0
     if (allocated(target%source)) digest = target%source%digest
 
     dep_digests = [(target%dependencies(i)%ptr%digest, i=1,size(target%dependencies))]
-
-    ! Insertion sort
-    do i=2,size(dep_digests)
-        key = dep_digests(i)
-        j = i - 1
-        do while (j > 0)
-            if (dep_digests(j) <= key) exit
-            dep_digests(j+1) = dep_digests(j)
-            j = j - 1
-        end do
-        dep_digests(j+1) = key
-    end do
+    call sort_digests(dep_digests)
 
     do i=1,size(dep_digests)
-        write(hex,'(z16.16)') dep_digests(i)
-        digest = fnv_1a(hex, digest)
+        bytes = transfer(dep_digests(i), bytes)
+        digest = fnv_1a(bytes, digest)
     end do
 
 end function target_digest
+
+
+!> Sort digests in ascending order (heapsort: libraries can have thousands of dependencies)
+pure subroutine sort_digests(digests)
+    integer(int64), intent(inout) :: digests(:)
+
+    integer :: i
+    integer(int64) :: tmp
+
+    ! Build a max-heap, then move its root to the end of the array
+    do i=size(digests)/2,1,-1
+        call sift_down(digests, i, size(digests))
+    end do
+    do i=size(digests),2,-1
+        tmp = digests(1)
+        digests(1) = digests(i)
+        digests(i) = tmp
+        call sift_down(digests, 1, i-1)
+    end do
+
+    contains
+
+    !> Move heap(root) down the max-heap heap(1:n)
+    pure subroutine sift_down(heap, root, n)
+        integer(int64), intent(inout) :: heap(:)
+        integer, intent(in) :: root, n
+
+        integer :: parent, child
+        integer(int64) :: tmp
+
+        parent = root
+        do while (2*parent <= n)
+            child = 2*parent
+            if (child < n) then
+                if (heap(child) < heap(child+1)) child = child + 1
+            end if
+            if (heap(parent) >= heap(child)) exit
+            tmp = heap(parent)
+            heap(parent) = heap(child)
+            heap(child) = tmp
+            parent = child
+        end do
+
+    end subroutine sift_down
+
+end subroutine sort_digests
 
 
 !> Construct a build schedule from the sorted targets.
