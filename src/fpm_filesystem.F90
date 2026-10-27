@@ -1089,9 +1089,7 @@ function command_program(cmd) result(prog)
     else
         tokens = ms_split(cmd, ucrt=.true.)  ! Windows lexer
     end if
-    ! The program is always the first token. A redirection in the command (e.g. "> log
-    ! 2>&1") makes the lexer report failure but it still tokenizes, and a redirection
-    ! operator never starts the command, so the first token is reliably the program.
+    ! The program is always reliably the first token. 
     if (allocated(tokens)) then
         if (size(tokens) > 0) prog = trim(adjustl(tokens(1)))
     end if
