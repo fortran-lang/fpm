@@ -4,7 +4,7 @@ module test_package_dependencies
   use testsuite, only: new_unittest, unittest_t, error_t, test_failed
   use fpm_filesystem, only: is_dir, join_path, filewrite, mkdir, os_delete_dir, exists
   use fpm_environment, only: os_is_unix
-  use fpm_os, only: get_current_directory
+  use fpm_os, only: get_current_directory, get_absolute_path
   use fpm_dependency
   use fpm_manifest_dependency
   use fpm_manifest_metapackages, only: metapackage_config_t
@@ -51,6 +51,7 @@ contains
         & new_unittest("features-change-detection", test_features_change_detection), &
         & new_unittest("status-after-load", test_status), &
         & new_unittest("add-dependencies", test_add_dependencies), &
+        & new_unittest("absolute-path-dependency", test_absolute_path_dependency), &
         & new_unittest("update-dependencies", test_update_dependencies), &
         & new_unittest("metapackage-override", test_metapackage_override), &
         & new_unittest("do-not-update-dependencies", test_non_updated_dependencies), &
@@ -391,6 +392,62 @@ contains
     end if
 
   end subroutine test_add_dependencies
+
+  !> A dependency declared with an absolute path is neither prefixed with the
+  !> directory of its manifest nor with the resolution root
+  subroutine test_absolute_path_dependency(error)
+
+    !> Error handling
+    type(error_t), allocatable, intent(out) :: error
+
+    type(toml_table) :: table
+    type(toml_table), pointer :: ptr
+    type(dependency_tree_t) :: deps
+    class(dependency_config_t), allocatable :: nodes(:)
+    character(len=:), allocatable :: dep_dir, abs_dir
+
+    call delete_tmp_folder
+    dep_dir = join_path(tmp_folder, 'abs-dep')
+    call mkdir(dep_dir)
+    call filewrite(join_path(dep_dir, 'fpm.toml'), ['name = "abs-dep"'])
+
+    call get_absolute_path(dep_dir, abs_dir, error)
+    if (allocated(error)) then
+      call delete_tmp_folder; return
+    end if
+
+    table = toml_table()
+    call add_table(table, "abs-dep", ptr)
+    call set_value(ptr, "path", abs_dir)
+
+    call new_dependencies(nodes, table, root='consumer', error=error)
+    if (allocated(error)) then
+      call delete_tmp_folder; return
+    end if
+
+    if (nodes(1)%path /= abs_dir) then
+      call test_failed(error, "Absolute dependency path changed to '"//nodes(1)%path//"'")
+      call delete_tmp_folder; return
+    end if
+
+    call new_dependency_tree(deps)
+    call deps%add(nodes, error)
+    if (allocated(error)) then
+      call delete_tmp_folder; return
+    end if
+
+    call deps%resolve(".", error)
+    if (allocated(error)) then
+      call delete_tmp_folder; return
+    end if
+
+    if (deps%dep(1)%proj_dir /= abs_dir) then
+      call test_failed(error, "Absolute dependency resolved to '"//deps%dep(1)%proj_dir//"'")
+    end if
+
+    call delete_tmp_folder
+
+  end subroutine test_absolute_path_dependency
 
   subroutine test_non_updated_dependencies(error)
 

@@ -59,7 +59,7 @@ module fpm_dependency
   use fpm_environment, only: get_os_type, OS_WINDOWS, os_is_unix
   use fpm_error, only: error_t, fatal_error
   use fpm_filesystem, only: exists, join_path, mkdir, canon_path, windows_path, list_files, is_dir, basename, &
-                            os_delete_dir, get_temp_filename, parent_dir
+                            os_delete_dir, get_temp_filename, parent_dir, is_absolute_path
   use fpm_git, only: git_target_revision, git_target_default, git_revision, serializable_t
   use fpm_manifest, only: package_config_t, dependency_config_t, get_package_data, get_package_dependencies
   use fpm_manifest_dependency, only: manifest_has_changed, dependency_destroy
@@ -704,7 +704,11 @@ contains
     if (allocated(dependency%proj_dir)) then
       proj_dir = dependency%proj_dir
     else if (allocated(dependency%path)) then
-      proj_dir = join_path(root, dependency%path)
+      if (is_absolute_path(dependency%path)) then
+        proj_dir = dependency%path
+      else
+        proj_dir = join_path(root, dependency%path)
+      end if
     else if (allocated(dependency%git)) then
       proj_dir = join_path(self%dep_dir, dependency%name)
       fetch = .not. exists(proj_dir)
