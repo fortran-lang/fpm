@@ -119,6 +119,25 @@ jobs:
       if: ${{ matrix.toolchain.compiler != 'flang' && !(matrix.toolchain.compiler == 'gcc' && matrix.toolchain.version == 16) }}
       uses: fortran-lang/setup-fortran@v1.10.0
       id: setup-fortran
+      continue-on-error: ${{ matrix.os == 'windows-latest' }}
+      with:
+        compiler: ${{ matrix.toolchain.compiler }}
+        version: ${{ matrix.toolchain.version }}
+
+    # On Windows, setup-fortran installs MinGW from the Chocolatey feed, which fails
+    # intermittently (HTTP 503/504): retry once. setup-fortran moves C:\mingw64 away
+    # before calling choco, so put it back first, or the retry fails on that move.
+    - name: Restore C:\mingw64 before retrying
+      if: steps.setup-fortran.outcome == 'failure'
+      shell: bash
+      run: |
+        if [ -d "$RUNNER_TEMP/mingw64" ] && [ ! -d /c/mingw64 ]; then
+          mv "$RUNNER_TEMP/mingw64" /c/
+        fi
+
+    - name: Setup Fortran compiler (retry)
+      if: steps.setup-fortran.outcome == 'failure'
+      uses: fortran-lang/setup-fortran@v1.10.0
       with:
         compiler: ${{ matrix.toolchain.compiler }}
         version: ${{ matrix.toolchain.version }}
