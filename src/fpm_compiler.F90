@@ -52,7 +52,7 @@ use fpm_versioning, only: version_t
 use shlex_module, only: sh_split => split, ms_split, quote => ms_quote
 implicit none
 public :: compiler_t, new_compiler, archiver_t, new_archiver, get_macros
-public :: append_clean_flags, append_clean_flags_array
+public :: append_clean_flags, append_clean_flags_array, drop_compile_options
 public :: debug
 public :: id_gcc,id_all
 public :: match_compiler_type, compiler_id_name, validate_compiler_name, is_cxx_gnu_based
@@ -2392,6 +2392,50 @@ subroutine append_clean_flags_array(flags_array, new_flags_array)
         call add_strings(flags_array, new_flags_array(i))
     end do
 end subroutine append_clean_flags_array
+
+!> Link flags without the options that the compile flags already pass: executables are
+!> linked with both, and a metapackage can set the same option in each (OpenMP), which a
+!> strict compiler rejects when repeated (NAG: `-openmp`). Only an option standing alone
+!> is dropped: paths, libraries, linker flags, repeats, and options that take an argument
+!> stay with that argument. The flags are split on blanks, not parsed, so Windows paths
+!> keep their backslashes.
+function drop_compile_options(link_flags, compile_flags) result(flags)
+    character(*), intent(in) :: link_flags, compile_flags
+    character(:), allocatable :: flags
+
+    !> Options that take the next token as their argument
+    character(len=*), parameter :: keywords(*) = [character(len=15) :: '-framework', &
+        & '-weak_framework', '-arch', '-isysroot', '-target', '-rpath', '-u', '-T', '-z']
+
+    character(len=:), allocatable :: link_tokens(:), compile_tokens(:)
+    integer :: i
+    logical :: lone
+
+    call split(link_flags, link_tokens)
+    call split(compile_flags, compile_tokens)
+
+    flags = ""
+    do i = 1, size(link_tokens)
+        lone = str_begins_with_str(link_tokens(i), '-') .and. .not.takes_argument(link_tokens(i))
+        if (lone) lone = .not.(str_begins_with_str(link_tokens(i), '-l') .or. &
+                               str_begins_with_str(link_tokens(i), '-L') .or. &
+                               str_begins_with_str(link_tokens(i), '-Wl,'))
+        if (lone .and. i > 1) lone = .not.takes_argument(link_tokens(i-1))
+        if (lone) then
+            if (any(compile_tokens == link_tokens(i))) cycle
+        end if
+        flags = flags // " " // trim(link_tokens(i))
+    end do
+
+contains
+
+    !> Whether `token` is an option followed by its argument (`-framework Accelerate`)
+    pure logical function takes_argument(token)
+        character(*), intent(in) :: token
+        takes_argument = str_begins_with_str(token, '-X') .or. any(keywords == token)
+    end function takes_argument
+
+end function drop_compile_options
 
 !> Tokenize a string into an array of compiler flags
 subroutine tokenize_flags(flags, flags_array)
