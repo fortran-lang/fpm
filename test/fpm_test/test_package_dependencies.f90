@@ -216,7 +216,7 @@ contains
     type(toml_table) :: table
     type(toml_table), pointer :: ptr
     type(mock_dependency_tree_t) :: deps
-    type(dependency_config_t), allocatable :: nodes(:)
+    class(dependency_config_t), allocatable :: nodes(:)
 
     table = toml_table()
     call add_table(table, "sub1", ptr)
@@ -433,7 +433,7 @@ contains
 
     type(toml_table) :: manifest
     type(toml_table), pointer :: ptr
-    type(dependency_config_t), allocatable :: deps(:)
+    class(dependency_config_t), allocatable :: deps(:)
     type(metapackage_config_t) :: meta
     logical :: found
     integer :: i

@@ -120,7 +120,7 @@ jobs:
     - id: deploy-on-push
       if: ${{ github.event_name == 'push' }}
       run:
-        echo "::set-output name=result::${{ env.DEPLOY_BRANCH }}"
+        echo "result=${{ env.DEPLOY_BRANCH }}" >> "$GITHUB_OUTPUT"
       env:
         DEPLOY_BRANCH: ${{ secrets.DEPLOY_BRANCH && contains(github.ref, secrets.DEPLOY_BRANCH) && 1 || 0 }}
 

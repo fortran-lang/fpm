@@ -194,10 +194,12 @@ contains
         logical, intent(in) :: main        
         
         !> Unprocessed list of all dependencies listed in this manifest
-        type(dependency_config_t), allocatable, intent(out) :: deps(:)
+        class(dependency_config_t), allocatable, intent(inout) :: deps(:)
         
         integer :: ndeps,k
         
+        if (allocated(deps)) deallocate(deps)
+
         ndeps = 0
         if (allocated(package%dependency)) &
         ndeps = ndeps + size(package%dependency)
@@ -270,7 +272,7 @@ contains
       contains
       
          ! Add dependencies to the list      
-         pure subroutine collect(list, nreq, new_deps)
+         subroutine collect(list, nreq, new_deps)
             type(dependency_config_t), intent(inout) :: list(:)
             integer,                   intent(inout) :: nreq
             type(dependency_config_t), intent(in)    :: new_deps(:)

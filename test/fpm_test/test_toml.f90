@@ -1267,7 +1267,12 @@ contains
         dep%git = git_target_revision(url="https://github.com/urbanjost/M_CLI2.git", &
                                       sha1="7264878cdb1baff7323cc48596d829ccfe7751b8")
 
-        allocate(exe%dependency(1),source=dep)
+        ! Replace allocate(..., source=dep) for a class(...): gfortran 15/16 finalization bug
+        allocate(exe%dependency(1))
+        select type (deps => exe%dependency)
+        type is (dependency_config_t)
+            deps(1) = dep
+        end select
         call exe%test_serialization('executable_config: 4',error)
 
     end subroutine executable_config_roundtrip

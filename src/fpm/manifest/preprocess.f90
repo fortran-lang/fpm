@@ -147,7 +147,7 @@ contains
    subroutine new_preprocessors(preprocessors, table, error)
 
       !> Instance of the preprocess configuration
-      type(preprocess_config_t), allocatable, intent(out) :: preprocessors(:)
+      class(preprocess_config_t), allocatable, intent(inout) :: preprocessors(:)
 
       !> Instance of the TOML data structure
       type(toml_table), intent(inout) :: table
@@ -158,6 +158,8 @@ contains
       type(toml_table), pointer :: node
       type(toml_key), allocatable :: list(:)
       integer :: iprep, stat
+
+      if (allocated(preprocessors)) deallocate(preprocessors)
 
       call table%get_keys(list)
 
