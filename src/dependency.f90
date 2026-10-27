@@ -1302,7 +1302,8 @@ contains
 
     integer :: ndep, ii
     logical :: is_unix
-    character(len=:), allocatable :: version, url, obj, rev, proj_dir
+    character(len=:), allocatable :: version, url, obj, rev, proj_dir, profile
+    type(string_t), allocatable :: features(:)
     type(toml_key), allocatable :: list(:)
     type(toml_table), pointer :: ptr
 
@@ -1317,6 +1318,14 @@ contains
 
     do ii = 1, size(list)
       call get_value(table, list(ii)%key, ptr)
+      ! Reset the per-entry optionals: `get_value`/`get_list` leave the
+      ! actual untouched when the key is absent, so a previous entry's
+      ! value would otherwise leak into this one.
+      if (allocated(features)) deallocate (features)
+      if (allocated(profile)) deallocate (profile)
+      call get_list(ptr, "features", features, error)
+      if (allocated(error)) exit
+      call get_value(ptr, "profile", profile)
       call get_value(ptr, "version", version)
       call get_value(ptr, "proj-dir", proj_dir)
       call get_value(ptr, "git", url)
@@ -1326,6 +1335,8 @@ contains
       self%ndep = self%ndep + 1
       associate (dep => self%dep(self%ndep))
         dep%name = list(ii)%key
+        if (allocated(features)) dep%features = features
+        if (allocated(profile)) dep%profile = profile
         if (is_unix) then
           dep%proj_dir = proj_dir
         else
@@ -1425,6 +1436,14 @@ contains
           if (allocated(dep%revision)) then
             call set_value(ptr, "rev", dep%revision)
           end if
+        end if
+        ! The requested features/profile are part of the dependency's IDENTITY:
+        ! they change its macros and its own dependency set, so a cache entry
+        ! that omits them resolves to a DIFFERENT package on the next run.
+        call set_list(ptr, "features", dep%features, error)
+        if (allocated(error)) exit
+        if (allocated(dep%profile)) then
+          call set_value(ptr, "profile", dep%profile)
         end if
       end associate
     end do

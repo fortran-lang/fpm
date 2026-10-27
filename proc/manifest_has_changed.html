@@ -92,7 +92,7 @@
 
             <li class="list-inline-item" id="statements"><i class="fa fa-list-ol"></i>
               <a data-bs-toggle="tooltip" data-bs-placement="bottom" data-bs-html="true"
-                 title=" 0.2% of total for procedures.">13 statements</a>
+                 title=" 0.4% of total for procedures.">33 statements</a>
             </li>
 
             <li class="list-inline-item" id="source-file">
@@ -165,6 +165,9 @@
 
     <p>Check if two dependency configurations are different</p>
 <p>Perform all checks
+A different feature set (or profile) means different macros and
+possibly different dependencies, so it is a different build of the
+same revision &ndash; the git checks above cannot see that.
 All checks passed! The two instances are equal</p>
 
 
@@ -181,7 +184,7 @@ All checks passed! The two instances are equal</p>
     <tbody>
         <tr>
             <td>
-              <span class="anchor" id="variable-cached"></span>
+              <span class="anchor" id="variable-cached~2"></span>
               class(<a href='../type/dependency_config_t.html'>dependency_config_t</a>),
             </td>
 <td>intent(in)</td>
@@ -196,7 +199,7 @@ All checks passed! The two instances are equal</p>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-manifest"></span>
+              <span class="anchor" id="variable-manifest~2"></span>
               class(<a href='../type/dependency_config_t.html'>dependency_config_t</a>),
             </td>
 <td>intent(in)</td>
@@ -211,7 +214,7 @@ All checks passed! The two instances are equal</p>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-verbosity~2"></span>
+              <span class="anchor" id="variable-verbosity~9"></span>
               integer,
             </td>
 <td>intent(in)</td>
@@ -226,7 +229,7 @@ All checks passed! The two instances are equal</p>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-iunit~4"></span>
+              <span class="anchor" id="variable-iunit~3"></span>
               integer,
             </td>
 <td>intent(in)</td>
@@ -282,6 +285,31 @@ All checks passed! The two instances are equal</p>
 <span class="k">            if</span><span class="w"> </span><span class="p">(.</span><span class="nb">not</span><span class="p">.</span><span class="n">git_matches_manifest</span><span class="p">(</span><span class="n">cached</span><span class="p">%</span><span class="n">git</span><span class="p">,</span><span class="n">manifest</span><span class="p">%</span><span class="n">git</span><span class="p">,</span><span class="n">verbosity</span><span class="p">,</span><span class="n">iunit</span><span class="p">))</span><span class="w"> </span><span class="k">return</span>
 <span class="k">        end if</span>
 
+<span class="w">        </span><span class="c">!&gt; A different feature set (or profile) means different macros and</span>
+<span class="w">        </span><span class="c">!&gt; possibly different dependencies, so it is a different build of the</span>
+<span class="w">        </span><span class="c">!&gt; same revision -- the git checks above cannot see that.</span>
+<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="nb">allocated</span><span class="p">(</span><span class="n">cached</span><span class="p">%</span><span class="n">features</span><span class="p">).</span><span class="n">neqv</span><span class="p">.</span><span class="nb">allocated</span><span class="p">(</span><span class="n">manifest</span><span class="p">%</span><span class="n">features</span><span class="p">))</span><span class="w"> </span><span class="k">then</span>
+<span class="k">            if</span><span class="w"> </span><span class="p">(</span><span class="n">verbosity</span><span class="o">&gt;</span><span class="mi">1</span><span class="p">)</span><span class="w"> </span><span class="k">write</span><span class="p">(</span><span class="n">iunit</span><span class="p">,</span><span class="n">out_fmt</span><span class="p">)</span><span class="w"> </span><span class="s2">"FEATURES presence has changed. "</span>
+<span class="w">            </span><span class="k">return</span>
+<span class="k">        endif</span>
+<span class="k">        if</span><span class="w"> </span><span class="p">(</span><span class="nb">allocated</span><span class="p">(</span><span class="n">cached</span><span class="p">%</span><span class="n">features</span><span class="p">))</span><span class="w"> </span><span class="k">then</span>
+<span class="k">            if</span><span class="w"> </span><span class="p">(.</span><span class="nb">not</span><span class="p">.(</span><span class="n">cached</span><span class="p">%</span><span class="n">features</span><span class="o">==</span><span class="n">manifest</span><span class="p">%</span><span class="n">features</span><span class="p">))</span><span class="w"> </span><span class="k">then</span>
+<span class="k">                if</span><span class="w"> </span><span class="p">(</span><span class="n">verbosity</span><span class="o">&gt;</span><span class="mi">1</span><span class="p">)</span><span class="w"> </span><span class="k">write</span><span class="p">(</span><span class="n">iunit</span><span class="p">,</span><span class="n">out_fmt</span><span class="p">)</span><span class="w"> </span><span class="s2">"FEATURES have changed. "</span>
+<span class="w">                </span><span class="k">return</span>
+<span class="k">            end if</span>
+<span class="k">        end if</span>
+<span class="k">        if</span><span class="w"> </span><span class="p">(</span><span class="nb">allocated</span><span class="p">(</span><span class="n">cached</span><span class="p">%</span><span class="n">profile</span><span class="p">).</span><span class="n">neqv</span><span class="p">.</span><span class="nb">allocated</span><span class="p">(</span><span class="n">manifest</span><span class="p">%</span><span class="n">profile</span><span class="p">))</span><span class="w"> </span><span class="k">then</span>
+<span class="k">            if</span><span class="w"> </span><span class="p">(</span><span class="n">verbosity</span><span class="o">&gt;</span><span class="mi">1</span><span class="p">)</span><span class="w"> </span><span class="k">write</span><span class="p">(</span><span class="n">iunit</span><span class="p">,</span><span class="n">out_fmt</span><span class="p">)</span><span class="w"> </span><span class="s2">"PROFILE presence has changed. "</span>
+<span class="w">            </span><span class="k">return</span>
+<span class="k">        endif</span>
+<span class="k">        if</span><span class="w"> </span><span class="p">(</span><span class="nb">allocated</span><span class="p">(</span><span class="n">cached</span><span class="p">%</span><span class="n">profile</span><span class="p">))</span><span class="w"> </span><span class="k">then</span>
+<span class="k">            if</span><span class="w"> </span><span class="p">(.</span><span class="nb">not</span><span class="p">.(</span><span class="n">cached</span><span class="p">%</span><span class="n">profile</span><span class="o">==</span><span class="n">manifest</span><span class="p">%</span><span class="n">profile</span><span class="p">))</span><span class="w"> </span><span class="k">then</span>
+<span class="k">                if</span><span class="w"> </span><span class="p">(</span><span class="n">verbosity</span><span class="o">&gt;</span><span class="mi">1</span><span class="p">)</span><span class="w"> </span><span class="k">write</span><span class="p">(</span><span class="n">iunit</span><span class="p">,</span><span class="n">out_fmt</span><span class="p">)</span><span class="w"> </span><span class="p">&amp;</span>
+<span class="w">                    </span><span class="s2">"PROFILE has changed: "</span><span class="o">//</span><span class="n">cached</span><span class="p">%</span><span class="n">profile</span><span class="o">//</span><span class="s2">" vs. "</span><span class="o">//</span><span class="n">manifest</span><span class="p">%</span><span class="n">profile</span>
+<span class="w">                </span><span class="k">return</span>
+<span class="k">            end if</span>
+<span class="k">        end if</span>
+
 <span class="w">        </span><span class="c">!&gt; All checks passed! The two instances are equal</span>
 <span class="w">        </span><span class="n">has_changed</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">.</span><span class="n">false</span><span class="p">.</span>
 
@@ -309,7 +337,7 @@ All checks passed! The two instances are equal</p>
             <p class="text-end">
               Documentation generated by
               <a href="https://github.com/Fortran-FOSS-Programmers/ford">FORD</a>
- on 2026-10-27 14:43 +0000             </p>
+ on 2026-10-27 14:52 +0000             </p>
           </div>
         </div>
         <br>
