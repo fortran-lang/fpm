@@ -129,7 +129,10 @@ type build_target_t
     !> Targets in the same schedule group are guaranteed to be independent
     integer :: schedule = -1
 
-    !> Previous source file hash
+    !> Hash of the target inputs: its source file and the digests of its dependencies
+    integer(int64) :: digest = 0
+
+    !> Target digest of the last successful build
     integer(int64), allocatable :: digest_cached
 
     !> List of macros
