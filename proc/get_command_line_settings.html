@@ -92,7 +92,7 @@
 
             <li class="list-inline-item" id="statements"><i class="fa fa-list-ol"></i>
               <a data-bs-toggle="tooltip" data-bs-placement="bottom" data-bs-html="true"
-                 title=" 4.0% of total for procedures.">303 statements</a>
+                 title=" 4.0% of total for procedures.">309 statements</a>
             </li>
 
             <li class="list-inline-item" id="source-file">
@@ -354,6 +354,7 @@
 <span class="s1">            &amp; --tests F &amp;</span>
 <span class="s1">            &amp; --config-file " " &amp;</span>
 <span class="s1">            &amp; --'</span><span class="p">,</span><span class="n">help_build</span><span class="p">,</span><span class="n">version_text</span><span class="p">)</span>
+<span class="w">            </span><span class="k">call </span><span class="n">check_no_unnamed_args</span><span class="p">(</span><span class="s1">'build'</span><span class="p">)</span>
 
 <span class="w">            </span><span class="c">! Create and populate a base fpm_build_settings from CLI/env</span>
 <span class="w">            </span><span class="k">allocate</span><span class="p">(</span><span class="w"> </span><span class="n">fpm_build_settings</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">cmd_settings</span><span class="w"> </span><span class="p">)</span>
@@ -507,6 +508,7 @@
 <span class="s1">                &amp; --includedir "include" &amp;</span>
 <span class="s1">                &amp; --config-file " " &amp;</span>
 <span class="s1">                &amp;'</span><span class="p">,</span><span class="w"> </span><span class="n">help_install</span><span class="p">,</span><span class="w"> </span><span class="n">version_text</span><span class="p">)</span>
+<span class="w">            </span><span class="k">call </span><span class="n">check_no_unnamed_args</span><span class="p">(</span><span class="s1">'install'</span><span class="p">)</span>
 
 <span class="w">            </span><span class="n">config_file</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">sget</span><span class="p">(</span><span class="s1">'config-file'</span><span class="p">)</span>
 
@@ -528,6 +530,7 @@
 <span class="w">            </span><span class="k">call </span><span class="n">set_args</span><span class="p">(</span><span class="n">common_args</span><span class="w"> </span><span class="o">//</span><span class="w"> </span><span class="s1">'&amp;</span>
 <span class="s1">            &amp; --list F &amp;</span>
 <span class="s1">            &amp;'</span><span class="p">,</span><span class="w"> </span><span class="n">help_list</span><span class="p">,</span><span class="w"> </span><span class="n">version_text</span><span class="p">)</span>
+<span class="w">            </span><span class="k">call </span><span class="n">check_no_unnamed_args</span><span class="p">(</span><span class="s1">'list'</span><span class="p">)</span>
 <span class="w">            </span><span class="k">if</span><span class="p">(</span><span class="n">lget</span><span class="p">(</span><span class="s1">'list'</span><span class="p">))</span><span class="k">then</span>
 <span class="k">                </span><span class="n">help_text</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">[</span><span class="kt">character</span><span class="p">(</span><span class="n">widest</span><span class="p">)</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">help_list_nodash</span><span class="p">,</span><span class="w"> </span><span class="n">help_list_dash</span><span class="p">]</span>
 <span class="w">            </span><span class="k">else</span>
@@ -615,6 +618,7 @@
 <span class="s1">                &amp; --model "filename" &amp;</span>
 <span class="s1">                &amp; --dependencies "filename" '</span><span class="p">,</span><span class="w"> </span><span class="p">&amp;</span>
 <span class="w">                </span><span class="n">help_build</span><span class="p">,</span><span class="w"> </span><span class="n">version_text</span><span class="p">)</span>
+<span class="w">            </span><span class="k">call </span><span class="n">check_no_unnamed_args</span><span class="p">(</span><span class="s1">'export'</span><span class="p">)</span>
 
 <span class="w">            </span><span class="k">allocate</span><span class="p">(</span><span class="n">export_settings</span><span class="p">)</span>
 <span class="w">            </span><span class="k">call </span><span class="n">build_settings</span><span class="p">(</span><span class="n">export_settings</span><span class="p">,</span><span class="w"> </span><span class="n">show_model</span><span class="o">=</span><span class="p">.</span><span class="n">true</span><span class="p">.)</span>
@@ -632,6 +636,7 @@
 <span class="w">            </span><span class="p">&amp;</span><span class="w">   </span><span class="s1">' --apps'</span><span class="w">             </span><span class="o">//</span><span class="w"> </span><span class="p">&amp;</span>
 <span class="w">            </span><span class="p">&amp;</span><span class="w">   </span><span class="s1">' --examples'</span><span class="w">         </span><span class="o">//</span><span class="w"> </span><span class="p">&amp;</span>
 <span class="w">            </span><span class="p">&amp;</span><span class="w">   </span><span class="s1">' --config-file ""'</span><span class="p">,</span><span class="w"> </span><span class="n">help_clean</span><span class="p">,</span><span class="w"> </span><span class="n">version_text</span><span class="p">)</span>
+<span class="w">            </span><span class="k">call </span><span class="n">check_no_unnamed_args</span><span class="p">(</span><span class="s1">'clean'</span><span class="p">)</span>
 
 <span class="w">            </span><span class="k">block</span>
 <span class="k">                </span><span class="kt">logical</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">skip</span><span class="p">,</span><span class="w"> </span><span class="n">clean_all</span><span class="p">,</span><span class="w"> </span><span class="n">clean_test</span><span class="p">,</span><span class="w"> </span><span class="n">clean_apps</span><span class="p">,</span><span class="w"> </span><span class="n">clean_examples</span>
@@ -686,6 +691,7 @@
 <span class="s1">            &amp; --tests F &amp;</span>
 <span class="s1">            &amp; --config-file " " &amp;</span>
 <span class="s1">            &amp; --'</span><span class="p">,</span><span class="w"> </span><span class="n">help_publish</span><span class="p">,</span><span class="w"> </span><span class="n">version_text</span><span class="p">)</span>
+<span class="w">            </span><span class="k">call </span><span class="n">check_no_unnamed_args</span><span class="p">(</span><span class="s1">'publish'</span><span class="p">)</span>
 
 <span class="w">            </span><span class="n">config_file</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">sget</span><span class="p">(</span><span class="s1">'config-file'</span><span class="p">)</span>
 <span class="w">            </span><span class="n">token_s</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">sget</span><span class="p">(</span><span class="s1">'token'</span><span class="p">)</span>
@@ -760,7 +766,7 @@
             <p class="text-end">
               Documentation generated by
               <a href="https://github.com/Fortran-FOSS-Programmers/ford">FORD</a>
- on 2026-10-28 11:44 +0000             </p>
+ on 2026-10-28 13:40 +0000             </p>
           </div>
         </div>
         <br>
