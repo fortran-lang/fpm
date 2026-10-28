@@ -35,7 +35,7 @@ module fpm_manifest_dependency
     use tomlf, only: toml_table, toml_key, toml_stat
     use fpm_toml, only: get_value, check_keys, serializable_t, add_table, &
         & set_value, set_string, get_list, set_list
-    use fpm_filesystem, only: windows_path, join_path
+    use fpm_filesystem, only: windows_path, join_path, is_absolute_path
     use fpm_environment, only: get_os_type, OS_WINDOWS
     use fpm_manifest_metapackages, only: metapackage_config_t, is_meta_package, new_meta_config, &
             metapackage_request_t, new_meta_request
@@ -147,7 +147,8 @@ contains
         call get_value(table, "path", uri)
         if (allocated(uri)) then
             if (get_os_type() == OS_WINDOWS) uri = windows_path(uri)
-            if (present(root)) uri = join_path(root,uri)  ! Relative to the fpm.toml it’s written in
+            ! Relative to the fpm.toml it’s written in, unless absolute
+            if (present(root) .and. .not.is_absolute_path(uri)) uri = join_path(root,uri)
             call move_alloc(uri, self%path)
             return
         end if
