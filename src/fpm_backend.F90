@@ -14,16 +14,14 @@
 !> The backend process supports *incremental* compilation whereby targets are not
 !> re-compiled if their corresponding dependencies have not been modified.
 !>
-!> - Source-based targets (*i.e.* objects) are not re-compiled if the corresponding source
-!>   file is unmodified AND all of the target dependencies are not marked for re-compilation
+!> Targets (objects, executables and libraries) are not re-compiled if the target output
+!> file already exists AND its inputs are unmodified since it was last generated AND all of
+!> the target dependencies are not marked for re-compilation
 !>
-!> - Link targets (*i.e.* executables and libraries) are not re-compiled if the
-!>   target output file already exists AND all of the target dependencies are not marked for
-!>   re-compilation
-!>
-!> Source file modification is determined by a file digest (hash) which is calculated during
-!> the source parsing phase ([[fpm_source_parsing]]) and cached to disk after a target is
-!> successfully generated.
+!> The inputs of a target are summarised by a digest (hash) of its source file, if any,
+!> and of the digests of its dependencies. Source file digests are calculated during
+!> the source parsing phase ([[fpm_source_parsing]]); target digests are cached to disk after
+!> a target is successfully generated.
 !>
 module fpm_backend
 
@@ -171,8 +169,8 @@ end subroutine build_package
 !> Topologically sort a target for scheduling by
 !>  recursing over its dependencies.
 !>
-!> Checks disk-cached source hashes to determine if objects are
-!>  up-to-date. Up-to-date sources are tagged as skipped.
+!> Checks disk-cached target digests to determine if targets are
+!>  up-to-date. Up-to-date targets are tagged as skipped.
 !>
 !> On completion, `target` should either be marked as
 !> sorted (`target%sorted=.true.`) or skipped (`target%skip=.true.`)
@@ -202,7 +200,7 @@ recursive subroutine sort_target(target, mock)
         target%touched = .true.  ! Set touched flag
     end if
 
-    ! Load cached source file digest if present
+    ! Load cached target digest if present
     if (.not.allocated(target%digest_cached) .and. &
          exists(target%output_file) .and. &
          exists(target%output_file//'.digest') .and. &
@@ -217,31 +215,27 @@ recursive subroutine sort_target(target, mock)
         if (stat /= 0) deallocate(target%digest_cached)
 
     end if
-    
-    if (dry_run) then 
-        
-        target%skip = .false.
-        
-    elseif (allocated(target%source)) then
 
-        ! Skip if target is source-based and source file is unmodified
-        if (allocated(target%digest_cached)) then
-            if (target%digest_cached == target%source%digest) target%skip = .true.
-        end if
+    ! Sort dependencies first: the target digest depends on theirs
+    do i=1,size(target%dependencies)
 
-    elseif (exists(target%output_file)) then
+        call sort_target(target%dependencies(i)%ptr, dry_run)
 
-        ! Skip if target is not source-based and already exists
-        target%skip = .true.
+    end do
 
+    ! Skip if target was last built from the same inputs: its source file, if any,
+    ! and the digests of its dependencies. These catch a dependency rebuilt by an
+    ! earlier run that did not rebuild this target (it stopped early, or did not
+    ! include it, as `fpm build` does with tests)
+    target%digest = target%compute_digest()
+    target%skip = .false.
+    if (allocated(target%digest_cached) .and. .not.dry_run) then
+        target%skip = target%digest_cached == target%digest
     end if
 
     ! Loop over target dependencies
     target%schedule = 1
     do i=1,size(target%dependencies)
-
-        ! Sort dependency
-        call sort_target(target%dependencies(i)%ptr, dry_run)
 
         if (.not.target%dependencies(i)%ptr%skip) then
 
@@ -314,7 +308,7 @@ end subroutine schedule_targets
 
 !> Call compile/link command for a single target.
 !>
-!> If successful, also caches the source file digest to disk.
+!> If successful, also caches the target digest to disk.
 !>
 subroutine build_target(model,target,verbose,dry_run,table,stat)
     type(fpm_model_t), intent(in) :: model
@@ -362,9 +356,9 @@ subroutine build_target(model,target,verbose,dry_run,table,stat)
 
     end select
 
-    if (stat == 0 .and. allocated(target%source) .and. .not.dry_run) then
+    if (stat == 0 .and. .not.dry_run) then
         open(newunit=fh,file=target%output_file//'.digest',status='unknown')
-        write(fh,*) target%source%digest
+        write(fh,*) target%digest
         close(fh)
     end if
 

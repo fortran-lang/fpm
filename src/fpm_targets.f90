@@ -129,7 +129,10 @@ type build_target_t
     !> Targets in the same schedule group are guaranteed to be independent
     integer :: schedule = -1
 
-    !> Previous source file hash
+    !> Hash of the target inputs: its source file and the digests of its dependencies
+    integer(int64) :: digest = 0
+
+    !> Target digest of the last successful build
     integer(int64), allocatable :: digest_cached
 
     !> List of macros
@@ -147,6 +150,9 @@ type build_target_t
         procedure :: set_output_dir
          
         procedure :: is_executable_target
+
+        !> Digest of the target inputs: its source file and the digests of its dependencies
+        procedure :: compute_digest
 
 end type build_target_t
 
@@ -1550,6 +1556,75 @@ subroutine set_output_dir(self, output_dir)
     self%output_log_file = self%output_file // ".log"
 
 end subroutine set_output_dir
+
+!> Digest of the target inputs: the digest of its source file, if any, combined
+!> with those of its dependencies, in an order-independent way.
+!> The digests of the dependencies must be computed first
+pure function compute_digest(self) result(digest)
+    class(build_target_t), intent(in) :: self
+    integer(int64) :: digest
+
+    integer :: i
+    integer(int64), allocatable :: dep_digests(:)
+    character(8) :: bytes
+
+    digest = 0
+    if (allocated(self%source)) digest = self%source%digest
+
+    dep_digests = [(self%dependencies(i)%ptr%digest, i=1,size(self%dependencies))]
+    call sort_digests(dep_digests)
+
+    do i=1,size(dep_digests)
+        bytes = transfer(dep_digests(i), bytes)
+        digest = fnv_1a(bytes, digest)
+    end do
+
+end function compute_digest
+
+!> Sort digests in ascending order (heapsort: libraries can have thousands of dependencies)
+pure subroutine sort_digests(digests)
+    integer(int64), intent(inout) :: digests(:)
+
+    integer :: i
+    integer(int64) :: tmp
+
+    ! Build a max-heap, then move its root to the end of the array
+    do i=size(digests)/2,1,-1
+        call sift_down(digests, i, size(digests))
+    end do
+    do i=size(digests),2,-1
+        tmp = digests(1)
+        digests(1) = digests(i)
+        digests(i) = tmp
+        call sift_down(digests, 1, i-1)
+    end do
+
+    contains
+
+    !> Move heap(root) down the max-heap heap(1:n)
+    pure subroutine sift_down(heap, root, n)
+        integer(int64), intent(inout) :: heap(:)
+        integer, intent(in) :: root, n
+
+        integer :: parent, child
+        integer(int64) :: tmp
+
+        parent = root
+        do while (2*parent <= n)
+            child = 2*parent
+            if (child < n) then
+                if (heap(child) < heap(child+1)) child = child + 1
+            end if
+            if (heap(parent) >= heap(child)) exit
+            tmp = heap(parent)
+            heap(parent) = heap(child)
+            heap(child) = tmp
+            parent = child
+        end do
+
+    end subroutine sift_down
+
+end subroutine sort_digests
 
 !> Build a lookup table mapping each package dependency to its corresponding
 !> shared or archive build target in the targets list.
