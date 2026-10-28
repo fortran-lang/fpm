@@ -5,13 +5,21 @@ module fpm_settings
   use fpm_error, only: error_t, fatal_error
   use tomlf, only: toml_table, toml_error, toml_stat, toml_load
   use fpm_toml, only: get_value, check_keys
-  use fpm_os, only: get_current_directory, change_directory, get_absolute_path, convert_to_absolute_path
+  use fpm_os, only: get_absolute_path, convert_to_absolute_path
 
   implicit none
   private
   public :: fpm_global_settings, get_global_settings, get_registry_settings, official_registry_base_url
 
-  character(*), parameter :: official_registry_base_url = 'https://fpm-registry.vercel.app'
+  !> Public base URL of the official fpm registry.
+  !>
+  !> This is the serverless registry served by the `worker` in the
+  !> fortran-lang/registry repository (see its `wrangler.jsonc` `HOST` and the
+  !> frontend's `REACT_APP_REGISTRY_API_URL`). Pointing the CLI here makes
+  !> `fpm search`, registry dependencies and `fpm publish` talk to the same
+  !> backend the website does. Override per machine with `[registry] url` in
+  !> the global config file, or per invocation with `--registry`.
+  character(*), parameter :: official_registry_base_url = 'https://registry.fortran-lang.org'
   character(*), parameter :: default_config_file_name = 'config.toml'
 
   type :: fpm_global_settings
@@ -114,7 +122,8 @@ contains
   subroutine use_default_registry_settings(global_settings)
     type(fpm_global_settings), intent(inout) :: global_settings
 
-    if (.not. allocated(global_settings%registry_settings)) allocate (global_settings%registry_settings)
+    if (allocated(global_settings%registry_settings)) deallocate (global_settings%registry_settings)
+    allocate (global_settings%registry_settings)
     global_settings%registry_settings%url = official_registry_base_url
     global_settings%registry_settings%cache_path = join_path(global_settings%path_to_config_folder_or_empty(), &
     & 'dependencies')
@@ -132,7 +141,7 @@ contains
     character(:), allocatable :: path, url, cache_path
     integer :: stat
 
-    !> List of valid keys for the dependency table.
+    !> List of valid keys for the registry table.
     character(*), dimension(*), parameter :: valid_keys = [character(10) :: &
         & 'path', &
         & 'url', &
@@ -142,12 +151,13 @@ contains
     call check_keys(table, valid_keys, error)
     if (allocated(error)) return
 
+    if (allocated(global_settings%registry_settings)) deallocate (global_settings%registry_settings)
     allocate (global_settings%registry_settings)
 
     if (table%has_key('path')) then
       call get_value(table, 'path', path, stat=stat)
       if (stat /= toml_stat%success) then
-        call fatal_error(error, "Error reading registry path: '"//path//"'."); return
+        call fatal_error(error, "Error reading registry path from config file."); return
       end if
     end if
 
@@ -171,7 +181,7 @@ contains
     if (table%has_key('url')) then
       call get_value(table, 'url', url, stat=stat)
       if (stat /= toml_stat%success) then
-        call fatal_error(error, "Error reading registry url: '"//url//"'."); return
+        call fatal_error(error, "Error reading registry url from config file."); return
       end if
     end if
 
@@ -188,7 +198,7 @@ contains
     if (table%has_key('cache_path')) then
       call get_value(table, 'cache_path', cache_path, stat=stat)
       if (stat /= toml_stat%success) then
-        call fatal_error(error, "Error reading path to registry cache: '"//cache_path//"'."); return
+        call fatal_error(error, "Error reading path to registry cache from config file."); return
       end if
     end if
 

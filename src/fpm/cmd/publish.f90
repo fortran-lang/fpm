@@ -12,7 +12,7 @@ module fpm_cmd_publish
   use fpm_git, only: git_archive
   use fpm_downloader, only: downloader_t
   use fpm_strings, only: string_t
-  use fpm_settings, only: official_registry_base_url
+  use fpm_settings, only: official_registry_base_url, get_global_settings, fpm_global_settings
   use fpm, only: build_model
 
   implicit none
@@ -28,10 +28,11 @@ contains
 
     type(package_config_t) :: package
     type(fpm_model_t) :: model
+    type(fpm_global_settings) :: global_settings
     type(error_t), allocatable :: error
     type(version_t), allocatable :: version
     type(string_t), allocatable :: upload_data(:)
-    character(len=:), allocatable :: tmp_file
+    character(len=:), allocatable :: tmp_file, registry_url
     type(downloader_t) :: downloader
     integer :: i
 
@@ -64,11 +65,15 @@ contains
       end if
     end do
 
+    ! Dump the model *before* archiving: `git archive --add-file=fpm_model.json`
+    ! fails when the file does not exist yet, so the old order made every
+    ! non-dry-run publish abort before it could upload.
+    call model%dump('fpm_model.json', error, json=.true.)
+    if (allocated(error)) call fpm_stop(1, '*cmd_publish* Model dump error: '//error%message)
+
     tmp_file = get_temp_filename()
     call git_archive('.', tmp_file, 'HEAD', additional_files=['fpm_model.json'], verbose=settings%verbose, error=error)
     if (allocated(error)) call fpm_stop(1, '*cmd_publish* Archive error: '//error%message)
-    call model%dump('fpm_model.json', error, json=.true.)
-    if (allocated(error)) call fpm_stop(1, '*cmd_publish* Model dump error: '//error%message)
 
     upload_data = [ &
     & string_t('package_name="'//package%name//'"'), &
@@ -103,7 +108,29 @@ contains
       print *, 'Dry run successful. Generated tarball: ', tmp_file; return
     end if
 
-    call downloader%upload_form(official_registry_base_url//'/packages', upload_data, settings%verbose, error)
+    ! Resolve the target registry: `--registry` wins, then the global config's
+    ! `[registry] url`, then the official registry. This is what lets
+    ! `fpm publish` reach staging or a self-hosted worker.
+    if (allocated(settings%registry)) then
+      registry_url = trim(settings%registry)
+    else
+      call get_global_settings(global_settings, error)
+      if (allocated(error)) call fpm_stop(1, 'Error retrieving global settings')
+      if (allocated(global_settings%registry_settings)) then
+        if (allocated(global_settings%registry_settings%url)) then
+          registry_url = trim(global_settings%registry_settings%url)
+        end if
+      end if
+      if (.not. allocated(registry_url)) registry_url = official_registry_base_url
+    end if
+    do while (len(registry_url) > 0)
+      if (registry_url(len(registry_url):len(registry_url)) /= '/') exit
+      registry_url = registry_url(:len(registry_url)-1)
+    end do
+
+    if (settings%verbose) print *, 'Publishing to registry: ', registry_url
+
+    call downloader%upload_form(registry_url//'/packages', upload_data, settings%verbose, error)
     call delete_file(tmp_file)
     if (allocated(error)) call fpm_stop(1, '*cmd_publish* Upload error: '//error%message)
   end
