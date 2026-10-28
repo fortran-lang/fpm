@@ -30,8 +30,6 @@ implicit none
 private
 public :: parse_f_source, parse_c_source, parse_use_statement
 
-integer, parameter :: MAX_CPP_DEPTH = 64
-
 type :: cpp_block
     ! Nested block total depth
     integer :: depth = 0
@@ -40,7 +38,7 @@ type :: cpp_block
     ! Depth at which we became inactive (0 if active)
     integer :: inactive_depth = 0
     ! Track whether a branch was taken at each depth
-    logical :: branch_taken(MAX_CPP_DEPTH) = .false.
+    logical, allocatable :: branch_taken(:)
     ! Current macro
     character(:), allocatable :: name
 end type cpp_block
@@ -478,6 +476,7 @@ subroutine start_cpp_block(blk, lower_line, line, preprocess, defined_macros)
     logical :: is_active
     character(:), allocatable :: macro_name
     logical :: parent_active
+    logical, allocatable :: new_branch_taken(:)
 
     parent_active = .not. blk%inside_inactive_block
 
@@ -485,16 +484,21 @@ subroutine start_cpp_block(blk, lower_line, line, preprocess, defined_macros)
     
     blk%depth = blk%depth + 1
 
-    if (blk%depth <= MAX_CPP_DEPTH) then
-        blk%branch_taken(blk%depth) = .false.
+    ! Grow the branch stack as needed; CPP nesting has no fixed parser limit.
+    if (.not. allocated(blk%branch_taken)) then
+        allocate(blk%branch_taken(1))
+    elseif (blk%depth > size(blk%branch_taken)) then
+        allocate(new_branch_taken(2 * size(blk%branch_taken)))
+        new_branch_taken = .false.
+        new_branch_taken(:size(blk%branch_taken)) = blk%branch_taken
+        call move_alloc(new_branch_taken, blk%branch_taken)
     end if
+    blk%branch_taken(blk%depth) = .false.
 
     if (parent_active) then
         blk%name = macro_name    
         if (is_active) then
-            if (blk%depth <= MAX_CPP_DEPTH) then
-                blk%branch_taken(blk%depth) = .true.
-            end if
+            blk%branch_taken(blk%depth) = .true.
             blk%inside_inactive_block = .false.
             blk%inactive_depth = 0
         else
@@ -517,9 +521,7 @@ subroutine end_cpp_block(blk)
         blk%inactive_depth = 0
     end if
 
-    if (blk%depth <= MAX_CPP_DEPTH) then
-        blk%branch_taken(blk%depth) = .false.
-    end if
+    blk%branch_taken(blk%depth) = .false.
 
     blk%depth = max(0, blk%depth - 1)
         
@@ -536,13 +538,11 @@ subroutine handle_else_block(blk)
     parent_active = (.not. blk%inside_inactive_block) .or. (blk%depth == blk%inactive_depth)
 
     if (parent_active) then
-        if (blk%depth <= MAX_CPP_DEPTH .and. blk%branch_taken(blk%depth)) then
+        if (blk%branch_taken(blk%depth)) then
             blk%inside_inactive_block = .true.
             blk%inactive_depth = blk%depth
         else
-            if (blk%depth <= MAX_CPP_DEPTH) then
-                blk%branch_taken(blk%depth) = .true.
-            end if
+            blk%branch_taken(blk%depth) = .true.
             blk%inside_inactive_block = .false.
             blk%inactive_depth = 0
         end if
@@ -566,16 +566,14 @@ subroutine handle_elif_block(blk, lower_line, line, preprocess, defined_macros)
     parent_active = (.not. blk%inside_inactive_block) .or. (blk%depth == blk%inactive_depth)
 
     if (parent_active) then
-        if (blk%depth <= MAX_CPP_DEPTH .and. blk%branch_taken(blk%depth)) then
+        if (blk%branch_taken(blk%depth)) then
             blk%inside_inactive_block = .true.
             blk%inactive_depth = blk%depth
         else
             call parse_cpp_condition(lower_line, line, preprocess, is_active, macro_name, defined_macros)
             blk%name = macro_name
             if (is_active) then
-                if (blk%depth <= MAX_CPP_DEPTH) then
-                    blk%branch_taken(blk%depth) = .true.
-                end if
+                blk%branch_taken(blk%depth) = .true.
                 blk%inside_inactive_block = .false.
                 blk%inactive_depth = 0
             else

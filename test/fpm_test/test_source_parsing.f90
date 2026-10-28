@@ -56,6 +56,7 @@ contains
             & new_unittest("conditional-compilation-elif", test_conditional_compilation_elif), &
             & new_unittest("conditional-compilation-elif-else", test_conditional_compilation_elif_else), &
             & new_unittest("conditional-compilation-post-elif", test_conditional_compilation_post_elif), &
+            & new_unittest("conditional-compilation-nested-elif", test_conditional_compilation_nested_elif), &
             & new_unittest("conditional-compilation_ifdef_else", test_conditional_compilation_ifdef_else), &
             & new_unittest("conditional-if-defined", test_conditional_if_defined), &
             & new_unittest("conditional-if-defined-indented", test_conditional_if_defined_indented), &
@@ -1614,6 +1615,83 @@ contains
         end if
 
     end subroutine test_conditional_compilation_elif_else
+
+    !> Exercise branch selection and state restoration at and beyond the old depth limit.
+    subroutine test_conditional_compilation_nested_elif(error)
+        type(error_t), allocatable, intent(out) :: error
+        type(srcfile_t) :: f_source
+        type(preprocess_config_t) :: cpp_config
+        character(:), allocatable :: temp_file
+        character(1) :: selected
+        integer, parameter :: depths(*) = [1, 64, 65, 128]
+        integer :: unit, level, case_depth, branch, chain
+
+        temp_file = get_temp_filename()
+        do case_depth = 1, size(depths)
+            do branch = 1, 4
+                write(selected, '(i1)') branch
+                call cpp_config%new([string_t('SELECT='//selected)])
+                cpp_config%name = 'cpp'
+
+                open(file=temp_file, newunit=unit, status='replace')
+                ! Reuse each stack slot after #endif to check branch state is reset.
+                do chain = 1, 2
+                    do level = 1, depths(case_depth) - 1
+                        write(unit, '(a)') '#ifdef SELECT'
+                    end do
+                    write(unit, '(a)') &
+                        '#if SELECT == 1', 'use dep_1', &
+                        '#elif SELECT == 2', 'use dep_2', &
+                        '#elif SELECT == 3', 'use dep_3', &
+                        '#else', 'use dep_4', '#endif', &
+                        'use dep_after_inner'
+                    do level = 1, depths(case_depth) - 1
+                        write(unit, '(a)') '#endif'
+                    end do
+                end do
+                ! An inactive parent must suppress all branches of nested chains.
+                write(unit, '(a)') '#ifdef MISSING'
+                do level = 1, depths(case_depth)
+                    write(unit, '(a)') '#ifdef SELECT'
+                end do
+                write(unit, '(a)') &
+                    'use inactive_if', '#elif SELECT == 2', &
+                    'use inactive_elif', '#else', 'use inactive_else', '#endif'
+                do level = 1, depths(case_depth) - 1
+                    write(unit, '(a)') '#endif'
+                end do
+                write(unit, '(a)') &
+                    '#else', 'use dep_after_outer', '#endif', &
+                    'module test_mod_nested', 'end module test_mod_nested'
+                close(unit)
+
+                f_source = parse_f_source(temp_file, error, preprocess=cpp_config)
+                if (allocated(error)) return
+                if (f_source%unit_type /= FPM_UNIT_MODULE .or. size(f_source%modules_provided) /= 1) then
+                    call test_failed(error, 'Lost module declaration after nested conditional chains')
+                    return
+                end if
+                if (f_source%modules_provided(1)%s /= 'test_mod_nested') then
+                    call test_failed(error, 'Incorrect module declaration after nested conditional chains')
+                    return
+                end if
+                if (size(f_source%modules_used) /= 5) then
+                    call test_failed(error, 'Incorrect dependency count in nested conditional chains')
+                    return
+                end if
+                if (f_source%modules_used(1)%s /= 'dep_'//selected .or. &
+                    f_source%modules_used(2)%s /= 'dep_after_inner' .or. &
+                    f_source%modules_used(3)%s /= 'dep_'//selected .or. &
+                    f_source%modules_used(4)%s /= 'dep_after_inner' .or. &
+                    f_source%modules_used(5)%s /= 'dep_after_outer') then
+                    call test_failed(error, 'Incorrect branch selection or parent state in nested conditional chains')
+                    return
+                end if
+            end do
+        end do
+        open(file=temp_file, newunit=unit)
+        close(unit, status='delete')
+    end subroutine test_conditional_compilation_nested_elif
 
     subroutine test_conditional_compilation_post_elif(error)
 
