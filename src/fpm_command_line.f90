@@ -780,9 +780,8 @@ contains
         integer :: i
 
         do i = 2, size(unnamed)
-            if (len_trim(unnamed(i)) > 0) then
-                call fpm_stop(1, 'fpm '//subcommand//': unexpected argument '''//trim(unnamed(i))//'''')
-            end if
+            if (len_trim(unnamed(i)) > 0) &
+            call fpm_stop(1, 'fpm '//subcommand//': unexpected argument '''//trim(unnamed(i))//'''')
         end do
     end subroutine check_no_unnamed_args
 
