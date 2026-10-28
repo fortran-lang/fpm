@@ -151,7 +151,7 @@ character(len=:),allocatable  :: rm_command
    ! Test that generated manifests are valid by building one of the packages
    write(*,'(a)') ' <INFO> Testing that generated manifest is valid (can be built)...'
    call execute_command_line(path//' build --directory '//scr//'A --build-dir build', &
-      exitstat=estat, cmdstat=cstat, cmdmsg=message)
+                             exitstat=estat, cmdstat=cstat, cmdmsg=message)
    if (estat == 0) then
       write(*,'(a)') ' <INFO> Generated manifest is valid - build succeeded'
       tally = [tally, .true.]
