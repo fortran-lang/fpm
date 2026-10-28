@@ -25,11 +25,11 @@
 !>
 module fpm_backend
 
-use,intrinsic :: iso_fortran_env, only : stdin=>input_unit, stdout=>output_unit, stderr=>error_unit, int64
+use,intrinsic :: iso_fortran_env, only : stdin=>input_unit, stdout=>output_unit, stderr=>error_unit
 use fpm_error, only : fpm_stop, error_t
 use fpm_filesystem, only: basename, dirname, join_path, exists, mkdir, run, getline
 use fpm_model, only: fpm_model_t
-use fpm_strings, only: string_t, operator(.in.), fnv_1a
+use fpm_strings, only: string_t, operator(.in.)
 use fpm_targets, only: build_target_t, build_target_ptr, FPM_TARGET_OBJECT, &
                        FPM_TARGET_C_OBJECT, FPM_TARGET_ARCHIVE, FPM_TARGET_EXECUTABLE, &
                        FPM_TARGET_CPP_OBJECT, FPM_TARGET_SHARED
@@ -227,7 +227,7 @@ recursive subroutine sort_target(target, mock)
     ! and the digests of its dependencies. These catch a dependency rebuilt by an
     ! earlier run that did not rebuild this target (it stopped early, or did not
     ! include it, as `fpm build` does with tests)
-    target%digest = target_digest(target)
+    target%digest = target%compute_digest()
     target%skip = .false.
     if (allocated(target%digest_cached) .and. .not.dry_run) then
         target%skip = target%digest_cached == target%digest
@@ -253,76 +253,6 @@ recursive subroutine sort_target(target, mock)
     target%sorted = .not.target%skip
 
 end subroutine sort_target
-
-
-!> Digest of the inputs of a sorted target: the digest of its source file, if any,
-!> combined with those of its dependencies, in an order-independent way
-pure function target_digest(target) result(digest)
-    type(build_target_t), intent(in) :: target
-    integer(int64) :: digest
-
-    integer :: i
-    integer(int64), allocatable :: dep_digests(:)
-    character(8) :: bytes
-
-    digest = 0
-    if (allocated(target%source)) digest = target%source%digest
-
-    dep_digests = [(target%dependencies(i)%ptr%digest, i=1,size(target%dependencies))]
-    call sort_digests(dep_digests)
-
-    do i=1,size(dep_digests)
-        bytes = transfer(dep_digests(i), bytes)
-        digest = fnv_1a(bytes, digest)
-    end do
-
-end function target_digest
-
-
-!> Sort digests in ascending order (heapsort: libraries can have thousands of dependencies)
-pure subroutine sort_digests(digests)
-    integer(int64), intent(inout) :: digests(:)
-
-    integer :: i
-    integer(int64) :: tmp
-
-    ! Build a max-heap, then move its root to the end of the array
-    do i=size(digests)/2,1,-1
-        call sift_down(digests, i, size(digests))
-    end do
-    do i=size(digests),2,-1
-        tmp = digests(1)
-        digests(1) = digests(i)
-        digests(i) = tmp
-        call sift_down(digests, 1, i-1)
-    end do
-
-    contains
-
-    !> Move heap(root) down the max-heap heap(1:n)
-    pure subroutine sift_down(heap, root, n)
-        integer(int64), intent(inout) :: heap(:)
-        integer, intent(in) :: root, n
-
-        integer :: parent, child
-        integer(int64) :: tmp
-
-        parent = root
-        do while (2*parent <= n)
-            child = 2*parent
-            if (child < n) then
-                if (heap(child) < heap(child+1)) child = child + 1
-            end if
-            if (heap(parent) >= heap(child)) exit
-            tmp = heap(parent)
-            heap(parent) = heap(child)
-            heap(child) = tmp
-            parent = child
-        end do
-
-    end subroutine sift_down
-
-end subroutine sort_digests
 
 
 !> Construct a build schedule from the sorted targets.
