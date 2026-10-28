@@ -4,7 +4,7 @@ module test_package_dependencies
   use testsuite, only: new_unittest, unittest_t, error_t, test_failed
   use fpm_filesystem, only: is_dir, join_path, filewrite, mkdir, os_delete_dir, exists
   use fpm_environment, only: os_is_unix
-  use fpm_os, only: get_current_directory
+  use fpm_os, only: get_current_directory, get_absolute_path
   use fpm_dependency
   use fpm_manifest_dependency
   use fpm_manifest_metapackages, only: metapackage_config_t
@@ -14,6 +14,8 @@ module test_package_dependencies
   use fpm_settings, only: fpm_global_settings, get_registry_settings, get_global_settings
   use fpm_downloader, only: downloader_t
   use fpm_versioning, only: version_t
+  use fpm_strings, only: string_t
+  use, intrinsic :: iso_fortran_env, only: output_unit
   use jonquil, only: json_object, json_value, json_loads, cast_to_object
 
   implicit none
@@ -45,8 +47,11 @@ contains
     testsuite = [ &
         & new_unittest("cache-load-dump", test_cache_load_dump), &
         & new_unittest("cache-dump-load", test_cache_dump_load), &
+        & new_unittest("cache-preserves-features", test_cache_preserves_features), &
+        & new_unittest("features-change-detection", test_features_change_detection), &
         & new_unittest("status-after-load", test_status), &
         & new_unittest("add-dependencies", test_add_dependencies), &
+        & new_unittest("absolute-path-dependency", test_absolute_path_dependency), &
         & new_unittest("update-dependencies", test_update_dependencies), &
         & new_unittest("metapackage-override", test_metapackage_override), &
         & new_unittest("do-not-update-dependencies", test_non_updated_dependencies), &
@@ -126,6 +131,134 @@ contains
     end if
 
   end subroutine test_cache_dump_load
+
+  !> A dependency's requested features and profile are part of its IDENTITY --
+  !> they change its macros and can change its own dependency set -- so they
+  !> must survive the cache round trip.  When they did not, the first build
+  !> applied the feature and every incremental build silently resolved the
+  !> dependency without it.
+  subroutine test_cache_preserves_features(error)
+
+    !> Error handling
+    type(error_t), allocatable, intent(out) :: error
+
+    type(dependency_tree_t) :: deps
+    type(dependency_config_t) :: dep
+    integer :: unit, id
+
+    call new_dependency_tree(deps)
+    call resize(deps%dep, 5)
+    deps%ndep = 2
+
+    dep%name = "dep1"
+    dep%path = "fpm-tmp1-dir"
+    allocate (dep%features(2))
+    dep%features(1)%s = "serial"
+    dep%features(2)%s = "openmp"
+    call new_dependency_node(deps%dep(1), dep, proj_dir=dep%path)
+
+    !> dep2 requests a profile and NO features, so it also pins that one
+    !> entry's optionals do not leak into the next while loading.
+    call dependency_destroy(dep)
+    dep%name = "dep2"
+    dep%path = "fpm-tmp2-dir"
+    dep%profile = "parallel-mpi"
+    call new_dependency_node(deps%dep(2), dep, proj_dir=dep%path)
+
+    open (newunit=unit, status='scratch')
+    call deps%dump_cache(unit, error)
+    if (.not. allocated(error)) then
+      rewind (unit)
+
+      call new_dependency_tree(deps)
+      call resize(deps%dep, 2)
+      call deps%load_cache(unit, error)
+      close (unit)
+    end if
+    if (allocated(error)) return
+
+    id = deps%find("dep1")
+    if (id <= 0) then
+      call test_failed(error, "Dependency 'dep1' missing from the loaded cache")
+      return
+    end if
+    if (.not. allocated(deps%dep(id)%features)) then
+      call test_failed(error, "Cached dependency 'dep1' lost its requested features")
+      return
+    end if
+    if (size(deps%dep(id)%features) /= 2) then
+      call test_failed(error, "Expected two features on 'dep1' after the cache round trip")
+      return
+    end if
+    if (deps%dep(id)%features(1)%s /= "serial" .or. &
+        deps%dep(id)%features(2)%s /= "openmp") then
+      call test_failed(error, "Feature names not preserved by the cache round trip")
+      return
+    end if
+
+    id = deps%find("dep2")
+    if (id <= 0) then
+      call test_failed(error, "Dependency 'dep2' missing from the loaded cache")
+      return
+    end if
+    if (allocated(deps%dep(id)%features)) then
+      call test_failed(error, "Dependency 'dep2' inherited the previous entry's features")
+      return
+    end if
+    if (.not. allocated(deps%dep(id)%profile)) then
+      call test_failed(error, "Cached dependency 'dep2' lost its requested profile")
+      return
+    end if
+    if (deps%dep(id)%profile /= "parallel-mpi") then
+      call test_failed(error, "Profile not preserved by the cache round trip")
+      return
+    end if
+
+  end subroutine test_cache_preserves_features
+
+  !> Differing features must mark a dependency as changed, so a cache entry
+  !> written before the feature was requested is re-resolved instead of being
+  !> accepted as equal.
+  subroutine test_features_change_detection(error)
+
+    !> Error handling
+    type(error_t), allocatable, intent(out) :: error
+
+    type(dependency_config_t) :: cached, manifest
+
+    cached%name = "dep1"
+    cached%path = "fpm-tmp1-dir"
+
+    manifest%name = "dep1"
+    manifest%path = "fpm-tmp1-dir"
+    allocate (manifest%features(1))
+    manifest%features(1)%s = "serial"
+
+    !> Cache has no features, manifest asks for one: that is a change.
+    if (.not. manifest_has_changed(cached=cached, manifest=manifest, &
+                                   verbosity=0, iunit=output_unit)) then
+      call test_failed(error, "Requesting a feature absent from the cache must count as a change")
+      return
+    end if
+
+    !> Same feature on both sides: not a change.
+    allocate (cached%features(1))
+    cached%features(1)%s = "serial"
+    if (manifest_has_changed(cached=cached, manifest=manifest, &
+                             verbosity=0, iunit=output_unit)) then
+      call test_failed(error, "Identical features must not count as a change")
+      return
+    end if
+
+    !> Different feature name: a change again.
+    manifest%features(1)%s = "openmp"
+    if (.not. manifest_has_changed(cached=cached, manifest=manifest, &
+                                   verbosity=0, iunit=output_unit)) then
+      call test_failed(error, "A different feature name must count as a change")
+      return
+    end if
+
+  end subroutine test_features_change_detection
 
   !> Round trip of the dependency cache from a TOML data structure to
   !> a dependency tree to a TOML data structure
@@ -259,6 +392,62 @@ contains
     end if
 
   end subroutine test_add_dependencies
+
+  !> A dependency declared with an absolute path is neither prefixed with the
+  !> directory of its manifest nor with the resolution root
+  subroutine test_absolute_path_dependency(error)
+
+    !> Error handling
+    type(error_t), allocatable, intent(out) :: error
+
+    type(toml_table) :: table
+    type(toml_table), pointer :: ptr
+    type(dependency_tree_t) :: deps
+    class(dependency_config_t), allocatable :: nodes(:)
+    character(len=:), allocatable :: dep_dir, abs_dir
+
+    call delete_tmp_folder
+    dep_dir = join_path(tmp_folder, 'abs-dep')
+    call mkdir(dep_dir)
+    call filewrite(join_path(dep_dir, 'fpm.toml'), ['name = "abs-dep"'])
+
+    call get_absolute_path(dep_dir, abs_dir, error)
+    if (allocated(error)) then
+      call delete_tmp_folder; return
+    end if
+
+    table = toml_table()
+    call add_table(table, "abs-dep", ptr)
+    call set_value(ptr, "path", abs_dir)
+
+    call new_dependencies(nodes, table, root='consumer', error=error)
+    if (allocated(error)) then
+      call delete_tmp_folder; return
+    end if
+
+    if (nodes(1)%path /= abs_dir) then
+      call test_failed(error, "Absolute dependency path changed to '"//nodes(1)%path//"'")
+      call delete_tmp_folder; return
+    end if
+
+    call new_dependency_tree(deps)
+    call deps%add(nodes, error)
+    if (allocated(error)) then
+      call delete_tmp_folder; return
+    end if
+
+    call deps%resolve(".", error)
+    if (allocated(error)) then
+      call delete_tmp_folder; return
+    end if
+
+    if (deps%dep(1)%proj_dir /= abs_dir) then
+      call test_failed(error, "Absolute dependency resolved to '"//deps%dep(1)%proj_dir//"'")
+    end if
+
+    call delete_tmp_folder
+
+  end subroutine test_absolute_path_dependency
 
   subroutine test_non_updated_dependencies(error)
 

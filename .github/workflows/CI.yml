@@ -45,6 +45,10 @@ jobs:
             toolchain: {compiler: intel, version: '2025.2'}
           - os: windows-latest
             toolchain: {compiler: intel, version: '2026.1'}
+          - os: ubuntu-latest  # Intel runs on ubuntu-24.04, see include
+            toolchain: {compiler: intel, version: '2025.2'}
+          - os: ubuntu-latest
+            toolchain: {compiler: intel, version: '2026.1'}
         include:
           # os-arch is independent of toolchain version
           - os: ubuntu-latest
@@ -73,10 +77,15 @@ jobs:
           - os: ubuntu-latest
             toolchain: {compiler: gcc, version: 14}
             release-flags: --features openmp --flag '--static -g -fbacktrace -O3'
-          - os: ubuntu-latest
+          # setup-fortran v1.10.0 installs Intel with apt-key, which
+          # ubuntu-26.04 (ubuntu-latest) no longer has
+          # (fortran-lang/setup-fortran#298).
+          - os: ubuntu-24.04
+            os-arch: linux-x86_64
             toolchain: {compiler: intel, version: '2025.2'}
             release-flags: --flag '--static -g -fbacktrace -O3'
-          - os: ubuntu-latest
+          - os: ubuntu-24.04
+            os-arch: linux-x86_64
             toolchain: {compiler: intel, version: '2026.1'}
             release-flags: --flag '--static -g -fbacktrace -O3'
           - os: macos-15
@@ -92,15 +101,43 @@ jobs:
             os-arch: macos26-arm64
             toolchain: {compiler: gcc, version: 16}
             release-flags: --features openmp --flag '-g -fbacktrace -O3'
+          # LLVM Flang, test only: fpm is built with flang, and the flang-built
+          # fpm then runs the test suite and all example packages with flang.
+          - os: ubuntu-latest
+            os-arch: linux-x86_64
+            toolchain: {compiler: flang, version: 23}
+          - os: windows-latest
+            os-arch: windows-x86_64
+            exe: .exe
+            toolchain: {compiler: flang, version: 23}
 
     steps:
     - name: Checkout code
       uses: actions/checkout@v6
 
     - name: Setup Fortran compiler
-      if: ${{ !(matrix.toolchain.compiler == 'gcc' && matrix.toolchain.version == 16) }}
+      if: ${{ matrix.toolchain.compiler != 'flang' && !(matrix.toolchain.compiler == 'gcc' && matrix.toolchain.version == 16) }}
       uses: fortran-lang/setup-fortran@v1.10.0
       id: setup-fortran
+      continue-on-error: ${{ matrix.os == 'windows-latest' }}
+      with:
+        compiler: ${{ matrix.toolchain.compiler }}
+        version: ${{ matrix.toolchain.version }}
+
+    # On Windows, setup-fortran installs MinGW from the Chocolatey feed, which fails
+    # intermittently (HTTP 503/504): retry once. setup-fortran moves C:\mingw64 away
+    # before calling choco, so put it back first, or the retry fails on that move.
+    - name: Restore C:\mingw64 before retrying
+      if: steps.setup-fortran.outcome == 'failure'
+      shell: bash
+      run: |
+        if [ -d "$RUNNER_TEMP/mingw64" ] && [ ! -d /c/mingw64 ]; then
+          mv "$RUNNER_TEMP/mingw64" /c/
+        fi
+
+    - name: Setup Fortran compiler (retry)
+      if: steps.setup-fortran.outcome == 'failure'
+      uses: fortran-lang/setup-fortran@v1.10.0
       with:
         compiler: ${{ matrix.toolchain.compiler }}
         version: ${{ matrix.toolchain.version }}
@@ -109,6 +146,13 @@ jobs:
     - name: Setup gcc 16
       if: matrix.toolchain.compiler == 'gcc' && matrix.toolchain.version == 16
       uses: ./.github/actions/setup-gcc16
+
+    # setup-fortran v1.10.0 does not provide LLVM Flang
+    - name: Setup LLVM Flang
+      if: matrix.toolchain.compiler == 'flang'
+      uses: ./.github/actions/setup-flang
+      with:
+        version: ${{ matrix.toolchain.version }}
 
     # Phase 1: Bootstrap fpm with existing version
     - name: Install fpm
@@ -227,7 +271,12 @@ jobs:
     - name: Test Fortran fpm (bootstrap)
       shell: bash
       run: |
-        ${{ env.BOOTSTRAP }} test --flag " -Wno-external-argument-mismatch"
+        if [ "${{ matrix.toolchain.compiler }}" = flang ]; then
+          # flang rejects unknown warning options
+          ${{ env.BOOTSTRAP }} test
+        else
+          ${{ env.BOOTSTRAP }} test --flag " -Wno-external-argument-mismatch"
+        fi
 
     - name: Install Fortran fpm (bootstrap)
       shell: bash
@@ -289,7 +338,7 @@ jobs:
         rm -v ${{ env.FPM }}
         echo "FPM_RELEASE=${{ env.EXE }}" >> $GITHUB_ENV
       env:
-        EXE: fpm-${{ env.VERSION }}-${{ matrix.os-arch }}-gcc-${{ matrix.toolchain.version }}${{ matrix.exe }}
+        EXE: fpm-${{ env.VERSION }}-${{ matrix.os-arch }}-${{ matrix.toolchain.compiler }}-${{ matrix.toolchain.version }}${{ matrix.exe }}
 
     - name: Run release version
       shell: bash

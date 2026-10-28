@@ -35,7 +35,7 @@ module fpm_manifest_dependency
     use tomlf, only: toml_table, toml_key, toml_stat
     use fpm_toml, only: get_value, check_keys, serializable_t, add_table, &
         & set_value, set_string, get_list, set_list
-    use fpm_filesystem, only: windows_path, join_path
+    use fpm_filesystem, only: windows_path, join_path, is_absolute_path
     use fpm_environment, only: get_os_type, OS_WINDOWS
     use fpm_manifest_metapackages, only: metapackage_config_t, is_meta_package, new_meta_config, &
             metapackage_request_t, new_meta_request
@@ -147,7 +147,8 @@ contains
         call get_value(table, "path", uri)
         if (allocated(uri)) then
             if (get_os_type() == OS_WINDOWS) uri = windows_path(uri)
-            if (present(root)) uri = join_path(root,uri)  ! Relative to the fpm.toml it’s written in
+            ! Relative to the fpm.toml it’s written in, unless absolute
+            if (present(root) .and. .not.is_absolute_path(uri)) uri = join_path(root,uri)
             call move_alloc(uri, self%path)
             return
         end if
@@ -427,6 +428,31 @@ contains
             if (.not.git_matches_manifest(cached%git,manifest%git,verbosity,iunit)) return
         end if
 
+        !> A different feature set (or profile) means different macros and
+        !> possibly different dependencies, so it is a different build of the
+        !> same revision -- the git checks above cannot see that.
+        if (allocated(cached%features).neqv.allocated(manifest%features)) then
+            if (verbosity>1) write(iunit,out_fmt) "FEATURES presence has changed. "
+            return
+        endif
+        if (allocated(cached%features)) then
+            if (.not.(cached%features==manifest%features)) then
+                if (verbosity>1) write(iunit,out_fmt) "FEATURES have changed. "
+                return
+            end if
+        end if
+        if (allocated(cached%profile).neqv.allocated(manifest%profile)) then
+            if (verbosity>1) write(iunit,out_fmt) "PROFILE presence has changed. "
+            return
+        endif
+        if (allocated(cached%profile)) then
+            if (.not.(cached%profile==manifest%profile)) then
+                if (verbosity>1) write(iunit,out_fmt) &
+                    "PROFILE has changed: "//cached%profile//" vs. "//manifest%profile
+                return
+            end if
+        end if
+
         !> All checks passed! The two instances are equal
         has_changed = .false.
 
@@ -637,12 +663,9 @@ contains
         if (allocated(dep%preprocess)) then 
             
             n = size(dep%preprocess)
-            
-            if (n<1) then 
-                deallocate(dep%preprocess)
-                allocate(dep%preprocess(1),source=preprocess)
-            else
-                
+
+            if (n>0) then
+
                 find_similar: do i=1,n
                     if (dep%preprocess(i)%name==dep%name) then                             
                         call dep%preprocess(i)%add_config(preprocess)
@@ -658,15 +681,19 @@ contains
                     new_preprocess(n+1) = preprocess
                 end select
                 call move_alloc(from=new_preprocess,to=dep%preprocess)
-                
+                return
+
             end if
-        else
-            
-            ! Copy configuration
-            allocate(dep%preprocess(1),source=preprocess)
-            
-        end if                
-               
+            deallocate(dep%preprocess)
+        end if
+
+        ! Replace allocate(..., source=preprocess) for a class(...): gfortran 15/16 finalization bug 
+        allocate(dep%preprocess(1))
+        select type (list => dep%preprocess)
+        type is (preprocess_config_t)
+            list(1) = preprocess
+        end select
+
     end subroutine add_preprocess
 
 

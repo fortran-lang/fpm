@@ -867,11 +867,12 @@ function parse_f_source(f_filename,error,preprocess) result(f_source)
                 end if
 
                 mod_name = trim(adjustl(string_parts(2)))
-                if (scan(mod_name,'=(&')>0 ) then
+                if (scan(mod_name,'=(&')>0 .or. index(mod_name,'procedure::')==1) then
                     ! Ignore these cases:
                     ! module <something>&
                     ! module =*
                     ! module (i)
+                    ! module procedure::name
                     cycle
                 end if
 
