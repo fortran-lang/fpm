@@ -92,7 +92,7 @@
 
             <li class="list-inline-item" id="statements"><i class="fa fa-list-ol"></i>
               <a data-bs-toggle="tooltip" data-bs-placement="bottom" data-bs-html="true"
-                 title="<p> 3.9% of total for derived types.</p>Including implementation: 98 statements,  1.4% of total for derived types.">26 statements</a>
+                 title="<p> 4.2% of total for derived types.</p>Including implementation: 115 statements,  1.7% of total for derived types.">28 statements</a>
             </li>
 
             <li class="list-inline-item" id="source-file">
@@ -134,26 +134,27 @@
       </a>
       <div id="vars-0" class="collapse">
         <div class="list-group list-group-flush">
-            <a class="list-group-item" href="../type/build_target_t.html#variable-compile_flags~7">compile_flags</a>
+            <a class="list-group-item" href="../type/build_target_t.html#variable-compile_flags">compile_flags</a>
             <a class="list-group-item" href="../type/build_target_t.html#variable-dependencies">dependencies</a>
+            <a class="list-group-item" href="../type/build_target_t.html#variable-digest">digest</a>
             <a class="list-group-item" href="../type/build_target_t.html#variable-digest_cached">digest_cached</a>
-            <a class="list-group-item" href="../type/build_target_t.html#variable-features~9">features</a>
-            <a class="list-group-item" href="../type/build_target_t.html#variable-link_flags~7">link_flags</a>
+            <a class="list-group-item" href="../type/build_target_t.html#variable-features~6">features</a>
+            <a class="list-group-item" href="../type/build_target_t.html#variable-link_flags~2">link_flags</a>
             <a class="list-group-item" href="../type/build_target_t.html#variable-link_libraries">link_libraries</a>
             <a class="list-group-item" href="../type/build_target_t.html#variable-link_objects">link_objects</a>
-            <a class="list-group-item" href="../type/build_target_t.html#variable-macros~8">macros</a>
+            <a class="list-group-item" href="../type/build_target_t.html#variable-macros~7">macros</a>
             <a class="list-group-item" href="../type/build_target_t.html#variable-output_dir">output_dir</a>
-            <a class="list-group-item" href="../type/build_target_t.html#variable-output_file~2">output_file</a>
+            <a class="list-group-item" href="../type/build_target_t.html#variable-output_file">output_file</a>
             <a class="list-group-item" href="../type/build_target_t.html#variable-output_log_file">output_log_file</a>
             <a class="list-group-item" href="../type/build_target_t.html#variable-output_name">output_name</a>
             <a class="list-group-item" href="../type/build_target_t.html#variable-package_name~4">package_name</a>
             <a class="list-group-item" href="../type/build_target_t.html#variable-schedule">schedule</a>
             <a class="list-group-item" href="../type/build_target_t.html#variable-skip">skip</a>
             <a class="list-group-item" href="../type/build_target_t.html#variable-sorted">sorted</a>
-            <a class="list-group-item" href="../type/build_target_t.html#variable-source~7">source</a>
+            <a class="list-group-item" href="../type/build_target_t.html#variable-source~17">source</a>
             <a class="list-group-item" href="../type/build_target_t.html#variable-target_type">target_type</a>
             <a class="list-group-item" href="../type/build_target_t.html#variable-touched">touched</a>
-            <a class="list-group-item" href="../type/build_target_t.html#variable-version~17">version</a>
+            <a class="list-group-item" href="../type/build_target_t.html#variable-version~14">version</a>
         </div>
       </div>
     </div>
@@ -180,7 +181,8 @@
       </a>
       <div id="boundprocs-0" class="collapse">
         <div class="list-group list-group-flush">
-            <a class="list-group-item" href="../type/build_target_t.html#boundprocedure-info~13">info</a>
+            <a class="list-group-item" href="../type/build_target_t.html#boundprocedure-compute_digest">compute_digest</a>
+            <a class="list-group-item" href="../type/build_target_t.html#boundprocedure-info~7">info</a>
             <a class="list-group-item" href="../type/build_target_t.html#boundprocedure-is_executable_target">is_executable_target</a>
             <a class="list-group-item" href="../type/build_target_t.html#boundprocedure-set_output_dir">set_output_dir</a>
         </div>
@@ -221,7 +223,7 @@
     <tbody>
         <tr>
             <td>
-              <span class="anchor" id="variable-compile_flags~7"></span>
+              <span class="anchor" id="variable-compile_flags"></span>
               character(len=:),
             </td>
               <td>public,</td>
@@ -255,6 +257,23 @@
         </tr>
         <tr>
             <td>
+              <span class="anchor" id="variable-digest"></span>
+              integer(kind=int64),
+            </td>
+              <td>public</td>
+            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>digest</strong></td>
+<td> =</td>
+                <td>0</td>
+            <td>
+                <p>Hash of the target inputs: its source file and the digests of its dependencies</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
               <span class="anchor" id="variable-digest_cached"></span>
               integer(kind=int64),
             </td>
@@ -267,12 +286,12 @@
                 <td></td>
                 <td></td>
             <td>
-                <p>Previous source file hash</p>
+                <p>Target digest of the last successful build</p>
             </td>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-features~9"></span>
+              <span class="anchor" id="variable-features~6"></span>
               type(<a href='fortran_config_t.html'>fortran_config_t</a>),
             </td>
               <td>public</td>
@@ -289,7 +308,7 @@
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-link_flags~7"></span>
+              <span class="anchor" id="variable-link_flags~2"></span>
               character(len=:),
             </td>
               <td>public,</td>
@@ -340,7 +359,7 @@
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-macros~8"></span>
+              <span class="anchor" id="variable-macros~7"></span>
               type(<a href='string_t.html'>string_t</a>),
             </td>
               <td>public,</td>
@@ -374,7 +393,7 @@
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-output_file~2"></span>
+              <span class="anchor" id="variable-output_file"></span>
               character(len=:),
             </td>
               <td>public,</td>
@@ -493,7 +512,7 @@
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-source~7"></span>
+              <span class="anchor" id="variable-source~17"></span>
               type(<a href='srcfile_t.html'>srcfile_t</a>),
             </td>
               <td>public,</td>
@@ -544,7 +563,7 @@
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-version~17"></span>
+              <span class="anchor" id="variable-version~14"></span>
               type(<a href='version_t.html'>version_t</a>),
             </td>
               <td>public,</td>
@@ -572,7 +591,71 @@
           <div class="row">
               <div class="card mt-3">
     <div class="card-header codesum">
-      <span class="anchor" id="boundprocedure-info~13"></span>
+      <span class="anchor" id="boundprocedure-compute_digest"></span>
+      <h3>
+          procedure, public ::
+  <strong>compute_digest</strong>
+        
+      </h3>
+    </div>
+        <div class="card-body">
+          
+          <p>Digest of the target inputs: its source file and the digests of its dependencies</p>
+        </div>
+      <ul class="list-group">
+          <li class="list-group-item">
+                    <h3>
+    private pure function compute_digest(self) result(digest)  
+</h3>
+
+  <p>Digest of the target inputs: the digest of its source file, if any, combined
+with those of its dependencies, in an order-independent way.
+The digests of the dependencies must be computed first</p>
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" ></span>
+              class(<a href='build_target_t.html'>build_target_t</a>),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>self</strong></td>
+            <td>
+                
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+    <h4>
+    Return Value
+    <small>integer(kind=int64)</small>
+    </h4>
+    
+
+          </li>
+      </ul>
+  </div>
+
+          </div>
+          <div class="row">
+              <div class="card mt-3">
+    <div class="card-header codesum">
+      <span class="anchor" id="boundprocedure-info~7"></span>
       <h3>
           procedure, public ::
   <strong>info</strong>
@@ -858,7 +941,10 @@
 <span class="w">    </span><span class="c">!&gt; Targets in the same schedule group are guaranteed to be independent</span>
 <span class="w">    </span><span class="kt">integer</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">schedule</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="o">-</span><span class="mi">1</span>
 
-<span class="w">    </span><span class="c">!&gt; Previous source file hash</span>
+<span class="w">    </span><span class="c">!&gt; Hash of the target inputs: its source file and the digests of its dependencies</span>
+<span class="w">    </span><span class="kt">integer</span><span class="p">(</span><span class="n">int64</span><span class="p">)</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">digest</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span>
+
+<span class="w">    </span><span class="c">!&gt; Target digest of the last successful build</span>
 <span class="w">    </span><span class="kt">integer</span><span class="p">(</span><span class="n">int64</span><span class="p">),</span><span class="w"> </span><span class="k">allocatable</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">digest_cached</span>
 
 <span class="w">    </span><span class="c">!&gt; List of macros</span>
@@ -876,6 +962,9 @@
 <span class="w">        </span><span class="k">procedure</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">set_output_dir</span>
 <span class="w">         </span>
 <span class="w">        </span><span class="k">procedure</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">is_executable_target</span>
+
+<span class="w">        </span><span class="c">!&gt; Digest of the target inputs: its source file and the digests of its dependencies</span>
+<span class="w">        </span><span class="k">procedure</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">compute_digest</span>
 
 <span class="k">end type </span><span class="n">build_target_t</span>
 </pre></div>
@@ -900,7 +989,7 @@
             <p class="text-end">
               Documentation generated by
               <a href="https://github.com/Fortran-FOSS-Programmers/ford">FORD</a>
- on 2026-10-27 17:31 +0000             </p>
+ on 2026-10-28 08:52 +0000             </p>
           </div>
         </div>
         <br>

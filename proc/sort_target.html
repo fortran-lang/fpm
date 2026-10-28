@@ -92,7 +92,7 @@
 
             <li class="list-inline-item" id="statements"><i class="fa fa-list-ol"></i>
               <a data-bs-toggle="tooltip" data-bs-placement="bottom" data-bs-html="true"
-                 title=" 0.5% of total for procedures.">39 statements</a>
+                 title=" 0.5% of total for procedures.">37 statements</a>
             </li>
 
             <li class="list-inline-item" id="source-file">
@@ -165,8 +165,8 @@
 
     <p>Topologically sort a target for scheduling by
  recursing over its dependencies.</p>
-<p>Checks disk-cached source hashes to determine if objects are
- up-to-date. Up-to-date sources are tagged as skipped.</p>
+<p>Checks disk-cached target digests to determine if targets are
+ up-to-date. Up-to-date targets are tagged as skipped.</p>
 <p>On completion, <code>target</code> should either be marked as
 sorted (<code>target%sorted=.true.</code>) or skipped (<code>target%skip=.true.</code>)</p>
 <p>If <code>target</code> is marked as sorted, <code>target%schedule</code> should be an
@@ -186,7 +186,7 @@ integer greater than zero indicating the region for scheduling</p>
     <tbody>
         <tr>
             <td>
-              <span class="anchor" id="variable-target"></span>
+              <span class="anchor" id="variable-target~16"></span>
               type(<a href='../type/build_target_t.html'>build_target_t</a>),
             </td>
 <td>intent(inout),</td>
@@ -253,7 +253,7 @@ integer greater than zero indicating the region for scheduling</p>
 <span class="k">        target</span><span class="p">%</span><span class="n">touched</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">.</span><span class="n">true</span><span class="p">.</span><span class="w">  </span><span class="c">! Set touched flag</span>
 <span class="w">    </span><span class="k">end if</span>
 
-<span class="w">    </span><span class="c">! Load cached source file digest if present</span>
+<span class="w">    </span><span class="c">! Load cached target digest if present</span>
 <span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(.</span><span class="nb">not</span><span class="p">.</span><span class="nb">allocated</span><span class="p">(</span><span class="k">target</span><span class="p">%</span><span class="n">digest_cached</span><span class="p">)</span><span class="w"> </span><span class="p">.</span><span class="nb">and</span><span class="p">.</span><span class="w"> </span><span class="p">&amp;</span>
 <span class="w">         </span><span class="n">exists</span><span class="p">(</span><span class="k">target</span><span class="p">%</span><span class="n">output_file</span><span class="p">)</span><span class="w"> </span><span class="p">.</span><span class="nb">and</span><span class="p">.</span><span class="w"> </span><span class="p">&amp;</span>
 <span class="w">         </span><span class="n">exists</span><span class="p">(</span><span class="k">target</span><span class="p">%</span><span class="n">output_file</span><span class="o">//</span><span class="s1">'.digest'</span><span class="p">)</span><span class="w"> </span><span class="p">.</span><span class="nb">and</span><span class="p">.</span><span class="w"> </span><span class="p">&amp;</span>
@@ -268,31 +268,27 @@ integer greater than zero indicating the region for scheduling</p>
 <span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="nb">stat</span><span class="w"> </span><span class="o">/=</span><span class="w"> </span><span class="mi">0</span><span class="p">)</span><span class="w"> </span><span class="k">deallocate</span><span class="p">(</span><span class="k">target</span><span class="p">%</span><span class="n">digest_cached</span><span class="p">)</span>
 
 <span class="w">    </span><span class="k">end if</span>
-<span class="k">    </span>
-<span class="k">    if</span><span class="w"> </span><span class="p">(</span><span class="n">dry_run</span><span class="p">)</span><span class="w"> </span><span class="k">then </span>
-<span class="k">        </span>
-<span class="k">        target</span><span class="p">%</span><span class="n">skip</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">.</span><span class="n">false</span><span class="p">.</span>
-<span class="w">        </span>
-<span class="w">    </span><span class="k">elseif</span><span class="w"> </span><span class="p">(</span><span class="nb">allocated</span><span class="p">(</span><span class="k">target</span><span class="p">%</span><span class="n">source</span><span class="p">))</span><span class="w"> </span><span class="k">then</span>
 
-<span class="w">        </span><span class="c">! Skip if target is source-based and source file is unmodified</span>
-<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="nb">allocated</span><span class="p">(</span><span class="k">target</span><span class="p">%</span><span class="n">digest_cached</span><span class="p">))</span><span class="w"> </span><span class="k">then</span>
-<span class="k">            if</span><span class="w"> </span><span class="p">(</span><span class="k">target</span><span class="p">%</span><span class="n">digest_cached</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="k">target</span><span class="p">%</span><span class="n">source</span><span class="p">%</span><span class="n">digest</span><span class="p">)</span><span class="w"> </span><span class="k">target</span><span class="p">%</span><span class="n">skip</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">.</span><span class="n">true</span><span class="p">.</span>
-<span class="w">        </span><span class="k">end if</span>
+<span class="w">    </span><span class="c">! Sort dependencies first: the target digest depends on theirs</span>
+<span class="w">    </span><span class="k">do </span><span class="n">i</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span><span class="n">size</span><span class="p">(</span><span class="k">target</span><span class="p">%</span><span class="n">dependencies</span><span class="p">)</span>
 
-<span class="k">    elseif</span><span class="w"> </span><span class="p">(</span><span class="n">exists</span><span class="p">(</span><span class="k">target</span><span class="p">%</span><span class="n">output_file</span><span class="p">))</span><span class="w"> </span><span class="k">then</span>
+<span class="w">        </span><span class="k">call </span><span class="n">sort_target</span><span class="p">(</span><span class="k">target</span><span class="p">%</span><span class="n">dependencies</span><span class="p">(</span><span class="n">i</span><span class="p">)%</span><span class="n">ptr</span><span class="p">,</span><span class="w"> </span><span class="n">dry_run</span><span class="p">)</span>
 
-<span class="w">        </span><span class="c">! Skip if target is not source-based and already exists</span>
-<span class="w">        </span><span class="k">target</span><span class="p">%</span><span class="n">skip</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">.</span><span class="n">true</span><span class="p">.</span>
+<span class="w">    </span><span class="k">end do</span>
 
+<span class="w">    </span><span class="c">! Skip if target was last built from the same inputs: its source file, if any,</span>
+<span class="w">    </span><span class="c">! and the digests of its dependencies. These catch a dependency rebuilt by an</span>
+<span class="w">    </span><span class="c">! earlier run that did not rebuild this target (it stopped early, or did not</span>
+<span class="w">    </span><span class="c">! include it, as `fpm build` does with tests)</span>
+<span class="w">    </span><span class="k">target</span><span class="p">%</span><span class="n">digest</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">target</span><span class="p">%</span><span class="n">compute_digest</span><span class="p">()</span>
+<span class="w">    </span><span class="k">target</span><span class="p">%</span><span class="n">skip</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">.</span><span class="n">false</span><span class="p">.</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="nb">allocated</span><span class="p">(</span><span class="k">target</span><span class="p">%</span><span class="n">digest_cached</span><span class="p">)</span><span class="w"> </span><span class="p">.</span><span class="nb">and</span><span class="p">.</span><span class="w"> </span><span class="p">.</span><span class="nb">not</span><span class="p">.</span><span class="n">dry_run</span><span class="p">)</span><span class="w"> </span><span class="k">then</span>
+<span class="k">        target</span><span class="p">%</span><span class="n">skip</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">target</span><span class="p">%</span><span class="n">digest_cached</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="k">target</span><span class="p">%</span><span class="n">digest</span>
 <span class="w">    </span><span class="k">end if</span>
 
 <span class="w">    </span><span class="c">! Loop over target dependencies</span>
 <span class="w">    </span><span class="k">target</span><span class="p">%</span><span class="n">schedule</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">1</span>
 <span class="w">    </span><span class="k">do </span><span class="n">i</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span><span class="n">size</span><span class="p">(</span><span class="k">target</span><span class="p">%</span><span class="n">dependencies</span><span class="p">)</span>
-
-<span class="w">        </span><span class="c">! Sort dependency</span>
-<span class="w">        </span><span class="k">call </span><span class="n">sort_target</span><span class="p">(</span><span class="k">target</span><span class="p">%</span><span class="n">dependencies</span><span class="p">(</span><span class="n">i</span><span class="p">)%</span><span class="n">ptr</span><span class="p">,</span><span class="w"> </span><span class="n">dry_run</span><span class="p">)</span>
 
 <span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(.</span><span class="nb">not</span><span class="p">.</span><span class="k">target</span><span class="p">%</span><span class="n">dependencies</span><span class="p">(</span><span class="n">i</span><span class="p">)%</span><span class="n">ptr</span><span class="p">%</span><span class="n">skip</span><span class="p">)</span><span class="w"> </span><span class="k">then</span>
 
@@ -333,7 +329,7 @@ integer greater than zero indicating the region for scheduling</p>
             <p class="text-end">
               Documentation generated by
               <a href="https://github.com/Fortran-FOSS-Programmers/ford">FORD</a>
- on 2026-10-27 17:31 +0000             </p>
+ on 2026-10-28 08:52 +0000             </p>
           </div>
         </div>
         <br>
