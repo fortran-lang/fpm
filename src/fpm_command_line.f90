@@ -383,6 +383,7 @@ contains
             & --tests F &
             & --config-file " " &
             & --',help_build,version_text)
+            call check_no_unnamed_args('build')
 
             ! Create and populate a base fpm_build_settings from CLI/env
             allocate( fpm_build_settings :: cmd_settings )
@@ -536,6 +537,7 @@ contains
                 & --includedir "include" &
                 & --config-file " " &
                 &', help_install, version_text)
+            call check_no_unnamed_args('install')
 
             config_file = sget('config-file')
 
@@ -557,6 +559,7 @@ contains
             call set_args(common_args // '&
             & --list F &
             &', help_list, version_text)
+            call check_no_unnamed_args('list')
             if(lget('list'))then
                 help_text = [character(widest) :: help_list_nodash, help_list_dash]
             else
@@ -644,6 +647,7 @@ contains
                 & --model "filename" &
                 & --dependencies "filename" ', &
                 help_build, version_text)
+            call check_no_unnamed_args('export')
 
             allocate(export_settings)
             call build_settings(export_settings, show_model=.true.)
@@ -661,6 +665,7 @@ contains
             &   ' --apps'             // &
             &   ' --examples'         // &
             &   ' --config-file ""', help_clean, version_text)
+            call check_no_unnamed_args('clean')
 
             block
                 logical :: skip, clean_all, clean_test, clean_apps, clean_examples
@@ -715,6 +720,7 @@ contains
             & --tests F &
             & --config-file " " &
             & --', help_publish, version_text)
+            call check_no_unnamed_args('publish')
 
             config_file = sget('config-file')
             token_s = sget('token')
@@ -766,6 +772,19 @@ contains
         end if
 
     end subroutine get_command_line_settings
+
+    !> Stop if a subcommand that takes no positional arguments was given any.
+    !> unnamed(1) is the subcommand itself; empty arguments are ignored.
+    subroutine check_no_unnamed_args(subcommand)
+        character(len=*), intent(in) :: subcommand
+        integer :: i
+
+        do i = 2, size(unnamed)
+            if (len_trim(unnamed(i)) > 0) then
+                call fpm_stop(1, 'fpm '//subcommand//': unexpected argument '''//trim(unnamed(i))//'''')
+            end if
+        end do
+    end subroutine check_no_unnamed_args
 
     !> Validate that build directory is not a reserved source directory name
     subroutine validate_build_dir(build_dir)
