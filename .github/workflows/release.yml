@@ -67,7 +67,7 @@ jobs:
         patch -p1 < ./ci/single-file.patch
 
     - name: Install fpm
-      uses: fortran-lang/setup-fpm@v9
+      uses: fortran-lang/setup-fpm@v10
       with:
         fpm-version: 'v0.13.0'
 
