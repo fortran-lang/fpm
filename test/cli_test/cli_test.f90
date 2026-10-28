@@ -41,7 +41,9 @@ character(len=:), allocatable        :: token, act_token     ; namelist/act_cli/
 
 character(len=:), allocatable        :: profile,act_profile  ; namelist/act_cli/act_profile
 character(len=:), allocatable        :: args,act_args        ; namelist/act_cli/act_args
-namelist/expected/cmd,cstat,estat,w_e,w_t,c_s,c_a,c_t,c_apps,c_ex,reg_c,name,features,profile,args,show_v,show_u_d,dry_run,token
+logical                              :: status_only          ! only check the exit status (e.g. "list" stops after printing)
+namelist/expected/cmd,cstat,estat,w_e,w_t,c_s,c_a,c_t,c_apps,c_ex,reg_c,name,features,profile,args,show_v,show_u_d,dry_run,token, &
+                 & status_only
 integer                              :: lun
 logical,allocatable                  :: tally(:)
 logical,allocatable                  :: subtally(:)
@@ -92,6 +94,21 @@ character(len=*),parameter           :: tests(*)= [ character(len=256) :: &
 'CMD="publish --token abc --show-upload-data",           SHOW_U_D=T, NAME=, token="abc",ARGS="",', &
 'CMD="publish --token abc --dry-run",                    DRY_RUN=T, NAME=, token="abc",ARGS="",', &
 'CMD="publish --token abc",                                        NAME=, token="abc",ARGS="",', &
+
+! subcommands without positional arguments reject them, but still take flags followed by values
+'CMD="build foo",                                     ESTAT=1,', &
+'CMD="build --tests foo",                             ESTAT=1,', &
+'CMD="build --flag ""-O2 -g"" --profile release",                  NAME=, profile="release",features=,ARGS="",', &
+'CMD="install foo",                                   ESTAT=1,', &
+'CMD="install --prefix ./installed --flag ""-O2""",                NAME=, ARGS="",', &
+'CMD="list foo",                                      ESTAT=1,', &
+'CMD="list --list",                                   STATUS_ONLY=T,', &
+'CMD="export foo",                                    ESTAT=1,', &
+'CMD="export --manifest manifest.json --flag ""-O2""",             NAME=, ARGS="",', &
+'CMD="clean --all foo",                               ESTAT=1,', &
+'CMD="clean --skip --config-file cfg.toml",                 C_S=T, NAME=, ARGS="",', &
+'CMD="publish foo",                                   ESTAT=1,', &
+'CMD="publish --token abc --flag ""-O2""",                         NAME=, token="abc",ARGS="",', &
 ' ' ]
 character(len=256) :: readme(3)
 
@@ -135,6 +152,7 @@ if(command_argument_count()==0)then  ! assume if called with no arguments to do 
       cmd=repeat(' ',132)            ! the command line arguments to test
       cstat=0                        ! status values from EXECUTE_COMMAND_LINE()
       estat=0
+      status_only=.false.
       readme(2)=' '//tests(i)        ! select command options to test for CMD and set nondefault expected values
       read(readme,nml=expected)
 
@@ -142,7 +160,7 @@ if(command_argument_count()==0)then  ! assume if called with no arguments to do 
       ! call this program which will crack command line and write results to scratch file _test_cli
       call execute_command_line(command//' '//trim(cmd),cmdstat=act_cstat,exitstat=act_estat)
       if(cstat==act_cstat.and.estat==act_estat)then
-          if(estat==0)then
+          if(estat==0.and..not.status_only)then
              open(file='_test_cli',newunit=lun,delim='quote')
              act_name=[(repeat(' ',len(act_name)),i=1,max_names)]
              if(.not.allocated(act_features)) allocate(character(len=15) :: act_features(max_names))
@@ -195,7 +213,7 @@ if(command_argument_count()==0)then  ! assume if called with no arguments to do 
                 tally=[tally,.false.]
              endif
           else
-             write(*,'(*(g0))')'PASSED: TEST ',i,' EXPECTED BAD STATUS: expected ',cstat,' ',estat, &
+             write(*,'(*(g0))')'PASSED: TEST ',i,' EXPECTED STATUS: expected ',cstat,' ',estat, &
              ' actual ',act_cstat,' ',act_estat,' for [',trim(cmd),']'
              tally=[tally,.true.]
           endif
