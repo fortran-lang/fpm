@@ -92,7 +92,7 @@
 
             <li class="list-inline-item" id="statements"><i class="fa fa-list-ol"></i>
               <a data-bs-toggle="tooltip" data-bs-placement="bottom" data-bs-html="true"
-                 title=" 0.2% of total for procedures.">15 statements</a>
+                 title=" 0.2% of total for procedures.">16 statements</a>
             </li>
 
             <li class="list-inline-item" id="source-file">
@@ -225,7 +225,14 @@
 <span class="w">            </span><span class="s1">' -fPIC'</span><span class="p">,</span><span class="w"> </span><span class="p">&amp;</span>
 <span class="w">            </span><span class="s1">' -fPIC'</span><span class="p">))</span>
 <span class="w">            </span>
-<span class="w">        </span><span class="k">call </span><span class="n">collection</span><span class="p">%</span><span class="n">push_variant</span><span class="p">(</span><span class="n">default_variant</span><span class="p">(</span><span class="s1">'debug'</span><span class="p">,</span><span class="w"> </span><span class="n">id_intel_classic_nix</span><span class="p">,</span><span class="w"> </span><span class="n">OS_ALL</span><span class="p">,</span><span class="w"> </span><span class="p">&amp;</span>
+<span class="w">        </span><span class="c">! Unix-style Intel flags must not reach Windows, where the variants below</span>
+<span class="w">        </span><span class="c">! are added to them instead of replacing them</span>
+<span class="w">        </span><span class="k">call </span><span class="n">collection</span><span class="p">%</span><span class="n">push_variant</span><span class="p">(</span><span class="n">default_variant</span><span class="p">(</span><span class="s1">'debug'</span><span class="p">,</span><span class="w"> </span><span class="n">id_intel_classic_nix</span><span class="p">,</span><span class="w"> </span><span class="n">OS_LINUX</span><span class="p">,</span><span class="w"> </span><span class="p">&amp;</span>
+<span class="w">            </span><span class="s1">' -warn all -check all -error-limit 1 -O0 -g -assume byterecl -traceback'</span><span class="p">,</span><span class="w"> </span><span class="p">&amp;</span>
+<span class="w">            </span><span class="s1">' -fPIC'</span><span class="p">,</span><span class="w"> </span><span class="p">&amp;</span>
+<span class="w">            </span><span class="s1">' -fPIC'</span><span class="p">))</span>
+
+<span class="w">        </span><span class="k">call </span><span class="n">collection</span><span class="p">%</span><span class="n">push_variant</span><span class="p">(</span><span class="n">default_variant</span><span class="p">(</span><span class="s1">'debug'</span><span class="p">,</span><span class="w"> </span><span class="n">id_intel_classic_mac</span><span class="p">,</span><span class="w"> </span><span class="n">OS_MACOS</span><span class="p">,</span><span class="w"> </span><span class="p">&amp;</span>
 <span class="w">            </span><span class="s1">' -warn all -check all -error-limit 1 -O0 -g -assume byterecl -traceback'</span><span class="p">,</span><span class="w"> </span><span class="p">&amp;</span>
 <span class="w">            </span><span class="s1">' -fPIC'</span><span class="p">,</span><span class="w"> </span><span class="p">&amp;</span>
 <span class="w">            </span><span class="s1">' -fPIC'</span><span class="p">))</span>
@@ -234,7 +241,7 @@
 <span class="w">            </span><span class="s1">' /warn:all /check:all /error-limit:1&amp;</span>
 <span class="s1">            &amp; /Od /Z7 /assume:byterecl /traceback'</span><span class="p">))</span>
 <span class="w">            </span>
-<span class="w">        </span><span class="k">call </span><span class="n">collection</span><span class="p">%</span><span class="n">push_variant</span><span class="p">(</span><span class="n">default_variant</span><span class="p">(</span><span class="s1">'debug'</span><span class="p">,</span><span class="w"> </span><span class="n">id_intel_llvm_nix</span><span class="p">,</span><span class="w"> </span><span class="n">OS_ALL</span><span class="p">,</span><span class="w"> </span><span class="p">&amp;</span>
+<span class="w">        </span><span class="k">call </span><span class="n">collection</span><span class="p">%</span><span class="n">push_variant</span><span class="p">(</span><span class="n">default_variant</span><span class="p">(</span><span class="s1">'debug'</span><span class="p">,</span><span class="w"> </span><span class="n">id_intel_llvm_nix</span><span class="p">,</span><span class="w"> </span><span class="n">OS_LINUX</span><span class="p">,</span><span class="w"> </span><span class="p">&amp;</span>
 <span class="w">            </span><span class="s1">' -warn all -check all -error-limit 1 -O0 -g -assume byterecl -traceback'</span><span class="p">,</span><span class="w"> </span><span class="p">&amp;</span>
 <span class="w">            </span><span class="s1">' -fPIC'</span><span class="p">,</span><span class="w"> </span><span class="p">&amp;</span>
 <span class="w">            </span><span class="s1">' -fPIC'</span><span class="p">))</span>
@@ -268,7 +275,7 @@
             <p class="text-end">
               Documentation generated by
               <a href="https://github.com/Fortran-FOSS-Programmers/ford">FORD</a>
- on 2026-10-28 13:40 +0000             </p>
+ on 2026-10-28 14:27 +0000             </p>
           </div>
         </div>
         <br>
