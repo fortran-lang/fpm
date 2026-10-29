@@ -118,6 +118,7 @@ int c_run_argv(const char *joined, int argc, const char *redirect)
     DWORD found;
     HANDLE hout = INVALID_HANDLE_VALUE;
     HANDLE hin = NULL;
+    HANDLE stdin_handle;
     HANDLE inherit[2];
     DWORD ninherit = 0;
     LPPROC_THREAD_ATTRIBUTE_LIST attrs = NULL;
@@ -184,8 +185,12 @@ int c_run_argv(const char *joined, int argc, const char *redirect)
         if (hout == INVALID_HANDLE_VALUE) { free(cmd); free((void *)argv); return -1; }
         inherit[ninherit++] = hout;
         /* The handle list only accepts inheritable handles, so pass the child
-           an inheritable duplicate of stdin, or none if that fails. */
-        if (DuplicateHandle(GetCurrentProcess(), GetStdHandle(STD_INPUT_HANDLE),
+           an inheritable duplicate of stdin, or none if there is no stdin or
+           duplication fails. INVALID_HANDLE_VALUE is also the current-process
+           pseudo-handle, so it must not be duplicated. */
+        stdin_handle = GetStdHandle(STD_INPUT_HANDLE);
+        if (stdin_handle != NULL && stdin_handle != INVALID_HANDLE_VALUE &&
+            DuplicateHandle(GetCurrentProcess(), stdin_handle,
                             GetCurrentProcess(), &hin, 0, TRUE, DUPLICATE_SAME_ACCESS)) {
             inherit[ninherit++] = hin;
         } else {
@@ -290,8 +295,10 @@ int c_run_argv(const char *joined, int argc, const char *redirect)
     }
     free(argv);
 
+    /* posix_spawnp reports a failed spawn as a positive errno, which the
+       caller would take for an exit code; -1 lets it fall back to the shell. */
     if (spawn_status != 0) {
-        return spawn_status;
+        return -1;
     }
 
     do {

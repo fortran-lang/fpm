@@ -1182,6 +1182,17 @@ subroutine run_argv(args,echo,exitstat,verbose,redirect)
         call run(command, echo=.false., verbose=verbose_local, redirect=redirect_file, exitstat=stat)
     end if
 
+    ! Some posix_spawnp implementations start the child anyway and report a
+    ! missing program only as its exit status 127.
+    if (stat == 127 .and. os_is_unix()) then
+        if (command_not_found(command)) then
+            write(*,'(a)')'<ERROR>:failed command '//command
+            call fpm_stop(1, "Could not execute '"//command_program(command)//"': program not found on PATH."//new_line('a')// &
+                "  Check that it is installed and on your PATH, or set it explicitly with"//new_line('a')// &
+                "  --compiler / FPM_FC (use FPM_CC / FPM_AR for the C compiler / archiver).")
+        end if
+    end if
+
     if (verbose_local.and.present(redirect)) then
 
         open(newunit=fh,file=redirect,status='old',iostat=iostat,iomsg=iomsg)
