@@ -14,6 +14,11 @@ extern char **environ;
 #endif
 
 #ifdef _WIN32
+/* PROC_THREAD_ATTRIBUTE_HANDLE_LIST needs Vista or later. */
+#if !defined(_WIN32_WINNT) || _WIN32_WINNT < 0x0600
+#undef _WIN32_WINNT
+#define _WIN32_WINNT 0x0600
+#endif
 #include <windows.h>
 #include <stdlib.h>
 #include <string.h>
@@ -112,8 +117,14 @@ int c_run_argv(const char *joined, int argc, const char *redirect)
     char *appname = NULL;
     DWORD found;
     HANDLE hout = INVALID_HANDLE_VALUE;
+    HANDLE hin = NULL;
+    HANDLE inherit[2];
+    DWORD ninherit = 0;
+    LPPROC_THREAD_ATTRIBUTE_LIST attrs = NULL;
+    SIZE_T attrs_size = 0;
+    DWORD flags = 0;
     SECURITY_ATTRIBUTES sa;
-    STARTUPINFOA si;
+    STARTUPINFOEXA si;
     PROCESS_INFORMATION pi;
     BOOL ok;
     int result;
@@ -157,7 +168,7 @@ int c_run_argv(const char *joined, int argc, const char *redirect)
     if (found > 0 && found < MAX_PATH) appname = apppath;
 
     ZeroMemory(&si, sizeof(si));
-    si.cb = sizeof(si);
+    si.StartupInfo.cb = sizeof(si);
     ZeroMemory(&pi, sizeof(pi));
 
     /* Only override the child's std handles when redirecting. Setting
@@ -171,13 +182,46 @@ int c_run_argv(const char *joined, int argc, const char *redirect)
         hout = CreateFileA(redirect, GENERIC_WRITE, FILE_SHARE_READ, &sa,
                            CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, NULL);
         if (hout == INVALID_HANDLE_VALUE) { free(cmd); free((void *)argv); return -1; }
-        si.dwFlags |= STARTF_USESTDHANDLES;
-        si.hStdInput = GetStdHandle(STD_INPUT_HANDLE);
-        si.hStdOutput = hout;
-        si.hStdError = hout;
+        inherit[ninherit++] = hout;
+        /* The handle list only accepts inheritable handles, so pass the child
+           an inheritable duplicate of stdin, or none if that fails. */
+        if (DuplicateHandle(GetCurrentProcess(), GetStdHandle(STD_INPUT_HANDLE),
+                            GetCurrentProcess(), &hin, 0, TRUE, DUPLICATE_SAME_ACCESS)) {
+            inherit[ninherit++] = hin;
+        } else {
+            hin = NULL;
+        }
+        si.StartupInfo.dwFlags |= STARTF_USESTDHANDLES;
+        si.StartupInfo.hStdInput = hin;
+        si.StartupInfo.hStdOutput = hout;
+        si.StartupInfo.hStdError = hout;
+
+        /* Parallel builds hold several inheritable redirect handles at once;
+           restrict inheritance to this child's own handles. */
+        InitializeProcThreadAttributeList(NULL, 1, 0, &attrs_size);
+        attrs = (LPPROC_THREAD_ATTRIBUTE_LIST)HeapAlloc(GetProcessHeap(), 0, attrs_size);
+        if (attrs == NULL || !InitializeProcThreadAttributeList(attrs, 1, 0, &attrs_size)) {
+            if (attrs != NULL) HeapFree(GetProcessHeap(), 0, attrs);
+            attrs = NULL;
+        } else if (!UpdateProcThreadAttribute(attrs, 0, PROC_THREAD_ATTRIBUTE_HANDLE_LIST,
+                                              inherit, ninherit * sizeof(HANDLE), NULL, NULL)) {
+            DeleteProcThreadAttributeList(attrs);
+            HeapFree(GetProcessHeap(), 0, attrs);
+            attrs = NULL;
+        }
+        if (attrs == NULL) {
+            if (hin != NULL) CloseHandle(hin);
+            CloseHandle(hout);
+            free(cmd);
+            free((void *)argv);
+            return -1;
+        }
+        si.lpAttributeList = attrs;
+        flags = EXTENDED_STARTUPINFO_PRESENT;
     }
 
-    ok = CreateProcessA(appname, cmd, NULL, NULL, use_redirect, 0, NULL, NULL, &si, &pi);
+    ok = CreateProcessA(appname, cmd, NULL, NULL, use_redirect, flags, NULL, NULL,
+                        &si.StartupInfo, &pi);
     if (!ok) {
         result = -1;
     } else {
@@ -191,6 +235,11 @@ int c_run_argv(const char *joined, int argc, const char *redirect)
         result = (code > 0x7fffffff) ? 1 : (int)code;
     }
 
+    if (attrs != NULL) {
+        DeleteProcThreadAttributeList(attrs);
+        HeapFree(GetProcessHeap(), 0, attrs);
+    }
+    if (hin != NULL) CloseHandle(hin);
     if (hout != INVALID_HANDLE_VALUE) CloseHandle(hout);
     free(cmd);
     free((void *)argv);
