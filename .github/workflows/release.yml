@@ -42,11 +42,21 @@ jobs:
 
   source-single-file:
     runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        # default: the runner's gfortran, which builds the uploaded file
+        gcc: [default, 16]
     steps:
     - name: Checkout code
       uses: actions/checkout@v7
       with:
         fetch-depth: 0
+
+    # setup-fortran v1.10.0 does not support gcc 16 yet
+    - name: Setup gcc 16
+      if: matrix.gcc == 16
+      uses: ./.github/actions/setup-gcc16
 
     - name: Get version number
       run: |
@@ -91,6 +101,7 @@ jobs:
       run: |
         echo "EXE=${{ env.BUILD_DIR }}/fpm" >> $GITHUB_ENV
         mkdir ${{ env.BUILD_DIR }}
+        gfortran --version
         gfortran ${{ env.OUTPUT }} -J ${{ env.BUILD_DIR }} -o ${{ env.BUILD_DIR }}/fpm
       env:
         BUILD_DIR: build/bootstrap
@@ -104,6 +115,7 @@ jobs:
         ${{ env.EXE }} build
 
     - name: Upload artifact
+      if: matrix.gcc == 'default'
       uses: actions/upload-artifact@v7
       with:
         name: ${{ env.OUTPUT }}
