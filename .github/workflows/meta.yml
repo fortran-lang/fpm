@@ -50,22 +50,20 @@ jobs:
           - os: macos-15
             mpi: mpich
             release-flags: --flag ' -Wno-external-argument-mismatch'
+          # -Wno-external-argument-mismatch works around a gcc 15.0-15.1
+          # bug: gcc 16 does not need it.
           - os: ubuntu-latest
             mpi: openmpi
             gcc: 16
-            release-flags: --flag ' -Wno-external-argument-mismatch'
           - os: ubuntu-latest
             mpi: mpich
             gcc: 16
-            release-flags: --flag ' -Wno-external-argument-mismatch'
           - os: macos-15
             mpi: openmpi
             gcc: 16
-            release-flags: --flag ' -Wno-external-argument-mismatch'
           - os: macos-15
             mpi: mpich
             gcc: 16
-            release-flags: --flag ' -Wno-external-argument-mismatch'
           # setup-fortran v1.10.0 installs Intel with apt-key, which
           # ubuntu-26.04 (ubuntu-latest) no longer has
           # (fortran-lang/setup-fortran#298).
