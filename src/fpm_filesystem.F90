@@ -1179,12 +1179,15 @@ subroutine run(cmd,echo,exitstat,verbose,redirect)
     ! cmdstat/=0 "Invalid command line", Windows cmdstat==0 but cmd.exe exit 9009 -- and
     ! only where fpm stops anyway.
     if (cmdstat /= 0 .or. (stat == 9009 .and. .not.os_is_unix() .and. .not.present(exitstat))) then
+        ! Several build threads may get here at once (see run_argv)
+        !$omp critical (fpm_string_result)
         if (command_not_found(cmd)) then
             write(*,'(a)')'<ERROR>:failed command '//cmd//redirect_str
             call fpm_stop(1, "Could not execute '"//command_program(cmd)//"': program not found on PATH."//new_line('a')// &
                 "  Check that it is installed and on your PATH, or set it explicitly with"//new_line('a')// &
                 "  --compiler / FPM_FC (use FPM_CC / FPM_AR for the C compiler / archiver).")
         end if
+        !$omp end critical (fpm_string_result)
     end if
     if (cmdstat /= 0) then
         write(*,'(a)')'<ERROR>:failed command '//cmd//redirect_str
@@ -1265,7 +1268,12 @@ subroutine run_argv(args,echo,exitstat,verbose,redirect)
     logical :: echo_local, verbose_local
     integer :: stat, fh, iostat, i
 
+    ! gfortran keeps the length of a deferred-length character function result
+    ! in a static variable, which all OpenMP build threads share: take every
+    ! such result on the parallel build path under this lock
+    !$omp critical (fpm_string_result)
     command = string_cat(args, " ")
+    !$omp end critical (fpm_string_result)
 
     if(present(echo))then
        echo_local=echo
@@ -1319,12 +1327,14 @@ subroutine run_argv(args,echo,exitstat,verbose,redirect)
     ! Some posix_spawnp implementations start the child anyway and report a
     ! missing program only as its exit status 127.
     if (stat == 127 .and. os_is_unix()) then
+        !$omp critical (fpm_string_result)
         if (command_not_found(command)) then
             write(*,'(a)')'<ERROR>:failed command '//command
             call fpm_stop(1, "Could not execute '"//command_program(command)//"': program not found on PATH."//new_line('a')// &
                 "  Check that it is installed and on your PATH, or set it explicitly with"//new_line('a')// &
                 "  --compiler / FPM_FC (use FPM_CC / FPM_AR for the C compiler / archiver).")
         end if
+        !$omp end critical (fpm_string_result)
     end if
 
     if (verbose_local.and.present(redirect)) then
