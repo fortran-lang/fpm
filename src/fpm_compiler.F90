@@ -1425,6 +1425,31 @@ subroutine compile_fortran(self, input, output, args, log_file, stat, table, dry
     !> Optional mocking
     logical, optional, intent(in) :: dry_run
 
+    call compile_object(self, self%fc, input, output, args, log_file, stat, table, dry_run)
+
+end subroutine compile_fortran
+
+!> Compile an object with a Fortran, C or C++ compiler
+subroutine compile_object(self, prog, input, output, args, log_file, stat, table, dry_run)
+    !> Instance of the compiler object
+    class(compiler_t), intent(in) :: self
+    !> Compiler command: self%fc, self%cc or self%cxx
+    character(len=*), intent(in) :: prog
+    !> Source file input
+    character(len=*), intent(in) :: input
+    !> Output file of object
+    character(len=*), intent(in) :: output
+    !> Arguments for compiler
+    character(len=*), intent(in) :: args
+    !> Compiler output log file
+    character(len=*), intent(in) :: log_file
+    !> Status flag
+    integer, intent(out) :: stat
+    !> Optional compile_commands table
+    type(compile_command_table_t), optional, intent(inout) :: table
+    !> Optional mocking
+    logical, optional, intent(in) :: dry_run
+
     character(len=:), allocatable :: command
     type(string_t), allocatable :: argv(:)
     type(error_t), allocatable :: error
@@ -1438,35 +1463,11 @@ subroutine compile_fortran(self, input, output, args, log_file, stat, table, dry
     mock = .false.
     if (present(dry_run)) mock = dry_run
 
-    ! Set command (shell fallback string) and build the argv token list. The
-    ! command is split with the OS-native lexer (POSIX on Unix, Windows rules
-    ! otherwise) so quoting and backslash paths survive on both platforms.
-    command = self%fc // " -c " // input // " " // args // " -o " // output
-
-    tokenized = .true.
-    call split_append(argv, self%fc, .false., .false., tokenized)
-    if (tokenized) then
-        call add_strings(argv, string_t("-c"))
-        call add_strings(argv, string_t(input))
-    end if
-    if (tokenized .and. len_trim(args) > 0) then
-        call split_append(argv, args, .true., .true., tokenized)
-    end if
-    if (tokenized) then
-        call add_strings(argv, string_t("-o"))
-        call add_strings(argv, string_t(output))
-    end if
+    call tool_command(prog, [string_t(args)], output, command, argv, tokenized, input)
 
     ! Execute command
     if (.not.mock) then
-       if (tokenized) then
-          call run_argv(argv, echo=self%echo, verbose=self%verbose, redirect=log_file, exitstat=stat)
-       else
-          ! Tokenization failed; serialize the shell fork (not concurrency-safe).
-          !$omp critical (run_command)
-          call run(command, echo=self%echo, verbose=self%verbose, redirect=log_file, exitstat=stat)
-          !$omp end critical (run_command)
-       end if
+       call run_tool(command, argv, tokenized, self%echo, self%verbose, log_file, stat)
        if (stat/=0) return
     endif
 
@@ -1476,7 +1477,81 @@ subroutine compile_fortran(self, input, output, args, log_file, stat, table, dry
         stat = merge(-1,0,allocated(error))
     endif
 
-end subroutine compile_fortran
+end subroutine compile_object
+
+!> Build `prog [-c input] flags(1) flags(2) ... -o output` both as a shell command and
+!> as an argv list. Each flags entry is split on its own, with the OS-native lexer.
+!> tokenized is .false. when a part cannot be split: only the shell command can run then.
+subroutine tool_command(prog, flags, output, command, argv, tokenized, input)
+    !> Program, possibly followed by its own flags
+    character(len=*), intent(in) :: prog
+    !> Flag strings, in order
+    type(string_t), intent(in) :: flags(:)
+    !> Output file, passed with -o
+    character(len=*), intent(in) :: output
+    !> Shell command
+    character(len=:), allocatable, intent(out) :: command
+    !> Arguments for run_argv
+    type(string_t), allocatable, intent(out) :: argv(:)
+    !> Whether every part could be split
+    logical, intent(out) :: tokenized
+    !> Optional source file, passed with -c
+    character(len=*), optional, intent(in) :: input
+
+    integer :: i
+
+    command = prog
+    tokenized = .true.
+    call split_append(argv, prog, .false., .false., tokenized)
+
+    if (present(input)) then
+        command = command // " -c " // input
+        if (tokenized) then
+            call add_strings(argv, string_t("-c"))
+            call add_strings(argv, string_t(input))
+        end if
+    end if
+
+    do i = 1, size(flags)
+        command = command // " " // flags(i)%s
+        if (tokenized .and. len_trim(flags(i)%s) > 0) &
+            call split_append(argv, flags(i)%s, .true., .true., tokenized)
+    end do
+
+    command = command // " -o " // output
+    if (tokenized) then
+        call add_strings(argv, string_t("-o"))
+        call add_strings(argv, string_t(output))
+    end if
+
+end subroutine tool_command
+
+!> Run a tool by argv spawn, which is safe from several OpenMP threads. When its
+!> arguments could not be split, run the shell command instead, one at a time.
+subroutine run_tool(command, argv, tokenized, echo, verbose, log_file, stat)
+    !> Shell command
+    character(len=*), intent(in) :: command
+    !> Arguments for run_argv
+    type(string_t), allocatable, intent(in) :: argv(:)
+    !> Whether argv is complete
+    logical, intent(in) :: tokenized
+    !> Echo and verbosity settings of the tool
+    logical, intent(in) :: echo, verbose
+    !> Tool output log file
+    character(len=*), intent(in) :: log_file
+    !> Status flag
+    integer, intent(out) :: stat
+
+    if (tokenized) then
+        call run_argv(argv, echo=echo, verbose=verbose, redirect=log_file, exitstat=stat)
+    else
+        ! The shell forks, which is not safe from several threads at once
+        !$omp critical (run_command)
+        call run(command, echo=echo, verbose=verbose, redirect=log_file, exitstat=stat)
+        !$omp end critical (run_command)
+    end if
+
+end subroutine run_tool
 
 !> Split a command fragment into argv tokens with the OS-native lexer and
 !> append them to argv. fortran-shlex is not reentrant, so the split runs
@@ -1562,53 +1637,7 @@ subroutine compile_c(self, input, output, args, log_file, stat, table, dry_run)
     !> Optional mocking
     logical, optional, intent(in) :: dry_run
 
-    character(len=:), allocatable :: command
-    type(string_t), allocatable :: argv(:)
-    type(error_t), allocatable :: error
-    logical :: mock, tokenized
-
-    ! Initialize intent(out) status so the mock path with no table returns
-    ! a defined value.
-    stat = 0
-
-    ! Check if we're actually building this file
-    mock = .false.
-    if (present(dry_run)) mock = dry_run
-
-    ! Set command (shell fallback string) and build the argv token list, exec'd
-    ! via argv spawn (fork-safe under OpenMP) rather than through a shell.
-    command = self%cc // " -c " // input // " " // args // " -o " // output
-
-    tokenized = .true.
-    call split_append(argv, self%cc, .false., .false., tokenized)
-    if (tokenized) then
-        call add_strings(argv, string_t("-c"))
-        call add_strings(argv, string_t(input))
-    end if
-    if (tokenized .and. len_trim(args) > 0) call split_append(argv, args, .true., .true., tokenized)
-    if (tokenized) then
-        call add_strings(argv, string_t("-o"))
-        call add_strings(argv, string_t(output))
-    end if
-
-    ! Execute command
-    if (.not.mock) then
-       if (tokenized) then
-          call run_argv(argv, echo=self%echo, verbose=self%verbose, redirect=log_file, exitstat=stat)
-       else
-          ! Tokenization failed; serialize the shell fork (not concurrency-safe).
-          !$omp critical (run_command)
-          call run(command, echo=self%echo, verbose=self%verbose, redirect=log_file, exitstat=stat)
-          !$omp end critical (run_command)
-       end if
-       if (stat/=0) return
-    endif
-
-    ! Optionally register compile command
-    if (present(table)) then
-        call table%register(command, get_os_type(), error)
-        stat = merge(-1,0,allocated(error))
-    endif
+    call compile_object(self, self%cc, input, output, args, log_file, stat, table, dry_run)
 
 end subroutine compile_c
 
@@ -1631,53 +1660,7 @@ subroutine compile_cpp(self, input, output, args, log_file, stat, table, dry_run
     !> Optional mocking
     logical, optional, intent(in) :: dry_run
 
-    character(len=:), allocatable :: command
-    type(string_t), allocatable :: argv(:)
-    type(error_t), allocatable :: error
-    logical :: mock, tokenized
-
-    ! Initialize intent(out) status so the mock path with no table returns
-    ! a defined value.
-    stat = 0
-
-    ! Check if we're actually building this file
-    mock = .false.
-    if (present(dry_run)) mock = dry_run
-
-    ! Set command (shell fallback string) and build the argv token list, exec'd
-    ! via argv spawn (fork-safe under OpenMP) rather than through a shell.
-    command = self%cxx // " -c " // input // " " // args // " -o " // output
-
-    tokenized = .true.
-    call split_append(argv, self%cxx, .false., .false., tokenized)
-    if (tokenized) then
-        call add_strings(argv, string_t("-c"))
-        call add_strings(argv, string_t(input))
-    end if
-    if (tokenized .and. len_trim(args) > 0) call split_append(argv, args, .true., .true., tokenized)
-    if (tokenized) then
-        call add_strings(argv, string_t("-o"))
-        call add_strings(argv, string_t(output))
-    end if
-
-    ! Execute command
-    if (.not.mock) then
-       if (tokenized) then
-          call run_argv(argv, echo=self%echo, verbose=self%verbose, redirect=log_file, exitstat=stat)
-       else
-          ! Tokenization failed; serialize the shell fork (not concurrency-safe).
-          !$omp critical (run_command)
-          call run(command, echo=self%echo, verbose=self%verbose, redirect=log_file, exitstat=stat)
-          !$omp end critical (run_command)
-       end if
-       if (stat/=0) return
-    endif
-
-    ! Optionally register compile command
-    if (present(table)) then
-        call table%register(command, get_os_type(), error)
-        stat = merge(-1,0,allocated(error))
-    endif
+    call compile_object(self, self%cxx, input, output, args, log_file, stat, table, dry_run)
 
 end subroutine compile_cpp
 
@@ -1707,28 +1690,10 @@ subroutine link_executable(self, output, args, log_file, stat, dry_run)
     mock = .false.
     if (present(dry_run)) mock = dry_run
 
-    ! Shell fallback string plus the argv token list. Exec via argv spawn
-    ! (fork-safe under OpenMP) so the link can run in parallel; the previous
-    ! run() needed critical(run_command) only because the shell fork is not.
-    command = self%fc // " " // args // " -o " // output
-    tokenized = .true.
-    call split_append(argv, self%fc, .false., .false., tokenized)
-    if (tokenized .and. len_trim(args) > 0) call split_append(argv, args, .true., .true., tokenized)
-    if (tokenized) then
-        call add_strings(argv, string_t("-o"))
-        call add_strings(argv, string_t(output))
-    end if
+    if (mock) return
 
-    if (.not.mock) then
-        if (tokenized) then
-            call run_argv(argv, echo=self%echo, verbose=self%verbose, redirect=log_file, exitstat=stat)
-        else
-            ! Tokenization failed; serialize the shell fork (not concurrency-safe).
-            !$omp critical (run_command)
-            call run(command, echo=self%echo, verbose=self%verbose, redirect=log_file, exitstat=stat)
-            !$omp end critical (run_command)
-        end if
-    end if
+    call tool_command(self%fc, [string_t(args)], output, command, argv, tokenized)
+    call run_tool(command, argv, tokenized, self%echo, self%verbose, log_file, stat)
 
 end subroutine link_executable
 
@@ -1758,28 +1723,12 @@ subroutine link_shared(self, output, args, log_file, stat, dry_run)
     mock = .false.
     if (present(dry_run)) mock = dry_run
 
+    if (mock) return
+
     shared_flag = get_shared_flag(self)
 
-    command = self%fc // " " // shared_flag // " " // args // " -o " // output
-    tokenized = .true.
-    call split_append(argv, self%fc, .false., .false., tokenized)
-    if (tokenized .and. len_trim(shared_flag) > 0) call split_append(argv, shared_flag, .true., .true., tokenized)
-    if (tokenized .and. len_trim(args) > 0) call split_append(argv, args, .true., .true., tokenized)
-    if (tokenized) then
-        call add_strings(argv, string_t("-o"))
-        call add_strings(argv, string_t(output))
-    end if
-
-    if (.not.mock) then
-        if (tokenized) then
-            call run_argv(argv, echo=self%echo, verbose=self%verbose, redirect=log_file, exitstat=stat)
-        else
-            ! Tokenization failed; serialize the shell fork (not concurrency-safe).
-            !$omp critical (run_command)
-            call run(command, echo=self%echo, verbose=self%verbose, redirect=log_file, exitstat=stat)
-            !$omp end critical (run_command)
-        end if
-    end if
+    call tool_command(self%fc, [string_t(shared_flag), string_t(args)], output, command, argv, tokenized)
+    call run_tool(command, argv, tokenized, self%echo, self%verbose, log_file, stat)
 
 end subroutine link_shared
 
@@ -1855,14 +1804,7 @@ subroutine make_archive(self, output, args, log_file, stat, dry_run)
         end if
     end if
 
-    if (tokenized) then
-        call run_argv(argv, echo=self%echo, verbose=self%verbose, redirect=log_file, exitstat=stat)
-    else
-        ! Tokenization failed; serialize the shell fork (not concurrency-safe).
-        !$omp critical (run_command)
-        call run(command, echo=self%echo, verbose=self%verbose, redirect=log_file, exitstat=stat)
-        !$omp end critical (run_command)
-    end if
+    call run_tool(command, argv, tokenized, self%echo, self%verbose, log_file, stat)
 
     if (self%use_response_file) call delete_file_safe(output//".resp")
 
