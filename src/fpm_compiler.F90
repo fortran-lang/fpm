@@ -1818,7 +1818,16 @@ subroutine make_archive(self, output, args, log_file, stat, dry_run)
         end if
     end if
 
-    call run_tool(command, argv, tokenized, self%echo, self%verbose, log_file, stat)
+    ! On Windows, MinGW ar runs that write archives into one folder at once can fail to
+    ! create their temporary file there ("could not create temporary file whilst writing
+    ! archive: Permission denied"): make archives one at a time
+    if (get_os_type() == OS_WINDOWS) then
+        !$omp critical (fpm_archive)
+        call run_tool(command, argv, tokenized, self%echo, self%verbose, log_file, stat)
+        !$omp end critical (fpm_archive)
+    else
+        call run_tool(command, argv, tokenized, self%echo, self%verbose, log_file, stat)
+    end if
 
     if (self%use_response_file) call delete_file_safe(output//".resp")
 
