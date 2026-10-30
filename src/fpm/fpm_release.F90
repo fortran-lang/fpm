@@ -16,11 +16,6 @@ module fpm_release
 
         type(error_t), allocatable :: error
 
-! Fallback to last known version in case of undefined macro
-#ifndef FPM_RELEASE_VERSION
-#  define FPM_RELEASE_VERSION 0.13.0
-#endif
-
 ! Accept solution from https://stackoverflow.com/questions/31649691/stringify-macro-with-gnu-gfortran
 ! which provides the "easiest" way to pass a macro to a string in Fortran complying with both
 ! gfortran's "traditional" cpp and the standard cpp syntaxes
@@ -34,8 +29,14 @@ module fpm_release
 #endif
 
         character (len=:), allocatable :: ver_string
+#if defined(FPM_RELEASE_VERSION) && !defined(NAGFOR)
         ver_string = STRINGIFY_START(FPM_RELEASE_VERSION)
         STRINGIFY_END(FPM_RELEASE_VERSION)
+#else
+        ! Fallback to last known version when the macro is undefined, or when the
+        ! preprocessor cannot turn it into a string (NAG fpp)
+        ver_string = "0.13.0"
+#endif
 
         call new_version(fpm_version,ver_string,error)
 
