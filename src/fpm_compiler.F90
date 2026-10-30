@@ -912,6 +912,10 @@ subroutine get_default_c_compiler(f_compiler, c_compiler)
     case(id_lfortran)
         c_compiler = 'cc'
 
+    case(id_nag)
+        ! nagfor compiles C through the host C compiler, but without passing on -I
+        c_compiler = 'cc'
+
     case(id_gcc)
         c_compiler = 'gcc'
 
@@ -952,6 +956,9 @@ subroutine get_default_cxx_compiler(f_compiler, cxx_compiler)
 
     case(id_lfortran)
         cxx_compiler = 'cc'
+
+    case(id_nag)
+        cxx_compiler = 'c++'
 
     case(id_gcc)
         cxx_compiler = 'g++'
@@ -1352,12 +1359,17 @@ function get_headerpad_flags(self) result(flags)
     class(compiler_t), intent(in) :: self
     character(len=:), allocatable :: flags
 
-    if (get_os_type() /= OS_MACOS .or. self%id == id_nag) then
+    if (get_os_type() /= OS_MACOS) then
         flags = ""
         return
     end if
     ! Reserve enough space in the Mach-O header to safely add two install_name or rpath later
-    flags = " -Wl,-headerpad,0x200"
+    if (self%id == id_nag) then
+        ! NAG hands -Wl, options to the host C compiler, split at single commas
+        flags = " -Wl,-Wl,,-headerpad,,0x200"
+    else
+        flags = " -Wl,-headerpad,0x200"
+    end if
 end function get_headerpad_flags
 
 !>

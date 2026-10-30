@@ -2,7 +2,7 @@
 module test_compiler
     use testsuite, only : new_unittest, unittest_t, error_t, test_failed, &
         & check_string
-    use fpm_environment, only : OS_WINDOWS, OS_LINUX, os_is_unix, get_os_type
+    use fpm_environment, only : OS_WINDOWS, OS_LINUX, OS_MACOS, os_is_unix, get_os_type
     use fpm_compiler   , only : compiler_t, new_compiler, tokenize_flags, archiver_t, new_archiver, &
         & match_compiler_type, id_flang, id_amdflang, id_flang_classic, set_cpp_preprocessor_flags, &
         & append_clean_flags, drop_compile_options
@@ -38,6 +38,8 @@ contains
             & new_unittest("drop-compile-options", test_drop_compile_options), &
             & new_unittest("enumerate-libraries-nag", test_enumerate_libraries_nag), &
             & new_unittest("preprocess-flag-nag", test_preprocess_flag_nag), &
+            & new_unittest("default-c-compiler-nag", test_default_c_compiler_nag), &
+            & new_unittest("headerpad-flags-nag", test_headerpad_flags_nag), &
             & new_unittest("archive-drops-stale-members", test_archive_drops_stale_members), &
             & new_unittest("new-archiver-user-set", test_new_archiver_user_set)]
 
@@ -657,6 +659,43 @@ contains
         end if
 
     end subroutine test_enumerate_libraries_nag
+
+    !> NAG compiles C and C++ with the host compilers by default: nagfor drops -I for C sources
+    subroutine test_default_c_compiler_nag(error)
+        !> Error handling
+        type(error_t), allocatable, intent(out) :: error
+
+        type(compiler_t) :: compiler
+
+        call new_compiler(compiler, "nagfor", "", "", echo=.false., verbose=.false.)
+        if (compiler%cc /= "cc" .or. compiler%cxx /= "c++") then
+            call test_failed(error, "Expected 'cc' and 'c++', got '"//compiler%cc//"' and '"//compiler%cxx//"'")
+            return
+        end if
+
+    end subroutine test_default_c_compiler_nag
+
+    !> On macOS, NAG pads Mach-O headers with -Wl, commas escaped for the host C compiler
+    subroutine test_headerpad_flags_nag(error)
+        !> Error handling
+        type(error_t), allocatable, intent(out) :: error
+
+        type(compiler_t) :: compiler
+        character(:), allocatable :: flags, expected
+
+        call new_compiler(compiler, "nagfor", "", "", echo=.false., verbose=.false.)
+        flags = compiler%get_headerpad_flags()
+        if (get_os_type() == OS_MACOS) then
+            expected = " -Wl,-Wl,,-headerpad,,0x200"
+        else
+            expected = ""
+        end if
+        if (flags /= expected) then
+            call test_failed(error, "Expected '"//expected//"', got '"//flags//"'")
+            return
+        end if
+
+    end subroutine test_headerpad_flags_nag
 
     !> NAG preprocesses only `.ff90`, `.ff95` and `.ff` by suffix: `.F90` and `.F` need `-fpp`
     subroutine test_preprocess_flag_nag(error)
