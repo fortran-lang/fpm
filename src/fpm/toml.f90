@@ -15,11 +15,12 @@
 module fpm_toml
     use fpm_error, only: error_t, fatal_error, file_not_found_error
     use fpm_strings, only: string_t, str_ends_with, lower
+    use fpm_filesystem, only: getline
     use tomlf, only: toml_table, toml_array, toml_key, toml_stat, get_value, &
         & set_value, toml_parse, toml_error, new_table, add_table, add_array, &
-        & toml_serialize, len, toml_load, toml_value
+        & toml_serialize, len, toml_load, toml_loads, toml_value
     use tomlf_de_parser, only: parse
-    use jonquil, only: json_serialize, json_error, json_value, json_object, json_load, &
+    use jonquil, only: json_serialize, json_error, json_value, json_object, json_loads, &
                        cast_to_object
     use iso_fortran_env, only: int64
     implicit none
@@ -28,7 +29,7 @@ module fpm_toml
     public :: read_package_file, toml_table, toml_array, toml_key, toml_stat, &
               get_value, set_value, get_list, new_table, add_table, add_array, len, &
               toml_error, toml_serialize, toml_load, check_keys, set_list, set_string, &
-              name_is_json, has_list
+              name_is_json, has_list, read_unit_text
 
     !> An abstract interface for any fpm class that should be fully serializable to/from TOML/JSON
     type, abstract, public :: serializable_t
@@ -262,14 +263,18 @@ contains
         type(toml_table), allocatable :: table
         type(toml_table), pointer     :: jtable
         class(toml_value), allocatable :: object
+        character(len=:), allocatable :: text
         logical :: is_json
 
         is_json = .false.; if (present(json)) is_json = json
 
+        call read_unit_text(unit, text, error)
+        if (allocated(error)) return
+
         if (is_json) then
 
            !> init JSON interpreter
-           call json_load(object, unit, error=local_error)
+           call json_loads(object, text, error=local_error)
            if (allocated(local_error)) then
               allocate (error)
               call move_alloc(local_error%message, error%message)
@@ -288,7 +293,7 @@ contains
         else
 
            !> use default TOML parser
-           call toml_load(table, unit, error=local_error)
+           call toml_loads(table, text, error=local_error)
 
            if (allocated(local_error)) then
               allocate (error)
@@ -318,7 +323,6 @@ contains
         type(error_t), allocatable, intent(out) :: error
 
         type(toml_error), allocatable :: parse_error
-        integer :: unit
         logical :: exist
 
         inquire (file=manifest, exist=exist)
@@ -328,9 +332,8 @@ contains
             return
         end if
 
-        open(file=manifest, newunit=unit)
-        call toml_load(table, unit, error=parse_error)
-        close(unit)
+        ! By name, not through a unit: see read_unit_text
+        call toml_load(table, manifest, error=parse_error)
 
         if (allocated(parse_error)) then
             allocate (error)
@@ -339,6 +342,35 @@ contains
         end if
 
     end subroutine read_package_file
+
+    !> Read a formatted unit to its end, one line per record. toml-f and jonquil read a unit
+    !> by re-opening it first, which NAG 7.2 rejects for a unit from NEWUNIT=
+    subroutine read_unit_text(unit, text, error)
+
+        !> Formatted unit to read
+        integer, intent(in) :: unit
+
+        !> Text read, with lines separated by new_line('a')
+        character(len=:), allocatable, intent(out) :: text
+
+        !> Error handling
+        type(error_t), allocatable, intent(out) :: error
+
+        character(len=:), allocatable :: line
+        integer :: stat
+
+        text = ""
+        do
+            call getline(unit, line, stat)
+            if (stat > 0) then
+                call fatal_error(error, "Failed to read from unit")
+                return
+            end if
+            text = text // line // new_line('a')
+            if (stat < 0) exit
+        end do
+
+    end subroutine read_unit_text
 
     !> Check if an instance of the TOML data structure contains a list
     logical function has_list(table, key)
