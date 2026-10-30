@@ -36,6 +36,7 @@ contains
             & new_unittest("classic-flang", test_classic_flang), &
             & new_unittest("append-clean-flags", test_append_clean_flags), &
             & new_unittest("drop-compile-options", test_drop_compile_options), &
+            & new_unittest("enumerate-libraries-nag", test_enumerate_libraries_nag), &
             & new_unittest("archive-drops-stale-members", test_archive_drops_stale_members), &
             & new_unittest("new-archiver-user-set", test_new_archiver_user_set)]
 
@@ -638,6 +639,23 @@ contains
         end if
 
     end subroutine test_drop_compile_options
+
+    !> NAG links libraries as `-lfoo`: its `-Wl,foo` reaches the host C compiler as a file name
+    subroutine test_enumerate_libraries_nag(error)
+        !> Error handling
+        type(error_t), allocatable, intent(out) :: error
+
+        type(compiler_t) :: compiler
+        character(:), allocatable :: flags
+
+        call new_compiler(compiler, "nagfor", "gcc", "g++", echo=.false., verbose=.false.)
+        flags = compiler%enumerate_libraries(" -openmp", [string_t("z"), string_t("c++")])
+        if (flags /= " -openmp -lz -lc++") then
+            call test_failed(error, "Expected ' -openmp -lz -lc++', got '"//flags//"'")
+            return
+        end if
+
+    end subroutine test_enumerate_libraries_nag
 
 
 end module test_compiler

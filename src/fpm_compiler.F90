@@ -1258,13 +1258,14 @@ function enumerate_libraries(self, prefix, libs) result(r)
         joined = string_cat(libs, ".lib ") // ".lib"
         r = trim(prefix) // " " // trim(joined)
 
-    case (id_nag, id_ibmxl)
-        ! NAG and IBMXL need -Wl, wrapper around linker flags
+    case (id_ibmxl)
+        ! IBMXL needs -Wl, wrapper around linker flags
         joined = string_cat(libs, " -Wl,")
         r = trim(prefix) // " -Wl," // trim(joined)
 
     case default
-        ! Generic Unix-style linker flags: use `-lfoo`
+        ! Generic Unix-style linker flags: use `-lfoo`. NAG takes these too: its `-Wl,`
+        ! hands the word to the host C compiler, which reads `-Wl,foo` as a file name
         joined = string_cat(libs, " -l")
         r = trim(prefix) // " -l" // trim(joined)
 
