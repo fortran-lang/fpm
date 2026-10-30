@@ -135,9 +135,9 @@
       <div id="vars-0" class="collapse">
         <div class="list-group list-group-flush">
             <a class="list-group-item" href="../proc/make_archive.html#variable-argv~7">argv</a>
-            <a class="list-group-item" href="../proc/make_archive.html#variable-command~20">command</a>
-            <a class="list-group-item" href="../proc/make_archive.html#variable-i~158">i</a>
-            <a class="list-group-item" href="../proc/make_archive.html#variable-mock~5">mock</a>
+            <a class="list-group-item" href="../proc/make_archive.html#variable-command~8">command</a>
+            <a class="list-group-item" href="../proc/make_archive.html#variable-i~54">i</a>
+            <a class="list-group-item" href="../proc/make_archive.html#variable-mock~4">mock</a>
             <a class="list-group-item" href="../proc/make_archive.html#variable-tokenized~6">tokenized</a>
         </div>
       </div>
@@ -213,7 +213,7 @@ see issue #707, #708 and #808.</p>
     <tbody>
         <tr>
             <td>
-              <span class="anchor" id="variable-self~204"></span>
+              <span class="anchor" id="variable-self~56"></span>
               class(<a href='../type/archiver_t.html'>archiver_t</a>),
             </td>
 <td>intent(in)</td>
@@ -228,7 +228,7 @@ see issue #707, #708 and #808.</p>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-output~12"></span>
+              <span class="anchor" id="variable-output~10"></span>
               character(len=*),
             </td>
 <td>intent(in)</td>
@@ -243,7 +243,7 @@ see issue #707, #708 and #808.</p>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-args~14"></span>
+              <span class="anchor" id="variable-args~9"></span>
               type(<a href='../type/string_t.html'>string_t</a>),
             </td>
 <td>intent(in)</td>
@@ -273,7 +273,7 @@ see issue #707, #708 and #808.</p>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-stat~69"></span>
+              <span class="anchor" id="variable-stat~23"></span>
               integer,
             </td>
 <td>intent(out)</td>
@@ -288,7 +288,7 @@ see issue #707, #708 and #808.</p>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-dry_run~10"></span>
+              <span class="anchor" id="variable-dry_run~7"></span>
               logical,
             </td>
 <td>intent(in),</td>
@@ -338,7 +338,7 @@ see issue #707, #708 and #808.</p>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-command~20"></span>
+              <span class="anchor" id="variable-command~8"></span>
               character(len=:),
             </td>
               <td>public,</td>
@@ -355,7 +355,7 @@ see issue #707, #708 and #808.</p>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-i~158"></span>
+              <span class="anchor" id="variable-i~54"></span>
               integer,
             </td>
               <td>public</td>
@@ -372,7 +372,7 @@ see issue #707, #708 and #808.</p>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-mock~5"></span>
+              <span class="anchor" id="variable-mock~4"></span>
               logical,
             </td>
               <td>public</td>
@@ -438,7 +438,7 @@ see issue #707, #708 and #808.</p>
     <tbody>
         <tr>
             <td>
-              <span class="anchor" id="variable-file~9"></span>
+              <span class="anchor" id="variable-file"></span>
               character(len=*),
             </td>
 <td>intent(in)</td>
@@ -453,7 +453,7 @@ see issue #707, #708 and #808.</p>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-stat~70"></span>
+              <span class="anchor" id="variable-stat~24"></span>
               integer,
             </td>
 <td>intent(out),</td>
@@ -515,9 +515,8 @@ see issue #707, #708 and #808.</p>
 <span class="k">    end if</span>
 
 <span class="w">    </span><span class="c">! Build the argv token list: archiver + flags, the archive name, then the</span>
-<span class="w">    </span><span class="c">! object files (already individual tokens). argv spawn is fork-safe under</span>
-<span class="w">    </span><span class="c">! OpenMP, so the archive runs without critical(run_command), and it has no</span>
-<span class="w">    </span><span class="c">! shell command-length ceiling.</span>
+<span class="w">    </span><span class="c">! object files (already individual tokens). argv spawn is safe from several</span>
+<span class="w">    </span><span class="c">! OpenMP threads, and it has no shell command-length ceiling.</span>
 <span class="w">    </span><span class="n">tokenized</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">.</span><span class="n">true</span><span class="p">.</span>
 <span class="w">    </span><span class="k">call </span><span class="n">split_append</span><span class="p">(</span><span class="n">argv</span><span class="p">,</span><span class="w"> </span><span class="n">self</span><span class="p">%</span><span class="n">ar</span><span class="p">,</span><span class="w"> </span><span class="p">.</span><span class="n">false</span><span class="p">.,</span><span class="w"> </span><span class="p">.</span><span class="n">false</span><span class="p">.,</span><span class="w"> </span><span class="n">tokenized</span><span class="p">)</span>
 <span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">tokenized</span><span class="p">)</span><span class="w"> </span><span class="k">then</span>
@@ -592,7 +591,7 @@ see issue #707, #708 and #808.</p>
             <p class="text-end">
               Documentation generated by
               <a href="https://github.com/Fortran-FOSS-Programmers/ford">FORD</a>
- on 2026-10-30 11:48 +0000             </p>
+ on 2026-10-30 11:50 +0000             </p>
           </div>
         </div>
         <br>

@@ -1039,7 +1039,10 @@ subroutine run(cmd,echo,exitstat,verbose,redirect)
     if(echo_local) print *, '+ ', cmd !//redirect_str
 
     stat = 0
+    ! The shell forks, which is not safe from several OpenMP threads at once
+    !$omp critical (run_command)
     call execute_command_line(cmd//redirect_str, exitstat=stat,cmdstat=cmdstat,cmdmsg=cmdmsg)
+    !$omp end critical (run_command)
 
     ! Explain a missing program only when the command could not be launched -- Unix
     ! cmdstat/=0 "Invalid command line", Windows cmdstat==0 but cmd.exe exit 9009 -- and
@@ -1173,19 +1176,13 @@ subroutine run_argv(args,echo,exitstat,verbose,redirect)
             redirect_file//c_null_char)
 #else
     else
-        !$omp critical (run_command)
         call run(command, echo=.false., verbose=verbose_local, redirect=redirect_file, exitstat=stat)
-        !$omp end critical (run_command)
 #endif
     end if
 
     ! Fall back to the shell if the argv spawn was unavailable or failed (stat < 0).
-    ! The shell forks, which is not safe to call concurrently from OpenMP
-    ! threads, so this rare path stays serialized.
     if (stat < 0) then
-        !$omp critical (run_command)
         call run(command, echo=.false., verbose=verbose_local, redirect=redirect_file, exitstat=stat)
-        !$omp end critical (run_command)
     end if
 
     ! Some posix_spawnp implementations start the child anyway and report a

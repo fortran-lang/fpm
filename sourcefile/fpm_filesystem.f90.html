@@ -1212,386 +1212,383 @@
 <a id="ln-1039" name="ln-1039" href="#ln-1039"></a><span class="s1">    if(echo_local) print *, '</span><span class="o">+</span><span class="w"> </span><span class="s1">', cmd !//redirect_str</span>
 <a id="ln-1040" name="ln-1040" href="#ln-1040"></a>
 <a id="ln-1041" name="ln-1041" href="#ln-1041"></a><span class="s1">    stat = 0</span>
-<a id="ln-1042" name="ln-1042" href="#ln-1042"></a><span class="s1">    call execute_command_line(cmd//redirect_str, exitstat=stat,cmdstat=cmdstat,cmdmsg=cmdmsg)</span>
-<a id="ln-1043" name="ln-1043" href="#ln-1043"></a>
-<a id="ln-1044" name="ln-1044" href="#ln-1044"></a><span class="s1">    ! Explain a missing program only when the command could not be launched -- Unix</span>
-<a id="ln-1045" name="ln-1045" href="#ln-1045"></a><span class="s1">    ! cmdstat/=0 "Invalid command line", Windows cmdstat==0 but cmd.exe exit 9009 -- and</span>
-<a id="ln-1046" name="ln-1046" href="#ln-1046"></a><span class="s1">    ! only where fpm stops anyway.</span>
-<a id="ln-1047" name="ln-1047" href="#ln-1047"></a><span class="s1">    if (cmdstat /= 0 .or. (stat == 9009 .and. .not.os_is_unix() .and. .not.present(exitstat))) then</span>
-<a id="ln-1048" name="ln-1048" href="#ln-1048"></a><span class="s1">        if (command_not_found(cmd)) then</span>
-<a id="ln-1049" name="ln-1049" href="#ln-1049"></a><span class="s1">            write(*,'</span><span class="p">(</span><span class="n">a</span><span class="p">)</span><span class="s1">')'</span><span class="o">&lt;</span><span class="n">ERROR</span><span class="o">&gt;</span><span class="p">:</span><span class="n">failed</span><span class="w"> </span><span class="n">command</span><span class="w"> </span><span class="s1">'//cmd//redirect_str</span>
-<a id="ln-1050" name="ln-1050" href="#ln-1050"></a><span class="s1">            call fpm_stop(1, "Could not execute '</span><span class="s2">"//command_program(cmd)//"</span><span class="s1">': program not found on PATH."//new_line('</span><span class="n">a</span><span class="s1">')// &amp;</span>
-<a id="ln-1051" name="ln-1051" href="#ln-1051"></a><span class="s1">                "  Check that it is installed and on your PATH, or set it explicitly with"//new_line('</span><span class="n">a</span><span class="s1">')// &amp;</span>
-<a id="ln-1052" name="ln-1052" href="#ln-1052"></a><span class="s1">                "  --compiler / FPM_FC (use FPM_CC / FPM_AR for the C compiler / archiver).")</span>
-<a id="ln-1053" name="ln-1053" href="#ln-1053"></a><span class="s1">        end if</span>
-<a id="ln-1054" name="ln-1054" href="#ln-1054"></a><span class="s1">    end if</span>
-<a id="ln-1055" name="ln-1055" href="#ln-1055"></a><span class="s1">    if (cmdstat /= 0) then</span>
-<a id="ln-1056" name="ln-1056" href="#ln-1056"></a><span class="s1">        write(*,'</span><span class="p">(</span><span class="n">a</span><span class="p">)</span><span class="s1">')'</span><span class="o">&lt;</span><span class="n">ERROR</span><span class="o">&gt;</span><span class="p">:</span><span class="n">failed</span><span class="w"> </span><span class="n">command</span><span class="w"> </span><span class="s1">'//cmd//redirect_str</span>
-<a id="ln-1057" name="ln-1057" href="#ln-1057"></a><span class="s1">        call fpm_stop(1,'</span><span class="o">*</span><span class="n">run</span><span class="o">*</span><span class="p">:</span><span class="s1">'//trim(cmdmsg))</span>
-<a id="ln-1058" name="ln-1058" href="#ln-1058"></a><span class="s1">    end if</span>
-<a id="ln-1059" name="ln-1059" href="#ln-1059"></a>
-<a id="ln-1060" name="ln-1060" href="#ln-1060"></a><span class="s1">    if (verbose_local.and.present(redirect)) then</span>
-<a id="ln-1061" name="ln-1061" href="#ln-1061"></a>
-<a id="ln-1062" name="ln-1062" href="#ln-1062"></a><span class="s1">        open(newunit=fh,file=redirect,status='</span><span class="n">old</span><span class="s1">',iostat=iostat,iomsg=iomsg)</span>
-<a id="ln-1063" name="ln-1063" href="#ln-1063"></a><span class="s1">        if(iostat == 0)then</span>
-<a id="ln-1064" name="ln-1064" href="#ln-1064"></a><span class="s1">           do</span>
-<a id="ln-1065" name="ln-1065" href="#ln-1065"></a><span class="s1">               call getline(fh, line, iostat)</span>
-<a id="ln-1066" name="ln-1066" href="#ln-1066"></a><span class="s1">               if (iostat /= 0) exit</span>
-<a id="ln-1067" name="ln-1067" href="#ln-1067"></a><span class="s1">               write(*,'</span><span class="p">(</span><span class="n">A</span><span class="p">)</span><span class="s1">') trim(line)</span>
-<a id="ln-1068" name="ln-1068" href="#ln-1068"></a><span class="s1">           end do</span>
-<a id="ln-1069" name="ln-1069" href="#ln-1069"></a><span class="s1">        else</span>
-<a id="ln-1070" name="ln-1070" href="#ln-1070"></a><span class="s1">           write(*,'</span><span class="p">(</span><span class="n">A</span><span class="p">)</span><span class="s1">') trim(iomsg)</span>
-<a id="ln-1071" name="ln-1071" href="#ln-1071"></a><span class="s1">        endif</span>
-<a id="ln-1072" name="ln-1072" href="#ln-1072"></a>
-<a id="ln-1073" name="ln-1073" href="#ln-1073"></a><span class="s1">        close(fh)</span>
-<a id="ln-1074" name="ln-1074" href="#ln-1074"></a>
-<a id="ln-1075" name="ln-1075" href="#ln-1075"></a><span class="s1">    end if</span>
-<a id="ln-1076" name="ln-1076" href="#ln-1076"></a>
-<a id="ln-1077" name="ln-1077" href="#ln-1077"></a><span class="s1">    if (present(exitstat)) then</span>
-<a id="ln-1078" name="ln-1078" href="#ln-1078"></a><span class="s1">        exitstat = stat</span>
-<a id="ln-1079" name="ln-1079" href="#ln-1079"></a><span class="s1">    elseif (stat /= 0) then</span>
-<a id="ln-1080" name="ln-1080" href="#ln-1080"></a><span class="s1">        call fpm_stop(stat,'</span><span class="o">*</span><span class="n">run</span><span class="o">*</span><span class="p">:</span><span class="w"> </span><span class="n">Command</span><span class="w"> </span><span class="s1">'//cmd//redirect_str//'</span><span class="w"> </span><span class="n">returned</span><span class="w"> </span><span class="n">a</span><span class="w"> </span><span class="n">non</span><span class="o">-</span><span class="n">zero</span><span class="w"> </span><span class="n">status</span><span class="w"> </span><span class="n">code</span><span class="s1">')</span>
-<a id="ln-1081" name="ln-1081" href="#ln-1081"></a><span class="s1">    end if</span>
-<a id="ln-1082" name="ln-1082" href="#ln-1082"></a>
-<a id="ln-1083" name="ln-1083" href="#ln-1083"></a><span class="s1">end subroutine run</span>
-<a id="ln-1084" name="ln-1084" href="#ln-1084"></a>
-<a id="ln-1085" name="ln-1085" href="#ln-1085"></a><span class="s1">!&gt; Return the program invoked by a command line (its first shell token), OS-aware.</span>
-<a id="ln-1086" name="ln-1086" href="#ln-1086"></a><span class="s1">!! Uses fpm'</span><span class="n">s</span><span class="w"> </span><span class="n">shell</span><span class="w"> </span><span class="n">lexer</span><span class="w"> </span><span class="n">so</span><span class="w"> </span><span class="n">quoted</span><span class="w"> </span><span class="n">paths</span><span class="w"> </span><span class="n">stay</span><span class="w"> </span><span class="n">intact</span><span class="w"> </span><span class="nb">and </span><span class="n">trailing</span><span class="w"> </span><span class="n">arguments</span>
-<a id="ln-1087" name="ln-1087" href="#ln-1087"></a><span class="c">!! (e.g. a wrapper's "mpifort -fc=gfortran") are dropped. Returns '' if empty.</span>
-<a id="ln-1088" name="ln-1088" href="#ln-1088"></a><span class="k">function </span><span class="n">command_program</span><span class="p">(</span><span class="n">cmd</span><span class="p">)</span><span class="w"> </span><span class="k">result</span><span class="p">(</span><span class="n">prog</span><span class="p">)</span>
-<a id="ln-1089" name="ln-1089" href="#ln-1089"></a><span class="w">    </span><span class="kt">character</span><span class="p">(</span><span class="o">*</span><span class="p">),</span><span class="w"> </span><span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">)</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">cmd</span>
-<a id="ln-1090" name="ln-1090" href="#ln-1090"></a><span class="w">    </span><span class="kt">character</span><span class="p">(:),</span><span class="w"> </span><span class="k">allocatable</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">prog</span>
-<a id="ln-1091" name="ln-1091" href="#ln-1091"></a><span class="w">    </span><span class="kt">character</span><span class="p">(</span><span class="nb">len</span><span class="o">=</span><span class="p">:),</span><span class="w"> </span><span class="k">allocatable</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">tokens</span><span class="p">(:)</span>
-<a id="ln-1092" name="ln-1092" href="#ln-1092"></a>
-<a id="ln-1093" name="ln-1093" href="#ln-1093"></a><span class="w">    </span><span class="n">prog</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">''</span>
-<a id="ln-1094" name="ln-1094" href="#ln-1094"></a><span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">os_is_unix</span><span class="p">())</span><span class="w"> </span><span class="k">then</span>
-<a id="ln-1095" name="ln-1095" href="#ln-1095"></a><span class="k">        </span><span class="n">tokens</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">sh_split</span><span class="p">(</span><span class="n">cmd</span><span class="p">)</span><span class="w">               </span><span class="c">! POSIX lexer</span>
-<a id="ln-1096" name="ln-1096" href="#ln-1096"></a><span class="w">    </span><span class="k">else</span>
-<a id="ln-1097" name="ln-1097" href="#ln-1097"></a><span class="k">        </span><span class="n">tokens</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">ms_split</span><span class="p">(</span><span class="n">cmd</span><span class="p">,</span><span class="w"> </span><span class="n">ucrt</span><span class="o">=</span><span class="p">.</span><span class="n">true</span><span class="p">.)</span><span class="w">  </span><span class="c">! Windows lexer</span>
-<a id="ln-1098" name="ln-1098" href="#ln-1098"></a><span class="w">    </span><span class="k">end if</span>
-<a id="ln-1099" name="ln-1099" href="#ln-1099"></a><span class="w">    </span><span class="c">! The program is always reliably the first token. </span>
-<a id="ln-1100" name="ln-1100" href="#ln-1100"></a><span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="nb">allocated</span><span class="p">(</span><span class="n">tokens</span><span class="p">))</span><span class="w"> </span><span class="k">then</span>
-<a id="ln-1101" name="ln-1101" href="#ln-1101"></a><span class="k">        if</span><span class="w"> </span><span class="p">(</span><span class="n">size</span><span class="p">(</span><span class="n">tokens</span><span class="p">)</span><span class="w"> </span><span class="o">&gt;</span><span class="w"> </span><span class="mi">0</span><span class="p">)</span><span class="w"> </span><span class="n">prog</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">trim</span><span class="p">(</span><span class="nb">adjustl</span><span class="p">(</span><span class="n">tokens</span><span class="p">(</span><span class="mi">1</span><span class="p">)))</span>
-<a id="ln-1102" name="ln-1102" href="#ln-1102"></a><span class="w">    </span><span class="k">end if</span>
-<a id="ln-1103" name="ln-1103" href="#ln-1103"></a>
-<a id="ln-1104" name="ln-1104" href="#ln-1104"></a><span class="k">end function </span><span class="n">command_program</span>
-<a id="ln-1105" name="ln-1105" href="#ln-1105"></a>
-<a id="ln-1106" name="ln-1106" href="#ln-1106"></a><span class="c">!&gt; True when the program invoked by `cmd` cannot be located on PATH (nor as a</span>
-<a id="ln-1107" name="ln-1107" href="#ln-1107"></a><span class="c">!! direct path). Cross-platform via which()/exists().</span>
-<a id="ln-1108" name="ln-1108" href="#ln-1108"></a><span class="kt">logical </span><span class="k">function </span><span class="n">command_not_found</span><span class="p">(</span><span class="n">cmd</span><span class="p">)</span>
-<a id="ln-1109" name="ln-1109" href="#ln-1109"></a><span class="w">    </span><span class="kt">character</span><span class="p">(</span><span class="o">*</span><span class="p">),</span><span class="w"> </span><span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">)</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">cmd</span>
-<a id="ln-1110" name="ln-1110" href="#ln-1110"></a><span class="w">    </span><span class="kt">character</span><span class="p">(:),</span><span class="w"> </span><span class="k">allocatable</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">prog</span>
-<a id="ln-1111" name="ln-1111" href="#ln-1111"></a>
-<a id="ln-1112" name="ln-1112" href="#ln-1112"></a><span class="w">    </span><span class="n">command_not_found</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">.</span><span class="n">false</span><span class="p">.</span>
-<a id="ln-1113" name="ln-1113" href="#ln-1113"></a><span class="w">    </span><span class="n">prog</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">command_program</span><span class="p">(</span><span class="n">cmd</span><span class="p">)</span>
-<a id="ln-1114" name="ln-1114" href="#ln-1114"></a><span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="nb">len_trim</span><span class="p">(</span><span class="n">prog</span><span class="p">)</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="mi">0</span><span class="p">)</span><span class="w"> </span><span class="k">return</span>
-<a id="ln-1115" name="ln-1115" href="#ln-1115"></a><span class="k">    if</span><span class="w"> </span><span class="p">(</span><span class="nb">len_trim</span><span class="p">(</span><span class="n">which</span><span class="p">(</span><span class="n">prog</span><span class="p">))</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="mi">0</span><span class="w"> </span><span class="p">.</span><span class="nb">and</span><span class="p">.</span><span class="w"> </span><span class="p">.</span><span class="nb">not</span><span class="p">.</span><span class="w"> </span><span class="n">exists</span><span class="p">(</span><span class="n">prog</span><span class="p">))</span><span class="w"> </span><span class="n">command_not_found</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">.</span><span class="n">true</span><span class="p">.</span>
-<a id="ln-1116" name="ln-1116" href="#ln-1116"></a>
-<a id="ln-1117" name="ln-1117" href="#ln-1117"></a><span class="k">end function </span><span class="n">command_not_found</span>
-<a id="ln-1118" name="ln-1118" href="#ln-1118"></a>
-<a id="ln-1119" name="ln-1119" href="#ln-1119"></a><span class="k">subroutine </span><span class="n">run_argv</span><span class="p">(</span><span class="n">args</span><span class="p">,</span><span class="n">echo</span><span class="p">,</span><span class="n">exitstat</span><span class="p">,</span><span class="n">verbose</span><span class="p">,</span><span class="n">redirect</span><span class="p">)</span>
-<a id="ln-1120" name="ln-1120" href="#ln-1120"></a><span class="w">    </span><span class="k">type</span><span class="p">(</span><span class="n">string_t</span><span class="p">),</span><span class="w"> </span><span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">)</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">args</span><span class="p">(:)</span>
-<a id="ln-1121" name="ln-1121" href="#ln-1121"></a><span class="w">    </span><span class="kt">logical</span><span class="p">,</span><span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">),</span><span class="k">optional</span><span class="w">  </span><span class="kd">::</span><span class="w"> </span><span class="n">echo</span>
-<a id="ln-1122" name="ln-1122" href="#ln-1122"></a><span class="w">    </span><span class="kt">integer</span><span class="p">,</span><span class="w"> </span><span class="k">intent</span><span class="p">(</span><span class="n">out</span><span class="p">),</span><span class="k">optional</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">exitstat</span>
-<a id="ln-1123" name="ln-1123" href="#ln-1123"></a><span class="w">    </span><span class="kt">logical</span><span class="p">,</span><span class="w"> </span><span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">),</span><span class="w"> </span><span class="k">optional</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">verbose</span>
-<a id="ln-1124" name="ln-1124" href="#ln-1124"></a><span class="w">    </span><span class="kt">character</span><span class="p">(</span><span class="o">*</span><span class="p">),</span><span class="w"> </span><span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">),</span><span class="w"> </span><span class="k">optional</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">redirect</span>
-<a id="ln-1125" name="ln-1125" href="#ln-1125"></a>
-<a id="ln-1126" name="ln-1126" href="#ln-1126"></a><span class="w">    </span><span class="kt">character</span><span class="p">(:),</span><span class="w"> </span><span class="k">allocatable</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">command</span>
-<a id="ln-1127" name="ln-1127" href="#ln-1127"></a><span class="w">    </span><span class="kt">character</span><span class="p">(:),</span><span class="w"> </span><span class="k">allocatable</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">joined</span>
-<a id="ln-1128" name="ln-1128" href="#ln-1128"></a><span class="w">    </span><span class="kt">character</span><span class="p">(:),</span><span class="w"> </span><span class="k">allocatable</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">redirect_file</span>
-<a id="ln-1129" name="ln-1129" href="#ln-1129"></a><span class="w">    </span><span class="kt">character</span><span class="p">(:),</span><span class="w"> </span><span class="k">allocatable</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">line</span>
-<a id="ln-1130" name="ln-1130" href="#ln-1130"></a><span class="w">    </span><span class="kt">character</span><span class="p">(</span><span class="nb">len</span><span class="o">=</span><span class="mi">256</span><span class="p">)</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">iomsg</span>
-<a id="ln-1131" name="ln-1131" href="#ln-1131"></a><span class="w">    </span><span class="kt">logical</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">echo_local</span><span class="p">,</span><span class="w"> </span><span class="n">verbose_local</span>
-<a id="ln-1132" name="ln-1132" href="#ln-1132"></a><span class="w">    </span><span class="kt">integer</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="nb">stat</span><span class="p">,</span><span class="w"> </span><span class="n">fh</span><span class="p">,</span><span class="w"> </span><span class="n">iostat</span><span class="p">,</span><span class="w"> </span><span class="n">i</span>
-<a id="ln-1133" name="ln-1133" href="#ln-1133"></a>
-<a id="ln-1134" name="ln-1134" href="#ln-1134"></a><span class="w">    </span><span class="n">command</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">string_cat</span><span class="p">(</span><span class="n">args</span><span class="p">,</span><span class="w"> </span><span class="s2">" "</span><span class="p">)</span>
-<a id="ln-1135" name="ln-1135" href="#ln-1135"></a>
-<a id="ln-1136" name="ln-1136" href="#ln-1136"></a><span class="w">    </span><span class="k">if</span><span class="p">(</span><span class="nb">present</span><span class="p">(</span><span class="n">echo</span><span class="p">))</span><span class="k">then</span>
-<a id="ln-1137" name="ln-1137" href="#ln-1137"></a><span class="k">       </span><span class="n">echo_local</span><span class="o">=</span><span class="n">echo</span>
-<a id="ln-1138" name="ln-1138" href="#ln-1138"></a><span class="w">    </span><span class="k">else</span>
-<a id="ln-1139" name="ln-1139" href="#ln-1139"></a><span class="k">       </span><span class="n">echo_local</span><span class="o">=</span><span class="p">.</span><span class="n">true</span><span class="p">.</span>
-<a id="ln-1140" name="ln-1140" href="#ln-1140"></a><span class="w">    </span><span class="k">end if</span>
-<a id="ln-1141" name="ln-1141" href="#ln-1141"></a>
-<a id="ln-1142" name="ln-1142" href="#ln-1142"></a><span class="k">    if</span><span class="p">(</span><span class="nb">present</span><span class="p">(</span><span class="n">verbose</span><span class="p">))</span><span class="k">then</span>
-<a id="ln-1143" name="ln-1143" href="#ln-1143"></a><span class="k">        </span><span class="n">verbose_local</span><span class="o">=</span><span class="n">verbose</span>
-<a id="ln-1144" name="ln-1144" href="#ln-1144"></a><span class="w">    </span><span class="k">else</span>
-<a id="ln-1145" name="ln-1145" href="#ln-1145"></a><span class="k">        </span><span class="n">verbose_local</span><span class="o">=</span><span class="p">.</span><span class="n">true</span><span class="p">.</span>
-<a id="ln-1146" name="ln-1146" href="#ln-1146"></a><span class="w">    </span><span class="k">end if</span>
-<a id="ln-1147" name="ln-1147" href="#ln-1147"></a>
-<a id="ln-1148" name="ln-1148" href="#ln-1148"></a><span class="k">    if</span><span class="w"> </span><span class="p">(</span><span class="nb">present</span><span class="p">(</span><span class="n">redirect</span><span class="p">))</span><span class="w"> </span><span class="k">then</span>
-<a id="ln-1149" name="ln-1149" href="#ln-1149"></a><span class="k">        </span><span class="n">redirect_file</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">redirect</span>
-<a id="ln-1150" name="ln-1150" href="#ln-1150"></a><span class="w">    </span><span class="k">else</span>
-<a id="ln-1151" name="ln-1151" href="#ln-1151"></a><span class="k">        if</span><span class="p">(</span><span class="n">verbose_local</span><span class="p">)</span><span class="k">then</span>
-<a id="ln-1152" name="ln-1152" href="#ln-1152"></a><span class="k">            </span><span class="n">redirect_file</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">""</span>
-<a id="ln-1153" name="ln-1153" href="#ln-1153"></a><span class="w">        </span><span class="k">else</span>
-<a id="ln-1154" name="ln-1154" href="#ln-1154"></a><span class="k">            if</span><span class="w"> </span><span class="p">(</span><span class="n">os_is_unix</span><span class="p">())</span><span class="w"> </span><span class="k">then</span>
-<a id="ln-1155" name="ln-1155" href="#ln-1155"></a><span class="k">                </span><span class="n">redirect_file</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">"/dev/null"</span>
-<a id="ln-1156" name="ln-1156" href="#ln-1156"></a><span class="w">            </span><span class="k">else</span>
-<a id="ln-1157" name="ln-1157" href="#ln-1157"></a><span class="k">                </span><span class="n">redirect_file</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">"NUL"</span>
-<a id="ln-1158" name="ln-1158" href="#ln-1158"></a><span class="w">            </span><span class="k">end if</span>
-<a id="ln-1159" name="ln-1159" href="#ln-1159"></a><span class="k">        end if</span>
-<a id="ln-1160" name="ln-1160" href="#ln-1160"></a><span class="k">    end if</span>
-<a id="ln-1161" name="ln-1161" href="#ln-1161"></a>
-<a id="ln-1162" name="ln-1162" href="#ln-1162"></a><span class="k">    if</span><span class="p">(</span><span class="n">echo_local</span><span class="p">)</span><span class="w"> </span><span class="k">print</span><span class="w"> </span><span class="o">*</span><span class="p">,</span><span class="w"> </span><span class="s1">'+ '</span><span class="p">,</span><span class="w"> </span><span class="n">command</span>
-<a id="ln-1163" name="ln-1163" href="#ln-1163"></a>
-<a id="ln-1164" name="ln-1164" href="#ln-1164"></a><span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">size</span><span class="p">(</span><span class="n">args</span><span class="p">)</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="mi">1</span><span class="p">)</span><span class="w"> </span><span class="k">then</span>
-<a id="ln-1165" name="ln-1165" href="#ln-1165"></a><span class="k">        </span><span class="nb">stat</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span>
-<a id="ln-1166" name="ln-1166" href="#ln-1166"></a><span class="cp">#ifndef FPM_BOOTSTRAP</span>
-<a id="ln-1167" name="ln-1167" href="#ln-1167"></a><span class="w">    </span><span class="k">else</span>
-<a id="ln-1168" name="ln-1168" href="#ln-1168"></a><span class="k">        </span><span class="n">joined</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">""</span>
-<a id="ln-1169" name="ln-1169" href="#ln-1169"></a><span class="w">        </span><span class="k">do </span><span class="n">i</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="n">size</span><span class="p">(</span><span class="n">args</span><span class="p">)</span>
-<a id="ln-1170" name="ln-1170" href="#ln-1170"></a><span class="w">            </span><span class="n">joined</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">joined</span><span class="o">//</span><span class="n">args</span><span class="p">(</span><span class="n">i</span><span class="p">)%</span><span class="n">s</span><span class="o">//</span><span class="nb">c_null_char</span>
-<a id="ln-1171" name="ln-1171" href="#ln-1171"></a><span class="nb">        </span><span class="k">end do</span>
-<a id="ln-1172" name="ln-1172" href="#ln-1172"></a><span class="k">        </span><span class="nb">stat</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">c_run_argv</span><span class="p">(</span><span class="n">joined</span><span class="o">//</span><span class="nb">c_null_char</span><span class="p">,</span><span class="w"> </span><span class="nb">int</span><span class="p">(</span><span class="n">size</span><span class="p">(</span><span class="n">args</span><span class="p">),</span><span class="w"> </span><span class="kt">c_int</span><span class="p">),</span><span class="w"> </span><span class="p">&amp;</span>
-<a id="ln-1173" name="ln-1173" href="#ln-1173"></a><span class="w">            </span><span class="n">redirect_file</span><span class="o">//</span><span class="nb">c_null_char</span><span class="p">)</span>
-<a id="ln-1174" name="ln-1174" href="#ln-1174"></a><span class="cp">#else</span>
-<a id="ln-1175" name="ln-1175" href="#ln-1175"></a><span class="w">    </span><span class="k">else</span>
-<a id="ln-1176" name="ln-1176" href="#ln-1176"></a><span class="w">        </span><span class="c">!$omp critical (run_command)</span>
-<a id="ln-1177" name="ln-1177" href="#ln-1177"></a><span class="w">        </span><span class="k">call </span><span class="n">run</span><span class="p">(</span><span class="n">command</span><span class="p">,</span><span class="w"> </span><span class="n">echo</span><span class="o">=</span><span class="p">.</span><span class="n">false</span><span class="p">.,</span><span class="w"> </span><span class="n">verbose</span><span class="o">=</span><span class="n">verbose_local</span><span class="p">,</span><span class="w"> </span><span class="n">redirect</span><span class="o">=</span><span class="n">redirect_file</span><span class="p">,</span><span class="w"> </span><span class="n">exitstat</span><span class="o">=</span><span class="nb">stat</span><span class="p">)</span>
-<a id="ln-1178" name="ln-1178" href="#ln-1178"></a><span class="w">        </span><span class="c">!$omp end critical (run_command)</span>
-<a id="ln-1179" name="ln-1179" href="#ln-1179"></a><span class="cp">#endif</span>
-<a id="ln-1180" name="ln-1180" href="#ln-1180"></a><span class="w">    </span><span class="k">end if</span>
-<a id="ln-1181" name="ln-1181" href="#ln-1181"></a>
-<a id="ln-1182" name="ln-1182" href="#ln-1182"></a><span class="w">    </span><span class="c">! Fall back to the shell if the argv spawn was unavailable or failed (stat &lt; 0).</span>
-<a id="ln-1183" name="ln-1183" href="#ln-1183"></a><span class="w">    </span><span class="c">! The shell forks, which is not safe to call concurrently from OpenMP</span>
-<a id="ln-1184" name="ln-1184" href="#ln-1184"></a><span class="w">    </span><span class="c">! threads, so this rare path stays serialized.</span>
-<a id="ln-1185" name="ln-1185" href="#ln-1185"></a><span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="nb">stat</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="mi">0</span><span class="p">)</span><span class="w"> </span><span class="k">then</span>
-<a id="ln-1186" name="ln-1186" href="#ln-1186"></a><span class="w">        </span><span class="c">!$omp critical (run_command)</span>
-<a id="ln-1187" name="ln-1187" href="#ln-1187"></a><span class="w">        </span><span class="k">call </span><span class="n">run</span><span class="p">(</span><span class="n">command</span><span class="p">,</span><span class="w"> </span><span class="n">echo</span><span class="o">=</span><span class="p">.</span><span class="n">false</span><span class="p">.,</span><span class="w"> </span><span class="n">verbose</span><span class="o">=</span><span class="n">verbose_local</span><span class="p">,</span><span class="w"> </span><span class="n">redirect</span><span class="o">=</span><span class="n">redirect_file</span><span class="p">,</span><span class="w"> </span><span class="n">exitstat</span><span class="o">=</span><span class="nb">stat</span><span class="p">)</span>
-<a id="ln-1188" name="ln-1188" href="#ln-1188"></a><span class="w">        </span><span class="c">!$omp end critical (run_command)</span>
-<a id="ln-1189" name="ln-1189" href="#ln-1189"></a><span class="w">    </span><span class="k">end if</span>
-<a id="ln-1190" name="ln-1190" href="#ln-1190"></a>
-<a id="ln-1191" name="ln-1191" href="#ln-1191"></a><span class="w">    </span><span class="c">! Some posix_spawnp implementations start the child anyway and report a</span>
-<a id="ln-1192" name="ln-1192" href="#ln-1192"></a><span class="w">    </span><span class="c">! missing program only as its exit status 127.</span>
-<a id="ln-1193" name="ln-1193" href="#ln-1193"></a><span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="nb">stat</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="mi">127</span><span class="w"> </span><span class="p">.</span><span class="nb">and</span><span class="p">.</span><span class="w"> </span><span class="n">os_is_unix</span><span class="p">())</span><span class="w"> </span><span class="k">then</span>
-<a id="ln-1194" name="ln-1194" href="#ln-1194"></a><span class="k">        if</span><span class="w"> </span><span class="p">(</span><span class="n">command_not_found</span><span class="p">(</span><span class="n">command</span><span class="p">))</span><span class="w"> </span><span class="k">then</span>
-<a id="ln-1195" name="ln-1195" href="#ln-1195"></a><span class="k">            write</span><span class="p">(</span><span class="o">*</span><span class="p">,</span><span class="s1">'(a)'</span><span class="p">)</span><span class="s1">'&lt;ERROR&gt;:failed command '</span><span class="o">//</span><span class="n">command</span>
-<a id="ln-1196" name="ln-1196" href="#ln-1196"></a><span class="w">            </span><span class="k">call </span><span class="n">fpm_stop</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="s2">"Could not execute '"</span><span class="o">//</span><span class="n">command_program</span><span class="p">(</span><span class="n">command</span><span class="p">)</span><span class="o">//</span><span class="s2">"': program not found on PATH."</span><span class="o">//</span><span class="nb">new_line</span><span class="p">(</span><span class="s1">'a'</span><span class="p">)</span><span class="o">//</span><span class="w"> </span><span class="p">&amp;</span>
-<a id="ln-1197" name="ln-1197" href="#ln-1197"></a><span class="w">                </span><span class="s2">"  Check that it is installed and on your PATH, or set it explicitly with"</span><span class="o">//</span><span class="nb">new_line</span><span class="p">(</span><span class="s1">'a'</span><span class="p">)</span><span class="o">//</span><span class="w"> </span><span class="p">&amp;</span>
-<a id="ln-1198" name="ln-1198" href="#ln-1198"></a><span class="w">                </span><span class="s2">"  --compiler / FPM_FC (use FPM_CC / FPM_AR for the C compiler / archiver)."</span><span class="p">)</span>
-<a id="ln-1199" name="ln-1199" href="#ln-1199"></a><span class="w">        </span><span class="k">end if</span>
-<a id="ln-1200" name="ln-1200" href="#ln-1200"></a><span class="k">    end if</span>
-<a id="ln-1201" name="ln-1201" href="#ln-1201"></a>
-<a id="ln-1202" name="ln-1202" href="#ln-1202"></a><span class="k">    if</span><span class="w"> </span><span class="p">(</span><span class="n">verbose_local</span><span class="p">.</span><span class="nb">and</span><span class="p">.</span><span class="nb">present</span><span class="p">(</span><span class="n">redirect</span><span class="p">))</span><span class="w"> </span><span class="k">then</span>
-<a id="ln-1203" name="ln-1203" href="#ln-1203"></a>
-<a id="ln-1204" name="ln-1204" href="#ln-1204"></a><span class="k">        open</span><span class="p">(</span><span class="n">newunit</span><span class="o">=</span><span class="n">fh</span><span class="p">,</span><span class="k">file</span><span class="o">=</span><span class="n">redirect</span><span class="p">,</span><span class="n">status</span><span class="o">=</span><span class="s1">'old'</span><span class="p">,</span><span class="n">iostat</span><span class="o">=</span><span class="n">iostat</span><span class="p">,</span><span class="n">iomsg</span><span class="o">=</span><span class="n">iomsg</span><span class="p">)</span>
-<a id="ln-1205" name="ln-1205" href="#ln-1205"></a><span class="w">        </span><span class="k">if</span><span class="p">(</span><span class="n">iostat</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="mi">0</span><span class="p">)</span><span class="k">then</span>
-<a id="ln-1206" name="ln-1206" href="#ln-1206"></a><span class="k">           do</span>
-<a id="ln-1207" name="ln-1207" href="#ln-1207"></a><span class="k">               call </span><span class="n">getline</span><span class="p">(</span><span class="n">fh</span><span class="p">,</span><span class="w"> </span><span class="n">line</span><span class="p">,</span><span class="w"> </span><span class="n">iostat</span><span class="p">)</span>
-<a id="ln-1208" name="ln-1208" href="#ln-1208"></a><span class="w">               </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">iostat</span><span class="w"> </span><span class="o">/=</span><span class="w"> </span><span class="mi">0</span><span class="p">)</span><span class="w"> </span><span class="k">exit</span>
-<a id="ln-1209" name="ln-1209" href="#ln-1209"></a><span class="k">               write</span><span class="p">(</span><span class="o">*</span><span class="p">,</span><span class="s1">'(A)'</span><span class="p">)</span><span class="w"> </span><span class="nb">trim</span><span class="p">(</span><span class="n">line</span><span class="p">)</span>
-<a id="ln-1210" name="ln-1210" href="#ln-1210"></a><span class="w">           </span><span class="k">end do</span>
-<a id="ln-1211" name="ln-1211" href="#ln-1211"></a><span class="k">        else</span>
-<a id="ln-1212" name="ln-1212" href="#ln-1212"></a><span class="k">           write</span><span class="p">(</span><span class="o">*</span><span class="p">,</span><span class="s1">'(A)'</span><span class="p">)</span><span class="w"> </span><span class="nb">trim</span><span class="p">(</span><span class="n">iomsg</span><span class="p">)</span>
-<a id="ln-1213" name="ln-1213" href="#ln-1213"></a><span class="w">        </span><span class="k">endif</span>
-<a id="ln-1214" name="ln-1214" href="#ln-1214"></a>
-<a id="ln-1215" name="ln-1215" href="#ln-1215"></a><span class="k">        close</span><span class="p">(</span><span class="n">fh</span><span class="p">)</span>
-<a id="ln-1216" name="ln-1216" href="#ln-1216"></a>
-<a id="ln-1217" name="ln-1217" href="#ln-1217"></a><span class="w">    </span><span class="k">end if</span>
-<a id="ln-1218" name="ln-1218" href="#ln-1218"></a>
-<a id="ln-1219" name="ln-1219" href="#ln-1219"></a><span class="k">    if</span><span class="w"> </span><span class="p">(</span><span class="nb">present</span><span class="p">(</span><span class="n">exitstat</span><span class="p">))</span><span class="w"> </span><span class="k">then</span>
-<a id="ln-1220" name="ln-1220" href="#ln-1220"></a><span class="k">        </span><span class="n">exitstat</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">stat</span>
-<a id="ln-1221" name="ln-1221" href="#ln-1221"></a><span class="nb">    </span><span class="k">elseif</span><span class="w"> </span><span class="p">(</span><span class="nb">stat</span><span class="w"> </span><span class="o">/=</span><span class="w"> </span><span class="mi">0</span><span class="p">)</span><span class="w"> </span><span class="k">then</span>
-<a id="ln-1222" name="ln-1222" href="#ln-1222"></a><span class="k">        call </span><span class="n">fpm_stop</span><span class="p">(</span><span class="nb">stat</span><span class="p">,</span><span class="s1">'*run_argv*: Command '</span><span class="o">//</span><span class="n">command</span><span class="o">//</span><span class="s1">' returned a non-zero status code'</span><span class="p">)</span>
-<a id="ln-1223" name="ln-1223" href="#ln-1223"></a><span class="w">    </span><span class="k">end if</span>
-<a id="ln-1224" name="ln-1224" href="#ln-1224"></a>
-<a id="ln-1225" name="ln-1225" href="#ln-1225"></a><span class="k">end subroutine </span><span class="n">run_argv</span>
-<a id="ln-1226" name="ln-1226" href="#ln-1226"></a>
-<a id="ln-1227" name="ln-1227" href="#ln-1227"></a><span class="c">!&gt; Delete directory using system OS remove directory commands</span>
-<a id="ln-1228" name="ln-1228" href="#ln-1228"></a><span class="k">subroutine </span><span class="n">os_delete_dir</span><span class="p">(</span><span class="n">is_unix</span><span class="p">,</span><span class="w"> </span><span class="n">dir</span><span class="p">,</span><span class="w"> </span><span class="n">echo</span><span class="p">)</span>
-<a id="ln-1229" name="ln-1229" href="#ln-1229"></a><span class="w">    </span><span class="kt">logical</span><span class="p">,</span><span class="w"> </span><span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">)</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">is_unix</span>
-<a id="ln-1230" name="ln-1230" href="#ln-1230"></a><span class="w">    </span><span class="kt">character</span><span class="p">(</span><span class="nb">len</span><span class="o">=*</span><span class="p">),</span><span class="w"> </span><span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">)</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">dir</span>
-<a id="ln-1231" name="ln-1231" href="#ln-1231"></a><span class="w">    </span><span class="kt">logical</span><span class="p">,</span><span class="w"> </span><span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">),</span><span class="w"> </span><span class="k">optional</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">echo</span>
-<a id="ln-1232" name="ln-1232" href="#ln-1232"></a>
-<a id="ln-1233" name="ln-1233" href="#ln-1233"></a><span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">is_unix</span><span class="p">)</span><span class="w"> </span><span class="k">then</span>
-<a id="ln-1234" name="ln-1234" href="#ln-1234"></a><span class="k">        call </span><span class="n">run</span><span class="p">(</span><span class="s1">'rm -rf '</span><span class="w"> </span><span class="o">//</span><span class="w"> </span><span class="n">dir</span><span class="p">,</span><span class="w"> </span><span class="n">echo</span><span class="o">=</span><span class="n">echo</span><span class="p">,</span><span class="n">verbose</span><span class="o">=</span><span class="p">.</span><span class="n">false</span><span class="p">.)</span>
-<a id="ln-1235" name="ln-1235" href="#ln-1235"></a><span class="w">    </span><span class="k">else</span>
-<a id="ln-1236" name="ln-1236" href="#ln-1236"></a><span class="k">        call </span><span class="n">run</span><span class="p">(</span><span class="s1">'rmdir /s/q '</span><span class="w"> </span><span class="o">//</span><span class="w"> </span><span class="n">dir</span><span class="p">,</span><span class="w"> </span><span class="n">echo</span><span class="o">=</span><span class="n">echo</span><span class="p">,</span><span class="n">verbose</span><span class="o">=</span><span class="p">.</span><span class="n">false</span><span class="p">.)</span>
-<a id="ln-1237" name="ln-1237" href="#ln-1237"></a><span class="w">    </span><span class="k">end if</span>
-<a id="ln-1238" name="ln-1238" href="#ln-1238"></a>
-<a id="ln-1239" name="ln-1239" href="#ln-1239"></a><span class="k">end subroutine </span><span class="n">os_delete_dir</span>
-<a id="ln-1240" name="ln-1240" href="#ln-1240"></a>
-<a id="ln-1241" name="ln-1241" href="#ln-1241"></a><span class="w">    </span><span class="c">!&gt; Determine the path prefix to the local folder. Used for installation, registry etc.</span>
-<a id="ln-1242" name="ln-1242" href="#ln-1242"></a><span class="w">    </span><span class="k">function </span><span class="n">get_local_prefix</span><span class="p">(</span><span class="n">os</span><span class="p">)</span><span class="w"> </span><span class="k">result</span><span class="p">(</span><span class="n">prefix</span><span class="p">)</span>
-<a id="ln-1243" name="ln-1243" href="#ln-1243"></a><span class="w">        </span><span class="c">!&gt; Installation prefix</span>
-<a id="ln-1244" name="ln-1244" href="#ln-1244"></a><span class="w">        </span><span class="kt">character</span><span class="p">(</span><span class="nb">len</span><span class="o">=</span><span class="p">:),</span><span class="w"> </span><span class="k">allocatable</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">prefix</span>
-<a id="ln-1245" name="ln-1245" href="#ln-1245"></a><span class="w">        </span><span class="c">!&gt; Platform identifier</span>
-<a id="ln-1246" name="ln-1246" href="#ln-1246"></a><span class="w">        </span><span class="kt">integer</span><span class="p">,</span><span class="w"> </span><span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">),</span><span class="w"> </span><span class="k">optional</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">os</span>
-<a id="ln-1247" name="ln-1247" href="#ln-1247"></a>
-<a id="ln-1248" name="ln-1248" href="#ln-1248"></a><span class="w">        </span><span class="c">!&gt; Default installation prefix on Unix platforms</span>
-<a id="ln-1249" name="ln-1249" href="#ln-1249"></a><span class="w">        </span><span class="kt">character</span><span class="p">(</span><span class="nb">len</span><span class="o">=*</span><span class="p">),</span><span class="w"> </span><span class="k">parameter</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">default_prefix_unix</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">"/usr/local"</span>
-<a id="ln-1250" name="ln-1250" href="#ln-1250"></a><span class="w">        </span><span class="c">!&gt; Default installation prefix on Windows platforms</span>
-<a id="ln-1251" name="ln-1251" href="#ln-1251"></a><span class="w">        </span><span class="kt">character</span><span class="p">(</span><span class="nb">len</span><span class="o">=*</span><span class="p">),</span><span class="w"> </span><span class="k">parameter</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">default_prefix_win</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">"C:\"</span>
-<a id="ln-1252" name="ln-1252" href="#ln-1252"></a>
-<a id="ln-1253" name="ln-1253" href="#ln-1253"></a><span class="s2">        character(len=:), allocatable :: home</span>
-<a id="ln-1254" name="ln-1254" href="#ln-1254"></a>
-<a id="ln-1255" name="ln-1255" href="#ln-1255"></a><span class="s2">        if (os_is_unix(os)) then</span>
-<a id="ln-1256" name="ln-1256" href="#ln-1256"></a><span class="s2">            home=get_env('HOME','')</span>
-<a id="ln-1257" name="ln-1257" href="#ln-1257"></a><span class="s2">            if (home /= '' ) then</span>
-<a id="ln-1258" name="ln-1258" href="#ln-1258"></a><span class="s2">                prefix = join_path(home, "</span><span class="p">.</span><span class="n">local</span><span class="s2">")</span>
-<a id="ln-1259" name="ln-1259" href="#ln-1259"></a><span class="s2">            else</span>
-<a id="ln-1260" name="ln-1260" href="#ln-1260"></a><span class="s2">                prefix = default_prefix_unix</span>
-<a id="ln-1261" name="ln-1261" href="#ln-1261"></a><span class="s2">            end if</span>
-<a id="ln-1262" name="ln-1262" href="#ln-1262"></a><span class="s2">        else</span>
-<a id="ln-1263" name="ln-1263" href="#ln-1263"></a><span class="s2">            home=get_env('APPDATA','')</span>
-<a id="ln-1264" name="ln-1264" href="#ln-1264"></a><span class="s2">            if (home /= '' ) then</span>
-<a id="ln-1265" name="ln-1265" href="#ln-1265"></a><span class="s2">                prefix = join_path(home, "</span><span class="n">local</span><span class="s2">")</span>
-<a id="ln-1266" name="ln-1266" href="#ln-1266"></a><span class="s2">            else</span>
-<a id="ln-1267" name="ln-1267" href="#ln-1267"></a><span class="s2">                prefix = default_prefix_win</span>
-<a id="ln-1268" name="ln-1268" href="#ln-1268"></a><span class="s2">            end if</span>
-<a id="ln-1269" name="ln-1269" href="#ln-1269"></a><span class="s2">        end if</span>
-<a id="ln-1270" name="ln-1270" href="#ln-1270"></a>
-<a id="ln-1271" name="ln-1271" href="#ln-1271"></a><span class="s2">    end function get_local_prefix</span>
-<a id="ln-1272" name="ln-1272" href="#ln-1272"></a>
-<a id="ln-1273" name="ln-1273" href="#ln-1273"></a><span class="s2">    !&gt; Returns .true. if provided path is absolute.</span>
-<a id="ln-1274" name="ln-1274" href="#ln-1274"></a><span class="s2">    !&gt;</span>
-<a id="ln-1275" name="ln-1275" href="#ln-1275"></a><span class="s2">    !&gt; `~` not treated as absolute.</span>
-<a id="ln-1276" name="ln-1276" href="#ln-1276"></a><span class="s2">    logical function is_absolute_path(path, is_unix)</span>
-<a id="ln-1277" name="ln-1277" href="#ln-1277"></a><span class="s2">        character(len=*), intent(in) :: path</span>
-<a id="ln-1278" name="ln-1278" href="#ln-1278"></a><span class="s2">        logical, optional, intent(in):: is_unix</span>
-<a id="ln-1279" name="ln-1279" href="#ln-1279"></a><span class="s2">        character(len=*), parameter :: letters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz'</span>
-<a id="ln-1280" name="ln-1280" href="#ln-1280"></a><span class="s2">        logical :: is_unix_os</span>
-<a id="ln-1281" name="ln-1281" href="#ln-1281"></a>
-<a id="ln-1282" name="ln-1282" href="#ln-1282"></a><span class="s2">        if (present(is_unix)) then</span>
-<a id="ln-1283" name="ln-1283" href="#ln-1283"></a><span class="s2">            is_unix_os = is_unix</span>
-<a id="ln-1284" name="ln-1284" href="#ln-1284"></a><span class="s2">        else</span>
-<a id="ln-1285" name="ln-1285" href="#ln-1285"></a><span class="s2">            is_unix_os = os_is_unix()</span>
-<a id="ln-1286" name="ln-1286" href="#ln-1286"></a><span class="s2">        end if</span>
-<a id="ln-1287" name="ln-1287" href="#ln-1287"></a>
-<a id="ln-1288" name="ln-1288" href="#ln-1288"></a><span class="s2">        if (is_unix_os) then</span>
-<a id="ln-1289" name="ln-1289" href="#ln-1289"></a><span class="s2">            is_absolute_path = index(path, '/') == 1</span>
-<a id="ln-1290" name="ln-1290" href="#ln-1290"></a><span class="s2">        else</span>
-<a id="ln-1291" name="ln-1291" href="#ln-1291"></a><span class="s2">            if (len(path) &lt; 2) then</span>
-<a id="ln-1292" name="ln-1292" href="#ln-1292"></a><span class="s2">                is_absolute_path = .false.</span>
-<a id="ln-1293" name="ln-1293" href="#ln-1293"></a><span class="s2">                return</span>
-<a id="ln-1294" name="ln-1294" href="#ln-1294"></a><span class="s2">            end if</span>
+<a id="ln-1042" name="ln-1042" href="#ln-1042"></a><span class="s1">    ! The shell forks, which is not safe from several OpenMP threads at once</span>
+<a id="ln-1043" name="ln-1043" href="#ln-1043"></a><span class="s1">    !$omp critical (run_command)</span>
+<a id="ln-1044" name="ln-1044" href="#ln-1044"></a><span class="s1">    call execute_command_line(cmd//redirect_str, exitstat=stat,cmdstat=cmdstat,cmdmsg=cmdmsg)</span>
+<a id="ln-1045" name="ln-1045" href="#ln-1045"></a><span class="s1">    !$omp end critical (run_command)</span>
+<a id="ln-1046" name="ln-1046" href="#ln-1046"></a>
+<a id="ln-1047" name="ln-1047" href="#ln-1047"></a><span class="s1">    ! Explain a missing program only when the command could not be launched -- Unix</span>
+<a id="ln-1048" name="ln-1048" href="#ln-1048"></a><span class="s1">    ! cmdstat/=0 "Invalid command line", Windows cmdstat==0 but cmd.exe exit 9009 -- and</span>
+<a id="ln-1049" name="ln-1049" href="#ln-1049"></a><span class="s1">    ! only where fpm stops anyway.</span>
+<a id="ln-1050" name="ln-1050" href="#ln-1050"></a><span class="s1">    if (cmdstat /= 0 .or. (stat == 9009 .and. .not.os_is_unix() .and. .not.present(exitstat))) then</span>
+<a id="ln-1051" name="ln-1051" href="#ln-1051"></a><span class="s1">        if (command_not_found(cmd)) then</span>
+<a id="ln-1052" name="ln-1052" href="#ln-1052"></a><span class="s1">            write(*,'</span><span class="p">(</span><span class="n">a</span><span class="p">)</span><span class="s1">')'</span><span class="o">&lt;</span><span class="n">ERROR</span><span class="o">&gt;</span><span class="p">:</span><span class="n">failed</span><span class="w"> </span><span class="n">command</span><span class="w"> </span><span class="s1">'//cmd//redirect_str</span>
+<a id="ln-1053" name="ln-1053" href="#ln-1053"></a><span class="s1">            call fpm_stop(1, "Could not execute '</span><span class="s2">"//command_program(cmd)//"</span><span class="s1">': program not found on PATH."//new_line('</span><span class="n">a</span><span class="s1">')// &amp;</span>
+<a id="ln-1054" name="ln-1054" href="#ln-1054"></a><span class="s1">                "  Check that it is installed and on your PATH, or set it explicitly with"//new_line('</span><span class="n">a</span><span class="s1">')// &amp;</span>
+<a id="ln-1055" name="ln-1055" href="#ln-1055"></a><span class="s1">                "  --compiler / FPM_FC (use FPM_CC / FPM_AR for the C compiler / archiver).")</span>
+<a id="ln-1056" name="ln-1056" href="#ln-1056"></a><span class="s1">        end if</span>
+<a id="ln-1057" name="ln-1057" href="#ln-1057"></a><span class="s1">    end if</span>
+<a id="ln-1058" name="ln-1058" href="#ln-1058"></a><span class="s1">    if (cmdstat /= 0) then</span>
+<a id="ln-1059" name="ln-1059" href="#ln-1059"></a><span class="s1">        write(*,'</span><span class="p">(</span><span class="n">a</span><span class="p">)</span><span class="s1">')'</span><span class="o">&lt;</span><span class="n">ERROR</span><span class="o">&gt;</span><span class="p">:</span><span class="n">failed</span><span class="w"> </span><span class="n">command</span><span class="w"> </span><span class="s1">'//cmd//redirect_str</span>
+<a id="ln-1060" name="ln-1060" href="#ln-1060"></a><span class="s1">        call fpm_stop(1,'</span><span class="o">*</span><span class="n">run</span><span class="o">*</span><span class="p">:</span><span class="s1">'//trim(cmdmsg))</span>
+<a id="ln-1061" name="ln-1061" href="#ln-1061"></a><span class="s1">    end if</span>
+<a id="ln-1062" name="ln-1062" href="#ln-1062"></a>
+<a id="ln-1063" name="ln-1063" href="#ln-1063"></a><span class="s1">    if (verbose_local.and.present(redirect)) then</span>
+<a id="ln-1064" name="ln-1064" href="#ln-1064"></a>
+<a id="ln-1065" name="ln-1065" href="#ln-1065"></a><span class="s1">        open(newunit=fh,file=redirect,status='</span><span class="n">old</span><span class="s1">',iostat=iostat,iomsg=iomsg)</span>
+<a id="ln-1066" name="ln-1066" href="#ln-1066"></a><span class="s1">        if(iostat == 0)then</span>
+<a id="ln-1067" name="ln-1067" href="#ln-1067"></a><span class="s1">           do</span>
+<a id="ln-1068" name="ln-1068" href="#ln-1068"></a><span class="s1">               call getline(fh, line, iostat)</span>
+<a id="ln-1069" name="ln-1069" href="#ln-1069"></a><span class="s1">               if (iostat /= 0) exit</span>
+<a id="ln-1070" name="ln-1070" href="#ln-1070"></a><span class="s1">               write(*,'</span><span class="p">(</span><span class="n">A</span><span class="p">)</span><span class="s1">') trim(line)</span>
+<a id="ln-1071" name="ln-1071" href="#ln-1071"></a><span class="s1">           end do</span>
+<a id="ln-1072" name="ln-1072" href="#ln-1072"></a><span class="s1">        else</span>
+<a id="ln-1073" name="ln-1073" href="#ln-1073"></a><span class="s1">           write(*,'</span><span class="p">(</span><span class="n">A</span><span class="p">)</span><span class="s1">') trim(iomsg)</span>
+<a id="ln-1074" name="ln-1074" href="#ln-1074"></a><span class="s1">        endif</span>
+<a id="ln-1075" name="ln-1075" href="#ln-1075"></a>
+<a id="ln-1076" name="ln-1076" href="#ln-1076"></a><span class="s1">        close(fh)</span>
+<a id="ln-1077" name="ln-1077" href="#ln-1077"></a>
+<a id="ln-1078" name="ln-1078" href="#ln-1078"></a><span class="s1">    end if</span>
+<a id="ln-1079" name="ln-1079" href="#ln-1079"></a>
+<a id="ln-1080" name="ln-1080" href="#ln-1080"></a><span class="s1">    if (present(exitstat)) then</span>
+<a id="ln-1081" name="ln-1081" href="#ln-1081"></a><span class="s1">        exitstat = stat</span>
+<a id="ln-1082" name="ln-1082" href="#ln-1082"></a><span class="s1">    elseif (stat /= 0) then</span>
+<a id="ln-1083" name="ln-1083" href="#ln-1083"></a><span class="s1">        call fpm_stop(stat,'</span><span class="o">*</span><span class="n">run</span><span class="o">*</span><span class="p">:</span><span class="w"> </span><span class="n">Command</span><span class="w"> </span><span class="s1">'//cmd//redirect_str//'</span><span class="w"> </span><span class="n">returned</span><span class="w"> </span><span class="n">a</span><span class="w"> </span><span class="n">non</span><span class="o">-</span><span class="n">zero</span><span class="w"> </span><span class="n">status</span><span class="w"> </span><span class="n">code</span><span class="s1">')</span>
+<a id="ln-1084" name="ln-1084" href="#ln-1084"></a><span class="s1">    end if</span>
+<a id="ln-1085" name="ln-1085" href="#ln-1085"></a>
+<a id="ln-1086" name="ln-1086" href="#ln-1086"></a><span class="s1">end subroutine run</span>
+<a id="ln-1087" name="ln-1087" href="#ln-1087"></a>
+<a id="ln-1088" name="ln-1088" href="#ln-1088"></a><span class="s1">!&gt; Return the program invoked by a command line (its first shell token), OS-aware.</span>
+<a id="ln-1089" name="ln-1089" href="#ln-1089"></a><span class="s1">!! Uses fpm'</span><span class="n">s</span><span class="w"> </span><span class="n">shell</span><span class="w"> </span><span class="n">lexer</span><span class="w"> </span><span class="n">so</span><span class="w"> </span><span class="n">quoted</span><span class="w"> </span><span class="n">paths</span><span class="w"> </span><span class="n">stay</span><span class="w"> </span><span class="n">intact</span><span class="w"> </span><span class="nb">and </span><span class="n">trailing</span><span class="w"> </span><span class="n">arguments</span>
+<a id="ln-1090" name="ln-1090" href="#ln-1090"></a><span class="c">!! (e.g. a wrapper's "mpifort -fc=gfortran") are dropped. Returns '' if empty.</span>
+<a id="ln-1091" name="ln-1091" href="#ln-1091"></a><span class="k">function </span><span class="n">command_program</span><span class="p">(</span><span class="n">cmd</span><span class="p">)</span><span class="w"> </span><span class="k">result</span><span class="p">(</span><span class="n">prog</span><span class="p">)</span>
+<a id="ln-1092" name="ln-1092" href="#ln-1092"></a><span class="w">    </span><span class="kt">character</span><span class="p">(</span><span class="o">*</span><span class="p">),</span><span class="w"> </span><span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">)</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">cmd</span>
+<a id="ln-1093" name="ln-1093" href="#ln-1093"></a><span class="w">    </span><span class="kt">character</span><span class="p">(:),</span><span class="w"> </span><span class="k">allocatable</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">prog</span>
+<a id="ln-1094" name="ln-1094" href="#ln-1094"></a><span class="w">    </span><span class="kt">character</span><span class="p">(</span><span class="nb">len</span><span class="o">=</span><span class="p">:),</span><span class="w"> </span><span class="k">allocatable</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">tokens</span><span class="p">(:)</span>
+<a id="ln-1095" name="ln-1095" href="#ln-1095"></a>
+<a id="ln-1096" name="ln-1096" href="#ln-1096"></a><span class="w">    </span><span class="n">prog</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">''</span>
+<a id="ln-1097" name="ln-1097" href="#ln-1097"></a><span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">os_is_unix</span><span class="p">())</span><span class="w"> </span><span class="k">then</span>
+<a id="ln-1098" name="ln-1098" href="#ln-1098"></a><span class="k">        </span><span class="n">tokens</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">sh_split</span><span class="p">(</span><span class="n">cmd</span><span class="p">)</span><span class="w">               </span><span class="c">! POSIX lexer</span>
+<a id="ln-1099" name="ln-1099" href="#ln-1099"></a><span class="w">    </span><span class="k">else</span>
+<a id="ln-1100" name="ln-1100" href="#ln-1100"></a><span class="k">        </span><span class="n">tokens</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">ms_split</span><span class="p">(</span><span class="n">cmd</span><span class="p">,</span><span class="w"> </span><span class="n">ucrt</span><span class="o">=</span><span class="p">.</span><span class="n">true</span><span class="p">.)</span><span class="w">  </span><span class="c">! Windows lexer</span>
+<a id="ln-1101" name="ln-1101" href="#ln-1101"></a><span class="w">    </span><span class="k">end if</span>
+<a id="ln-1102" name="ln-1102" href="#ln-1102"></a><span class="w">    </span><span class="c">! The program is always reliably the first token. </span>
+<a id="ln-1103" name="ln-1103" href="#ln-1103"></a><span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="nb">allocated</span><span class="p">(</span><span class="n">tokens</span><span class="p">))</span><span class="w"> </span><span class="k">then</span>
+<a id="ln-1104" name="ln-1104" href="#ln-1104"></a><span class="k">        if</span><span class="w"> </span><span class="p">(</span><span class="n">size</span><span class="p">(</span><span class="n">tokens</span><span class="p">)</span><span class="w"> </span><span class="o">&gt;</span><span class="w"> </span><span class="mi">0</span><span class="p">)</span><span class="w"> </span><span class="n">prog</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">trim</span><span class="p">(</span><span class="nb">adjustl</span><span class="p">(</span><span class="n">tokens</span><span class="p">(</span><span class="mi">1</span><span class="p">)))</span>
+<a id="ln-1105" name="ln-1105" href="#ln-1105"></a><span class="w">    </span><span class="k">end if</span>
+<a id="ln-1106" name="ln-1106" href="#ln-1106"></a>
+<a id="ln-1107" name="ln-1107" href="#ln-1107"></a><span class="k">end function </span><span class="n">command_program</span>
+<a id="ln-1108" name="ln-1108" href="#ln-1108"></a>
+<a id="ln-1109" name="ln-1109" href="#ln-1109"></a><span class="c">!&gt; True when the program invoked by `cmd` cannot be located on PATH (nor as a</span>
+<a id="ln-1110" name="ln-1110" href="#ln-1110"></a><span class="c">!! direct path). Cross-platform via which()/exists().</span>
+<a id="ln-1111" name="ln-1111" href="#ln-1111"></a><span class="kt">logical </span><span class="k">function </span><span class="n">command_not_found</span><span class="p">(</span><span class="n">cmd</span><span class="p">)</span>
+<a id="ln-1112" name="ln-1112" href="#ln-1112"></a><span class="w">    </span><span class="kt">character</span><span class="p">(</span><span class="o">*</span><span class="p">),</span><span class="w"> </span><span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">)</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">cmd</span>
+<a id="ln-1113" name="ln-1113" href="#ln-1113"></a><span class="w">    </span><span class="kt">character</span><span class="p">(:),</span><span class="w"> </span><span class="k">allocatable</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">prog</span>
+<a id="ln-1114" name="ln-1114" href="#ln-1114"></a>
+<a id="ln-1115" name="ln-1115" href="#ln-1115"></a><span class="w">    </span><span class="n">command_not_found</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">.</span><span class="n">false</span><span class="p">.</span>
+<a id="ln-1116" name="ln-1116" href="#ln-1116"></a><span class="w">    </span><span class="n">prog</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">command_program</span><span class="p">(</span><span class="n">cmd</span><span class="p">)</span>
+<a id="ln-1117" name="ln-1117" href="#ln-1117"></a><span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="nb">len_trim</span><span class="p">(</span><span class="n">prog</span><span class="p">)</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="mi">0</span><span class="p">)</span><span class="w"> </span><span class="k">return</span>
+<a id="ln-1118" name="ln-1118" href="#ln-1118"></a><span class="k">    if</span><span class="w"> </span><span class="p">(</span><span class="nb">len_trim</span><span class="p">(</span><span class="n">which</span><span class="p">(</span><span class="n">prog</span><span class="p">))</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="mi">0</span><span class="w"> </span><span class="p">.</span><span class="nb">and</span><span class="p">.</span><span class="w"> </span><span class="p">.</span><span class="nb">not</span><span class="p">.</span><span class="w"> </span><span class="n">exists</span><span class="p">(</span><span class="n">prog</span><span class="p">))</span><span class="w"> </span><span class="n">command_not_found</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">.</span><span class="n">true</span><span class="p">.</span>
+<a id="ln-1119" name="ln-1119" href="#ln-1119"></a>
+<a id="ln-1120" name="ln-1120" href="#ln-1120"></a><span class="k">end function </span><span class="n">command_not_found</span>
+<a id="ln-1121" name="ln-1121" href="#ln-1121"></a>
+<a id="ln-1122" name="ln-1122" href="#ln-1122"></a><span class="k">subroutine </span><span class="n">run_argv</span><span class="p">(</span><span class="n">args</span><span class="p">,</span><span class="n">echo</span><span class="p">,</span><span class="n">exitstat</span><span class="p">,</span><span class="n">verbose</span><span class="p">,</span><span class="n">redirect</span><span class="p">)</span>
+<a id="ln-1123" name="ln-1123" href="#ln-1123"></a><span class="w">    </span><span class="k">type</span><span class="p">(</span><span class="n">string_t</span><span class="p">),</span><span class="w"> </span><span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">)</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">args</span><span class="p">(:)</span>
+<a id="ln-1124" name="ln-1124" href="#ln-1124"></a><span class="w">    </span><span class="kt">logical</span><span class="p">,</span><span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">),</span><span class="k">optional</span><span class="w">  </span><span class="kd">::</span><span class="w"> </span><span class="n">echo</span>
+<a id="ln-1125" name="ln-1125" href="#ln-1125"></a><span class="w">    </span><span class="kt">integer</span><span class="p">,</span><span class="w"> </span><span class="k">intent</span><span class="p">(</span><span class="n">out</span><span class="p">),</span><span class="k">optional</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">exitstat</span>
+<a id="ln-1126" name="ln-1126" href="#ln-1126"></a><span class="w">    </span><span class="kt">logical</span><span class="p">,</span><span class="w"> </span><span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">),</span><span class="w"> </span><span class="k">optional</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">verbose</span>
+<a id="ln-1127" name="ln-1127" href="#ln-1127"></a><span class="w">    </span><span class="kt">character</span><span class="p">(</span><span class="o">*</span><span class="p">),</span><span class="w"> </span><span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">),</span><span class="w"> </span><span class="k">optional</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">redirect</span>
+<a id="ln-1128" name="ln-1128" href="#ln-1128"></a>
+<a id="ln-1129" name="ln-1129" href="#ln-1129"></a><span class="w">    </span><span class="kt">character</span><span class="p">(:),</span><span class="w"> </span><span class="k">allocatable</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">command</span>
+<a id="ln-1130" name="ln-1130" href="#ln-1130"></a><span class="w">    </span><span class="kt">character</span><span class="p">(:),</span><span class="w"> </span><span class="k">allocatable</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">joined</span>
+<a id="ln-1131" name="ln-1131" href="#ln-1131"></a><span class="w">    </span><span class="kt">character</span><span class="p">(:),</span><span class="w"> </span><span class="k">allocatable</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">redirect_file</span>
+<a id="ln-1132" name="ln-1132" href="#ln-1132"></a><span class="w">    </span><span class="kt">character</span><span class="p">(:),</span><span class="w"> </span><span class="k">allocatable</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">line</span>
+<a id="ln-1133" name="ln-1133" href="#ln-1133"></a><span class="w">    </span><span class="kt">character</span><span class="p">(</span><span class="nb">len</span><span class="o">=</span><span class="mi">256</span><span class="p">)</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">iomsg</span>
+<a id="ln-1134" name="ln-1134" href="#ln-1134"></a><span class="w">    </span><span class="kt">logical</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">echo_local</span><span class="p">,</span><span class="w"> </span><span class="n">verbose_local</span>
+<a id="ln-1135" name="ln-1135" href="#ln-1135"></a><span class="w">    </span><span class="kt">integer</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="nb">stat</span><span class="p">,</span><span class="w"> </span><span class="n">fh</span><span class="p">,</span><span class="w"> </span><span class="n">iostat</span><span class="p">,</span><span class="w"> </span><span class="n">i</span>
+<a id="ln-1136" name="ln-1136" href="#ln-1136"></a>
+<a id="ln-1137" name="ln-1137" href="#ln-1137"></a><span class="w">    </span><span class="n">command</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">string_cat</span><span class="p">(</span><span class="n">args</span><span class="p">,</span><span class="w"> </span><span class="s2">" "</span><span class="p">)</span>
+<a id="ln-1138" name="ln-1138" href="#ln-1138"></a>
+<a id="ln-1139" name="ln-1139" href="#ln-1139"></a><span class="w">    </span><span class="k">if</span><span class="p">(</span><span class="nb">present</span><span class="p">(</span><span class="n">echo</span><span class="p">))</span><span class="k">then</span>
+<a id="ln-1140" name="ln-1140" href="#ln-1140"></a><span class="k">       </span><span class="n">echo_local</span><span class="o">=</span><span class="n">echo</span>
+<a id="ln-1141" name="ln-1141" href="#ln-1141"></a><span class="w">    </span><span class="k">else</span>
+<a id="ln-1142" name="ln-1142" href="#ln-1142"></a><span class="k">       </span><span class="n">echo_local</span><span class="o">=</span><span class="p">.</span><span class="n">true</span><span class="p">.</span>
+<a id="ln-1143" name="ln-1143" href="#ln-1143"></a><span class="w">    </span><span class="k">end if</span>
+<a id="ln-1144" name="ln-1144" href="#ln-1144"></a>
+<a id="ln-1145" name="ln-1145" href="#ln-1145"></a><span class="k">    if</span><span class="p">(</span><span class="nb">present</span><span class="p">(</span><span class="n">verbose</span><span class="p">))</span><span class="k">then</span>
+<a id="ln-1146" name="ln-1146" href="#ln-1146"></a><span class="k">        </span><span class="n">verbose_local</span><span class="o">=</span><span class="n">verbose</span>
+<a id="ln-1147" name="ln-1147" href="#ln-1147"></a><span class="w">    </span><span class="k">else</span>
+<a id="ln-1148" name="ln-1148" href="#ln-1148"></a><span class="k">        </span><span class="n">verbose_local</span><span class="o">=</span><span class="p">.</span><span class="n">true</span><span class="p">.</span>
+<a id="ln-1149" name="ln-1149" href="#ln-1149"></a><span class="w">    </span><span class="k">end if</span>
+<a id="ln-1150" name="ln-1150" href="#ln-1150"></a>
+<a id="ln-1151" name="ln-1151" href="#ln-1151"></a><span class="k">    if</span><span class="w"> </span><span class="p">(</span><span class="nb">present</span><span class="p">(</span><span class="n">redirect</span><span class="p">))</span><span class="w"> </span><span class="k">then</span>
+<a id="ln-1152" name="ln-1152" href="#ln-1152"></a><span class="k">        </span><span class="n">redirect_file</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">redirect</span>
+<a id="ln-1153" name="ln-1153" href="#ln-1153"></a><span class="w">    </span><span class="k">else</span>
+<a id="ln-1154" name="ln-1154" href="#ln-1154"></a><span class="k">        if</span><span class="p">(</span><span class="n">verbose_local</span><span class="p">)</span><span class="k">then</span>
+<a id="ln-1155" name="ln-1155" href="#ln-1155"></a><span class="k">            </span><span class="n">redirect_file</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">""</span>
+<a id="ln-1156" name="ln-1156" href="#ln-1156"></a><span class="w">        </span><span class="k">else</span>
+<a id="ln-1157" name="ln-1157" href="#ln-1157"></a><span class="k">            if</span><span class="w"> </span><span class="p">(</span><span class="n">os_is_unix</span><span class="p">())</span><span class="w"> </span><span class="k">then</span>
+<a id="ln-1158" name="ln-1158" href="#ln-1158"></a><span class="k">                </span><span class="n">redirect_file</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">"/dev/null"</span>
+<a id="ln-1159" name="ln-1159" href="#ln-1159"></a><span class="w">            </span><span class="k">else</span>
+<a id="ln-1160" name="ln-1160" href="#ln-1160"></a><span class="k">                </span><span class="n">redirect_file</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">"NUL"</span>
+<a id="ln-1161" name="ln-1161" href="#ln-1161"></a><span class="w">            </span><span class="k">end if</span>
+<a id="ln-1162" name="ln-1162" href="#ln-1162"></a><span class="k">        end if</span>
+<a id="ln-1163" name="ln-1163" href="#ln-1163"></a><span class="k">    end if</span>
+<a id="ln-1164" name="ln-1164" href="#ln-1164"></a>
+<a id="ln-1165" name="ln-1165" href="#ln-1165"></a><span class="k">    if</span><span class="p">(</span><span class="n">echo_local</span><span class="p">)</span><span class="w"> </span><span class="k">print</span><span class="w"> </span><span class="o">*</span><span class="p">,</span><span class="w"> </span><span class="s1">'+ '</span><span class="p">,</span><span class="w"> </span><span class="n">command</span>
+<a id="ln-1166" name="ln-1166" href="#ln-1166"></a>
+<a id="ln-1167" name="ln-1167" href="#ln-1167"></a><span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">size</span><span class="p">(</span><span class="n">args</span><span class="p">)</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="mi">1</span><span class="p">)</span><span class="w"> </span><span class="k">then</span>
+<a id="ln-1168" name="ln-1168" href="#ln-1168"></a><span class="k">        </span><span class="nb">stat</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span>
+<a id="ln-1169" name="ln-1169" href="#ln-1169"></a><span class="cp">#ifndef FPM_BOOTSTRAP</span>
+<a id="ln-1170" name="ln-1170" href="#ln-1170"></a><span class="w">    </span><span class="k">else</span>
+<a id="ln-1171" name="ln-1171" href="#ln-1171"></a><span class="k">        </span><span class="n">joined</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">""</span>
+<a id="ln-1172" name="ln-1172" href="#ln-1172"></a><span class="w">        </span><span class="k">do </span><span class="n">i</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="n">size</span><span class="p">(</span><span class="n">args</span><span class="p">)</span>
+<a id="ln-1173" name="ln-1173" href="#ln-1173"></a><span class="w">            </span><span class="n">joined</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">joined</span><span class="o">//</span><span class="n">args</span><span class="p">(</span><span class="n">i</span><span class="p">)%</span><span class="n">s</span><span class="o">//</span><span class="nb">c_null_char</span>
+<a id="ln-1174" name="ln-1174" href="#ln-1174"></a><span class="nb">        </span><span class="k">end do</span>
+<a id="ln-1175" name="ln-1175" href="#ln-1175"></a><span class="k">        </span><span class="nb">stat</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">c_run_argv</span><span class="p">(</span><span class="n">joined</span><span class="o">//</span><span class="nb">c_null_char</span><span class="p">,</span><span class="w"> </span><span class="nb">int</span><span class="p">(</span><span class="n">size</span><span class="p">(</span><span class="n">args</span><span class="p">),</span><span class="w"> </span><span class="kt">c_int</span><span class="p">),</span><span class="w"> </span><span class="p">&amp;</span>
+<a id="ln-1176" name="ln-1176" href="#ln-1176"></a><span class="w">            </span><span class="n">redirect_file</span><span class="o">//</span><span class="nb">c_null_char</span><span class="p">)</span>
+<a id="ln-1177" name="ln-1177" href="#ln-1177"></a><span class="cp">#else</span>
+<a id="ln-1178" name="ln-1178" href="#ln-1178"></a><span class="w">    </span><span class="k">else</span>
+<a id="ln-1179" name="ln-1179" href="#ln-1179"></a><span class="k">        call </span><span class="n">run</span><span class="p">(</span><span class="n">command</span><span class="p">,</span><span class="w"> </span><span class="n">echo</span><span class="o">=</span><span class="p">.</span><span class="n">false</span><span class="p">.,</span><span class="w"> </span><span class="n">verbose</span><span class="o">=</span><span class="n">verbose_local</span><span class="p">,</span><span class="w"> </span><span class="n">redirect</span><span class="o">=</span><span class="n">redirect_file</span><span class="p">,</span><span class="w"> </span><span class="n">exitstat</span><span class="o">=</span><span class="nb">stat</span><span class="p">)</span>
+<a id="ln-1180" name="ln-1180" href="#ln-1180"></a><span class="cp">#endif</span>
+<a id="ln-1181" name="ln-1181" href="#ln-1181"></a><span class="w">    </span><span class="k">end if</span>
+<a id="ln-1182" name="ln-1182" href="#ln-1182"></a>
+<a id="ln-1183" name="ln-1183" href="#ln-1183"></a><span class="w">    </span><span class="c">! Fall back to the shell if the argv spawn was unavailable or failed (stat &lt; 0).</span>
+<a id="ln-1184" name="ln-1184" href="#ln-1184"></a><span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="nb">stat</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="mi">0</span><span class="p">)</span><span class="w"> </span><span class="k">then</span>
+<a id="ln-1185" name="ln-1185" href="#ln-1185"></a><span class="k">        call </span><span class="n">run</span><span class="p">(</span><span class="n">command</span><span class="p">,</span><span class="w"> </span><span class="n">echo</span><span class="o">=</span><span class="p">.</span><span class="n">false</span><span class="p">.,</span><span class="w"> </span><span class="n">verbose</span><span class="o">=</span><span class="n">verbose_local</span><span class="p">,</span><span class="w"> </span><span class="n">redirect</span><span class="o">=</span><span class="n">redirect_file</span><span class="p">,</span><span class="w"> </span><span class="n">exitstat</span><span class="o">=</span><span class="nb">stat</span><span class="p">)</span>
+<a id="ln-1186" name="ln-1186" href="#ln-1186"></a><span class="w">    </span><span class="k">end if</span>
+<a id="ln-1187" name="ln-1187" href="#ln-1187"></a>
+<a id="ln-1188" name="ln-1188" href="#ln-1188"></a><span class="w">    </span><span class="c">! Some posix_spawnp implementations start the child anyway and report a</span>
+<a id="ln-1189" name="ln-1189" href="#ln-1189"></a><span class="w">    </span><span class="c">! missing program only as its exit status 127.</span>
+<a id="ln-1190" name="ln-1190" href="#ln-1190"></a><span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="nb">stat</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="mi">127</span><span class="w"> </span><span class="p">.</span><span class="nb">and</span><span class="p">.</span><span class="w"> </span><span class="n">os_is_unix</span><span class="p">())</span><span class="w"> </span><span class="k">then</span>
+<a id="ln-1191" name="ln-1191" href="#ln-1191"></a><span class="k">        if</span><span class="w"> </span><span class="p">(</span><span class="n">command_not_found</span><span class="p">(</span><span class="n">command</span><span class="p">))</span><span class="w"> </span><span class="k">then</span>
+<a id="ln-1192" name="ln-1192" href="#ln-1192"></a><span class="k">            write</span><span class="p">(</span><span class="o">*</span><span class="p">,</span><span class="s1">'(a)'</span><span class="p">)</span><span class="s1">'&lt;ERROR&gt;:failed command '</span><span class="o">//</span><span class="n">command</span>
+<a id="ln-1193" name="ln-1193" href="#ln-1193"></a><span class="w">            </span><span class="k">call </span><span class="n">fpm_stop</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="s2">"Could not execute '"</span><span class="o">//</span><span class="n">command_program</span><span class="p">(</span><span class="n">command</span><span class="p">)</span><span class="o">//</span><span class="s2">"': program not found on PATH."</span><span class="o">//</span><span class="nb">new_line</span><span class="p">(</span><span class="s1">'a'</span><span class="p">)</span><span class="o">//</span><span class="w"> </span><span class="p">&amp;</span>
+<a id="ln-1194" name="ln-1194" href="#ln-1194"></a><span class="w">                </span><span class="s2">"  Check that it is installed and on your PATH, or set it explicitly with"</span><span class="o">//</span><span class="nb">new_line</span><span class="p">(</span><span class="s1">'a'</span><span class="p">)</span><span class="o">//</span><span class="w"> </span><span class="p">&amp;</span>
+<a id="ln-1195" name="ln-1195" href="#ln-1195"></a><span class="w">                </span><span class="s2">"  --compiler / FPM_FC (use FPM_CC / FPM_AR for the C compiler / archiver)."</span><span class="p">)</span>
+<a id="ln-1196" name="ln-1196" href="#ln-1196"></a><span class="w">        </span><span class="k">end if</span>
+<a id="ln-1197" name="ln-1197" href="#ln-1197"></a><span class="k">    end if</span>
+<a id="ln-1198" name="ln-1198" href="#ln-1198"></a>
+<a id="ln-1199" name="ln-1199" href="#ln-1199"></a><span class="k">    if</span><span class="w"> </span><span class="p">(</span><span class="n">verbose_local</span><span class="p">.</span><span class="nb">and</span><span class="p">.</span><span class="nb">present</span><span class="p">(</span><span class="n">redirect</span><span class="p">))</span><span class="w"> </span><span class="k">then</span>
+<a id="ln-1200" name="ln-1200" href="#ln-1200"></a>
+<a id="ln-1201" name="ln-1201" href="#ln-1201"></a><span class="k">        open</span><span class="p">(</span><span class="n">newunit</span><span class="o">=</span><span class="n">fh</span><span class="p">,</span><span class="k">file</span><span class="o">=</span><span class="n">redirect</span><span class="p">,</span><span class="n">status</span><span class="o">=</span><span class="s1">'old'</span><span class="p">,</span><span class="n">iostat</span><span class="o">=</span><span class="n">iostat</span><span class="p">,</span><span class="n">iomsg</span><span class="o">=</span><span class="n">iomsg</span><span class="p">)</span>
+<a id="ln-1202" name="ln-1202" href="#ln-1202"></a><span class="w">        </span><span class="k">if</span><span class="p">(</span><span class="n">iostat</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="mi">0</span><span class="p">)</span><span class="k">then</span>
+<a id="ln-1203" name="ln-1203" href="#ln-1203"></a><span class="k">           do</span>
+<a id="ln-1204" name="ln-1204" href="#ln-1204"></a><span class="k">               call </span><span class="n">getline</span><span class="p">(</span><span class="n">fh</span><span class="p">,</span><span class="w"> </span><span class="n">line</span><span class="p">,</span><span class="w"> </span><span class="n">iostat</span><span class="p">)</span>
+<a id="ln-1205" name="ln-1205" href="#ln-1205"></a><span class="w">               </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">iostat</span><span class="w"> </span><span class="o">/=</span><span class="w"> </span><span class="mi">0</span><span class="p">)</span><span class="w"> </span><span class="k">exit</span>
+<a id="ln-1206" name="ln-1206" href="#ln-1206"></a><span class="k">               write</span><span class="p">(</span><span class="o">*</span><span class="p">,</span><span class="s1">'(A)'</span><span class="p">)</span><span class="w"> </span><span class="nb">trim</span><span class="p">(</span><span class="n">line</span><span class="p">)</span>
+<a id="ln-1207" name="ln-1207" href="#ln-1207"></a><span class="w">           </span><span class="k">end do</span>
+<a id="ln-1208" name="ln-1208" href="#ln-1208"></a><span class="k">        else</span>
+<a id="ln-1209" name="ln-1209" href="#ln-1209"></a><span class="k">           write</span><span class="p">(</span><span class="o">*</span><span class="p">,</span><span class="s1">'(A)'</span><span class="p">)</span><span class="w"> </span><span class="nb">trim</span><span class="p">(</span><span class="n">iomsg</span><span class="p">)</span>
+<a id="ln-1210" name="ln-1210" href="#ln-1210"></a><span class="w">        </span><span class="k">endif</span>
+<a id="ln-1211" name="ln-1211" href="#ln-1211"></a>
+<a id="ln-1212" name="ln-1212" href="#ln-1212"></a><span class="k">        close</span><span class="p">(</span><span class="n">fh</span><span class="p">)</span>
+<a id="ln-1213" name="ln-1213" href="#ln-1213"></a>
+<a id="ln-1214" name="ln-1214" href="#ln-1214"></a><span class="w">    </span><span class="k">end if</span>
+<a id="ln-1215" name="ln-1215" href="#ln-1215"></a>
+<a id="ln-1216" name="ln-1216" href="#ln-1216"></a><span class="k">    if</span><span class="w"> </span><span class="p">(</span><span class="nb">present</span><span class="p">(</span><span class="n">exitstat</span><span class="p">))</span><span class="w"> </span><span class="k">then</span>
+<a id="ln-1217" name="ln-1217" href="#ln-1217"></a><span class="k">        </span><span class="n">exitstat</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">stat</span>
+<a id="ln-1218" name="ln-1218" href="#ln-1218"></a><span class="nb">    </span><span class="k">elseif</span><span class="w"> </span><span class="p">(</span><span class="nb">stat</span><span class="w"> </span><span class="o">/=</span><span class="w"> </span><span class="mi">0</span><span class="p">)</span><span class="w"> </span><span class="k">then</span>
+<a id="ln-1219" name="ln-1219" href="#ln-1219"></a><span class="k">        call </span><span class="n">fpm_stop</span><span class="p">(</span><span class="nb">stat</span><span class="p">,</span><span class="s1">'*run_argv*: Command '</span><span class="o">//</span><span class="n">command</span><span class="o">//</span><span class="s1">' returned a non-zero status code'</span><span class="p">)</span>
+<a id="ln-1220" name="ln-1220" href="#ln-1220"></a><span class="w">    </span><span class="k">end if</span>
+<a id="ln-1221" name="ln-1221" href="#ln-1221"></a>
+<a id="ln-1222" name="ln-1222" href="#ln-1222"></a><span class="k">end subroutine </span><span class="n">run_argv</span>
+<a id="ln-1223" name="ln-1223" href="#ln-1223"></a>
+<a id="ln-1224" name="ln-1224" href="#ln-1224"></a><span class="c">!&gt; Delete directory using system OS remove directory commands</span>
+<a id="ln-1225" name="ln-1225" href="#ln-1225"></a><span class="k">subroutine </span><span class="n">os_delete_dir</span><span class="p">(</span><span class="n">is_unix</span><span class="p">,</span><span class="w"> </span><span class="n">dir</span><span class="p">,</span><span class="w"> </span><span class="n">echo</span><span class="p">)</span>
+<a id="ln-1226" name="ln-1226" href="#ln-1226"></a><span class="w">    </span><span class="kt">logical</span><span class="p">,</span><span class="w"> </span><span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">)</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">is_unix</span>
+<a id="ln-1227" name="ln-1227" href="#ln-1227"></a><span class="w">    </span><span class="kt">character</span><span class="p">(</span><span class="nb">len</span><span class="o">=*</span><span class="p">),</span><span class="w"> </span><span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">)</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">dir</span>
+<a id="ln-1228" name="ln-1228" href="#ln-1228"></a><span class="w">    </span><span class="kt">logical</span><span class="p">,</span><span class="w"> </span><span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">),</span><span class="w"> </span><span class="k">optional</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">echo</span>
+<a id="ln-1229" name="ln-1229" href="#ln-1229"></a>
+<a id="ln-1230" name="ln-1230" href="#ln-1230"></a><span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">is_unix</span><span class="p">)</span><span class="w"> </span><span class="k">then</span>
+<a id="ln-1231" name="ln-1231" href="#ln-1231"></a><span class="k">        call </span><span class="n">run</span><span class="p">(</span><span class="s1">'rm -rf '</span><span class="w"> </span><span class="o">//</span><span class="w"> </span><span class="n">dir</span><span class="p">,</span><span class="w"> </span><span class="n">echo</span><span class="o">=</span><span class="n">echo</span><span class="p">,</span><span class="n">verbose</span><span class="o">=</span><span class="p">.</span><span class="n">false</span><span class="p">.)</span>
+<a id="ln-1232" name="ln-1232" href="#ln-1232"></a><span class="w">    </span><span class="k">else</span>
+<a id="ln-1233" name="ln-1233" href="#ln-1233"></a><span class="k">        call </span><span class="n">run</span><span class="p">(</span><span class="s1">'rmdir /s/q '</span><span class="w"> </span><span class="o">//</span><span class="w"> </span><span class="n">dir</span><span class="p">,</span><span class="w"> </span><span class="n">echo</span><span class="o">=</span><span class="n">echo</span><span class="p">,</span><span class="n">verbose</span><span class="o">=</span><span class="p">.</span><span class="n">false</span><span class="p">.)</span>
+<a id="ln-1234" name="ln-1234" href="#ln-1234"></a><span class="w">    </span><span class="k">end if</span>
+<a id="ln-1235" name="ln-1235" href="#ln-1235"></a>
+<a id="ln-1236" name="ln-1236" href="#ln-1236"></a><span class="k">end subroutine </span><span class="n">os_delete_dir</span>
+<a id="ln-1237" name="ln-1237" href="#ln-1237"></a>
+<a id="ln-1238" name="ln-1238" href="#ln-1238"></a><span class="w">    </span><span class="c">!&gt; Determine the path prefix to the local folder. Used for installation, registry etc.</span>
+<a id="ln-1239" name="ln-1239" href="#ln-1239"></a><span class="w">    </span><span class="k">function </span><span class="n">get_local_prefix</span><span class="p">(</span><span class="n">os</span><span class="p">)</span><span class="w"> </span><span class="k">result</span><span class="p">(</span><span class="n">prefix</span><span class="p">)</span>
+<a id="ln-1240" name="ln-1240" href="#ln-1240"></a><span class="w">        </span><span class="c">!&gt; Installation prefix</span>
+<a id="ln-1241" name="ln-1241" href="#ln-1241"></a><span class="w">        </span><span class="kt">character</span><span class="p">(</span><span class="nb">len</span><span class="o">=</span><span class="p">:),</span><span class="w"> </span><span class="k">allocatable</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">prefix</span>
+<a id="ln-1242" name="ln-1242" href="#ln-1242"></a><span class="w">        </span><span class="c">!&gt; Platform identifier</span>
+<a id="ln-1243" name="ln-1243" href="#ln-1243"></a><span class="w">        </span><span class="kt">integer</span><span class="p">,</span><span class="w"> </span><span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">),</span><span class="w"> </span><span class="k">optional</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">os</span>
+<a id="ln-1244" name="ln-1244" href="#ln-1244"></a>
+<a id="ln-1245" name="ln-1245" href="#ln-1245"></a><span class="w">        </span><span class="c">!&gt; Default installation prefix on Unix platforms</span>
+<a id="ln-1246" name="ln-1246" href="#ln-1246"></a><span class="w">        </span><span class="kt">character</span><span class="p">(</span><span class="nb">len</span><span class="o">=*</span><span class="p">),</span><span class="w"> </span><span class="k">parameter</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">default_prefix_unix</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">"/usr/local"</span>
+<a id="ln-1247" name="ln-1247" href="#ln-1247"></a><span class="w">        </span><span class="c">!&gt; Default installation prefix on Windows platforms</span>
+<a id="ln-1248" name="ln-1248" href="#ln-1248"></a><span class="w">        </span><span class="kt">character</span><span class="p">(</span><span class="nb">len</span><span class="o">=*</span><span class="p">),</span><span class="w"> </span><span class="k">parameter</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">default_prefix_win</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">"C:\"</span>
+<a id="ln-1249" name="ln-1249" href="#ln-1249"></a>
+<a id="ln-1250" name="ln-1250" href="#ln-1250"></a><span class="s2">        character(len=:), allocatable :: home</span>
+<a id="ln-1251" name="ln-1251" href="#ln-1251"></a>
+<a id="ln-1252" name="ln-1252" href="#ln-1252"></a><span class="s2">        if (os_is_unix(os)) then</span>
+<a id="ln-1253" name="ln-1253" href="#ln-1253"></a><span class="s2">            home=get_env('HOME','')</span>
+<a id="ln-1254" name="ln-1254" href="#ln-1254"></a><span class="s2">            if (home /= '' ) then</span>
+<a id="ln-1255" name="ln-1255" href="#ln-1255"></a><span class="s2">                prefix = join_path(home, "</span><span class="p">.</span><span class="n">local</span><span class="s2">")</span>
+<a id="ln-1256" name="ln-1256" href="#ln-1256"></a><span class="s2">            else</span>
+<a id="ln-1257" name="ln-1257" href="#ln-1257"></a><span class="s2">                prefix = default_prefix_unix</span>
+<a id="ln-1258" name="ln-1258" href="#ln-1258"></a><span class="s2">            end if</span>
+<a id="ln-1259" name="ln-1259" href="#ln-1259"></a><span class="s2">        else</span>
+<a id="ln-1260" name="ln-1260" href="#ln-1260"></a><span class="s2">            home=get_env('APPDATA','')</span>
+<a id="ln-1261" name="ln-1261" href="#ln-1261"></a><span class="s2">            if (home /= '' ) then</span>
+<a id="ln-1262" name="ln-1262" href="#ln-1262"></a><span class="s2">                prefix = join_path(home, "</span><span class="n">local</span><span class="s2">")</span>
+<a id="ln-1263" name="ln-1263" href="#ln-1263"></a><span class="s2">            else</span>
+<a id="ln-1264" name="ln-1264" href="#ln-1264"></a><span class="s2">                prefix = default_prefix_win</span>
+<a id="ln-1265" name="ln-1265" href="#ln-1265"></a><span class="s2">            end if</span>
+<a id="ln-1266" name="ln-1266" href="#ln-1266"></a><span class="s2">        end if</span>
+<a id="ln-1267" name="ln-1267" href="#ln-1267"></a>
+<a id="ln-1268" name="ln-1268" href="#ln-1268"></a><span class="s2">    end function get_local_prefix</span>
+<a id="ln-1269" name="ln-1269" href="#ln-1269"></a>
+<a id="ln-1270" name="ln-1270" href="#ln-1270"></a><span class="s2">    !&gt; Returns .true. if provided path is absolute.</span>
+<a id="ln-1271" name="ln-1271" href="#ln-1271"></a><span class="s2">    !&gt;</span>
+<a id="ln-1272" name="ln-1272" href="#ln-1272"></a><span class="s2">    !&gt; `~` not treated as absolute.</span>
+<a id="ln-1273" name="ln-1273" href="#ln-1273"></a><span class="s2">    logical function is_absolute_path(path, is_unix)</span>
+<a id="ln-1274" name="ln-1274" href="#ln-1274"></a><span class="s2">        character(len=*), intent(in) :: path</span>
+<a id="ln-1275" name="ln-1275" href="#ln-1275"></a><span class="s2">        logical, optional, intent(in):: is_unix</span>
+<a id="ln-1276" name="ln-1276" href="#ln-1276"></a><span class="s2">        character(len=*), parameter :: letters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz'</span>
+<a id="ln-1277" name="ln-1277" href="#ln-1277"></a><span class="s2">        logical :: is_unix_os</span>
+<a id="ln-1278" name="ln-1278" href="#ln-1278"></a>
+<a id="ln-1279" name="ln-1279" href="#ln-1279"></a><span class="s2">        if (present(is_unix)) then</span>
+<a id="ln-1280" name="ln-1280" href="#ln-1280"></a><span class="s2">            is_unix_os = is_unix</span>
+<a id="ln-1281" name="ln-1281" href="#ln-1281"></a><span class="s2">        else</span>
+<a id="ln-1282" name="ln-1282" href="#ln-1282"></a><span class="s2">            is_unix_os = os_is_unix()</span>
+<a id="ln-1283" name="ln-1283" href="#ln-1283"></a><span class="s2">        end if</span>
+<a id="ln-1284" name="ln-1284" href="#ln-1284"></a>
+<a id="ln-1285" name="ln-1285" href="#ln-1285"></a><span class="s2">        if (is_unix_os) then</span>
+<a id="ln-1286" name="ln-1286" href="#ln-1286"></a><span class="s2">            is_absolute_path = index(path, '/') == 1</span>
+<a id="ln-1287" name="ln-1287" href="#ln-1287"></a><span class="s2">        else</span>
+<a id="ln-1288" name="ln-1288" href="#ln-1288"></a><span class="s2">            if (len(path) &lt; 2) then</span>
+<a id="ln-1289" name="ln-1289" href="#ln-1289"></a><span class="s2">                is_absolute_path = .false.</span>
+<a id="ln-1290" name="ln-1290" href="#ln-1290"></a><span class="s2">                return</span>
+<a id="ln-1291" name="ln-1291" href="#ln-1291"></a><span class="s2">            end if</span>
+<a id="ln-1292" name="ln-1292" href="#ln-1292"></a>
+<a id="ln-1293" name="ln-1293" href="#ln-1293"></a><span class="s2">            is_absolute_path = index(letters, path(1:1)) /= 0 .and. path(2:2) == ':'</span>
+<a id="ln-1294" name="ln-1294" href="#ln-1294"></a><span class="s2">        end if</span>
 <a id="ln-1295" name="ln-1295" href="#ln-1295"></a>
-<a id="ln-1296" name="ln-1296" href="#ln-1296"></a><span class="s2">            is_absolute_path = index(letters, path(1:1)) /= 0 .and. path(2:2) == ':'</span>
-<a id="ln-1297" name="ln-1297" href="#ln-1297"></a><span class="s2">        end if</span>
-<a id="ln-1298" name="ln-1298" href="#ln-1298"></a>
-<a id="ln-1299" name="ln-1299" href="#ln-1299"></a><span class="s2">    end function is_absolute_path</span>
-<a id="ln-1300" name="ln-1300" href="#ln-1300"></a>
-<a id="ln-1301" name="ln-1301" href="#ln-1301"></a><span class="s2">    !&gt; Get the HOME directory on Unix and the %USERPROFILE% directory on Windows.</span>
-<a id="ln-1302" name="ln-1302" href="#ln-1302"></a><span class="s2">    subroutine get_home(home, error)</span>
-<a id="ln-1303" name="ln-1303" href="#ln-1303"></a><span class="s2">        character(len=:), allocatable, intent(out) :: home</span>
-<a id="ln-1304" name="ln-1304" href="#ln-1304"></a><span class="s2">        type(error_t), allocatable, intent(out) :: error</span>
-<a id="ln-1305" name="ln-1305" href="#ln-1305"></a>
-<a id="ln-1306" name="ln-1306" href="#ln-1306"></a><span class="s2">        if (os_is_unix()) then</span>
-<a id="ln-1307" name="ln-1307" href="#ln-1307"></a><span class="s2">            home=get_env('HOME','')</span>
-<a id="ln-1308" name="ln-1308" href="#ln-1308"></a><span class="s2">            if ( home == '' ) then</span>
-<a id="ln-1309" name="ln-1309" href="#ln-1309"></a><span class="s2">                call fatal_error(error, "</span><span class="n">Couldn</span><span class="s1">'t retrieve '</span><span class="n">HOME</span><span class="s1">' variable")</span>
-<a id="ln-1310" name="ln-1310" href="#ln-1310"></a><span class="s1">                return</span>
-<a id="ln-1311" name="ln-1311" href="#ln-1311"></a><span class="s1">            end if</span>
-<a id="ln-1312" name="ln-1312" href="#ln-1312"></a><span class="s1">        else</span>
-<a id="ln-1313" name="ln-1313" href="#ln-1313"></a><span class="s1">            home=get_env('</span><span class="n">USERPROFILE</span><span class="s1">','')</span>
-<a id="ln-1314" name="ln-1314" href="#ln-1314"></a><span class="s1">            if ( home == '' ) then</span>
-<a id="ln-1315" name="ln-1315" href="#ln-1315"></a><span class="s1">                call fatal_error(error, "Couldn'</span><span class="n">t</span><span class="w"> </span><span class="n">retrieve</span><span class="w"> </span><span class="s1">'%USERPROFILE%'</span><span class="w"> </span><span class="n">variable</span><span class="s2">")</span>
-<a id="ln-1316" name="ln-1316" href="#ln-1316"></a><span class="s2">                return</span>
-<a id="ln-1317" name="ln-1317" href="#ln-1317"></a><span class="s2">            end if</span>
-<a id="ln-1318" name="ln-1318" href="#ln-1318"></a><span class="s2">        end if</span>
-<a id="ln-1319" name="ln-1319" href="#ln-1319"></a><span class="s2">    end subroutine get_home</span>
-<a id="ln-1320" name="ln-1320" href="#ln-1320"></a>
-<a id="ln-1321" name="ln-1321" href="#ln-1321"></a><span class="s2">    !&gt; Execute command line and return output as a string.</span>
-<a id="ln-1322" name="ln-1322" href="#ln-1322"></a><span class="s2">    subroutine execute_and_read_output(cmd, output, error, verbose)</span>
-<a id="ln-1323" name="ln-1323" href="#ln-1323"></a><span class="s2">        !&gt; Command to execute.</span>
-<a id="ln-1324" name="ln-1324" href="#ln-1324"></a><span class="s2">        character(len=*), intent(in) :: cmd</span>
-<a id="ln-1325" name="ln-1325" href="#ln-1325"></a><span class="s2">        !&gt; Command line output.</span>
-<a id="ln-1326" name="ln-1326" href="#ln-1326"></a><span class="s2">        character(len=:), allocatable, intent(out) :: output</span>
-<a id="ln-1327" name="ln-1327" href="#ln-1327"></a><span class="s2">        !&gt; Error to handle.</span>
-<a id="ln-1328" name="ln-1328" href="#ln-1328"></a><span class="s2">        type(error_t), allocatable, intent(out) :: error</span>
-<a id="ln-1329" name="ln-1329" href="#ln-1329"></a><span class="s2">        !&gt; Print additional information if true.</span>
-<a id="ln-1330" name="ln-1330" href="#ln-1330"></a><span class="s2">        logical, intent(in), optional :: verbose</span>
-<a id="ln-1331" name="ln-1331" href="#ln-1331"></a>
-<a id="ln-1332" name="ln-1332" href="#ln-1332"></a><span class="s2">        integer :: exitstat, unit, stat</span>
-<a id="ln-1333" name="ln-1333" href="#ln-1333"></a><span class="s2">        character(len=:), allocatable :: cmdmsg, tmp_file, output_line</span>
-<a id="ln-1334" name="ln-1334" href="#ln-1334"></a><span class="s2">        logical :: is_verbose</span>
-<a id="ln-1335" name="ln-1335" href="#ln-1335"></a>
-<a id="ln-1336" name="ln-1336" href="#ln-1336"></a><span class="s2">        if (present(verbose)) then</span>
-<a id="ln-1337" name="ln-1337" href="#ln-1337"></a><span class="s2">          is_verbose = verbose</span>
-<a id="ln-1338" name="ln-1338" href="#ln-1338"></a><span class="s2">        else</span>
-<a id="ln-1339" name="ln-1339" href="#ln-1339"></a><span class="s2">          is_verbose = .false.</span>
-<a id="ln-1340" name="ln-1340" href="#ln-1340"></a><span class="s2">        end if</span>
-<a id="ln-1341" name="ln-1341" href="#ln-1341"></a>
-<a id="ln-1342" name="ln-1342" href="#ln-1342"></a><span class="s2">        tmp_file = get_temp_filename()</span>
+<a id="ln-1296" name="ln-1296" href="#ln-1296"></a><span class="s2">    end function is_absolute_path</span>
+<a id="ln-1297" name="ln-1297" href="#ln-1297"></a>
+<a id="ln-1298" name="ln-1298" href="#ln-1298"></a><span class="s2">    !&gt; Get the HOME directory on Unix and the %USERPROFILE% directory on Windows.</span>
+<a id="ln-1299" name="ln-1299" href="#ln-1299"></a><span class="s2">    subroutine get_home(home, error)</span>
+<a id="ln-1300" name="ln-1300" href="#ln-1300"></a><span class="s2">        character(len=:), allocatable, intent(out) :: home</span>
+<a id="ln-1301" name="ln-1301" href="#ln-1301"></a><span class="s2">        type(error_t), allocatable, intent(out) :: error</span>
+<a id="ln-1302" name="ln-1302" href="#ln-1302"></a>
+<a id="ln-1303" name="ln-1303" href="#ln-1303"></a><span class="s2">        if (os_is_unix()) then</span>
+<a id="ln-1304" name="ln-1304" href="#ln-1304"></a><span class="s2">            home=get_env('HOME','')</span>
+<a id="ln-1305" name="ln-1305" href="#ln-1305"></a><span class="s2">            if ( home == '' ) then</span>
+<a id="ln-1306" name="ln-1306" href="#ln-1306"></a><span class="s2">                call fatal_error(error, "</span><span class="n">Couldn</span><span class="s1">'t retrieve '</span><span class="n">HOME</span><span class="s1">' variable")</span>
+<a id="ln-1307" name="ln-1307" href="#ln-1307"></a><span class="s1">                return</span>
+<a id="ln-1308" name="ln-1308" href="#ln-1308"></a><span class="s1">            end if</span>
+<a id="ln-1309" name="ln-1309" href="#ln-1309"></a><span class="s1">        else</span>
+<a id="ln-1310" name="ln-1310" href="#ln-1310"></a><span class="s1">            home=get_env('</span><span class="n">USERPROFILE</span><span class="s1">','')</span>
+<a id="ln-1311" name="ln-1311" href="#ln-1311"></a><span class="s1">            if ( home == '' ) then</span>
+<a id="ln-1312" name="ln-1312" href="#ln-1312"></a><span class="s1">                call fatal_error(error, "Couldn'</span><span class="n">t</span><span class="w"> </span><span class="n">retrieve</span><span class="w"> </span><span class="s1">'%USERPROFILE%'</span><span class="w"> </span><span class="n">variable</span><span class="s2">")</span>
+<a id="ln-1313" name="ln-1313" href="#ln-1313"></a><span class="s2">                return</span>
+<a id="ln-1314" name="ln-1314" href="#ln-1314"></a><span class="s2">            end if</span>
+<a id="ln-1315" name="ln-1315" href="#ln-1315"></a><span class="s2">        end if</span>
+<a id="ln-1316" name="ln-1316" href="#ln-1316"></a><span class="s2">    end subroutine get_home</span>
+<a id="ln-1317" name="ln-1317" href="#ln-1317"></a>
+<a id="ln-1318" name="ln-1318" href="#ln-1318"></a><span class="s2">    !&gt; Execute command line and return output as a string.</span>
+<a id="ln-1319" name="ln-1319" href="#ln-1319"></a><span class="s2">    subroutine execute_and_read_output(cmd, output, error, verbose)</span>
+<a id="ln-1320" name="ln-1320" href="#ln-1320"></a><span class="s2">        !&gt; Command to execute.</span>
+<a id="ln-1321" name="ln-1321" href="#ln-1321"></a><span class="s2">        character(len=*), intent(in) :: cmd</span>
+<a id="ln-1322" name="ln-1322" href="#ln-1322"></a><span class="s2">        !&gt; Command line output.</span>
+<a id="ln-1323" name="ln-1323" href="#ln-1323"></a><span class="s2">        character(len=:), allocatable, intent(out) :: output</span>
+<a id="ln-1324" name="ln-1324" href="#ln-1324"></a><span class="s2">        !&gt; Error to handle.</span>
+<a id="ln-1325" name="ln-1325" href="#ln-1325"></a><span class="s2">        type(error_t), allocatable, intent(out) :: error</span>
+<a id="ln-1326" name="ln-1326" href="#ln-1326"></a><span class="s2">        !&gt; Print additional information if true.</span>
+<a id="ln-1327" name="ln-1327" href="#ln-1327"></a><span class="s2">        logical, intent(in), optional :: verbose</span>
+<a id="ln-1328" name="ln-1328" href="#ln-1328"></a>
+<a id="ln-1329" name="ln-1329" href="#ln-1329"></a><span class="s2">        integer :: exitstat, unit, stat</span>
+<a id="ln-1330" name="ln-1330" href="#ln-1330"></a><span class="s2">        character(len=:), allocatable :: cmdmsg, tmp_file, output_line</span>
+<a id="ln-1331" name="ln-1331" href="#ln-1331"></a><span class="s2">        logical :: is_verbose</span>
+<a id="ln-1332" name="ln-1332" href="#ln-1332"></a>
+<a id="ln-1333" name="ln-1333" href="#ln-1333"></a><span class="s2">        if (present(verbose)) then</span>
+<a id="ln-1334" name="ln-1334" href="#ln-1334"></a><span class="s2">          is_verbose = verbose</span>
+<a id="ln-1335" name="ln-1335" href="#ln-1335"></a><span class="s2">        else</span>
+<a id="ln-1336" name="ln-1336" href="#ln-1336"></a><span class="s2">          is_verbose = .false.</span>
+<a id="ln-1337" name="ln-1337" href="#ln-1337"></a><span class="s2">        end if</span>
+<a id="ln-1338" name="ln-1338" href="#ln-1338"></a>
+<a id="ln-1339" name="ln-1339" href="#ln-1339"></a><span class="s2">        tmp_file = get_temp_filename()</span>
+<a id="ln-1340" name="ln-1340" href="#ln-1340"></a>
+<a id="ln-1341" name="ln-1341" href="#ln-1341"></a><span class="s2">        call run(cmd//' &gt; '//tmp_file, exitstat=exitstat, echo=is_verbose)</span>
+<a id="ln-1342" name="ln-1342" href="#ln-1342"></a><span class="s2">        if (exitstat /= 0) call fatal_error(error, '*run*: '//"</span><span class="n">Command</span><span class="w"> </span><span class="n">failed</span><span class="p">:</span><span class="w"> </span><span class="s1">'"//cmd//"'</span><span class="p">.</span><span class="w"> </span><span class="n">Message</span><span class="p">:</span><span class="w"> </span><span class="s1">'"//trim(cmdmsg)//"'</span><span class="p">.</span><span class="s2">")</span>
 <a id="ln-1343" name="ln-1343" href="#ln-1343"></a>
-<a id="ln-1344" name="ln-1344" href="#ln-1344"></a><span class="s2">        call run(cmd//' &gt; '//tmp_file, exitstat=exitstat, echo=is_verbose)</span>
-<a id="ln-1345" name="ln-1345" href="#ln-1345"></a><span class="s2">        if (exitstat /= 0) call fatal_error(error, '*run*: '//"</span><span class="n">Command</span><span class="w"> </span><span class="n">failed</span><span class="p">:</span><span class="w"> </span><span class="s1">'"//cmd//"'</span><span class="p">.</span><span class="w"> </span><span class="n">Message</span><span class="p">:</span><span class="w"> </span><span class="s1">'"//trim(cmdmsg)//"'</span><span class="p">.</span><span class="s2">")</span>
-<a id="ln-1346" name="ln-1346" href="#ln-1346"></a>
-<a id="ln-1347" name="ln-1347" href="#ln-1347"></a><span class="s2">        open(newunit=unit, file=tmp_file, action='read', status='old')</span>
-<a id="ln-1348" name="ln-1348" href="#ln-1348"></a><span class="s2">        output = ''</span>
-<a id="ln-1349" name="ln-1349" href="#ln-1349"></a><span class="s2">        do</span>
-<a id="ln-1350" name="ln-1350" href="#ln-1350"></a><span class="s2">           call getline(unit, output_line, stat)</span>
-<a id="ln-1351" name="ln-1351" href="#ln-1351"></a><span class="s2">           if (stat /= 0) exit</span>
-<a id="ln-1352" name="ln-1352" href="#ln-1352"></a><span class="s2">           output = output//output_line//' '</span>
-<a id="ln-1353" name="ln-1353" href="#ln-1353"></a><span class="s2">        end do</span>
-<a id="ln-1354" name="ln-1354" href="#ln-1354"></a><span class="s2">        if (is_verbose) print *, output</span>
-<a id="ln-1355" name="ln-1355" href="#ln-1355"></a><span class="s2">        close(unit, status='delete')</span>
-<a id="ln-1356" name="ln-1356" href="#ln-1356"></a><span class="s2">    end</span>
-<a id="ln-1357" name="ln-1357" href="#ln-1357"></a>
-<a id="ln-1358" name="ln-1358" href="#ln-1358"></a><span class="s2">    !&gt; Ensure a windows path is converted to an 8.3 DOS path if it contains spaces</span>
-<a id="ln-1359" name="ln-1359" href="#ln-1359"></a><span class="s2">    function get_dos_path(path,error)</span>
-<a id="ln-1360" name="ln-1360" href="#ln-1360"></a><span class="s2">        character(len=*), intent(in) :: path</span>
-<a id="ln-1361" name="ln-1361" href="#ln-1361"></a><span class="s2">        type(error_t), allocatable, intent(out) :: error</span>
-<a id="ln-1362" name="ln-1362" href="#ln-1362"></a><span class="s2">        character(len=:), allocatable :: get_dos_path</span>
+<a id="ln-1344" name="ln-1344" href="#ln-1344"></a><span class="s2">        open(newunit=unit, file=tmp_file, action='read', status='old')</span>
+<a id="ln-1345" name="ln-1345" href="#ln-1345"></a><span class="s2">        output = ''</span>
+<a id="ln-1346" name="ln-1346" href="#ln-1346"></a><span class="s2">        do</span>
+<a id="ln-1347" name="ln-1347" href="#ln-1347"></a><span class="s2">           call getline(unit, output_line, stat)</span>
+<a id="ln-1348" name="ln-1348" href="#ln-1348"></a><span class="s2">           if (stat /= 0) exit</span>
+<a id="ln-1349" name="ln-1349" href="#ln-1349"></a><span class="s2">           output = output//output_line//' '</span>
+<a id="ln-1350" name="ln-1350" href="#ln-1350"></a><span class="s2">        end do</span>
+<a id="ln-1351" name="ln-1351" href="#ln-1351"></a><span class="s2">        if (is_verbose) print *, output</span>
+<a id="ln-1352" name="ln-1352" href="#ln-1352"></a><span class="s2">        close(unit, status='delete')</span>
+<a id="ln-1353" name="ln-1353" href="#ln-1353"></a><span class="s2">    end</span>
+<a id="ln-1354" name="ln-1354" href="#ln-1354"></a>
+<a id="ln-1355" name="ln-1355" href="#ln-1355"></a><span class="s2">    !&gt; Ensure a windows path is converted to an 8.3 DOS path if it contains spaces</span>
+<a id="ln-1356" name="ln-1356" href="#ln-1356"></a><span class="s2">    function get_dos_path(path,error)</span>
+<a id="ln-1357" name="ln-1357" href="#ln-1357"></a><span class="s2">        character(len=*), intent(in) :: path</span>
+<a id="ln-1358" name="ln-1358" href="#ln-1358"></a><span class="s2">        type(error_t), allocatable, intent(out) :: error</span>
+<a id="ln-1359" name="ln-1359" href="#ln-1359"></a><span class="s2">        character(len=:), allocatable :: get_dos_path</span>
+<a id="ln-1360" name="ln-1360" href="#ln-1360"></a>
+<a id="ln-1361" name="ln-1361" href="#ln-1361"></a><span class="s2">        character(:), allocatable :: redirect,screen_output,line</span>
+<a id="ln-1362" name="ln-1362" href="#ln-1362"></a><span class="s2">        integer :: stat,cmdstat,iunit,last</span>
 <a id="ln-1363" name="ln-1363" href="#ln-1363"></a>
-<a id="ln-1364" name="ln-1364" href="#ln-1364"></a><span class="s2">        character(:), allocatable :: redirect,screen_output,line</span>
-<a id="ln-1365" name="ln-1365" href="#ln-1365"></a><span class="s2">        integer :: stat,cmdstat,iunit,last</span>
-<a id="ln-1366" name="ln-1366" href="#ln-1366"></a>
-<a id="ln-1367" name="ln-1367" href="#ln-1367"></a><span class="s2">        ! Non-Windows OS</span>
-<a id="ln-1368" name="ln-1368" href="#ln-1368"></a><span class="s2">        if (get_os_type()/=OS_WINDOWS) then</span>
-<a id="ln-1369" name="ln-1369" href="#ln-1369"></a><span class="s2">            get_dos_path = path</span>
-<a id="ln-1370" name="ln-1370" href="#ln-1370"></a><span class="s2">            return</span>
-<a id="ln-1371" name="ln-1371" href="#ln-1371"></a><span class="s2">        end if</span>
+<a id="ln-1364" name="ln-1364" href="#ln-1364"></a><span class="s2">        ! Non-Windows OS</span>
+<a id="ln-1365" name="ln-1365" href="#ln-1365"></a><span class="s2">        if (get_os_type()/=OS_WINDOWS) then</span>
+<a id="ln-1366" name="ln-1366" href="#ln-1366"></a><span class="s2">            get_dos_path = path</span>
+<a id="ln-1367" name="ln-1367" href="#ln-1367"></a><span class="s2">            return</span>
+<a id="ln-1368" name="ln-1368" href="#ln-1368"></a><span class="s2">        end if</span>
+<a id="ln-1369" name="ln-1369" href="#ln-1369"></a>
+<a id="ln-1370" name="ln-1370" href="#ln-1370"></a><span class="s2">        ! Trim path first</span>
+<a id="ln-1371" name="ln-1371" href="#ln-1371"></a><span class="s2">        get_dos_path = trim(path)</span>
 <a id="ln-1372" name="ln-1372" href="#ln-1372"></a>
-<a id="ln-1373" name="ln-1373" href="#ln-1373"></a><span class="s2">        ! Trim path first</span>
-<a id="ln-1374" name="ln-1374" href="#ln-1374"></a><span class="s2">        get_dos_path = trim(path)</span>
+<a id="ln-1373" name="ln-1373" href="#ln-1373"></a><span class="s2">        !&gt; No need to convert if there are no spaces</span>
+<a id="ln-1374" name="ln-1374" href="#ln-1374"></a><span class="s2">        has_spaces: if (scan(get_dos_path,' ')&gt;0) then</span>
 <a id="ln-1375" name="ln-1375" href="#ln-1375"></a>
-<a id="ln-1376" name="ln-1376" href="#ln-1376"></a><span class="s2">        !&gt; No need to convert if there are no spaces</span>
-<a id="ln-1377" name="ln-1377" href="#ln-1377"></a><span class="s2">        has_spaces: if (scan(get_dos_path,' ')&gt;0) then</span>
-<a id="ln-1378" name="ln-1378" href="#ln-1378"></a>
-<a id="ln-1379" name="ln-1379" href="#ln-1379"></a><span class="s2">            redirect = get_temp_filename()</span>
-<a id="ln-1380" name="ln-1380" href="#ln-1380"></a><span class="s2">            call execute_command_line('cmd /c for %A in ("</span><span class="s1">'//path//'</span><span class="err">"</span><span class="p">)</span><span class="w"> </span><span class="k">do</span><span class="w"> </span><span class="err">@</span><span class="n">echo</span><span class="w"> </span><span class="p">%</span><span class="err">~</span><span class="n">sA</span><span class="w"> </span><span class="o">&gt;</span><span class="s1">'//redirect//'</span><span class="w"> </span><span class="mi">2</span><span class="o">&gt;</span><span class="p">&amp;</span><span class="mi">1</span><span class="s1">',&amp;</span>
-<a id="ln-1381" name="ln-1381" href="#ln-1381"></a><span class="s1">                                      exitstat=stat,cmdstat=cmdstat)</span>
+<a id="ln-1376" name="ln-1376" href="#ln-1376"></a><span class="s2">            redirect = get_temp_filename()</span>
+<a id="ln-1377" name="ln-1377" href="#ln-1377"></a><span class="s2">            call execute_command_line('cmd /c for %A in ("</span><span class="s1">'//path//'</span><span class="err">"</span><span class="p">)</span><span class="w"> </span><span class="k">do</span><span class="w"> </span><span class="err">@</span><span class="n">echo</span><span class="w"> </span><span class="p">%</span><span class="err">~</span><span class="n">sA</span><span class="w"> </span><span class="o">&gt;</span><span class="s1">'//redirect//'</span><span class="w"> </span><span class="mi">2</span><span class="o">&gt;</span><span class="p">&amp;</span><span class="mi">1</span><span class="s1">',&amp;</span>
+<a id="ln-1378" name="ln-1378" href="#ln-1378"></a><span class="s1">                                      exitstat=stat,cmdstat=cmdstat)</span>
+<a id="ln-1379" name="ln-1379" href="#ln-1379"></a>
+<a id="ln-1380" name="ln-1380" href="#ln-1380"></a><span class="s1">            !&gt; Read screen output</span>
+<a id="ln-1381" name="ln-1381" href="#ln-1381"></a><span class="s1">            command_OK: if (cmdstat==0 .and. stat==0) then</span>
 <a id="ln-1382" name="ln-1382" href="#ln-1382"></a>
-<a id="ln-1383" name="ln-1383" href="#ln-1383"></a><span class="s1">            !&gt; Read screen output</span>
-<a id="ln-1384" name="ln-1384" href="#ln-1384"></a><span class="s1">            command_OK: if (cmdstat==0 .and. stat==0) then</span>
-<a id="ln-1385" name="ln-1385" href="#ln-1385"></a>
-<a id="ln-1386" name="ln-1386" href="#ln-1386"></a><span class="s1">                allocate(character(len=0) :: screen_output)</span>
-<a id="ln-1387" name="ln-1387" href="#ln-1387"></a><span class="s1">                open(newunit=iunit,file=redirect,status='</span><span class="n">old</span><span class="s1">',iostat=stat)</span>
-<a id="ln-1388" name="ln-1388" href="#ln-1388"></a><span class="s1">                if (stat == 0)then</span>
-<a id="ln-1389" name="ln-1389" href="#ln-1389"></a>
-<a id="ln-1390" name="ln-1390" href="#ln-1390"></a><span class="s1">                   do</span>
-<a id="ln-1391" name="ln-1391" href="#ln-1391"></a><span class="s1">                       call getline(iunit, line, stat)</span>
-<a id="ln-1392" name="ln-1392" href="#ln-1392"></a><span class="s1">                       if (stat /= 0) exit</span>
-<a id="ln-1393" name="ln-1393" href="#ln-1393"></a><span class="s1">                       screen_output = screen_output//line//'</span><span class="w"> </span><span class="s1">'</span>
-<a id="ln-1394" name="ln-1394" href="#ln-1394"></a><span class="s1">                   end do</span>
+<a id="ln-1383" name="ln-1383" href="#ln-1383"></a><span class="s1">                allocate(character(len=0) :: screen_output)</span>
+<a id="ln-1384" name="ln-1384" href="#ln-1384"></a><span class="s1">                open(newunit=iunit,file=redirect,status='</span><span class="n">old</span><span class="s1">',iostat=stat)</span>
+<a id="ln-1385" name="ln-1385" href="#ln-1385"></a><span class="s1">                if (stat == 0)then</span>
+<a id="ln-1386" name="ln-1386" href="#ln-1386"></a>
+<a id="ln-1387" name="ln-1387" href="#ln-1387"></a><span class="s1">                   do</span>
+<a id="ln-1388" name="ln-1388" href="#ln-1388"></a><span class="s1">                       call getline(iunit, line, stat)</span>
+<a id="ln-1389" name="ln-1389" href="#ln-1389"></a><span class="s1">                       if (stat /= 0) exit</span>
+<a id="ln-1390" name="ln-1390" href="#ln-1390"></a><span class="s1">                       screen_output = screen_output//line//'</span><span class="w"> </span><span class="s1">'</span>
+<a id="ln-1391" name="ln-1391" href="#ln-1391"></a><span class="s1">                   end do</span>
+<a id="ln-1392" name="ln-1392" href="#ln-1392"></a>
+<a id="ln-1393" name="ln-1393" href="#ln-1393"></a><span class="s1">                   ! Close and delete file</span>
+<a id="ln-1394" name="ln-1394" href="#ln-1394"></a><span class="s1">                   close(iunit,status='</span><span class="n">delete</span><span class="s1">')</span>
 <a id="ln-1395" name="ln-1395" href="#ln-1395"></a>
-<a id="ln-1396" name="ln-1396" href="#ln-1396"></a><span class="s1">                   ! Close and delete file</span>
-<a id="ln-1397" name="ln-1397" href="#ln-1397"></a><span class="s1">                   close(iunit,status='</span><span class="n">delete</span><span class="s1">')</span>
-<a id="ln-1398" name="ln-1398" href="#ln-1398"></a>
-<a id="ln-1399" name="ln-1399" href="#ln-1399"></a><span class="s1">                else</span>
-<a id="ln-1400" name="ln-1400" href="#ln-1400"></a><span class="s1">                   call fatal_error(error,'</span><span class="n">cannot</span><span class="w"> </span><span class="k">read </span><span class="n">temporary</span><span class="w"> </span><span class="k">file </span><span class="n">from</span><span class="w"> </span><span class="n">successful</span><span class="w"> </span><span class="n">DOS</span><span class="w"> </span><span class="n">path</span><span class="w"> </span><span class="n">evaluation</span><span class="s1">')</span>
-<a id="ln-1401" name="ln-1401" href="#ln-1401"></a><span class="s1">                   return</span>
-<a id="ln-1402" name="ln-1402" href="#ln-1402"></a><span class="s1">                endif</span>
-<a id="ln-1403" name="ln-1403" href="#ln-1403"></a>
-<a id="ln-1404" name="ln-1404" href="#ln-1404"></a><span class="s1">            else command_OK</span>
+<a id="ln-1396" name="ln-1396" href="#ln-1396"></a><span class="s1">                else</span>
+<a id="ln-1397" name="ln-1397" href="#ln-1397"></a><span class="s1">                   call fatal_error(error,'</span><span class="n">cannot</span><span class="w"> </span><span class="k">read </span><span class="n">temporary</span><span class="w"> </span><span class="k">file </span><span class="n">from</span><span class="w"> </span><span class="n">successful</span><span class="w"> </span><span class="n">DOS</span><span class="w"> </span><span class="n">path</span><span class="w"> </span><span class="n">evaluation</span><span class="s1">')</span>
+<a id="ln-1398" name="ln-1398" href="#ln-1398"></a><span class="s1">                   return</span>
+<a id="ln-1399" name="ln-1399" href="#ln-1399"></a><span class="s1">                endif</span>
+<a id="ln-1400" name="ln-1400" href="#ln-1400"></a>
+<a id="ln-1401" name="ln-1401" href="#ln-1401"></a><span class="s1">            else command_OK</span>
+<a id="ln-1402" name="ln-1402" href="#ln-1402"></a>
+<a id="ln-1403" name="ln-1403" href="#ln-1403"></a><span class="s1">                call fatal_error(error,'</span><span class="n">unsuccessful</span><span class="w"> </span><span class="n">Windows</span><span class="o">-&gt;</span><span class="n">DOS</span><span class="w"> </span><span class="n">path</span><span class="w"> </span><span class="n">command</span><span class="s1">')</span>
+<a id="ln-1404" name="ln-1404" href="#ln-1404"></a><span class="s1">                return</span>
 <a id="ln-1405" name="ln-1405" href="#ln-1405"></a>
-<a id="ln-1406" name="ln-1406" href="#ln-1406"></a><span class="s1">                call fatal_error(error,'</span><span class="n">unsuccessful</span><span class="w"> </span><span class="n">Windows</span><span class="o">-&gt;</span><span class="n">DOS</span><span class="w"> </span><span class="n">path</span><span class="w"> </span><span class="n">command</span><span class="s1">')</span>
-<a id="ln-1407" name="ln-1407" href="#ln-1407"></a><span class="s1">                return</span>
-<a id="ln-1408" name="ln-1408" href="#ln-1408"></a>
-<a id="ln-1409" name="ln-1409" href="#ln-1409"></a><span class="s1">            end if command_OK</span>
-<a id="ln-1410" name="ln-1410" href="#ln-1410"></a>
-<a id="ln-1411" name="ln-1411" href="#ln-1411"></a><span class="s1">            get_dos_path = trim(adjustl(screen_output))</span>
-<a id="ln-1412" name="ln-1412" href="#ln-1412"></a>
-<a id="ln-1413" name="ln-1413" href="#ln-1413"></a><span class="s1">        endif has_spaces</span>
-<a id="ln-1414" name="ln-1414" href="#ln-1414"></a>
-<a id="ln-1415" name="ln-1415" href="#ln-1415"></a><span class="s1">        !&gt; Ensure there are no trailing slashes</span>
-<a id="ln-1416" name="ln-1416" href="#ln-1416"></a><span class="s1">        last = len_trim(get_dos_path)</span>
-<a id="ln-1417" name="ln-1417" href="#ln-1417"></a><span class="s1">        if (last&gt;1 .and. get_dos_path(last:last)=='</span><span class="o">/</span><span class="s1">' .or. get_dos_path(last:last)=='</span><span class="err">\'</span><span class="p">)</span><span class="w"> </span><span class="n">get_dos_path</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">get_dos_path</span><span class="p">(</span><span class="mi">1</span><span class="p">:</span><span class="n">last</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span>
-<a id="ln-1418" name="ln-1418" href="#ln-1418"></a>
-<a id="ln-1419" name="ln-1419" href="#ln-1419"></a><span class="w">    </span><span class="k">end function </span><span class="n">get_dos_path</span>
-<a id="ln-1420" name="ln-1420" href="#ln-1420"></a>
-<a id="ln-1421" name="ln-1421" href="#ln-1421"></a><span class="k">end module </span><span class="n">fpm_filesystem</span>
+<a id="ln-1406" name="ln-1406" href="#ln-1406"></a><span class="s1">            end if command_OK</span>
+<a id="ln-1407" name="ln-1407" href="#ln-1407"></a>
+<a id="ln-1408" name="ln-1408" href="#ln-1408"></a><span class="s1">            get_dos_path = trim(adjustl(screen_output))</span>
+<a id="ln-1409" name="ln-1409" href="#ln-1409"></a>
+<a id="ln-1410" name="ln-1410" href="#ln-1410"></a><span class="s1">        endif has_spaces</span>
+<a id="ln-1411" name="ln-1411" href="#ln-1411"></a>
+<a id="ln-1412" name="ln-1412" href="#ln-1412"></a><span class="s1">        !&gt; Ensure there are no trailing slashes</span>
+<a id="ln-1413" name="ln-1413" href="#ln-1413"></a><span class="s1">        last = len_trim(get_dos_path)</span>
+<a id="ln-1414" name="ln-1414" href="#ln-1414"></a><span class="s1">        if (last&gt;1 .and. get_dos_path(last:last)=='</span><span class="o">/</span><span class="s1">' .or. get_dos_path(last:last)=='</span><span class="err">\'</span><span class="p">)</span><span class="w"> </span><span class="n">get_dos_path</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">get_dos_path</span><span class="p">(</span><span class="mi">1</span><span class="p">:</span><span class="n">last</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span>
+<a id="ln-1415" name="ln-1415" href="#ln-1415"></a>
+<a id="ln-1416" name="ln-1416" href="#ln-1416"></a><span class="w">    </span><span class="k">end function </span><span class="n">get_dos_path</span>
+<a id="ln-1417" name="ln-1417" href="#ln-1417"></a>
+<a id="ln-1418" name="ln-1418" href="#ln-1418"></a><span class="k">end module </span><span class="n">fpm_filesystem</span>
 </pre></div>
 
       </section>
@@ -1613,7 +1610,7 @@
             <p class="text-end">
               Documentation generated by
               <a href="https://github.com/Fortran-FOSS-Programmers/ford">FORD</a>
- on 2026-10-30 11:48 +0000             </p>
+ on 2026-10-30 11:50 +0000             </p>
           </div>
         </div>
         <br>
