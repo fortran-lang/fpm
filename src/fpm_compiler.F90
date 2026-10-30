@@ -121,6 +121,8 @@ contains
     procedure :: get_install_name_flags
     !> Generate header padding flags for macOS executables
     procedure :: get_headerpad_flags
+    !> Get flag that preprocesses a source whose suffix asks for it
+    procedure :: get_preprocess_flag
     !> Compile a Fortran object
     procedure :: compile_fortran
     !> Compile a C object
@@ -261,6 +263,7 @@ character(*), parameter :: &
 character(*), parameter :: &
     flag_nag_coarray = " -coarray=single", &
     flag_nag_pic = " -PIC", &
+    flag_nag_fpp = " -fpp", &
     flag_nag_check = " -C", &
     flag_nag_debug = " -g -O0", &
     flag_nag_opt = " -O4", &
@@ -1356,6 +1359,21 @@ function get_headerpad_flags(self) result(flags)
     ! Reserve enough space in the Mach-O header to safely add two install_name or rpath later
     flags = " -Wl,-headerpad,0x200"
 end function get_headerpad_flags
+
+!>
+!> Get the flag that preprocesses a Fortran source with an upper-case `.F90` or `.F` suffix,
+!> for compilers that do not do so on their own: NAG runs `fpp` by suffix only on `.ff90`,
+!> `.ff95` and `.ff` sources
+!>
+function get_preprocess_flag(self, source_file) result(flag)
+    class(compiler_t), intent(in) :: self
+    character(len=*), intent(in) :: source_file
+    character(len=:), allocatable :: flag
+
+    flag = ""
+    if (self%id /= id_nag) return
+    if (str_ends_with(source_file, ".F90") .or. str_ends_with(source_file, ".F")) flag = flag_nag_fpp
+end function get_preprocess_flag
 
 !> Create new compiler instance
 subroutine new_compiler(self, fc, cc, cxx, echo, verbose)

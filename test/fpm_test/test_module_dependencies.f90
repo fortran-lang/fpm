@@ -9,7 +9,9 @@ module test_module_dependencies
                 FPM_UNIT_SUBMODULE, FPM_UNIT_SUBPROGRAM, FPM_UNIT_CSOURCE, &
                 FPM_UNIT_CHEADER, FPM_SCOPE_UNKNOWN, FPM_SCOPE_LIB, &
                 FPM_SCOPE_DEP, FPM_SCOPE_APP, FPM_SCOPE_TEST
-    use fpm_strings, only: string_t, operator(.in.), is_valid_module_name, is_valid_module_prefix
+    use fpm_strings, only: string_t, operator(.in.), is_valid_module_name, is_valid_module_prefix, &
+                           split, str_ends_with
+    use fpm_compiler, only: new_compiler
     use fpm, only: check_modules_for_duplicates
     implicit none
     private
@@ -67,7 +69,9 @@ contains
             & new_unittest("custom-module-prefixes", &
                             check_valid_custom_prefix, should_fail=.false.), &
             & new_unittest("custom-prefixed-module-names", &
-                            check_custom_prefixed_modules, should_fail=.false.) &
+                            check_custom_prefixed_modules, should_fail=.false.), &
+            & new_unittest("nag-preprocess-upper-case-suffix", &
+                            test_nag_preprocess_upper_case_suffix, should_fail=.false.) &
             ]
 
     end subroutine collect_module_dependencies
@@ -1126,6 +1130,84 @@ contains
         end do
 
     end subroutine check_custom_prefixed_modules
+
+    !> With NAG, a `.F90` object is compiled with `-fpp` once and a `.f90` one only when the
+    !> package flags already preprocess (`[preprocess.cpp]`); both share the output directory
+    subroutine test_nag_preprocess_upper_case_suffix(error)
+
+        !> Error handling
+        type(error_t), allocatable, intent(out) :: error
+
+        call test_package_flags(" -O0", error)
+        if (allocated(error)) return
+
+        call test_package_flags(" -fpp -O0", error)
+        if (allocated(error)) return
+
+    contains
+
+    subroutine test_package_flags(package_flags, error)
+        character(*), intent(in) :: package_flags
+        type(error_t), allocatable, intent(out) :: error
+
+        type(fpm_model_t) :: model
+        type(build_target_ptr), allocatable :: targets(:)
+        character(:), allocatable :: output_dir
+        integer :: i, expected
+
+        allocate(model%external_modules(0))
+        allocate(model%packages(1))
+        allocate(model%packages(1)%sources(2))
+
+        model%package_name = "test"
+        model%build_prefix = ""
+        model%packages(1)%name = "package1"
+        model%fortran_compile_flags = package_flags
+        call new_compiler(model%compiler, "nagfor", "gcc", "g++", echo=.false., verbose=.false.)
+
+        model%packages(1)%sources(1) = new_test_source(FPM_UNIT_MODULE,file_name="src/my_mod_1.F90", &
+                                    scope = FPM_SCOPE_LIB, &
+                                    provides=[string_t('my_mod_1')])
+
+        model%packages(1)%sources(2) = new_test_source(FPM_UNIT_MODULE,file_name="src/my_mod_2.f90", &
+                                    scope = FPM_SCOPE_LIB, &
+                                    provides=[string_t('my_mod_2')])
+
+        call targets_from_sources(targets,model,.false.,error=error)
+        if (allocated(error)) return
+
+        do i = 1, size(targets)
+            associate(target => targets(i)%ptr)
+                if (target%target_type /= FPM_TARGET_OBJECT) cycle
+
+                expected = merge(1, count_flag(package_flags, "-fpp"), &
+                                 str_ends_with(target%source%file_name, ".F90"))
+                if (count_flag(target%compile_flags, "-fpp") /= expected) then
+                    call test_failed(error,'Unexpected -fpp count for '//target%source%file_name// &
+                                           ': "'//target%compile_flags//'"')
+                    return
+                end if
+
+                if (.not.allocated(output_dir)) output_dir = target%output_dir
+                if (target%output_dir /= output_dir) then
+                    call test_failed(error,'Objects of one package in different output directories: '// &
+                                           output_dir//', '//target%output_dir)
+                    return
+                end if
+            end associate
+        end do
+
+    end subroutine test_package_flags
+
+    !> Number of times `flag` is passed in `flags`
+    integer function count_flag(flags, flag)
+        character(*), intent(in) :: flags, flag
+        character(len=:), allocatable :: tokens(:)
+        call split(flags, tokens)
+        count_flag = count(tokens == flag)
+    end function count_flag
+
+    end subroutine test_nag_preprocess_upper_case_suffix
 
     !> Helper to check if a build target is in a list of build_target_ptr
     logical function target_in(needle,haystack)

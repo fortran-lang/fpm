@@ -37,6 +37,7 @@ contains
             & new_unittest("append-clean-flags", test_append_clean_flags), &
             & new_unittest("drop-compile-options", test_drop_compile_options), &
             & new_unittest("enumerate-libraries-nag", test_enumerate_libraries_nag), &
+            & new_unittest("preprocess-flag-nag", test_preprocess_flag_nag), &
             & new_unittest("archive-drops-stale-members", test_archive_drops_stale_members), &
             & new_unittest("new-archiver-user-set", test_new_archiver_user_set)]
 
@@ -656,6 +657,41 @@ contains
         end if
 
     end subroutine test_enumerate_libraries_nag
+
+    !> NAG preprocesses only `.ff90`, `.ff95` and `.ff` by suffix: `.F90` and `.F` need `-fpp`
+    subroutine test_preprocess_flag_nag(error)
+        !> Error handling
+        type(error_t), allocatable, intent(out) :: error
+
+        type(compiler_t) :: compiler
+        character(len=*), parameter :: needs_fpp(*) = [character(len=16) :: &
+            & "src/m.F90", "app/main.F", "a.b/c.F90"]
+        character(len=*), parameter :: no_fpp(*) = [character(len=16) :: &
+            & "src/m.f90", "app/main.f", "src/F90.f90", "src/m.ff90", "src/m.c"]
+        integer :: i
+
+        call new_compiler(compiler, "nagfor", "gcc", "g++", echo=.false., verbose=.false.)
+        do i = 1, size(needs_fpp)
+            if (compiler%get_preprocess_flag(trim(needs_fpp(i))) /= " -fpp") then
+                call test_failed(error, "NAG should preprocess "//trim(needs_fpp(i)))
+                return
+            end if
+        end do
+        do i = 1, size(no_fpp)
+            if (compiler%get_preprocess_flag(trim(no_fpp(i))) /= "") then
+                call test_failed(error, "NAG should not request -fpp for "//trim(no_fpp(i)))
+                return
+            end if
+        end do
+
+        !> Other compilers preprocess `.F90` by suffix on their own
+        call new_compiler(compiler, "gfortran", "gcc", "g++", echo=.false., verbose=.false.)
+        if (compiler%get_preprocess_flag("src/m.F90") /= "") then
+            call test_failed(error, "gfortran should not need a preprocess flag for .F90")
+            return
+        end if
+
+    end subroutine test_preprocess_flag_nag
 
 
 end module test_compiler
