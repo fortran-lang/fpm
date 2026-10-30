@@ -1196,6 +1196,9 @@ subroutine run(cmd,echo,exitstat,verbose,redirect)
     call execute_command_line(cmd//redirect_str, exitstat=stat,cmdstat=cmdstat,cmdmsg=cmdmsg)
     !$omp end critical (run_command)
 
+    ! NAG returns the raw wait status, in which a program that exits with n reads n*256
+    if (os_is_unix() .and. stat > 255 .and. modulo(stat, 256) == 0) stat = stat / 256
+
     ! Explain a missing program only when the command could not be launched -- Unix
     ! cmdstat/=0 "Invalid command line", Windows cmdstat==0 but cmd.exe exit 9009 -- and
     ! only where fpm stops anyway.
