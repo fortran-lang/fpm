@@ -1,8 +1,10 @@
 module test_os
+    use, intrinsic :: iso_c_binding, only: c_int, c_ptr, c_null_ptr, c_associated
     use testsuite, only: new_unittest, unittest_t, error_t, test_failed
     use fpm_filesystem, only: join_path, mkdir, os_delete_dir, is_dir, get_local_prefix, get_home
     use fpm_environment, only: os_is_unix, get_env, set_env, delete_env
     use fpm_os, only: get_absolute_path, get_absolute_path_by_cd, get_current_directory
+    use fpm_strings, only: f_string
 
     implicit none
     private
@@ -31,7 +33,8 @@ contains
         & new_unittest('abs-path-home', abs_path_home), &
         & new_unittest('abs-path-cd-root', abs_path_home), &
         & new_unittest('abs-path-cd-home', abs_path_cd_home), &
-        & new_unittest('abs-path-cd-current', abs_path_cd_current) &
+        & new_unittest('abs-path-cd-current', abs_path_cd_current), &
+        & new_unittest('numeric-locale-stays-c', numeric_locale_stays_c) &
         ]
 
     end subroutine collect_os
@@ -302,5 +305,48 @@ contains
         endif
 
     end subroutine set_environment
+
+    !> On MinGW, libgfortran restores LC_NUMERIC after each formatted I/O statement from a
+    !> string the C runtime has already freed, so the locale drifts away from "C" (or setlocale
+    !> crashes). Check that the locale survives formatted I/O.
+    subroutine numeric_locale_stays_c(error)
+        type(error_t), allocatable, intent(out) :: error
+
+        interface
+            function setlocale(category, locale) result(name) bind(C, name="setlocale")
+                import :: c_int, c_ptr
+                integer(c_int), value :: category
+                type(c_ptr), value :: locale
+                type(c_ptr) :: name
+            end function setlocale
+        end interface
+
+        !> LC_NUMERIC in the Windows C runtime
+        integer(c_int), parameter :: lc_numeric = 4_c_int
+        character(len=16) :: buffer
+        character(len=:), allocatable :: locale
+        type(c_ptr) :: name
+        integer :: i, j
+
+        if (os_is_unix()) return
+
+        do i = 1, 100
+            write(buffer, '(i0)') i
+            read(buffer, *) j
+        end do
+
+        name = setlocale(lc_numeric, c_null_ptr)
+        if (.not. c_associated(name)) then
+            call test_failed(error, "Cannot query LC_NUMERIC")
+            return
+        end if
+
+        locale = f_string(name)
+        if (locale /= 'C') then
+            call test_failed(error, "LC_NUMERIC is '"//locale//"' after formatted I/O, expected 'C'")
+            return
+        end if
+
+    end subroutine numeric_locale_stays_c
 
 end module test_os
