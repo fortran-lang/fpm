@@ -526,6 +526,12 @@ All checks passed!</p></td>
                  <td><p>Compile a Fortran object</p></td>
                </tr>
 			   <tr>
+                 <td><a href='../proc/compile_object.html'>compile_object</a></td>
+                 <td><a href='../module/fpm_compiler.html'>fpm_compiler</a></td>
+                 <td>Subroutine</td>
+                 <td><p>Compile an object with the compiler for its language</p></td>
+               </tr>
+			   <tr>
                  <td><a href='../proc/compiler_dump.html'>compiler_dump</a></td>
                  <td><a href='../module/fpm_compiler.html'>fpm_compiler</a></td>
                  <td>Subroutine</td>
@@ -672,7 +678,7 @@ Returns an error if the variable did not exist in the first place</p><a href="..
                  <td><p>Extract dirname from path</p></td>
                </tr>
 			   <tr>
-                 <td><a href='../proc/dump_to_toml.html'>dump_to_toml</a></td>
+                 <td><a href='../proc/dump_to_toml~11.html'>dump_to_toml</a></td>
                  <td><a href='../module/fpm_git.html'>fpm_git</a></td>
                  <td>Subroutine</td>
                  <td><p>Dump dependency to toml table</p></td>
@@ -1123,7 +1129,7 @@ All checks passed!</p></td>
    contain wildcard characters.</p><a href="../proc/glob.html" class="pull-right"><emph>Read more&hellip;</emph></a></td>
                </tr>
 			   <tr>
-                 <td><a href='../proc/handle_error~3.html'>handle_error</a></td>
+                 <td><a href='../proc/handle_error.html'>handle_error</a></td>
                  <td><a href='../program/main.html'>main</a></td>
                  <td>Subroutine</td>
                  <td></td>
@@ -1159,7 +1165,7 @@ All checks passed!</p></td>
 3) If longer, package name must be followed by default separator plus at least one char</p><a href="../proc/has_valid_standard_prefix.html" class="pull-right"><emph>Read more&hellip;</emph></a></td>
                </tr>
 			   <tr>
-                 <td><a href='../proc/info.html'>info</a></td>
+                 <td><a href='../proc/info~14.html'>info</a></td>
                  <td><a href='../module/fpm_git.html'>fpm_git</a></td>
                  <td>Subroutine</td>
                  <td><p>Show information on git target</p></td>
@@ -1357,10 +1363,10 @@ Cleanup</p><a href="../proc/init_stdlib.html" class="pull-right"><emph>Read more
                  <td><p>Get file &amp; directory names in directory <code>dir</code> using iso_c_binding.</p><a href="../proc/list_files.html" class="pull-right"><emph>Read more&hellip;</emph></a></td>
                </tr>
 			   <tr>
-                 <td><a href='../proc/load_from_toml.html'>load_from_toml</a></td>
+                 <td><a href='../proc/load_from_toml~11.html'>load_from_toml</a></td>
                  <td><a href='../module/fpm_git.html'>fpm_git</a></td>
                  <td>Subroutine</td>
-                 <td><p>Read dependency from toml table (no checks made at this stage)</p><a href="../proc/load_from_toml.html" class="pull-right"><emph>Read more&hellip;</emph></a></td>
+                 <td><p>Read dependency from toml table (no checks made at this stage)</p><a href="../proc/load_from_toml~11.html" class="pull-right"><emph>Read more&hellip;</emph></a></td>
                </tr>
 			   <tr>
                  <td><a href='../proc/load_from_toml~13.html'>load_from_toml</a></td>
@@ -1741,15 +1747,15 @@ gfortran does not look into by default)</p></td>
                </tr>
 			   <tr>
                  <td><a href='../interface/resize.html'>resize</a></td>
-                 <td><a href='../module/fpm_strings.html'>fpm_strings</a></td>
-                 <td>Interface</td>
-                 <td></td>
-               </tr>
-			   <tr>
-                 <td><a href='../interface/resize~2.html'>resize</a></td>
                  <td><a href='../module/fpm_dependency.html'>fpm_dependency</a></td>
                  <td>Interface</td>
                  <td><p>Overloaded reallocation interface</p></td>
+               </tr>
+			   <tr>
+                 <td><a href='../interface/resize~2.html'>resize</a></td>
+                 <td><a href='../module/fpm_strings.html'>fpm_strings</a></td>
+                 <td>Interface</td>
+                 <td></td>
                </tr>
 			   <tr>
                  <td><a href='../proc/resize_dependency_config.html'>resize_dependency_config</a></td>
@@ -1771,16 +1777,23 @@ gfortran does not look into by default)</p></td>
  based on any modules used by the corresponding source file.</p><a href="../proc/resolve_module_dependencies.html" class="pull-right"><emph>Read more&hellip;</emph></a></td>
                </tr>
 			   <tr>
-                 <td><a href='../proc/run~2.html'>run</a></td>
+                 <td><a href='../proc/run.html'>run</a></td>
                  <td><a href='../module/fpm_filesystem.html'>fpm_filesystem</a></td>
                  <td>Subroutine</td>
-                 <td><p>Execute the specified system command. Optionally</p><a href="../proc/run~2.html" class="pull-right"><emph>Read more&hellip;</emph></a></td>
+                 <td><p>Execute the specified system command. Optionally</p><a href="../proc/run.html" class="pull-right"><emph>Read more&hellip;</emph></a></td>
                </tr>
 			   <tr>
                  <td><a href='../proc/run_argv.html'>run_argv</a></td>
                  <td><a href='../module/fpm_filesystem.html'>fpm_filesystem</a></td>
                  <td>Subroutine</td>
                  <td></td>
+               </tr>
+			   <tr>
+                 <td><a href='../proc/run_tool.html'>run_tool</a></td>
+                 <td><a href='../module/fpm_compiler.html'>fpm_compiler</a></td>
+                 <td>Subroutine</td>
+                 <td><p>Run a tool by argv spawn, which is safe from several OpenMP threads. When its
+arguments could not be split, run the shell command instead, one at a time.</p></td>
                </tr>
 			   <tr>
                  <td><a href='../proc/run_wrapper.html'>run_wrapper</a></td>
@@ -1935,6 +1948,14 @@ expanded to other characters if needed.</p></td>
                  <td><p>Tokenize a string into an array of compiler flags</p></td>
                </tr>
 			   <tr>
+                 <td><a href='../proc/tool_command.html'>tool_command</a></td>
+                 <td><a href='../module/fpm_compiler.html'>fpm_compiler</a></td>
+                 <td>Subroutine</td>
+                 <td><p>Build <code>prog [-c input] args -o output</code> both as a shell command and as an argv list,
+splitting prog and args with the OS-native lexer. tokenized is .false. when a part
+cannot be split: only the shell command can run then.</p></td>
+               </tr>
+			   <tr>
                  <td><a href='../interface/unique_programs.html'>unique_programs</a></td>
                  <td><a href='../module/fpm_manifest_feature.html'>fpm_manifest_feature</a></td>
                  <td>Interface</td>
@@ -2022,7 +2043,7 @@ in case of errors.</p></td>
             <p class="text-end">
               Documentation generated by
               <a href="https://github.com/Fortran-FOSS-Programmers/ford">FORD</a>
- on 2026-10-30 08:22 +0000             </p>
+ on 2026-10-30 11:48 +0000             </p>
           </div>
         </div>
         <br>

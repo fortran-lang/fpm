@@ -2,7 +2,7 @@ module fpm_meta_mpi
     use fpm_compiler, only: compiler_t, id_gcc, get_os_type, OS_WINDOWS, get_include_flag, &
         get_module_flag, new_compiler, compiler_name, id_f95, id_intel_classic_windows, &
         id_intel_llvm_windows, id_intel_classic_nix, id_intel_llvm_nix, id_intel_classic_mac, &
-        id_intel_llvm_unknown, id_pgi, id_nvhpc, id_cray
+        id_intel_llvm_unknown, id_pgi, id_nvhpc, id_cray, LANG_FORTRAN, LANG_C, LANG_CXX
     use fpm_filesystem, only: join_path, exists, get_dos_path, run, getline, is_dir, &
         get_temp_filename
     use fpm_os, only: get_absolute_path
@@ -31,10 +31,6 @@ module fpm_meta_mpi
 
     !> Debugging information
     logical, parameter, private :: verbose = .false.
-
-    integer, parameter, private :: LANG_FORTRAN = 1
-    integer, parameter, private :: LANG_C       = 2
-    integer, parameter, private :: LANG_CXX     = 3
 
     character(*), parameter :: LANG_NAME(*) = [character(7) :: 'Fortran','C','C++']
 

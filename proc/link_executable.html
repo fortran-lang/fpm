@@ -92,7 +92,7 @@
 
             <li class="list-inline-item" id="statements"><i class="fa fa-list-ol"></i>
               <a data-bs-toggle="tooltip" data-bs-placement="bottom" data-bs-html="true"
-                 title=" 0.4% of total for procedures.">29 statements</a>
+                 title=" 0.2% of total for procedures.">17 statements</a>
             </li>
 
             <li class="list-inline-item" id="source-file">
@@ -136,7 +136,7 @@
         <div class="list-group list-group-flush">
             <a class="list-group-item" href="../proc/link_executable.html#variable-argv~5">argv</a>
             <a class="list-group-item" href="../proc/link_executable.html#variable-command~18">command</a>
-            <a class="list-group-item" href="../proc/link_executable.html#variable-mock~5">mock</a>
+            <a class="list-group-item" href="../proc/link_executable.html#variable-mock~3">mock</a>
             <a class="list-group-item" href="../proc/link_executable.html#variable-tokenized~4">tokenized</a>
         </div>
       </div>
@@ -195,7 +195,7 @@
     <tbody>
         <tr>
             <td>
-              <span class="anchor" id="variable-self~201"></span>
+              <span class="anchor" id="variable-self~202"></span>
               class(<a href='../type/compiler_t.html'>compiler_t</a>),
             </td>
 <td>intent(in)</td>
@@ -210,7 +210,7 @@
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-output~8"></span>
+              <span class="anchor" id="variable-output~10"></span>
               character(len=*),
             </td>
 <td>intent(in)</td>
@@ -225,7 +225,7 @@
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-args~10"></span>
+              <span class="anchor" id="variable-args~12"></span>
               character(len=*),
             </td>
 <td>intent(in)</td>
@@ -240,7 +240,7 @@
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-log_file~4"></span>
+              <span class="anchor" id="variable-log_file~6"></span>
               character(len=*),
             </td>
 <td>intent(in)</td>
@@ -255,7 +255,7 @@
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-stat~65"></span>
+              <span class="anchor" id="variable-stat~67"></span>
               integer,
             </td>
 <td>intent(out)</td>
@@ -270,7 +270,7 @@
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-dry_run~7"></span>
+              <span class="anchor" id="variable-dry_run~8"></span>
               logical,
             </td>
 <td>intent(in),</td>
@@ -337,7 +337,7 @@
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-mock~5"></span>
+              <span class="anchor" id="variable-mock~3"></span>
               logical,
             </td>
               <td>public</td>
@@ -410,28 +410,10 @@
 <span class="w">    </span><span class="n">mock</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">.</span><span class="n">false</span><span class="p">.</span>
 <span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="nb">present</span><span class="p">(</span><span class="n">dry_run</span><span class="p">))</span><span class="w"> </span><span class="n">mock</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">dry_run</span>
 
-<span class="w">    </span><span class="c">! Shell fallback string plus the argv token list. Exec via argv spawn</span>
-<span class="w">    </span><span class="c">! (fork-safe under OpenMP) so the link can run in parallel; the previous</span>
-<span class="w">    </span><span class="c">! run() needed critical(run_command) only because the shell fork is not.</span>
-<span class="w">    </span><span class="n">command</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">self</span><span class="p">%</span><span class="n">fc</span><span class="w"> </span><span class="o">//</span><span class="w"> </span><span class="s2">" "</span><span class="w"> </span><span class="o">//</span><span class="w"> </span><span class="n">args</span><span class="w"> </span><span class="o">//</span><span class="w"> </span><span class="s2">" -o "</span><span class="w"> </span><span class="o">//</span><span class="w"> </span><span class="n">output</span>
-<span class="w">    </span><span class="n">tokenized</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">.</span><span class="n">true</span><span class="p">.</span>
-<span class="w">    </span><span class="k">call </span><span class="n">split_append</span><span class="p">(</span><span class="n">argv</span><span class="p">,</span><span class="w"> </span><span class="n">self</span><span class="p">%</span><span class="n">fc</span><span class="p">,</span><span class="w"> </span><span class="p">.</span><span class="n">false</span><span class="p">.,</span><span class="w"> </span><span class="p">.</span><span class="n">false</span><span class="p">.,</span><span class="w"> </span><span class="n">tokenized</span><span class="p">)</span>
-<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">tokenized</span><span class="w"> </span><span class="p">.</span><span class="nb">and</span><span class="p">.</span><span class="w"> </span><span class="nb">len_trim</span><span class="p">(</span><span class="n">args</span><span class="p">)</span><span class="w"> </span><span class="o">&gt;</span><span class="w"> </span><span class="mi">0</span><span class="p">)</span><span class="w"> </span><span class="k">call </span><span class="n">split_append</span><span class="p">(</span><span class="n">argv</span><span class="p">,</span><span class="w"> </span><span class="n">args</span><span class="p">,</span><span class="w"> </span><span class="p">.</span><span class="n">true</span><span class="p">.,</span><span class="w"> </span><span class="p">.</span><span class="n">true</span><span class="p">.,</span><span class="w"> </span><span class="n">tokenized</span><span class="p">)</span>
-<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">tokenized</span><span class="p">)</span><span class="w"> </span><span class="k">then</span>
-<span class="k">        call </span><span class="n">add_strings</span><span class="p">(</span><span class="n">argv</span><span class="p">,</span><span class="w"> </span><span class="n">string_t</span><span class="p">(</span><span class="s2">"-o"</span><span class="p">))</span>
-<span class="w">        </span><span class="k">call </span><span class="n">add_strings</span><span class="p">(</span><span class="n">argv</span><span class="p">,</span><span class="w"> </span><span class="n">string_t</span><span class="p">(</span><span class="n">output</span><span class="p">))</span>
-<span class="w">    </span><span class="k">end if</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">mock</span><span class="p">)</span><span class="w"> </span><span class="k">return</span>
 
-<span class="k">    if</span><span class="w"> </span><span class="p">(.</span><span class="nb">not</span><span class="p">.</span><span class="n">mock</span><span class="p">)</span><span class="w"> </span><span class="k">then</span>
-<span class="k">        if</span><span class="w"> </span><span class="p">(</span><span class="n">tokenized</span><span class="p">)</span><span class="w"> </span><span class="k">then</span>
-<span class="k">            call </span><span class="n">run_argv</span><span class="p">(</span><span class="n">argv</span><span class="p">,</span><span class="w"> </span><span class="n">echo</span><span class="o">=</span><span class="n">self</span><span class="p">%</span><span class="n">echo</span><span class="p">,</span><span class="w"> </span><span class="n">verbose</span><span class="o">=</span><span class="n">self</span><span class="p">%</span><span class="n">verbose</span><span class="p">,</span><span class="w"> </span><span class="n">redirect</span><span class="o">=</span><span class="n">log_file</span><span class="p">,</span><span class="w"> </span><span class="n">exitstat</span><span class="o">=</span><span class="nb">stat</span><span class="p">)</span>
-<span class="w">        </span><span class="k">else</span>
-<span class="w">            </span><span class="c">! Tokenization failed; serialize the shell fork (not concurrency-safe).</span>
-<span class="w">            </span><span class="c">!$omp critical (run_command)</span>
-<span class="w">            </span><span class="k">call </span><span class="n">run</span><span class="p">(</span><span class="n">command</span><span class="p">,</span><span class="w"> </span><span class="n">echo</span><span class="o">=</span><span class="n">self</span><span class="p">%</span><span class="n">echo</span><span class="p">,</span><span class="w"> </span><span class="n">verbose</span><span class="o">=</span><span class="n">self</span><span class="p">%</span><span class="n">verbose</span><span class="p">,</span><span class="w"> </span><span class="n">redirect</span><span class="o">=</span><span class="n">log_file</span><span class="p">,</span><span class="w"> </span><span class="n">exitstat</span><span class="o">=</span><span class="nb">stat</span><span class="p">)</span>
-<span class="w">            </span><span class="c">!$omp end critical (run_command)</span>
-<span class="w">        </span><span class="k">end if</span>
-<span class="k">    end if</span>
+<span class="k">    call </span><span class="n">tool_command</span><span class="p">(</span><span class="n">self</span><span class="p">%</span><span class="n">fc</span><span class="p">,</span><span class="w"> </span><span class="n">args</span><span class="p">,</span><span class="w"> </span><span class="n">output</span><span class="p">,</span><span class="w"> </span><span class="n">command</span><span class="p">,</span><span class="w"> </span><span class="n">argv</span><span class="p">,</span><span class="w"> </span><span class="n">tokenized</span><span class="p">)</span>
+<span class="w">    </span><span class="k">call </span><span class="n">run_tool</span><span class="p">(</span><span class="n">command</span><span class="p">,</span><span class="w"> </span><span class="n">argv</span><span class="p">,</span><span class="w"> </span><span class="n">tokenized</span><span class="p">,</span><span class="w"> </span><span class="n">self</span><span class="p">%</span><span class="n">echo</span><span class="p">,</span><span class="w"> </span><span class="n">self</span><span class="p">%</span><span class="n">verbose</span><span class="p">,</span><span class="w"> </span><span class="n">log_file</span><span class="p">,</span><span class="w"> </span><span class="nb">stat</span><span class="p">)</span>
 
 <span class="k">end subroutine </span><span class="n">link_executable</span>
 </pre></div>
@@ -457,7 +439,7 @@
             <p class="text-end">
               Documentation generated by
               <a href="https://github.com/Fortran-FOSS-Programmers/ford">FORD</a>
- on 2026-10-30 08:22 +0000             </p>
+ on 2026-10-30 11:48 +0000             </p>
           </div>
         </div>
         <br>

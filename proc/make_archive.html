@@ -92,7 +92,7 @@
 
             <li class="list-inline-item" id="statements"><i class="fa fa-list-ol"></i>
               <a data-bs-toggle="tooltip" data-bs-placement="bottom" data-bs-html="true"
-                 title=" 0.8% of total for procedures.">66 statements</a>
+                 title=" 0.8% of total for procedures.">62 statements</a>
             </li>
 
             <li class="list-inline-item" id="source-file">
@@ -137,7 +137,7 @@
             <a class="list-group-item" href="../proc/make_archive.html#variable-argv~7">argv</a>
             <a class="list-group-item" href="../proc/make_archive.html#variable-command~20">command</a>
             <a class="list-group-item" href="../proc/make_archive.html#variable-i~158">i</a>
-            <a class="list-group-item" href="../proc/make_archive.html#variable-mock~7">mock</a>
+            <a class="list-group-item" href="../proc/make_archive.html#variable-mock~5">mock</a>
             <a class="list-group-item" href="../proc/make_archive.html#variable-tokenized~6">tokenized</a>
         </div>
       </div>
@@ -213,7 +213,7 @@ see issue #707, #708 and #808.</p>
     <tbody>
         <tr>
             <td>
-              <span class="anchor" id="variable-self~203"></span>
+              <span class="anchor" id="variable-self~204"></span>
               class(<a href='../type/archiver_t.html'>archiver_t</a>),
             </td>
 <td>intent(in)</td>
@@ -228,7 +228,7 @@ see issue #707, #708 and #808.</p>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-output~10"></span>
+              <span class="anchor" id="variable-output~12"></span>
               character(len=*),
             </td>
 <td>intent(in)</td>
@@ -243,7 +243,7 @@ see issue #707, #708 and #808.</p>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-args~12"></span>
+              <span class="anchor" id="variable-args~14"></span>
               type(<a href='../type/string_t.html'>string_t</a>),
             </td>
 <td>intent(in)</td>
@@ -258,7 +258,7 @@ see issue #707, #708 and #808.</p>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-log_file~6"></span>
+              <span class="anchor" id="variable-log_file~8"></span>
               character(len=*),
             </td>
 <td>intent(in)</td>
@@ -273,7 +273,7 @@ see issue #707, #708 and #808.</p>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-stat~67"></span>
+              <span class="anchor" id="variable-stat~69"></span>
               integer,
             </td>
 <td>intent(out)</td>
@@ -288,7 +288,7 @@ see issue #707, #708 and #808.</p>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-dry_run~9"></span>
+              <span class="anchor" id="variable-dry_run~10"></span>
               logical,
             </td>
 <td>intent(in),</td>
@@ -372,7 +372,7 @@ see issue #707, #708 and #808.</p>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-mock~7"></span>
+              <span class="anchor" id="variable-mock~5"></span>
               logical,
             </td>
               <td>public</td>
@@ -453,7 +453,7 @@ see issue #707, #708 and #808.</p>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-stat~68"></span>
+              <span class="anchor" id="variable-stat~70"></span>
               integer,
             </td>
 <td>intent(out),</td>
@@ -545,16 +545,9 @@ see issue #707, #708 and #808.</p>
 <span class="k">        end if</span>
 <span class="k">    end if</span>
 
-<span class="k">    if</span><span class="w"> </span><span class="p">(</span><span class="n">tokenized</span><span class="p">)</span><span class="w"> </span><span class="k">then</span>
-<span class="k">        call </span><span class="n">run_argv</span><span class="p">(</span><span class="n">argv</span><span class="p">,</span><span class="w"> </span><span class="n">echo</span><span class="o">=</span><span class="n">self</span><span class="p">%</span><span class="n">echo</span><span class="p">,</span><span class="w"> </span><span class="n">verbose</span><span class="o">=</span><span class="n">self</span><span class="p">%</span><span class="n">verbose</span><span class="p">,</span><span class="w"> </span><span class="n">redirect</span><span class="o">=</span><span class="n">log_file</span><span class="p">,</span><span class="w"> </span><span class="n">exitstat</span><span class="o">=</span><span class="nb">stat</span><span class="p">)</span>
-<span class="w">    </span><span class="k">else</span>
-<span class="w">        </span><span class="c">! Tokenization failed; serialize the shell fork (not concurrency-safe).</span>
-<span class="w">        </span><span class="c">!$omp critical (run_command)</span>
-<span class="w">        </span><span class="k">call </span><span class="n">run</span><span class="p">(</span><span class="n">command</span><span class="p">,</span><span class="w"> </span><span class="n">echo</span><span class="o">=</span><span class="n">self</span><span class="p">%</span><span class="n">echo</span><span class="p">,</span><span class="w"> </span><span class="n">verbose</span><span class="o">=</span><span class="n">self</span><span class="p">%</span><span class="n">verbose</span><span class="p">,</span><span class="w"> </span><span class="n">redirect</span><span class="o">=</span><span class="n">log_file</span><span class="p">,</span><span class="w"> </span><span class="n">exitstat</span><span class="o">=</span><span class="nb">stat</span><span class="p">)</span>
-<span class="w">        </span><span class="c">!$omp end critical (run_command)</span>
-<span class="w">    </span><span class="k">end if</span>
+<span class="k">    call </span><span class="n">run_tool</span><span class="p">(</span><span class="n">command</span><span class="p">,</span><span class="w"> </span><span class="n">argv</span><span class="p">,</span><span class="w"> </span><span class="n">tokenized</span><span class="p">,</span><span class="w"> </span><span class="n">self</span><span class="p">%</span><span class="n">echo</span><span class="p">,</span><span class="w"> </span><span class="n">self</span><span class="p">%</span><span class="n">verbose</span><span class="p">,</span><span class="w"> </span><span class="n">log_file</span><span class="p">,</span><span class="w"> </span><span class="nb">stat</span><span class="p">)</span>
 
-<span class="k">    if</span><span class="w"> </span><span class="p">(</span><span class="n">self</span><span class="p">%</span><span class="n">use_response_file</span><span class="p">)</span><span class="w"> </span><span class="k">call </span><span class="n">delete_file_safe</span><span class="p">(</span><span class="n">output</span><span class="o">//</span><span class="s2">".resp"</span><span class="p">)</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">self</span><span class="p">%</span><span class="n">use_response_file</span><span class="p">)</span><span class="w"> </span><span class="k">call </span><span class="n">delete_file_safe</span><span class="p">(</span><span class="n">output</span><span class="o">//</span><span class="s2">".resp"</span><span class="p">)</span>
 
 <span class="w">    </span><span class="k">contains</span>
 <span class="k">        subroutine </span><span class="n">delete_file_safe</span><span class="p">(</span><span class="k">file</span><span class="p">,</span><span class="w"> </span><span class="nb">stat</span><span class="p">)</span>
@@ -599,7 +592,7 @@ see issue #707, #708 and #808.</p>
             <p class="text-end">
               Documentation generated by
               <a href="https://github.com/Fortran-FOSS-Programmers/ford">FORD</a>
- on 2026-10-30 08:22 +0000             </p>
+ on 2026-10-30 11:48 +0000             </p>
           </div>
         </div>
         <br>

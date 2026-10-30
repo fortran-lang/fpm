@@ -92,7 +92,7 @@
 
             <li class="list-inline-item" id="statements"><i class="fa fa-list-ol"></i>
               <a data-bs-toggle="tooltip" data-bs-placement="bottom" data-bs-html="true"
-                 title=" 0.5% of total for procedures.">43 statements</a>
+                 title=" 0.1% of total for procedures.">11 statements</a>
             </li>
 
             <li class="list-inline-item" id="source-file">
@@ -127,22 +127,7 @@
       <div id="sidebar">
       <h3>Contents</h3>
   
-      <div class="card mb-4">
-      <a data-bs-toggle="collapse" href="#vars-0"
-         aria-expanded="false" aria-controls="vars-0">
-         <h4 class="card-header bg-primary text-white">Variables</h4>
-      </a>
-      <div id="vars-0" class="collapse">
-        <div class="list-group list-group-flush">
-            <a class="list-group-item" href="../proc/compile_fortran.html#variable-argv">argv</a>
-            <a class="list-group-item" href="../proc/compile_fortran.html#variable-command~15">command</a>
-            <a class="list-group-item" href="../proc/compile_fortran.html#variable-error~250">error</a>
-            <a class="list-group-item" href="../proc/compile_fortran.html#variable-mock~2">mock</a>
-            <a class="list-group-item" href="../proc/compile_fortran.html#variable-tokenized">tokenized</a>
-        </div>
-      </div>
-    </div>
-
+  
   
   
   
@@ -320,108 +305,6 @@
     <br>
 
 
-    <section>    
-      <h2>Variables</h2>
-      <table class="table table-striped varlist">
-    <thead>
-      <tr>
-        <th scope="col">Type</th>
-<th scope="col">Visibility</th>        <th scope="col">Attributes</th>
-        <th scope="col"></th>
-        <th scope="col">Name</th>
-<th></th><th scope="col">Initial</th>        <th scope="col"></th>
-    </thead>
-    <tbody>
-        <tr>
-            <td>
-              <span class="anchor" id="variable-argv"></span>
-              type(<a href='../type/string_t.html'>string_t</a>),
-            </td>
-              <td>public,</td>
-            <td>
-              allocatable
-            </td>
-            <td>::</td>
-            <td><strong>argv</strong>(:)</td>
-                <td></td>
-                <td></td>
-            <td>
-                
-            </td>
-        </tr>
-        <tr>
-            <td>
-              <span class="anchor" id="variable-command~15"></span>
-              character(len=:),
-            </td>
-              <td>public,</td>
-            <td>
-              allocatable
-            </td>
-            <td>::</td>
-            <td><strong>command</strong></td>
-                <td></td>
-                <td></td>
-            <td>
-                
-            </td>
-        </tr>
-        <tr>
-            <td>
-              <span class="anchor" id="variable-error~250"></span>
-              type(<a href='../type/error_t.html'>error_t</a>),
-            </td>
-              <td>public,</td>
-            <td>
-              allocatable
-            </td>
-            <td>::</td>
-            <td><strong>error</strong></td>
-                <td></td>
-                <td></td>
-            <td>
-                
-            </td>
-        </tr>
-        <tr>
-            <td>
-              <span class="anchor" id="variable-mock~2"></span>
-              logical,
-            </td>
-              <td>public</td>
-            <td>
-              
-            </td>
-            <td>::</td>
-            <td><strong>mock</strong></td>
-                <td></td>
-                <td></td>
-            <td>
-                
-            </td>
-        </tr>
-        <tr>
-            <td>
-              <span class="anchor" id="variable-tokenized"></span>
-              logical,
-            </td>
-              <td>public</td>
-            <td>
-              
-            </td>
-            <td>::</td>
-            <td><strong>tokenized</strong></td>
-                <td></td>
-                <td></td>
-            <td>
-                
-            </td>
-        </tr>
-    </tbody>
-  </table>
-
-    </section>
-    <br>
     
     
 
@@ -451,56 +334,7 @@
 <span class="w">    </span><span class="c">!&gt; Optional mocking</span>
 <span class="w">    </span><span class="kt">logical</span><span class="p">,</span><span class="w"> </span><span class="k">optional</span><span class="p">,</span><span class="w"> </span><span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">)</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">dry_run</span>
 
-<span class="w">    </span><span class="kt">character</span><span class="p">(</span><span class="nb">len</span><span class="o">=</span><span class="p">:),</span><span class="w"> </span><span class="k">allocatable</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">command</span>
-<span class="w">    </span><span class="k">type</span><span class="p">(</span><span class="n">string_t</span><span class="p">),</span><span class="w"> </span><span class="k">allocatable</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">argv</span><span class="p">(:)</span>
-<span class="w">    </span><span class="k">type</span><span class="p">(</span><span class="n">error_t</span><span class="p">),</span><span class="w"> </span><span class="k">allocatable</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">error</span>
-<span class="w">    </span><span class="kt">logical</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">mock</span><span class="p">,</span><span class="w"> </span><span class="n">tokenized</span>
-
-<span class="w">    </span><span class="c">! Initialize intent(out) status so the mock path with no table returns</span>
-<span class="w">    </span><span class="c">! a defined value.</span>
-<span class="w">    </span><span class="nb">stat</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span>
-
-<span class="w">    </span><span class="c">! Check if we're actually building this file</span>
-<span class="w">    </span><span class="n">mock</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">.</span><span class="n">false</span><span class="p">.</span>
-<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="nb">present</span><span class="p">(</span><span class="n">dry_run</span><span class="p">))</span><span class="w"> </span><span class="n">mock</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">dry_run</span>
-
-<span class="w">    </span><span class="c">! Set command (shell fallback string) and build the argv token list. The</span>
-<span class="w">    </span><span class="c">! command is split with the OS-native lexer (POSIX on Unix, Windows rules</span>
-<span class="w">    </span><span class="c">! otherwise) so quoting and backslash paths survive on both platforms.</span>
-<span class="w">    </span><span class="n">command</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">self</span><span class="p">%</span><span class="n">fc</span><span class="w"> </span><span class="o">//</span><span class="w"> </span><span class="s2">" -c "</span><span class="w"> </span><span class="o">//</span><span class="w"> </span><span class="n">input</span><span class="w"> </span><span class="o">//</span><span class="w"> </span><span class="s2">" "</span><span class="w"> </span><span class="o">//</span><span class="w"> </span><span class="n">args</span><span class="w"> </span><span class="o">//</span><span class="w"> </span><span class="s2">" -o "</span><span class="w"> </span><span class="o">//</span><span class="w"> </span><span class="n">output</span>
-
-<span class="w">    </span><span class="n">tokenized</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">.</span><span class="n">true</span><span class="p">.</span>
-<span class="w">    </span><span class="k">call </span><span class="n">split_append</span><span class="p">(</span><span class="n">argv</span><span class="p">,</span><span class="w"> </span><span class="n">self</span><span class="p">%</span><span class="n">fc</span><span class="p">,</span><span class="w"> </span><span class="p">.</span><span class="n">false</span><span class="p">.,</span><span class="w"> </span><span class="p">.</span><span class="n">false</span><span class="p">.,</span><span class="w"> </span><span class="n">tokenized</span><span class="p">)</span>
-<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">tokenized</span><span class="p">)</span><span class="w"> </span><span class="k">then</span>
-<span class="k">        call </span><span class="n">add_strings</span><span class="p">(</span><span class="n">argv</span><span class="p">,</span><span class="w"> </span><span class="n">string_t</span><span class="p">(</span><span class="s2">"-c"</span><span class="p">))</span>
-<span class="w">        </span><span class="k">call </span><span class="n">add_strings</span><span class="p">(</span><span class="n">argv</span><span class="p">,</span><span class="w"> </span><span class="n">string_t</span><span class="p">(</span><span class="n">input</span><span class="p">))</span>
-<span class="w">    </span><span class="k">end if</span>
-<span class="k">    if</span><span class="w"> </span><span class="p">(</span><span class="n">tokenized</span><span class="w"> </span><span class="p">.</span><span class="nb">and</span><span class="p">.</span><span class="w"> </span><span class="nb">len_trim</span><span class="p">(</span><span class="n">args</span><span class="p">)</span><span class="w"> </span><span class="o">&gt;</span><span class="w"> </span><span class="mi">0</span><span class="p">)</span><span class="w"> </span><span class="k">then</span>
-<span class="k">        call </span><span class="n">split_append</span><span class="p">(</span><span class="n">argv</span><span class="p">,</span><span class="w"> </span><span class="n">args</span><span class="p">,</span><span class="w"> </span><span class="p">.</span><span class="n">true</span><span class="p">.,</span><span class="w"> </span><span class="p">.</span><span class="n">true</span><span class="p">.,</span><span class="w"> </span><span class="n">tokenized</span><span class="p">)</span>
-<span class="w">    </span><span class="k">end if</span>
-<span class="k">    if</span><span class="w"> </span><span class="p">(</span><span class="n">tokenized</span><span class="p">)</span><span class="w"> </span><span class="k">then</span>
-<span class="k">        call </span><span class="n">add_strings</span><span class="p">(</span><span class="n">argv</span><span class="p">,</span><span class="w"> </span><span class="n">string_t</span><span class="p">(</span><span class="s2">"-o"</span><span class="p">))</span>
-<span class="w">        </span><span class="k">call </span><span class="n">add_strings</span><span class="p">(</span><span class="n">argv</span><span class="p">,</span><span class="w"> </span><span class="n">string_t</span><span class="p">(</span><span class="n">output</span><span class="p">))</span>
-<span class="w">    </span><span class="k">end if</span>
-
-<span class="w">    </span><span class="c">! Execute command</span>
-<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(.</span><span class="nb">not</span><span class="p">.</span><span class="n">mock</span><span class="p">)</span><span class="w"> </span><span class="k">then</span>
-<span class="k">       if</span><span class="w"> </span><span class="p">(</span><span class="n">tokenized</span><span class="p">)</span><span class="w"> </span><span class="k">then</span>
-<span class="k">          call </span><span class="n">run_argv</span><span class="p">(</span><span class="n">argv</span><span class="p">,</span><span class="w"> </span><span class="n">echo</span><span class="o">=</span><span class="n">self</span><span class="p">%</span><span class="n">echo</span><span class="p">,</span><span class="w"> </span><span class="n">verbose</span><span class="o">=</span><span class="n">self</span><span class="p">%</span><span class="n">verbose</span><span class="p">,</span><span class="w"> </span><span class="n">redirect</span><span class="o">=</span><span class="n">log_file</span><span class="p">,</span><span class="w"> </span><span class="n">exitstat</span><span class="o">=</span><span class="nb">stat</span><span class="p">)</span>
-<span class="w">       </span><span class="k">else</span>
-<span class="w">          </span><span class="c">! Tokenization failed; serialize the shell fork (not concurrency-safe).</span>
-<span class="w">          </span><span class="c">!$omp critical (run_command)</span>
-<span class="w">          </span><span class="k">call </span><span class="n">run</span><span class="p">(</span><span class="n">command</span><span class="p">,</span><span class="w"> </span><span class="n">echo</span><span class="o">=</span><span class="n">self</span><span class="p">%</span><span class="n">echo</span><span class="p">,</span><span class="w"> </span><span class="n">verbose</span><span class="o">=</span><span class="n">self</span><span class="p">%</span><span class="n">verbose</span><span class="p">,</span><span class="w"> </span><span class="n">redirect</span><span class="o">=</span><span class="n">log_file</span><span class="p">,</span><span class="w"> </span><span class="n">exitstat</span><span class="o">=</span><span class="nb">stat</span><span class="p">)</span>
-<span class="w">          </span><span class="c">!$omp end critical (run_command)</span>
-<span class="w">       </span><span class="k">end if</span>
-<span class="k">       if</span><span class="w"> </span><span class="p">(</span><span class="nb">stat</span><span class="o">/=</span><span class="mi">0</span><span class="p">)</span><span class="w"> </span><span class="k">return</span>
-<span class="k">    endif</span>
-
-<span class="w">    </span><span class="c">! Optionally register compile command</span>
-<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="nb">present</span><span class="p">(</span><span class="n">table</span><span class="p">))</span><span class="w"> </span><span class="k">then</span>
-<span class="k">        call </span><span class="n">table</span><span class="p">%</span><span class="n">register</span><span class="p">(</span><span class="n">command</span><span class="p">,</span><span class="w"> </span><span class="n">get_os_type</span><span class="p">(),</span><span class="w"> </span><span class="n">error</span><span class="p">)</span>
-<span class="w">        </span><span class="nb">stat</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">merge</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="nb">allocated</span><span class="p">(</span><span class="n">error</span><span class="p">))</span>
-<span class="w">    </span><span class="k">endif</span>
+<span class="w">    </span><span class="k">call </span><span class="n">compile_object</span><span class="p">(</span><span class="n">self</span><span class="p">,</span><span class="w"> </span><span class="n">LANG_FORTRAN</span><span class="p">,</span><span class="w"> </span><span class="n">input</span><span class="p">,</span><span class="w"> </span><span class="n">output</span><span class="p">,</span><span class="w"> </span><span class="n">args</span><span class="p">,</span><span class="w"> </span><span class="n">log_file</span><span class="p">,</span><span class="w"> </span><span class="nb">stat</span><span class="p">,</span><span class="w"> </span><span class="n">table</span><span class="p">,</span><span class="w"> </span><span class="n">dry_run</span><span class="p">)</span>
 
 <span class="k">end subroutine </span><span class="n">compile_fortran</span>
 </pre></div>
@@ -526,7 +360,7 @@
             <p class="text-end">
               Documentation generated by
               <a href="https://github.com/Fortran-FOSS-Programmers/ford">FORD</a>
- on 2026-10-30 08:22 +0000             </p>
+ on 2026-10-30 11:48 +0000             </p>
           </div>
         </div>
         <br>
