@@ -59,9 +59,10 @@ for round in $(seq 1 "$rounds"); do
         exit 1
     fi
 
-    # Each echoed link command names its own object: `... app_<name>.f90.o ... -o .../<name>`
+    # Each echoed link command names its own object: `... app_<name>.f90.o ... -o .../<name>`.
+    # Only whole echoed lines are checked: some compilers' runtimes wrap long output.
     bad=$(tr '\\' '/' < build.log | tr -d '\r' | awk '
-        / -o [^ ]*\/app\/px+(\.exe)?$/ {
+        /^ \+ / && / -o [^ ]*\/app\/px+(\.exe)?$/ {
             out = $NF; sub(/.*\//, "", out); sub(/\.exe$/, "", out)
             if (index($0, "/app_" out ".f90.o ") == 0) print
         }')
