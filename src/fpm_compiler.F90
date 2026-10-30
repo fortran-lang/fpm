@@ -56,6 +56,7 @@ public :: append_clean_flags, append_clean_flags_array
 public :: debug
 public :: id_gcc,id_all
 public :: match_compiler_type, compiler_id_name, validate_compiler_name, is_cxx_gnu_based
+public :: LANG_FORTRAN, LANG_C, LANG_CXX
 
 enum, bind(C)
     enumerator :: &
@@ -83,6 +84,11 @@ enum, bind(C)
         id_lfortran
 end enum
 integer, parameter :: compiler_enum = kind(id_unknown)
+
+!> Source languages
+integer, parameter :: LANG_FORTRAN = 1
+integer, parameter :: LANG_C       = 2
+integer, parameter :: LANG_CXX     = 3
 
 !> Definition of compiler object
 type, extends(serializable_t) :: compiler_t
@@ -1425,16 +1431,16 @@ subroutine compile_fortran(self, input, output, args, log_file, stat, table, dry
     !> Optional mocking
     logical, optional, intent(in) :: dry_run
 
-    call compile_object(self, self%fc, input, output, args, log_file, stat, table, dry_run)
+    call compile_object(self, LANG_FORTRAN, input, output, args, log_file, stat, table, dry_run)
 
 end subroutine compile_fortran
 
-!> Compile an object with a Fortran, C or C++ compiler
-subroutine compile_object(self, prog, input, output, args, log_file, stat, table, dry_run)
+!> Compile an object with the compiler for its language
+subroutine compile_object(self, lang, input, output, args, log_file, stat, table, dry_run)
     !> Instance of the compiler object
     class(compiler_t), intent(in) :: self
-    !> Compiler command: self%fc, self%cc or self%cxx
-    character(len=*), intent(in) :: prog
+    !> Source language: LANG_FORTRAN, LANG_C or LANG_CXX
+    integer, intent(in) :: lang
     !> Source file input
     character(len=*), intent(in) :: input
     !> Output file of object
@@ -1450,7 +1456,7 @@ subroutine compile_object(self, prog, input, output, args, log_file, stat, table
     !> Optional mocking
     logical, optional, intent(in) :: dry_run
 
-    character(len=:), allocatable :: command
+    character(len=:), allocatable :: prog, command
     type(string_t), allocatable :: argv(:)
     type(error_t), allocatable :: error
     logical :: mock, tokenized
@@ -1463,7 +1469,20 @@ subroutine compile_object(self, prog, input, output, args, log_file, stat, table
     mock = .false.
     if (present(dry_run)) mock = dry_run
 
-    call tool_command(prog, [string_t(args)], output, command, argv, tokenized, input)
+    select case (lang)
+    case (LANG_FORTRAN)
+        prog = self%fc
+    case (LANG_C)
+        prog = self%cc
+    case (LANG_CXX)
+        prog = self%cxx
+    case default
+        write(stderr, '(a,i0)') '<ERROR> No compiler for language ', lang
+        stat = -1
+        return
+    end select
+
+    call tool_command(prog, args, output, command, argv, tokenized, input)
 
     ! Execute command
     if (.not.mock) then
@@ -1479,14 +1498,14 @@ subroutine compile_object(self, prog, input, output, args, log_file, stat, table
 
 end subroutine compile_object
 
-!> Build `prog [-c input] flags(1) flags(2) ... -o output` both as a shell command and
-!> as an argv list. Each flags entry is split on its own, with the OS-native lexer.
-!> tokenized is .false. when a part cannot be split: only the shell command can run then.
-subroutine tool_command(prog, flags, output, command, argv, tokenized, input)
+!> Build `prog [-c input] args -o output` both as a shell command and as an argv list,
+!> splitting prog and args with the OS-native lexer. tokenized is .false. when a part
+!> cannot be split: only the shell command can run then.
+subroutine tool_command(prog, args, output, command, argv, tokenized, input)
     !> Program, possibly followed by its own flags
     character(len=*), intent(in) :: prog
-    !> Flag strings, in order
-    type(string_t), intent(in) :: flags(:)
+    !> Arguments for the program
+    character(len=*), intent(in) :: args
     !> Output file, passed with -o
     character(len=*), intent(in) :: output
     !> Shell command
@@ -1497,8 +1516,6 @@ subroutine tool_command(prog, flags, output, command, argv, tokenized, input)
     logical, intent(out) :: tokenized
     !> Optional source file, passed with -c
     character(len=*), optional, intent(in) :: input
-
-    integer :: i
 
     command = prog
     tokenized = .true.
@@ -1512,13 +1529,8 @@ subroutine tool_command(prog, flags, output, command, argv, tokenized, input)
         end if
     end if
 
-    do i = 1, size(flags)
-        command = command // " " // flags(i)%s
-        if (tokenized .and. len_trim(flags(i)%s) > 0) &
-            call split_append(argv, flags(i)%s, .true., .true., tokenized)
-    end do
-
-    command = command // " -o " // output
+    command = command // " " // args // " -o " // output
+    if (tokenized .and. len_trim(args) > 0) call split_append(argv, args, .true., .true., tokenized)
     if (tokenized) then
         call add_strings(argv, string_t("-o"))
         call add_strings(argv, string_t(output))
@@ -1637,7 +1649,7 @@ subroutine compile_c(self, input, output, args, log_file, stat, table, dry_run)
     !> Optional mocking
     logical, optional, intent(in) :: dry_run
 
-    call compile_object(self, self%cc, input, output, args, log_file, stat, table, dry_run)
+    call compile_object(self, LANG_C, input, output, args, log_file, stat, table, dry_run)
 
 end subroutine compile_c
 
@@ -1660,7 +1672,7 @@ subroutine compile_cpp(self, input, output, args, log_file, stat, table, dry_run
     !> Optional mocking
     logical, optional, intent(in) :: dry_run
 
-    call compile_object(self, self%cxx, input, output, args, log_file, stat, table, dry_run)
+    call compile_object(self, LANG_CXX, input, output, args, log_file, stat, table, dry_run)
 
 end subroutine compile_cpp
 
@@ -1692,7 +1704,7 @@ subroutine link_executable(self, output, args, log_file, stat, dry_run)
 
     if (mock) return
 
-    call tool_command(self%fc, [string_t(args)], output, command, argv, tokenized)
+    call tool_command(self%fc, args, output, command, argv, tokenized)
     call run_tool(command, argv, tokenized, self%echo, self%verbose, log_file, stat)
 
 end subroutine link_executable
@@ -1727,7 +1739,7 @@ subroutine link_shared(self, output, args, log_file, stat, dry_run)
 
     shared_flag = get_shared_flag(self)
 
-    call tool_command(self%fc, [string_t(shared_flag), string_t(args)], output, command, argv, tokenized)
+    call tool_command(self%fc, shared_flag // " " // args, output, command, argv, tokenized)
     call run_tool(command, argv, tokenized, self%echo, self%verbose, log_file, stat)
 
 end subroutine link_shared
