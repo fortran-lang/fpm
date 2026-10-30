@@ -321,14 +321,13 @@ subroutine build_target(model,target,verbose,dry_run,table,stat)
 
     integer :: fh
 
-    ! mkdir shells out (is_dir 'test -d' and 'mkdir -p'), which forks. Serialize
-    ! it on the same run_command lock as every other shell fork so it cannot run
-    ! concurrently with a link/archive/compile shell fallback on another thread.
-    !$omp critical (run_command)
+    ! Check and create the output directory under one lock, so two threads never
+    ! both create it: on Windows, mkdir fails if the directory already exists
+    !$omp critical (output_dir)
     if (.not.exists(dirname(target%output_file)) .and. .not.dry_run) then
         call mkdir(dirname(target%output_file),verbose)
     end if
-    !$omp end critical (run_command)
+    !$omp end critical (output_dir)
 
     select case(target%target_type)
 
