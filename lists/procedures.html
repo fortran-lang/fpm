@@ -118,7 +118,7 @@
                  <td><p>Add default profiles to existing profiles array if they don&rsquo;t already exist</p></td>
                </tr>
 			   <tr>
-                 <td><a href='../proc/add_dependency.html'>add_dependency</a></td>
+                 <td><a href='../proc/add_dependency~2.html'>add_dependency</a></td>
                  <td><a href='../module/fpm_targets.html'>fpm_targets</a></td>
                  <td>Subroutine</td>
                  <td><p>Add pointer to dependeny in target%dependencies</p></td>
@@ -390,6 +390,12 @@ found that is not part of the list, an error is allocated.</p></td>
                  <td><a href='../proc/checkout.html'>checkout</a></td>
                  <td><a href='../module/fpm_git.html'>fpm_git</a></td>
                  <td>Subroutine</td>
+                 <td></td>
+               </tr>
+			   <tr>
+                 <td><a href='../proc/clean_shlex_token.html'>clean_shlex_token</a></td>
+                 <td><a href='../module/fpm_compiler.html'>fpm_compiler</a></td>
+                 <td>Function</td>
                  <td></td>
                </tr>
 			   <tr>
@@ -666,16 +672,23 @@ Returns an error if the variable did not exist in the first place</p><a href="..
                  <td><p>Extract dirname from path</p></td>
                </tr>
 			   <tr>
-                 <td><a href='../proc/dump_to_toml~8.html'>dump_to_toml</a></td>
+                 <td><a href='../proc/dump_to_toml~4.html'>dump_to_toml</a></td>
+                 <td><a href='../module/fpm_compiler.html'>fpm_compiler</a></td>
+                 <td>Subroutine</td>
+                 <td><p>Dump dependency to toml table</p><a href="../proc/dump_to_toml~4.html" class="pull-right"><emph>Read more&hellip;</emph></a></td>
+               </tr>
+			   <tr>
+                 <td><a href='../proc/dump_to_toml~12.html'>dump_to_toml</a></td>
                  <td><a href='../module/fpm_git.html'>fpm_git</a></td>
                  <td>Subroutine</td>
                  <td><p>Dump dependency to toml table</p></td>
                </tr>
 			   <tr>
-                 <td><a href='../proc/dump_to_toml~10.html'>dump_to_toml</a></td>
+                 <td><a href='../proc/ends_with_blank.html'>ends_with_blank</a></td>
                  <td><a href='../module/fpm_compiler.html'>fpm_compiler</a></td>
-                 <td>Subroutine</td>
-                 <td><p>Dump dependency to toml table</p><a href="../proc/dump_to_toml~10.html" class="pull-right"><emph>Read more&hellip;</emph></a></td>
+                 <td>Function</td>
+                 <td><p>True when the string ends in a blank (space or tab), i.e. its last character
+separates it from anything concatenated after it.</p></td>
                </tr>
 			   <tr>
                  <td><a href='../proc/enumerate_libraries.html'>enumerate_libraries</a></td>
@@ -1146,7 +1159,7 @@ All checks passed!</p></td>
 3) If longer, package name must be followed by default separator plus at least one char</p><a href="../proc/has_valid_standard_prefix.html" class="pull-right"><emph>Read more&hellip;</emph></a></td>
                </tr>
 			   <tr>
-                 <td><a href='../proc/info~10.html'>info</a></td>
+                 <td><a href='../proc/info~14.html'>info</a></td>
                  <td><a href='../module/fpm_git.html'>fpm_git</a></td>
                  <td>Subroutine</td>
                  <td><p>Show information on git target</p></td>
@@ -1344,16 +1357,16 @@ Cleanup</p><a href="../proc/init_stdlib.html" class="pull-right"><emph>Read more
                  <td><p>Get file &amp; directory names in directory <code>dir</code> using iso_c_binding.</p><a href="../proc/list_files.html" class="pull-right"><emph>Read more&hellip;</emph></a></td>
                </tr>
 			   <tr>
-                 <td><a href='../proc/load_from_toml~8.html'>load_from_toml</a></td>
-                 <td><a href='../module/fpm_git.html'>fpm_git</a></td>
-                 <td>Subroutine</td>
-                 <td><p>Read dependency from toml table (no checks made at this stage)</p><a href="../proc/load_from_toml~8.html" class="pull-right"><emph>Read more&hellip;</emph></a></td>
-               </tr>
-			   <tr>
-                 <td><a href='../proc/load_from_toml~10.html'>load_from_toml</a></td>
+                 <td><a href='../proc/load_from_toml~4.html'>load_from_toml</a></td>
                  <td><a href='../module/fpm_compiler.html'>fpm_compiler</a></td>
                  <td>Subroutine</td>
                  <td><p>Read dependency from toml table (no checks made at this stage)</p></td>
+               </tr>
+			   <tr>
+                 <td><a href='../proc/load_from_toml~12.html'>load_from_toml</a></td>
+                 <td><a href='../module/fpm_git.html'>fpm_git</a></td>
+                 <td>Subroutine</td>
+                 <td><p>Read dependency from toml table (no checks made at this stage)</p><a href="../proc/load_from_toml~12.html" class="pull-right"><emph>Read more&hellip;</emph></a></td>
                </tr>
 			   <tr>
                  <td><a href='../proc/lower.html'>lower</a></td>
@@ -1838,6 +1851,15 @@ gfortran does not look into by default)</p></td>
 given a line of structure &rdquo; par1 par2 par3 &hellip; parn &rdquo; store each par(n) into a separate variable in array.</p><a href="../proc/split.html" class="pull-right"><emph>Read more&hellip;</emph></a></td>
                </tr>
 			   <tr>
+                 <td><a href='../proc/split_append.html'>split_append</a></td>
+                 <td><a href='../module/fpm_compiler.html'>fpm_compiler</a></td>
+                 <td>Subroutine</td>
+                 <td><p>Split a command fragment into argv tokens with the OS-native lexer and
+append them to argv. fortran-shlex is not reentrant, so the split runs
+in a critical region. join_spaced/keep_quotes apply to the POSIX lexer;
+the Windows lexer already returns final argv tokens.</p></td>
+               </tr>
+			   <tr>
                  <td><a href='../proc/split_first_last.html'>split_first_last</a></td>
                  <td><a href='../module/fpm_strings.html'>fpm_strings</a></td>
                  <td>Subroutine</td>
@@ -2000,7 +2022,7 @@ in case of errors.</p></td>
             <p class="text-end">
               Documentation generated by
               <a href="https://github.com/Fortran-FOSS-Programmers/ford">FORD</a>
- on 2026-10-30 07:30 +0000             </p>
+ on 2026-10-30 08:17 +0000             </p>
           </div>
         </div>
         <br>

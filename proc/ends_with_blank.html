@@ -10,7 +10,7 @@
     <meta name="author" content="fortran-lang/fpm contributors" >
     <link rel="icon" href="../favicon.png">
 
-    <title>add_dependency &ndash; Fortran-lang/fpm</title>
+    <title>ends_with_blank &ndash; Fortran-lang/fpm</title>
 
     <!-- Bootstrap -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet"
@@ -81,8 +81,8 @@
 
     <div class="container">
   <div class="row">
-    <h1>add_dependency
-      <small>Subroutine</small>
+    <h1>ends_with_blank
+      <small>Function</small>
       
     </h1>
       <div class="container p-2 mb-4 bg-light border rounded-3">
@@ -92,21 +92,21 @@
 
             <li class="list-inline-item" id="statements"><i class="fa fa-list-ol"></i>
               <a data-bs-toggle="tooltip" data-bs-placement="bottom" data-bs-html="true"
-                 title=" 0.1% of total for procedures.">10 statements</a>
+                 title=" 0.1% of total for procedures.">5 statements</a>
             </li>
 
             <li class="list-inline-item" id="source-file">
               <i class="fa fa-code"></i>
-              <a href="../src/fpm_targets.f90"> Source File</a>
+              <a href="../src/fpm_compiler.F90"> Source File</a>
             </li>
         </ul>
       </div>
       <div class="col">
         <nav aria-label="breadcrumb">
           <ol class="breadcrumb justify-content-end mb-0">
-                <li class="breadcrumb-item"><a href='../sourcefile/fpm_targets.f90.html'>fpm_targets.f90</a></li>
-                <li class="breadcrumb-item"><a href='../module/fpm_targets.html'>fpm_targets</a></li>
-            <li class="breadcrumb-item active" aria-current="page">add_dependency</li>
+                <li class="breadcrumb-item"><a href='../sourcefile/fpm_compiler.f90.html'>fpm_compiler.F90</a></li>
+                <li class="breadcrumb-item"><a href='../module/fpm_compiler.html'>fpm_compiler</a></li>
+            <li class="breadcrumb-item active" aria-current="page">ends_with_blank</li>
           </ol>
         </nav>
       </div>
@@ -149,7 +149,7 @@
     <div class="card card-primary">
       <div class="card-header text-left"><h3 class="card-title">Source Code</h3></div>
       <div class="list-group">
-        <a class="list-group-item" href="../proc/add_dependency.html#src">add_dependency</a>
+        <a class="list-group-item" href="../proc/ends_with_blank.html#src">ends_with_blank</a>
       </div>
     </div>
 
@@ -159,11 +159,12 @@
     </div>
     
     <div class="col-md-9" id='text'>
-    <h2>public  subroutine add_dependency(target, dependency)  
+    <h2>public  function ends_with_blank(str)  
 </h2>
     
 
-    <p>Add pointer to dependeny in target%dependencies</p>
+    <p>True when the string ends in a blank (space or tab), i.e. its last character
+separates it from anything concatenated after it.</p>
 
 
     <h3>Arguments</h3>
@@ -179,30 +180,15 @@
     <tbody>
         <tr>
             <td>
-              <span class="anchor" id="variable-target~17"></span>
-              type(<a href='../type/build_target_t.html'>build_target_t</a>),
+              <span class="anchor" id="variable-str~2"></span>
+              character(len=*),
             </td>
-<td>intent(inout)</td>
+<td>intent(in)</td>
               <td></td>            <td>
               
             </td>
             <td>::</td>
-            <td><strong>target</strong></td>
-            <td>
-                
-            </td>
-        </tr>
-        <tr>
-            <td>
-              <span class="anchor" id="variable-dependency~3"></span>
-              type(<a href='../type/build_target_t.html'>build_target_t</a>),
-            </td>
-<td>intent(in),</td>
-              <td></td>            <td>
-              target
-            </td>
-            <td>::</td>
-            <td><strong>dependency</strong></td>
+            <td><strong>str</strong></td>
             <td>
                 
             </td>
@@ -210,6 +196,13 @@
     </tbody>
   </table>
 
+      <h3>Return Value
+        <small>
+          <span class="anchor" id="variable-ends_with_blank"></span>
+          logical
+        </small>
+      </h3>
+      
     <br>
 
 
@@ -224,22 +217,12 @@
     
     <section>
     <h2><span class="anchor" id="src"></span>Source Code</h2>
-    <div class="hl codehilite"><pre><span></span><span class="k">subroutine </span><span class="n">add_dependency</span><span class="p">(</span><span class="k">target</span><span class="p">,</span><span class="w"> </span><span class="n">dependency</span><span class="p">)</span>
-<span class="w">    </span><span class="k">type</span><span class="p">(</span><span class="n">build_target_t</span><span class="p">),</span><span class="w"> </span><span class="k">intent</span><span class="p">(</span><span class="n">inout</span><span class="p">)</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="k">target</span>
-<span class="k">    type</span><span class="p">(</span><span class="n">build_target_t</span><span class="p">)</span><span class="w"> </span><span class="p">,</span><span class="w"> </span><span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">),</span><span class="w"> </span><span class="k">target</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">dependency</span>
-<span class="w">    </span>
-<span class="w">    </span><span class="kt">integer</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">i</span>
-<span class="w">    </span>
-<span class="w">    </span><span class="c">! Ensure no duplicate dependencies: it may happen if we loop over two library targets that </span>
-<span class="w">    </span><span class="c">! contain the same objects</span>
-<span class="w">    </span><span class="k">do </span><span class="n">i</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span><span class="n">size</span><span class="p">(</span><span class="k">target</span><span class="p">%</span><span class="n">dependencies</span><span class="p">)</span>
-<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="k">target</span><span class="p">%</span><span class="n">dependencies</span><span class="p">(</span><span class="n">i</span><span class="p">)%</span><span class="n">ptr</span><span class="p">%</span><span class="n">output_name</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="n">dependency</span><span class="p">%</span><span class="n">output_name</span><span class="p">)</span><span class="w"> </span><span class="k">return</span>
-<span class="k">    end do</span>
-<span class="k">    if</span><span class="w"> </span><span class="p">(</span><span class="n">dependency</span><span class="p">%</span><span class="n">output_name</span><span class="o">==</span><span class="k">target</span><span class="p">%</span><span class="n">output_name</span><span class="p">)</span><span class="w"> </span><span class="k">return</span>
-<span class="k">    </span>
-<span class="k">    call </span><span class="n">add_target_ptr</span><span class="p">(</span><span class="k">target</span><span class="p">%</span><span class="n">dependencies</span><span class="p">,</span><span class="w"> </span><span class="n">build_target_ptr</span><span class="p">(</span><span class="n">dependency</span><span class="p">))</span>
-<span class="w">    </span>
-<span class="k">end subroutine </span><span class="n">add_dependency</span>
+    <div class="hl codehilite"><pre><span></span><span class="kt">logical </span><span class="k">function </span><span class="n">ends_with_blank</span><span class="p">(</span><span class="n">str</span><span class="p">)</span>
+<span class="w">    </span><span class="kt">character</span><span class="p">(</span><span class="nb">len</span><span class="o">=*</span><span class="p">),</span><span class="w"> </span><span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">)</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">str</span>
+<span class="w">    </span><span class="n">ends_with_blank</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">.</span><span class="n">false</span><span class="p">.</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">str</span><span class="p">)</span><span class="w"> </span><span class="o">&gt;</span><span class="w"> </span><span class="mi">0</span><span class="p">)</span><span class="w"> </span><span class="n">ends_with_blank</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">(</span><span class="n">str</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">str</span><span class="p">):</span><span class="nb">len</span><span class="p">(</span><span class="n">str</span><span class="p">))</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="s1">' '</span><span class="w"> </span><span class="p">&amp;</span>
+<span class="w">        </span><span class="p">&amp;</span><span class="w"> </span><span class="p">.</span><span class="nb">or</span><span class="p">.</span><span class="w"> </span><span class="n">str</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">str</span><span class="p">):</span><span class="nb">len</span><span class="p">(</span><span class="n">str</span><span class="p">))</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="nb">char</span><span class="p">(</span><span class="mi">9</span><span class="p">))</span>
+<span class="k">end function </span><span class="n">ends_with_blank</span>
 </pre></div>
 
     </section>
@@ -263,7 +246,7 @@
             <p class="text-end">
               Documentation generated by
               <a href="https://github.com/Fortran-FOSS-Programmers/ford">FORD</a>
- on 2026-10-30 07:30 +0000             </p>
+ on 2026-10-30 08:17 +0000             </p>
           </div>
         </div>
         <br>
