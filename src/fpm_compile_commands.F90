@@ -284,39 +284,45 @@ module fpm_compile_commands
             return
         end if
 
-        ! Tokenize the input command into args(:)
-        if (target_os==OS_WINDOWS) then 
+        ! Get current working directory (no lexer state involved)
+        call get_current_directory(cwd, error)
+        if (allocated(error)) return
+
+        ! Tokenize the command and consume the deferred-length args(:) result
+        ! under the shared fpm_shlex_split lock. fortran-shlex is not reentrant,
+        ! and reading the result while another build thread re-enters the lexer
+        ! corrupts the tokens, so the split and readback stay in one region.
+        !$omp critical (fpm_shlex_split)
+        if (target_os==OS_WINDOWS) then
             args = ms_split(command, ucrt=.true., success=sh_success)
         else
             args = sh_split(command, join_spaced=.false., keep_quotes=.true., success=sh_success)
         end if
         n = size(args)
-        
-        if (n==0 .or. .not.sh_success) then 
+        if (n>0 .and. sh_success) then
+            ! Try to find the source file
+            allocate(character(len=0) :: source_file)
+            find_source_file: do i = 1, n-1
+                if (args(i) == "-c") then
+                    source_file = trim(args(i+1))
+                    exit find_source_file
+                end if
+            end do find_source_file
+
+            ! Fallback: use last argument if not found
+            if (len_trim(source_file)==0) source_file = trim(args(n))
+
+            ! Fill in the compile_command_t.
+            ! Use non-default initializer due to gcc 15 bug
+            cmd = compile_command_t(cwd, args, source_file)
+        end if
+        !$omp end critical (fpm_shlex_split)
+
+        if (n==0 .or. .not.sh_success) then
             call syntax_error(error, "compile_command_table_t failed tokenizing: <"//command//">")
             return
         end if
-        
-        ! Get current working directory
-        call get_current_directory(cwd, error)
-        if (allocated(error)) return
 
-        ! Try to find the source file
-        allocate(character(len=0) :: source_file)
-        find_source_file: do i = 1, n-1
-            if (args(i) == "-c") then
-                source_file = trim(args(i+1))
-                exit find_source_file
-            end if
-        end do find_source_file
-
-        ! Fallback: use last argument if not found
-        if (len_trim(source_file)==0) source_file = trim(args(n))
-
-        ! Fill in the compile_command_t. 
-        ! Use non-default initializer due to gcc 15 bug
-        cmd = compile_command_t(cwd, args, source_file)
-        
         ! Add it to the structure
         !$omp critical (command_update)
         call cct_register_object(self, cmd, error)
