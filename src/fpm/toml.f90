@@ -15,10 +15,11 @@
 module fpm_toml
     use fpm_error, only: error_t, fatal_error, file_not_found_error
     use fpm_strings, only: string_t, str_ends_with, lower
-    use fpm_filesystem, only: getline
+    use fpm_filesystem, only: getline, getfile
     use tomlf, only: toml_table, toml_array, toml_key, toml_stat, get_value, &
         & set_value, toml_parse, toml_error, new_table, add_table, add_array, &
-        & toml_serialize, len, toml_load, toml_loads, toml_value
+        & toml_serialize, len, toml_load, toml_value
+    use tomlf_de_lexer, only: toml_lexer, new_lexer_from_string
     use tomlf_de_parser, only: parse
     use jonquil, only: json_serialize, json_error, json_value, json_object, json_loads, &
                        cast_to_object
@@ -29,7 +30,7 @@ module fpm_toml
     public :: read_package_file, toml_table, toml_array, toml_key, toml_stat, &
               get_value, set_value, get_list, new_table, add_table, add_array, len, &
               toml_error, toml_serialize, toml_load, check_keys, set_list, set_string, &
-              name_is_json, has_list, read_unit_text
+              name_is_json, has_list, read_unit_text, load_table_from_unit, load_table_from_file
 
     !> An abstract interface for any fpm class that should be fully serializable to/from TOML/JSON
     type, abstract, public :: serializable_t
@@ -237,15 +238,19 @@ contains
         !> Optional JSON format
         logical, optional, intent(in) :: json
 
-        integer :: unit
+        character(len=:), allocatable :: text, message
+        integer :: stat
         logical :: exist
 
         inquire (file=file, exist=exist)
         if (.not. exist) return
 
-        open (file=file, newunit=unit)
-        call self%load(unit, error, json)
-        close (unit)
+        text = getfile(file, iostat=stat, iomsg=message)
+        if (stat /= 0) then
+            call fatal_error(error, message)
+            return
+        end if
+        call load_from_text(self, text, file, error, json)
     end subroutine load_from_file
 
     !> Read dependency tree from file
@@ -259,22 +264,40 @@ contains
         !> Optional JSON format
         logical, optional, intent(in) :: json
 
+        character(len=:), allocatable :: text
+        character(len=4096) :: name
+
+        call read_unit_text(unit, text, error)
+        if (allocated(error)) return
+        inquire (unit=unit, name=name)
+        call load_from_text(self, text, trim(name), error, json)
+    end subroutine load_from_unit
+
+    !> Read an object from TOML or JSON text, naming `name` in TOML parse errors
+    subroutine load_from_text(self, text, name, error, json)
+        !> Instance of the dependency tree
+        class(serializable_t), intent(inout) :: self
+        !> TOML or JSON text
+        character(len=*), intent(in) :: text
+        !> Name of the file the text comes from
+        character(len=*), intent(in) :: name
+        !> Error handling
+        type(error_t), allocatable, intent(out) :: error
+        !> Optional JSON format
+        logical, optional, intent(in) :: json
+
         type(toml_error), allocatable :: local_error
         type(toml_table), allocatable :: table
         type(toml_table), pointer     :: jtable
         class(toml_value), allocatable :: object
-        character(len=:), allocatable :: text
         logical :: is_json
 
         is_json = .false.; if (present(json)) is_json = json
 
-        call read_unit_text(unit, text, error)
-        if (allocated(error)) return
-
         if (is_json) then
 
            !> init JSON interpreter
-           call json_loads(object, text, error=local_error)
+           call json_loads(object, crlf_to_lf(text), error=local_error)
            if (allocated(local_error)) then
               allocate (error)
               call move_alloc(local_error%message, error%message)
@@ -293,22 +316,15 @@ contains
         else
 
            !> use default TOML parser
-           call toml_loads(table, text, error=local_error)
-
-           if (allocated(local_error)) then
-              allocate (error)
-              call move_alloc(local_error%message, error%message)
-              return
-           end if
+           call load_table_from_text(table, text, name, error)
+           if (allocated(error)) return
 
            !> Read object from TOML table
            call self%load(table, error)
 
         endif
 
-        if (allocated(error)) return
-
-    end subroutine load_from_unit
+    end subroutine load_from_text
 
     !> Process the configuration file to a TOML data structure
     subroutine read_package_file(table, manifest, error)
@@ -322,7 +338,6 @@ contains
         !> Error status of the operation
         type(error_t), allocatable, intent(out) :: error
 
-        type(toml_error), allocatable :: parse_error
         logical :: exist
 
         inquire (file=manifest, exist=exist)
@@ -332,14 +347,7 @@ contains
             return
         end if
 
-        ! By name, not through a unit: see read_unit_text
-        call toml_load(table, manifest, error=parse_error)
-
-        if (allocated(parse_error)) then
-            allocate (error)
-            call move_alloc(parse_error%message, error%message)
-            return
-        end if
+        call load_table_from_file(table, manifest, error)
 
     end subroutine read_package_file
 
@@ -371,6 +379,104 @@ contains
         end do
 
     end subroutine read_unit_text
+
+    !> Load a TOML table from a file read whole by getfile; parse errors name the file
+    subroutine load_table_from_file(table, file, error)
+
+        !> TOML table read
+        type(toml_table), allocatable, intent(out) :: table
+
+        !> File to read
+        character(len=*), intent(in) :: file
+
+        !> Error handling
+        type(error_t), allocatable, intent(out) :: error
+
+        character(len=:), allocatable :: text, message
+        integer :: stat
+
+        text = getfile(file, iostat=stat, iomsg=message)
+        if (stat /= 0) then
+            call fatal_error(error, message)
+            return
+        end if
+        call load_table_from_text(table, text, file, error)
+
+    end subroutine load_table_from_file
+
+    !> Load a TOML table from a formatted unit as toml_load does, without the re-open
+    !> (see read_unit_text). Parse errors name the unit's file.
+    subroutine load_table_from_unit(table, unit, error)
+
+        !> TOML table read
+        type(toml_table), allocatable, intent(out) :: table
+
+        !> Formatted unit to read
+        integer, intent(in) :: unit
+
+        !> Error handling
+        type(error_t), allocatable, intent(out) :: error
+
+        character(len=:), allocatable :: text
+        character(len=4096) :: name
+
+        call read_unit_text(unit, text, error)
+        if (allocated(error)) return
+
+        inquire(unit=unit, name=name)
+        call load_table_from_text(table, text, trim(name), error)
+
+    end subroutine load_table_from_unit
+
+    !> Parse TOML text as toml_load does, naming `name` in parse errors. CRLF line ends
+    !> become LF first: toml-f rejects a CR after a multi-line string delimiter.
+    subroutine load_table_from_text(table, text, name, error)
+
+        !> TOML table read
+        type(toml_table), allocatable, intent(out) :: table
+
+        !> TOML text
+        character(len=*), intent(in) :: text
+
+        !> Name of the file the text comes from
+        character(len=*), intent(in) :: name
+
+        !> Error handling
+        type(error_t), allocatable, intent(out) :: error
+
+        type(toml_lexer) :: lexer
+        type(toml_error), allocatable :: parse_error
+
+        call new_lexer_from_string(lexer, crlf_to_lf(text))
+        if (len(name) > 0) lexer%filename = name
+
+        call parse(lexer, table, error=parse_error)
+        if (allocated(parse_error)) then
+            allocate (error)
+            call move_alloc(parse_error%message, error%message)
+        end if
+
+    end subroutine load_table_from_text
+
+    !> Drop the CR of each CRLF line end
+    pure function crlf_to_lf(text) result(lf)
+        character(len=*), intent(in) :: text
+        character(len=:), allocatable :: lf
+
+        integer :: i, n
+
+        allocate(character(len=len(text)) :: lf)
+        n = 0
+        do i = 1, len(text)
+            if (text(i:i) == achar(13) .and. i < len(text)) then
+                if (text(i+1:i+1) == new_line('a')) cycle
+            end if
+            n = n + 1
+            lf(n:n) = text(i:i)
+        end do
+        lf = lf(:n)
+
+    end function crlf_to_lf
 
     !> Check if an instance of the TOML data structure contains a list
     logical function has_list(table, key)

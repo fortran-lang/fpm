@@ -65,9 +65,9 @@ module fpm_dependency
   use fpm_manifest_dependency, only: manifest_has_changed, dependency_destroy
   use fpm_manifest_preprocess, only: operator(==)
   use fpm_strings, only: string_t, operator(.in.), operator(==), str
-  use tomlf, only: toml_table, toml_key, toml_error, toml_loads, toml_stat, toml_array, len, add_array
+  use tomlf, only: toml_table, toml_key, toml_error, toml_stat, toml_array, len, add_array
   use fpm_toml, only: toml_serialize, get_value, set_value, add_table, set_string, get_list, set_list, &
-                      read_unit_text
+                      load_table_from_unit, load_table_from_file
   use fpm_versioning, only: version_t, new_version
   use fpm_settings, only: fpm_global_settings, get_global_settings, official_registry_base_url
   use fpm_downloader, only: downloader_t
@@ -1260,15 +1260,16 @@ contains
     !> Error handling
     type(error_t), allocatable, intent(out) :: error
 
-    integer :: unit
+    type(toml_table), allocatable :: table
     logical :: exist
 
     inquire (file=file, exist=exist)
     if (.not. exist) return
 
-    open (file=file, newunit=unit)
-    call self%load_cache(unit, error)
-    close (unit)
+    call load_table_from_file(table, file, error)
+    if (allocated(error)) return
+
+    call self%load_cache(table, error)
   end subroutine load_cache_from_file
 
   !> Read dependency tree from file
@@ -1280,20 +1281,10 @@ contains
     !> Error handling
     type(error_t), allocatable, intent(out) :: error
 
-    type(toml_error), allocatable :: parse_error
     type(toml_table), allocatable :: table
-    character(len=:), allocatable :: text
 
-    call read_unit_text(unit, text, error)
+    call load_table_from_unit(table, unit, error)
     if (allocated(error)) return
-
-    call toml_loads(table, text, error=parse_error)
-
-    if (allocated(parse_error)) then
-      allocate (error)
-      call move_alloc(parse_error%message, error%message)
-      return
-    end if
 
     call self%load_cache(table, error)
     if (allocated(error)) return

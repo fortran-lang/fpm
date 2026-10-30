@@ -47,6 +47,7 @@ contains
 
         testsuite = [ &
            & new_unittest("valid-toml", test_valid_toml), &
+           & new_unittest("valid-toml-crlf", test_valid_toml_crlf), &
            & new_unittest("invalid-toml", test_invalid_toml, should_fail=.true.), &
            & new_unittest("missing-file", test_missing_file, should_fail=.true.), &
            & new_unittest("read-unit-text", test_read_unit_text), &
@@ -120,6 +121,31 @@ contains
         close(unit, status='delete')
 
     end subroutine test_valid_toml
+
+    !> A manifest with CRLF line ends, as git checks it out on Windows, is read
+    subroutine test_valid_toml_crlf(error)
+
+        !> Error handling
+        type(error_t), allocatable, intent(out) :: error
+
+        type(toml_table), allocatable :: table
+        character(len=*), parameter :: manifest = 'fpm-valid-toml-crlf.toml'
+        character(len=*), parameter :: crlf = achar(13)//achar(10)
+        integer :: unit
+
+        open(file=manifest, newunit=unit, access='stream', form='unformatted')
+        write(unit) 'name = "example"'//crlf// &
+            & '[library]'//crlf// &
+            & 'source-dir = """'//crlf// &
+            & 'lib""" # comment'//crlf
+        close(unit)
+
+        call read_package_file(table, manifest, error)
+
+        open(file=manifest, newunit=unit)
+        close(unit, status='delete')
+
+    end subroutine test_valid_toml_crlf
 
 
     !> Try to read an invalid TOML document
