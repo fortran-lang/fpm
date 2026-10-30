@@ -1173,13 +1173,19 @@ subroutine run_argv(args,echo,exitstat,verbose,redirect)
             redirect_file//c_null_char)
 #else
     else
+        !$omp critical (run_command)
         call run(command, echo=.false., verbose=verbose_local, redirect=redirect_file, exitstat=stat)
+        !$omp end critical (run_command)
 #endif
     end if
 
     ! Fall back to the shell if the argv spawn was unavailable or failed (stat < 0).
+    ! The shell forks, which is not safe to call concurrently from OpenMP
+    ! threads, so this rare path stays serialized.
     if (stat < 0) then
+        !$omp critical (run_command)
         call run(command, echo=.false., verbose=verbose_local, redirect=redirect_file, exitstat=stat)
+        !$omp end critical (run_command)
     end if
 
     ! Some posix_spawnp implementations start the child anyway and report a
