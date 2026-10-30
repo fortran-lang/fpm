@@ -1557,10 +1557,7 @@ subroutine run_tool(command, argv, tokenized, echo, verbose, log_file, stat)
     if (tokenized) then
         call run_argv(argv, echo=echo, verbose=verbose, redirect=log_file, exitstat=stat)
     else
-        ! The shell forks, which is not safe from several threads at once
-        !$omp critical (run_command)
         call run(command, echo=echo, verbose=verbose, redirect=log_file, exitstat=stat)
-        !$omp end critical (run_command)
     end if
 
 end subroutine run_tool
@@ -1786,9 +1783,8 @@ subroutine make_archive(self, output, args, log_file, stat, dry_run)
     end if
 
     ! Build the argv token list: archiver + flags, the archive name, then the
-    ! object files (already individual tokens). argv spawn is fork-safe under
-    ! OpenMP, so the archive runs without critical(run_command), and it has no
-    ! shell command-length ceiling.
+    ! object files (already individual tokens). argv spawn is safe from several
+    ! OpenMP threads, and it has no shell command-length ceiling.
     tokenized = .true.
     call split_append(argv, self%ar, .false., .false., tokenized)
     if (tokenized) then
