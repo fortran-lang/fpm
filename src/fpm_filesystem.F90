@@ -61,6 +61,14 @@ module fpm_filesystem
     end interface
 #endif
 
+    interface
+        ! Not `close(status='delete')`: LLVM Flang silently keeps the file on Windows
+        integer(c_int) function c_remove(path) bind(C, name="remove")
+            import :: c_char, c_int
+            character(kind=c_char), intent(in) :: path(*)
+        end function c_remove
+    end interface
+
 contains
 
 !> Extract filename from path with/without suffix
@@ -392,14 +400,6 @@ function getfile(fileName, iostat, iomsg, delete) result(file)
     logical, optional, intent(in) :: delete
     !> Return as an allocatable string
     character(len=:), allocatable :: file
-
-    interface
-        ! Not `close(status='delete')`: LLVM Flang silently keeps the file on Windows
-        integer(c_int) function c_remove(path) bind(C, name="remove")
-            import :: c_char, c_int
-            character(kind=c_char), intent(in) :: path(*)
-        end function c_remove
-    end interface
 
     ! Local variables
     character(*), parameter :: CRLF = achar(13)//new_line('a')
@@ -882,15 +882,16 @@ end subroutine getline
 
 
 !> delete a file by filename
-subroutine delete_file(file)
+subroutine delete_file(file, stat)
     character(len=*), intent(in) :: file
+    !> [optional] Result of remove(), 0 on success
+    integer, optional, intent(out) :: stat
     logical :: exist
-    integer :: unit
+    integer :: iostat
+    iostat = 0
     inquire(file=file, exist=exist)
-    if (exist) then
-        open(file=file, newunit=unit)
-        close(unit, status="delete")
-    end if
+    if (exist) iostat = c_remove(file//c_null_char)
+    if (present(stat)) stat = iostat
 end subroutine delete_file
 
 !> write trimmed character data to a file if it does not exist
