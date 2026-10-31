@@ -92,7 +92,7 @@
 
             <li class="list-inline-item" id="statements"><i class="fa fa-list-ol"></i>
               <a data-bs-toggle="tooltip" data-bs-placement="bottom" data-bs-html="true"
-                 title=" 4.6% of total for modules and submodules.">839 statements</a>
+                 title=" 5.0% of total for modules and submodules.">924 statements</a>
             </li>
 
             <li class="list-inline-item" id="source-file">
@@ -152,6 +152,7 @@
             <a class="list-group-item" href="../module/fpm_filesystem.html#proc-get_dos_path">get_dos_path</a>
             <a class="list-group-item" href="../module/fpm_filesystem.html#proc-get_local_prefix">get_local_prefix</a>
             <a class="list-group-item" href="../module/fpm_filesystem.html#proc-get_temp_filename">get_temp_filename</a>
+            <a class="list-group-item" href="../module/fpm_filesystem.html#proc-getfile">getfile</a>
             <a class="list-group-item" href="../module/fpm_filesystem.html#proc-is_absolute_path">is_absolute_path</a>
             <a class="list-group-item" href="../module/fpm_filesystem.html#proc-is_dir">is_dir</a>
             <a class="list-group-item" href="../module/fpm_filesystem.html#proc-is_hidden_file">is_hidden_file</a>
@@ -213,11 +214,11 @@
         <ul class="list-group list-group-flush">
             <li class="list-group-item">
               <ul class="list-inline">
-                  <li class="list-inline-item"><a href='fpm_strings.html'>fpm_strings</a></li>
                   <li class="list-inline-item"><a href='http://fortranwiki.org/fortran/show/iso_c_binding'>iso_c_binding</a></li>
-                  <li class="list-inline-item"><a href='http://fortranwiki.org/fortran/show/iso_fortran_env'>iso_fortran_env</a></li>
-                  <li class="list-inline-item"><a href='fpm_error.html'>fpm_error</a></li>
                   <li class="list-inline-item"><a href='fpm_environment.html'>fpm_environment</a></li>
+                  <li class="list-inline-item"><a href='fpm_error.html'>fpm_error</a></li>
+                  <li class="list-inline-item"><a href='http://fortranwiki.org/fortran/show/iso_fortran_env'>iso_fortran_env</a></li>
+                  <li class="list-inline-item"><a href='fpm_strings.html'>fpm_strings</a></li>
                   <li class="list-inline-item">shlex_module</li>
               </ul>
             </li>
@@ -256,7 +257,7 @@
     <tbody>
         <tr>
             <td>
-              <span class="anchor" id="variable-path~22"></span>
+              <span class="anchor" id="variable-path~11"></span>
               character(len=*),
             </td>
 <td>intent(in)</td>
@@ -271,7 +272,7 @@
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-suffix~2"></span>
+              <span class="anchor" id="variable-suffix"></span>
               logical,
             </td>
 <td>intent(in),</td>
@@ -318,7 +319,7 @@
     <tbody>
         <tr>
             <td>
-              <span class="anchor" id="variable-path~23"></span>
+              <span class="anchor" id="variable-path~12"></span>
               character(len=*),
             </td>
 <td>intent(in)</td>
@@ -364,7 +365,7 @@ direct path). Cross-platform via which()/exists().</p>
     <tbody>
         <tr>
             <td>
-              <span class="anchor" id="variable-cmd~6"></span>
+              <span class="anchor" id="variable-cmd~5"></span>
               character(len=*),
             </td>
 <td>intent(in)</td>
@@ -411,7 +412,7 @@ Uses fpm&rsquo;s shell lexer so quoted paths stay intact and trailing arguments
     <tbody>
         <tr>
             <td>
-              <span class="anchor" id="variable-cmd~5"></span>
+              <span class="anchor" id="variable-cmd~4"></span>
               character(len=*),
             </td>
 <td>intent(in)</td>
@@ -456,7 +457,7 @@ Uses fpm&rsquo;s shell lexer so quoted paths stay intact and trailing arguments
     <tbody>
         <tr>
             <td>
-              <span class="anchor" id="variable-path~24"></span>
+              <span class="anchor" id="variable-path~13"></span>
               character(len=*),
             </td>
 <td>intent(in)</td>
@@ -501,7 +502,7 @@ Uses fpm&rsquo;s shell lexer so quoted paths stay intact and trailing arguments
     <tbody>
         <tr>
             <td>
-              <span class="anchor" id="variable-filename~8"></span>
+              <span class="anchor" id="variable-filename~6"></span>
               character(len=*),
             </td>
 <td>intent(in)</td>
@@ -547,7 +548,7 @@ No need to convert if there are no spaces</p><a href="../proc/get_dos_path.html"
     <tbody>
         <tr>
             <td>
-              <span class="anchor" id="variable-path~30"></span>
+              <span class="anchor" id="variable-path~20"></span>
               character(len=*),
             </td>
 <td>intent(in)</td>
@@ -562,7 +563,7 @@ No need to convert if there are no spaces</p><a href="../proc/get_dos_path.html"
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-error~202"></span>
+              <span class="anchor" id="variable-error~70"></span>
               type(<a href='../type/error_t.html'>error_t</a>),
             </td>
 <td>intent(out),</td>
@@ -607,7 +608,7 @@ No need to convert if there are no spaces</p><a href="../proc/get_dos_path.html"
     <tbody>
         <tr>
             <td>
-              <span class="anchor" id="variable-os~3"></span>
+              <span class="anchor" id="variable-os~2"></span>
               integer,
             </td>
 <td>intent(in),</td>
@@ -655,6 +656,101 @@ Works with MinGW</p>
   </div>
 
               <div class="card">
+    <div class="card-header codesum"><span class="anchor" id="proc-getfile"></span> <h3>public  function <a href='../proc/getfile.html'>getfile</a>(fileName, iostat, iomsg, delete) result(file)  
+</h3></div>
+    <div class="card-body">
+          
+  <p>Read a whole ASCII file into an allocatable string, without its trailing newlines, and
+optionally delete it afterwards. Ported from stdlib&rsquo;s <code>getfile</code>, with an integer flag in
+place of the state type: on error, if <code>iostat</code> is not requested, the code stops.
+Check if the file should be deleted after reading
+Check file existing
+Retrieve file size, of the open unit: LLVM Flang on Windows returns -1 by file name</p>
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-filename"></span>
+              character(len=*),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>fileName</strong></td>
+            <td>
+<p>Input file name</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-iostat~2"></span>
+              integer,
+            </td>
+<td>intent(out),</td>
+              <td>optional</td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>iostat</strong></td>
+            <td>
+<p>[optional] Error flag, 0 on success</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-iomsg~2"></span>
+              character(len=:),
+            </td>
+<td>intent(out),</td>
+              <td>optional,</td>            <td>
+              allocatable
+            </td>
+            <td>::</td>
+            <td><strong>iomsg</strong></td>
+            <td>
+<p>[optional] Error message</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-delete"></span>
+              logical,
+            </td>
+<td>intent(in),</td>
+              <td>optional</td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>delete</strong></td>
+            <td>
+<p>[optional] Delete file after reading? Default: do not delete</p>
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+    <h4>
+    Return Value
+    <small>character(len=:), allocatable</small>
+    </h4>
+    <p>Return as an allocatable string</p>
+
+    </div>
+  </div>
+
+              <div class="card">
     <div class="card-header codesum"><span class="anchor" id="proc-is_absolute_path"></span> <h3>public  function <a href='../proc/is_absolute_path.html'>is_absolute_path</a>(path, is_unix)  
 </h3></div>
     <div class="card-body">
@@ -674,7 +770,7 @@ Works with MinGW</p>
     <tbody>
         <tr>
             <td>
-              <span class="anchor" id="variable-path~29"></span>
+              <span class="anchor" id="variable-path~19"></span>
               character(len=*),
             </td>
 <td>intent(in)</td>
@@ -689,7 +785,7 @@ Works with MinGW</p>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-is_unix~4"></span>
+              <span class="anchor" id="variable-is_unix~2"></span>
               logical,
             </td>
 <td>intent(in),</td>
@@ -734,7 +830,7 @@ Works with MinGW</p>
     <tbody>
         <tr>
             <td>
-              <span class="anchor" id="variable-dir~10"></span>
+              <span class="anchor" id="variable-dir~8"></span>
               character(len=*),
             </td>
 <td>intent(in)</td>
@@ -929,7 +1025,7 @@ Works with MinGW</p>
     <tbody>
         <tr>
             <td>
-              <span class="anchor" id="variable-s~25"></span>
+              <span class="anchor" id="variable-s~2"></span>
               integer,
             </td>
 <td>intent(in)</td>
@@ -974,7 +1070,7 @@ Works with MinGW</p>
     <tbody>
         <tr>
             <td>
-              <span class="anchor" id="variable-path~25"></span>
+              <span class="anchor" id="variable-path~14"></span>
               character(len=*),
             </td>
 <td>intent(in)</td>
@@ -1019,7 +1115,7 @@ Works with MinGW</p>
     <tbody>
         <tr>
             <td>
-              <span class="anchor" id="variable-filename~6"></span>
+              <span class="anchor" id="variable-filename~4"></span>
               character(len=*),
             </td>
 <td>intent(in)</td>
@@ -1064,7 +1160,7 @@ Works with MinGW</p>
     <tbody>
         <tr>
             <td>
-              <span class="anchor" id="variable-filename~5"></span>
+              <span class="anchor" id="variable-filename~3"></span>
               character(len=*),
             </td>
 <td>intent(in)</td>
@@ -1109,7 +1205,7 @@ Works with MinGW</p>
     <tbody>
         <tr>
             <td>
-              <span class="anchor" id="variable-path~28"></span>
+              <span class="anchor" id="variable-path~18"></span>
               character(len=*),
             </td>
 <td>intent(in)</td>
@@ -1158,7 +1254,7 @@ Works with MinGW</p>
     <tbody>
         <tr>
             <td>
-              <span class="anchor" id="variable-command~12"></span>
+              <span class="anchor" id="variable-command~13"></span>
               character(len=*),
             </td>
 <td>intent(in)</td>
@@ -1203,7 +1299,7 @@ Works with MinGW</p>
     <tbody>
         <tr>
             <td>
-              <span class="anchor" id="variable-path~27"></span>
+              <span class="anchor" id="variable-path~17"></span>
               character(len=*),
             </td>
 <td>intent(in)</td>
@@ -1253,7 +1349,7 @@ Works with MinGW</p>
     <tbody>
         <tr>
             <td>
-              <span class="anchor" id="variable-file~9"></span>
+              <span class="anchor" id="variable-file~6"></span>
               character(len=*),
             </td>
 <td>intent(in)</td>
@@ -1293,7 +1389,7 @@ Works with MinGW</p>
     <tbody>
         <tr>
             <td>
-              <span class="anchor" id="variable-cmd~7"></span>
+              <span class="anchor" id="variable-cmd~6"></span>
               character(len=*),
             </td>
 <td>intent(in)</td>
@@ -1308,7 +1404,7 @@ Works with MinGW</p>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-output~10"></span>
+              <span class="anchor" id="variable-output~11"></span>
               character(len=:),
             </td>
 <td>intent(out),</td>
@@ -1323,7 +1419,7 @@ Works with MinGW</p>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-error~201"></span>
+              <span class="anchor" id="variable-error~69"></span>
               type(<a href='../type/error_t.html'>error_t</a>),
             </td>
 <td>intent(out),</td>
@@ -1338,7 +1434,7 @@ Works with MinGW</p>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-verbose~17"></span>
+              <span class="anchor" id="variable-verbose~18"></span>
               logical,
             </td>
 <td>intent(in),</td>
@@ -1433,7 +1529,7 @@ Works with MinGW</p>
     <tbody>
         <tr>
             <td>
-              <span class="anchor" id="variable-filename~9"></span>
+              <span class="anchor" id="variable-filename~7"></span>
               character(len=*),
             </td>
 <td>intent(in)</td>
@@ -1503,7 +1599,7 @@ Works with MinGW</p>
     <tbody>
         <tr>
             <td>
-              <span class="anchor" id="variable-filename~10"></span>
+              <span class="anchor" id="variable-filename~8"></span>
               character(len=*),
             </td>
 <td>intent(in)</td>
@@ -1558,7 +1654,7 @@ Works with MinGW</p>
     <tbody>
         <tr>
             <td>
-              <span class="anchor" id="variable-home~3"></span>
+              <span class="anchor" id="variable-home~2"></span>
               character(len=:),
             </td>
 <td>intent(out),</td>
@@ -1573,7 +1669,7 @@ Works with MinGW</p>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-error~200"></span>
+              <span class="anchor" id="variable-error~68"></span>
               type(<a href='../type/error_t.html'>error_t</a>),
             </td>
 <td>intent(out),</td>
@@ -1617,7 +1713,7 @@ Works with MinGW</p>
     <tbody>
         <tr>
             <td>
-              <span class="anchor" id="variable-unit~28"></span>
+              <span class="anchor" id="variable-unit~12"></span>
               integer,
             </td>
 <td>intent(in)</td>
@@ -1632,7 +1728,7 @@ Works with MinGW</p>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-line~14"></span>
+              <span class="anchor" id="variable-line~12"></span>
               character(len=:),
             </td>
 <td>intent(out),</td>
@@ -1662,7 +1758,7 @@ Works with MinGW</p>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-iomsg~2"></span>
+              <span class="anchor" id="variable-iomsg~3"></span>
               character(len=:),
             </td>
 <td></td>
@@ -1702,7 +1798,7 @@ Works with MinGW</p>
     <tbody>
         <tr>
             <td>
-              <span class="anchor" id="variable-dir~12"></span>
+              <span class="anchor" id="variable-dir~10"></span>
               character(len=*),
             </td>
 <td>intent(in)</td>
@@ -1717,7 +1813,7 @@ Works with MinGW</p>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-files~3"></span>
+              <span class="anchor" id="variable-files"></span>
               type(<a href='../type/string_t.html'>string_t</a>),
             </td>
 <td>intent(out),</td>
@@ -1772,7 +1868,7 @@ Works with MinGW</p>
     <tbody>
         <tr>
             <td>
-              <span class="anchor" id="variable-dir~11"></span>
+              <span class="anchor" id="variable-dir~9"></span>
               character(len=*),
             </td>
 <td>intent(in)</td>
@@ -1787,7 +1883,7 @@ Works with MinGW</p>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-echo~6"></span>
+              <span class="anchor" id="variable-echo~7"></span>
               logical,
             </td>
 <td>intent(in),</td>
@@ -1827,7 +1923,7 @@ Works with MinGW</p>
     <tbody>
         <tr>
             <td>
-              <span class="anchor" id="variable-is_unix~3"></span>
+              <span class="anchor" id="variable-is_unix"></span>
               logical,
             </td>
 <td>intent(in)</td>
@@ -1842,7 +1938,7 @@ Works with MinGW</p>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-dir~14"></span>
+              <span class="anchor" id="variable-dir~12"></span>
               character(len=*),
             </td>
 <td>intent(in)</td>
@@ -1857,7 +1953,7 @@ Works with MinGW</p>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-echo~9"></span>
+              <span class="anchor" id="variable-echo~10"></span>
               logical,
             </td>
 <td>intent(in),</td>
@@ -1901,7 +1997,7 @@ Works with MinGW</p>
     <tbody>
         <tr>
             <td>
-              <span class="anchor" id="variable-cmd~4"></span>
+              <span class="anchor" id="variable-cmd~3"></span>
               character(len=*),
             </td>
 <td>intent(in)</td>
@@ -1916,7 +2012,7 @@ Works with MinGW</p>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-echo~7"></span>
+              <span class="anchor" id="variable-echo~8"></span>
               logical,
             </td>
 <td>intent(in),</td>
@@ -1946,7 +2042,7 @@ Works with MinGW</p>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-verbose~15"></span>
+              <span class="anchor" id="variable-verbose~16"></span>
               logical,
             </td>
 <td>intent(in),</td>
@@ -1961,7 +2057,7 @@ Works with MinGW</p>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-redirect~3"></span>
+              <span class="anchor" id="variable-redirect~2"></span>
               character(len=*),
             </td>
 <td>intent(in),</td>
@@ -2001,7 +2097,7 @@ Works with MinGW</p>
     <tbody>
         <tr>
             <td>
-              <span class="anchor" id="variable-args~12"></span>
+              <span class="anchor" id="variable-args~10"></span>
               type(<a href='../type/string_t.html'>string_t</a>),
             </td>
 <td>intent(in)</td>
@@ -2016,7 +2112,7 @@ Works with MinGW</p>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-echo~8"></span>
+              <span class="anchor" id="variable-echo~9"></span>
               logical,
             </td>
 <td>intent(in),</td>
@@ -2046,7 +2142,7 @@ Works with MinGW</p>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-verbose~16"></span>
+              <span class="anchor" id="variable-verbose~17"></span>
               logical,
             </td>
 <td>intent(in),</td>
@@ -2061,7 +2157,7 @@ Works with MinGW</p>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-redirect~4"></span>
+              <span class="anchor" id="variable-redirect~3"></span>
               character(len=*),
             </td>
 <td>intent(in),</td>
@@ -2159,7 +2255,7 @@ Works with MinGW</p>
             <p class="text-end">
               Documentation generated by
               <a href="https://github.com/Fortran-FOSS-Programmers/ford">FORD</a>
- on 2026-10-31 15:54 +0000             </p>
+ on 2026-10-31 17:21 +0000             </p>
           </div>
         </div>
         <br>

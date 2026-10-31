@@ -118,7 +118,7 @@
                  <td><p>Add default profiles to existing profiles array if they don&rsquo;t already exist</p></td>
                </tr>
 			   <tr>
-                 <td><a href='../proc/add_dependency~2.html'>add_dependency</a></td>
+                 <td><a href='../proc/add_dependency.html'>add_dependency</a></td>
                  <td><a href='../module/fpm_targets.html'>fpm_targets</a></td>
                  <td>Subroutine</td>
                  <td><p>Add pointer to dependeny in target%dependencies</p></td>
@@ -654,7 +654,7 @@ Returns an error if the variable did not exist in the first place</p><a href="..
                  <td><p>Code git descriptor to a string</p></td>
                </tr>
 			   <tr>
-                 <td><a href='../proc/destroy.html'>destroy</a></td>
+                 <td><a href='../proc/destroy~2.html'>destroy</a></td>
                  <td><a href='../module/fpm_meta_base.html'>fpm_meta_base</a></td>
                  <td>Subroutine</td>
                  <td></td>
@@ -678,16 +678,16 @@ Returns an error if the variable did not exist in the first place</p><a href="..
                  <td><p>Extract dirname from path</p></td>
                </tr>
 			   <tr>
-                 <td><a href='../proc/dump_to_toml~2.html'>dump_to_toml</a></td>
+                 <td><a href='../proc/dump_to_toml.html'>dump_to_toml</a></td>
                  <td><a href='../module/fpm_git.html'>fpm_git</a></td>
                  <td>Subroutine</td>
                  <td><p>Dump dependency to toml table</p></td>
                </tr>
 			   <tr>
-                 <td><a href='../proc/dump_to_toml~6.html'>dump_to_toml</a></td>
+                 <td><a href='../proc/dump_to_toml~2.html'>dump_to_toml</a></td>
                  <td><a href='../module/fpm_compiler.html'>fpm_compiler</a></td>
                  <td>Subroutine</td>
-                 <td><p>Dump dependency to toml table</p><a href="../proc/dump_to_toml~6.html" class="pull-right"><emph>Read more&hellip;</emph></a></td>
+                 <td><p>Dump dependency to toml table</p><a href="../proc/dump_to_toml~2.html" class="pull-right"><emph>Read more&hellip;</emph></a></td>
                </tr>
 			   <tr>
                  <td><a href='../proc/ends_with_blank.html'>ends_with_blank</a></td>
@@ -1067,6 +1067,17 @@ Works with MinGW</p></td>
                  <td><p>Save access to working directory in settings, in case setting have not been allocated</p></td>
                </tr>
 			   <tr>
+                 <td><a href='../proc/getfile.html'>getfile</a></td>
+                 <td><a href='../module/fpm_filesystem.html'>fpm_filesystem</a></td>
+                 <td>Function</td>
+                 <td><p>Read a whole ASCII file into an allocatable string, without its trailing newlines, and
+optionally delete it afterwards. Ported from stdlib&rsquo;s <code>getfile</code>, with an integer flag in
+place of the state type: on error, if <code>iostat</code> is not requested, the code stops.
+Check if the file should be deleted after reading
+Check file existing
+Retrieve file size, of the open unit: LLVM Flang on Windows returns -1 by file name</p></td>
+               </tr>
+			   <tr>
                  <td><a href='../proc/getline.html'>getline</a></td>
                  <td><a href='../module/fpm_filesystem.html'>fpm_filesystem</a></td>
                  <td>Subroutine</td>
@@ -1129,7 +1140,7 @@ All checks passed!</p></td>
    contain wildcard characters.</p><a href="../proc/glob.html" class="pull-right"><emph>Read more&hellip;</emph></a></td>
                </tr>
 			   <tr>
-                 <td><a href='../proc/handle_error~3.html'>handle_error</a></td>
+                 <td><a href='../proc/handle_error~2.html'>handle_error</a></td>
                  <td><a href='../program/main.html'>main</a></td>
                  <td>Subroutine</td>
                  <td></td>
@@ -1165,7 +1176,7 @@ All checks passed!</p></td>
 3) If longer, package name must be followed by default separator plus at least one char</p><a href="../proc/has_valid_standard_prefix.html" class="pull-right"><emph>Read more&hellip;</emph></a></td>
                </tr>
 			   <tr>
-                 <td><a href='../proc/info~2.html'>info</a></td>
+                 <td><a href='../proc/info.html'>info</a></td>
                  <td><a href='../module/fpm_git.html'>fpm_git</a></td>
                  <td>Subroutine</td>
                  <td><p>Show information on git target</p></td>
@@ -1363,16 +1374,29 @@ Cleanup</p><a href="../proc/init_stdlib.html" class="pull-right"><emph>Read more
                  <td><p>Get file &amp; directory names in directory <code>dir</code> using iso_c_binding.</p><a href="../proc/list_files.html" class="pull-right"><emph>Read more&hellip;</emph></a></td>
                </tr>
 			   <tr>
-                 <td><a href='../proc/load_from_toml~2.html'>load_from_toml</a></td>
+                 <td><a href='../proc/load_from_toml.html'>load_from_toml</a></td>
                  <td><a href='../module/fpm_git.html'>fpm_git</a></td>
                  <td>Subroutine</td>
-                 <td><p>Read dependency from toml table (no checks made at this stage)</p><a href="../proc/load_from_toml~2.html" class="pull-right"><emph>Read more&hellip;</emph></a></td>
+                 <td><p>Read dependency from toml table (no checks made at this stage)</p><a href="../proc/load_from_toml.html" class="pull-right"><emph>Read more&hellip;</emph></a></td>
                </tr>
 			   <tr>
-                 <td><a href='../proc/load_from_toml~6.html'>load_from_toml</a></td>
+                 <td><a href='../proc/load_from_toml~2.html'>load_from_toml</a></td>
                  <td><a href='../module/fpm_compiler.html'>fpm_compiler</a></td>
                  <td>Subroutine</td>
                  <td><p>Read dependency from toml table (no checks made at this stage)</p></td>
+               </tr>
+			   <tr>
+                 <td><a href='../proc/load_table_from_file.html'>load_table_from_file</a></td>
+                 <td><a href='../module/fpm_toml.html'>fpm_toml</a></td>
+                 <td>Subroutine</td>
+                 <td><p>Load a TOML table from a file read whole by getfile; parse errors name the file</p></td>
+               </tr>
+			   <tr>
+                 <td><a href='../proc/load_table_from_unit.html'>load_table_from_unit</a></td>
+                 <td><a href='../module/fpm_toml.html'>fpm_toml</a></td>
+                 <td>Subroutine</td>
+                 <td><p>Load a TOML table from a formatted unit as toml_load does, without the re-open
+(see read_unit_text). Parse errors name the unit&rsquo;s file.</p></td>
                </tr>
 			   <tr>
                  <td><a href='../proc/lower.html'>lower</a></td>
@@ -1722,6 +1746,13 @@ gfortran does not look into by default)</p></td>
                  <td><p>Process the configuration file to a TOML data structure</p></td>
                </tr>
 			   <tr>
+                 <td><a href='../proc/read_unit_text.html'>read_unit_text</a></td>
+                 <td><a href='../module/fpm_toml.html'>fpm_toml</a></td>
+                 <td>Subroutine</td>
+                 <td><p>Read a formatted unit to its end, one line per record. toml-f and jonquil read a unit
+by re-opening it first, which NAG 7.2 rejects for a unit from NEWUNIT=</p></td>
+               </tr>
+			   <tr>
                  <td><a href='../proc/regex_version_from_text.html'>regex_version_from_text</a></td>
                  <td><a href='../module/fpm_versioning.html'>fpm_versioning</a></td>
                  <td>Function</td>
@@ -2043,7 +2074,7 @@ in case of errors.</p></td>
             <p class="text-end">
               Documentation generated by
               <a href="https://github.com/Fortran-FOSS-Programmers/ford">FORD</a>
- on 2026-10-31 15:54 +0000             </p>
+ on 2026-10-31 17:21 +0000             </p>
           </div>
         </div>
         <br>

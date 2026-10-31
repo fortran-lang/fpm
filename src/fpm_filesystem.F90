@@ -1,14 +1,14 @@
 !> This module contains general routines for interacting with the file system
 !!
 module fpm_filesystem
-    use,intrinsic :: iso_fortran_env, only : stdin=>input_unit, stdout=>output_unit, stderr=>error_unit
+    use,intrinsic :: iso_fortran_env, only : stdin=>input_unit, stdout=>output_unit, stderr=>error_unit, int64
     use,intrinsic :: iso_c_binding, only: c_new_line
     use fpm_environment, only: get_os_type, &
                                OS_UNKNOWN, OS_LINUX, OS_MACOS, OS_WINDOWS, &
                                OS_CYGWIN, OS_SOLARIS, OS_FREEBSD, OS_OPENBSD
     use fpm_environment, only: separator, get_env, os_is_unix
     use fpm_strings, only: f_string, replace, string_t, split, split_lines_first_last, dilate, add_strings, &
-        str_begins_with_str, string_cat
+        str_begins_with_str, string_cat, str
     use iso_c_binding, only: c_char, c_ptr, c_int, c_null_char, c_associated, c_f_pointer
     use fpm_error, only : fpm_stop, error_t, fatal_error
     use shlex_module, only: sh_split => split, ms_split
@@ -18,7 +18,7 @@ module fpm_filesystem
             mkdir, exists, get_temp_filename, windows_path, unix_path, getline, delete_file, fileopen, fileclose, &
             filewrite, warnwrite, parent_dir, is_hidden_file, read_lines, read_lines_expanded, which, run, &
             run_argv, os_delete_dir, is_absolute_path, get_home, execute_and_read_output, get_dos_path, &
-            command_program, command_not_found
+            command_program, command_not_found, getfile
 
 #ifndef FPM_BOOTSTRAP
     interface
@@ -377,6 +377,137 @@ function read_text_file(filename) result(string)
     close (fh)
 
 end function read_text_file
+
+!> Read a whole ASCII file into an allocatable string, without its trailing newlines, and
+!> optionally delete it afterwards. Ported from stdlib's `getfile`, with an integer flag in
+!> place of the state type: on error, if `iostat` is not requested, the code stops.
+function getfile(fileName, iostat, iomsg, delete) result(file)
+    !> Input file name
+    character(*), intent(in) :: fileName
+    !> [optional] Error flag, 0 on success
+    integer, optional, intent(out) :: iostat
+    !> [optional] Error message
+    character(len=:), allocatable, optional, intent(out) :: iomsg
+    !> [optional] Delete file after reading? Default: do not delete
+    logical, optional, intent(in) :: delete
+    !> Return as an allocatable string
+    character(len=:), allocatable :: file
+
+    interface
+        ! Not `close(status='delete')`: LLVM Flang silently keeps the file on Windows
+        integer(c_int) function c_remove(path) bind(C, name="remove")
+            import :: c_char, c_int
+            character(kind=c_char), intent(in) :: path(*)
+        end function c_remove
+    end interface
+
+    ! Local variables
+    character(*), parameter :: CRLF = achar(13)//new_line('a')
+    character(len=:), allocatable :: fileString, message
+    character(len=512) :: msg
+    character :: last_char
+    integer :: lun, stat
+    integer(int64) :: errpos, fileSize
+    logical :: is_present, want_deleted
+
+    ! Initializations
+    file = ""
+    message = ""
+    stat = 0
+
+    !> Check if the file should be deleted after reading
+    if (present(delete)) then
+        want_deleted = delete
+    else
+        want_deleted = .false.
+    end if
+
+    read_file: block
+
+        !> Check file existing
+        inquire(file=fileName, exist=is_present)
+        if (.not.is_present) then
+            stat = 1
+            message = 'File not present: '//fileName
+            exit read_file
+        end if
+
+        ! Read file
+        open(newunit=lun, file=fileName, &
+             form='unformatted', action='read', access='stream', status='old', &
+             iostat=stat, iomsg=msg)
+
+        if (stat /= 0) then
+            message = 'Cannot open '//fileName//' for read: '//trim(msg)
+            exit read_file
+        end if
+
+        !> Retrieve file size, of the open unit: LLVM Flang on Windows returns -1 by file name
+        inquire(unit=lun, size=fileSize)
+
+        invalid_size: if (fileSize < 0) then
+            stat = 1
+            message = fileName//' has invalid size='//str(fileSize)
+            close(lun)
+            exit read_file
+        end if invalid_size
+
+        remove_trailing_newline: if (fileSize > 0) then
+
+            last_char = CRLF(1:1)
+            fileSize = fileSize + 1
+
+            do while (scan(last_char, CRLF) > 0 .and. fileSize > 1)
+                fileSize = fileSize - 1
+                read(lun, pos=fileSize, iostat=stat, iomsg=msg) last_char
+
+                ! Read error
+                if (stat /= 0) then
+                    message = trim(msg)//' ('//fileName//' at byte '//str(fileSize)//')'
+                    close(lun)
+                    exit read_file
+                end if
+            end do
+
+        end if remove_trailing_newline
+
+        allocate(character(len=fileSize) :: fileString)
+
+        read_data: if (fileSize > 0) then
+
+            read(lun, pos=1, iostat=stat, iomsg=msg) fileString
+
+            ! Read error
+            if (stat /= 0) then
+                inquire(unit=lun, pos=errpos)
+                message = trim(msg)//' ('//fileName//' at byte '//str(errpos)//')'
+                close(lun)
+                exit read_file
+            end if
+
+        end if read_data
+
+        close(lun, iostat=stat)
+        if (stat /= 0) then
+            message = 'Cannot close '//fileName//' after reading'
+        elseif (want_deleted) then
+            stat = c_remove(fileName//c_null_char)
+            if (stat /= 0) message = 'Cannot delete '//fileName//' after reading'
+        end if
+
+        ! Process output
+        call move_alloc(from=fileString, to=file)
+
+    end block read_file
+
+    if (present(iomsg)) iomsg = message
+    if (present(iostat)) then
+        iostat = stat
+    elseif (stat /= 0) then
+        call fpm_stop(1, '*getfile*: '//message)
+    end if
+
+end function getfile
 
 !> Create a directory. Create subdirectories as needed
 subroutine mkdir(dir, echo)
