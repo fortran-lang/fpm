@@ -19,17 +19,22 @@ trap 'rm -rf "$work"' EXIT
 ndeps=8
 nexe=32
 
+# New library package, quietly unless it fails
+new_lib() {
+    "$fpm" new "$1" --lib > "$work/new.log" 2>&1 || { cat "$work/new.log"; exit 1; }
+}
+
 # Dependencies, each archived on its own (library.type) in the same build directory
-mkdir -p "$work/par/src" "$work/par/app"
-cd "$work/par"
-printf 'name = "par"\nlibrary.type = "static"\n[dependencies]\n' > fpm.toml
+cd "$work"
+new_lib par
+cd par
+mkdir app
+printf 'library.type = "static"\n[dependencies]\n' >> fpm.toml
 uses=""
 for i in $(seq 1 $ndeps); do
-    mkdir -p "dep$i/src"
-    printf 'name = "dep%s"\n' "$i" > "dep$i/fpm.toml"
-    printf 'module dep%s\n  integer, parameter :: d%s = %s\nend module\n' "$i" "$i" "$i" > "dep$i/src/dep$i.f90"
+    new_lib "dep$i"
     printf 'dep%s = { path = "dep%s" }\n' "$i" "$i" >> fpm.toml
-    uses="$uses  use dep$i\n"
+    uses="$uses  use dep$i, only: hello$i => say_hello\n"
 done
 printf "module par\n${uses}contains\n  integer function f(k)\n    integer, intent(in) :: k\n    f = k\n  end function\nend module\n" > src/par.f90
 
