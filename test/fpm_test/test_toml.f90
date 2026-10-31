@@ -1,11 +1,11 @@
 !> Define tests for the `fpm_toml` modules
 module test_toml
     use testsuite, only : new_unittest, unittest_t, error_t
-    use tomlf, only: toml_table, toml_load
+    use tomlf, only: toml_table, toml_loads
     use fpm_toml, only: read_package_file, toml_array, toml_key, toml_stat, &
         get_value, set_value, get_list, new_table, add_table, add_array, len, &
         toml_error, toml_serialize, check_keys, set_list, set_string, &
-        name_is_json
+        name_is_json, read_unit_text
     use tomlf_constants, only: tf_i8
     use fpm_git, only: git_target_t, git_target_revision, git_target_branch, &
          & git_target_tag
@@ -47,8 +47,10 @@ contains
 
         testsuite = [ &
            & new_unittest("valid-toml", test_valid_toml), &
+           & new_unittest("valid-toml-crlf", test_valid_toml_crlf), &
            & new_unittest("invalid-toml", test_invalid_toml, should_fail=.true.), &
            & new_unittest("missing-file", test_missing_file, should_fail=.true.), &
+           & new_unittest("read-unit-text", test_read_unit_text), &
            & new_unittest("serialize-git-target", git_target_roundtrip), &
            & new_unittest("serialize-git-invalid", git_target_invalid, should_fail=.true.), &
            & new_unittest("serialize-dependency-config", dependency_config_roundtrip), &
@@ -120,6 +122,31 @@ contains
 
     end subroutine test_valid_toml
 
+    !> A manifest with CRLF line ends, as git checks it out on Windows, is read
+    subroutine test_valid_toml_crlf(error)
+
+        !> Error handling
+        type(error_t), allocatable, intent(out) :: error
+
+        type(toml_table), allocatable :: table
+        character(len=*), parameter :: manifest = 'fpm-valid-toml-crlf.toml'
+        character(len=*), parameter :: crlf = achar(13)//achar(10)
+        integer :: unit
+
+        open(file=manifest, newunit=unit, access='stream', form='unformatted')
+        write(unit) 'name = "example"'//crlf// &
+            & '[library]'//crlf// &
+            & 'source-dir = """'//crlf// &
+            & 'lib""" # comment'//crlf
+        close(unit)
+
+        call read_package_file(table, manifest, error)
+
+        open(file=manifest, newunit=unit)
+        close(unit, status='delete')
+
+    end subroutine test_valid_toml_crlf
+
 
     !> Try to read an invalid TOML document
     subroutine test_invalid_toml(error)
@@ -160,6 +187,38 @@ contains
         call read_package_file(table, 'low+chance+of+existing.toml', error)
 
     end subroutine test_missing_file
+
+    !> A unit from NEWUNIT= is read to its end, including a last line without a newline
+    subroutine test_read_unit_text(error)
+
+        !> Error handling
+        type(error_t), allocatable, intent(out) :: error
+
+        type(toml_table), allocatable :: table
+        character(len=*), parameter :: file = 'fpm-read-unit-text.toml'
+        character(len=:), allocatable :: text
+        integer :: unit, b
+
+        open(file=file, newunit=unit, access='stream', form='unformatted')
+        write(unit) 'a = 1'//new_line('a')//'b = 2'
+        close(unit)
+
+        open(file=file, newunit=unit)
+        call read_unit_text(unit, text, error)
+        close(unit, status='delete')
+        if (allocated(error)) return
+
+        call toml_loads(table, text)
+        if (.not.allocated(table)) then
+            call fatal_error(error, 'read_unit_text: text read is not valid TOML')
+            return
+        end if
+
+        b = 0
+        call get_value(table, 'b', b)
+        if (b /= 2) call fatal_error(error, 'read_unit_text: last line without a newline was lost')
+
+    end subroutine test_read_unit_text
 
     !> Test git_target_t serialization
     subroutine git_target_roundtrip(error)
@@ -1101,19 +1160,7 @@ contains
         !> The TOML table
         type(toml_table), allocatable, intent(out) :: table
 
-        integer :: iunit
-
-        ! Write
-        open(newunit=iunit,form='formatted',status='scratch',action='readwrite',recl=1073741824)
-
-        !> Dump to scratch file
-        write(iunit,*) string
-
-        !> Load from scratch file
-        rewind(iunit)
-        call toml_load(table, iunit)
-
-        close(iunit)
+        call toml_loads(table, string)
 
     end subroutine string_to_toml
 

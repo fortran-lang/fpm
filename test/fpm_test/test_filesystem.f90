@@ -3,7 +3,7 @@ module test_filesystem
     use fpm_filesystem, only: canon_path, is_dir, mkdir, os_delete_dir, &
                               join_path, is_absolute_path, get_home, &
                               delete_file, read_lines, get_temp_filename, &
-                              command_program, command_not_found
+                              command_program, command_not_found, getfile
     use fpm_environment, only: OS_WINDOWS, get_os_type, os_is_unix
     use fpm_strings, only: string_t, split_lines_first_last
     implicit none
@@ -28,7 +28,8 @@ contains
             & new_unittest("test-crlf-lines", test_dir_with_crlf), &
             & new_unittest("command-program-standard", test_command_program_standard), &
             & new_unittest("command-not-found-missing", test_command_not_found_missing), &
-            & new_unittest("command-not-found-present", test_command_not_found_present) &
+            & new_unittest("command-not-found-present", test_command_not_found_present), &
+            & new_unittest("getfile", test_getfile) &
             ]
 
     end subroutine collect_filesystem
@@ -525,6 +526,44 @@ contains
         call delete_file(temp_file)
 
     end subroutine test_command_not_found_present
+
+    !> getfile reads a whole file, keeping inner CRLF line ends and dropping trailing ones
+    subroutine test_getfile(error)
+        type(error_t), allocatable, intent(out) :: error
+
+        character(len=*), parameter :: crlf = achar(13)//new_line('a')
+        character(len=*), parameter :: expected = 'a = 1'//crlf//'b = 2'
+        character(len=:), allocatable :: file, content, message
+        integer :: unit, stat
+        logical :: exist
+
+        file = get_temp_filename()
+        open(newunit=unit, file=file, access='stream', form='unformatted', action='write')
+        write(unit) expected//crlf//crlf
+        close(unit)
+
+        content = getfile(file, iostat=stat, delete=.true.)
+        if (stat /= 0) then
+            call test_failed(error, "getfile could not read an existing file")
+            return
+        end if
+        if (len(content) /= len(expected) .or. content /= expected) then
+            call test_failed(error, "getfile should keep inner line ends and drop trailing ones")
+            return
+        end if
+
+        inquire(file=file, exist=exist)
+        if (exist) then
+            call test_failed(error, "getfile did not delete the file")
+            return
+        end if
+
+        content = getfile(file, iostat=stat, iomsg=message)
+        if (stat == 0 .or. len(message) == 0) then
+            call test_failed(error, "getfile should report a missing file")
+        end if
+
+    end subroutine test_getfile
 
 
 end module test_filesystem
