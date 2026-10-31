@@ -118,7 +118,9 @@ subroutine build_package(targets,model,verbose,dry_run)
     ! Loop over parallel schedule regions
     do i=1,size(schedule_ptr)-1
 
-        ! Build targets in schedule region i
+        ! Build targets in schedule region i. gfortran keeps the length of a deferred-length
+        ! character function result in a static variable that all threads share: code run
+        ! from this loop takes such results under critical (fpm_string_result)
         !$omp parallel do default(shared) private(skip_current) schedule(dynamic,1)
         do j=schedule_ptr(i),(schedule_ptr(i+1)-1)
 

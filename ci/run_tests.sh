@@ -381,5 +381,8 @@ bash "../ci/test_features.sh" "$fpm"
 # Test incremental rebuilds after failed or partial builds
 bash "../ci/test_incremental_rebuild.sh" "$fpm"
 
+# Test archives and executables made in parallel
+bash "../ci/test_parallel_link.sh" "$fpm"
+
 # Cleanup
 rm -rf ./*/build
