@@ -424,15 +424,6 @@ function getfile(fileName, iostat, iomsg, delete) result(file)
             exit read_file
         end if
 
-        !> Retrieve file size
-        inquire(file=fileName, size=fileSize)
-
-        invalid_size: if (fileSize < 0) then
-            stat = 1
-            message = fileName//' has invalid size='//str(fileSize)
-            exit read_file
-        end if invalid_size
-
         ! Read file
         open(newunit=lun, file=fileName, &
              form='unformatted', action='read', access='stream', status='old', &
@@ -442,6 +433,16 @@ function getfile(fileName, iostat, iomsg, delete) result(file)
             message = 'Cannot open '//fileName//' for read: '//trim(msg)
             exit read_file
         end if
+
+        !> Retrieve file size, of the open unit: LLVM Flang on Windows returns -1 by file name
+        inquire(unit=lun, size=fileSize)
+
+        invalid_size: if (fileSize < 0) then
+            stat = 1
+            message = fileName//' has invalid size='//str(fileSize)
+            close(lun)
+            exit read_file
+        end if invalid_size
 
         remove_trailing_newline: if (fileSize > 0) then
 
