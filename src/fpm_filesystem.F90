@@ -393,6 +393,14 @@ function getfile(fileName, iostat, iomsg, delete) result(file)
     !> Return as an allocatable string
     character(len=:), allocatable :: file
 
+    interface
+        ! Not `close(status='delete')`: LLVM Flang silently keeps the file on Windows
+        integer(c_int) function c_remove(path) bind(C, name="remove")
+            import :: c_char, c_int
+            character(kind=c_char), intent(in) :: path(*)
+        end function c_remove
+    end interface
+
     ! Local variables
     character(*), parameter :: CRLF = achar(13)//new_line('a')
     character(len=:), allocatable :: fileString, message
@@ -479,12 +487,12 @@ function getfile(fileName, iostat, iomsg, delete) result(file)
 
         end if read_data
 
-        if (want_deleted) then
-            close(lun, iostat=stat, status='delete')
+        close(lun, iostat=stat)
+        if (stat /= 0) then
+            message = 'Cannot close '//fileName//' after reading'
+        elseif (want_deleted) then
+            stat = c_remove(fileName//c_null_char)
             if (stat /= 0) message = 'Cannot delete '//fileName//' after reading'
-        else
-            close(lun, iostat=stat)
-            if (stat /= 0) message = 'Cannot close '//fileName//' after reading'
         end if
 
         ! Process output
