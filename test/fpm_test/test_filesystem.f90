@@ -5,7 +5,7 @@ module test_filesystem
                               delete_file, read_lines, get_temp_filename, &
                               command_program, command_not_found, getfile
     use fpm_environment, only: OS_WINDOWS, get_os_type, os_is_unix
-    use fpm_strings, only: string_t, split_lines_first_last
+    use fpm_strings, only: string_t, split_lines_first_last, glob
     implicit none
     private
 
@@ -26,6 +26,7 @@ contains
             & new_unittest("test-get-home", test_get_home), &
             & new_unittest("test-split-lines-first-last", test_split_lines_first_last), &
             & new_unittest("test-crlf-lines", test_dir_with_crlf), &
+            & new_unittest("glob", test_glob), &
             & new_unittest("command-program-standard", test_command_program_standard), &
             & new_unittest("command-not-found-missing", test_command_not_found_missing), &
             & new_unittest("command-not-found-present", test_command_not_found_present), &
@@ -593,5 +594,43 @@ contains
 
     end subroutine test_delete_file
 
+
+    subroutine test_glob(error)
+        type(error_t), allocatable, intent(out) :: error
+
+        ! A '*' must be able to backtrack over repeated characters
+        call check_glob(error, "aaabb", "*b", .true.)
+        if (allocated(error)) return
+        call check_glob(error, "unit_test_test", "*_test", .true.)
+        if (allocated(error)) return
+        call check_glob(error, "bbbbb", "b*b", .true.)
+        if (allocated(error)) return
+        call check_glob(error, "bb", "*b", .true.)
+        if (allocated(error)) return
+        call check_glob(error, "mississippi", "*sip*", .true.)
+        if (allocated(error)) return
+        call check_glob(error, "abcd", "?b*??", .true.)
+        if (allocated(error)) return
+        call check_glob(error, "ab", "*?*?*", .true.)
+        if (allocated(error)) return
+        call check_glob(error, "a12b12", "*12*23", .false.)
+        if (allocated(error)) return
+        call check_glob(error, "abcd", "?a*??", .false.)
+        if (allocated(error)) return
+        call check_glob(error, "bLah", "bLaH", .false.)
+
+    end subroutine test_glob
+
+    subroutine check_glob(error, tame, wild, expected)
+        type(error_t), allocatable, intent(out) :: error
+        character(len=*), intent(in) :: tame, wild
+        logical, intent(in) :: expected
+
+        if (glob(tame, wild) .neqv. expected) then
+            call test_failed(error, "glob('"//tame//"', '"//wild//"') should be "// &
+                & merge("true ", "false", expected))
+        end if
+
+    end subroutine check_glob
 
 end module test_filesystem
