@@ -1,13 +1,15 @@
 !> Implementation for interacting with git repositories.
 module fpm_git
     use fpm_error, only: error_t, fatal_error
-    use fpm_filesystem, only : get_temp_filename, getline, join_path, execute_and_read_output, run
+    use fpm_environment, only: os_is_unix
+    use fpm_filesystem, only : get_temp_filename, getline, join_path, execute_and_read_output, run, &
+                             & is_dir, exists, delete_file, os_delete_dir, command_not_found
     use tomlf, only: toml_table, toml_stat
     use fpm_toml, only: serializable_t, get_value, set_value, set_string
     implicit none
 
     public :: git_target_t, git_target_default, git_target_branch, git_target_tag, git_target_revision, git_revision, &
-            & git_archive, git_matches_manifest, compressed_package_name
+            & git_archive, git_matches_manifest, git_checkout_is_valid, compressed_package_name
 
     !> Name of the compressed package that is generated temporarily.
     character(len=*), parameter :: compressed_package_name = 'compressed_package'
@@ -196,6 +198,59 @@ contains
     end function git_matches_manifest
 
 
+    !> Check whether a local directory contains a usable git checkout
+    !! A directory which was left behind by an interrupted clone (missing
+    !! working tree, empty repository or stale lock files) is not usable.
+    logical function git_checkout_is_valid(local_path)
+
+        !> Local path of the checkout
+        character(*), intent(in) :: local_path
+
+        character(len=:), allocatable :: object
+        type(error_t), allocatable :: error
+
+        git_checkout_is_valid = .false.
+
+        ! Without git nothing can be validated, keep the directory untouched
+        if (command_not_found('git')) then
+            git_checkout_is_valid = .true.
+            return
+        end if
+
+        if (.not. is_dir(local_path)) return
+        if (.not. is_dir(join_path(local_path, ".git"))) return
+        if (exists(join_path(join_path(local_path, ".git"), "shallow.lock"))) return
+
+        ! A repository whose HEAD does not resolve to a commit (for instance
+        ! because the initial fetch was interrupted) cannot be used
+        call git_revision(local_path, object, error)
+        if (allocated(error)) return
+        git_checkout_is_valid = allocated(object)
+
+    end function git_checkout_is_valid
+
+
+    !> Drop the leftovers of a failed fetch, so that the next run can recover
+    subroutine cleanup_failed_checkout(local_path)
+
+        !> Local path of the checkout
+        character(*), intent(in) :: local_path
+
+        character(len=:), allocatable :: lock_file
+
+        if (git_checkout_is_valid(local_path)) then
+            ! Keep a usable repository, but remove a stale lock which would
+            ! block the next fetch
+            lock_file = join_path(join_path(local_path, ".git"), "shallow.lock")
+            if (exists(lock_file)) call delete_file(lock_file)
+        else if (is_dir(local_path)) then
+            ! A half initialized repository is useless, start over next time
+            call os_delete_dir(os_is_unix(), local_path)
+        end if
+
+    end subroutine cleanup_failed_checkout
+
+
     subroutine checkout(self, local_path, error)
 
         !> Instance of the git target
@@ -217,10 +272,17 @@ contains
         end if
         workdir = "--work-tree="//local_path//" --git-dir="//join_path(local_path, ".git")
 
+        ! Remove leftovers of a previous interrupted checkout, otherwise the
+        ! broken state would be kept forever and fail on every following run
+        if (.not. git_checkout_is_valid(local_path)) then
+            if (is_dir(local_path)) call os_delete_dir(os_is_unix(), local_path)
+        end if
+
         call execute_command_line("git init "//local_path, exitstat=stat)
 
         if (stat /= 0) then
-            call fatal_error(error,'Error while initiating git repository for remote dependency')
+            call fatal_error(error,'Error while initiating git repository for remote dependency '//self%url// &
+                & ' in '//local_path)
             return
         end if
 
@@ -228,14 +290,18 @@ contains
                                   self%url//" "//object, exitstat=stat)
 
         if (stat /= 0) then
-            call fatal_error(error,'Error while fetching git repository for remote dependency')
+            call cleanup_failed_checkout(local_path)
+            call fatal_error(error,'Error while fetching git repository for remote dependency '//self%url// &
+                & '. The partial checkout in '//local_path//' was cleaned up, check the network connection and retry.')
             return
         end if
 
         call execute_command_line("git "//workdir//" checkout -qf FETCH_HEAD", exitstat=stat)
 
         if (stat /= 0) then
-            call fatal_error(error,'Error while checking out git repository for remote dependency')
+            call cleanup_failed_checkout(local_path)
+            call fatal_error(error,'Error while checking out git repository for remote dependency '//self%url// &
+                & ' in '//local_path//'. The partial checkout was cleaned up, retry the command.')
             return
         end if
 

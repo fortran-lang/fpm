@@ -60,7 +60,7 @@ module fpm_dependency
   use fpm_error, only: error_t, fatal_error
   use fpm_filesystem, only: exists, join_path, mkdir, canon_path, windows_path, list_files, is_dir, basename, &
                             os_delete_dir, get_temp_filename, parent_dir, is_absolute_path
-  use fpm_git, only: git_target_revision, git_target_default, git_revision, serializable_t
+  use fpm_git, only: git_target_revision, git_target_default, git_revision, git_checkout_is_valid, serializable_t
   use fpm_manifest, only: package_config_t, dependency_config_t, get_package_data, get_package_dependencies
   use fpm_manifest_dependency, only: manifest_has_changed, dependency_destroy
   use fpm_manifest_preprocess, only: operator(==)
@@ -712,7 +712,9 @@ contains
       end if
     else if (allocated(dependency%git)) then
       proj_dir = join_path(self%dep_dir, dependency%name)
-      fetch = .not. exists(proj_dir)
+      ! A directory left behind by an interrupted clone is not a usable
+      ! checkout, refetch it instead of failing on the broken repository
+      fetch = .not. git_checkout_is_valid(proj_dir)
       if (fetch) then
         call dependency%git%checkout(proj_dir, error)
         if (allocated(error)) return
