@@ -127,7 +127,7 @@ jobs:
 
     - name: Setup Fortran compiler
       if: ${{ matrix.toolchain.compiler != 'flang' && !(matrix.toolchain.compiler == 'gcc' && matrix.toolchain.version == 16) }}
-      uses: fortran-lang/setup-fortran@v1.10.0
+      uses: fortran-lang/setup-fortran@v1.11.0
       id: setup-fortran
       continue-on-error: ${{ matrix.os == 'windows-latest' }}
       with:
@@ -147,7 +147,7 @@ jobs:
 
     - name: Setup Fortran compiler (retry)
       if: steps.setup-fortran.outcome == 'failure'
-      uses: fortran-lang/setup-fortran@v1.10.0
+      uses: fortran-lang/setup-fortran@v1.11.0
       with:
         compiler: ${{ matrix.toolchain.compiler }}
         version: ${{ matrix.toolchain.version }}
