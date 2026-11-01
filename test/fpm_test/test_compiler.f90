@@ -141,8 +141,10 @@ contains
         end if
 
         !> Test the flag check wrapper
+        !> Intel and LFortran accept this flag without reporting an error
         if (compiler%check_flags_supported(compile_flags='-Werror=unknown-flag') &
-            .and. .not. compiler%is_intel()) then  ! Intel will not trigger an error
+            .and. .not. compiler%is_intel() &
+            .and. compiler%name() /= "lfortran") then
             call test_failed(error, "Invalid compile flags did not trigger an error")
             return
         end if
