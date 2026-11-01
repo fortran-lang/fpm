@@ -7,6 +7,7 @@ program fpm_testing
     use test_manifest, only : collect_manifest
     use test_filesystem, only : collect_filesystem
     use test_source_parsing, only : collect_source_parsing
+    use test_source_cache, only : collect_source_cache
     use test_module_dependencies, only : collect_module_dependencies
     use test_package_dependencies, only : collect_package_dependencies
     use test_backend, only: collect_backend
@@ -30,6 +31,7 @@ program fpm_testing
         & new_testsuite("fpm_features", collect_features), &
         & new_testsuite("fpm_filesystem", collect_filesystem), &
         & new_testsuite("fpm_source_parsing", collect_source_parsing), &
+        & new_testsuite("fpm_source_cache", collect_source_cache), &
         & new_testsuite("fpm_module_dependencies", collect_module_dependencies), &
         & new_testsuite("fpm_package_dependencies", collect_package_dependencies), &
         & new_testsuite("fpm_test_backend", collect_backend), &

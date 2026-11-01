@@ -18,6 +18,7 @@ use fpm_compiler, only: new_compiler, new_archiver, set_cpp_preprocessor_flags, 
 
 
 use fpm_sources, only: add_executable_sources, add_sources_from_dir
+use fpm_source_cache, only: source_cache_t
 use fpm_targets, only: targets_from_sources, build_target_t, build_target_ptr, &
                         FPM_TARGET_EXECUTABLE, get_library_dirs, filter_executable_targets
 use fpm_manifest, only : get_package_data, package_config_t
@@ -54,6 +55,8 @@ subroutine build_model(model, settings, package_config, error)
     logical :: has_cpp
     logical :: duplicates_found, auto_exe, auto_example, auto_test
     type(string_t) :: include_dir
+    !> Cache of source analysis results, persisted in the build directory
+    type(source_cache_t) :: source_cache
     
     ! Large variables -> safer on heap
     allocate(package,dependency_config,dependency,target_platform)
@@ -136,6 +139,9 @@ subroutine build_model(model, settings, package_config, error)
       call filewrite(join_path(settings%build_dir, ".gitignore"),["*"])
     end if
 
+    ! Enable the cache of source analysis results for this build directory
+    call source_cache%init(join_path(settings%build_dir, "cache_sources.toml"))
+
     allocate(model%packages(model%deps%ndep))
     
     ! The current configuration may not have preprocessing, but some of its features may. 
@@ -195,7 +201,7 @@ subroutine build_model(model, settings, package_config, error)
                     if (is_dir(lib_dir)) then
                         call add_sources_from_dir(model%packages(i)%sources, lib_dir, FPM_SCOPE_LIB, &
                             with_f_ext=model%packages(i)%preprocess%suffixes, error=error, &
-                            preprocess=model%packages(i)%preprocess)
+                            preprocess=model%packages(i)%preprocess, cache=source_cache)
                         if (allocated(error)) exit
                     end if
                 end if
@@ -249,7 +255,8 @@ subroutine build_model(model, settings, package_config, error)
     if (is_dir('app') .and. auto_exe) then
         call add_sources_from_dir(model%packages(1)%sources,'app', FPM_SCOPE_APP, &
                                    with_executables=.true., with_f_ext=model%packages(1)%preprocess%suffixes,&
-                                   error=error,preprocess=model%packages(1)%preprocess)
+                                   error=error,preprocess=model%packages(1)%preprocess, &
+                                   cache=source_cache)
 
         if (allocated(error)) then
             return
@@ -260,7 +267,7 @@ subroutine build_model(model, settings, package_config, error)
         call add_sources_from_dir(model%packages(1)%sources,'example', FPM_SCOPE_EXAMPLE, &
                                   with_executables=.true., &
                                   with_f_ext=model%packages(1)%preprocess%suffixes,error=error,&
-                                  preprocess=model%packages(1)%preprocess)
+                                  preprocess=model%packages(1)%preprocess, cache=source_cache)
 
         if (allocated(error)) then
             return
@@ -271,7 +278,7 @@ subroutine build_model(model, settings, package_config, error)
         call add_sources_from_dir(model%packages(1)%sources,'test', FPM_SCOPE_TEST, &
                                   with_executables=.true., &
                                   with_f_ext=model%packages(1)%preprocess%suffixes,error=error,&
-                                  preprocess=model%packages(1)%preprocess)
+                                  preprocess=model%packages(1)%preprocess, cache=source_cache)
 
         if (allocated(error)) then
             return
@@ -282,7 +289,8 @@ subroutine build_model(model, settings, package_config, error)
         call add_executable_sources(model%packages(1)%sources, package%executable, FPM_SCOPE_APP, &
                                      auto_discover=auto_exe, &
                                      with_f_ext=model%packages(1)%preprocess%suffixes, &
-                                     error=error,preprocess=model%packages(1)%preprocess)
+                                     error=error,preprocess=model%packages(1)%preprocess, &
+                                     cache=source_cache)
 
         if (allocated(error)) then
             return
@@ -293,7 +301,8 @@ subroutine build_model(model, settings, package_config, error)
         call add_executable_sources(model%packages(1)%sources, package%example, FPM_SCOPE_EXAMPLE, &
                                      auto_discover=auto_example, &
                                      with_f_ext=model%packages(1)%preprocess%suffixes, &
-                                     error=error,preprocess=model%packages(1)%preprocess)
+                                     error=error,preprocess=model%packages(1)%preprocess, &
+                                     cache=source_cache)
 
         if (allocated(error)) then
             return
@@ -304,13 +313,17 @@ subroutine build_model(model, settings, package_config, error)
         call add_executable_sources(model%packages(1)%sources, package%test, FPM_SCOPE_TEST, &
                                      auto_discover=auto_test, &
                                      with_f_ext=model%packages(1)%preprocess%suffixes, &
-                                     error=error,preprocess=model%packages(1)%preprocess)
+                                     error=error,preprocess=model%packages(1)%preprocess, &
+                                     cache=source_cache)
 
         if (allocated(error)) then
             return
         endif
 
     endif
+
+    ! Persist the source analyses gathered above for the next invocation
+    call source_cache%save()
 
     if (settings%verbose) then
         write(*,*)'<INFO> BUILD_NAME: ',model%build_prefix
