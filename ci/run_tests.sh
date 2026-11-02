@@ -20,7 +20,7 @@ dir=hello_world
 
 # An invalid FPM_JOBS stops fpm with an error
 EXIT_CODE=0
-FPM_JOBS=two "$fpm" -C $dir build || EXIT_CODE=$?
+FPM_JOBS=two "$fpm" build -C $dir || EXIT_CODE=$?
 test $EXIT_CODE -eq 1
 
 pushd hello_fpm

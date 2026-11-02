@@ -292,9 +292,10 @@ contains
         version = fpm_version()
         version_s = version%s()
 
-        ! Number of threads a build uses by default (FPM_JOBS, else the OpenMP default)
+        ! Number of threads a build uses by default (FPM_JOBS, else the OpenMP default).
+        ! Read FPM_JOBS also without OpenMP, so that an invalid value always stops fpm
+        jobs = build_threads(parse_jobs(get_fpm_env(jobs_env, jobs_default), 'FPM_JOBS'))
         if (has_openmp()) then
-            jobs = build_threads(parse_jobs(get_fpm_env(jobs_env, jobs_default), 'FPM_JOBS'))
             parallel_type = 'Parallel:    OpenMP, '//str(jobs)//merge(' thread ', ' threads', jobs == 1)
         else
             parallel_type = 'Parallel:    no'
