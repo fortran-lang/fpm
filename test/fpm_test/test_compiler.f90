@@ -3,7 +3,8 @@ module test_compiler
     use testsuite, only : new_unittest, unittest_t, error_t, test_failed, &
         & check_string
     use fpm_environment, only : OS_WINDOWS, OS_LINUX, os_is_unix
-    use fpm_compiler   , only : compiler_t, new_compiler, tokenize_flags, archiver_t, new_archiver
+    use fpm_compiler   , only : compiler_t, new_compiler, tokenize_flags, archiver_t, new_archiver, &
+        & match_compiler_type, id_flang, id_amdflang
     use fpm_filesystem , only : get_temp_filename, mkdir, join_path, filewrite, run, os_delete_dir
     use fpm_strings    , only : string_t, operator(==)
     use fpm_command_line, only: get_fpm_env
@@ -29,6 +30,7 @@ contains
             & new_unittest("compile-commands-unix", test_register_compile_command_unix), &
             & new_unittest("compile-commands-windows", test_register_compile_command_windows), &
             & new_unittest("get-default-flags-pic", test_get_default_flags_pic), &
+            & new_unittest("match-compiler-type-flang", test_match_compiler_type_flang), &
             & new_unittest("archive-drops-stale-members", test_archive_drops_stale_members)]
 
     end subroutine collect_compiler
@@ -421,6 +423,33 @@ contains
         end if
 
     end subroutine test_get_default_flags_pic
+
+    !> amdflang contains "flang" in its name and must not be detected as LLVM flang
+    subroutine test_match_compiler_type_flang(error)
+        !> Error handling
+        type(error_t), allocatable, intent(out) :: error
+
+        if (match_compiler_type("amdflang") /= id_amdflang) then
+            call test_failed(error, "amdflang should be detected as AMD flang")
+            return
+        end if
+
+        if (match_compiler_type("/opt/rocm/bin/amdflang") /= id_amdflang) then
+            call test_failed(error, "/opt/rocm/bin/amdflang should be detected as AMD flang")
+            return
+        end if
+
+        if (match_compiler_type("flang") /= id_flang) then
+            call test_failed(error, "flang should be detected as LLVM flang")
+            return
+        end if
+
+        if (match_compiler_type("flang-new") /= id_flang) then
+            call test_failed(error, "flang-new should be detected as LLVM flang")
+            return
+        end if
+
+    end subroutine test_match_compiler_type_flang
 
 
 end module test_compiler
