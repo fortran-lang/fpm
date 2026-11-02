@@ -90,8 +90,7 @@ type, extends(fpm_cmd_settings)  :: fpm_build_settings
     character(len=:),allocatable :: cxxflag
     character(len=:),allocatable :: ldflag
     character(len=:),allocatable :: build_dir
-    !> Number of targets to build at once (--jobs); 0 uses the OpenMP default
-    integer                      :: jobs=0
+    integer                      :: jobs=0    !> Number of targets to build at once (--jobs); 0 uses the OpenMP default
 end type
 
 type, extends(fpm_build_settings)  :: fpm_run_settings
