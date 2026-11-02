@@ -22,7 +22,8 @@ contains
 
         tests = [ &
             & new_unittest("broken-checkout-recovery", test_broken_checkout_recovery), &
-            & new_unittest("failed-fetch-recovery", test_failed_fetch_recovery) &
+            & new_unittest("failed-fetch-recovery", test_failed_fetch_recovery), &
+            & new_unittest("stale-lock-recovery", test_stale_lock_recovery) &
             & ]
 
     end subroutine collect_git
@@ -106,6 +107,50 @@ contains
         call cleanup()
 
     end subroutine test_failed_fetch_recovery
+
+    !> A stale shallow lock does not invalidate an otherwise healthy checkout
+    subroutine test_stale_lock_recovery(error)
+
+        !> Error handling
+        type(error_t), allocatable, intent(out) :: error
+
+        type(git_target_t) :: target
+
+        if (command_not_found('git')) return
+
+        call cleanup()
+        call create_source_repo(error)
+        if (allocated(error)) return
+
+        target = git_target_default(source_repo)
+        call target%checkout(target_repo, error)
+        if (allocated(error)) return
+
+        ! Simulate a lock left behind by an interrupted update on a healthy
+        ! checkout: the checkout stays usable and the lock is cleaned up
+        call warnwrite(join_path(join_path(target_repo, ".git"), "shallow.lock"), [" "])
+
+        if (.not. git_checkout_is_valid(target_repo)) then
+            call test_failed(error, "A stale lock invalidated a healthy checkout")
+            return
+        end if
+
+        if (.not. exists(join_path(target_repo, "README.md"))) then
+            call test_failed(error, "The healthy checkout lost its working tree")
+            return
+        end if
+
+        call target%checkout(target_repo, error)
+        if (allocated(error)) return
+
+        if (exists(join_path(join_path(target_repo, ".git"), "shallow.lock"))) then
+            call test_failed(error, "The stale lock was not removed before fetching")
+            return
+        end if
+
+        call cleanup()
+
+    end subroutine test_stale_lock_recovery
 
     !> Create a local git repository with a single commit
     subroutine create_source_repo(error)

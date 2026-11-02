@@ -712,19 +712,19 @@ contains
       end if
     else if (allocated(dependency%git)) then
       proj_dir = join_path(self%dep_dir, dependency%name)
-      ! A directory left behind by an interrupted clone is not a usable
-      ! checkout, refetch it instead of failing on the broken repository
-      fetch = .not. git_checkout_is_valid(proj_dir)
-      if (fetch) then
-        call dependency%git%checkout(proj_dir, error)
-        if (allocated(error)) return
-      end if
     else
       call dependency%get_from_registry(proj_dir, global_settings, error)
       if (allocated(error)) return
     end if
 
     if (allocated(dependency%git)) then
+      ! Validate after selecting proj_dir, so that cached git dependencies
+      ! left behind by an interrupted update are recovered as well
+      fetch = .not. git_checkout_is_valid(proj_dir)
+      if (fetch) then
+        call dependency%git%checkout(proj_dir, error)
+        if (allocated(error)) return
+      end if
       call git_revision(proj_dir, revision, error)
       if (allocated(error)) return
     end if

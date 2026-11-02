@@ -200,7 +200,9 @@ contains
 
     !> Check whether a local directory contains a usable git checkout
     !! A directory which was left behind by an interrupted clone (missing
-    !! working tree, empty repository or stale lock files) is not usable.
+    !! working tree or empty repository) is not usable. A stale shallow
+    !! lock alone does not invalidate a checkout, it only blocks the next
+    !! fetch and is removed before fetching.
     logical function git_checkout_is_valid(local_path)
 
         !> Local path of the checkout
@@ -219,7 +221,6 @@ contains
 
         if (.not. is_dir(local_path)) return
         if (.not. is_dir(join_path(local_path, ".git"))) return
-        if (exists(join_path(join_path(local_path, ".git"), "shallow.lock"))) return
 
         ! A repository whose HEAD does not resolve to a commit (for instance
         ! because the initial fetch was interrupted) cannot be used
@@ -236,19 +237,30 @@ contains
         !> Local path of the checkout
         character(*), intent(in) :: local_path
 
-        character(len=:), allocatable :: lock_file
-
         if (git_checkout_is_valid(local_path)) then
             ! Keep a usable repository, but remove a stale lock which would
             ! block the next fetch
-            lock_file = join_path(join_path(local_path, ".git"), "shallow.lock")
-            if (exists(lock_file)) call delete_file(lock_file)
+            call remove_shallow_lock(local_path)
         else if (is_dir(local_path)) then
             ! A half initialized repository is useless, start over next time
             call os_delete_dir(os_is_unix(), local_path)
         end if
 
     end subroutine cleanup_failed_checkout
+
+
+    !> Remove a stale shallow lock left behind by an interrupted fetch
+    subroutine remove_shallow_lock(local_path)
+
+        !> Local path of the checkout
+        character(*), intent(in) :: local_path
+
+        character(len=:), allocatable :: lock_file
+
+        lock_file = join_path(join_path(local_path, ".git"), "shallow.lock")
+        if (exists(lock_file)) call delete_file(lock_file)
+
+    end subroutine remove_shallow_lock
 
 
     subroutine checkout(self, local_path, error)
@@ -285,6 +297,9 @@ contains
                 & ' in '//local_path)
             return
         end if
+
+        ! A stale lock from an interrupted fetch would block the next fetch
+        call remove_shallow_lock(local_path)
 
         call execute_command_line("git "//workdir//" fetch --depth=1 "// &
                                   self%url//" "//object, exitstat=stat)
