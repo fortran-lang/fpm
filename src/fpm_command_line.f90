@@ -165,6 +165,9 @@ character(len=20),parameter :: manual(*)=[ character(len=20) ::&
 
 character(len=:), allocatable :: val_runner,val_runner_args,val_dump
 
+!> Whether -j is given without a number, which selects the default number of jobs (as in make)
+logical :: jobs_flag_alone = .false.
+
 !   '12345678901234567890123456789012345678901234567890123456789012345678901234567890',&
 character(len=80), parameter :: help_text_build_common(*) = [character(len=80) ::      &
     ' --profile PROF    Selects either a compilation profile ("release", "debug") or   ',&
@@ -180,8 +183,9 @@ character(len=80), parameter :: help_text_build_common(*) = [character(len=80) :
     '                   by the environment variable FPM_BUILD_DIR.                   ',&
     ' --jobs, -j N      Build up to N targets at once. 0 (the default unless set by  ',&
     '                   the environment variable FPM_JOBS) uses OMP_NUM_THREADS if   ',&
-    '                   set, otherwise all cores; -j 1 builds one at a time. Only an ',&
-    '                   fpm built with OpenMP builds in parallel: see fpm --version. '&
+    '                   set, otherwise all cores, and so does -j without a number;   ',&
+    '                   -j 1 builds one at a time. Only an fpm built with OpenMP     ',&
+    '                   builds in parallel: see fpm --version.                       '&
     ]
 !   '12345678901234567890123456789012345678901234567890123456789012345678901234567890',&
 character(len=80), parameter :: help_text_compiler(*) = [character(len=80) :: &
@@ -259,8 +263,8 @@ contains
         type(fpm_export_settings) , allocatable :: export_settings
         type(version_t) :: version
         character(len=:), allocatable :: common_args, compiler_args, run_args, working_dir, &
-            & c_compiler, cxx_compiler, archiver, version_s, token_s, config_file, jobs_s, parallel_type
-        integer :: jobs, ios
+            & c_compiler, cxx_compiler, archiver, version_s, token_s, config_file, parallel_type
+        integer :: jobs
 
         character(len=*), parameter :: fc_env = "FC", cc_env = "CC", ar_env = "AR", &
             & fflags_env = "FFLAGS", cflags_env = "CFLAGS", cxxflags_env = "CXXFLAGS", &
@@ -290,10 +294,7 @@ contains
 
         ! Number of threads a build uses by default (FPM_JOBS, else the OpenMP default)
         if (has_openmp()) then
-            jobs_s = get_fpm_env(jobs_env, jobs_default)
-            read(jobs_s, *, iostat=ios) jobs
-            if (ios /= 0) jobs = 0
-            jobs = build_threads(jobs)
+            jobs = build_threads(parse_jobs(get_fpm_env(jobs_env, jobs_default), 'FPM_JOBS'))
             parallel_type = 'Parallel:    OpenMP, '//str(jobs)//merge(' thread ', ' threads', jobs == 1)
         else
             parallel_type = 'Parallel:    no'
@@ -336,6 +337,8 @@ contains
           ' --link-flag:: "'//get_fpm_env(ldflags_env, flags_default)//'"' // &
           ' --build-dir "'//get_fpm_env(build_dir_env, build_dir_default)//'"' // &
           ' --jobs:j "'//get_fpm_env(jobs_env, jobs_default)//'"'
+
+        call check_jobs_flag()
 
         ! now set subcommand-specific help text and process commandline
         ! arguments. Then call subcommand routine
@@ -1732,7 +1735,11 @@ contains
         self%ldflag        = ldflags
         self%verbose       = lget('verbose')
         self%dump          = dump
-        self%jobs          = parse_jobs(sget('jobs'))
+        if (jobs_flag_alone .and. len_trim(sget('jobs')) == 0) then
+            self%jobs      = 0
+        else
+            self%jobs      = parse_jobs(sget('jobs'), trim(merge('--jobs  ', 'FPM_JOBS', specified('jobs'))))
+        end if
 
         ! Optional overrides from caller
         if (present(list))        self%list        = list
@@ -1741,21 +1748,50 @@ contains
     end subroutine build_settings
 
     !> Read the number of build jobs given by --jobs or FPM_JOBS: a non-negative integer
-    integer function parse_jobs(jobs_str) result(jobs)
+    integer function parse_jobs(jobs_str, name) result(jobs)
         character(len=*), intent(in) :: jobs_str
+        !> Where the value comes from (--jobs or FPM_JOBS), for the error message
+        character(len=*), intent(in) :: name
 
         character(len=:), allocatable :: digits
         integer :: ios
 
         digits = trim(adjustl(jobs_str))
+        if (len(digits) == 0) call fpm_stop(1, 'Error: '//name//' needs a number of jobs (-j alone uses the default)')
         jobs = -1
-        if (len(digits) > 0 .and. verify(digits, '0123456789') == 0) then
+        if (verify(digits, '0123456789') == 0) then
             read(digits, *, iostat=ios) jobs
             if (ios /= 0) jobs = -1
         end if
-        if (jobs < 0) call fpm_stop(1, 'Error: --jobs (or FPM_JOBS) must be a non-negative integer, not "' &
-                                       //digits//'"')
+        if (jobs < 0) call fpm_stop(1, 'Error: '//name//' must be a non-negative integer, not "'//digits//'"')
     end function parse_jobs
+
+    !> Read -j on the command line before M_CLI2 does. A number attached to it (-j4, as make
+    !> allows) stops with an error: M_CLI2 would read it as the bundled options -j -4, and stop
+    !> without building but with exit status 0. Also record whether -j comes without a number.
+    subroutine check_jobs_flag()
+        character(len=64) :: arg
+        integer :: i, length
+
+        jobs_flag_alone = .false.
+        do i = 1, command_argument_count()
+            call get_command_argument(i, arg, length)
+            ! Arguments after -- go to the programs that fpm runs
+            if (length == 2 .and. arg(1:2) == '--') exit
+            if (arg(1:2) /= '-j') cycle
+            if (length > 2 .and. arg(3:3) /= '=') then
+                call fpm_stop(1, 'Error: give the number of jobs as -j N or --jobs=N, not '//trim(arg))
+            end if
+            if (length == 2) then
+                ! -j alone, unless the next argument is its number
+                jobs_flag_alone = i == command_argument_count()
+                if (.not.jobs_flag_alone) then
+                    call get_command_argument(i+1, arg)
+                    jobs_flag_alone = arg(1:1) == '-'
+                end if
+            end if
+        end do
+    end subroutine check_jobs_flag
 
     !> Parse comma-separated features string into string_t array
     subroutine parse_features(features_str, features_array)

@@ -118,9 +118,20 @@ character(len=*),parameter           :: tests(*)= [ character(len=256) :: &
 'CMD="run -j 3 my_project",                                        NAME="my_project", JOBS=3,', &
 'CMD="test --jobs 1",                                              JOBS=1,', &
 'CMD="install -j 8 --prefix ./installed",                          NAME=, JOBS=8, ARGS="",', &
+'CMD="build --jobs=3",                                             NAME=, JOBS=3, ARGS="",', &
+'CMD="build -j",                                                   NAME=, JOBS=0, ARGS="",', &
+'CMD="build -j --profile release",                                 NAME=, JOBS=0, profile="release",ARGS="",', &
+'CMD="run my_project -j",                                          NAME="my_project", JOBS=0,', &
+'CMD="test -j -- -j4",                                             JOBS=0, ARGS="""-j4""",', &
 'CMD="build --jobs -1",                               ESTAT=1,', &
 'CMD="build --jobs two",                              ESTAT=1,', &
 'CMD="build -j 1.5",                                  ESTAT=1,', &
+'CMD="build --jobs",                                  ESTAT=1,', &
+'CMD="build --jobs --profile release",                ESTAT=1,', &
+'CMD="build --jobs=",                                 ESTAT=1,', &
+'CMD="build -j4",                                     ESTAT=1,', &
+'CMD="build -jv",                                     ESTAT=1,', &
+'CMD="run -j my_project",                             ESTAT=1,', &
 ' ' ]
 character(len=256) :: readme(3)
 
