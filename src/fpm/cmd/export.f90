@@ -2,7 +2,7 @@ module fpm_cmd_export
   use fpm_command_line, only : fpm_export_settings
   use fpm_dependency, only : dependency_tree_t, new_dependency_tree
   use fpm_error, only : error_t, fpm_stop
-  use fpm_filesystem, only : join_path
+  use fpm_filesystem, only : join_path, lock_build_dir
   use fpm_manifest, only : package_config_t, get_package_data
   use fpm_toml, only: name_is_json
   use fpm_model, only: fpm_model_t
@@ -42,6 +42,9 @@ contains
 
     !> Export dependency tree
     if (len_trim(settings%dump_dependencies)>0) then
+
+        !> Wait for other fpm processes that use the same build directory
+        call lock_build_dir(settings%build_dir)
 
         !> Generate dependency tree
         filename = join_path(settings%build_dir, "cache.toml")

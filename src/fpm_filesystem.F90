@@ -9,7 +9,7 @@ module fpm_filesystem
     use fpm_environment, only: separator, get_env, os_is_unix
     use fpm_strings, only: f_string, replace, string_t, split, split_lines_first_last, dilate, add_strings, &
         str_begins_with_str, string_cat, str
-    use iso_c_binding, only: c_char, c_ptr, c_int, c_null_char, c_associated, c_f_pointer
+    use iso_c_binding, only: c_char, c_ptr, c_int, c_intptr_t, c_null_char, c_associated, c_f_pointer
     use fpm_error, only : fpm_stop, error_t, fatal_error
     use shlex_module, only: sh_split => split, ms_split
     implicit none
@@ -18,7 +18,7 @@ module fpm_filesystem
             mkdir, exists, get_temp_filename, windows_path, unix_path, getline, delete_file, fileopen, fileclose, &
             filewrite, warnwrite, parent_dir, is_hidden_file, read_lines, read_lines_expanded, which, run, &
             run_argv, os_delete_dir, is_absolute_path, get_home, execute_and_read_output, get_dos_path, &
-            command_program, command_not_found, getfile
+            command_program, command_not_found, getfile, lock_build_dir, unlock_build_dir
 
 #ifndef FPM_BOOTSTRAP
     interface
@@ -58,7 +58,23 @@ module fpm_filesystem
             integer(kind=c_int), intent(in), value :: argc
             integer(kind=c_int) :: r
         end function c_run_argv
+
+        function c_lock_file(path, wait) result(fd) bind(c, name="c_lock_file")
+            import c_char, c_int, c_intptr_t
+            character(kind=c_char), intent(in) :: path(*)
+            integer(kind=c_int), intent(in), value :: wait
+            integer(kind=c_intptr_t) :: fd
+        end function c_lock_file
+
+        subroutine c_unlock_file(fd) bind(c, name="c_unlock_file")
+            import c_intptr_t
+            integer(kind=c_intptr_t), intent(in), value :: fd
+        end subroutine c_unlock_file
     end interface
+
+    !> Build directory whose lock this process holds, and the lock's descriptor
+    character(len=:), allocatable :: locked_build_dir
+    integer(kind=c_intptr_t) :: build_lock = -1
 #endif
 
     interface
@@ -893,6 +909,49 @@ subroutine delete_file(file, stat)
     if (exist) iostat = c_remove(file//c_null_char)
     if (present(stat)) stat = iostat
 end subroutine delete_file
+
+!> Lock the build directory `build_dir` for this process, so that fpm processes
+!! working on the same package wait for each other instead of building over each
+!! other. The lock is held until `unlock_build_dir` or the process exits: the OS
+!! also releases it after a crash, so no stale lock is left behind.
+subroutine lock_build_dir(build_dir)
+    character(len=*), intent(in) :: build_dir
+#ifndef FPM_BOOTSTRAP
+    character(len=:), allocatable :: lock_file
+    integer(kind=c_intptr_t) :: fd
+
+    if (allocated(locked_build_dir)) then
+        if (locked_build_dir == build_dir) return
+        call unlock_build_dir()
+    end if
+
+    call mkdir(build_dir, echo=.false.)
+    lock_file = join_path(build_dir, '.fpm-lock')
+
+    fd = c_lock_file(lock_file//c_null_char, 0_c_int)
+    if (fd == -2) then
+        write(stderr, '(a)') '<INFO> Waiting for another fpm process to release '//lock_file
+        fd = c_lock_file(lock_file//c_null_char, 1_c_int)
+    end if
+    if (fd < 0) then
+        write(stderr, '(a)') '<WARN> Cannot lock '//lock_file// &
+                             ': fpm processes running at the same time on this package are not safe'
+        return
+    end if
+
+    build_lock = fd
+    locked_build_dir = build_dir
+#endif
+end subroutine lock_build_dir
+
+!> Release the lock that `lock_build_dir` took, if any
+subroutine unlock_build_dir()
+#ifndef FPM_BOOTSTRAP
+    if (.not. allocated(locked_build_dir)) return
+    call c_unlock_file(build_lock)
+    deallocate(locked_build_dir)
+#endif
+end subroutine unlock_build_dir
 
 !> write trimmed character data to a file if it does not exist
 subroutine warnwrite(fname,data)

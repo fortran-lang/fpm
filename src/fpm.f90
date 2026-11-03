@@ -8,7 +8,8 @@ use fpm_command_line, only: fpm_build_settings, fpm_new_settings, &
                       fpm_clean_settings
 use fpm_dependency, only : new_dependency_tree
 use fpm_filesystem, only: is_dir, join_path, list_files, exists, &
-                   basename, filewrite, mkdir, run, os_delete_dir, delete_file
+                   basename, filewrite, mkdir, run, os_delete_dir, delete_file, &
+                   lock_build_dir, unlock_build_dir
 use fpm_model, only: fpm_model_t, srcfile_t, show_model, &
                     FPM_SCOPE_UNKNOWN, FPM_SCOPE_LIB, FPM_SCOPE_DEP, &
                     FPM_SCOPE_APP, FPM_SCOPE_EXAMPLE, FPM_SCOPE_TEST
@@ -113,6 +114,9 @@ subroutine build_model(model, settings, package_config, error)
         model%enforce_module_names = package%build%module_naming
         model%module_prefix        = package%build%module_prefix
     endif
+
+    ! Wait for other fpm processes that use the same build directory
+    call lock_build_dir(settings%build_dir)
 
     ! Create dependencies
     call new_dependency_tree(model%deps, cache=join_path(settings%build_dir, "cache.toml"), &
@@ -699,6 +703,9 @@ subroutine cmd_run(settings,test)
     if (settings%list) then
          call compact_list()
     else
+
+        ! Let other fpm processes, also those the programs start, use the build directory
+        call unlock_build_dir()
 
         ! Save current library path and set a new one that includes the local 
         ! dynamic library folders

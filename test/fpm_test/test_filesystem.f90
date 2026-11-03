@@ -3,7 +3,8 @@ module test_filesystem
     use fpm_filesystem, only: canon_path, is_dir, mkdir, os_delete_dir, &
                               join_path, is_absolute_path, get_home, &
                               delete_file, read_lines, get_temp_filename, &
-                              command_program, command_not_found, getfile
+                              command_program, command_not_found, getfile, &
+                              exists, lock_build_dir, unlock_build_dir
     use fpm_environment, only: OS_WINDOWS, get_os_type, os_is_unix
     use fpm_strings, only: string_t, split_lines_first_last
     implicit none
@@ -30,7 +31,8 @@ contains
             & new_unittest("command-not-found-missing", test_command_not_found_missing), &
             & new_unittest("command-not-found-present", test_command_not_found_present), &
             & new_unittest("getfile", test_getfile), &
-            & new_unittest("delete-file", test_delete_file) &
+            & new_unittest("delete-file", test_delete_file), &
+            & new_unittest("lock-build-dir", test_lock_build_dir) &
             ]
 
     end subroutine collect_filesystem
@@ -592,6 +594,30 @@ contains
         end if
 
     end subroutine test_delete_file
+
+    !> lock_build_dir creates the lock file, does not wait for a lock this process
+    !> already holds, and can lock again after unlock_build_dir
+    subroutine test_lock_build_dir(error)
+        type(error_t), allocatable, intent(out) :: error
+
+        character(len=:), allocatable :: dir
+
+        dir = get_temp_filename()
+
+        call lock_build_dir(dir)
+        if (.not. exists(join_path(dir, '.fpm-lock'))) then
+            call test_failed(error, "lock_build_dir did not create "//join_path(dir, '.fpm-lock'))
+            return
+        end if
+
+        call lock_build_dir(dir)
+        call unlock_build_dir()
+        call lock_build_dir(dir)
+        call unlock_build_dir()
+
+        call os_delete_dir(os_is_unix(), dir)
+
+    end subroutine test_lock_build_dir
 
 
 end module test_filesystem

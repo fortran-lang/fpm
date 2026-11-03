@@ -2,7 +2,7 @@ module fpm_cmd_update
   use fpm_command_line, only : fpm_update_settings, get_fpm_env
   use fpm_dependency, only : dependency_tree_t, new_dependency_tree
   use fpm_error, only : error_t, fpm_stop
-  use fpm_filesystem, only : exists, mkdir, join_path, delete_file, filewrite
+  use fpm_filesystem, only : exists, mkdir, join_path, delete_file, filewrite, lock_build_dir
   use fpm_manifest, only : package_config_t, get_package_data
   use fpm_toml, only: name_is_json
   implicit none
@@ -32,6 +32,9 @@ contains
       call mkdir(build_dir)
       call filewrite(join_path(build_dir, ".gitignore"),["*"])
     end if
+
+    ! Wait for other fpm processes that use the same build directory
+    call lock_build_dir(build_dir)
 
     cache = join_path(build_dir, "cache.toml")
     if (settings%clean) call delete_file(cache)
