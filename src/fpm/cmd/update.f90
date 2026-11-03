@@ -28,13 +28,14 @@ contains
     ! Get build directory from environment variable or use default
     build_dir = get_fpm_env("BUILD_DIR", "build")
 
-    if (.not. exists(build_dir)) then
-      call mkdir(build_dir)
-      call filewrite(join_path(build_dir, ".gitignore"),["*"])
-    end if
+    call mkdir(build_dir)
 
     ! Wait for other fpm processes that use the same build directory
     call lock_build_dir(build_dir)
+
+    if (.not. exists(join_path(build_dir, ".gitignore"))) then
+      call filewrite(join_path(build_dir, ".gitignore"),["*"])
+    end if
 
     cache = join_path(build_dir, "cache.toml")
     if (settings%clean) call delete_file(cache)

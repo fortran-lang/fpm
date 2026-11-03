@@ -544,7 +544,8 @@ subroutine mkdir(dir, echo)
 
     end select
 
-    if (stat /= 0) then
+    ! Not an error if another process created it at the same time
+    if (stat /= 0 .and. .not. is_dir(dir)) then
         call fpm_stop(1, '*mkdir*:directory creation failed')
     end if
 end subroutine mkdir
