@@ -23,13 +23,13 @@
 !> ``fpm-help`` and ``fpm --list`` help pages below to make sure the help output
 !> is complete and consistent as well.
 module fpm_command_line
-use fpm_environment,  only : get_os_type, get_env, &
+use fpm_environment,  only : get_os_type, get_env, has_openmp, build_threads, &
                              OS_UNKNOWN, OS_LINUX, OS_MACOS, OS_WINDOWS, &
                              OS_CYGWIN, OS_SOLARIS, OS_FREEBSD, OS_OPENBSD, OS_NAME
 use M_CLI2,           only : set_args, lget, sget, unnamed, remaining, specified
 use M_CLI2,           only : get_subcommand, CLI_RESPONSE_FILE
 use fpm_strings,      only : lower, split, to_fortran_name, is_fortran_name, remove_characters_in_set, &
-                             string_t, glob, is_valid_feature_name
+                             string_t, glob, is_valid_feature_name, str
 use fpm_filesystem,   only : basename, canon_path, which, run
 use fpm_environment,  only : get_command_arguments_quoted
 use fpm_error,        only : fpm_stop, error_t
@@ -90,6 +90,7 @@ type, extends(fpm_cmd_settings)  :: fpm_build_settings
     character(len=:),allocatable :: cxxflag
     character(len=:),allocatable :: ldflag
     character(len=:),allocatable :: build_dir
+    integer                      :: jobs=0    !> Number of targets to build at once (--jobs); 0 uses the OpenMP default
 end type
 
 type, extends(fpm_build_settings)  :: fpm_run_settings
@@ -163,6 +164,9 @@ character(len=20),parameter :: manual(*)=[ character(len=20) ::&
 
 character(len=:), allocatable :: val_runner,val_runner_args,val_dump
 
+!> Whether -j is given without a number, which selects the default number of jobs (as in make)
+logical :: jobs_flag_alone = .false.
+
 !   '12345678901234567890123456789012345678901234567890123456789012345678901234567890',&
 character(len=80), parameter :: help_text_build_common(*) = [character(len=80) ::      &
     ' --profile PROF    Selects either a compilation profile ("release", "debug") or   ',&
@@ -175,7 +179,12 @@ character(len=80), parameter :: help_text_build_common(*) = [character(len=80) :
     '                   Example: `fpm build --features mpi,openmp,hdf5 `             ',&
     ' --no-prune        Disable tree-shaking/pruning of unused module dependencies   ',&
     ' --build-dir DIR   Specify the build directory. Default is "build" unless set   ',&
-    '                   by the environment variable FPM_BUILD_DIR.                   '&
+    '                   by the environment variable FPM_BUILD_DIR.                   ',&
+    ' --jobs, -j N      Build up to N targets at once. 0 (the default unless set by  ',&
+    '                   the environment variable FPM_JOBS) uses OMP_NUM_THREADS if   ',&
+    '                   set, otherwise all cores, and so does -j without a number;   ',&
+    '                   -j 1 builds one at a time. Only an fpm built with OpenMP     ',&
+    '                   builds in parallel: see fpm --version.                       '&
     ]
 !   '12345678901234567890123456789012345678901234567890123456789012345678901234567890',&
 character(len=80), parameter :: help_text_compiler(*) = [character(len=80) :: &
@@ -235,7 +244,10 @@ character(len=80), parameter :: help_text_environment(*) = [character(len=80) ::
     '                   will be overwritten by --link-flag command line option', &
     '', &
     ' FPM_BUILD_DIR     sets the build directory for compilation output', &
-    '                   will be overwritten by --build-dir command line option' &
+    '                   will be overwritten by --build-dir command line option', &
+    '', &
+    ' FPM_JOBS          sets the number of targets to build at once', &
+    '                   will be overwritten by --jobs command line option' &
     ]
 
 contains
@@ -250,13 +262,14 @@ contains
         type(fpm_export_settings) , allocatable :: export_settings
         type(version_t) :: version
         character(len=:), allocatable :: common_args, compiler_args, run_args, working_dir, &
-            & c_compiler, cxx_compiler, archiver, version_s, token_s, config_file
+            & c_compiler, cxx_compiler, archiver, version_s, token_s, config_file, parallel_type
+        integer :: jobs
 
         character(len=*), parameter :: fc_env = "FC", cc_env = "CC", ar_env = "AR", &
             & fflags_env = "FFLAGS", cflags_env = "CFLAGS", cxxflags_env = "CXXFLAGS", &
             & ldflags_env = "LDFLAGS", fc_default = "gfortran", cc_default = " ", ar_default = " ", &
             & flags_default = " ", cxx_env = "CXX", cxx_default = " ", build_dir_env = "BUILD_DIR", &
-            & build_dir_default = "build"
+            & build_dir_default = "build", jobs_env = "JOBS", jobs_default = "0"
         type(error_t), allocatable :: error
 
         call set_help()
@@ -278,13 +291,23 @@ contains
         version = fpm_version()
         version_s = version%s()
 
+        ! Number of threads a build uses by default (FPM_JOBS, else the OpenMP default).
+        ! Read FPM_JOBS also without OpenMP, so that an invalid value always stops fpm
+        jobs = build_threads(parse_jobs(get_fpm_env(jobs_env, jobs_default), 'FPM_JOBS'))
+        if (has_openmp()) then
+            parallel_type = 'Parallel:    OpenMP, '//str(jobs)//merge(' thread ', ' threads', jobs == 1)
+        else
+            parallel_type = 'Parallel:    no'
+        end if
+
         version_text = [character(len=80) :: &
          &  'Version:     '//trim(version_s)//', alpha',               &
          &  'Program:     fpm(1)',                                     &
          &  'Description: A Fortran package manager and build system', &
          &  'Home Page:   https://github.com/fortran-lang/fpm',        &
          &  'License:     MIT',                                        &
-         &  os_type]
+         &  os_type,                                                   &
+         &  parallel_type]
         ! find the subcommand name by looking for first word on command
         ! not starting with dash
         CLI_RESPONSE_FILE=.true.
@@ -312,7 +335,10 @@ contains
           ' --c-flag:: "'//get_fpm_env(cflags_env, flags_default)//'"' // &
           ' --cxx-flag:: "'//get_fpm_env(cxxflags_env, flags_default)//'"' // &
           ' --link-flag:: "'//get_fpm_env(ldflags_env, flags_default)//'"' // &
-          ' --build-dir "'//get_fpm_env(build_dir_env, build_dir_default)//'"'
+          ' --build-dir "'//get_fpm_env(build_dir_env, build_dir_default)//'"' // &
+          ' --jobs:j "'//get_fpm_env(jobs_env, jobs_default)//'"'
+
+        call check_jobs_flag()
 
         ! now set subcommand-specific help text and process commandline
         ! arguments. Then call subcommand routine
@@ -1184,8 +1210,8 @@ contains
     '                                                                       ', &
     'SYNOPSIS                                                               ', &
     ' fpm build [--profile PROF] [--features LIST] [--flag FFLAGS]         ', &
-    '           [--compiler COMPILER_NAME] [--build-dir DIR] [--list]        ', &
-    '           [--tests] [--config-file PATH] [--dump [FILENAME]]           ', &
+    '           [--compiler COMPILER_NAME] [--build-dir DIR] [--jobs N]      ', &
+    '           [--list] [--tests] [--config-file PATH] [--dump [FILENAME]]  ', &
     '                                                                       ', &
     ' fpm build --help|--version                                            ', &
     '                                                                       ', &
@@ -1232,6 +1258,7 @@ contains
     '  fpm build --features mpi,openmp # build with specific features       ', &
     '  fpm build --profile development  # use feature profile from fpm.toml', &
     '  fpm build --build-dir /tmp/my_build # build to custom directory      ', &
+    '  fpm build -j 4              # build up to 4 targets at once          ', &
     '' ]
 
     help_help=[character(len=80) :: &
@@ -1708,12 +1735,63 @@ contains
         self%ldflag        = ldflags
         self%verbose       = lget('verbose')
         self%dump          = dump
+        if (jobs_flag_alone .and. len_trim(sget('jobs')) == 0) then
+            self%jobs      = 0
+        else
+            self%jobs      = parse_jobs(sget('jobs'), trim(merge('--jobs  ', 'FPM_JOBS', specified('jobs'))))
+        end if
 
         ! Optional overrides from caller
         if (present(list))        self%list        = list
         if (present(show_model))  self%show_model  = show_model
         if (present(build_tests)) self%build_tests = build_tests
     end subroutine build_settings
+
+    !> Read the number of build jobs given by --jobs or FPM_JOBS: a non-negative integer
+    integer function parse_jobs(jobs_str, name) result(jobs)
+        character(len=*), intent(in) :: jobs_str
+        !> Where the value comes from (--jobs or FPM_JOBS), for the error message
+        character(len=*), intent(in) :: name
+
+        character(len=:), allocatable :: digits
+        integer :: ios
+
+        digits = trim(adjustl(jobs_str))
+        if (len(digits) == 0) call fpm_stop(1, 'Error: '//name//' needs a number of jobs (-j alone uses the default)')
+        jobs = -1
+        if (verify(digits, '0123456789') == 0) then
+            read(digits, *, iostat=ios) jobs
+            if (ios /= 0) jobs = -1
+        end if
+        if (jobs < 0) call fpm_stop(1, 'Error: '//name//' must be a non-negative integer, not "'//digits//'"')
+    end function parse_jobs
+
+    !> Read -j on the command line before M_CLI2 does. A number attached to it (-j4, as make
+    !> allows) stops with an error: M_CLI2 would read it as the bundled options -j -4, and stop
+    !> without building but with exit status 0. Also record whether -j comes without a number.
+    subroutine check_jobs_flag()
+        character(len=64) :: arg
+        integer :: i, length
+
+        jobs_flag_alone = .false.
+        do i = 1, command_argument_count()
+            call get_command_argument(i, arg, length)
+            ! Arguments after -- go to the programs that fpm runs
+            if (length == 2 .and. arg(1:2) == '--') exit
+            if (arg(1:2) /= '-j') cycle
+            if (length > 2 .and. arg(3:3) /= '=') then
+                call fpm_stop(1, 'Error: give the number of jobs as -j N or --jobs=N, not '//trim(arg))
+            end if
+            if (length == 2) then
+                ! -j alone, unless the next argument is its number
+                jobs_flag_alone = i == command_argument_count()
+                if (.not.jobs_flag_alone) then
+                    call get_command_argument(i+1, arg)
+                    jobs_flag_alone = arg(1:1) == '-'
+                end if
+            end if
+        end do
+    end subroutine check_jobs_flag
 
     !> Parse comma-separated features string into string_t array
     subroutine parse_features(features_str, features_array)

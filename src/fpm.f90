@@ -580,7 +580,8 @@ endif
 if (settings%show_model) then
     call show_model(model)
 else
-    call build_package(targets,model,verbose=settings%verbose,dry_run=settings%list)
+    call build_package(targets,model,verbose=settings%verbose,dry_run=settings%list, &
+                       jobs=settings%jobs)
 endif
 
 end subroutine cmd_build
@@ -692,7 +693,8 @@ subroutine cmd_run(settings,test)
 
     end if
 
-    call build_package(targets,model,verbose=settings%verbose,dry_run=settings%list)
+    call build_package(targets,model,verbose=settings%verbose,dry_run=settings%list, &
+                       jobs=settings%jobs)
 
     if (settings%list) then
          call compact_list()
