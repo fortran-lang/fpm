@@ -92,7 +92,7 @@
 
             <li class="list-inline-item" id="statements"><i class="fa fa-list-ol"></i>
               <a data-bs-toggle="tooltip" data-bs-placement="bottom" data-bs-html="true"
-                 title=" 1.9% of total for modules and submodules.">351 statements</a>
+                 title=" 2.0% of total for modules and submodules.">360 statements</a>
             </li>
 
             <li class="list-inline-item" id="source-file">
@@ -163,10 +163,12 @@
       <div id="funcs-0" class="collapse">
         <div class="list-group list-group-flush">
             <a class="list-group-item" href="../module/fpm_environment.html#proc-os_name">OS_NAME</a>
+            <a class="list-group-item" href="../module/fpm_environment.html#proc-build_threads">build_threads</a>
             <a class="list-group-item" href="../module/fpm_environment.html#proc-delete_env">delete_env</a>
             <a class="list-group-item" href="../module/fpm_environment.html#proc-get_command_arguments_quoted">get_command_arguments_quoted</a>
             <a class="list-group-item" href="../module/fpm_environment.html#proc-get_env">get_env</a>
             <a class="list-group-item" href="../module/fpm_environment.html#proc-get_os_type">get_os_type</a>
+            <a class="list-group-item" href="../module/fpm_environment.html#proc-has_openmp">has_openmp</a>
             <a class="list-group-item" href="../module/fpm_environment.html#proc-library_filename">library_filename</a>
             <a class="list-group-item" href="../module/fpm_environment.html#proc-match_os_type">match_os_type</a>
             <a class="list-group-item" href="../module/fpm_environment.html#proc-os_is_unix">os_is_unix</a>
@@ -206,6 +208,7 @@
 <ul>
 <li>[get_os_type] &ndash; Determine the OS type</li>
 <li>[get_env] &ndash; return the value of an environment variable</li>
+<li>[build_threads] &ndash; number of threads that build targets in parallel</li>
 </ul>
 <br>          <div class="card mb-4">
       <h3 class="card-header card-title bg-light">Uses</h3>
@@ -213,9 +216,9 @@
         <ul class="list-group list-group-flush">
             <li class="list-group-item">
               <ul class="list-inline">
-                  <li class="list-inline-item"><a href='fpm_strings.html'>fpm_strings</a></li>
-                  <li class="list-inline-item"><a href='http://fortranwiki.org/fortran/show/iso_fortran_env'>iso_fortran_env</a></li>
                   <li class="list-inline-item"><a href='fpm_error.html'>fpm_error</a></li>
+                  <li class="list-inline-item"><a href='http://fortranwiki.org/fortran/show/iso_fortran_env'>iso_fortran_env</a></li>
+                  <li class="list-inline-item"><a href='fpm_strings.html'>fpm_strings</a></li>
                   <li class="list-inline-item"><a href='http://fortranwiki.org/fortran/show/iso_c_binding'>iso_c_binding</a></li>
               </ul>
             </li>
@@ -424,7 +427,7 @@ parameter
     <tbody>
         <tr>
             <td>
-              <span class="anchor" id="variable-os~2"></span>
+              <span class="anchor" id="variable-os~4"></span>
               integer,
             </td>
 <td>intent(in)</td>
@@ -443,6 +446,52 @@ parameter
     <h4>
     Return Value
     <small>character(len=:), allocatable</small>
+    </h4>
+    
+
+    </div>
+  </div>
+
+              <div class="card">
+    <div class="card-header codesum"><span class="anchor" id="proc-build_threads"></span> <h3>public  function <a href='../proc/build_threads.html'>build_threads</a>(jobs)  
+</h3></div>
+    <div class="card-body">
+          
+  <p>Number of threads that build targets: <code>jobs</code> if positive, else the OpenMP
+default (OMP_NUM_THREADS if set, otherwise all cores). 1 without OpenMP.</p>
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-jobs"></span>
+              integer,
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>jobs</strong></td>
+            <td>
+<p>Requested number of build jobs (&ndash;jobs); 0 selects the default</p>
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+    <h4>
+    Return Value
+    <small>integer</small>
     </h4>
     
 
@@ -470,7 +519,7 @@ Returns an error if the variable did not exist in the first place</p><a href="..
     <tbody>
         <tr>
             <td>
-              <span class="anchor" id="variable-name~19"></span>
+              <span class="anchor" id="variable-name~33"></span>
               character(len=*),
             </td>
 <td>intent(in)</td>
@@ -595,6 +644,24 @@ Returns an error if the variable did not exist in the first place</p><a href="..
   </div>
 
               <div class="card">
+    <div class="card-header codesum"><span class="anchor" id="proc-has_openmp"></span> <h3>public  function <a href='../proc/has_openmp.html'>has_openmp</a>()  
+</h3></div>
+    <div class="card-body">
+          
+  <p>Whether this fpm was built with OpenMP, so that it can build targets in parallel</p>
+
+  <h4>Arguments</h4>
+    <em>None</em>
+    <h4>
+    Return Value
+    <small>logical</small>
+    </h4>
+    
+
+    </div>
+  </div>
+
+              <div class="card">
     <div class="card-header codesum"><span class="anchor" id="proc-library_filename"></span> <h3>public pure function <a href='../proc/library_filename.html'>library_filename</a>(package_name, shared, import, target_os) result(name)  
 </h3></div>
     <div class="card-body">
@@ -614,7 +681,7 @@ Returns an error if the variable did not exist in the first place</p><a href="..
     <tbody>
         <tr>
             <td>
-              <span class="anchor" id="variable-package_name~4"></span>
+              <span class="anchor" id="variable-package_name~7"></span>
               character(len=*),
             </td>
 <td>intent(in)</td>
@@ -629,7 +696,7 @@ Returns an error if the variable did not exist in the first place</p><a href="..
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-shared"></span>
+              <span class="anchor" id="variable-shared~4"></span>
               logical,
             </td>
 <td>intent(in)</td>
@@ -659,7 +726,7 @@ Returns an error if the variable did not exist in the first place</p><a href="..
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-target_os~3"></span>
+              <span class="anchor" id="variable-target_os~4"></span>
               integer,
             </td>
 <td>intent(in)</td>
@@ -751,7 +818,7 @@ and return .TRUE. if they match and .FALSE. otherwise</p>
     <tbody>
         <tr>
             <td>
-              <span class="anchor" id="variable-os~3"></span>
+              <span class="anchor" id="variable-os~5"></span>
               integer,
             </td>
 <td>intent(in),</td>
@@ -814,7 +881,7 @@ and return .TRUE. if they match and .FALSE. otherwise</p>
     <tbody>
         <tr>
             <td>
-              <span class="anchor" id="variable-name~18"></span>
+              <span class="anchor" id="variable-name~32"></span>
               character(len=*),
             </td>
 <td>intent(in)</td>
@@ -829,7 +896,7 @@ and return .TRUE. if they match and .FALSE. otherwise</p>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-value~4"></span>
+              <span class="anchor" id="variable-value~6"></span>
               character(len=*),
             </td>
 <td>intent(in)</td>
@@ -952,7 +1019,7 @@ and return .TRUE. if they match and .FALSE. otherwise</p>
             <p class="text-end">
               Documentation generated by
               <a href="https://github.com/Fortran-FOSS-Programmers/ford">FORD</a>
- on 2026-11-02 09:07 +0000             </p>
+ on 2026-11-03 08:59 +0000             </p>
           </div>
         </div>
         <br>

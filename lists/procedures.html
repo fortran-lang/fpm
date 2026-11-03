@@ -118,7 +118,7 @@
                  <td><p>Add default profiles to existing profiles array if they don&rsquo;t already exist</p></td>
                </tr>
 			   <tr>
-                 <td><a href='../proc/add_dependency~2.html'>add_dependency</a></td>
+                 <td><a href='../proc/add_dependency.html'>add_dependency</a></td>
                  <td><a href='../module/fpm_targets.html'>fpm_targets</a></td>
                  <td>Subroutine</td>
                  <td><p>Add pointer to dependeny in target%dependencies</p></td>
@@ -233,6 +233,13 @@ Add this dependency&rsquo;s package-level macros</p></td>
                  <td><a href='../module/fpm_backend_output.html'>fpm_backend_output</a></td>
                  <td>Interface</td>
                  <td><p>Constructor for build_progress_t</p></td>
+               </tr>
+			   <tr>
+                 <td><a href='../proc/build_threads.html'>build_threads</a></td>
+                 <td><a href='../module/fpm_environment.html'>fpm_environment</a></td>
+                 <td>Function</td>
+                 <td><p>Number of threads that build targets: <code>jobs</code> if positive, else the OpenMP
+default (OMP_NUM_THREADS if set, otherwise all cores). 1 without OpenMP.</p></td>
                </tr>
 			   <tr>
                  <td><a href='../proc/canon_path.html'>canon_path</a></td>
@@ -654,7 +661,7 @@ Returns an error if the variable did not exist in the first place</p><a href="..
                  <td><p>Code git descriptor to a string</p></td>
                </tr>
 			   <tr>
-                 <td><a href='../proc/destroy~2.html'>destroy</a></td>
+                 <td><a href='../proc/destroy.html'>destroy</a></td>
                  <td><a href='../module/fpm_meta_base.html'>fpm_meta_base</a></td>
                  <td>Subroutine</td>
                  <td></td>
@@ -678,16 +685,16 @@ Returns an error if the variable did not exist in the first place</p><a href="..
                  <td><p>Extract dirname from path</p></td>
                </tr>
 			   <tr>
-                 <td><a href='../proc/dump_to_toml.html'>dump_to_toml</a></td>
+                 <td><a href='../proc/dump_to_toml~6.html'>dump_to_toml</a></td>
                  <td><a href='../module/fpm_git.html'>fpm_git</a></td>
                  <td>Subroutine</td>
                  <td><p>Dump dependency to toml table</p></td>
                </tr>
 			   <tr>
-                 <td><a href='../proc/dump_to_toml~7.html'>dump_to_toml</a></td>
+                 <td><a href='../proc/dump_to_toml~9.html'>dump_to_toml</a></td>
                  <td><a href='../module/fpm_compiler.html'>fpm_compiler</a></td>
                  <td>Subroutine</td>
-                 <td><p>Dump dependency to toml table</p><a href="../proc/dump_to_toml~7.html" class="pull-right"><emph>Read more&hellip;</emph></a></td>
+                 <td><p>Dump dependency to toml table</p><a href="../proc/dump_to_toml~9.html" class="pull-right"><emph>Read more&hellip;</emph></a></td>
                </tr>
 			   <tr>
                  <td><a href='../proc/ends_with_blank.html'>ends_with_blank</a></td>
@@ -843,13 +850,6 @@ Expands home folder (~) on both Unix and Windows.</p></td>
                  <td></td>
                </tr>
 			   <tr>
-                 <td><a href='../proc/get_command_line_settings.html'>get_command_line_settings</a></td>
-                 <td><a href='../module/fpm_command_line.html'>fpm_command_line</a></td>
-                 <td>Subroutine</td>
-                 <td><p>! canon_path is not converting &ldquo;.&rdquo;, etc.
-&amp; &lsquo;<ERROR> unknown help topic &ldquo;&rsquo;//trim(unnamed(i)).&rsquo;not found in:&rsquo;,manual]</p></td>
-               </tr>
-			   <tr>
                  <td><a href='../proc/get_compiler_id.html'>get_compiler_id</a></td>
                  <td><a href='../module/fpm_compiler.html'>fpm_compiler</a></td>
                  <td>Function</td>
@@ -930,13 +930,6 @@ No need to convert if there are no spaces</p><a href="../proc/get_dos_path.html"
                  <td><a href='../module/fpm_compiler.html'>fpm_compiler</a></td>
                  <td>Function</td>
                  <td></td>
-               </tr>
-			   <tr>
-                 <td><a href='../proc/get_fpm_env.html'>get_fpm_env</a></td>
-                 <td><a href='../module/fpm_command_line.html'>fpm_command_line</a></td>
-                 <td>Function</td>
-                 <td><p>Get an environment variable for fpm, this routine ensures that every variable
-used by fpm is prefixed with FPM_.</p></td>
                </tr>
 			   <tr>
                  <td><a href='../proc/get_global_settings.html'>get_global_settings</a></td>
@@ -1140,7 +1133,7 @@ All checks passed!</p></td>
    contain wildcard characters.</p><a href="../proc/glob.html" class="pull-right"><emph>Read more&hellip;</emph></a></td>
                </tr>
 			   <tr>
-                 <td><a href='../proc/handle_error.html'>handle_error</a></td>
+                 <td><a href='../proc/handle_error~4.html'>handle_error</a></td>
                  <td><a href='../program/main.html'>main</a></td>
                  <td>Subroutine</td>
                  <td></td>
@@ -1156,6 +1149,12 @@ All checks passed!</p></td>
                  <td><a href='../program/main.html'>main</a></td>
                  <td>Function</td>
                  <td></td>
+               </tr>
+			   <tr>
+                 <td><a href='../proc/has_openmp.html'>has_openmp</a></td>
+                 <td><a href='../module/fpm_environment.html'>fpm_environment</a></td>
+                 <td>Function</td>
+                 <td><p>Whether this fpm was built with OpenMP, so that it can build targets in parallel</p></td>
                </tr>
 			   <tr>
                  <td><a href='../proc/has_valid_custom_prefix.html'>has_valid_custom_prefix</a></td>
@@ -1176,7 +1175,7 @@ All checks passed!</p></td>
 3) If longer, package name must be followed by default separator plus at least one char</p><a href="../proc/has_valid_standard_prefix.html" class="pull-right"><emph>Read more&hellip;</emph></a></td>
                </tr>
 			   <tr>
-                 <td><a href='../proc/info~2.html'>info</a></td>
+                 <td><a href='../proc/info~8.html'>info</a></td>
                  <td><a href='../module/fpm_git.html'>fpm_git</a></td>
                  <td>Subroutine</td>
                  <td><p>Show information on git target</p></td>
@@ -1374,13 +1373,13 @@ Cleanup</p><a href="../proc/init_stdlib.html" class="pull-right"><emph>Read more
                  <td><p>Get file &amp; directory names in directory <code>dir</code> using iso_c_binding.</p><a href="../proc/list_files.html" class="pull-right"><emph>Read more&hellip;</emph></a></td>
                </tr>
 			   <tr>
-                 <td><a href='../proc/load_from_toml.html'>load_from_toml</a></td>
+                 <td><a href='../proc/load_from_toml~6.html'>load_from_toml</a></td>
                  <td><a href='../module/fpm_git.html'>fpm_git</a></td>
                  <td>Subroutine</td>
-                 <td><p>Read dependency from toml table (no checks made at this stage)</p><a href="../proc/load_from_toml.html" class="pull-right"><emph>Read more&hellip;</emph></a></td>
+                 <td><p>Read dependency from toml table (no checks made at this stage)</p><a href="../proc/load_from_toml~6.html" class="pull-right"><emph>Read more&hellip;</emph></a></td>
                </tr>
 			   <tr>
-                 <td><a href='../proc/load_from_toml~7.html'>load_from_toml</a></td>
+                 <td><a href='../proc/load_from_toml~9.html'>load_from_toml</a></td>
                  <td><a href='../module/fpm_compiler.html'>fpm_compiler</a></td>
                  <td>Subroutine</td>
                  <td><p>Read dependency from toml table (no checks made at this stage)</p></td>
@@ -1778,15 +1777,15 @@ by re-opening it first, which NAG 7.2 rejects for a unit from NEWUNIT=</p></td>
                </tr>
 			   <tr>
                  <td><a href='../interface/resize.html'>resize</a></td>
-                 <td><a href='../module/fpm_dependency.html'>fpm_dependency</a></td>
-                 <td>Interface</td>
-                 <td><p>Overloaded reallocation interface</p></td>
-               </tr>
-			   <tr>
-                 <td><a href='../interface/resize~2.html'>resize</a></td>
                  <td><a href='../module/fpm_strings.html'>fpm_strings</a></td>
                  <td>Interface</td>
                  <td></td>
+               </tr>
+			   <tr>
+                 <td><a href='../interface/resize~2.html'>resize</a></td>
+                 <td><a href='../module/fpm_dependency.html'>fpm_dependency</a></td>
+                 <td>Interface</td>
+                 <td><p>Overloaded reallocation interface</p></td>
                </tr>
 			   <tr>
                  <td><a href='../proc/resize_dependency_config.html'>resize_dependency_config</a></td>
@@ -2074,7 +2073,7 @@ in case of errors.</p></td>
             <p class="text-end">
               Documentation generated by
               <a href="https://github.com/Fortran-FOSS-Programmers/ford">FORD</a>
- on 2026-11-02 09:07 +0000             </p>
+ on 2026-11-03 08:59 +0000             </p>
           </div>
         </div>
         <br>
