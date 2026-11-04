@@ -29,7 +29,8 @@ contains
             & new_unittest("command-program-standard", test_command_program_standard), &
             & new_unittest("command-not-found-missing", test_command_not_found_missing), &
             & new_unittest("command-not-found-present", test_command_not_found_present), &
-            & new_unittest("getfile", test_getfile) &
+            & new_unittest("getfile", test_getfile), &
+            & new_unittest("delete-file", test_delete_file) &
             ]
 
     end subroutine collect_filesystem
@@ -564,6 +565,33 @@ contains
         end if
 
     end subroutine test_getfile
+
+    !> delete_file removes a file, and succeeds on a missing one
+    subroutine test_delete_file(error)
+        type(error_t), allocatable, intent(out) :: error
+
+        character(len=:), allocatable :: file
+        integer :: unit, stat
+        logical :: exist
+
+        file = get_temp_filename()
+        open(newunit=unit, file=file, action='write')
+        write(unit, '(a)') 'x'
+        close(unit)
+
+        call delete_file(file, stat)
+        inquire(file=file, exist=exist)
+        if (stat /= 0 .or. exist) then
+            call test_failed(error, "delete_file did not delete the file")
+            return
+        end if
+
+        call delete_file(file, stat)
+        if (stat /= 0) then
+            call test_failed(error, "delete_file should succeed on a missing file")
+        end if
+
+    end subroutine test_delete_file
 
 
 end module test_filesystem

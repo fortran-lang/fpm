@@ -18,6 +18,11 @@ dir=hello_world
 "$fpm" -C $dir run --target hello_world
 "$fpm" -C $dir/app run
 
+# An invalid FPM_JOBS stops fpm with an error
+EXIT_CODE=0
+FPM_JOBS=two "$fpm" build -C $dir || EXIT_CODE=$?
+test $EXIT_CODE -eq 1
+
 pushd hello_fpm
 "$fpm" build
 "$fpm" run --target hello_fpm
