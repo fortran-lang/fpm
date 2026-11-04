@@ -2,7 +2,7 @@
 module test_compiler
     use testsuite, only : new_unittest, unittest_t, error_t, test_failed, &
         & check_string
-    use fpm_environment, only : OS_WINDOWS, OS_LINUX, os_is_unix
+    use fpm_environment, only : OS_WINDOWS, OS_LINUX, os_is_unix, get_os_type
     use fpm_compiler   , only : compiler_t, new_compiler, tokenize_flags, archiver_t, new_archiver
     use fpm_filesystem , only : get_temp_filename, mkdir, join_path, filewrite, run, os_delete_dir
     use fpm_strings    , only : string_t, operator(==)
@@ -29,9 +29,39 @@ contains
             & new_unittest("compile-commands-unix", test_register_compile_command_unix), &
             & new_unittest("compile-commands-windows", test_register_compile_command_windows), &
             & new_unittest("get-default-flags-pic", test_get_default_flags_pic), &
-            & new_unittest("archive-drops-stale-members", test_archive_drops_stale_members)]
+            & new_unittest("archive-drops-stale-members", test_archive_drops_stale_members), &
+            & new_unittest("new-archiver-user-set", test_new_archiver_user_set)]
 
     end subroutine collect_compiler
+
+    !> A user-set archiver gets the flags of its kind, and uses response files on Windows only
+    subroutine test_new_archiver_user_set(error)
+        !> Error handling
+        type(error_t), allocatable, intent(out) :: error
+
+        type(archiver_t) :: archiver
+
+        call new_archiver(archiver, "lib", echo=.false., verbose=.false.)
+        if (archiver%ar /= "lib /OUT:") then
+            call test_failed(error, "Archiver 'lib' should use /OUT:, got: '"//archiver%ar//"'")
+            return
+        end if
+        if (archiver%use_response_file .neqv. get_os_type() == OS_WINDOWS) then
+            call test_failed(error, "User-set archiver should use response files on Windows only")
+            return
+        end if
+
+        call new_archiver(archiver, "ar", echo=.false., verbose=.false.)
+        if (archiver%ar /= "ar -rs ") then
+            call test_failed(error, "Archiver 'ar' should use -rs, got: '"//archiver%ar//"'")
+            return
+        end if
+        if (archiver%use_response_file .neqv. get_os_type() == OS_WINDOWS) then
+            call test_failed(error, "User-set archiver should use response files on Windows only")
+            return
+        end if
+
+    end subroutine test_new_archiver_user_set
 
     !> Rebuilding an archive must drop members whose objects are no longer listed
     !> (e.g. the object of a moved source file), otherwise they shadow the new ones
