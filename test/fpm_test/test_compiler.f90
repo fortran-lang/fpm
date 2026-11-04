@@ -25,6 +25,7 @@ contains
             & new_unittest("check-fortran-source-runs", test_check_fortran_source_runs), &
             & new_unittest("check-c-source-runs", test_check_c_source_runs), &
             & new_unittest("check-cxx-source-runs", test_check_cxx_source_runs), &
+            & new_unittest("quoted-flags", test_quoted_flags), &
             & new_unittest("tokenize-flags", test_tokenize_flags), &
             & new_unittest("compile-commands-unix", test_register_compile_command_unix), &
             & new_unittest("compile-commands-windows", test_register_compile_command_windows), &
@@ -306,6 +307,49 @@ contains
         end if
 
     end subroutine test_check_cxx_source_runs
+
+    !> Quotes in flags reach the compiler as a shell passes them: -DMSG=\"hi\" defines
+    !> MSG as the string "hi", not as the identifier hi
+    subroutine test_quoted_flags(error)
+        type(error_t), allocatable, intent(out) :: error
+
+        character(:), allocatable :: fc, cc, cxx
+        type(compiler_t) :: compiler
+
+        fc  = get_fpm_env("FC", default="gfortran")
+        cc  = get_fpm_env("CC", default=" ")
+        cxx = get_fpm_env("CXX", default=" ")
+
+        call new_compiler(compiler, fc, cc, cxx, echo=.false., verbose=.false.)
+
+        if (compiler%is_unknown()) then
+            call test_failed(error, "Cannot initialize compiler")
+            return
+        end if
+
+        !> Skip tests if no C compiler is available
+        if (len_trim(compiler%cc) == 0) return
+
+        if (.not.compiler%check_c_source_runs( &
+                '#include <string.h>' // new_line('a') // &
+                'int main() { return strcmp(MSG, "hi") != 0; }', &
+                compile_flags='-DMSG=\"hi\"')) then
+            call test_failed(error, 'Flag -DMSG=\"hi\" did not define MSG as "hi"')
+            return
+        end if
+
+        !> Double quotes inside single quotes, which only a POSIX shell understands
+        if (os_is_unix()) then
+            if (.not.compiler%check_c_source_runs( &
+                    '#include <string.h>' // new_line('a') // &
+                    'int main() { return strcmp(MSG, "hello world") != 0; }', &
+                    compile_flags='-DMSG=''"hello world"''')) then
+                call test_failed(error, 'Flag -DMSG=''"hello world"'' did not define MSG as "hello world"')
+                return
+            end if
+        end if
+
+    end subroutine test_quoted_flags
 
     subroutine test_tokenize_flags(error)
         type(error_t), allocatable, intent(out) :: error
