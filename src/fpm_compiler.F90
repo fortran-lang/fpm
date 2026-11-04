@@ -1366,21 +1366,21 @@ subroutine new_archiver(self, ar, echo, verbose)
 
     character(len=*), parameter :: arflags = " -rs ", libflags = " /OUT:"
 
+    os_type = get_os_type()
     if (len_trim(ar) > 0) then
       ! Check first for ar-like commands
       if (check_compiler(ar, "ar")) then
         self%ar = ar//arflags
-      end if
 
       ! Check for lib-like commands
-      if (check_compiler(ar, "lib")) then
+      else if (check_compiler(ar, "lib")) then
         self%ar = ar//libflags
-      end if
 
       ! Fallback and assume ar-like behaviour
-      self%ar = ar//arflags
+      else
+        self%ar = ar//arflags
+      end if
     else
-      os_type = get_os_type()
       if (os_type /= OS_WINDOWS .and. os_type /= OS_UNKNOWN) then
         self%ar = "ar"//arflags
       else

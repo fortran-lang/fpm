@@ -2,6 +2,7 @@
 !!
 !! * [get_os_type] -- Determine the OS type
 !! * [get_env] -- return the value of an environment variable
+!! * [build_threads] -- number of threads that build targets in parallel
 module fpm_environment
     use,intrinsic :: iso_fortran_env, only : stdin=>input_unit,   &
                                            & stdout=>output_unit, &
@@ -9,6 +10,7 @@ module fpm_environment
     use,intrinsic :: iso_c_binding, only: c_char,c_int,c_null_char
     use fpm_error, only : fpm_stop
     use fpm_strings, only : lower
+    !$ use omp_lib, only : omp_get_max_threads
     implicit none
     private
     public :: get_os_type
@@ -21,6 +23,8 @@ module fpm_environment
     public :: get_command_arguments_quoted
     public :: separator
     public :: library_filename
+    public :: has_openmp
+    public :: build_threads
     
                         public :: OS_NAME
     integer, parameter, public :: OS_ALL     = -1   ! "all" flag for profile support
@@ -291,6 +295,22 @@ contains
         endif
         if(VALUE==''.and.present(DEFAULT))VALUE=DEFAULT
      end function get_env
+
+    !> Whether this fpm was built with OpenMP, so that it can build targets in parallel
+    logical function has_openmp()
+        has_openmp = .false.
+        !$ has_openmp = .true.
+    end function has_openmp
+
+    !> Number of threads that build targets: `jobs` if positive, else the OpenMP
+    !! default (OMP_NUM_THREADS if set, otherwise all cores). 1 without OpenMP.
+    integer function build_threads(jobs)
+        !> Requested number of build jobs (--jobs); 0 selects the default
+        integer, intent(in) :: jobs
+        build_threads = 1
+        !$ build_threads = omp_get_max_threads()
+        !$ if (jobs > 0) build_threads = jobs
+    end function build_threads
 
     function get_command_arguments_quoted() result(args)
     character(len=:),allocatable :: args
