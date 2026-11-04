@@ -2,11 +2,12 @@ module fpm_cmd_export
   use fpm_command_line, only : fpm_export_settings
   use fpm_dependency, only : dependency_tree_t, new_dependency_tree
   use fpm_error, only : error_t, fpm_stop
-  use fpm_filesystem, only : join_path, lock_build_dir
+  use fpm_filesystem, only : join_path
   use fpm_manifest, only : package_config_t, get_package_data
   use fpm_toml, only: name_is_json
   use fpm_model, only: fpm_model_t
   use fpm, only: build_model
+  use fpm_build_lock, only: build_lock_t
   implicit none
   private
   public :: cmd_export
@@ -21,6 +22,7 @@ contains
     type(dependency_tree_t) :: deps
     type(fpm_model_t) :: model
     type(error_t), allocatable :: error
+    type(build_lock_t) :: lock
 
     character(len=:), allocatable :: filename
 
@@ -44,7 +46,7 @@ contains
     if (len_trim(settings%dump_dependencies)>0) then
 
         !> Wait for other fpm processes that use the same build directory
-        call lock_build_dir(settings%build_dir)
+        call lock%acquire(settings%build_dir)
 
         !> Generate dependency tree
         filename = join_path(settings%build_dir, "cache.toml")
@@ -61,6 +63,9 @@ contains
     !> Export full model
     if (len_trim(settings%dump_model)>0) then
 
+        !> Wait for other fpm processes that use the same build directory
+        call lock%acquire(settings%build_dir)
+
         call build_model(model, settings%fpm_build_settings, package, error)
         if (allocated(error)) then
             call fpm_stop(1,'*cmd_export* Model error: '//error%message)
@@ -70,6 +75,8 @@ contains
         call model%dump(filename, error, json=name_is_json(filename))
         call handle_error(error)
     end if
+
+    call lock%release()
 
   end subroutine cmd_export
 

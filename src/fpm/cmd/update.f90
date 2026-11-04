@@ -2,7 +2,8 @@ module fpm_cmd_update
   use fpm_command_line, only : fpm_update_settings, get_fpm_env
   use fpm_dependency, only : dependency_tree_t, new_dependency_tree
   use fpm_error, only : error_t, fpm_stop
-  use fpm_filesystem, only : exists, mkdir, join_path, delete_file, filewrite, lock_build_dir
+  use fpm_filesystem, only : exists, mkdir, join_path, delete_file, filewrite
+  use fpm_build_lock, only : build_lock_t
   use fpm_manifest, only : package_config_t, get_package_data
   use fpm_toml, only: name_is_json
   implicit none
@@ -21,6 +22,7 @@ contains
     type(error_t), allocatable :: error
     integer :: ii
     character(len=:), allocatable :: cache, build_dir
+    type(build_lock_t) :: lock
 
     call get_package_data(package, "fpm.toml", error, apply_defaults=.true.)
     call handle_error(error)
@@ -31,7 +33,7 @@ contains
     call mkdir(build_dir)
 
     ! Wait for other fpm processes that use the same build directory
-    call lock_build_dir(build_dir)
+    call lock%acquire(build_dir)
 
     if (.not. exists(join_path(build_dir, ".gitignore"))) then
       call filewrite(join_path(build_dir, ".gitignore"),["*"])
@@ -69,6 +71,8 @@ contains
         call deps%dump(trim(settings%dump), error, json=name_is_json(trim(settings%dump)))
         call handle_error(error)
     end if
+
+    call lock%release()
 
   end subroutine cmd_update
 

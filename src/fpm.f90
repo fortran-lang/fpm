@@ -8,8 +8,8 @@ use fpm_command_line, only: fpm_build_settings, fpm_new_settings, &
                       fpm_clean_settings
 use fpm_dependency, only : new_dependency_tree
 use fpm_filesystem, only: is_dir, join_path, list_files, exists, &
-                   basename, filewrite, mkdir, run, os_delete_dir, delete_file, &
-                   lock_build_dir, unlock_build_dir
+                   basename, filewrite, mkdir, run, os_delete_dir, delete_file
+use fpm_build_lock, only: build_lock_t
 use fpm_model, only: fpm_model_t, srcfile_t, show_model, &
                     FPM_SCOPE_UNKNOWN, FPM_SCOPE_LIB, FPM_SCOPE_DEP, &
                     FPM_SCOPE_APP, FPM_SCOPE_EXAMPLE, FPM_SCOPE_TEST
@@ -114,9 +114,6 @@ subroutine build_model(model, settings, package_config, error)
         model%enforce_module_names = package%build%module_naming
         model%module_prefix        = package%build%module_prefix
     endif
-
-    ! Wait for other fpm processes that use the same build directory
-    call lock_build_dir(settings%build_dir)
 
     ! Create dependencies
     call new_dependency_tree(model%deps, cache=join_path(settings%build_dir, "cache.toml"), &
@@ -549,6 +546,7 @@ type(package_config_t), allocatable :: package
 type(fpm_model_t), allocatable :: model
 type(build_target_ptr), allocatable :: targets(:)
 type(error_t), allocatable :: error
+type(build_lock_t) :: lock
 
 integer :: i
 
@@ -559,6 +557,9 @@ call get_package_data(package, "fpm.toml", error, apply_defaults=.true.)
 if (allocated(error)) then
     call fpm_stop(1,'*cmd_build* Package error: '//error%message)
 end if
+
+! Wait for other fpm processes that use the same build directory
+call lock%acquire(settings%build_dir)
 
 call build_model(model, settings, package, error)
 if (allocated(error)) then
@@ -588,6 +589,8 @@ else
                        jobs=settings%jobs)
 endif
 
+call lock%release()
+
 end subroutine cmd_build
 
 subroutine cmd_run(settings,test)
@@ -607,6 +610,7 @@ subroutine cmd_run(settings,test)
     integer :: run_scope,firsterror
     integer, allocatable :: stat(:),target_ID(:)
     character(len=:),allocatable :: line,run_cmd,library_path
+    type(build_lock_t) :: lock
     
     ! Large variables -> safer on heap
     allocate(package,model)
@@ -615,6 +619,9 @@ subroutine cmd_run(settings,test)
     if (allocated(error)) then
         call fpm_stop(1, '*cmd_run* Package error: '//error%message)
     end if
+
+    ! Wait for other fpm processes that use the same build directory
+    call lock%acquire(settings%build_dir)
 
     call build_model(model, settings, package, error)
     if (allocated(error)) then
@@ -700,12 +707,12 @@ subroutine cmd_run(settings,test)
     call build_package(targets,model,verbose=settings%verbose,dry_run=settings%list, &
                        jobs=settings%jobs)
 
+    ! Let other fpm processes, also those the programs start, use the build directory
+    call lock%release()
+
     if (settings%list) then
          call compact_list()
     else
-
-        ! Let other fpm processes, also those the programs start, use the build directory
-        call unlock_build_dir()
 
         ! Save current library path and set a new one that includes the local 
         ! dynamic library folders
@@ -841,6 +848,7 @@ subroutine delete_targets(settings, error)
     type(fpm_model_t), allocatable :: model
     type(build_target_ptr), allocatable :: targets(:)
     logical :: deleted_any
+    type(build_lock_t) :: lock
     
     ! Large variables -> safer on heap
     allocate(package,model)
@@ -849,6 +857,9 @@ subroutine delete_targets(settings, error)
     call get_package_data(package, "fpm.toml", error, apply_defaults=.true.)
     if (allocated(error)) return
     
+    ! Wait for other fpm processes that use the same build directory
+    call lock%acquire(settings%build_dir)
+
     ! Build the model to understand targets
     call build_model(model, settings, package, error)
     if (allocated(error)) return
@@ -875,6 +886,8 @@ subroutine delete_targets(settings, error)
     if (.not. deleted_any) then
         write(stdout, '(A)') "No matching build targets found to delete."
     end if
+
+    call lock%release()
 
 end subroutine delete_targets
 

@@ -2,6 +2,7 @@ module fpm_cmd_install
   use, intrinsic :: iso_fortran_env, only : output_unit
   use fpm, only : build_model
   use fpm_backend, only : build_package
+  use fpm_build_lock, only : build_lock_t
   use fpm_command_line, only : fpm_install_settings
   use fpm_error, only : error_t, fatal_error, fpm_stop
   use fpm_filesystem, only : join_path, list_files
@@ -33,9 +34,13 @@ contains
     logical :: has_library, has_executables
     character(len=:), allocatable :: module_dir
     integer :: ntargets,i
+    type(build_lock_t) :: lock
 
     call get_package_data(package, "fpm.toml", error, apply_defaults=.true.)
     call handle_error(error)
+
+    ! Wait for other fpm processes that use the same build directory
+    call lock%acquire(settings%build_dir)
     
     call build_model(model, settings, package, error)
     call handle_error(error)
@@ -107,6 +112,8 @@ contains
         call handle_error(error)
         
     end if
+
+    call lock%release()
 
   end subroutine cmd_install
 
