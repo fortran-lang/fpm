@@ -1734,7 +1734,10 @@ subroutine link_shared(self, output, args, log_file, stat, dry_run)
 
     if (mock) return
 
+    ! Shared libraries link in parallel: see run_argv
+    !$omp critical (fpm_string_result)
     shared_flag = get_shared_flag(self)
+    !$omp end critical (fpm_string_result)
 
     call tool_command(self%fc, shared_flag // " " // args, output, command, argv, tokenized)
     call run_tool(command, argv, tokenized, self%echo, self%verbose, log_file, stat)
@@ -1804,7 +1807,10 @@ subroutine make_archive(self, output, args, log_file, stat, dry_run)
         command = self%ar // output // " @" // output//".resp"
         if (tokenized) call add_strings(argv, string_t("@"//output//".resp"))
     else
+        ! Archives are made in parallel: see run_argv
+        !$omp critical (fpm_string_result)
         command = self%ar // output // " " // string_cat(args, " ")
+        !$omp end critical (fpm_string_result)
         if (tokenized) then
             do i = 1, size(args)
                 call add_strings(argv, args(i))
@@ -1812,7 +1818,16 @@ subroutine make_archive(self, output, args, log_file, stat, dry_run)
         end if
     end if
 
-    call run_tool(command, argv, tokenized, self%echo, self%verbose, log_file, stat)
+    ! On Windows, MinGW ar runs that write archives into one folder at once can fail to
+    ! create their temporary file there ("could not create temporary file whilst writing
+    ! archive: Permission denied"): make archives one at a time
+    if (get_os_type() == OS_WINDOWS) then
+        !$omp critical (fpm_archive)
+        call run_tool(command, argv, tokenized, self%echo, self%verbose, log_file, stat)
+        !$omp end critical (fpm_archive)
+    else
+        call run_tool(command, argv, tokenized, self%echo, self%verbose, log_file, stat)
+    end if
 
     if (self%use_response_file) call delete_file_safe(output//".resp")
 
@@ -1849,9 +1864,12 @@ subroutine write_response_file(name, argv)
     integer :: iarg, io
 
     open(file=name, newunit=io, status='replace')
+    ! Archives are made in parallel: see run_argv
+    !$omp critical (fpm_string_result)
     do iarg = 1, size(argv)
         write(io, '(a)') unix_path(argv(iarg)%s)
     end do
+    !$omp end critical (fpm_string_result)
     close(io)
 end subroutine write_response_file
 
