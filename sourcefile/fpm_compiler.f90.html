@@ -1539,22 +1539,22 @@
 <a id="ln-1366" name="ln-1366" href="#ln-1366"></a>
 <a id="ln-1367" name="ln-1367" href="#ln-1367"></a><span class="w">    </span><span class="kt">character</span><span class="p">(</span><span class="nb">len</span><span class="o">=*</span><span class="p">),</span><span class="w"> </span><span class="k">parameter</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">arflags</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">" -rs "</span><span class="p">,</span><span class="w"> </span><span class="n">libflags</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">" /OUT:"</span>
 <a id="ln-1368" name="ln-1368" href="#ln-1368"></a>
-<a id="ln-1369" name="ln-1369" href="#ln-1369"></a><span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="nb">len_trim</span><span class="p">(</span><span class="n">ar</span><span class="p">)</span><span class="w"> </span><span class="o">&gt;</span><span class="w"> </span><span class="mi">0</span><span class="p">)</span><span class="w"> </span><span class="k">then</span>
-<a id="ln-1370" name="ln-1370" href="#ln-1370"></a><span class="w">      </span><span class="c">! Check first for ar-like commands</span>
-<a id="ln-1371" name="ln-1371" href="#ln-1371"></a><span class="w">      </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">check_compiler</span><span class="p">(</span><span class="n">ar</span><span class="p">,</span><span class="w"> </span><span class="s2">"ar"</span><span class="p">))</span><span class="w"> </span><span class="k">then</span>
-<a id="ln-1372" name="ln-1372" href="#ln-1372"></a><span class="k">        </span><span class="n">self</span><span class="p">%</span><span class="n">ar</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">ar</span><span class="o">//</span><span class="n">arflags</span>
-<a id="ln-1373" name="ln-1373" href="#ln-1373"></a><span class="w">      </span><span class="k">end if</span>
+<a id="ln-1369" name="ln-1369" href="#ln-1369"></a><span class="w">    </span><span class="n">os_type</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">get_os_type</span><span class="p">()</span>
+<a id="ln-1370" name="ln-1370" href="#ln-1370"></a><span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="nb">len_trim</span><span class="p">(</span><span class="n">ar</span><span class="p">)</span><span class="w"> </span><span class="o">&gt;</span><span class="w"> </span><span class="mi">0</span><span class="p">)</span><span class="w"> </span><span class="k">then</span>
+<a id="ln-1371" name="ln-1371" href="#ln-1371"></a><span class="w">      </span><span class="c">! Check first for ar-like commands</span>
+<a id="ln-1372" name="ln-1372" href="#ln-1372"></a><span class="w">      </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">check_compiler</span><span class="p">(</span><span class="n">ar</span><span class="p">,</span><span class="w"> </span><span class="s2">"ar"</span><span class="p">))</span><span class="w"> </span><span class="k">then</span>
+<a id="ln-1373" name="ln-1373" href="#ln-1373"></a><span class="k">        </span><span class="n">self</span><span class="p">%</span><span class="n">ar</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">ar</span><span class="o">//</span><span class="n">arflags</span>
 <a id="ln-1374" name="ln-1374" href="#ln-1374"></a>
 <a id="ln-1375" name="ln-1375" href="#ln-1375"></a><span class="w">      </span><span class="c">! Check for lib-like commands</span>
-<a id="ln-1376" name="ln-1376" href="#ln-1376"></a><span class="w">      </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">check_compiler</span><span class="p">(</span><span class="n">ar</span><span class="p">,</span><span class="w"> </span><span class="s2">"lib"</span><span class="p">))</span><span class="w"> </span><span class="k">then</span>
+<a id="ln-1376" name="ln-1376" href="#ln-1376"></a><span class="w">      </span><span class="k">else if</span><span class="w"> </span><span class="p">(</span><span class="n">check_compiler</span><span class="p">(</span><span class="n">ar</span><span class="p">,</span><span class="w"> </span><span class="s2">"lib"</span><span class="p">))</span><span class="w"> </span><span class="k">then</span>
 <a id="ln-1377" name="ln-1377" href="#ln-1377"></a><span class="k">        </span><span class="n">self</span><span class="p">%</span><span class="n">ar</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">ar</span><span class="o">//</span><span class="n">libflags</span>
-<a id="ln-1378" name="ln-1378" href="#ln-1378"></a><span class="w">      </span><span class="k">end if</span>
-<a id="ln-1379" name="ln-1379" href="#ln-1379"></a>
-<a id="ln-1380" name="ln-1380" href="#ln-1380"></a><span class="w">      </span><span class="c">! Fallback and assume ar-like behaviour</span>
-<a id="ln-1381" name="ln-1381" href="#ln-1381"></a><span class="w">      </span><span class="n">self</span><span class="p">%</span><span class="n">ar</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">ar</span><span class="o">//</span><span class="n">arflags</span>
-<a id="ln-1382" name="ln-1382" href="#ln-1382"></a><span class="w">    </span><span class="k">else</span>
-<a id="ln-1383" name="ln-1383" href="#ln-1383"></a><span class="k">      </span><span class="n">os_type</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">get_os_type</span><span class="p">()</span>
-<a id="ln-1384" name="ln-1384" href="#ln-1384"></a><span class="w">      </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">os_type</span><span class="w"> </span><span class="o">/=</span><span class="w"> </span><span class="n">OS_WINDOWS</span><span class="w"> </span><span class="p">.</span><span class="nb">and</span><span class="p">.</span><span class="w"> </span><span class="n">os_type</span><span class="w"> </span><span class="o">/=</span><span class="w"> </span><span class="n">OS_UNKNOWN</span><span class="p">)</span><span class="w"> </span><span class="k">then</span>
+<a id="ln-1378" name="ln-1378" href="#ln-1378"></a>
+<a id="ln-1379" name="ln-1379" href="#ln-1379"></a><span class="w">      </span><span class="c">! Fallback and assume ar-like behaviour</span>
+<a id="ln-1380" name="ln-1380" href="#ln-1380"></a><span class="w">      </span><span class="k">else</span>
+<a id="ln-1381" name="ln-1381" href="#ln-1381"></a><span class="k">        </span><span class="n">self</span><span class="p">%</span><span class="n">ar</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">ar</span><span class="o">//</span><span class="n">arflags</span>
+<a id="ln-1382" name="ln-1382" href="#ln-1382"></a><span class="w">      </span><span class="k">end if</span>
+<a id="ln-1383" name="ln-1383" href="#ln-1383"></a><span class="k">    else</span>
+<a id="ln-1384" name="ln-1384" href="#ln-1384"></a><span class="k">      if</span><span class="w"> </span><span class="p">(</span><span class="n">os_type</span><span class="w"> </span><span class="o">/=</span><span class="w"> </span><span class="n">OS_WINDOWS</span><span class="w"> </span><span class="p">.</span><span class="nb">and</span><span class="p">.</span><span class="w"> </span><span class="n">os_type</span><span class="w"> </span><span class="o">/=</span><span class="w"> </span><span class="n">OS_UNKNOWN</span><span class="p">)</span><span class="w"> </span><span class="k">then</span>
 <a id="ln-1385" name="ln-1385" href="#ln-1385"></a><span class="k">        </span><span class="n">self</span><span class="p">%</span><span class="n">ar</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">"ar"</span><span class="o">//</span><span class="n">arflags</span>
 <a id="ln-1386" name="ln-1386" href="#ln-1386"></a><span class="w">      </span><span class="k">else</span>
 <a id="ln-1387" name="ln-1387" href="#ln-1387"></a><span class="w">        </span><span class="c">! Attempt "ar"</span>
@@ -2568,7 +2568,7 @@
             <p class="text-end">
               Documentation generated by
               <a href="https://github.com/Fortran-FOSS-Programmers/ford">FORD</a>
- on 2026-11-03 08:59 +0000             </p>
+ on 2026-11-04 18:03 +0000             </p>
           </div>
         </div>
         <br>
