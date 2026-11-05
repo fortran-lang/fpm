@@ -75,6 +75,8 @@ contains
         failed_count = check_ifort_flags(options, debug_on, release_on, fast_on, strict_on)
       case ('ifx')
         failed_count = check_ifx_flags(options, debug_on, release_on, fast_on, strict_on)
+      case ('flang')
+        failed_count = check_flang_flags(options, release_on, fast_on, strict_on)
       case default
         print '(a)', 'Compiler-specific checks: Unknown compiler - only base flags checked'
     end select
@@ -105,6 +107,8 @@ contains
       msg = 'ifort'
     else if (index(version_str, 'Intel') > 0) then
       msg = 'ifx'
+    else if (index(version_str, 'flang') > 0) then
+      msg = 'flang'
     else
       msg = 'any'
     end if
@@ -195,6 +199,28 @@ contains
     if (strict_on) then
       if (.not. check_flag(options, '-stand f18', 'Strict', '-stand f18')) failed_count = failed_count + 1
       if (.not. check_flag(options, '-warn errors', 'Strict', '-warn errors')) failed_count = failed_count + 1
+    end if
+  end function
+
+  function check_flang_flags(options, release_on, fast_on, strict_on) result(failed_count)
+    character(len=*), intent(in) :: options
+    logical, intent(in) :: release_on, fast_on, strict_on
+    integer :: failed_count
+
+    failed_count = 0
+    print '(a)', 'Compiler-specific flag checks (flang):'
+
+    if (release_on) then
+      if (.not. check_flag(options, '-funroll-loops', 'Release', '-funroll-loops')) failed_count = failed_count + 1
+    end if
+
+    if (fast_on) then
+      if (.not. check_flag(options, '-ffast-math', 'Fast', '-ffast-math')) failed_count = failed_count + 1
+    end if
+
+    if (strict_on) then
+      if (.not. check_flag(options, '-pedantic', 'Strict', '-pedantic')) failed_count = failed_count + 1
+      if (.not. check_flag(options, '-Werror', 'Strict', '-Werror')) failed_count = failed_count + 1
     end if
   end function
 

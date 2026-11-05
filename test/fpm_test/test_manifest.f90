@@ -509,7 +509,7 @@ contains
         type(error_t), allocatable, intent(out) :: error
 
         type(toml_table) :: table
-        type(dependency_config_t), allocatable :: dependencies(:)
+        class(dependency_config_t), allocatable :: dependencies(:)
 
         call new_table(table)
 
@@ -533,7 +533,7 @@ contains
         type(toml_table) :: table
         type(toml_array), pointer :: children
         integer :: stat
-        type(dependency_config_t), allocatable :: dependencies(:)
+        class(dependency_config_t), allocatable :: dependencies(:)
 
         call new_table(table)
         call add_array(table, 'dep1', children, stat)
@@ -1466,7 +1466,7 @@ contains
         type(error_t), allocatable, intent(out) :: error
 
         type(toml_table) :: table
-        type(preprocess_config_t), allocatable :: preprocessors(:)
+        class(preprocess_config_t), allocatable :: preprocessors(:)
 
         call new_table(table)
 

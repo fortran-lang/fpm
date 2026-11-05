@@ -14,24 +14,24 @@
 !> The backend process supports *incremental* compilation whereby targets are not
 !> re-compiled if their corresponding dependencies have not been modified.
 !>
-!> - Source-based targets (*i.e.* objects) are not re-compiled if the corresponding source
-!>   file is unmodified AND all of the target dependencies are not marked for re-compilation
+!> Targets (objects, executables and libraries) are not re-compiled if the target output
+!> file already exists AND its inputs are unmodified since it was last generated AND all of
+!> the target dependencies are not marked for re-compilation
 !>
-!> - Link targets (*i.e.* executables and libraries) are not re-compiled if the
-!>   target output file already exists AND all of the target dependencies are not marked for
-!>   re-compilation
-!>
-!> Source file modification is determined by a file digest (hash) which is calculated during
-!> the source parsing phase ([[fpm_source_parsing]]) and cached to disk after a target is
-!> successfully generated.
+!> The inputs of a target are summarised by a digest (hash) of its source file, if any,
+!> and of the digests of its dependencies. Source file digests are calculated during
+!> the source parsing phase ([[fpm_source_parsing]]); target digests are cached to disk after
+!> a target is successfully generated.
 !>
 module fpm_backend
 
-use,intrinsic :: iso_fortran_env, only : stdin=>input_unit, stdout=>output_unit, stderr=>error_unit
+use,intrinsic :: iso_fortran_env, only : stdin=>input_unit, stdout=>output_unit, stderr=>error_unit, int64
+use,intrinsic :: iso_c_binding, only : c_intptr_t, c_loc
 use fpm_error, only : fpm_stop, error_t
+use fpm_environment, only: has_openmp, build_threads
 use fpm_filesystem, only: basename, dirname, join_path, exists, mkdir, run, getline
 use fpm_model, only: fpm_model_t
-use fpm_strings, only: string_t, operator(.in.)
+use fpm_strings, only: string_t, operator(.in.), fnv_1a
 use fpm_targets, only: build_target_t, build_target_ptr, FPM_TARGET_OBJECT, &
                        FPM_TARGET_C_OBJECT, FPM_TARGET_ARCHIVE, FPM_TARGET_EXECUTABLE, &
                        FPM_TARGET_CPP_OBJECT, FPM_TARGET_SHARED
@@ -54,7 +54,7 @@ end interface
 contains
 
 !> Top-level routine to build package described by `model`
-subroutine build_package(targets,model,verbose,dry_run)
+subroutine build_package(targets,model,verbose,dry_run,jobs)
     type(build_target_ptr), intent(inout) :: targets(:)
     type(fpm_model_t), intent(in) :: model
     logical, intent(in) :: verbose
@@ -62,12 +62,15 @@ subroutine build_package(targets,model,verbose,dry_run)
     !> If dry_run, the build process is only mocked, but the list of compile_commands 
     !> is still created
     logical, intent(in) :: dry_run
+
+    !> Number of targets to build at once (--jobs): 0 or absent uses the OpenMP default
+    integer, intent(in), optional :: jobs
  
-    integer :: i, j, e, kk, n_ready, n_completed, n_done
+    integer :: i, j, n_jobs, n_threads
     type(build_target_ptr), allocatable :: queue(:)
     integer, allocatable :: schedule_ptr(:), stat(:)
-    integer, allocatable :: n_unmet(:), rdep_ptr(:), rdep_idx(:), ready(:)
-    logical :: build_failed, skip_current
+    integer, allocatable :: n_unmet(:), rdep_ptr(:), rdep_idx(:)
+    logical :: build_failed
     type(string_t), allocatable :: build_dirs(:)
     type(string_t) :: temp
     type(error_t), allocatable :: error
@@ -96,9 +99,7 @@ subroutine build_package(targets,model,verbose,dry_run)
 
     end do
 
-    ! Construct the (topologically ordered) build queue. schedule_ptr (region
-    ! boundaries) is retained only to satisfy schedule_targets' intent(out); the
-    ! dependency-driven scheduler below does not use regions.
+    ! Construct build schedule queue
     call schedule_targets(queue, schedule_ptr, targets)
 
     ! Check if queue is empty
@@ -120,83 +121,38 @@ subroutine build_package(targets,model,verbose,dry_run)
 
     progress = build_progress_t(queue,plain_output,model%build_dir)
 
-    ! Dependency-driven schedule: a target becomes ready as soon as its own
-    ! dependencies are built, with no per-region barrier. Workers pop ready
-    ! targets, build them, then release any dependent that now has all of its
-    ! dependencies satisfied.
+    ! Number of threads that build targets
+    n_jobs = 0
+    if (present(jobs)) n_jobs = jobs
+    if (n_jobs > 1 .and. .not.has_openmp() .and. .not.dry_run) then
+        write(stderr,'(a,i0,a)') '<WARNING> --jobs ',n_jobs,' ignored: this fpm was built without OpenMP,'// &
+                                 ' so it builds one target at a time'
+    end if
+    n_threads = build_threads(n_jobs)
+
+    ! Dependency-driven schedule: each target is built as soon as its own dependencies
+    ! are, with no barrier between schedule regions. gfortran keeps the length of a
+    ! deferred-length character function result in a static variable that all threads
+    ! share: code run from build_ready takes such results under critical (fpm_string_result)
     call build_dependency_graph(queue, n_unmet, rdep_ptr, rdep_idx)
 
-    allocate(ready(size(queue)))
-    n_ready = 0
-    do j = 1, size(queue)
+    !$omp parallel default(shared) num_threads(n_threads)
+    !$omp single
+    do j=1,size(queue)
         if (n_unmet(j) == 0) then
-            n_ready = n_ready + 1
-            ready(n_ready) = j
+            !$omp task firstprivate(j)
+            call build_ready(j)
+            !$omp end task
         end if
     end do
-    n_completed = 0
-
-    !$omp parallel default(shared) private(j, skip_current, e, kk)
-    do
-
-        ! Pop a ready target
-        j = 0
-        !$omp critical(fpm_sched)
-        if (n_ready > 0) then
-            j = ready(n_ready)
-            n_ready = n_ready - 1
-        end if
-        !$omp end critical(fpm_sched)
-
-        if (j == 0) then
-            ! No ready work: stop once every target is accounted for, else other
-            ! threads are still building and will release more dependents. This
-            ! is a busy-wait on the scheduler lock; a yield/backoff would be
-            ! cleaner but compile time dominates in practice.
-            !$omp atomic read
-            n_done = n_completed
-            if (n_done >= size(queue)) exit
-            cycle
-        end if
-
-        ! Check if build already failed
-        !$omp atomic read
-        skip_current = build_failed
-
-        if (.not.skip_current) then
-            if (.not.dry_run) call progress%compiling_status(j)
-            call build_target(model,queue(j)%ptr,verbose,dry_run, &
-                              progress%compile_commands,stat(j))
-            if (.not.dry_run) call progress%completed_status(j,stat(j))
-        end if
-
-        ! Set global flag if this target failed to build
-        if (stat(j) /= 0) then
-            !$omp atomic write
-            build_failed = .true.
-        end if
-
-        ! Mark complete and release dependents
-        !$omp critical(fpm_sched)
-        n_completed = n_completed + 1
-        do e = rdep_ptr(j), rdep_ptr(j+1)-1
-            kk = rdep_idx(e)
-            n_unmet(kk) = n_unmet(kk) - 1
-            if (n_unmet(kk) == 0) then
-                n_ready = n_ready + 1
-                ready(n_ready) = kk
-            end if
-        end do
-        !$omp end critical(fpm_sched)
-
-    end do
+    !$omp end single
     !$omp end parallel
 
-    ! Report any failure after the parallel region
+    ! Exit with message if any target failed
     if (build_failed) then
         write(*,*)
         do j=1,size(stat)
-            if (stat(j) /= 0) then
+            if (stat(j) /= 0) Then
                 call print_build_log(queue(j)%ptr)
             end if
         end do
@@ -212,14 +168,56 @@ subroutine build_package(targets,model,verbose,dry_run)
     call progress%dump_commands(error)
     if (allocated(error)) call fpm_stop(1,'error writing compile_commands.json: '//trim(error%message))
 
+contains
+
+    !> Build queued target j, whose dependencies are built, then start each dependent
+    !> whose last dependency it was. After a failure, nothing new is started
+    recursive subroutine build_ready(j)
+        integer, intent(in) :: j
+
+        integer :: e, k, n_left
+        logical :: skip_current
+
+        ! Check if build already failed
+        !$omp atomic read
+        skip_current = build_failed
+        if (skip_current) return
+
+        if (.not.dry_run) call progress%compiling_status(j)
+        call build_target(model,queue(j)%ptr,verbose,dry_run, &
+                progress%compile_commands,stat(j))
+        if (.not.dry_run) call progress%completed_status(j,stat(j))
+
+        ! Set global flag if this target failed to build
+        if (stat(j) /= 0) then
+            !$omp atomic write
+            build_failed = .true.
+            return
+        end if
+
+        do e=rdep_ptr(j),rdep_ptr(j+1)-1
+            k = rdep_idx(e)
+            !$omp atomic capture
+            n_unmet(k) = n_unmet(k) - 1
+            n_left = n_unmet(k)
+            !$omp end atomic
+            if (n_left == 0) then
+                !$omp task firstprivate(k)
+                call build_ready(k)
+                !$omp end task
+            end if
+        end do
+
+    end subroutine build_ready
+
 end subroutine build_package
 
 
 !> Topologically sort a target for scheduling by
 !>  recursing over its dependencies.
 !>
-!> Checks disk-cached source hashes to determine if objects are
-!>  up-to-date. Up-to-date sources are tagged as skipped.
+!> Checks disk-cached target digests to determine if targets are
+!>  up-to-date. Up-to-date targets are tagged as skipped.
 !>
 !> On completion, `target` should either be marked as
 !> sorted (`target%sorted=.true.`) or skipped (`target%skip=.true.`)
@@ -249,7 +247,7 @@ recursive subroutine sort_target(target, mock)
         target%touched = .true.  ! Set touched flag
     end if
 
-    ! Load cached source file digest if present
+    ! Load cached target digest if present
     if (.not.allocated(target%digest_cached) .and. &
          exists(target%output_file) .and. &
          exists(target%output_file//'.digest') .and. &
@@ -264,31 +262,27 @@ recursive subroutine sort_target(target, mock)
         if (stat /= 0) deallocate(target%digest_cached)
 
     end if
-    
-    if (dry_run) then 
-        
-        target%skip = .false.
-        
-    elseif (allocated(target%source)) then
 
-        ! Skip if target is source-based and source file is unmodified
-        if (allocated(target%digest_cached)) then
-            if (target%digest_cached == target%source%digest) target%skip = .true.
-        end if
+    ! Sort dependencies first: the target digest depends on theirs
+    do i=1,size(target%dependencies)
 
-    elseif (exists(target%output_file)) then
+        call sort_target(target%dependencies(i)%ptr, dry_run)
 
-        ! Skip if target is not source-based and already exists
-        target%skip = .true.
+    end do
 
+    ! Skip if target was last built from the same inputs: its source file, if any,
+    ! and the digests of its dependencies. These catch a dependency rebuilt by an
+    ! earlier run that did not rebuild this target (it stopped early, or did not
+    ! include it, as `fpm build` does with tests)
+    target%digest = target%compute_digest()
+    target%skip = .false.
+    if (allocated(target%digest_cached) .and. .not.dry_run) then
+        target%skip = target%digest_cached == target%digest
     end if
 
     ! Loop over target dependencies
     target%schedule = 1
     do i=1,size(target%dependencies)
-
-        ! Sort dependency
-        call sort_target(target%dependencies(i)%ptr, dry_run)
 
         if (.not.target%dependencies(i)%ptr%skip) then
 
@@ -368,77 +362,84 @@ subroutine build_dependency_graph(queue, n_unmet, rdep_ptr, rdep_idx)
     type(build_target_ptr), intent(in) :: queue(:)
     integer, allocatable, intent(out) :: n_unmet(:), rdep_ptr(:), rdep_idx(:)
 
-    integer :: n, k, d, m, e, n_edges
-    integer, allocatable :: edge_k(:), edge_m(:), rdeg(:), fillp(:)
+    integer :: n, k, d, m, n_slots
+    integer, allocatable :: fillp(:), slot_index(:)
+    integer(c_intptr_t), allocatable :: slot_address(:)
 
     n = size(queue)
     allocate(n_unmet(n), source=0)
 
-    ! Count edges (target k depends on target m, both queued)
-    n_edges = 0
+    ! Hash table from target address to queue position: libraries can have thousands
+    ! of dependencies, so do not search the queue for each one
+    n_slots = 2
+    do while (n_slots < 2*n)
+        n_slots = 2*n_slots
+    end do
+    allocate(slot_address(0:n_slots-1), source=0_c_intptr_t)
+    allocate(slot_index(0:n_slots-1), source=0)
     do k = 1, n
-        do d = 1, size(queue(k)%ptr%dependencies)
-            if (queue_index(queue, queue(k)%ptr%dependencies(d)%ptr) > 0) n_edges = n_edges + 1
-        end do
+        d = slot_of(queue(k)%ptr)
+        slot_address(d) = address_of(queue(k)%ptr)
+        slot_index(d) = k
     end do
 
-    allocate(edge_k(n_edges), edge_m(n_edges))
-    e = 0
+    ! Number of queued dependencies of each target, and of queued dependents
+    allocate(rdep_ptr(n+1), source=0)
     do k = 1, n
         do d = 1, size(queue(k)%ptr%dependencies)
-            m = queue_index(queue, queue(k)%ptr%dependencies(d)%ptr)
+            m = slot_index(slot_of(queue(k)%ptr%dependencies(d)%ptr))
             if (m > 0) then
-                e = e + 1
-                edge_k(e) = k
-                edge_m(e) = m
                 n_unmet(k) = n_unmet(k) + 1
+                rdep_ptr(m+1) = rdep_ptr(m+1) + 1
             end if
         end do
     end do
 
     ! Compressed-sparse-row reverse adjacency, grouped by dependency m
-    allocate(rdeg(n), source=0)
-    do e = 1, n_edges
-        rdeg(edge_m(e)) = rdeg(edge_m(e)) + 1
-    end do
-    allocate(rdep_ptr(n+1))
     rdep_ptr(1) = 1
     do k = 1, n
-        rdep_ptr(k+1) = rdep_ptr(k) + rdeg(k)
+        rdep_ptr(k+1) = rdep_ptr(k) + rdep_ptr(k+1)
     end do
-    allocate(rdep_idx(n_edges))
-    allocate(fillp(n))
+    allocate(rdep_idx(rdep_ptr(n+1)-1))
     fillp = rdep_ptr(1:n)
-    do e = 1, n_edges
-        m = edge_m(e)
-        rdep_idx(fillp(m)) = edge_k(e)
-        fillp(m) = fillp(m) + 1
+    do k = 1, n
+        do d = 1, size(queue(k)%ptr%dependencies)
+            m = slot_index(slot_of(queue(k)%ptr%dependencies(d)%ptr))
+            if (m > 0) then
+                rdep_idx(fillp(m)) = k
+                fillp(m) = fillp(m) + 1
+            end if
+        end do
     end do
+
+contains
+
+    integer(c_intptr_t) function address_of(target)
+        type(build_target_t), intent(in), target :: target
+        address_of = transfer(c_loc(target), address_of)
+    end function address_of
+
+    !> Slot of a target in the hash table: its own, or the empty one it would take
+    integer function slot_of(target)
+        type(build_target_t), intent(in), target :: target
+
+        integer(c_intptr_t) :: address
+        character(storage_size(address)/8) :: bytes
+
+        address = address_of(target)
+        bytes = transfer(address, bytes)
+        slot_of = int(modulo(fnv_1a(bytes), int(n_slots, int64)))
+        do while (slot_address(slot_of) /= 0 .and. slot_address(slot_of) /= address)
+            slot_of = modulo(slot_of + 1, n_slots)
+        end do
+    end function slot_of
 
 end subroutine build_dependency_graph
 
 
-!> Index of a target within the queue, or 0 if it is not queued.
-integer function queue_index(queue, target) result(idx)
-    type(build_target_ptr), intent(in) :: queue(:)
-    type(build_target_t), intent(in), target :: target
-
-    integer :: i
-
-    idx = 0
-    do i = 1, size(queue)
-        if (associated(queue(i)%ptr, target)) then
-            idx = i
-            return
-        end if
-    end do
-
-end function queue_index
-
-
 !> Call compile/link command for a single target.
 !>
-!> If successful, also caches the source file digest to disk.
+!> If successful, also caches the target digest to disk.
 !>
 subroutine build_target(model,target,verbose,dry_run,table,stat)
     type(fpm_model_t), intent(in) :: model
@@ -451,11 +452,13 @@ subroutine build_target(model,target,verbose,dry_run,table,stat)
 
     integer :: fh
 
-    !$omp critical
+    ! Check and create the output directory under one lock, so two threads never
+    ! both create it: on Windows, mkdir fails if the directory already exists
+    !$omp critical (output_dir)
     if (.not.exists(dirname(target%output_file)) .and. .not.dry_run) then
         call mkdir(dirname(target%output_file),verbose)
     end if
-    !$omp end critical
+    !$omp end critical (output_dir)
 
     select case(target%target_type)
 
@@ -486,9 +489,9 @@ subroutine build_target(model,target,verbose,dry_run,table,stat)
 
     end select
 
-    if (stat == 0 .and. allocated(target%source) .and. .not.dry_run) then
+    if (stat == 0 .and. .not.dry_run) then
         open(newunit=fh,file=target%output_file//'.digest',status='unknown')
-        write(fh,*) target%source%digest
+        write(fh,*) target%digest
         close(fh)
     end if
 

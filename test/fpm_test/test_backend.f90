@@ -28,6 +28,9 @@ contains
             & new_unittest("target-sort", test_target_sort), &
             & new_unittest("target-sort-skip-all", test_target_sort_skip_all), &
             & new_unittest("target-sort-rebuild-all", test_target_sort_rebuild_all), &
+            & new_unittest("target-sort-failed-link", test_target_sort_failed_link), &
+            & new_unittest("target-sort-outdated-dependency", test_target_sort_outdated_dependency), &
+            & new_unittest("target-digest-dependency-order", test_target_digest_order), &
             & new_unittest("target-shared-sort", test_target_shared), &
             & new_unittest("schedule-targets", test_schedule_targets), &
             & new_unittest("schedule-targets-empty", test_schedule_empty), &
@@ -123,9 +126,11 @@ contains
             ! Mimick unmodified sources
             allocate(targets(i)%ptr%source)
             targets(i)%ptr%source%digest = i
-            targets(i)%ptr%digest_cached = i
 
         end do
+
+        ! Mimick a previous build from the same sources
+        call cache_digests(targets)
 
         ! Mimick archive already exists
         open(newunit=fh,file=targets(1)%ptr%output_file,status="unknown")
@@ -210,6 +215,146 @@ contains
         end do
 
     end subroutine test_target_sort_rebuild_all
+
+
+    !> Check incremental rebuild after a build that failed before linking (#1323)
+    !>  all objects were rebuilt, but not the archive: only the archive should be rebuilt
+    subroutine test_target_sort_failed_link(error)
+
+        !> Error handling
+        type(error_t), allocatable, intent(out) :: error
+
+        type(build_target_ptr), allocatable :: targets(:)
+
+        integer :: i
+
+        targets = new_test_package()
+
+        do i=2,size(targets)
+            allocate(targets(i)%ptr%source)
+            targets(i)%ptr%source%digest = i
+        end do
+
+        call cache_digests(targets)
+
+        ! Modify the lowest source: all targets are scheduled
+        targets(4)%ptr%source%digest = 40
+
+        do i=1,size(targets)
+            call sort_target(targets(i)%ptr)
+        end do
+
+        ! Mimick a build that stops before the archive: all objects are built
+        do i=2,size(targets)
+            targets(i)%ptr%digest_cached = targets(i)%ptr%digest
+        end do
+
+        call reset_sort(targets)
+
+        do i=1,size(targets)
+            call sort_target(targets(i)%ptr)
+        end do
+
+        ! Check target states: objects skipped, archive scheduled
+        do i=2,size(targets)
+            if (.not.targets(i)%ptr%skip) then
+                call test_failed(error,"Object built by the failed build is not skipped")
+                return
+            end if
+        end do
+
+        if (targets(1)%ptr%skip .or. .not.targets(1)%ptr%sorted) then
+            call test_failed(error,"Archive not built by the failed build is skipped")
+            return
+        end if
+
+    end subroutine test_target_sort_failed_link
+
+
+    !> Check incremental rebuild after a build that rebuilt a dependency but not
+    !>  its dependents (it stopped early, or did not include them):
+    !>  all dependents should be rebuilt, although no dependency is rebuilt now
+    subroutine test_target_sort_outdated_dependency(error)
+
+        !> Error handling
+        type(error_t), allocatable, intent(out) :: error
+
+        type(build_target_ptr), allocatable :: targets(:)
+
+        integer :: i
+
+        targets = new_test_package()
+
+        do i=2,size(targets)
+            allocate(targets(i)%ptr%source)
+            targets(i)%ptr%source%digest = i
+        end do
+
+        call cache_digests(targets)
+
+        ! Modify the lowest source, and mimick a build of that target only
+        targets(4)%ptr%source%digest = 40
+
+        call sort_target(targets(4)%ptr)
+        targets(4)%ptr%digest_cached = targets(4)%ptr%digest
+
+        call reset_sort(targets)
+
+        do i=1,size(targets)
+            call sort_target(targets(i)%ptr)
+        end do
+
+        ! Check target states: lowest object skipped, all of its dependents scheduled
+        if (.not.targets(4)%ptr%skip) then
+            call test_failed(error,"Rebuilt dependency is not skipped")
+            return
+        end if
+
+        do i=1,3
+            if (targets(i)%ptr%skip .or. .not.targets(i)%ptr%sorted) then
+                call test_failed(error,"Dependent of a rebuilt dependency is skipped")
+                return
+            end if
+        end do
+
+    end subroutine test_target_sort_outdated_dependency
+
+
+    !> Check that the target digest does not depend on the order of its dependencies
+    subroutine test_target_digest_order(error)
+
+        !> Error handling
+        type(error_t), allocatable, intent(out) :: error
+
+        type(build_target_ptr), allocatable :: targets(:)
+
+        integer :: i
+        integer, parameter :: n = 20
+
+        call add_target(targets,'test-package',FPM_TARGET_ARCHIVE,get_temp_filename())
+        call add_target(targets,'test-package',FPM_TARGET_ARCHIVE,get_temp_filename())
+        do i=1,n
+            call add_target(targets,'test-package',FPM_TARGET_OBJECT,get_temp_filename())
+            allocate(targets(2+i)%ptr%source)
+            targets(2+i)%ptr%source%digest = mod(37*i,101)
+        end do
+
+        ! Same objects, added in order and shuffled
+        do i=1,n
+            call add_dependency(targets(1)%ptr,targets(2+i)%ptr)
+            call add_dependency(targets(2)%ptr,targets(3+mod(7*i,n))%ptr)
+        end do
+
+        do i=1,size(targets)
+            call sort_target(targets(i)%ptr)
+        end do
+
+        if (targets(1)%ptr%digest /= targets(2)%ptr%digest) then
+            call test_failed(error,"Target digest depends on the order of its dependencies")
+            return
+        end if
+
+    end subroutine test_target_digest_order
 
 
     !> Check construction of target queue and schedule
@@ -356,6 +501,40 @@ contains
         call add_dependency(targets(3)%ptr,targets(4)%ptr)
 
     end function new_test_package
+
+
+    !> Mimick a successful build of all targets: cache their digests
+    subroutine cache_digests(targets)
+
+        type(build_target_ptr), intent(inout) :: targets(:)
+        integer :: i
+
+        do i=1,size(targets)
+            call sort_target(targets(i)%ptr)
+        end do
+
+        do i=1,size(targets)
+            targets(i)%ptr%digest_cached = targets(i)%ptr%digest
+        end do
+
+        call reset_sort(targets)
+
+    end subroutine cache_digests
+
+
+    !> Reset the sorting state of all targets, as for a new build
+    subroutine reset_sort(targets)
+
+        type(build_target_ptr), intent(inout) :: targets(:)
+        integer :: i
+
+        do i=1,size(targets)
+            targets(i)%ptr%touched = .false.
+            targets(i)%ptr%sorted = .false.
+            targets(i)%ptr%skip = .false.
+        end do
+
+    end subroutine reset_sort
 
     subroutine compile_commands_roundtrip(error)
         
