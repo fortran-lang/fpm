@@ -47,14 +47,14 @@ module fpm_meta_base
         type(string_t), allocatable :: external_modules(:)
 
         !> Special fortran features
-        type(fortran_config_t), allocatable :: fortran
+        class(fortran_config_t), allocatable :: fortran
         
         !> Preprocessor configuration
-        type(preprocess_config_t), allocatable :: preprocess
+        class(preprocess_config_t), allocatable :: preprocess
 
         !> List of Development dependency meta data.
         !> Metapackage dependencies are never exported from the model
-        type(dependency_config_t), allocatable :: dependency(:)
+        class(dependency_config_t), allocatable :: dependency(:)
 
         contains
 
@@ -77,7 +77,7 @@ module fpm_meta_base
 
     contains
 
-    elemental subroutine destroy(this)
+    impure elemental subroutine destroy(this)
         class(metapackage_t), intent(inout) :: this
         this%has_link_libraries = .false.
         this%has_link_flags = .false.
@@ -242,12 +242,12 @@ module fpm_meta_base
     end subroutine resolve_package_config
 
     !> Add one dependency to array with a loop (gcc-15 bug on array initializer)
-    pure subroutine add_dependency_config_one(list,new)
-        type(dependency_config_t), allocatable, intent(inout) :: list(:)
+    subroutine add_dependency_config_one(list,new)
+        class(dependency_config_t), allocatable, intent(inout) :: list(:)
         type(dependency_config_t), intent(in) :: new
 
         integer :: i,n
-        type(dependency_config_t), allocatable :: tmp(:)
+        class(dependency_config_t), allocatable :: tmp(:)
 
         if (allocated(list)) then
            n = size(list)
@@ -256,21 +256,24 @@ module fpm_meta_base
         end if
 
         allocate(tmp(n+1))
-        do i=1,n
-           tmp(i) = list(i)
-        end do
-        tmp(n+1) = new
+        select type (tmp)
+        type is (dependency_config_t)
+           do i=1,n
+              tmp(i) = list(i)
+           end do
+           tmp(n+1) = new
+        end select
         call move_alloc(from=tmp,to=list)
 
     end subroutine add_dependency_config_one
 
     !> Add multiple dependencies to array with a loop (gcc-15 bug on array initializer)
-    pure subroutine add_dependency_config_many(list,new)
-        type(dependency_config_t), allocatable, intent(inout) :: list(:)
+    subroutine add_dependency_config_many(list,new)
+        class(dependency_config_t), allocatable, intent(inout) :: list(:)
         type(dependency_config_t), intent(in) :: new(:)
 
         integer :: i,n,add
-        type(dependency_config_t), allocatable :: tmp(:)
+        class(dependency_config_t), allocatable :: tmp(:)
 
         if (allocated(list)) then
            n = size(list)
@@ -282,12 +285,15 @@ module fpm_meta_base
         if (add == 0) return
 
         allocate(tmp(n+add))
-        do i=1,n
-           tmp(i) = list(i)
-        end do
-        do i=1,add
-           tmp(n+i) = new(i)
-        end do
+        select type (tmp)
+        type is (dependency_config_t)
+           do i=1,n
+              tmp(i) = list(i)
+           end do
+           do i=1,add
+              tmp(n+i) = new(i)
+           end do
+        end select
         call move_alloc(from=tmp,to=list)
 
     end subroutine add_dependency_config_many
