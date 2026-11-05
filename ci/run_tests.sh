@@ -18,6 +18,11 @@ dir=hello_world
 "$fpm" -C $dir run --target hello_world
 "$fpm" -C $dir/app run
 
+# An invalid FPM_JOBS stops fpm with an error
+EXIT_CODE=0
+FPM_JOBS=two "$fpm" build -C $dir || EXIT_CODE=$?
+test $EXIT_CODE -eq 1
+
 pushd hello_fpm
 "$fpm" build
 "$fpm" run --target hello_fpm
@@ -115,8 +120,8 @@ pushd auto_discovery_off
 "$fpm" build
 "$fpm" run --target auto_discovery_off
 "$fpm" test --target my_test
-test ! -x ./build/gfortran_*/app/unused
-test ! -x ./build/gfortran_*/test/unused_test
+test ! -x ./build/*_*/app/unused
+test ! -x ./build/*_*/test/unused_test
 popd
 
 pushd auto_with_nondefault_main
@@ -129,16 +134,16 @@ pushd tree_shake
 "$fpm" build
 "$fpm" run
 "$fpm" test
-test ! -e ./build/gfortran_*/tree_shake/src_farewell_m.f90.o
-test ! -e ./build/gfortran_*/tree_shake/src_farewell_m.f90.o.log
+test ! -e ./build/*_*/tree_shake/src_farewell_m.f90.o
+test ! -e ./build/*_*/tree_shake/src_farewell_m.f90.o.log
 popd
 
 pushd submodule_tree_shake
 "$fpm" run
-test ! -e ./build/gfortran_*/submodule_tree_shake/src_parent_unused.f90.o
-test ! -e ./build/gfortran_*/submodule_tree_shake/src_parent_unused.f90.o.log
-test ! -e ./build/gfortran_*/submodule_tree_shake/src_child_unused.f90.o
-test ! -e ./build/gfortran_*/submodule_tree_shake/src_child_unused.f90.o.log
+test ! -e ./build/*_*/submodule_tree_shake/src_parent_unused.f90.o
+test ! -e ./build/*_*/submodule_tree_shake/src_parent_unused.f90.o.log
+test ! -e ./build/*_*/submodule_tree_shake/src_child_unused.f90.o
+test ! -e ./build/*_*/submodule_tree_shake/src_child_unused.f90.o.log
 popd
 
 pushd version_file
@@ -377,6 +382,15 @@ bash "../ci/test_custom_build_dir.sh" "$fpm" hello_world
 # Test FPM features functionality
 echo "=== Testing FPM Features Functionality ==="
 bash "../ci/test_features.sh" "$fpm"
+
+# Test incremental rebuilds after failed or partial builds
+bash "../ci/test_incremental_rebuild.sh" "$fpm"
+
+# Test archives and executables made in parallel
+bash "../ci/test_parallel_link.sh" "$fpm"
+
+# Test fpm processes running at the same time on one package
+bash "../ci/test_concurrent_builds.sh" "$fpm"
 
 # Cleanup
 rm -rf ./*/build

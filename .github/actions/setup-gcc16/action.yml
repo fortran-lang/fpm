@@ -1,0 +1,71 @@
+name: 'Setup GCC 16'
+description: >-
+  Installs GCC 16 on Ubuntu, macOS and Windows runners and exports FC, CC, CXX
+  and FPM_FC, FPM_CC, FPM_CXX, like fortran-lang/setup-fortran does.
+  setup-fortran v1.10.0 does not support gcc 16: on Ubuntu it would install the
+  pre-release gcc-16 snapshot from the ubuntu-toolchain-r/test PPA, and on
+  Windows it has no gcc 16 package. Replace with setup-fortran once it does.
+
+runs:
+  using: "composite"
+  steps:
+    # Ubuntu 24.04 has no gcc 16 release package (the PPA and the Ubuntu 26.04
+    # archive only carry pre-release snapshots): use the Homebrew bottle.
+    - name: (Ubuntu) Install gcc 16 from Homebrew
+      if: runner.os == 'Linux'
+      shell: bash
+      run: |
+        eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)"
+        brew install gcc@16
+        bindir=$(brew --prefix)/bin
+        # gcc 15+ needs a newer assembler than the system binutils
+        echo "$(brew --prefix binutils)/bin" >> "$GITHUB_PATH"
+        echo "$bindir" >> "$GITHUB_PATH"
+        sudo update-alternatives \
+          --install /usr/bin/gcc gcc ${bindir}/gcc-16 100 \
+          --slave /usr/bin/gfortran gfortran ${bindir}/gfortran-16 \
+          --slave /usr/bin/gcov gcov ${bindir}/gcov-16 \
+          --slave /usr/bin/g++ g++ ${bindir}/g++-16
+        {
+          echo "FC=gfortran-16"; echo "CC=gcc-16"; echo "CXX=g++-16"
+          echo "FPM_FC=gfortran-16"; echo "FPM_CC=gcc-16"; echo "FPM_CXX=g++-16"
+        } >> "$GITHUB_ENV"
+
+    # gcc@16 is an alias of the Homebrew gcc formula
+    - name: (macOS) Install gcc 16 from Homebrew
+      if: runner.os == 'macOS'
+      shell: bash
+      run: |
+        brew install gcc@16
+        {
+          echo "FC=gfortran-16"; echo "CC=gcc-16"; echo "CXX=g++-16"
+          echo "FPM_FC=gfortran-16"; echo "FPM_CC=gcc-16"; echo "FPM_CXX=g++-16"
+        } >> "$GITHUB_ENV"
+
+    # Chocolatey only has MinGW 16.1.0: use the MSYS2 gcc 16.2.0 build
+    - name: (Windows) Install MSYS2
+      if: runner.os == 'Windows'
+      uses: msys2/setup-msys2@v2
+      with:
+        msystem: UCRT64
+        update: false
+        install: >-
+          mingw-w64-ucrt-x86_64-gcc
+          mingw-w64-ucrt-x86_64-gcc-fortran
+          mingw-w64-ucrt-x86_64-libgomp
+
+    - name: (Windows) Put gcc 16 on PATH
+      if: runner.os == 'Windows'
+      shell: bash
+      run: |
+        echo "${{ runner.temp }}\msys64\ucrt64\bin" >> "$GITHUB_PATH"
+        {
+          echo "FC=gfortran"; echo "CC=gcc"; echo "CXX=g++"
+          echo "FPM_FC=gfortran"; echo "FPM_CC=gcc"; echo "FPM_CXX=g++"
+        } >> "$GITHUB_ENV"
+
+    - name: Check gcc 16 version
+      shell: bash
+      run: |
+        "$FC" --version
+        [[ "$("$FC" -dumpfullversion)" == 16.* ]]

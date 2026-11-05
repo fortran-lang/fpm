@@ -2,8 +2,10 @@
 module test_compiler
     use testsuite, only : new_unittest, unittest_t, error_t, test_failed, &
         & check_string
-    use fpm_environment, only : OS_WINDOWS, OS_LINUX
-    use fpm_compiler   , only : compiler_t, new_compiler, tokenize_flags
+    use fpm_environment, only : OS_WINDOWS, OS_LINUX, os_is_unix, get_os_type
+    use fpm_compiler   , only : compiler_t, new_compiler, tokenize_flags, archiver_t, new_archiver, &
+        & match_compiler_type, id_flang, id_amdflang
+    use fpm_filesystem , only : get_temp_filename, mkdir, join_path, filewrite, run, os_delete_dir
     use fpm_strings    , only : string_t, operator(==)
     use fpm_command_line, only: get_fpm_env
     use fpm_compile_commands, only: compile_command_table_t
@@ -24,12 +26,107 @@ contains
             & new_unittest("check-fortran-source-runs", test_check_fortran_source_runs), &
             & new_unittest("check-c-source-runs", test_check_c_source_runs), &
             & new_unittest("check-cxx-source-runs", test_check_cxx_source_runs), &
+            & new_unittest("quoted-flags", test_quoted_flags), &
             & new_unittest("tokenize-flags", test_tokenize_flags), &
             & new_unittest("compile-commands-unix", test_register_compile_command_unix), &
             & new_unittest("compile-commands-windows", test_register_compile_command_windows), &
-            & new_unittest("get-default-flags-pic", test_get_default_flags_pic)]
+            & new_unittest("get-default-flags-pic", test_get_default_flags_pic), &
+            & new_unittest("match-compiler-type-flang", test_match_compiler_type_flang), &
+            & new_unittest("archive-drops-stale-members", test_archive_drops_stale_members), &
+            & new_unittest("new-archiver-user-set", test_new_archiver_user_set)]
 
     end subroutine collect_compiler
+
+    !> A user-set archiver gets the flags of its kind, and uses response files on Windows only
+    subroutine test_new_archiver_user_set(error)
+        !> Error handling
+        type(error_t), allocatable, intent(out) :: error
+
+        type(archiver_t) :: archiver
+
+        call new_archiver(archiver, "lib", echo=.false., verbose=.false.)
+        if (archiver%ar /= "lib /OUT:") then
+            call test_failed(error, "Archiver 'lib' should use /OUT:, got: '"//archiver%ar//"'")
+            return
+        end if
+        if (archiver%use_response_file .neqv. get_os_type() == OS_WINDOWS) then
+            call test_failed(error, "User-set archiver should use response files on Windows only")
+            return
+        end if
+
+        call new_archiver(archiver, "ar", echo=.false., verbose=.false.)
+        if (archiver%ar /= "ar -rs ") then
+            call test_failed(error, "Archiver 'ar' should use -rs, got: '"//archiver%ar//"'")
+            return
+        end if
+        if (archiver%use_response_file .neqv. get_os_type() == OS_WINDOWS) then
+            call test_failed(error, "User-set archiver should use response files on Windows only")
+            return
+        end if
+
+    end subroutine test_new_archiver_user_set
+
+    !> Rebuilding an archive must drop members whose objects are no longer listed
+    !> (e.g. the object of a moved source file), otherwise they shadow the new ones
+    subroutine test_archive_drops_stale_members(error)
+        !> Error handling
+        type(error_t), allocatable, intent(out) :: error
+
+        type(compiler_t) :: compiler
+        type(archiver_t) :: archiver
+        character(:), allocatable :: dir, archive, exe, log
+        integer :: stat
+
+        call new_compiler(compiler, get_fpm_env("FC", default="gfortran"), &
+            & get_fpm_env("CC", default=" "), get_fpm_env("CXX", default=" "), &
+            & echo=.false., verbose=.false.)
+        call new_archiver(archiver, get_fpm_env("AR", default=""), echo=.false., verbose=.false.)
+
+        dir = get_temp_filename()
+        call mkdir(dir, echo=.false.)
+        archive = join_path(dir, "libprobe.a")
+        exe = join_path(dir, "probe.exe")
+        log = join_path(dir, "build.log")
+
+        !> Two objects providing the same procedure
+        call filewrite(join_path(dir, "old.f90"), [character(32) :: &
+            & "integer function probe()", "probe = 11", "end function probe"])
+        call filewrite(join_path(dir, "new.f90"), [character(32) :: &
+            & "integer function probe()", "probe = 22", "end function probe"])
+        call filewrite(join_path(dir, "main.f90"), [character(32) :: &
+            & "program main", "integer, external :: probe", &
+            & "if (probe() /= 22) stop 1", "end program main"])
+
+        call compiler%compile_fortran(join_path(dir, "old.f90"), join_path(dir, "old.o"), "", log, stat)
+        if (stat == 0) call compiler%compile_fortran(join_path(dir, "new.f90"), join_path(dir, "new.o"), "", log, stat)
+        if (stat /= 0) then
+            call test_failed(error, "Cannot compile archive members")
+            return
+        end if
+
+        !> Archive the old object, then rebuild the same archive from the new one only
+        call archiver%make_archive(archive, [string_t(join_path(dir, "old.o"))], log, stat)
+        if (stat == 0) call archiver%make_archive(archive, [string_t(join_path(dir, "new.o"))], log, stat)
+        if (stat /= 0) then
+            call test_failed(error, "Cannot create archive")
+            return
+        end if
+
+        call compiler%link(exe, join_path(dir, "main.f90")//" "//archive, log, stat)
+        if (stat /= 0) then
+            call test_failed(error, "Cannot link against archive")
+            return
+        end if
+
+        call run(exe, echo=.false., verbose=.false., exitstat=stat)
+        if (stat /= 0) then
+            call test_failed(error, "Rebuilt archive still provides a stale member")
+            return
+        end if
+
+        call os_delete_dir(os_is_unix(), dir, echo=.false.)
+
+    end subroutine test_archive_drops_stale_members
 
     subroutine test_check_fortran_source_runs(error)
         !> Error handling
@@ -213,6 +310,49 @@ contains
 
     end subroutine test_check_cxx_source_runs
 
+    !> Quotes in flags reach the compiler as a shell passes them: -DMSG=\"hi\" defines
+    !> MSG as the string "hi", not as the identifier hi
+    subroutine test_quoted_flags(error)
+        type(error_t), allocatable, intent(out) :: error
+
+        character(:), allocatable :: fc, cc, cxx
+        type(compiler_t) :: compiler
+
+        fc  = get_fpm_env("FC", default="gfortran")
+        cc  = get_fpm_env("CC", default=" ")
+        cxx = get_fpm_env("CXX", default=" ")
+
+        call new_compiler(compiler, fc, cc, cxx, echo=.false., verbose=.false.)
+
+        if (compiler%is_unknown()) then
+            call test_failed(error, "Cannot initialize compiler")
+            return
+        end if
+
+        !> Skip tests if no C compiler is available
+        if (len_trim(compiler%cc) == 0) return
+
+        if (.not.compiler%check_c_source_runs( &
+                '#include <string.h>' // new_line('a') // &
+                'int main() { return strcmp(MSG, "hi") != 0; }', &
+                compile_flags='-DMSG=\"hi\"')) then
+            call test_failed(error, 'Flag -DMSG=\"hi\" did not define MSG as "hi"')
+            return
+        end if
+
+        !> Double quotes inside single quotes, which only a POSIX shell understands
+        if (os_is_unix()) then
+            if (.not.compiler%check_c_source_runs( &
+                    '#include <string.h>' // new_line('a') // &
+                    'int main() { return strcmp(MSG, "hello world") != 0; }', &
+                    compile_flags='-DMSG=''"hello world"''')) then
+                call test_failed(error, 'Flag -DMSG=''"hello world"'' did not define MSG as "hello world"')
+                return
+            end if
+        end if
+
+    end subroutine test_quoted_flags
+
     subroutine test_tokenize_flags(error)
         type(error_t), allocatable, intent(out) :: error
 
@@ -357,6 +497,33 @@ contains
         end if
 
     end subroutine test_get_default_flags_pic
+
+    !> amdflang contains "flang" in its name and must not be detected as LLVM flang
+    subroutine test_match_compiler_type_flang(error)
+        !> Error handling
+        type(error_t), allocatable, intent(out) :: error
+
+        if (match_compiler_type("amdflang") /= id_amdflang) then
+            call test_failed(error, "amdflang should be detected as AMD flang")
+            return
+        end if
+
+        if (match_compiler_type("/opt/rocm/bin/amdflang") /= id_amdflang) then
+            call test_failed(error, "/opt/rocm/bin/amdflang should be detected as AMD flang")
+            return
+        end if
+
+        if (match_compiler_type("flang") /= id_flang) then
+            call test_failed(error, "flang should be detected as LLVM flang")
+            return
+        end if
+
+        if (match_compiler_type("flang-new") /= id_flang) then
+            call test_failed(error, "flang-new should be detected as LLVM flang")
+            return
+        end if
+
+    end subroutine test_match_compiler_type_flang
 
 
 end module test_compiler

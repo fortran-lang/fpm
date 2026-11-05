@@ -14,6 +14,7 @@ module fpm_cmd_publish
   use fpm_strings, only: string_t
   use fpm_settings, only: official_registry_base_url
   use fpm, only: build_model
+  use fpm_build_lock, only: build_lock_t
 
   implicit none
   private
@@ -33,6 +34,7 @@ contains
     type(string_t), allocatable :: upload_data(:)
     character(len=:), allocatable :: tmp_file
     type(downloader_t) :: downloader
+    type(build_lock_t) :: lock
     integer :: i
 
     ! Get package data to determine package version.
@@ -52,8 +54,10 @@ contains
     if (version%s() == '0') call fpm_stop(1, 'Invalid version: "'//version%s()//'".')
     if (.not. exists('fpm.toml')) call fpm_stop(1, "Cannot find 'fpm.toml' file. Are you in the project root?")
 
-    ! Build model to obtain dependency tree.
+    ! Build model to obtain dependency tree, while no other fpm process uses the build directory
+    call lock%acquire(settings%build_dir)
     call build_model(model, settings%fpm_build_settings, package, error)
+    call lock%release()
     if (allocated(error)) call fpm_stop(1, '*cmd_build* Model error: '//error%message)
 
     ! Check if package contains git dependencies. Only publish packages without git dependencies.

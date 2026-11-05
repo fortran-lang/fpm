@@ -14,23 +14,21 @@
 !> The backend process supports *incremental* compilation whereby targets are not
 !> re-compiled if their corresponding dependencies have not been modified.
 !>
-!> - Source-based targets (*i.e.* objects) are not re-compiled if the corresponding source
-!>   file is unmodified AND all of the target dependencies are not marked for re-compilation
+!> Targets (objects, executables and libraries) are not re-compiled if the target output
+!> file already exists AND its inputs are unmodified since it was last generated AND all of
+!> the target dependencies are not marked for re-compilation
 !>
-!> - Link targets (*i.e.* executables and libraries) are not re-compiled if the
-!>   target output file already exists AND all of the target dependencies are not marked for
-!>   re-compilation
-!>
-!> Source file modification is determined by a file digest (hash) which is calculated during
-!> the source parsing phase ([[fpm_source_parsing]]) and cached to disk after a target is
-!> successfully generated.
+!> The inputs of a target are summarised by a digest (hash) of its source file, if any,
+!> and of the digests of its dependencies. Source file digests are calculated during
+!> the source parsing phase ([[fpm_source_parsing]]); target digests are cached to disk after
+!> a target is successfully generated.
 !>
 module fpm_backend
 
 use,intrinsic :: iso_fortran_env, only : stdin=>input_unit, stdout=>output_unit, stderr=>error_unit, int64
 use fpm_error, only : fpm_stop, error_t
-use fpm_filesystem, only: basename, dirname, join_path, exists, mkdir, run, getline, &
-                          read_text_file
+use fpm_environment, only: has_openmp, build_threads
+use fpm_filesystem, only: basename, dirname, join_path, exists, mkdir, run, getline
 use fpm_model, only: fpm_model_t
 use fpm_strings, only: string_t, operator(.in.), fnv_1a
 use fpm_compiler, only: id_gcc
@@ -42,7 +40,7 @@ use fpm_compile_commands, only: compile_command_table_t
 implicit none
 
 private
-public :: build_package, sort_target, schedule_targets, object_can_skip, deps_fingerprint
+public :: build_package, sort_target, schedule_targets, object_can_skip, record_interfaces
 
 #ifndef FPM_BOOTSTRAP
 interface
@@ -56,7 +54,7 @@ end interface
 contains
 
 !> Top-level routine to build package described by `model`
-subroutine build_package(targets,model,verbose,dry_run)
+subroutine build_package(targets,model,verbose,dry_run,jobs)
     type(build_target_ptr), intent(inout) :: targets(:)
     type(fpm_model_t), intent(in) :: model
     logical, intent(in) :: verbose
@@ -64,8 +62,11 @@ subroutine build_package(targets,model,verbose,dry_run)
     !> If dry_run, the build process is only mocked, but the list of compile_commands 
     !> is still created
     logical, intent(in) :: dry_run
+
+    !> Number of targets to build at once (--jobs): 0 or absent uses the OpenMP default
+    integer, intent(in), optional :: jobs
  
-    integer :: i, j
+    integer :: i, j, n_jobs, n_threads
     type(build_target_ptr), allocatable :: queue(:)
     integer, allocatable :: schedule_ptr(:), stat(:)
     logical :: build_failed, skip_current
@@ -119,11 +120,22 @@ subroutine build_package(targets,model,verbose,dry_run)
 
     progress = build_progress_t(queue,plain_output,model%build_dir)
 
+    ! Number of threads that build targets
+    n_jobs = 0
+    if (present(jobs)) n_jobs = jobs
+    if (n_jobs > 1 .and. .not.has_openmp() .and. .not.dry_run) then
+        write(stderr,'(a,i0,a)') '<WARNING> --jobs ',n_jobs,' ignored: this fpm was built without OpenMP,'// &
+                                 ' so it builds one target at a time'
+    end if
+    n_threads = build_threads(n_jobs)
+
     ! Loop over parallel schedule regions
     do i=1,size(schedule_ptr)-1
 
-        ! Build targets in schedule region i
-        !$omp parallel do default(shared) private(skip_current) schedule(dynamic,1)
+        ! Build targets in schedule region i. gfortran keeps the length of a deferred-length
+        ! character function result in a static variable that all threads share: code run
+        ! from this loop takes such results under critical (fpm_string_result)
+        !$omp parallel do default(shared) private(skip_current) schedule(dynamic,1) num_threads(n_threads)
         do j=schedule_ptr(i),(schedule_ptr(i+1)-1)
 
             ! Check if build already failed
@@ -173,8 +185,8 @@ end subroutine build_package
 !> Topologically sort a target for scheduling by
 !>  recursing over its dependencies.
 !>
-!> Checks disk-cached source hashes to determine if objects are
-!>  up-to-date. Up-to-date sources are tagged as skipped.
+!> Checks disk-cached target digests to determine if targets are
+!>  up-to-date. Up-to-date targets are tagged as skipped.
 !>
 !> On completion, `target` should either be marked as
 !> sorted (`target%sorted=.true.`) or skipped (`target%skip=.true.`)
@@ -204,7 +216,7 @@ recursive subroutine sort_target(target, mock)
         target%touched = .true.  ! Set touched flag
     end if
 
-    ! Load cached source file digest if present
+    ! Load cached target digest if present
     if (.not.allocated(target%digest_cached) .and. &
          exists(target%output_file) .and. &
          exists(target%output_file//'.digest') .and. &
@@ -219,31 +231,27 @@ recursive subroutine sort_target(target, mock)
         if (stat /= 0) deallocate(target%digest_cached)
 
     end if
-    
-    if (dry_run) then 
-        
-        target%skip = .false.
-        
-    elseif (allocated(target%source)) then
 
-        ! Skip if target is source-based and source file is unmodified
-        if (allocated(target%digest_cached)) then
-            if (target%digest_cached == target%source%digest) target%skip = .true.
-        end if
+    ! Sort dependencies first: the target digest depends on theirs
+    do i=1,size(target%dependencies)
 
-    elseif (exists(target%output_file)) then
+        call sort_target(target%dependencies(i)%ptr, dry_run)
 
-        ! Skip if target is not source-based and already exists
-        target%skip = .true.
+    end do
 
+    ! Skip if target was last built from the same inputs: its source file, if any,
+    ! and the digests of its dependencies. These catch a dependency rebuilt by an
+    ! earlier run that did not rebuild this target (it stopped early, or did not
+    ! include it, as `fpm build` does with tests)
+    target%digest = target%compute_digest()
+    target%skip = .false.
+    if (allocated(target%digest_cached) .and. .not.dry_run) then
+        target%skip = target%digest_cached == target%digest
     end if
 
     ! Loop over target dependencies
     target%schedule = 1
     do i=1,size(target%dependencies)
-
-        ! Sort dependency
-        call sort_target(target%dependencies(i)%ptr, dry_run)
 
         if (.not.target%dependencies(i)%ptr%skip) then
 
@@ -316,7 +324,7 @@ end subroutine schedule_targets
 
 !> Call compile/link command for a single target.
 !>
-!> If successful, also caches the source file digest to disk.
+!> If successful, also caches the target digest to disk.
 !>
 subroutine build_target(model,target,verbose,dry_run,table,stat)
     type(fpm_model_t), intent(in) :: model
@@ -327,32 +335,34 @@ subroutine build_target(model,target,verbose,dry_run,table,stat)
     type(compile_command_table_t), intent(inout) :: table
     integer, intent(out) :: stat
 
-    integer(int64) :: fp
-    logical :: fp_ok
+    integer :: fh
+    logical :: interface_aware, unchanged
 
-    !$omp critical
+    ! gfortran rewrites a .mod file only when the module interface changes, so an object
+    ! whose source and whose dependencies' interfaces are unchanged needs no recompile,
+    ! even if a dependency was recompiled. Other compilers keep the full cascade
+    interface_aware = .not.dry_run .and. target%target_type == FPM_TARGET_OBJECT &
+            .and. model%compiler%id == id_gcc
+    unchanged = .false.
+
+    ! Check and create the output directory under one lock, so two threads never
+    ! both create it: on Windows, mkdir fails if the directory already exists
+    !$omp critical (output_dir)
     if (.not.exists(dirname(target%output_file)) .and. .not.dry_run) then
         call mkdir(dirname(target%output_file),verbose)
     end if
-    !$omp end critical
-
-    ! Interface-aware incremental rebuild: skip recompiling an object whose source
-    ! is unchanged and whose dependencies' module interfaces are unchanged, even if
-    ! a dependency was recompiled. Only gfortran .mod files are a stable interface
-    ! signal, so other compilers keep the conservative dependency cascade.
-    if (.not.dry_run .and. model%compiler%id == id_gcc &
-        & .and. target%target_type == FPM_TARGET_OBJECT) then
-        if (object_can_skip(target)) then
-            stat = 0
-            return
-        end if
-    end if
+    !$omp end critical (output_dir)
 
     select case(target%target_type)
 
     case (FPM_TARGET_OBJECT)
-        call model%compiler%compile_fortran(target%source%file_name, target%output_file, &
-            & target%compile_flags, target%output_log_file, stat, table, dry_run)
+        if (interface_aware) unchanged = object_can_skip(target)
+        if (unchanged) then
+            stat = 0
+        else
+            call model%compiler%compile_fortran(target%source%file_name, target%output_file, &
+                & target%compile_flags, target%output_log_file, stat, table, dry_run)
+        end if
 
     case (FPM_TARGET_C_OBJECT)
         call model%compiler%compile_c(target%source%file_name, target%output_file, &
@@ -377,145 +387,199 @@ subroutine build_target(model,target,verbose,dry_run,table,stat)
 
     end select
 
-    if (stat == 0 .and. allocated(target%source) .and. .not.dry_run) then
-        call write_digest(target%output_file//'.digest', target%source%digest)
+    if (stat == 0 .and. .not.dry_run) then
+        open(newunit=fh,file=target%output_file//'.digest',status='unknown')
+        write(fh,*) target%digest
+        close(fh)
     end if
 
-    ! Cache this object's module-interface fingerprint and the fingerprints of its
-    ! dependencies, so the next build can prune it when those interfaces are stable.
-    if (stat == 0 .and. .not.dry_run .and. model%compiler%id == id_gcc &
-        & .and. target%target_type == FPM_TARGET_OBJECT .and. allocated(target%source)) then
-        fp = module_fingerprint(target, fp_ok)
-        if (fp_ok) call write_digest(target%output_file//'.mod-digest', fp)
-        fp = deps_fingerprint(target, fp_ok)
-        if (fp_ok) call write_digest(target%output_file//'.dep-mods', fp)
-    end if
+    if (interface_aware .and. .not.unchanged) call record_interfaces(target, stat == 0)
 
 end subroutine build_target
 
 
-!> Whether an object target can be skipped despite a dependency having been
-!> rebuilt: true only if its own source is unchanged and the recorded interface
-!> fingerprints of its dependencies match their current on-disk values.
+!> Whether an object queued for rebuild can keep its output: true only if it was last
+!> compiled from the same source and against the same dependency module interfaces
 function object_can_skip(target) result(can_skip)
     type(build_target_t), intent(in) :: target
     logical :: can_skip
 
-    integer(int64) :: current, recorded
-    logical :: ok, have
+    integer(int64) :: record(2), deps
+    logical :: ok
 
     can_skip = .false.
-    if (.not.allocated(target%source)) return
-    if (.not.allocated(target%digest_cached)) return
-    if (target%digest_cached /= target%source%digest) return
+    if (.not.allocated(target%source) .or. .not.exists(target%output_file)) return
 
-    current = deps_fingerprint(target, ok)
+    call read_digests(target%output_file//'.dep-mods', record, ok)
     if (.not.ok) return
+    if (record(1) /= target%source%digest) return
 
-    call read_digest(target%output_file//'.dep-mods', recorded, have)
-    if (.not.have) return
+    deps = deps_fingerprint(target, ok)
+    can_skip = ok .and. record(2) == deps
 
-    can_skip = (current == recorded)
 end function object_can_skip
 
 
-!> Combined hash of the bytes of every module file (`.mod`) an object provides.
-!> `ok` is false if the object provides no modules or any `.mod` is unreadable.
+!> After compiling an object, record the fingerprint of the module interfaces it provides
+!> and the source and dependency interfaces it was compiled from. Records that cannot be
+!> made, or that a failed compile may have outdated, are deleted, which forces a rebuild
+subroutine record_interfaces(target, compiled)
+    type(build_target_t), intent(in) :: target
+    logical, intent(in) :: compiled
+
+    integer(int64) :: fp
+    logical :: ok
+
+    ok = compiled
+    if (ok) fp = module_fingerprint(target, ok)
+    if (ok) then
+        call write_digests(target%output_file//'.mod-digest', [fp])
+    else
+        call delete_record(target%output_file//'.mod-digest')
+    end if
+
+    ok = compiled .and. allocated(target%source)
+    if (ok) fp = deps_fingerprint(target, ok)
+    if (ok) then
+        call write_digests(target%output_file//'.dep-mods', [target%source%digest, fp])
+    else
+        call delete_record(target%output_file//'.dep-mods')
+    end if
+
+end subroutine record_interfaces
+
+
+!> Hash of the module files (`.mod`, and `.smod` for submodules) an object provides.
+!> `ok` is false if it provides no module or a `.mod` file cannot be read
 function module_fingerprint(target, ok) result(fp)
     type(build_target_t), intent(in) :: target
     logical, intent(out) :: ok
     integer(int64) :: fp
 
-    character(:), allocatable :: bytes, modfile
-    logical :: first
+    character(:), allocatable :: mod_base
     integer :: i
 
-    fp = 0_int64
+    fp = 0
     ok = .false.
-    first = .true.
     if (.not.allocated(target%source)) return
     if (.not.allocated(target%source%modules_provided)) return
+    if (size(target%source%modules_provided) == 0) return
+
     do i=1,size(target%source%modules_provided)
-        modfile = join_path(target%output_dir, &
-            & target%source%modules_provided(i)%s)//'.mod'
-        if (.not.exists(modfile)) return
-        bytes = read_text_file(modfile)
-        if (first) then
-            fp = fnv_1a(bytes)
-            first = .false.
-        else
-            fp = fnv_1a(bytes, fp)
+
+        ! Build threads share deferred-length function results: see build_package
+        !$omp critical (fpm_string_result)
+        mod_base = join_path(target%output_dir, target%source%modules_provided(i)%s)
+        !$omp end critical (fpm_string_result)
+
+        call hash_file(mod_base//'.mod', fp, ok)
+        if (.not.ok) return
+
+        ! Submodules use the private entities of their ancestor, which are only in .smod
+        if (exists(mod_base//'.smod')) then
+            call hash_file(mod_base//'.smod', fp, ok)
+            if (.not.ok) return
         end if
+
     end do
-    ok = .not.first
+
 end function module_fingerprint
 
 
-!> Combine the recorded interface fingerprints of an object target's object
-!> dependencies. `ok` is false if any object dependency has no fingerprint on disk.
+!> Hash of the recorded interface fingerprints of the dependencies of an object.
+!> `ok` is false if a dependency is not a Fortran object or has no fingerprint
 function deps_fingerprint(target, ok) result(fp)
     type(build_target_t), intent(in) :: target
     logical, intent(out) :: ok
     integer(int64) :: fp
 
-    integer(int64) :: dval
-    character(len=8) :: buf
-    logical :: have, first
+    integer(int64) :: dep(1)
+    character(8) :: bytes
     integer :: i
 
-    fp = 0_int64
+    fp = 0
     ok = .true.
-    first = .true.
-    if (.not.allocated(target%dependencies)) return
     do i=1,size(target%dependencies)
-        associate(dep => target%dependencies(i)%ptr)
-            if (dep%target_type /= FPM_TARGET_OBJECT) cycle
-            call read_digest(dep%output_file//'.mod-digest', dval, have)
-            if (.not.have) then
-                ok = .false.
-                return
-            end if
-            buf = transfer(dval, buf)
-            if (first) then
-                fp = fnv_1a(buf)
-                first = .false.
-            else
-                fp = fnv_1a(buf, fp)
-            end if
+        associate(dependency => target%dependencies(i)%ptr)
+            ok = dependency%target_type == FPM_TARGET_OBJECT
+            if (ok) call read_digests(dependency%output_file//'.mod-digest', dep, ok)
+            if (.not.ok) return
+            bytes = transfer(dep(1), bytes)
+            fp = fnv_1a(bytes, fp)
         end associate
     end do
+
 end function deps_fingerprint
 
 
-!> Write a single integer digest to a sidecar file, mirroring the `.digest` idiom.
-subroutine write_digest(path, value)
-    character(len=*), intent(in) :: path
-    integer(int64), intent(in) :: value
+!> Update a hash with the bytes of a file
+subroutine hash_file(path, fp, ok)
+    character(*), intent(in) :: path
+    integer(int64), intent(inout) :: fp
+    logical, intent(out) :: ok
+
+    character(:), allocatable :: bytes
+    integer :: fh, ios, n
+
+    ok = .false.
+    open(newunit=fh,file=path,access='stream',form='unformatted',status='old', &
+            action='read',iostat=ios)
+    if (ios /= 0) return
+    inquire(unit=fh,size=n)
+    allocate(character(len=max(n,0)) :: bytes)
+    read(fh,iostat=ios) bytes
+    close(fh)
+    if (n < 0 .or. ios /= 0) return
+
+    fp = fnv_1a(bytes, fp)
+    ok = .true.
+
+end subroutine hash_file
+
+
+!> Write digests to a record file next to a target output
+subroutine write_digests(path, digests)
+    character(*), intent(in) :: path
+    integer(int64), intent(in) :: digests(:)
+
     integer :: fh
 
     open(newunit=fh,file=path,status='unknown')
-    write(fh,*) value
+    write(fh,*) digests
     close(fh)
-end subroutine write_digest
+
+end subroutine write_digests
 
 
-!> Read a single integer digest from a sidecar file. `ok` is false if the file is
-!> missing or unreadable, so a missing record forces a rebuild.
-subroutine read_digest(path, value, ok)
-    character(len=*), intent(in) :: path
-    integer(int64), intent(out) :: value
+!> Read digests from a record file. `ok` is false if it is missing or unreadable
+subroutine read_digests(path, digests, ok)
+    character(*), intent(in) :: path
+    integer(int64), intent(out) :: digests(:)
     logical, intent(out) :: ok
+
     integer :: fh, ios
 
-    value = 0_int64
+    digests = 0
     ok = .false.
-    if (.not.exists(path)) return
-    open(newunit=fh,file=path,status='old',iostat=ios)
+    open(newunit=fh,file=path,status='old',action='read',iostat=ios)
     if (ios /= 0) return
-    read(fh,*,iostat=ios) value
+    read(fh,*,iostat=ios) digests
     close(fh)
-    ok = (ios == 0)
-end subroutine read_digest
+    ok = ios == 0
+
+end subroutine read_digests
+
+
+!> Delete a record file, if present
+subroutine delete_record(path)
+    character(*), intent(in) :: path
+
+    integer :: fh, ios
+
+    open(newunit=fh,file=path,status='old',iostat=ios)
+    if (ios == 0) close(fh,status='delete')
+
+end subroutine delete_record
 
 
 !> Read and print the build log for target

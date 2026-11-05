@@ -7,8 +7,9 @@ on:
       - 'src/*meta*.f90'
       - 'src/fpm/*meta*.f90'
       - 'src/fpm/manifest/*meta*.f90'
-      - 'src/ci/meta_tests.sh'
-      - 'src/.github/workflows/meta.yml'
+      - 'src/metapackage/**'
+      - 'ci/meta_tests.sh'
+      - '.github/workflows/meta.yml'
   # Always run on PR or release
   pull_request:
   release:
@@ -24,6 +25,10 @@ env:
   HOMEBREW_NO_GITHUB_API: 1
   HOMEBREW_NO_INSTALL_CLEANUP: 1
   HOMEBREW_NO_INSTALLED_DEPENDENTS_CHECK: 1
+  # Some runner VMs expose an InfiniBand device that UCX cannot use
+  # (ibv_create_srq fails in MPI_Init): single-node tests only need
+  # shared memory and TCP.
+  UCX_TLS: self,sm,tcp
 
 jobs:
 
@@ -39,34 +44,60 @@ jobs:
           - os: ubuntu-latest
             mpi: mpich
             release-flags: --flag ' -Wno-external-argument-mismatch'
-          - os: macos-14
+          - os: macos-15
             mpi: openmpi
             release-flags: --flag ' -Wno-external-argument-mismatch'
-          - os: macos-14
+          - os: macos-15
             mpi: mpich
             release-flags: --flag ' -Wno-external-argument-mismatch'
+          # -Wno-external-argument-mismatch works around a gcc 15.0-15.1
+          # bug: gcc 16 does not need it.
           - os: ubuntu-latest
+            mpi: openmpi
+            gcc: 16
+          - os: ubuntu-latest
+            mpi: mpich
+            gcc: 16
+          - os: macos-15
+            mpi: openmpi
+            gcc: 16
+          - os: macos-15
+            mpi: mpich
+            gcc: 16
+          # setup-fortran v1.10.0 installs Intel with apt-key, which
+          # ubuntu-26.04 (ubuntu-latest) no longer has
+          # (fortran-lang/setup-fortran#298).
+          - os: ubuntu-24.04
             mpi: intel
             intel_version: "2024.1.0"
             release-flags: ""            # override: no GCC flags
-          - os: ubuntu-latest
+          - os: ubuntu-24.04
             mpi: intel
             intel_version: "2025.0"
             release-flags: ""            # override: no GCC flags
 
     steps:
     - name: Checkout code
-      uses: actions/checkout@v6
+      uses: actions/checkout@v7
 
     - name: (Ubuntu) setup gcc version
       if: contains(matrix.os,'ubuntu')
       run: |
-        echo "GCC_V=14" >> $GITHUB_ENV
+        # The MPI and HDF5 .mod files from apt only load with the gfortran
+        # that built them: 15 on ubuntu-26.04. ubuntu-24.04 (Intel) keeps 14.
+        # gfortran 16 writes the same module format (version 16) as 15.
+        if [ -n "${{ matrix.gcc }}" ]; then
+          echo "GCC_V=${{ matrix.gcc }}" >> $GITHUB_ENV
+        elif [ "$(lsb_release -rs)" = "24.04" ]; then
+          echo "GCC_V=14" >> $GITHUB_ENV
+        else
+          echo "GCC_V=15" >> $GITHUB_ENV
+        fi
 
     - name: (macOS) setup gcc version
       if: contains(matrix.os,'macos')
       run: |
-        echo "GCC_V=15" >> $GITHUB_ENV
+        echo "GCC_V=${{ matrix.gcc || 15 }}" >> $GITHUB_ENV
 
     - name: (Windows) Install MSYS2
       uses: msys2/setup-msys2@v2
@@ -85,24 +116,29 @@ jobs:
           netcdf-fortran
 
     - name: (Ubuntu) Install gfortran
-      if: contains(matrix.os,'ubuntu')
+      if: contains(matrix.os,'ubuntu') && matrix.gcc != 16
       run: |
         sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-${GCC_V} 100 \
         --slave /usr/bin/gfortran gfortran /usr/bin/gfortran-${GCC_V} \
         --slave /usr/bin/gcov gcov /usr/bin/gcov-${GCC_V}
+
+    # apt only has gcc 16 pre-release snapshots
+    - name: (Ubuntu) Install gcc 16
+      if: contains(matrix.os,'ubuntu') && matrix.gcc == 16
+      uses: ./.github/actions/setup-gcc16
 
     - name: (Ubuntu) Install OpenMPI
       if: contains(matrix.os,'ubuntu') && contains(matrix.mpi,'openmpi')
       run: |
         sudo apt-get update
         sudo apt install -y -q openmpi-bin libopenmpi-dev hwloc fabric libhdf5-dev \
-          libhdf5-fortran-102 libnetcdf-dev libnetcdff-dev libopenblas-dev
+          libnetcdf-dev libnetcdff-dev libopenblas-dev
 
     - name: (Ubuntu) Install MPICH
       if: contains(matrix.os,'ubuntu') && contains(matrix.mpi,'mpich')
       run: |
         sudo apt-get update
-        sudo apt install -y -q mpich hwloc fabric libhdf5-dev libhdf5-fortran-102 \
+        sudo apt install -y -q mpich hwloc fabric libhdf5-dev \
           libnetcdf-dev libnetcdff-dev libopenblas-dev
 
     # Intel
@@ -200,7 +236,7 @@ jobs:
     - name: (macOS) Set up Homebrew
       if: contains(matrix.os,'macos')
       id: set-up-homebrew
-      uses: Homebrew/actions/setup-homebrew@master
+      uses: Homebrew/actions/setup-homebrew@main
 
     - name: (macOS) Install Homebrew gfortran
       if: contains(matrix.os, 'macos')
@@ -234,7 +270,7 @@ jobs:
 
     # Phase 1: Bootstrap fpm with existing version
     - name: Install fpm
-      uses: fortran-lang/setup-fpm@v9
+      uses: fortran-lang/setup-fpm@v10
       with:
         fpm-version: 'v0.13.0'
 

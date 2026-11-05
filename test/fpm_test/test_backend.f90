@@ -2,11 +2,11 @@
 module test_backend
     use testsuite, only : new_unittest, unittest_t, error_t, test_failed
     use test_module_dependencies, only: operator(.in.)
-    use fpm_filesystem, only: exists, mkdir, get_temp_filename, delete_file
+    use fpm_filesystem, only: exists, mkdir, get_temp_filename
     use fpm_targets, only: build_target_t, build_target_ptr, &
                             FPM_TARGET_OBJECT, FPM_TARGET_ARCHIVE, FPM_TARGET_SHARED, &
                            add_target, add_dependency
-    use fpm_backend, only: sort_target, schedule_targets, object_can_skip, deps_fingerprint
+    use fpm_backend, only: sort_target, schedule_targets, object_can_skip, record_interfaces
     use fpm_strings, only: string_t
     use fpm_environment, only: OS_LINUX
     use, intrinsic :: iso_fortran_env, only: int64
@@ -29,6 +29,9 @@ contains
             & new_unittest("target-sort", test_target_sort), &
             & new_unittest("target-sort-skip-all", test_target_sort_skip_all), &
             & new_unittest("target-sort-rebuild-all", test_target_sort_rebuild_all), &
+            & new_unittest("target-sort-failed-link", test_target_sort_failed_link), &
+            & new_unittest("target-sort-outdated-dependency", test_target_sort_outdated_dependency), &
+            & new_unittest("target-digest-dependency-order", test_target_digest_order), &
             & new_unittest("target-shared-sort", test_target_shared), &
             & new_unittest("schedule-targets", test_schedule_targets), &
             & new_unittest("schedule-targets-empty", test_schedule_empty), &
@@ -125,9 +128,11 @@ contains
             ! Mimick unmodified sources
             allocate(targets(i)%ptr%source)
             targets(i)%ptr%source%digest = i
-            targets(i)%ptr%digest_cached = i
 
         end do
+
+        ! Mimick a previous build from the same sources
+        call cache_digests(targets)
 
         ! Mimick archive already exists
         open(newunit=fh,file=targets(1)%ptr%output_file,status="unknown")
@@ -212,6 +217,146 @@ contains
         end do
 
     end subroutine test_target_sort_rebuild_all
+
+
+    !> Check incremental rebuild after a build that failed before linking (#1323)
+    !>  all objects were rebuilt, but not the archive: only the archive should be rebuilt
+    subroutine test_target_sort_failed_link(error)
+
+        !> Error handling
+        type(error_t), allocatable, intent(out) :: error
+
+        type(build_target_ptr), allocatable :: targets(:)
+
+        integer :: i
+
+        targets = new_test_package()
+
+        do i=2,size(targets)
+            allocate(targets(i)%ptr%source)
+            targets(i)%ptr%source%digest = i
+        end do
+
+        call cache_digests(targets)
+
+        ! Modify the lowest source: all targets are scheduled
+        targets(4)%ptr%source%digest = 40
+
+        do i=1,size(targets)
+            call sort_target(targets(i)%ptr)
+        end do
+
+        ! Mimick a build that stops before the archive: all objects are built
+        do i=2,size(targets)
+            targets(i)%ptr%digest_cached = targets(i)%ptr%digest
+        end do
+
+        call reset_sort(targets)
+
+        do i=1,size(targets)
+            call sort_target(targets(i)%ptr)
+        end do
+
+        ! Check target states: objects skipped, archive scheduled
+        do i=2,size(targets)
+            if (.not.targets(i)%ptr%skip) then
+                call test_failed(error,"Object built by the failed build is not skipped")
+                return
+            end if
+        end do
+
+        if (targets(1)%ptr%skip .or. .not.targets(1)%ptr%sorted) then
+            call test_failed(error,"Archive not built by the failed build is skipped")
+            return
+        end if
+
+    end subroutine test_target_sort_failed_link
+
+
+    !> Check incremental rebuild after a build that rebuilt a dependency but not
+    !>  its dependents (it stopped early, or did not include them):
+    !>  all dependents should be rebuilt, although no dependency is rebuilt now
+    subroutine test_target_sort_outdated_dependency(error)
+
+        !> Error handling
+        type(error_t), allocatable, intent(out) :: error
+
+        type(build_target_ptr), allocatable :: targets(:)
+
+        integer :: i
+
+        targets = new_test_package()
+
+        do i=2,size(targets)
+            allocate(targets(i)%ptr%source)
+            targets(i)%ptr%source%digest = i
+        end do
+
+        call cache_digests(targets)
+
+        ! Modify the lowest source, and mimick a build of that target only
+        targets(4)%ptr%source%digest = 40
+
+        call sort_target(targets(4)%ptr)
+        targets(4)%ptr%digest_cached = targets(4)%ptr%digest
+
+        call reset_sort(targets)
+
+        do i=1,size(targets)
+            call sort_target(targets(i)%ptr)
+        end do
+
+        ! Check target states: lowest object skipped, all of its dependents scheduled
+        if (.not.targets(4)%ptr%skip) then
+            call test_failed(error,"Rebuilt dependency is not skipped")
+            return
+        end if
+
+        do i=1,3
+            if (targets(i)%ptr%skip .or. .not.targets(i)%ptr%sorted) then
+                call test_failed(error,"Dependent of a rebuilt dependency is skipped")
+                return
+            end if
+        end do
+
+    end subroutine test_target_sort_outdated_dependency
+
+
+    !> Check that the target digest does not depend on the order of its dependencies
+    subroutine test_target_digest_order(error)
+
+        !> Error handling
+        type(error_t), allocatable, intent(out) :: error
+
+        type(build_target_ptr), allocatable :: targets(:)
+
+        integer :: i
+        integer, parameter :: n = 20
+
+        call add_target(targets,'test-package',FPM_TARGET_ARCHIVE,get_temp_filename())
+        call add_target(targets,'test-package',FPM_TARGET_ARCHIVE,get_temp_filename())
+        do i=1,n
+            call add_target(targets,'test-package',FPM_TARGET_OBJECT,get_temp_filename())
+            allocate(targets(2+i)%ptr%source)
+            targets(2+i)%ptr%source%digest = mod(37*i,101)
+        end do
+
+        ! Same objects, added in order and shuffled
+        do i=1,n
+            call add_dependency(targets(1)%ptr,targets(2+i)%ptr)
+            call add_dependency(targets(2)%ptr,targets(3+mod(7*i,n))%ptr)
+        end do
+
+        do i=1,size(targets)
+            call sort_target(targets(i)%ptr)
+        end do
+
+        if (targets(1)%ptr%digest /= targets(2)%ptr%digest) then
+            call test_failed(error,"Target digest depends on the order of its dependencies")
+            return
+        end if
+
+    end subroutine test_target_digest_order
 
 
     !> Check construction of target queue and schedule
@@ -334,7 +479,7 @@ contains
 
 
     !> Check interface-aware pruning of a cascade victim: an object whose source is
-    !> unchanged and whose dependencies' module interfaces are unchanged can be skipped
+    !> unchanged and whose dependencies' module files are unchanged can be skipped
     !> even though a dependency was rebuilt.
     subroutine test_interface_prune(error)
 
@@ -342,74 +487,79 @@ contains
         type(error_t), allocatable, intent(out) :: error
 
         type(build_target_ptr), allocatable :: targets(:)
-        integer(int64) :: depfp
-        logical :: ok
+        character(:), allocatable :: dir
 
-        ! Two objects: a provider and a consumer that depends on it
-        call add_target(targets,'test-package',FPM_TARGET_OBJECT,get_temp_filename())
-        call add_target(targets,'test-package',FPM_TARGET_OBJECT,get_temp_filename())
+        dir = get_temp_filename()
+        call mkdir(dir)
+
+        ! A provider of module m, and a consumer that uses it
+        call add_target(targets,'test-package',FPM_TARGET_OBJECT,dir//'/m.o')
+        call add_target(targets,'test-package',FPM_TARGET_OBJECT,dir//'/u.o')
         call add_dependency(targets(2)%ptr,targets(1)%ptr)
-
-        ! Consumer source unchanged: it is only in the queue as a cascade victim
+        targets(1)%ptr%output_dir = dir
+        allocate(targets(1)%ptr%source)
+        targets(1)%ptr%source%modules_provided = [string_t('m')]
         allocate(targets(2)%ptr%source)
         targets(2)%ptr%source%digest = 42_int64
-        targets(2)%ptr%digest_cached = 42_int64
+        allocate(targets(2)%ptr%source%modules_provided(0))
 
-        ! Provider has a recorded module-interface fingerprint on disk
-        call write_int(targets(1)%ptr%output_file//'.mod-digest', 12345_int64)
+        ! Both compiled
+        call write_text(dir//'/m.mod', 'interface 1')
+        call write_text(dir//'/u.o', 'object')
+        call record_interfaces(targets(1)%ptr, .true.)
+        call record_interfaces(targets(2)%ptr, .true.)
 
-        ! Record the consumer's dependency fingerprint as it stands now
-        depfp = deps_fingerprint(targets(2)%ptr, ok)
-        if (.not.ok) then
-            call test_failed(error,"deps_fingerprint should succeed when dependency fingerprint exists")
-            return
-        end if
-        call write_int(targets(2)%ptr%output_file//'.dep-mods', depfp)
-
-        ! Interface unchanged: consumer can be pruned
         if (.not.object_can_skip(targets(2)%ptr)) then
-            call test_failed(error,"consumer should be prunable when dependency interface is unchanged")
+            call test_failed(error,"consumer should be skipped when the module file is unchanged")
             return
         end if
 
-        ! Dependency interface changes: consumer must rebuild
-        call write_int(targets(1)%ptr%output_file//'.mod-digest', 99999_int64)
+        ! Provider recompiled to a new interface
+        call write_text(dir//'/m.mod', 'interface 2')
+        call record_interfaces(targets(1)%ptr, .true.)
         if (object_can_skip(targets(2)%ptr)) then
-            call test_failed(error,"consumer should rebuild when dependency interface changes")
+            call test_failed(error,"consumer should rebuild when the module interface changes")
             return
         end if
 
-        ! Restore the match, but the consumer's own source changed: must rebuild
-        call write_int(targets(1)%ptr%output_file//'.mod-digest', 12345_int64)
+        ! Consumer compiled against it; then only a private entity of m changes
+        call record_interfaces(targets(2)%ptr, .true.)
+        call write_text(dir//'/m.smod', 'private 1')
+        call record_interfaces(targets(1)%ptr, .true.)
+        if (object_can_skip(targets(2)%ptr)) then
+            call test_failed(error,"consumer should rebuild when the submodule file changes")
+            return
+        end if
+
+        ! Consumer source changed
+        call record_interfaces(targets(2)%ptr, .true.)
         targets(2)%ptr%source%digest = 43_int64
         if (object_can_skip(targets(2)%ptr)) then
             call test_failed(error,"consumer should rebuild when its own source changes")
             return
         end if
 
-        ! Missing dependency fingerprint: rebuild (safe default)
+        ! Provider compile failed: its module file may be partly written
         targets(2)%ptr%source%digest = 42_int64
-        call delete_file(targets(1)%ptr%output_file//'.mod-digest')
+        call record_interfaces(targets(2)%ptr, .true.)
+        call record_interfaces(targets(1)%ptr, .false.)
         if (object_can_skip(targets(2)%ptr)) then
-            call test_failed(error,"consumer should rebuild when a dependency fingerprint is missing")
+            call test_failed(error,"consumer should rebuild after a failed provider compile")
             return
         end if
-
-        call delete_file(targets(2)%ptr%output_file//'.dep-mods')
 
     end subroutine test_interface_prune
 
 
-    !> Write a single integer digest to a sidecar file (test helper)
-    subroutine write_int(path, value)
-        character(len=*), intent(in) :: path
-        integer(int64), intent(in) :: value
+    !> Write a one-line file (test helper)
+    subroutine write_text(path, text)
+        character(len=*), intent(in) :: path, text
         integer :: fh
 
-        open(newunit=fh,file=path,status='unknown')
-        write(fh,*) value
+        open(newunit=fh,file=path,status='replace')
+        write(fh,'(a)') text
         close(fh)
-    end subroutine write_int
+    end subroutine write_text
 
 
     !> Helper to generate target objects with dependencies
@@ -437,6 +587,40 @@ contains
         call add_dependency(targets(3)%ptr,targets(4)%ptr)
 
     end function new_test_package
+
+
+    !> Mimick a successful build of all targets: cache their digests
+    subroutine cache_digests(targets)
+
+        type(build_target_ptr), intent(inout) :: targets(:)
+        integer :: i
+
+        do i=1,size(targets)
+            call sort_target(targets(i)%ptr)
+        end do
+
+        do i=1,size(targets)
+            targets(i)%ptr%digest_cached = targets(i)%ptr%digest
+        end do
+
+        call reset_sort(targets)
+
+    end subroutine cache_digests
+
+
+    !> Reset the sorting state of all targets, as for a new build
+    subroutine reset_sort(targets)
+
+        type(build_target_ptr), intent(inout) :: targets(:)
+        integer :: i
+
+        do i=1,size(targets)
+            targets(i)%ptr%touched = .false.
+            targets(i)%ptr%sorted = .false.
+            targets(i)%ptr%skip = .false.
+        end do
+
+    end subroutine reset_sort
 
     subroutine compile_commands_roundtrip(error)
         
