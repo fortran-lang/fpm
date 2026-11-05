@@ -392,5 +392,14 @@ bash "../ci/test_parallel_link.sh" "$fpm"
 # Test fpm processes running at the same time on one package
 bash "../ci/test_concurrent_builds.sh" "$fpm"
 
+# Test that run builds only the selected executable: the other one does not compile
+sel="$(mktemp -d)"
+"$fpm" new "$sel/sel" --app
+printf 'program broken\n  call\nend program broken\n' > "$sel/sel/app/broken.f90"
+pushd "$sel/sel"
+"$fpm" run sel
+popd
+rm -rf "$sel"
+
 # Cleanup
 rm -rf ./*/build
