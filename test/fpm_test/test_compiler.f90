@@ -4,7 +4,7 @@ module test_compiler
         & check_string
     use fpm_environment, only : OS_WINDOWS, OS_LINUX, os_is_unix, get_os_type
     use fpm_compiler   , only : compiler_t, new_compiler, tokenize_flags, archiver_t, new_archiver, &
-        & match_compiler_type, id_flang, id_amdflang
+        & match_compiler_type, id_flang, id_amdflang, id_flang_classic, set_cpp_preprocessor_flags
     use fpm_filesystem , only : get_temp_filename, mkdir, join_path, filewrite, run, os_delete_dir
     use fpm_strings    , only : string_t, operator(==)
     use fpm_command_line, only: get_fpm_env
@@ -32,6 +32,7 @@ contains
             & new_unittest("compile-commands-windows", test_register_compile_command_windows), &
             & new_unittest("get-default-flags-pic", test_get_default_flags_pic), &
             & new_unittest("match-compiler-type-flang", test_match_compiler_type_flang), &
+            & new_unittest("classic-flang", test_classic_flang), &
             & new_unittest("archive-drops-stale-members", test_archive_drops_stale_members), &
             & new_unittest("new-archiver-user-set", test_new_archiver_user_set)]
 
@@ -524,6 +525,67 @@ contains
         end if
 
     end subroutine test_match_compiler_type_flang
+
+    !> A compiler named flang is classic flang, as AOCC's, when flang1 is installed next
+    !> to it, and gets the classic flang flags; otherwise it is LLVM flang
+    subroutine test_classic_flang(error)
+        !> Error handling
+        type(error_t), allocatable, intent(out) :: error
+
+        type(compiler_t) :: compiler
+        character(:), allocatable :: classic_dir, llvm_dir, flags
+
+        classic_dir = get_temp_filename()
+        llvm_dir = get_temp_filename()
+        call mkdir(classic_dir, echo=.false.)
+        call mkdir(llvm_dir, echo=.false.)
+        call filewrite(join_path(classic_dir, "flang"), [character(1) :: ""])
+        call filewrite(join_path(classic_dir, "flang1"), [character(1) :: ""])
+        call filewrite(join_path(llvm_dir, "flang"), [character(1) :: ""])
+
+        call new_compiler(compiler, join_path(classic_dir, "flang"), "", "", &
+            & echo=.false., verbose=.false.)
+        if (compiler%id /= id_flang_classic) then
+            call test_failed(error, "flang with flang1 next to it should be classic flang")
+        end if
+
+        if (.not.allocated(error)) then
+            flags = compiler%get_default_flags(release=.true.)
+            if (index(flags, "-O3") == 0) call test_failed(error, &
+                & "classic flang release flags should optimize, got '"//flags//"'")
+        end if
+
+        if (.not.allocated(error)) then
+            flags = compiler%get_default_flags(release=.false.)
+            if (index(flags, "-g") == 0) call test_failed(error, &
+                & "classic flang debug flags should include -g, got '"//flags//"'")
+        end if
+
+        if (.not.allocated(error)) then
+            flags = ""
+            call set_cpp_preprocessor_flags(compiler%id, flags)
+            if (flags /= "-cpp") call test_failed(error, &
+                & "classic flang should preprocess with -cpp, got '"//flags//"'")
+        end if
+
+        if (.not.allocated(error)) then
+            call compiler%get_main_flags("c", flags)
+            if (flags /= "-Mnomain") call test_failed(error, &
+                & "classic flang should link a C main with -Mnomain, got '"//flags//"'")
+        end if
+
+        if (.not.allocated(error)) then
+            call new_compiler(compiler, join_path(llvm_dir, "flang"), "", "", &
+                & echo=.false., verbose=.false.)
+            if (compiler%id /= id_flang) then
+                call test_failed(error, "flang without flang1 next to it should be LLVM flang")
+            end if
+        end if
+
+        call os_delete_dir(os_is_unix(), classic_dir)
+        call os_delete_dir(os_is_unix(), llvm_dir)
+
+    end subroutine test_classic_flang
 
 
 end module test_compiler

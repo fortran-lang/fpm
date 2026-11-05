@@ -40,8 +40,8 @@ use fpm_environment, only: &
         OS_UNKNOWN, &
         os_is_unix, &
         library_filename
-use fpm_filesystem, only: join_path, basename, get_temp_filename, delete_file, unix_path, &
-    & getline, run, run_argv
+use fpm_filesystem, only: join_path, basename, dirname, get_temp_filename, delete_file, unix_path, &
+    & getline, run, run_argv, which, exists
 use fpm_strings, only: split, string_cat, string_t, str_ends_with, str_begins_with_str, &
     & string_array_contains, lower, add_strings
 use fpm_error, only: error_t, fatal_error, fpm_stop
@@ -425,7 +425,7 @@ subroutine get_release_compile_flags(id, flags)
         flags = &
             flag_lfortran_opt
 
-    case(id_flang)
+    case(id_flang, id_flang_classic)
         flags = &
             flag_flang_opt
 
@@ -525,7 +525,7 @@ subroutine get_debug_compile_flags(id, flags)
     case(id_lfortran)
         flags = ""
 
-    case(id_flang)
+    case(id_flang, id_flang_classic)
         flags = &
             flag_flang_debug
 
@@ -545,7 +545,7 @@ pure subroutine set_cpp_preprocessor_flags(id, flags)
     select case(id)
     case default
         flag_cpp_preprocessor = ""
-    case(id_caf, id_gcc, id_f95, id_nvhpc, id_flang, id_amdflang)
+    case(id_caf, id_gcc, id_f95, id_nvhpc, id_flang, id_amdflang, id_flang_classic)
         flag_cpp_preprocessor = "-cpp"
     case(id_intel_classic_windows, id_intel_llvm_windows)
         flag_cpp_preprocessor = "/fpp"
@@ -860,7 +860,7 @@ subroutine get_main_flags(self, language, flags)
                flags = '-nofor-main'
            case(id_intel_classic_windows,id_intel_llvm_windows)
                flags = '/nofor-main'
-           case (id_pgi,id_nvhpc)
+           case (id_pgi,id_nvhpc,id_flang_classic)
                flags = '-Mnomain'
         end select
 
@@ -871,7 +871,7 @@ subroutine get_main_flags(self, language, flags)
                flags = '-nofor-main'
            case(id_intel_classic_windows,id_intel_llvm_windows)
                flags = '/nofor-main'
-           case (id_pgi,id_nvhpc)
+           case (id_pgi,id_nvhpc,id_flang_classic)
                flags = '-Mnomain'
         end select
 
@@ -1023,15 +1023,51 @@ function get_compiler_id(compiler) result(id)
                command = trim(full_command_parts(1))
             endif
             if (allocated(command)) then
-                id = match_compiler_type(command)
+                id = identify_compiler(command)
                 if (id /= id_unknown) return
             end if
         end if
     end if
 
-    id = match_compiler_type(compiler)
+    id = identify_compiler(compiler)
 
 end function get_compiler_id
+
+!> Identify a compiler from its name, and for a compiler named like LLVM flang, from its
+!> installation: AOCC, like other classic flang installs, also calls its compiler flang
+function identify_compiler(compiler) result(id)
+    character(len=*), intent(in) :: compiler
+    integer(kind=compiler_enum) :: id
+
+    id = match_compiler_type(compiler)
+    if (id == id_flang) then
+        if (is_classic_flang(compiler)) id = id_flang_classic
+    end if
+
+end function identify_compiler
+
+!> Whether a compiler named flang is classic flang: its driver runs the flang1 program
+!> installed next to it, which LLVM flang does not have
+function is_classic_flang(compiler) result(classic)
+    character(len=*), intent(in) :: compiler
+    logical :: classic
+
+    character(len=:), allocatable :: path, bin_dir
+
+    classic = .false.
+
+    ! A compiler given by name is looked up on the PATH
+    if (scan(compiler, '/\') > 0) then
+        path = compiler
+    else
+        path = which(compiler)
+    end if
+    if (len_trim(path) == 0) return
+
+    bin_dir = dirname(path)
+    classic = exists(bin_dir//'flang1') .or. exists(bin_dir//'flang1.exe')
+
+end function is_classic_flang
 
 function match_compiler_type(compiler) result(id)
     character(len=*), intent(in) :: compiler
