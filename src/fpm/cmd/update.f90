@@ -24,7 +24,8 @@ contains
     character(len=:), allocatable :: cache, build_dir
     type(build_lock_t) :: lock
 
-    call get_package_data(package, "fpm.toml", error, apply_defaults=.true.)
+    call get_package_data(package, "fpm.toml", error, &
+        apply_defaults=.not.settings%fetch_only)
     call handle_error(error, lock)
 
     ! Get build directory from environment variable or use default
