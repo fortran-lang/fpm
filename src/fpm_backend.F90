@@ -36,6 +36,7 @@ use fpm_targets, only: build_target_t, build_target_ptr, FPM_TARGET_OBJECT, &
                        FPM_TARGET_CPP_OBJECT, FPM_TARGET_SHARED
 use fpm_backend_output
 use fpm_compile_commands, only: compile_command_table_t
+use fpm_source_parsing, only: add_include_digest
 implicit none
 
 private
@@ -69,7 +70,7 @@ subroutine build_package(targets,model,verbose,dry_run,jobs)
     type(build_target_ptr), allocatable :: queue(:)
     integer, allocatable :: schedule_ptr(:), stat(:)
     logical :: build_failed, skip_current
-    type(string_t), allocatable :: build_dirs(:)
+    type(string_t), allocatable :: build_dirs(:), visited(:)
     type(string_t) :: temp
     type(error_t), allocatable :: error
 
@@ -88,6 +89,17 @@ subroutine build_package(targets,model,verbose,dry_run,jobs)
 
     do i = 1, size(build_dirs)
        if (.not.dry_run) call mkdir(build_dirs(i)%s,verbose)
+    end do
+
+    ! Included files can change while the sources including them do not
+    do i = 1, size(targets)
+        if (.not.allocated(targets(i)%ptr%source)) cycle
+        if (.not.allocated(targets(i)%ptr%source%include_dependencies)) cycle
+        if (size(targets(i)%ptr%source%include_dependencies) == 0) cycle
+        allocate(visited(0))
+        call add_include_digest(targets(i)%ptr%source%file_name, model%include_dirs, &
+                targets(i)%ptr%source%digest, visited)
+        deallocate(visited)
     end do
 
     ! Perform depth-first topological sort of targets
