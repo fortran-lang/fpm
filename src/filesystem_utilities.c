@@ -38,6 +38,57 @@ int c_is_dir(const char *path)
     return r == 0 && S_ISDIR(m.st_mode);
 }
 
+/* Return size and a high resolution modification stamp of a file.
+   Returns 1 on success, 0 if the file does not exist or cannot be inspected.
+   The stamp must be precise enough to detect two writes to the same file
+   within one second, otherwise incremental builds can reuse stale analyses. */
+#ifdef _WIN32
+int c_file_info(const char *path, long long *size, long long *mtime)
+{
+    WIN32_FILE_ATTRIBUTE_DATA info;
+    wchar_t *wpath;
+    int n;
+
+    if (path == NULL) return 0;
+
+    n = MultiByteToWideChar(CP_UTF8, 0, path, -1, NULL, 0);
+    if (n <= 0) return 0;
+    wpath = (wchar_t *) malloc((size_t) n * sizeof(wchar_t));
+    if (wpath == NULL) return 0;
+    MultiByteToWideChar(CP_UTF8, 0, path, -1, wpath, n);
+
+    if (!GetFileAttributesExW(wpath, GetFileExInfoStandard, &info)) {
+        free(wpath);
+        return 0;
+    }
+    free(wpath);
+
+    if (size != NULL) {
+        *size = ((long long) info.nFileSizeHigh << 32) | (long long) info.nFileSizeLow;
+    }
+    if (mtime != NULL) {
+        *mtime = ((long long) info.ftLastWriteTime.dwHighDateTime << 32)
+               | (long long) info.ftLastWriteTime.dwLowDateTime;
+    }
+    return 1;
+}
+#else
+int c_file_info(const char *path, long long *size, long long *mtime)
+{
+    struct stat m;
+    if (stat(path, &m) != 0) return 0;
+    if (size != NULL) *size = (long long) m.st_size;
+    if (mtime != NULL) {
+#if defined(__APPLE__)
+        *mtime = (long long) m.st_mtimespec.tv_sec * 1000000000LL + (long long) m.st_mtimespec.tv_nsec;
+#else
+        *mtime = (long long) m.st_mtim.tv_sec * 1000000000LL + (long long) m.st_mtim.tv_nsec;
+#endif
+    }
+    return 1;
+}
+#endif
+
 const char *get_d_name(struct dirent *d)
 {
     return (const char *) d->d_name;

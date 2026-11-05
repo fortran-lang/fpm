@@ -359,20 +359,26 @@ end subroutine insert_lines
 !> Read source file lines with include files embedded inline
 !> Replaces both CPP `#include "file"` and Fortran `include "file"` with file contents
 !> Searches in: source directory, ../include (default fpm include dir)
-function read_lines_with_includes(filename) result(lines)
+function read_lines_with_includes(filename, includes) result(lines)
     character(*), intent(in) :: filename
+    !> Paths of the files whose content was inlined (optional)
+    type(string_t), allocatable, optional, intent(out) :: includes(:)
     type(string_t), allocatable :: lines(:)
 
-    type(string_t), allocatable :: include_lines(:)
+    type(string_t), allocatable :: include_lines(:), grown(:)
     character(:), allocatable :: include_name, include_path, source_dir, pkg_dir
-    integer :: i
+    integer :: i, n_includes, include_capacity
     logical :: found_include
 
-    lines = read_lines_expanded(filename)
-    if (.not. allocated(lines) .or. size(lines) == 0) then
-        allocate(lines(0))
-        return
+    if (present(includes)) then
+        allocate (includes(0))
+        n_includes = 0
+        include_capacity = 0
     end if
+
+    lines = read_lines_expanded(filename)
+    if (.not. allocated(lines)) allocate (lines(0))
+    if (size(lines) == 0) return
 
     source_dir = parent_dir(filename)
     pkg_dir = parent_dir(source_dir)
@@ -388,9 +394,30 @@ function read_lines_with_includes(filename) result(lines)
                 if (allocated(include_lines) .and. size(include_lines) > 0) then
                     call insert_lines(lines, include_lines, i)
                 end if
+                if (present(includes)) then
+                    ! Grow the list exponentially: reallocating for every
+                    ! include would make collection quadratic in the number
+                    ! of inlined files.
+                    if (n_includes >= include_capacity) then
+                        include_capacity = max(8, 2*include_capacity)
+                        allocate (grown(include_capacity))
+                        if (n_includes > 0) grown(1:n_includes) = includes(1:n_includes)
+                        call move_alloc(grown, includes)
+                    end if
+                    n_includes = n_includes + 1
+                    includes(n_includes)%s = include_path
+                end if
             end if
         end if
     end do
+
+    if (present(includes)) then
+        if (n_includes < size(includes)) then
+            allocate (grown(n_includes))
+            if (n_includes > 0) grown(1:n_includes) = includes(1:n_includes)
+            call move_alloc(grown, includes)
+        end if
+    end if
 
 end function read_lines_with_includes
 
@@ -680,10 +707,12 @@ end subroutine parse_cpp_condition
 !>    my_module
 !>```
 !>
-function parse_f_source(f_filename,error,preprocess) result(f_source)
+function parse_f_source(f_filename,error,preprocess,include_files) result(f_source)
     character(*), intent(in) :: f_filename
     type(error_t), allocatable, intent(out) :: error
     type(preprocess_config_t), optional, intent(in) :: preprocess
+    !> Files inlined by cpp include expansion (optional)
+    type(string_t), allocatable, optional, intent(out) :: include_files(:)
     type(srcfile_t) :: f_source
 
     logical :: inside_module, inside_interface, using, intrinsic_module
@@ -709,7 +738,11 @@ function parse_f_source(f_filename,error,preprocess) result(f_source)
 
     ! Read file with #include directives expanded inline (for CPP parsing)
     if (cpp_conditional_parsing) then
-        file_lines = read_lines_with_includes(f_filename)
+        if (present(include_files)) then
+            file_lines = read_lines_with_includes(f_filename, include_files)
+        else
+            file_lines = read_lines_with_includes(f_filename)
+        end if
     else
         file_lines = read_lines_expanded(f_filename)
     end if

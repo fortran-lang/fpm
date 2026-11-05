@@ -9,7 +9,7 @@ module fpm_filesystem
     use fpm_environment, only: separator, get_env, os_is_unix
     use fpm_strings, only: f_string, replace, string_t, split, split_lines_first_last, dilate, add_strings, &
         str_begins_with_str, string_cat, str
-    use iso_c_binding, only: c_char, c_ptr, c_int, c_null_char, c_associated, c_f_pointer
+    use iso_c_binding, only: c_char, c_ptr, c_int, c_null_char, c_associated, c_f_pointer, c_long_long
     use fpm_error, only : fpm_stop, error_t, fatal_error
     use shlex_module, only: sh_split => split, ms_split
     implicit none
@@ -18,7 +18,7 @@ module fpm_filesystem
             mkdir, exists, get_temp_filename, windows_path, unix_path, getline, delete_file, fileopen, fileclose, &
             filewrite, warnwrite, parent_dir, is_hidden_file, read_lines, read_lines_expanded, which, run, &
             run_argv, os_delete_dir, is_absolute_path, get_home, execute_and_read_output, get_dos_path, &
-            command_program, command_not_found, getfile
+            command_program, command_not_found, file_info, getfile
 
 #ifndef FPM_BOOTSTRAP
     interface
@@ -51,6 +51,13 @@ module fpm_filesystem
             character(kind=c_char), intent(in) :: path(*)
             integer(kind=c_int) :: r
         end function c_is_dir
+
+        function c_file_info(path, size, mtime) result(r) bind(c, name="c_file_info")
+            import c_char, c_int, c_long_long
+            character(kind=c_char), intent(in) :: path(*)
+            integer(kind=c_long_long), intent(out) :: size, mtime
+            integer(kind=c_int) :: r
+        end function c_file_info
 
         function c_run_argv(joined, argc, redirect) result(r) bind(c, name="c_run_argv")
             import c_char, c_int
@@ -243,6 +250,32 @@ logical function is_dir(dir)
     is_dir = (stat == 0)
 
 end function is_dir
+
+!> Get the size in bytes and the last modification time of a file.
+!! Returns `.false.` if the file does not exist or cannot be inspected.
+logical function file_info(filename, size, mtime) result(ok)
+    character(*), intent(in) :: filename
+    !> File size in bytes
+    integer(int64), intent(out) :: size
+    !> High resolution modification stamp (platform-specific units)
+    integer(int64), intent(out) :: mtime
+
+    size = 0
+    mtime = 0
+    ok = .false.
+
+#ifndef FPM_BOOTSTRAP
+    block
+        integer(c_long_long) :: c_size, c_mtime
+        if (c_file_info(filename//c_null_char, c_size, c_mtime) == 1) then
+            size = int(c_size, int64)
+            mtime = int(c_mtime, int64)
+            ok = .true.
+        end if
+    end block
+#endif
+
+end function file_info
 
 !> test if a file is hidden
 logical function is_hidden_file(file_basename) result(r)

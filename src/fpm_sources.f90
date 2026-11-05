@@ -10,6 +10,7 @@ use fpm_filesystem, only: basename, canon_path, dirname, join_path, list_files, 
 use fpm_environment, only: get_os_type,OS_WINDOWS
 use fpm_strings, only: lower, str_ends_with, string_t, operator(.in.), add_strings
 use fpm_source_parsing, only: parse_f_source, parse_c_source
+use fpm_source_cache, only: source_cache_t
 use fpm_manifest_executable, only: executable_config_t
 use fpm_manifest_preprocess, only: preprocess_config_t
 implicit none
@@ -32,27 +33,67 @@ contains
 
 !> Wrapper to source parsing routines.
 !> Selects parsing routine based on source file name extension
-type(srcfile_t) function parse_source(source_file_path,custom_f_ext,error,preprocess) result(source)
+type(srcfile_t) function parse_source(source_file_path,custom_f_ext,error,preprocess,cache) result(source)
     character(*), intent(in) :: source_file_path
     type(string_t), optional, intent(in) :: custom_f_ext(:)
     type(error_t), allocatable, intent(out) :: error
     type(preprocess_config_t), optional, intent(in) :: preprocess
+    !> Optional cache of previously analyzed sources
+    type(source_cache_t), optional, intent(inout) :: cache
     
     type(string_t), allocatable :: f_ext(:)
+    type(string_t), allocatable :: include_files(:)
+    logical :: cache_hit
+    character(:), allocatable :: cache_config
 
     call list_fortran_suffixes(f_ext,custom_f_ext)
 
     if (str_ends_with(lower(source_file_path), f_ext)) then
 
-        source = parse_f_source(source_file_path, error, preprocess)
+        ! The analysis of a preprocessed source depends on the macros that are
+        ! defined and on the content of the files that are inlined, so the
+        ! preprocessing configuration is part of the cache key and every
+        ! inlined file has to be validated together with the source itself
+        cache_config = ''
+        if (present(preprocess)) then
+            if (preprocess%is_cpp()) cache_config = preprocess_fingerprint(preprocess)
+        end if
 
-        if (source%unit_type == FPM_UNIT_PROGRAM) then
-            source%exe_name = basename(source_file_path,suffix=.false.)
+        cache_hit = .false.
+        if (present(cache)) cache_hit = cache%lookup(source_file_path, source, cache_config)
+
+        if (.not. cache_hit) then
+
+            source = parse_f_source(source_file_path, error, preprocess, include_files)
+            if (allocated(error)) return
+
+            if (source%unit_type == FPM_UNIT_PROGRAM) then
+                source%exe_name = basename(source_file_path,suffix=.false.)
+            end if
+
+            if (present(cache)) then
+                if (allocated(include_files)) then
+                    call cache%store(source_file_path, source, cache_config, include_files)
+                else
+                    call cache%store(source_file_path, source, cache_config)
+                end if
+            end if
+
         end if
 
     else if (str_ends_with(lower(source_file_path), c_suffixes)) then
 
-        source = parse_c_source(source_file_path,error)
+        cache_hit = .false.
+        if (present(cache)) cache_hit = cache%lookup(source_file_path, source)
+
+        if (.not. cache_hit) then
+
+            source = parse_c_source(source_file_path,error)
+            if (allocated(error)) return
+
+            if (present(cache)) call cache%store(source_file_path, source)
+
+        end if
 
     endif
 
@@ -61,6 +102,33 @@ type(srcfile_t) function parse_source(source_file_path,custom_f_ext,error,prepro
     end if
 
 end function parse_source
+
+
+!> Fingerprint of a preprocessing configuration that changes analysis results
+function preprocess_fingerprint(preprocess) result(fingerprint)
+    type(preprocess_config_t), intent(in) :: preprocess
+    character(:), allocatable :: fingerprint
+
+    integer :: i
+
+    fingerprint = preprocess%name
+    if (allocated(preprocess%macros)) then
+        do i = 1, size(preprocess%macros)
+            fingerprint = fingerprint//'|'//preprocess%macros(i)%s
+        end do
+    end if
+    if (allocated(preprocess%suffixes)) then
+        do i = 1, size(preprocess%suffixes)
+            fingerprint = fingerprint//'#'//preprocess%suffixes(i)%s
+        end do
+    end if
+    if (allocated(preprocess%directories)) then
+        do i = 1, size(preprocess%directories)
+            fingerprint = fingerprint//'@'//preprocess%directories(i)%s
+        end do
+    end if
+
+end function preprocess_fingerprint
 
 !> List fortran suffixes, including optional ones
 subroutine list_fortran_suffixes(suffixes,with_f_ext)
@@ -87,7 +155,7 @@ end subroutine list_fortran_suffixes
 
 !> Add to `sources` by looking for source files in `directory`
 subroutine add_sources_from_dir(sources,directory,scope,with_executables,with_f_ext,recurse,error,&
-                                preprocess)
+                                preprocess,cache)
     !> List of `[[srcfile_t]]` objects to append to. Allocated if not allocated
     type(srcfile_t), allocatable, intent(inout), target :: sources(:)
     !> Directory in which to search for source files
@@ -104,6 +172,8 @@ subroutine add_sources_from_dir(sources,directory,scope,with_executables,with_f_
     type(error_t), allocatable, intent(out) :: error
     !> Optional source preprocessor configuration
     type(preprocess_config_t), optional, intent(in) :: preprocess    
+    !> Optional cache of previously analyzed sources
+    type(source_cache_t), optional, intent(inout) :: cache
 
     integer :: i
     logical, allocatable :: is_source(:), exclude_source(:)
@@ -143,7 +213,7 @@ subroutine add_sources_from_dir(sources,directory,scope,with_executables,with_f_
 
     do i = 1, size(src_file_names)
 
-        dir_sources(i) = parse_source(src_file_names(i)%s,with_f_ext,error,preprocess)
+        dir_sources(i) = parse_source(src_file_names(i)%s,with_f_ext,error,preprocess,cache)
         if (allocated(error)) return
 
         dir_sources(i)%unit_scope = scope
@@ -174,7 +244,8 @@ end subroutine add_sources_from_dir
 !> Add to `sources` using the executable and test entries in the manifest and
 !> applies any executable-specific overrides such as `executable%name`.
 !> Adds all sources (including modules) from each `executable%source_dir`
-subroutine add_executable_sources(sources,executables,scope,auto_discover,with_f_ext,error,preprocess)
+subroutine add_executable_sources(sources,executables,scope,auto_discover,with_f_ext,error,preprocess,&
+                                  cache)
     !> List of `[[srcfile_t]]` objects to append to. Allocated if not allocated
     type(srcfile_t), allocatable, intent(inout), target :: sources(:)
     !> List of `[[executable_config_t]]` entries from manifest
@@ -189,6 +260,8 @@ subroutine add_executable_sources(sources,executables,scope,auto_discover,with_f
     type(error_t), allocatable, intent(out) :: error
     !> Optional source preprocessor configuration
     type(preprocess_config_t), optional, intent(in) :: preprocess
+    !> Optional cache of previously analyzed sources
+    type(source_cache_t), optional, intent(inout) :: cache
 
     integer :: i, j
 
@@ -200,7 +273,7 @@ subroutine add_executable_sources(sources,executables,scope,auto_discover,with_f
     do i=1,size(exe_dirs)
         call add_sources_from_dir(sources,exe_dirs(i)%s, scope, &
                      with_executables=auto_discover, with_f_ext=with_f_ext,recurse=.false., &
-                     error=error, preprocess=preprocess)
+                     error=error, preprocess=preprocess, cache=cache)
 
         if (allocated(error)) then
             return
@@ -231,7 +304,8 @@ subroutine add_executable_sources(sources,executables,scope,auto_discover,with_f
 
         ! Add if not already discovered (auto_discovery off)
         associate(exe => executables(i))
-            exe_source = parse_source(join_path(exe%source_dir,exe%main),with_f_ext,error,preprocess)
+            exe_source = parse_source(join_path(exe%source_dir,exe%main),with_f_ext,error,preprocess,&
+                                      cache)
             exe_source%exe_name = exe%name
             if (allocated(exe%link)) then
                 exe_source%link_libraries = exe%link
