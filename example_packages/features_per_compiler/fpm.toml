@@ -38,6 +38,7 @@ release.gfortran.flags = "-mtune=generic -funroll-loops"
 release.ifort.flags = "-unroll"     # Unix/Linux/macOS Intel
 release.ifx.flags = "-unroll"       # Intel oneAPI
 release.flang.flags = "-funroll-loops"  # LLVM Flang
+release.flang-classic.flags = "-funroll-loops"  # Classic flang, as in AOCC
 
 # Verbose feature for enhanced diagnostics (applies to all compilers)
 verbose.flags = "-v"
@@ -48,6 +49,7 @@ fast.gfortran.flags = "-Ofast -ffast-math"
 fast.ifort.flags = "-fp-model fast"
 fast.ifx.flags = "-fp-model fast"
 fast.flang.flags = "-ffast-math"
+fast.flang-classic.flags = "-ffast-math"
 
 # Strict feature with base standard compliance, then per-compiler extensions
 strict.flags = "-std=f2018"  # Base standard compliance for ALL compilers (applied first)
