@@ -14,17 +14,25 @@ fi
 work="$(mktemp -d)"
 trap 'rm -rf "$work"' EXIT
 
-# A chain of modules, each using the one before: builds that do not wait for
-# each other write the same module and object files at the same time
-mkdir -p "$work/chain/src" "$work/chain/app"
-pushd "$work/chain"
-printf 'name = "chain"\n' > fpm.toml
-printf 'module m1\ncontains\n  integer function f1()\n    f1 = 1\n  end function\nend module\n' > src/m1.f90
-for i in $(seq 2 30); do
-    printf 'module m%d\n  use m%d\ncontains\n  integer function f%d()\n    f%d = f%d() + 1\n  end function\nend module\n' \
-        "$i" "$((i-1))" "$i" "$i" "$((i-1))" > "src/m$i.f90"
-done
-printf 'program main\n  use m30\n  print *, f30()\nend program\n' > app/main.f90
+# Wait at most 120 s for a background process, and return its exit status,
+# or 124 if it is still running
+wait_for() {
+    local pid="$1" i
+    for i in $(seq 120); do
+        kill -0 "$pid" 2>/dev/null || break
+        sleep 1
+    done
+    if kill -0 "$pid" 2>/dev/null; then
+        kill "$pid"
+        return 124
+    fi
+    wait "$pid"
+}
+
+# Work on a copy of an example package, so that every build starts from scratch
+cp -R "$(dirname "$0")/../example_packages/hello_complex" "$work/pkg"
+rm -rf "$work/pkg/build"
+pushd "$work/pkg"
 
 echo "Test 1: builds of one package that start together all succeed"
 pids=()
@@ -34,7 +42,7 @@ for i in 1 2 3 4; do
 done
 failed=0
 for pid in "${pids[@]}"; do
-    wait "$pid" || failed=1
+    wait_for "$pid" || failed=1
 done
 if [ $failed -ne 0 ]; then
     cat "$work"/build*.log
@@ -43,8 +51,8 @@ if [ $failed -ne 0 ]; then
 fi
 # They started together, so all but the first waited for the lock
 grep -q "Waiting for another fpm process" "$work"/build*.log
-"$fpm" run > "$work/run.log"
-test "$(tail -n 1 "$work/run.log" | tr -d ' \r')" = 30
+"$fpm" run --target say_Hello > "$work/run.log"
+test "$(tail -n 1 "$work/run.log" | tr -d ' \r')" = "Hello,World!"
 
 echo "Test 2: programs that fpm run starts can run fpm on the same package"
 # fpm releases the lock before it runs the programs: if it did not, the
@@ -54,22 +62,38 @@ case "$fpm" in
     *.exe) cp "$fpm" "$work/bin/fpm.exe" ;;
     *)     cp "$fpm" "$work/bin/fpm" ;;
 esac
-PATH="$work/bin:$PATH" "$fpm" run --runner "fpm build &&" > "$work/nested.log" 2>&1 &
-pid=$!
-for i in $(seq 120); do
-    kill -0 "$pid" 2>/dev/null || break
-    sleep 1
-done
-if kill -0 "$pid" 2>/dev/null; then
-    kill "$pid"
-    cat "$work/nested.log"
+PATH="$work/bin:$PATH" "$fpm" run --target say_Hello --runner "fpm build &&" > "$work/nested.log" 2>&1 &
+status=0
+wait_for $! || status=$?
+cat "$work/nested.log"
+if [ $status -eq 124 ]; then
     echo "ERROR: fpm run kept the build directory locked while its program ran"
     exit 1
 fi
-wait "$pid"
-cat "$work/nested.log"
+test $status -eq 0
 ! grep -q "Waiting for another fpm process" "$work/nested.log"
-test "$(tail -n 1 "$work/nested.log" | tr -d ' \r')" = 30
+test "$(tail -n 1 "$work/nested.log" | tr -d ' \r')" = "Hello,World!"
+
+echo "Test 3: builds that stop with an error leave the build directory unlocked"
+cp source/greet_m.f90 "$work/greet_m.f90"
+printf 'this is not fortran\n' >> source/greet_m.f90
+pids=()
+for i in 1 2; do
+    "$fpm" build > "$work/fail$i.log" 2>&1 &
+    pids+=($!)
+done
+for pid in "${pids[@]}"; do
+    status=0
+    wait_for "$pid" || status=$?
+    if [ $status -eq 0 ] || [ $status -eq 124 ]; then
+        cat "$work"/fail*.log
+        echo "ERROR: a build of a broken source did not stop with an error"
+        exit 1
+    fi
+done
+cp "$work/greet_m.f90" source/greet_m.f90
+"$fpm" build > "$work/fixed.log" 2>&1 || { cat "$work/fixed.log"; exit 1; }
+! grep -q "Waiting for another fpm process" "$work/fixed.log"
 popd
 
 echo "All concurrent build tests passed"
