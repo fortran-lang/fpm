@@ -122,9 +122,9 @@ grep -q "Project is up to date" build.log
 popd
 echo "✓ Up-to-date project is not rebuilt"
 
-# Whether the last build compiled a given source
+# Whether the last build compiled a given source; Windows logs use backslashes
 compiled() {
-    grep -q -- "-c .*$1" build.log
+    tr '\\' / < build.log | grep -q -- "-c .*$1"
 }
 
 echo "Test 5: dependents of a module whose interface is unchanged"
