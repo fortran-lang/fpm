@@ -1096,13 +1096,13 @@ function match_compiler_type(compiler) result(id)
         return
     end if
 
-    if (check_compiler(compiler, "flang-new") .or. check_compiler(compiler, "flang")) then
-        id = id_flang
+    if (check_compiler(compiler, "amdflang")) then
+        id = id_amdflang
         return
     end if
 
-    if (check_compiler(compiler, "amdflang")) then
-        id = id_amdflang
+    if (check_compiler(compiler, "flang-new") .or. check_compiler(compiler, "flang")) then
+        id = id_flang
         return
     end if
 
