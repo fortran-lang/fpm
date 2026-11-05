@@ -129,6 +129,9 @@ type build_target_t
     !> Targets in the same schedule group are guaranteed to be independent
     integer :: schedule = -1
 
+    !> Position in the build queue, set by the backend
+    integer :: queue_index = 0
+
     !> Hash of the target inputs: its source file and the digests of its dependencies
     integer(int64) :: digest = 0
 

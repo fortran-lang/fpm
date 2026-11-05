@@ -25,13 +25,12 @@
 !>
 module fpm_backend
 
-use,intrinsic :: iso_fortran_env, only : stdin=>input_unit, stdout=>output_unit, stderr=>error_unit, int64
-use,intrinsic :: iso_c_binding, only : c_intptr_t, c_loc
+use,intrinsic :: iso_fortran_env, only : stdin=>input_unit, stdout=>output_unit, stderr=>error_unit
 use fpm_error, only : fpm_stop, error_t
 use fpm_environment, only: has_openmp, build_threads
 use fpm_filesystem, only: basename, dirname, join_path, exists, mkdir, run, getline
 use fpm_model, only: fpm_model_t
-use fpm_strings, only: string_t, operator(.in.), fnv_1a
+use fpm_strings, only: string_t, operator(.in.)
 use fpm_targets, only: build_target_t, build_target_ptr, FPM_TARGET_OBJECT, &
                        FPM_TARGET_C_OBJECT, FPM_TARGET_ARCHIVE, FPM_TARGET_EXECUTABLE, &
                        FPM_TARGET_CPP_OBJECT, FPM_TARGET_SHARED
@@ -353,41 +352,25 @@ subroutine schedule_targets(queue, schedule_ptr, targets)
 end subroutine schedule_targets
 
 
-!> Build the reverse dependency graph over the queued targets.
-!>
-!> `n_unmet(j)` is the number of target `j`'s dependencies that are also in the
-!> queue (and so must build first). The dependents of each target `m` are stored
-!> in compressed-sparse-row form: `rdep_idx(rdep_ptr(m):rdep_ptr(m+1)-1)`.
+!> Count the queued dependencies of each queued target in `n_unmet`, and list the
+!> queued dependents of each target `m` in `rdep_idx(rdep_ptr(m):rdep_ptr(m+1)-1)`
 subroutine build_dependency_graph(queue, n_unmet, rdep_ptr, rdep_idx)
     type(build_target_ptr), intent(in) :: queue(:)
     integer, allocatable, intent(out) :: n_unmet(:), rdep_ptr(:), rdep_idx(:)
 
-    integer :: n, k, d, m, n_slots
-    integer, allocatable :: fillp(:), slot_index(:)
-    integer(c_intptr_t), allocatable :: slot_address(:)
+    integer :: n, k, d, m
+    integer, allocatable :: fill(:)
 
     n = size(queue)
-    allocate(n_unmet(n), source=0)
-
-    ! Hash table from target address to queue position: libraries can have thousands
-    ! of dependencies, so do not search the queue for each one
-    n_slots = 2
-    do while (n_slots < 2*n)
-        n_slots = 2*n_slots
-    end do
-    allocate(slot_address(0:n_slots-1), source=0_c_intptr_t)
-    allocate(slot_index(0:n_slots-1), source=0)
     do k = 1, n
-        d = slot_of(queue(k)%ptr)
-        slot_address(d) = address_of(queue(k)%ptr)
-        slot_index(d) = k
+        queue(k)%ptr%queue_index = k
     end do
 
-    ! Number of queued dependencies of each target, and of queued dependents
+    allocate(n_unmet(n), source=0)
     allocate(rdep_ptr(n+1), source=0)
     do k = 1, n
         do d = 1, size(queue(k)%ptr%dependencies)
-            m = slot_index(slot_of(queue(k)%ptr%dependencies(d)%ptr))
+            m = queued(queue(k)%ptr%dependencies(d)%ptr)
             if (m > 0) then
                 n_unmet(k) = n_unmet(k) + 1
                 rdep_ptr(m+1) = rdep_ptr(m+1) + 1
@@ -395,44 +378,35 @@ subroutine build_dependency_graph(queue, n_unmet, rdep_ptr, rdep_idx)
         end do
     end do
 
-    ! Compressed-sparse-row reverse adjacency, grouped by dependency m
     rdep_ptr(1) = 1
     do k = 1, n
         rdep_ptr(k+1) = rdep_ptr(k) + rdep_ptr(k+1)
     end do
     allocate(rdep_idx(rdep_ptr(n+1)-1))
-    fillp = rdep_ptr(1:n)
+    fill = rdep_ptr(1:n)
     do k = 1, n
         do d = 1, size(queue(k)%ptr%dependencies)
-            m = slot_index(slot_of(queue(k)%ptr%dependencies(d)%ptr))
+            m = queued(queue(k)%ptr%dependencies(d)%ptr)
             if (m > 0) then
-                rdep_idx(fillp(m)) = k
-                fillp(m) = fillp(m) + 1
+                rdep_idx(fill(m)) = k
+                fill(m) = fill(m) + 1
             end if
         end do
     end do
 
 contains
 
-    integer(c_intptr_t) function address_of(target)
-        type(build_target_t), intent(in), target :: target
-        address_of = transfer(c_loc(target), address_of)
-    end function address_of
-
-    !> Slot of a target in the hash table: its own, or the empty one it would take
-    integer function slot_of(target)
+    !> Queue position of a target, or 0 if it is not queued
+    integer function queued(target)
         type(build_target_t), intent(in), target :: target
 
-        integer(c_intptr_t) :: address
-        character(storage_size(address)/8) :: bytes
-
-        address = address_of(target)
-        bytes = transfer(address, bytes)
-        slot_of = int(modulo(fnv_1a(bytes), int(n_slots, int64)))
-        do while (slot_address(slot_of) /= 0 .and. slot_address(slot_of) /= address)
-            slot_of = modulo(slot_of + 1, n_slots)
-        end do
-    end function slot_of
+        queued = target%queue_index
+        if (queued < 1 .or. queued > n) then
+            queued = 0
+        else if (.not.associated(queue(queued)%ptr, target)) then
+            queued = 0
+        end if
+    end function queued
 
 end subroutine build_dependency_graph
 
