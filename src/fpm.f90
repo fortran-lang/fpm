@@ -563,18 +563,23 @@ call lock%acquire(settings%build_dir)
 
 call build_model(model, settings, package, error)
 if (allocated(error)) then
+    call lock%release()
     call fpm_stop(1,'*cmd_build* Model error: '//error%message)
 end if
 
 call targets_from_sources(targets, model, settings%prune, package%library, error)
 if (allocated(error)) then
+    call lock%release()
     call fpm_stop(1,'*cmd_build* Target error: '//error%message)
 end if
 
 !> Dump model to file
 if (len_trim(settings%dump)>0) then
     call model%dump(trim(settings%dump),error,json=name_is_json(trim(settings%dump)))
-    if (allocated(error)) call fpm_stop(1,'*cmd_build* Model dump error: '//error%message)
+    if (allocated(error)) then
+        call lock%release()
+        call fpm_stop(1,'*cmd_build* Model dump error: '//error%message)
+    end if
 endif
 
 if(settings%list)then
@@ -625,11 +630,13 @@ subroutine cmd_run(settings,test)
 
     call build_model(model, settings, package, error)
     if (allocated(error)) then
+        call lock%release()
         call fpm_stop(1, '*cmd_run* Model error: '//error%message)
     end if
 
     call targets_from_sources(targets, model, settings%prune, package%library, error)
     if (allocated(error)) then
+        call lock%release()
         call fpm_stop(1, '*cmd_run* Targets error: '//error%message)
     end if
 
@@ -669,6 +676,7 @@ subroutine cmd_run(settings,test)
     
     ! Check if any apps/tests were found
     if (col_width < 0) then
+        call lock%release()
         if (test) then
             call fpm_stop(0,'No tests to run')
         else
@@ -696,6 +704,7 @@ subroutine cmd_run(settings,test)
 
         call compact_list_all()
 
+        call lock%release()
         if(line=='.' .or. line==' ')then ! do not report these special strings
            call fpm_stop(0,'')
         else
@@ -862,11 +871,17 @@ subroutine delete_targets(settings, error)
 
     ! Build the model to understand targets
     call build_model(model, settings, package, error)
-    if (allocated(error)) return
+    if (allocated(error)) then
+        call lock%release()
+        return
+    end if
 
     ! Get the exact targets
     call targets_from_sources(targets, model, settings%prune, package%library, error)
-    if (allocated(error)) return
+    if (allocated(error)) then
+        call lock%release()
+        return
+    end if
 
     deleted_any = .false.
 

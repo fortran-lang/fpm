@@ -57,8 +57,8 @@ contains
     ! Build model to obtain dependency tree, while no other fpm process uses the build directory
     call lock%acquire(settings%build_dir)
     call build_model(model, settings%fpm_build_settings, package, error)
-    if (allocated(error)) call fpm_stop(1, '*cmd_build* Model error: '//error%message)
     call lock%release()
+    if (allocated(error)) call fpm_stop(1, '*cmd_build* Model error: '//error%message)
 
     ! Check if package contains git dependencies. Only publish packages without git dependencies.
     do i = 1, model%deps%ndep

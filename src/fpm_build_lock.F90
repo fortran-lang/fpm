@@ -4,8 +4,9 @@
 !> The lock is an exclusive OS lock on `<build-dir>/.fpm-lock`: `flock` on Unix,
 !> `LockFileEx` on Windows. It belongs to the process, and all its OpenMP threads
 !> work under it: acquire and release it in serial code, outside any parallel region.
-!> The OS releases it when the process exits, also after a crash, so no stale lock
-!> is left behind. In the bootstrap build, which has no C, it does nothing.
+!> The OS releases it when the process exits, also after an error stop or a crash,
+!> so no stale lock is left behind. In the bootstrap build, which has no C, it does
+!> nothing.
 module fpm_build_lock
     use, intrinsic :: iso_c_binding, only: c_char, c_int, c_intptr_t, c_null_char
     use, intrinsic :: iso_fortran_env, only: stderr => error_unit
@@ -15,7 +16,9 @@ module fpm_build_lock
 
     public :: build_lock_t
 
-    !> Lock on a build directory, held by the command that works on it
+    !> Lock on a build directory, held by the command that works on it. Release it
+    !> on every way out of the command, before an error stop too. Do not copy a held
+    !> lock: both copies would release it.
     type :: build_lock_t
         private
         !> Descriptor of the lock file (its HANDLE on Windows), -1 when not held
@@ -24,6 +27,7 @@ module fpm_build_lock
         procedure :: acquire
         procedure :: release
         procedure :: held
+        final :: release_on_exit
     end type build_lock_t
 
 #ifndef FPM_BOOTSTRAP
@@ -80,6 +84,14 @@ contains
         self%handle = -1
 #endif
     end subroutine release
+
+    !> Release the lock when it goes out of scope, as on a return from the command
+    !> that holds it. Compilers that do not finalize local variables, like gfortran
+    !> before 13, skip this, so commands release the lock themselves as well.
+    subroutine release_on_exit(self)
+        type(build_lock_t), intent(inout) :: self
+        call self%release()
+    end subroutine release_on_exit
 
     !> Whether this lock is held
     logical function held(self)

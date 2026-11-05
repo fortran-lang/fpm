@@ -25,7 +25,7 @@ contains
     type(build_lock_t) :: lock
 
     call get_package_data(package, "fpm.toml", error, apply_defaults=.true.)
-    call handle_error(error)
+    call handle_error(error, lock)
 
     ! Get build directory from environment variable or use default
     build_dir = get_fpm_env("BUILD_DIR", "build")
@@ -46,7 +46,7 @@ contains
     & path_to_config=settings%path_to_config, build_dir=build_dir)
 
     call deps%add(package, error)
-    call handle_error(error)
+    call handle_error(error, lock)
 
     ! Force-update all dependencies if `--clean`
     if (settings%clean) then
@@ -55,32 +55,38 @@ contains
         end do
     end if
 
-    if (settings%fetch_only) return
+    if (settings%fetch_only) then
+      call lock%release()
+      return
+    end if
 
     if (size(settings%name) == 0) then
       call deps%update(error)
-      call handle_error(error)
+      call handle_error(error, lock)
     else
       do ii = 1, size(settings%name)
         call deps%update(trim(settings%name(ii)), error)
-        call handle_error(error)
+        call handle_error(error, lock)
       end do
     end if
 
     if (len_trim(settings%dump)>0) then
         call deps%dump(trim(settings%dump), error, json=name_is_json(trim(settings%dump)))
-        call handle_error(error)
+        call handle_error(error, lock)
     end if
 
     call lock%release()
 
   end subroutine cmd_update
 
-  !> Error handling for this command
-  subroutine handle_error(error)
+  !> Error handling for this command: release the lock and stop
+  subroutine handle_error(error, lock)
     !> Potential error
     type(error_t), intent(in), optional :: error
+    !> Lock on the build directory, released before stopping
+    type(build_lock_t), intent(inout) :: lock
     if (present(error)) then
+      call lock%release()
       call fpm_stop(1, '*cmd_update* error: '//error%message)
     end if
   end subroutine handle_error

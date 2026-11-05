@@ -34,7 +34,7 @@ contains
 
     !> Read in manifest
     call get_package_data(package, "fpm.toml", error, apply_defaults=.true.)
-    call handle_error(error)
+    call handle_error(error, lock)
 
     !> Export manifest
     if (len_trim(settings%dump_manifest)>0) then
@@ -52,12 +52,12 @@ contains
         filename = join_path(settings%build_dir, "cache.toml")
         call new_dependency_tree(deps, cache=filename, verbosity=merge(2, 1, settings%verbose), build_dir=settings%build_dir)
         call deps%add(package, error)
-        call handle_error(error)
+        call handle_error(error, lock)
 
         !> Export dependency tree
         filename = settings%dump_dependencies
         call deps%dump(filename, error, json=name_is_json(filename))
-        call handle_error(error)
+        call handle_error(error, lock)
     end if
 
     !> Export full model
@@ -68,23 +68,27 @@ contains
 
         call build_model(model, settings%fpm_build_settings, package, error)
         if (allocated(error)) then
+            call lock%release()
             call fpm_stop(1,'*cmd_export* Model error: '//error%message)
         end if
 
         filename = settings%dump_model
         call model%dump(filename, error, json=name_is_json(filename))
-        call handle_error(error)
+        call handle_error(error, lock)
     end if
 
     call lock%release()
 
   end subroutine cmd_export
 
-  !> Error handling for this command
-  subroutine handle_error(error)
+  !> Error handling for this command: release the lock and stop
+  subroutine handle_error(error, lock)
     !> Potential error
     type(error_t), intent(in), optional :: error
+    !> Lock on the build directory, released before stopping
+    type(build_lock_t), intent(inout) :: lock
     if (present(error)) then
+      call lock%release()
       call fpm_stop(1, '*cmd_export* error: '//error%message)
     end if
   end subroutine handle_error
