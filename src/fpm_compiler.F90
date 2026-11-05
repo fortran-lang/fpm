@@ -1192,7 +1192,7 @@ pure elemental subroutine validate_compiler_name(compiler_name, is_valid)
 
     select case (lname)
       case("gfortran", "ifort", "ifx", "pgfortran", &
-           "nvfortran", "flang", "amdflang", "caf", &
+           "nvfortran", "flang", "flang-new", "f18", "flang-classic", "amdflang", "caf", &
            "f95", "lfortran", "lfc", "nagfor",&
            "crayftn", "xlf90", "ftn95", "all")
         is_valid = .true.
