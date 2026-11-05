@@ -822,6 +822,9 @@ subroutine cmd_run(settings,test)
             if (associated(selected(ii)%ptr,target)) return
         end do
 
+        ! Pruned targets, such as an empty library, stay dependencies but are never built
+        if (.not.any([(associated(targets(ii)%ptr,target), ii=1,size(targets))])) return
+
         do ii=1,size(target%dependencies)
             call add_target_closure(selected,n_selected,target%dependencies(ii)%ptr)
         end do
