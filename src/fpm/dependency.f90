@@ -59,14 +59,15 @@ module fpm_dependency
   use fpm_environment, only: get_os_type, OS_WINDOWS, os_is_unix
   use fpm_error, only: error_t, fatal_error
   use fpm_filesystem, only: exists, join_path, mkdir, canon_path, windows_path, list_files, is_dir, basename, &
-                            os_delete_dir, get_temp_filename, parent_dir
+                            os_delete_dir, get_temp_filename, parent_dir, is_absolute_path
   use fpm_git, only: git_target_revision, git_target_default, git_revision, serializable_t
   use fpm_manifest, only: package_config_t, dependency_config_t, get_package_data, get_package_dependencies
   use fpm_manifest_dependency, only: manifest_has_changed, dependency_destroy
   use fpm_manifest_preprocess, only: operator(==)
   use fpm_strings, only: string_t, operator(.in.), operator(==), str
-  use tomlf, only: toml_table, toml_key, toml_error, toml_load, toml_stat, toml_array, len, add_array
-  use fpm_toml, only: toml_serialize, get_value, set_value, add_table, set_string, get_list, set_list
+  use tomlf, only: toml_table, toml_key, toml_error, toml_stat, toml_array, len, add_array
+  use fpm_toml, only: toml_serialize, get_value, set_value, add_table, set_string, get_list, set_list, &
+                      load_table_from_unit, load_table_from_file
   use fpm_versioning, only: version_t, new_version
   use fpm_settings, only: fpm_global_settings, get_global_settings, official_registry_base_url
   use fpm_downloader, only: downloader_t
@@ -704,7 +705,11 @@ contains
     if (allocated(dependency%proj_dir)) then
       proj_dir = dependency%proj_dir
     else if (allocated(dependency%path)) then
-      proj_dir = join_path(root, dependency%path)
+      if (is_absolute_path(dependency%path)) then
+        proj_dir = dependency%path
+      else
+        proj_dir = join_path(root, dependency%path)
+      end if
     else if (allocated(dependency%git)) then
       proj_dir = join_path(self%dep_dir, dependency%name)
       fetch = .not. exists(proj_dir)
@@ -1098,7 +1103,7 @@ contains
       type(error_t), allocatable, intent(out) :: error
       
       integer :: nreq,k,id
-      type(dependency_config_t), allocatable :: dependency(:)
+      class(dependency_config_t), allocatable :: dependency(:)
       type(package_config_t) :: manifest
       logical :: required(tree%ndep),main
       
@@ -1255,15 +1260,16 @@ contains
     !> Error handling
     type(error_t), allocatable, intent(out) :: error
 
-    integer :: unit
+    type(toml_table), allocatable :: table
     logical :: exist
 
     inquire (file=file, exist=exist)
     if (.not. exist) return
 
-    open (file=file, newunit=unit)
-    call self%load_cache(unit, error)
-    close (unit)
+    call load_table_from_file(table, file, error)
+    if (allocated(error)) return
+
+    call self%load_cache(table, error)
   end subroutine load_cache_from_file
 
   !> Read dependency tree from file
@@ -1275,16 +1281,10 @@ contains
     !> Error handling
     type(error_t), allocatable, intent(out) :: error
 
-    type(toml_error), allocatable :: parse_error
     type(toml_table), allocatable :: table
 
-    call toml_load(table, unit, error=parse_error)
-
-    if (allocated(parse_error)) then
-      allocate (error)
-      call move_alloc(parse_error%message, error%message)
-      return
-    end if
+    call load_table_from_unit(table, unit, error)
+    if (allocated(error)) return
 
     call self%load_cache(table, error)
     if (allocated(error)) return
@@ -1302,7 +1302,8 @@ contains
 
     integer :: ndep, ii
     logical :: is_unix
-    character(len=:), allocatable :: version, url, obj, rev, proj_dir
+    character(len=:), allocatable :: version, url, obj, rev, proj_dir, profile
+    type(string_t), allocatable :: features(:)
     type(toml_key), allocatable :: list(:)
     type(toml_table), pointer :: ptr
 
@@ -1317,6 +1318,14 @@ contains
 
     do ii = 1, size(list)
       call get_value(table, list(ii)%key, ptr)
+      ! Reset the per-entry optionals: `get_value`/`get_list` leave the
+      ! actual untouched when the key is absent, so a previous entry's
+      ! value would otherwise leak into this one.
+      if (allocated(features)) deallocate (features)
+      if (allocated(profile)) deallocate (profile)
+      call get_list(ptr, "features", features, error)
+      if (allocated(error)) exit
+      call get_value(ptr, "profile", profile)
       call get_value(ptr, "version", version)
       call get_value(ptr, "proj-dir", proj_dir)
       call get_value(ptr, "git", url)
@@ -1326,6 +1335,8 @@ contains
       self%ndep = self%ndep + 1
       associate (dep => self%dep(self%ndep))
         dep%name = list(ii)%key
+        if (allocated(features)) dep%features = features
+        if (allocated(profile)) dep%profile = profile
         if (is_unix) then
           dep%proj_dir = proj_dir
         else
@@ -1426,6 +1437,14 @@ contains
             call set_value(ptr, "rev", dep%revision)
           end if
         end if
+        ! The requested features/profile are part of the dependency's IDENTITY:
+        ! they change its macros and its own dependency set, so a cache entry
+        ! that omits them resolves to a DIFFERENT package on the next run.
+        call set_list(ptr, "features", dep%features, error)
+        if (allocated(error)) exit
+        if (allocated(dep%profile)) then
+          call set_value(ptr, "profile", dep%profile)
+        end if
       end associate
     end do
     if (allocated(error)) return
@@ -1433,7 +1452,7 @@ contains
   end subroutine dump_cache_to_toml
 
   !> Reallocate a list of dependencies
-  pure subroutine resize_dependency_node(var, n)
+  subroutine resize_dependency_node(var, n)
     !> Instance of the array to be resized
     type(dependency_node_t), allocatable, intent(inout) :: var(:)
     !> Dimension of the final array size
