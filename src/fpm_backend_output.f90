@@ -99,11 +99,14 @@ contains
 
         associate(target=>progress%target_queue(queue_index)%ptr)
 
+            ! Build threads report progress at once: see run_argv
+            !$omp critical (fpm_string_result)
             if (allocated(target%source)) then
                 target_name = basename(target%source%file_name)
             else
                 target_name = basename(target%output_file)
             end if
+            !$omp end critical (fpm_string_result)
 
             !$omp atomic read
             n_done = progress%n_complete
@@ -153,11 +156,13 @@ contains
 
         associate(target=>progress%target_queue(queue_index)%ptr)
 
+            !$omp critical (fpm_string_result)
             if (allocated(target%source)) then
                 target_name = basename(target%source%file_name)
             else
                 target_name = basename(target%output_file)
             end if
+            !$omp end critical (fpm_string_result)
 
             if (build_stat == 0) then
                 write(output_string,'(A,T40,A,A)') target_name,COLOR_GREEN//'done.'//COLOR_RESET

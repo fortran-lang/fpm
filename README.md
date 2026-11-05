@@ -146,7 +146,7 @@ To automatically bootstrap using this appoach run the install script
 ## Environmental variables
 
 The table below lists the environment variables that control `fpm`'s choice of compilers, 
-compiler flags, archiver locations, and link flags, each of which can be overridden by 
+compiler flags, archiver locations, link flags, and parallel build jobs, each of which can be overridden by 
 passing `fpm` flags also shown in the table.
 
 | Environment Variable | Defines               | Overridden by    |
@@ -159,3 +159,4 @@ passing `fpm` flags also shown in the table.
 | `FPM_CXXFLAGS`       | C++ compiler flags    | `--cxx-flag`     |
 | `FPM_AR`             | Archiver path         | `--archiver`     |
 | `FPM_LDFLAGS`        | Link flags            | `--link-flag`    |
+| `FPM_JOBS`           | Parallel build jobs   | `--jobs`, `-j`   |

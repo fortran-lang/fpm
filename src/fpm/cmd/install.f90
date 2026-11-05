@@ -2,6 +2,7 @@ module fpm_cmd_install
   use, intrinsic :: iso_fortran_env, only : output_unit
   use fpm, only : build_model
   use fpm_backend, only : build_package
+  use fpm_build_lock, only : build_lock_t
   use fpm_command_line, only : fpm_install_settings
   use fpm_error, only : error_t, fatal_error, fpm_stop
   use fpm_filesystem, only : join_path, list_files
@@ -33,12 +34,16 @@ contains
     logical :: has_library, has_executables
     character(len=:), allocatable :: module_dir
     integer :: ntargets,i
+    type(build_lock_t) :: lock
 
     call get_package_data(package, "fpm.toml", error, apply_defaults=.true.)
-    call handle_error(error)
+    call handle_error(error, lock)
+
+    ! Wait for other fpm processes that use the same build directory
+    call lock%acquire(settings%build_dir)
     
     call build_model(model, settings, package, error)
-    call handle_error(error)
+    call handle_error(error, lock)
 
     ! Set up logical variables to avoid repetitive conditions
     has_install     = allocated(package%install)
@@ -60,20 +65,24 @@ contains
     else
        call targets_from_sources(targets, model, settings%prune, error=error) 
     endif
-    call handle_error(error)
+    call handle_error(error, lock)
 
     call install_info(output_unit, settings%list, targets, ntargets)
-    if (settings%list) return
+    if (settings%list) then
+      call lock%release()
+      return
+    end if
 
     installable = (has_library .and. with_library) .or. has_executables .or. ntargets>0
     
     if (.not.installable) then
       call fatal_error(error, "Project does not contain any installable targets")
-      call handle_error(error)
+      call handle_error(error, lock)
     end if
 
     if (.not.settings%no_rebuild) then
-      call build_package(targets,model,verbose=settings%verbose,dry_run=settings%list)
+      call build_package(targets,model,verbose=settings%verbose,dry_run=settings%list, &
+                         jobs=settings%jobs)
     end if
 
     call new_installer(installer, prefix=settings%prefix, &
@@ -87,25 +96,27 @@ contains
       if (size(libraries) > 0) then
         do i=1,size(libraries)
            call installer%install_library(libraries(i)%ptr, error)
-           call handle_error(error)
+           call handle_error(error, lock)
         end do
 
         call install_module_files(installer, targets, error)
-        call handle_error(error)
+        call handle_error(error, lock)
       end if
     end if
     
     if (has_executables .or. ntargets>0) then
       call install_executables(installer, targets, error)
-      call handle_error(error)
+      call handle_error(error, lock)
     end if
 
     if (allocated(package%test) .and. (with_tests .or. model%include_tests)) then 
         
         call install_tests(installer, targets, error)
-        call handle_error(error)
+        call handle_error(error, lock)
         
     end if
+
+    call lock%release()
 
   end subroutine cmd_install
 
@@ -195,9 +206,13 @@ contains
 
   end subroutine install_tests
 
-  subroutine handle_error(error)
+  !> Error handling for this command: release the lock and stop
+  subroutine handle_error(error, lock)
     type(error_t), intent(in), optional :: error
+    !> Lock on the build directory, released before stopping
+    type(build_lock_t), intent(inout) :: lock
     if (present(error)) then
+      call lock%release()
       call fpm_stop(1,'*cmd_install* error: '//error%message)
     end if
   end subroutine handle_error

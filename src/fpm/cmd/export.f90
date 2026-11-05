@@ -7,6 +7,7 @@ module fpm_cmd_export
   use fpm_toml, only: name_is_json
   use fpm_model, only: fpm_model_t
   use fpm, only: build_model
+  use fpm_build_lock, only: build_lock_t
   implicit none
   private
   public :: cmd_export
@@ -21,6 +22,7 @@ contains
     type(dependency_tree_t) :: deps
     type(fpm_model_t) :: model
     type(error_t), allocatable :: error
+    type(build_lock_t) :: lock
 
     character(len=:), allocatable :: filename
 
@@ -32,7 +34,7 @@ contains
 
     !> Read in manifest
     call get_package_data(package, "fpm.toml", error, apply_defaults=.true.)
-    call handle_error(error)
+    call handle_error(error, lock)
 
     !> Export manifest
     if (len_trim(settings%dump_manifest)>0) then
@@ -43,38 +45,50 @@ contains
     !> Export dependency tree
     if (len_trim(settings%dump_dependencies)>0) then
 
+        !> Wait for other fpm processes that use the same build directory
+        call lock%acquire(settings%build_dir)
+
         !> Generate dependency tree
         filename = join_path(settings%build_dir, "cache.toml")
         call new_dependency_tree(deps, cache=filename, verbosity=merge(2, 1, settings%verbose), build_dir=settings%build_dir)
         call deps%add(package, error)
-        call handle_error(error)
+        call handle_error(error, lock)
 
         !> Export dependency tree
         filename = settings%dump_dependencies
         call deps%dump(filename, error, json=name_is_json(filename))
-        call handle_error(error)
+        call handle_error(error, lock)
     end if
 
     !> Export full model
     if (len_trim(settings%dump_model)>0) then
 
+        !> Wait for other fpm processes that use the same build directory
+        call lock%acquire(settings%build_dir)
+
         call build_model(model, settings%fpm_build_settings, package, error)
         if (allocated(error)) then
+            call lock%release()
             call fpm_stop(1,'*cmd_export* Model error: '//error%message)
         end if
 
         filename = settings%dump_model
         call model%dump(filename, error, json=name_is_json(filename))
-        call handle_error(error)
+        call handle_error(error, lock)
     end if
+
+    call lock%release()
 
   end subroutine cmd_export
 
-  !> Error handling for this command
-  subroutine handle_error(error)
+  !> Error handling for this command: release the lock and stop
+  subroutine handle_error(error, lock)
     !> Potential error
     type(error_t), intent(in), optional :: error
+    !> Lock on the build directory, released before stopping
+    type(build_lock_t), intent(inout) :: lock
     if (present(error)) then
+      call lock%release()
       call fpm_stop(1, '*cmd_export* error: '//error%message)
     end if
   end subroutine handle_error
