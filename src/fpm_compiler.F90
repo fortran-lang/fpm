@@ -1384,9 +1384,9 @@ subroutine new_archiver(self, ar, echo, verbose)
       if (os_type /= OS_WINDOWS .and. os_type /= OS_UNKNOWN) then
         self%ar = "ar"//arflags
       else
-        ! Attempt "ar"
-        call execute_command_line("ar --version > "//get_temp_filename()//" 2>&1", &
-          & exitstat=estat)
+        ! Attempt "ar". Discard its output rather than write it to a temporary file:
+        ! on Windows, fpm processes started together get the same temporary file name
+        call run("ar --version", echo=.false., exitstat=estat, verbose=.false.)
 
         if (estat == 0) then
 
@@ -1395,8 +1395,7 @@ subroutine new_archiver(self, ar, echo, verbose)
         else
 
             ! Then "gcc-ar"
-            call execute_command_line("gcc-ar --version > "//get_temp_filename()//" 2>&1", &
-               & exitstat=estat)
+            call run("gcc-ar --version", echo=.false., exitstat=estat, verbose=.false.)
 
             if (estat /= 0) then
               self%ar = "lib"//libflags
