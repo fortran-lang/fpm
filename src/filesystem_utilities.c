@@ -1,5 +1,6 @@
 #include <sys/stat.h>
 #include <dirent.h>
+#include <stdint.h>
 
 #ifndef _WIN32
 #include <errno.h>
@@ -7,6 +8,7 @@
 #include <spawn.h>
 #include <stdlib.h>
 #include <string.h>
+#include <sys/file.h>
 #include <sys/wait.h>
 #include <unistd.h>
 
@@ -316,5 +318,59 @@ int c_run_argv(const char *joined, int argc, const char *redirect)
         return 128 + WTERMSIG(wait_status);
     }
     return -1;
+#endif
+}
+
+/* Take an exclusive lock on the file at path, creating it if needed, and
+   return its descriptor (its HANDLE on Windows). If another process holds the
+   lock, wait for it when wait != 0, else return -2 at once. Return -1 on any
+   other error. The lock lasts until c_unlock_file, or until the process exits. */
+intptr_t c_lock_file(const char *path, int wait)
+{
+#ifdef _WIN32
+    OVERLAPPED ov = {0};
+    DWORD flags = LOCKFILE_EXCLUSIVE_LOCK | (wait ? 0 : LOCKFILE_FAIL_IMMEDIATELY);
+    HANDLE h = CreateFileA(path, GENERIC_READ | GENERIC_WRITE,
+                           FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE,
+                           NULL, OPEN_ALWAYS, FILE_ATTRIBUTE_NORMAL, NULL);
+
+    if (h == INVALID_HANDLE_VALUE) {
+        return -1;
+    }
+    if (!LockFileEx(h, flags, 0, 1, 0, &ov)) {
+        DWORD err = GetLastError();
+        CloseHandle(h);
+        return err == ERROR_LOCK_VIOLATION ? -2 : -1;
+    }
+    return (intptr_t)h;
+#else
+    /* O_CLOEXEC: a child that outlives fpm, such as a compiler server, must
+       not inherit the descriptor and keep holding the lock. */
+    int fd = open(path, O_RDWR | O_CREAT | O_CLOEXEC, 0666);
+
+    if (fd < 0) {
+        return -1;
+    }
+    while (flock(fd, LOCK_EX | (wait ? 0 : LOCK_NB)) != 0) {
+        int busy = errno == EWOULDBLOCK;
+        if (errno == EINTR) {
+            continue;
+        }
+        close(fd);
+        return busy ? -2 : -1;
+    }
+    return fd;
+#endif
+}
+
+/* Release a lock taken by c_lock_file. */
+void c_unlock_file(intptr_t fd)
+{
+#ifdef _WIN32
+    OVERLAPPED ov = {0};
+    UnlockFileEx((HANDLE)fd, 0, 1, 0, &ov);
+    CloseHandle((HANDLE)fd);
+#else
+    close((int)fd);
 #endif
 }
