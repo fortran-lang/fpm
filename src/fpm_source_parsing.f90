@@ -15,6 +15,7 @@
 !> - `[[parse_c_source]]`
 !>
 module fpm_source_parsing
+use, intrinsic :: iso_fortran_env, only: int64
 use fpm_error, only: error_t, file_parse_error, fatal_error, file_not_found_error
 use fpm_strings, only: string_t, string_cat, len_trim, split, lower, str_ends_with, fnv_1a, &
     is_fortran_name, operator(.in.), operator(==)
@@ -24,11 +25,12 @@ use fpm_model, only: srcfile_t, &
                     FPM_UNIT_CSOURCE, FPM_UNIT_CHEADER, FPM_SCOPE_UNKNOWN, &
                     FPM_SCOPE_DEP, FPM_SCOPE_APP, FPM_SCOPE_TEST, FPM_UNIT_CPPSOURCE
 use fpm_manifest_preprocess, only: preprocess_config_t
-use fpm_filesystem, only: read_lines, read_lines_expanded, exists, join_path, parent_dir
+use fpm_filesystem, only: read_lines, read_lines_expanded, exists, join_path, parent_dir, &
+    canon_path
 implicit none
 
 private
-public :: parse_f_source, parse_c_source, parse_use_statement
+public :: parse_f_source, parse_c_source, parse_use_statement, add_include_digest
 
 type :: cpp_block
     ! Nested block total depth
@@ -127,6 +129,39 @@ function find_include_file(name, src_dir, pkg_dir) result(path)
     ! Not found
     path = ""
 end function find_include_file
+
+!> Fold the contents of a file and, recursively, of the files it includes into a digest
+!> Searches like the compiler: the including file's directory, then the include directories
+recursive subroutine add_include_digest(filename, include_dirs, digest, visited)
+    character(*), intent(in) :: filename
+    type(string_t), intent(in) :: include_dirs(:)
+    integer(int64), intent(inout) :: digest
+    !> Files already hashed: preprocessor include guards allow cyclic includes
+    type(string_t), allocatable, intent(inout) :: visited(:)
+
+    type(string_t), allocatable :: lines(:)
+    character(:), allocatable :: name, path
+    logical :: is_include
+    integer :: i, j
+
+    lines = read_lines(filename)
+    if (size(lines) > 0) digest = fnv_1a(lines, digest)
+    do i = 1, size(lines)
+        call is_include_line(lines(i)%s, is_include, name)
+        if (.not. is_include) cycle
+
+        path = canon_path(join_path(parent_dir(filename), name))
+        do j = 1, size(include_dirs)
+            if (exists(path)) exit
+            path = canon_path(join_path(include_dirs(j)%s, name))
+        end do
+
+        if (.not. exists(path) .or. (path .in. visited)) cycle
+        visited = [visited, string_t(path)]
+        call add_include_digest(path, include_dirs, digest, visited)
+    end do
+
+end subroutine add_include_digest
 
 !> Get the value of a macro from the macros list
 !> Returns empty string if macro is not defined
