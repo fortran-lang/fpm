@@ -28,7 +28,7 @@ module fpm_backend
 use,intrinsic :: iso_fortran_env, only : stdin=>input_unit, stdout=>output_unit, stderr=>error_unit, int64
 use fpm_error, only : fpm_stop, error_t
 use fpm_environment, only: has_openmp, build_threads
-use fpm_filesystem, only: basename, dirname, join_path, exists, mkdir, run, getline
+use fpm_filesystem, only: basename, dirname, join_path, exists, mkdir, run, getline, delete_file
 use fpm_model, only: fpm_model_t
 use fpm_strings, only: string_t, operator(.in.), fnv_1a
 use fpm_compiler, only: id_gcc
@@ -40,7 +40,7 @@ use fpm_compile_commands, only: compile_command_table_t
 implicit none
 
 private
-public :: build_package, sort_target, schedule_targets, object_can_skip, record_interfaces
+public :: build_package, sort_target, schedule_targets
 
 #ifndef FPM_BOOTSTRAP
 interface
@@ -399,71 +399,81 @@ end subroutine build_target
 
 
 !> Whether an object queued for rebuild can keep its output: true only if it was last
-!> compiled from the same source and against the same dependency module interfaces
-function object_can_skip(target) result(can_skip)
+!> compiled from the same source and against the same dependency module interfaces.
+!> The record `<object>.iface` holds the source digest, the fingerprint of the
+!> dependencies' interfaces and the fingerprint of the modules the object provides
+logical function object_can_skip(target) result(can_skip)
     type(build_target_t), intent(in) :: target
-    logical :: can_skip
 
-    integer(int64) :: record(2), deps
+    integer(int64) :: record(3), deps
     logical :: ok
 
     can_skip = .false.
     if (.not.allocated(target%source) .or. .not.exists(target%output_file)) return
 
-    call read_digests(target%output_file//'.dep-mods', record, ok)
-    if (.not.ok) return
-    if (record(1) /= target%source%digest) return
+    call read_record(target%output_file, record, ok)
+    if (.not.ok .or. record(1) /= target%source%digest) return
 
     deps = deps_fingerprint(target, ok)
-    can_skip = ok .and. record(2) == deps
+    if (ok) can_skip = record(2) == deps
 
 end function object_can_skip
 
 
-!> After compiling an object, record the fingerprint of the module interfaces it provides
-!> and the source and dependency interfaces it was compiled from. Records that cannot be
-!> made, or that a failed compile may have outdated, are deleted, which forces a rebuild
+!> Write the interface record of a compiled object, or delete it if the compile failed
+!> or a fingerprint cannot be taken, which forces a rebuild of the object and its dependents
 subroutine record_interfaces(target, compiled)
     type(build_target_t), intent(in) :: target
     logical, intent(in) :: compiled
 
-    integer(int64) :: fp
+    integer(int64) :: deps, mods
+    integer :: fh
     logical :: ok
 
-    ok = compiled
-    if (ok) fp = module_fingerprint(target, ok)
-    if (ok) then
-        call write_digests(target%output_file//'.mod-digest', [fp])
-    else
-        call delete_record(target%output_file//'.mod-digest')
-    end if
-
     ok = compiled .and. allocated(target%source)
-    if (ok) fp = deps_fingerprint(target, ok)
+    if (ok) deps = deps_fingerprint(target, ok)
+    if (ok) mods = module_fingerprint(target, ok)
     if (ok) then
-        call write_digests(target%output_file//'.dep-mods', [target%source%digest, fp])
+        open(newunit=fh,file=target%output_file//'.iface',status='unknown')
+        write(fh,*) target%source%digest, deps, mods
+        close(fh)
     else
-        call delete_record(target%output_file//'.dep-mods')
+        call delete_file(target%output_file//'.iface')
     end if
 
 end subroutine record_interfaces
 
 
+!> Read the interface record of an object. `ok` is false if it is missing or unreadable
+subroutine read_record(object, record, ok)
+    character(*), intent(in) :: object
+    integer(int64), intent(out) :: record(3)
+    logical, intent(out) :: ok
+
+    integer :: fh, ios
+
+    ok = .false.
+    open(newunit=fh,file=object//'.iface',status='old',action='read',iostat=ios)
+    if (ios /= 0) return
+    read(fh,*,iostat=ios) record
+    close(fh)
+    ok = ios == 0
+
+end subroutine read_record
+
+
 !> Hash of the module files (`.mod`, and `.smod` for submodules) an object provides.
-!> `ok` is false if it provides no module or a `.mod` file cannot be read
-function module_fingerprint(target, ok) result(fp)
+!> `ok` is false if a `.mod` file cannot be read
+integer(int64) function module_fingerprint(target, ok) result(fp)
     type(build_target_t), intent(in) :: target
     logical, intent(out) :: ok
-    integer(int64) :: fp
 
     character(:), allocatable :: mod_base
     integer :: i
 
     fp = 0
-    ok = .false.
-    if (.not.allocated(target%source)) return
+    ok = .true.
     if (.not.allocated(target%source%modules_provided)) return
-    if (size(target%source%modules_provided) == 0) return
 
     do i=1,size(target%source%modules_provided)
 
@@ -486,14 +496,13 @@ function module_fingerprint(target, ok) result(fp)
 end function module_fingerprint
 
 
-!> Hash of the recorded interface fingerprints of the dependencies of an object.
-!> `ok` is false if a dependency is not a Fortran object or has no fingerprint
-function deps_fingerprint(target, ok) result(fp)
+!> Hash of the recorded module fingerprints of the dependencies of an object.
+!> `ok` is false if a dependency is not a Fortran object or has no record
+integer(int64) function deps_fingerprint(target, ok) result(fp)
     type(build_target_t), intent(in) :: target
     logical, intent(out) :: ok
-    integer(int64) :: fp
 
-    integer(int64) :: dep(1)
+    integer(int64) :: record(3)
     character(8) :: bytes
     integer :: i
 
@@ -502,9 +511,9 @@ function deps_fingerprint(target, ok) result(fp)
     do i=1,size(target%dependencies)
         associate(dependency => target%dependencies(i)%ptr)
             ok = dependency%target_type == FPM_TARGET_OBJECT
-            if (ok) call read_digests(dependency%output_file//'.mod-digest', dep, ok)
+            if (ok) call read_record(dependency%output_file, record, ok)
             if (.not.ok) return
-            bytes = transfer(dep(1), bytes)
+            bytes = transfer(record(3), bytes)
             fp = fnv_1a(bytes, fp)
         end associate
     end do
@@ -535,51 +544,6 @@ subroutine hash_file(path, fp, ok)
     ok = .true.
 
 end subroutine hash_file
-
-
-!> Write digests to a record file next to a target output
-subroutine write_digests(path, digests)
-    character(*), intent(in) :: path
-    integer(int64), intent(in) :: digests(:)
-
-    integer :: fh
-
-    open(newunit=fh,file=path,status='unknown')
-    write(fh,*) digests
-    close(fh)
-
-end subroutine write_digests
-
-
-!> Read digests from a record file. `ok` is false if it is missing or unreadable
-subroutine read_digests(path, digests, ok)
-    character(*), intent(in) :: path
-    integer(int64), intent(out) :: digests(:)
-    logical, intent(out) :: ok
-
-    integer :: fh, ios
-
-    digests = 0
-    ok = .false.
-    open(newunit=fh,file=path,status='old',action='read',iostat=ios)
-    if (ios /= 0) return
-    read(fh,*,iostat=ios) digests
-    close(fh)
-    ok = ios == 0
-
-end subroutine read_digests
-
-
-!> Delete a record file, if present
-subroutine delete_record(path)
-    character(*), intent(in) :: path
-
-    integer :: fh, ios
-
-    open(newunit=fh,file=path,status='old',iostat=ios)
-    if (ios == 0) close(fh,status='delete')
-
-end subroutine delete_record
 
 
 !> Read and print the build log for target

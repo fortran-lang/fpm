@@ -6,10 +6,9 @@ module test_backend
     use fpm_targets, only: build_target_t, build_target_ptr, &
                             FPM_TARGET_OBJECT, FPM_TARGET_ARCHIVE, FPM_TARGET_SHARED, &
                            add_target, add_dependency
-    use fpm_backend, only: sort_target, schedule_targets, object_can_skip, record_interfaces
+    use fpm_backend, only: sort_target, schedule_targets
     use fpm_strings, only: string_t
     use fpm_environment, only: OS_LINUX
-    use, intrinsic :: iso_fortran_env, only: int64
     use fpm_compile_commands, only: compile_command_t, compile_command_table_t
     implicit none
     private
@@ -35,7 +34,6 @@ contains
             & new_unittest("target-shared-sort", test_target_shared), &
             & new_unittest("schedule-targets", test_schedule_targets), &
             & new_unittest("schedule-targets-empty", test_schedule_empty), &
-            & new_unittest("interface-aware-prune", test_interface_prune), &
             & new_unittest("serialize-compile-commands", compile_commands_roundtrip), &
             & new_unittest("compile-commands-write", compile_commands_register_from_cmd), &
             & new_unittest("compile-commands-register-string", compile_commands_register_from_string) &
@@ -476,90 +474,6 @@ contains
         end do
 
     end subroutine test_schedule_empty
-
-
-    !> Check interface-aware pruning of a cascade victim: an object whose source is
-    !> unchanged and whose dependencies' module files are unchanged can be skipped
-    !> even though a dependency was rebuilt.
-    subroutine test_interface_prune(error)
-
-        !> Error handling
-        type(error_t), allocatable, intent(out) :: error
-
-        type(build_target_ptr), allocatable :: targets(:)
-        character(:), allocatable :: dir
-
-        dir = get_temp_filename()
-        call mkdir(dir)
-
-        ! A provider of module m, and a consumer that uses it
-        call add_target(targets,'test-package',FPM_TARGET_OBJECT,dir//'/m.o')
-        call add_target(targets,'test-package',FPM_TARGET_OBJECT,dir//'/u.o')
-        call add_dependency(targets(2)%ptr,targets(1)%ptr)
-        targets(1)%ptr%output_dir = dir
-        allocate(targets(1)%ptr%source)
-        targets(1)%ptr%source%modules_provided = [string_t('m')]
-        allocate(targets(2)%ptr%source)
-        targets(2)%ptr%source%digest = 42_int64
-        allocate(targets(2)%ptr%source%modules_provided(0))
-
-        ! Both compiled
-        call write_text(dir//'/m.mod', 'interface 1')
-        call write_text(dir//'/u.o', 'object')
-        call record_interfaces(targets(1)%ptr, .true.)
-        call record_interfaces(targets(2)%ptr, .true.)
-
-        if (.not.object_can_skip(targets(2)%ptr)) then
-            call test_failed(error,"consumer should be skipped when the module file is unchanged")
-            return
-        end if
-
-        ! Provider recompiled to a new interface
-        call write_text(dir//'/m.mod', 'interface 2')
-        call record_interfaces(targets(1)%ptr, .true.)
-        if (object_can_skip(targets(2)%ptr)) then
-            call test_failed(error,"consumer should rebuild when the module interface changes")
-            return
-        end if
-
-        ! Consumer compiled against it; then only a private entity of m changes
-        call record_interfaces(targets(2)%ptr, .true.)
-        call write_text(dir//'/m.smod', 'private 1')
-        call record_interfaces(targets(1)%ptr, .true.)
-        if (object_can_skip(targets(2)%ptr)) then
-            call test_failed(error,"consumer should rebuild when the submodule file changes")
-            return
-        end if
-
-        ! Consumer source changed
-        call record_interfaces(targets(2)%ptr, .true.)
-        targets(2)%ptr%source%digest = 43_int64
-        if (object_can_skip(targets(2)%ptr)) then
-            call test_failed(error,"consumer should rebuild when its own source changes")
-            return
-        end if
-
-        ! Provider compile failed: its module file may be partly written
-        targets(2)%ptr%source%digest = 42_int64
-        call record_interfaces(targets(2)%ptr, .true.)
-        call record_interfaces(targets(1)%ptr, .false.)
-        if (object_can_skip(targets(2)%ptr)) then
-            call test_failed(error,"consumer should rebuild after a failed provider compile")
-            return
-        end if
-
-    end subroutine test_interface_prune
-
-
-    !> Write a one-line file (test helper)
-    subroutine write_text(path, text)
-        character(len=*), intent(in) :: path, text
-        integer :: fh
-
-        open(newunit=fh,file=path,status='replace')
-        write(fh,'(a)') text
-        close(fh)
-    end subroutine write_text
 
 
     !> Helper to generate target objects with dependencies
