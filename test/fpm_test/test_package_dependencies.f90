@@ -49,6 +49,7 @@ contains
         & new_unittest("cache-dump-load", test_cache_dump_load), &
         & new_unittest("cache-preserves-features", test_cache_preserves_features), &
         & new_unittest("features-change-detection", test_features_change_detection), &
+        & new_unittest("path-change-detection", test_path_change_detection), &
         & new_unittest("status-after-load", test_status), &
         & new_unittest("add-dependencies", test_add_dependencies), &
         & new_unittest("absolute-path-dependency", test_absolute_path_dependency), &
@@ -259,6 +260,33 @@ contains
     end if
 
   end subroutine test_features_change_detection
+
+  !> A changed local path must mark a dependency as changed, while the
+  !> canonical form stored in the cache must not.
+  subroutine test_path_change_detection(error)
+
+    !> Error handling
+    type(error_t), allocatable, intent(out) :: error
+
+    type(dependency_config_t) :: cached, manifest
+
+    cached%name = "dep1"
+    cached%path = "../old"
+
+    manifest%name = "dep1"
+    manifest%path = "./../old/"
+    if (manifest_has_changed(cached=cached, manifest=manifest, verbosity=0, iunit=output_unit)) then
+      call test_failed(error, "An equivalent local path must not count as a change")
+      return
+    end if
+
+    manifest%path = "../new"
+    if (.not. manifest_has_changed(cached=cached, manifest=manifest, verbosity=0, iunit=output_unit)) then
+      call test_failed(error, "A different local path must count as a change")
+      return
+    end if
+
+  end subroutine test_path_change_detection
 
   !> Round trip of the dependency cache from a TOML data structure to
   !> a dependency tree to a TOML data structure
