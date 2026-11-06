@@ -92,7 +92,7 @@
 
             <li class="list-inline-item" id="statements"><i class="fa fa-list-ol"></i>
               <a data-bs-toggle="tooltip" data-bs-placement="bottom" data-bs-html="true"
-                 title=" 0.2% of total for procedures.">15 statements</a>
+                 title=" 0.2% of total for procedures.">19 statements</a>
             </li>
 
             <li class="list-inline-item" id="source-file">
@@ -179,7 +179,7 @@
     <tbody>
         <tr>
             <td>
-              <span class="anchor" id="variable-dir~8"></span>
+              <span class="anchor" id="variable-dir~9"></span>
               character(len=*),
             </td>
 <td>intent(in)</td>
@@ -194,7 +194,7 @@
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-echo~6"></span>
+              <span class="anchor" id="variable-echo"></span>
               logical,
             </td>
 <td>intent(in),</td>
@@ -229,12 +229,20 @@
 <span class="w">    </span><span class="kt">logical</span><span class="p">,</span><span class="w"> </span><span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">),</span><span class="w"> </span><span class="k">optional</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">echo</span>
 
 <span class="w">    </span><span class="kt">integer</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="nb">stat</span>
+<span class="nb">    </span><span class="kt">logical</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">echo_local</span>
 
-<span class="nb">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">is_dir</span><span class="p">(</span><span class="n">dir</span><span class="p">))</span><span class="w"> </span><span class="k">return</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">is_dir</span><span class="p">(</span><span class="n">dir</span><span class="p">))</span><span class="w"> </span><span class="k">return</span>
 
 <span class="k">    select case</span><span class="w"> </span><span class="p">(</span><span class="n">get_os_type</span><span class="p">())</span>
 <span class="w">        </span><span class="k">case</span><span class="w"> </span><span class="p">(</span><span class="n">OS_UNKNOWN</span><span class="p">,</span><span class="w"> </span><span class="n">OS_LINUX</span><span class="p">,</span><span class="w"> </span><span class="n">OS_MACOS</span><span class="p">,</span><span class="w"> </span><span class="n">OS_CYGWIN</span><span class="p">,</span><span class="w"> </span><span class="n">OS_SOLARIS</span><span class="p">,</span><span class="w"> </span><span class="n">OS_FREEBSD</span><span class="p">,</span><span class="w"> </span><span class="n">OS_OPENBSD</span><span class="p">)</span>
+<span class="cp">#ifndef FPM_BOOTSTRAP</span>
+<span class="w">            </span><span class="n">echo_local</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">.</span><span class="n">true</span><span class="p">.</span>
+<span class="w">            </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="nb">present</span><span class="p">(</span><span class="n">echo</span><span class="p">))</span><span class="w"> </span><span class="n">echo_local</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">echo</span>
+<span class="w">            </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">echo_local</span><span class="p">)</span><span class="w"> </span><span class="k">print</span><span class="w"> </span><span class="o">*</span><span class="p">,</span><span class="w"> </span><span class="s1">'+ '</span><span class="p">,</span><span class="w"> </span><span class="s1">'mkdir -p '</span><span class="w"> </span><span class="o">//</span><span class="w"> </span><span class="n">dir</span>
+<span class="w">            </span><span class="nb">stat</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">c_mkdir_p</span><span class="p">(</span><span class="n">dir</span><span class="p">(</span><span class="mi">1</span><span class="p">:</span><span class="nb">len_trim</span><span class="p">(</span><span class="n">dir</span><span class="p">))</span><span class="o">//</span><span class="nb">c_null_char</span><span class="p">)</span>
+<span class="cp">#else</span>
 <span class="w">            </span><span class="k">call </span><span class="n">run</span><span class="p">(</span><span class="s1">'mkdir -p '</span><span class="w"> </span><span class="o">//</span><span class="w"> </span><span class="n">dir</span><span class="p">,</span><span class="w"> </span><span class="n">exitstat</span><span class="o">=</span><span class="nb">stat</span><span class="p">,</span><span class="n">echo</span><span class="o">=</span><span class="n">echo</span><span class="p">,</span><span class="n">verbose</span><span class="o">=</span><span class="p">.</span><span class="n">false</span><span class="p">.)</span>
+<span class="cp">#endif</span>
 
 <span class="w">        </span><span class="k">case</span><span class="w"> </span><span class="p">(</span><span class="n">OS_WINDOWS</span><span class="p">)</span>
 <span class="w">            </span><span class="k">call </span><span class="n">run</span><span class="p">(</span><span class="s2">"mkdir "</span><span class="w"> </span><span class="o">//</span><span class="w"> </span><span class="n">windows_path</span><span class="p">(</span><span class="n">dir</span><span class="p">),</span><span class="w"> </span><span class="p">&amp;</span>
@@ -270,7 +278,7 @@
             <p class="text-end">
               Documentation generated by
               <a href="https://github.com/Fortran-FOSS-Programmers/ford">FORD</a>
- on 2026-11-06 09:29 +0000             </p>
+ on 2026-11-06 10:27 +0000             </p>
           </div>
         </div>
         <br>
