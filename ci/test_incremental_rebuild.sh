@@ -122,4 +122,61 @@ grep -q "Project is up to date" build.log
 popd
 echo "✓ Up-to-date project is not rebuilt"
 
+# Whether the last build compiled a given source; Windows logs use backslashes
+compiled() {
+    tr '\\' / < build.log | grep -q -- "-c .*$1"
+}
+
+echo "Test 5: dependents of a module whose interface is unchanged"
+mkdir -p "$work/interface/src" "$work/interface/app"
+pushd "$work/interface"
+printf 'name = "interface"\n' > fpm.toml
+module_a 1
+printf 'module b\n  use a\ncontains\n  integer function g()\n    g = f()\n  end function\nend module\n' > src/b.f90
+printf 'program main\n  use b\n  print *, g()\nend program\n' > app/main.f90
+"$fpm" build
+expect 1 "$fpm" run
+
+# Only a procedure body changes: gfortran leaves a.mod as it was, so b need not compile
+module_a 2
+"$fpm" build --verbose 2>&1 | tee build.log
+compiled src/a.f90
+case "${FPM_FC:-gfortran}" in
+    *gfortran*)
+        if compiled src/b.f90 || compiled app/main.f90; then
+            echo "ERROR: dependents of a module with an unchanged interface were compiled"
+            exit 1
+        fi ;;
+esac
+expect 2 "$fpm" run
+
+# The interface changes: b compiles again
+printf 'module a\ncontains\n  integer function f(i)\n    integer, optional :: i\n    f = 3\n  end function\nend module\n' > src/a.f90
+"$fpm" build --verbose 2>&1 | tee build.log
+compiled src/b.f90
+expect 3 "$fpm" run
+popd
+echo "✓ Dependents compile again only when a module interface changes"
+
+echo "Test 6: submodules of a module whose private entities change"
+mkdir -p "$work/submodule/src" "$work/submodule/app"
+pushd "$work/submodule"
+printf 'name = "submodule"\n' > fpm.toml
+module_p() {
+    printf 'module p\n  implicit none\n  %s, private :: v\n  interface\n    module integer function h()\n    end function\n  end interface\nend module\n' "$1" > src/p.f90
+}
+module_p integer
+printf 'submodule (p) s\ncontains\n  module integer function h()\n    v = 1\n    h = int(v + v)\n  end function\nend submodule\n' > src/s.f90
+printf 'program main\n  use p\n  print *, h()\nend program\n' > app/main.f90
+"$fpm" build
+expect 2 "$fpm" run
+
+# p.mod is unchanged, but the submodule reads the private v through p.smod
+module_p 'real(8)'
+"$fpm" build --verbose 2>&1 | tee build.log
+compiled src/s.f90
+expect 2 "$fpm" run
+popd
+echo "✓ Submodules compile again when private entities of their ancestor change"
+
 echo "All incremental rebuild tests passed"
