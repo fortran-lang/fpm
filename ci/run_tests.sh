@@ -151,6 +151,10 @@ pushd version_file
 "$fpm" run
 popd
 
+pushd include_directory_with_spaces
+"$fpm" run
+popd
+
 pushd with_c
 "$fpm" build
 "$fpm" run --target with_c
