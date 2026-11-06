@@ -11,6 +11,7 @@ use fpm_command_line, only: &
         fpm_update_settings, &
         fpm_clean_settings, &
         fpm_publish_settings, &
+        fpm_generate_settings, &
         get_command_line_settings
 use fpm_error, only: error_t
 use fpm_filesystem, only: exists, parent_dir, join_path
@@ -20,6 +21,7 @@ use fpm_cmd_export, only: cmd_export
 use fpm_cmd_new, only: cmd_new
 use fpm_cmd_update, only : cmd_update
 use fpm_cmd_publish, only: cmd_publish
+use fpm_cmd_cmake, only: cmd_generate
 use fpm_os,  only: change_directory, get_current_directory
 
 implicit none
@@ -88,6 +90,8 @@ type is (fpm_clean_settings)
     call cmd_clean(settings)
 type is (fpm_publish_settings)
     call cmd_publish(settings)
+type is (fpm_generate_settings)
+    call cmd_generate(settings)
 end select
 
 if (allocated(project_root)) then

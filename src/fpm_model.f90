@@ -197,6 +197,11 @@ type, extends(serializable_t) :: fpm_model_t
     !> Command line flags passed to the linker
     character(:), allocatable :: link_flags
 
+    !> Language-specific linker flags (for CMake generator)
+    character(:), allocatable :: fortran_link_flags
+    character(:), allocatable :: c_link_flags
+    character(:), allocatable :: cxx_link_flags
+
     !> Base directory for build
     character(:), allocatable :: build_prefix
 
@@ -849,6 +854,18 @@ logical function model_is_same(this,that)
            if (allocated(this%link_flags)) then
              if (.not.(this%link_flags==other%link_flags)) return
            end if
+           if (allocated(this%fortran_link_flags).neqv.allocated(other%fortran_link_flags)) return
+           if (allocated(this%fortran_link_flags)) then
+             if (.not.(this%fortran_link_flags==other%fortran_link_flags)) return
+           end if
+           if (allocated(this%c_link_flags).neqv.allocated(other%c_link_flags)) return
+           if (allocated(this%c_link_flags)) then
+             if (.not.(this%c_link_flags==other%c_link_flags)) return
+           end if
+           if (allocated(this%cxx_link_flags).neqv.allocated(other%cxx_link_flags)) return
+           if (allocated(this%cxx_link_flags)) then
+             if (.not.(this%cxx_link_flags==other%cxx_link_flags)) return
+           end if
            if (allocated(this%build_prefix).neqv.allocated(other%build_prefix)) return
            if (allocated(this%build_prefix)) then
              if (.not.(this%build_prefix==other%build_prefix)) return
@@ -921,6 +938,12 @@ subroutine model_dump_to_toml(self, table, error)
     call set_string(table, "cxx-flags", self%cxx_compile_flags, error, 'fpm_model_t')
     if (allocated(error)) return
     call set_string(table, "link-flags", self%link_flags, error, 'fpm_model_t')
+    if (allocated(error)) return
+    call set_string(table, "fortran-link-flags", self%fortran_link_flags, error, 'fpm_model_t')
+    if (allocated(error)) return
+    call set_string(table, "c-link-flags", self%c_link_flags, error, 'fpm_model_t')
+    if (allocated(error)) return
+    call set_string(table, "cxx-link-flags", self%cxx_link_flags, error, 'fpm_model_t')
     if (allocated(error)) return
     call set_string(table, "build-prefix", self%build_prefix, error, 'fpm_model_t')
     if (allocated(error)) return
@@ -1009,6 +1032,9 @@ subroutine model_load_from_toml(self, table, error)
     call get_value(table, "c-flags", self%c_compile_flags)
     call get_value(table, "cxx-flags", self%cxx_compile_flags)
     call get_value(table, "link-flags", self%link_flags)
+    call get_value(table, "fortran-link-flags", self%fortran_link_flags)
+    call get_value(table, "c-link-flags", self%c_link_flags)
+    call get_value(table, "cxx-link-flags", self%cxx_link_flags)
     call get_value(table, "build-prefix", self%build_prefix)
     call get_value(table, "build-dir", self%build_dir)
 
