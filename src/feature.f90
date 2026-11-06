@@ -40,7 +40,8 @@ module fpm_manifest_feature
     use fpm_error, only: error_t, fatal_error, syntax_error
     use fpm_environment, only: OS_UNKNOWN, OS_LINUX, OS_MACOS, OS_WINDOWS, OS_CYGWIN, OS_SOLARIS, &
                              OS_FREEBSD, OS_OPENBSD, OS_ALL, OS_NAME, match_os_type
-    use fpm_compiler, only: compiler_enum, compiler_id_name, match_compiler_type, id_all
+    use fpm_compiler, only: compiler_enum, compiler_id_name, match_compiler_type, id_all, &
+        validate_compiler_name
     use fpm_strings, only: string_t, lower, operator(==)
     use tomlf, only: toml_table, toml_array, toml_key, toml_stat
     use fpm_toml, only: get_value, len, serializable_t, set_value, set_string, set_list, add_table, &
@@ -195,6 +196,7 @@ contains
 
         type(toml_key), allocatable :: list(:)
         integer :: ikey
+        logical :: is_compiler
 
         call table%get_keys(list)
 
@@ -206,8 +208,12 @@ contains
         do ikey = 1, size(list)
             select case(list(ikey)%key)
             case default
-                call syntax_error(error, "Key "//list(ikey)%key//" is not allowed in feature table")
-                exit
+                ! Compiler names, as fpm knows them
+                call validate_compiler_name(list(ikey)%key, is_compiler)
+                if (.not.is_compiler) then
+                    call syntax_error(error, "Key "//list(ikey)%key//" is not allowed in feature table")
+                    exit
+                end if
 
             ! Keys
             case("description", "platform", "flags", "c-flags", &
@@ -221,12 +227,6 @@ contains
              case("linux", "macos", "windows", "cygwin", "solaris", "freebsd", "openbsd")
                 
                  continue 
-                 
-             ! Compiler names  
-             case ("gfortran", "f95", "caf", "ifort", "ifx", "pgfortran", "nvfortran", "nagfor", &
-                   "flang", "flang-new", "f18", "xlf90", "lfortran")
-                 
-                 continue
                  
              ! Standard feature configuration names
              case("debug", "release")  

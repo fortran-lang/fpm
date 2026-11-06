@@ -118,7 +118,7 @@
                  <td><p>Add default profiles to existing profiles array if they don&rsquo;t already exist</p></td>
                </tr>
 			   <tr>
-                 <td><a href='../proc/add_dependency~2.html'>add_dependency</a></td>
+                 <td><a href='../proc/add_dependency.html'>add_dependency</a></td>
                  <td><a href='../module/fpm_targets.html'>fpm_targets</a></td>
                  <td>Subroutine</td>
                  <td><p>Add pointer to dependeny in target%dependencies</p></td>
@@ -679,16 +679,16 @@ Returns an error if the variable did not exist in the first place</p><a href="..
                  <td><p>Extract dirname from path</p></td>
                </tr>
 			   <tr>
-                 <td><a href='../proc/dump_to_toml~6.html'>dump_to_toml</a></td>
+                 <td><a href='../proc/dump_to_toml~2.html'>dump_to_toml</a></td>
+                 <td><a href='../module/fpm_compiler.html'>fpm_compiler</a></td>
+                 <td>Subroutine</td>
+                 <td><p>Dump dependency to toml table</p><a href="../proc/dump_to_toml~2.html" class="pull-right"><emph>Read more&hellip;</emph></a></td>
+               </tr>
+			   <tr>
+                 <td><a href='../proc/dump_to_toml~5.html'>dump_to_toml</a></td>
                  <td><a href='../module/fpm_git.html'>fpm_git</a></td>
                  <td>Subroutine</td>
                  <td><p>Dump dependency to toml table</p></td>
-               </tr>
-			   <tr>
-                 <td><a href='../proc/dump_to_toml~10.html'>dump_to_toml</a></td>
-                 <td><a href='../module/fpm_compiler.html'>fpm_compiler</a></td>
-                 <td>Subroutine</td>
-                 <td><p>Dump dependency to toml table</p><a href="../proc/dump_to_toml~10.html" class="pull-right"><emph>Read more&hellip;</emph></a></td>
                </tr>
 			   <tr>
                  <td><a href='../proc/ends_with_blank.html'>ends_with_blank</a></td>
@@ -1127,7 +1127,7 @@ All checks passed!</p></td>
    contain wildcard characters.</p><a href="../proc/glob.html" class="pull-right"><emph>Read more&hellip;</emph></a></td>
                </tr>
 			   <tr>
-                 <td><a href='../proc/handle_error~2.html'>handle_error</a></td>
+                 <td><a href='../proc/handle_error~4.html'>handle_error</a></td>
                  <td><a href='../program/main.html'>main</a></td>
                  <td>Subroutine</td>
                  <td></td>
@@ -1169,7 +1169,14 @@ All checks passed!</p></td>
 3) If longer, package name must be followed by default separator plus at least one char</p><a href="../proc/has_valid_standard_prefix.html" class="pull-right"><emph>Read more&hellip;</emph></a></td>
                </tr>
 			   <tr>
-                 <td><a href='../proc/info~6.html'>info</a></td>
+                 <td><a href='../proc/identify_compiler.html'>identify_compiler</a></td>
+                 <td><a href='../module/fpm_compiler.html'>fpm_compiler</a></td>
+                 <td>Function</td>
+                 <td><p>Identify a compiler from its name, and for a compiler named like LLVM flang, from its
+installation: AOCC, like other classic flang installs, also calls its compiler flang</p></td>
+               </tr>
+			   <tr>
+                 <td><a href='../proc/info~3.html'>info</a></td>
                  <td><a href='../module/fpm_git.html'>fpm_git</a></td>
                  <td>Subroutine</td>
                  <td><p>Show information on git target</p></td>
@@ -1237,6 +1244,13 @@ Cleanup</p><a href="../proc/init_stdlib.html" class="pull-right"><emph>Read more
                  <td><a href='../module/fpm_filesystem.html'>fpm_filesystem</a></td>
                  <td>Function</td>
                  <td><p>Returns .true. if provided path is absolute.</p><a href="../proc/is_absolute_path.html" class="pull-right"><emph>Read more&hellip;</emph></a></td>
+               </tr>
+			   <tr>
+                 <td><a href='../proc/is_classic_flang.html'>is_classic_flang</a></td>
+                 <td><a href='../module/fpm_compiler.html'>fpm_compiler</a></td>
+                 <td>Function</td>
+                 <td><p>Whether a compiler named flang is classic flang: its driver runs the flang1 program
+installed next to it, which LLVM flang does not have</p></td>
                </tr>
 			   <tr>
                  <td><a href='../proc/is_cxx_gnu_based.html'>is_cxx_gnu_based</a></td>
@@ -1367,16 +1381,16 @@ Cleanup</p><a href="../proc/init_stdlib.html" class="pull-right"><emph>Read more
                  <td><p>Get file &amp; directory names in directory <code>dir</code> using iso_c_binding.</p><a href="../proc/list_files.html" class="pull-right"><emph>Read more&hellip;</emph></a></td>
                </tr>
 			   <tr>
-                 <td><a href='../proc/load_from_toml~6.html'>load_from_toml</a></td>
-                 <td><a href='../module/fpm_git.html'>fpm_git</a></td>
-                 <td>Subroutine</td>
-                 <td><p>Read dependency from toml table (no checks made at this stage)</p><a href="../proc/load_from_toml~6.html" class="pull-right"><emph>Read more&hellip;</emph></a></td>
-               </tr>
-			   <tr>
-                 <td><a href='../proc/load_from_toml~10.html'>load_from_toml</a></td>
+                 <td><a href='../proc/load_from_toml~2.html'>load_from_toml</a></td>
                  <td><a href='../module/fpm_compiler.html'>fpm_compiler</a></td>
                  <td>Subroutine</td>
                  <td><p>Read dependency from toml table (no checks made at this stage)</p></td>
+               </tr>
+			   <tr>
+                 <td><a href='../proc/load_from_toml~5.html'>load_from_toml</a></td>
+                 <td><a href='../module/fpm_git.html'>fpm_git</a></td>
+                 <td>Subroutine</td>
+                 <td><p>Read dependency from toml table (no checks made at this stage)</p><a href="../proc/load_from_toml~5.html" class="pull-right"><emph>Read more&hellip;</emph></a></td>
                </tr>
 			   <tr>
                  <td><a href='../proc/load_table_from_file.html'>load_table_from_file</a></td>
@@ -1801,10 +1815,10 @@ by re-opening it first, which NAG 7.2 rejects for a unit from NEWUNIT=</p></td>
  based on any modules used by the corresponding source file.</p><a href="../proc/resolve_module_dependencies.html" class="pull-right"><emph>Read more&hellip;</emph></a></td>
                </tr>
 			   <tr>
-                 <td><a href='../proc/run~2.html'>run</a></td>
+                 <td><a href='../proc/run.html'>run</a></td>
                  <td><a href='../module/fpm_filesystem.html'>fpm_filesystem</a></td>
                  <td>Subroutine</td>
-                 <td><p>Execute the specified system command. Optionally</p><a href="../proc/run~2.html" class="pull-right"><emph>Read more&hellip;</emph></a></td>
+                 <td><p>Execute the specified system command. Optionally</p><a href="../proc/run.html" class="pull-right"><emph>Read more&hellip;</emph></a></td>
                </tr>
 			   <tr>
                  <td><a href='../proc/run_argv.html'>run_argv</a></td>
@@ -2067,7 +2081,7 @@ in case of errors.</p></td>
             <p class="text-end">
               Documentation generated by
               <a href="https://github.com/Fortran-FOSS-Programmers/ford">FORD</a>
- on 2026-11-05 15:19 +0000             </p>
+ on 2026-11-06 09:29 +0000             </p>
           </div>
         </div>
         <br>

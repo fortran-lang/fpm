@@ -134,12 +134,12 @@
       </a>
       <div id="vars-0" class="collapse">
         <div class="list-group list-group-flush">
-            <a class="list-group-item" href="../proc/get_compiler_id.html#variable-command~8">command</a>
+            <a class="list-group-item" href="../proc/get_compiler_id.html#variable-command">command</a>
             <a class="list-group-item" href="../proc/get_compiler_id.html#variable-full_command">full_command</a>
             <a class="list-group-item" href="../proc/get_compiler_id.html#variable-full_command_parts">full_command_parts</a>
-            <a class="list-group-item" href="../proc/get_compiler_id.html#variable-io~3">io</a>
-            <a class="list-group-item" href="../proc/get_compiler_id.html#variable-output~3">output</a>
-            <a class="list-group-item" href="../proc/get_compiler_id.html#variable-stat~44">stat</a>
+            <a class="list-group-item" href="../proc/get_compiler_id.html#variable-io~2">io</a>
+            <a class="list-group-item" href="../proc/get_compiler_id.html#variable-output">output</a>
+            <a class="list-group-item" href="../proc/get_compiler_id.html#variable-stat~10">stat</a>
         </div>
       </div>
     </div>
@@ -194,7 +194,7 @@
     <tbody>
         <tr>
             <td>
-              <span class="anchor" id="variable-compiler~14"></span>
+              <span class="anchor" id="variable-compiler~6"></span>
               character(len=*),
             </td>
 <td>intent(in)</td>
@@ -212,7 +212,7 @@
 
       <h3>Return Value
         <small>
-          <span class="anchor" id="variable-id~15"></span>
+          <span class="anchor" id="variable-id~8"></span>
           integer(kind=compiler_enum)
         </small>
       </h3>
@@ -234,7 +234,7 @@
     <tbody>
         <tr>
             <td>
-              <span class="anchor" id="variable-command~8"></span>
+              <span class="anchor" id="variable-command"></span>
               character(len=:),
             </td>
               <td>public,</td>
@@ -285,7 +285,7 @@
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-io~3"></span>
+              <span class="anchor" id="variable-io~2"></span>
               integer,
             </td>
               <td>public</td>
@@ -302,7 +302,7 @@
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-output~3"></span>
+              <span class="anchor" id="variable-output"></span>
               character(len=:),
             </td>
               <td>public,</td>
@@ -319,7 +319,7 @@
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-stat~44"></span>
+              <span class="anchor" id="variable-stat~10"></span>
               integer,
             </td>
               <td>public</td>
@@ -375,13 +375,13 @@
 <span class="k">               </span><span class="n">command</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">trim</span><span class="p">(</span><span class="n">full_command_parts</span><span class="p">(</span><span class="mi">1</span><span class="p">))</span>
 <span class="w">            </span><span class="k">endif</span>
 <span class="k">            if</span><span class="w"> </span><span class="p">(</span><span class="nb">allocated</span><span class="p">(</span><span class="n">command</span><span class="p">))</span><span class="w"> </span><span class="k">then</span>
-<span class="k">                </span><span class="n">id</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">match_compiler_type</span><span class="p">(</span><span class="n">command</span><span class="p">)</span>
+<span class="k">                </span><span class="n">id</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">identify_compiler</span><span class="p">(</span><span class="n">command</span><span class="p">)</span>
 <span class="w">                </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">id</span><span class="w"> </span><span class="o">/=</span><span class="w"> </span><span class="n">id_unknown</span><span class="p">)</span><span class="w"> </span><span class="k">return</span>
 <span class="k">            end if</span>
 <span class="k">        end if</span>
 <span class="k">    end if</span>
 
-<span class="k">    </span><span class="n">id</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">match_compiler_type</span><span class="p">(</span><span class="n">compiler</span><span class="p">)</span>
+<span class="k">    </span><span class="n">id</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">identify_compiler</span><span class="p">(</span><span class="n">compiler</span><span class="p">)</span>
 
 <span class="k">end function </span><span class="n">get_compiler_id</span>
 </pre></div>
@@ -407,7 +407,7 @@
             <p class="text-end">
               Documentation generated by
               <a href="https://github.com/Fortran-FOSS-Programmers/ford">FORD</a>
- on 2026-11-05 15:19 +0000             </p>
+ on 2026-11-06 09:29 +0000             </p>
           </div>
         </div>
         <br>
