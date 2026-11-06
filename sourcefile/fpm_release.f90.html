@@ -189,34 +189,35 @@
 <a id="ln-16" name="ln-16" href="#ln-16"></a>
 <a id="ln-17" name="ln-17" href="#ln-17"></a><span class="w">        </span><span class="k">type</span><span class="p">(</span><span class="n">error_t</span><span class="p">),</span><span class="w"> </span><span class="k">allocatable</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">error</span>
 <a id="ln-18" name="ln-18" href="#ln-18"></a>
-<a id="ln-19" name="ln-19" href="#ln-19"></a><span class="c">! Fallback to last known version in case of undefined macro</span>
-<a id="ln-20" name="ln-20" href="#ln-20"></a><span class="cp">#ifndef FPM_RELEASE_VERSION</span>
-<a id="ln-21" name="ln-21" href="#ln-21"></a><span class="cp">#  define FPM_RELEASE_VERSION 0.13.0</span>
-<a id="ln-22" name="ln-22" href="#ln-22"></a><span class="cp">#endif</span>
-<a id="ln-23" name="ln-23" href="#ln-23"></a>
-<a id="ln-24" name="ln-24" href="#ln-24"></a><span class="c">! Accept solution from https://stackoverflow.com/questions/31649691/stringify-macro-with-gnu-gfortran</span>
-<a id="ln-25" name="ln-25" href="#ln-25"></a><span class="c">! which provides the "easiest" way to pass a macro to a string in Fortran complying with both</span>
-<a id="ln-26" name="ln-26" href="#ln-26"></a><span class="c">! gfortran's "traditional" cpp and the standard cpp syntaxes</span>
-<a id="ln-27" name="ln-27" href="#ln-27"></a><span class="cp">#ifdef __GFORTRAN__ /* traditional-cpp stringification */</span>
-<a id="ln-28" name="ln-28" href="#ln-28"></a><span class="cp">#  define STRINGIFY_START(X) "&amp;</span>
-<a id="ln-29" name="ln-29" href="#ln-29"></a><span class="cp">#  define STRINGIFY_END(X) &amp;X"</span>
-<a id="ln-30" name="ln-30" href="#ln-30"></a><span class="cp">#else               /* default stringification */</span>
-<a id="ln-31" name="ln-31" href="#ln-31"></a><span class="cp">#  define STRINGIFY_(X) #X</span>
-<a id="ln-32" name="ln-32" href="#ln-32"></a><span class="cp">#  define STRINGIFY_START(X) &amp;</span>
-<a id="ln-33" name="ln-33" href="#ln-33"></a><span class="cp">#  define STRINGIFY_END(X) STRINGIFY_(X)</span>
-<a id="ln-34" name="ln-34" href="#ln-34"></a><span class="cp">#endif</span>
-<a id="ln-35" name="ln-35" href="#ln-35"></a>
-<a id="ln-36" name="ln-36" href="#ln-36"></a><span class="w">        </span><span class="kt">character</span><span class="w"> </span><span class="p">(</span><span class="nb">len</span><span class="o">=</span><span class="p">:),</span><span class="w"> </span><span class="k">allocatable</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">ver_string</span>
-<a id="ln-37" name="ln-37" href="#ln-37"></a><span class="w">        </span><span class="n">ver_string</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">STRINGIFY_START</span><span class="p">(</span><span class="n">FPM_RELEASE_VERSION</span><span class="p">)</span>
-<a id="ln-38" name="ln-38" href="#ln-38"></a><span class="w">        </span><span class="n">STRINGIFY_END</span><span class="p">(</span><span class="n">FPM_RELEASE_VERSION</span><span class="p">)</span>
-<a id="ln-39" name="ln-39" href="#ln-39"></a>
-<a id="ln-40" name="ln-40" href="#ln-40"></a><span class="w">        </span><span class="k">call </span><span class="n">new_version</span><span class="p">(</span><span class="n">fpm_version</span><span class="p">,</span><span class="n">ver_string</span><span class="p">,</span><span class="n">error</span><span class="p">)</span>
-<a id="ln-41" name="ln-41" href="#ln-41"></a>
-<a id="ln-42" name="ln-42" href="#ln-42"></a><span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="nb">allocated</span><span class="p">(</span><span class="n">error</span><span class="p">))</span><span class="w"> </span><span class="k">call </span><span class="n">fpm_stop</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="s1">'*fpm*:internal error: cannot get version - '</span><span class="o">//</span><span class="n">error</span><span class="p">%</span><span class="n">message</span><span class="p">)</span>
-<a id="ln-43" name="ln-43" href="#ln-43"></a>
-<a id="ln-44" name="ln-44" href="#ln-44"></a><span class="w">    </span><span class="k">end function </span><span class="n">fpm_version</span>
-<a id="ln-45" name="ln-45" href="#ln-45"></a>
-<a id="ln-46" name="ln-46" href="#ln-46"></a><span class="k">end module </span><span class="n">fpm_release</span>
+<a id="ln-19" name="ln-19" href="#ln-19"></a><span class="c">! Accept solution from https://stackoverflow.com/questions/31649691/stringify-macro-with-gnu-gfortran</span>
+<a id="ln-20" name="ln-20" href="#ln-20"></a><span class="c">! which provides the "easiest" way to pass a macro to a string in Fortran complying with both</span>
+<a id="ln-21" name="ln-21" href="#ln-21"></a><span class="c">! gfortran's "traditional" cpp and the standard cpp syntaxes</span>
+<a id="ln-22" name="ln-22" href="#ln-22"></a><span class="cp">#ifdef __GFORTRAN__ /* traditional-cpp stringification */</span>
+<a id="ln-23" name="ln-23" href="#ln-23"></a><span class="cp">#  define STRINGIFY_START(X) "&amp;</span>
+<a id="ln-24" name="ln-24" href="#ln-24"></a><span class="cp">#  define STRINGIFY_END(X) &amp;X"</span>
+<a id="ln-25" name="ln-25" href="#ln-25"></a><span class="cp">#else               /* default stringification */</span>
+<a id="ln-26" name="ln-26" href="#ln-26"></a><span class="cp">#  define STRINGIFY_(X) #X</span>
+<a id="ln-27" name="ln-27" href="#ln-27"></a><span class="cp">#  define STRINGIFY_START(X) &amp;</span>
+<a id="ln-28" name="ln-28" href="#ln-28"></a><span class="cp">#  define STRINGIFY_END(X) STRINGIFY_(X)</span>
+<a id="ln-29" name="ln-29" href="#ln-29"></a><span class="cp">#endif</span>
+<a id="ln-30" name="ln-30" href="#ln-30"></a>
+<a id="ln-31" name="ln-31" href="#ln-31"></a><span class="w">        </span><span class="kt">character</span><span class="w"> </span><span class="p">(</span><span class="nb">len</span><span class="o">=</span><span class="p">:),</span><span class="w"> </span><span class="k">allocatable</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">ver_string</span>
+<a id="ln-32" name="ln-32" href="#ln-32"></a><span class="cp">#if defined(FPM_RELEASE_VERSION) &amp;&amp; !defined(NAGFOR)</span>
+<a id="ln-33" name="ln-33" href="#ln-33"></a><span class="w">        </span><span class="n">ver_string</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">STRINGIFY_START</span><span class="p">(</span><span class="n">FPM_RELEASE_VERSION</span><span class="p">)</span>
+<a id="ln-34" name="ln-34" href="#ln-34"></a><span class="w">        </span><span class="n">STRINGIFY_END</span><span class="p">(</span><span class="n">FPM_RELEASE_VERSION</span><span class="p">)</span>
+<a id="ln-35" name="ln-35" href="#ln-35"></a><span class="cp">#else</span>
+<a id="ln-36" name="ln-36" href="#ln-36"></a><span class="w">        </span><span class="c">! Fallback to last known version when the macro is undefined, or when the</span>
+<a id="ln-37" name="ln-37" href="#ln-37"></a><span class="w">        </span><span class="c">! preprocessor cannot turn it into a string (NAG fpp)</span>
+<a id="ln-38" name="ln-38" href="#ln-38"></a><span class="w">        </span><span class="n">ver_string</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">"0.13.0"</span>
+<a id="ln-39" name="ln-39" href="#ln-39"></a><span class="cp">#endif</span>
+<a id="ln-40" name="ln-40" href="#ln-40"></a>
+<a id="ln-41" name="ln-41" href="#ln-41"></a><span class="w">        </span><span class="k">call </span><span class="n">new_version</span><span class="p">(</span><span class="n">fpm_version</span><span class="p">,</span><span class="n">ver_string</span><span class="p">,</span><span class="n">error</span><span class="p">)</span>
+<a id="ln-42" name="ln-42" href="#ln-42"></a>
+<a id="ln-43" name="ln-43" href="#ln-43"></a><span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="nb">allocated</span><span class="p">(</span><span class="n">error</span><span class="p">))</span><span class="w"> </span><span class="k">call </span><span class="n">fpm_stop</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="s1">'*fpm*:internal error: cannot get version - '</span><span class="o">//</span><span class="n">error</span><span class="p">%</span><span class="n">message</span><span class="p">)</span>
+<a id="ln-44" name="ln-44" href="#ln-44"></a>
+<a id="ln-45" name="ln-45" href="#ln-45"></a><span class="w">    </span><span class="k">end function </span><span class="n">fpm_version</span>
+<a id="ln-46" name="ln-46" href="#ln-46"></a>
+<a id="ln-47" name="ln-47" href="#ln-47"></a><span class="k">end module </span><span class="n">fpm_release</span>
 </pre></div>
 
       </section>
@@ -238,7 +239,7 @@
             <p class="text-end">
               Documentation generated by
               <a href="https://github.com/Fortran-FOSS-Programmers/ford">FORD</a>
- on 2026-11-06 10:27 +0000             </p>
+ on 2026-11-06 15:57 +0000             </p>
           </div>
         </div>
         <br>

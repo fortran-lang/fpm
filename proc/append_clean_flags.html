@@ -92,7 +92,7 @@
 
             <li class="list-inline-item" id="statements"><i class="fa fa-list-ol"></i>
               <a data-bs-toggle="tooltip" data-bs-placement="bottom" data-bs-html="true"
-                 title=" 0.2% of total for procedures.">12 statements</a>
+                 title=" 0.2% of total for procedures.">13 statements</a>
             </li>
 
             <li class="list-inline-item" id="source-file">
@@ -135,7 +135,8 @@
       <div id="vars-0" class="collapse">
         <div class="list-group list-group-flush">
             <a class="list-group-item" href="../proc/append_clean_flags.html#variable-flags_array">flags_array</a>
-            <a class="list-group-item" href="../proc/append_clean_flags.html#variable-i~156">i</a>
+            <a class="list-group-item" href="../proc/append_clean_flags.html#variable-i~128">i</a>
+            <a class="list-group-item" href="../proc/append_clean_flags.html#variable-n_old">n_old</a>
             <a class="list-group-item" href="../proc/append_clean_flags.html#variable-new_flags_array">new_flags_array</a>
         </div>
       </div>
@@ -192,7 +193,7 @@
     <tbody>
         <tr>
             <td>
-              <span class="anchor" id="variable-flags~25"></span>
+              <span class="anchor" id="variable-flags~23"></span>
               character(len=:),
             </td>
 <td>intent(inout),</td>
@@ -257,7 +258,7 @@
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-i~156"></span>
+              <span class="anchor" id="variable-i~128"></span>
               integer,
             </td>
               <td>public</td>
@@ -266,6 +267,23 @@
             </td>
             <td>::</td>
             <td><strong>i</strong></td>
+                <td></td>
+                <td></td>
+            <td>
+                
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-n_old"></span>
+              integer,
+            </td>
+              <td>public</td>
+            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>n_old</strong></td>
                 <td></td>
                 <td></td>
             <td>
@@ -310,14 +328,19 @@
 <span class="w">    </span><span class="kt">character</span><span class="p">(</span><span class="o">*</span><span class="p">),</span><span class="w"> </span><span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">)</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">new_flags</span>
 
 <span class="w">    </span><span class="k">type</span><span class="p">(</span><span class="n">string_t</span><span class="p">),</span><span class="w"> </span><span class="k">allocatable</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">flags_array</span><span class="p">(:),</span><span class="w"> </span><span class="n">new_flags_array</span><span class="p">(:)</span>
-<span class="w">    </span><span class="kt">integer</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">i</span>
+<span class="w">    </span><span class="kt">integer</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">i</span><span class="p">,</span><span class="w"> </span><span class="n">n_old</span>
 
 <span class="w">    </span><span class="k">call </span><span class="n">tokenize_flags</span><span class="p">(</span><span class="n">flags</span><span class="p">,</span><span class="w"> </span><span class="n">flags_array</span><span class="p">)</span>
 <span class="w">    </span><span class="k">call </span><span class="n">tokenize_flags</span><span class="p">(</span><span class="n">new_flags</span><span class="p">,</span><span class="w"> </span><span class="n">new_flags_array</span><span class="p">)</span>
 
+<span class="w">    </span><span class="c">! `flags_array` starts out holding the flags already in `flags`, and</span>
+<span class="w">    </span><span class="c">! `append_clean_flags_array` only ever appends: re-emitting the whole array</span>
+<span class="w">    </span><span class="c">! would repeat every one of them on each call</span>
+<span class="w">    </span><span class="n">n_old</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">size</span><span class="p">(</span><span class="n">flags_array</span><span class="p">)</span>
+
 <span class="w">    </span><span class="k">call </span><span class="n">append_clean_flags_array</span><span class="p">(</span><span class="n">flags_array</span><span class="p">,</span><span class="w"> </span><span class="n">new_flags_array</span><span class="p">)</span>
 
-<span class="w">    </span><span class="k">do </span><span class="n">i</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="n">size</span><span class="p">(</span><span class="n">flags_array</span><span class="p">)</span>
+<span class="w">    </span><span class="k">do </span><span class="n">i</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">n_old</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="n">size</span><span class="p">(</span><span class="n">flags_array</span><span class="p">)</span>
 <span class="w">        </span><span class="n">flags</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">flags</span><span class="w"> </span><span class="o">//</span><span class="w"> </span><span class="s2">" "</span><span class="w"> </span><span class="o">//</span><span class="w"> </span><span class="n">flags_array</span><span class="p">(</span><span class="n">i</span><span class="p">)%</span><span class="n">s</span>
 <span class="w">    </span><span class="k">end do</span>
 <span class="k">end subroutine </span><span class="n">append_clean_flags</span>
@@ -344,7 +367,7 @@
             <p class="text-end">
               Documentation generated by
               <a href="https://github.com/Fortran-FOSS-Programmers/ford">FORD</a>
- on 2026-11-06 10:27 +0000             </p>
+ on 2026-11-06 15:57 +0000             </p>
           </div>
         </div>
         <br>

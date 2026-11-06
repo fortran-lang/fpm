@@ -118,7 +118,7 @@
                  <td><p>Add default profiles to existing profiles array if they don&rsquo;t already exist</p></td>
                </tr>
 			   <tr>
-                 <td><a href='../proc/add_dependency.html'>add_dependency</a></td>
+                 <td><a href='../proc/add_dependency~2.html'>add_dependency</a></td>
                  <td><a href='../module/fpm_targets.html'>fpm_targets</a></td>
                  <td>Subroutine</td>
                  <td><p>Add pointer to dependeny in target%dependencies</p></td>
@@ -679,16 +679,27 @@ Returns an error if the variable did not exist in the first place</p><a href="..
                  <td><p>Extract dirname from path</p></td>
                </tr>
 			   <tr>
-                 <td><a href='../proc/dump_to_toml~7.html'>dump_to_toml</a></td>
+                 <td><a href='../proc/drop_compile_options.html'>drop_compile_options</a></td>
+                 <td><a href='../module/fpm_compiler.html'>fpm_compiler</a></td>
+                 <td>Function</td>
+                 <td><p>Link flags without the options that the compile flags already pass: executables are
+linked with both, and a metapackage can set the same option in each (OpenMP), which a
+strict compiler rejects when repeated (NAG: <code>-openmp</code>). Only an option standing alone
+is dropped: paths, libraries, linker flags, repeats, and options that take an argument
+stay with that argument. The flags are split on blanks, not parsed, so Windows paths
+keep their backslashes.</p></td>
+               </tr>
+			   <tr>
+                 <td><a href='../proc/dump_to_toml~5.html'>dump_to_toml</a></td>
                  <td><a href='../module/fpm_git.html'>fpm_git</a></td>
                  <td>Subroutine</td>
                  <td><p>Dump dependency to toml table</p></td>
                </tr>
 			   <tr>
-                 <td><a href='../proc/dump_to_toml~11.html'>dump_to_toml</a></td>
+                 <td><a href='../proc/dump_to_toml~8.html'>dump_to_toml</a></td>
                  <td><a href='../module/fpm_compiler.html'>fpm_compiler</a></td>
                  <td>Subroutine</td>
-                 <td><p>Dump dependency to toml table</p><a href="../proc/dump_to_toml~11.html" class="pull-right"><emph>Read more&hellip;</emph></a></td>
+                 <td><p>Dump dependency to toml table</p><a href="../proc/dump_to_toml~8.html" class="pull-right"><emph>Read more&hellip;</emph></a></td>
                </tr>
 			   <tr>
                  <td><a href='../proc/ends_with_blank.html'>ends_with_blank</a></td>
@@ -783,7 +794,7 @@ single characters terminated with a C_NULL_CHAR character</p></td>
                  <td></td>
                </tr>
 			   <tr>
-                 <td><a href='../proc/find_feature.html'>find_feature</a></td>
+                 <td><a href='../proc/find_feature~2.html'>find_feature</a></td>
                  <td><a href='../module/fpm_manifest_feature.html'>fpm_manifest_feature</a></td>
                  <td>Subroutine</td>
                  <td><p>Find matching feature configuration (similar to find_profile)</p></td>
@@ -1014,6 +1025,14 @@ Split the macro name and value.</p><a href="../proc/get_macros.html" class="pull
                  <td></td>
                </tr>
 			   <tr>
+                 <td><a href='../proc/get_preprocess_flag.html'>get_preprocess_flag</a></td>
+                 <td><a href='../module/fpm_compiler.html'>fpm_compiler</a></td>
+                 <td>Function</td>
+                 <td><p>Get the flag that preprocesses a Fortran source with an upper-case <code>.F90</code> or <code>.F</code> suffix,
+for compilers that do not do so on their own: NAG runs <code>fpp</code> by suffix only on <code>.ff90</code>,
+<code>.ff95</code> and <code>.ff</code> sources</p></td>
+               </tr>
+			   <tr>
                  <td><a href='../proc/get_registry_settings.html'>get_registry_settings</a></td>
                  <td><a href='../module/fpm_settings.html'>fpm_settings</a></td>
                  <td>Subroutine</td>
@@ -1176,7 +1195,7 @@ All checks passed!</p></td>
 installation: AOCC, like other classic flang installs, also calls its compiler flang</p></td>
                </tr>
 			   <tr>
-                 <td><a href='../proc/info~9.html'>info</a></td>
+                 <td><a href='../proc/info~8.html'>info</a></td>
                  <td><a href='../module/fpm_git.html'>fpm_git</a></td>
                  <td>Subroutine</td>
                  <td><p>Show information on git target</p></td>
@@ -1381,13 +1400,13 @@ installed next to it, which LLVM flang does not have</p></td>
                  <td><p>Get file &amp; directory names in directory <code>dir</code> using iso_c_binding.</p><a href="../proc/list_files.html" class="pull-right"><emph>Read more&hellip;</emph></a></td>
                </tr>
 			   <tr>
-                 <td><a href='../proc/load_from_toml~7.html'>load_from_toml</a></td>
+                 <td><a href='../proc/load_from_toml~5.html'>load_from_toml</a></td>
                  <td><a href='../module/fpm_git.html'>fpm_git</a></td>
                  <td>Subroutine</td>
-                 <td><p>Read dependency from toml table (no checks made at this stage)</p><a href="../proc/load_from_toml~7.html" class="pull-right"><emph>Read more&hellip;</emph></a></td>
+                 <td><p>Read dependency from toml table (no checks made at this stage)</p><a href="../proc/load_from_toml~5.html" class="pull-right"><emph>Read more&hellip;</emph></a></td>
                </tr>
 			   <tr>
-                 <td><a href='../proc/load_from_toml~11.html'>load_from_toml</a></td>
+                 <td><a href='../proc/load_from_toml~8.html'>load_from_toml</a></td>
                  <td><a href='../module/fpm_compiler.html'>fpm_compiler</a></td>
                  <td>Subroutine</td>
                  <td><p>Read dependency from toml table (no checks made at this stage)</p></td>
@@ -1785,15 +1804,15 @@ by re-opening it first, which NAG 7.2 rejects for a unit from NEWUNIT=</p></td>
                </tr>
 			   <tr>
                  <td><a href='../interface/resize.html'>resize</a></td>
-                 <td><a href='../module/fpm_strings.html'>fpm_strings</a></td>
-                 <td>Interface</td>
-                 <td></td>
-               </tr>
-			   <tr>
-                 <td><a href='../interface/resize~2.html'>resize</a></td>
                  <td><a href='../module/fpm_dependency.html'>fpm_dependency</a></td>
                  <td>Interface</td>
                  <td><p>Overloaded reallocation interface</p></td>
+               </tr>
+			   <tr>
+                 <td><a href='../interface/resize~2.html'>resize</a></td>
+                 <td><a href='../module/fpm_strings.html'>fpm_strings</a></td>
+                 <td>Interface</td>
+                 <td></td>
                </tr>
 			   <tr>
                  <td><a href='../proc/resize_dependency_config.html'>resize_dependency_config</a></td>
@@ -2081,7 +2100,7 @@ in case of errors.</p></td>
             <p class="text-end">
               Documentation generated by
               <a href="https://github.com/Fortran-FOSS-Programmers/ford">FORD</a>
- on 2026-11-06 10:27 +0000             </p>
+ on 2026-11-06 15:57 +0000             </p>
           </div>
         </div>
         <br>
