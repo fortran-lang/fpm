@@ -336,6 +336,7 @@ subroutine build_target(model,target,verbose,dry_run,table,stat)
     integer, intent(out) :: stat
 
     integer :: fh
+    character(len=:), allocatable :: link_flags
 
     ! Check and create the output directory under one lock, so two threads never
     ! both create it: on Windows, mkdir fails if the directory already exists
@@ -360,9 +361,11 @@ subroutine build_target(model,target,verbose,dry_run,table,stat)
             & target%compile_flags, target%output_log_file, stat, table, dry_run)
 
     case (FPM_TARGET_EXECUTABLE)
-        call model%compiler%link(target%output_file, &
-            & target%compile_flags//drop_compile_options(target%link_flags, target%compile_flags), &
-            & target%output_log_file, stat, dry_run)
+        ! Executables link in parallel: see run_argv
+        !$omp critical (fpm_string_result)
+        link_flags = target%compile_flags//drop_compile_options(target%link_flags, target%compile_flags)
+        !$omp end critical (fpm_string_result)
+        call model%compiler%link(target%output_file, link_flags, target%output_log_file, stat, dry_run)
 
     case (FPM_TARGET_ARCHIVE)
         call model%archiver%make_archive(target%output_file, target%link_objects, &
