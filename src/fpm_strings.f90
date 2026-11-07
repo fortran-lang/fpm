@@ -1040,89 +1040,46 @@ function glob(tame,wild)
 logical                    :: glob       !! result of test
 character(len=*)           :: tame       !! A string without wildcards to compare to the globbing expression
 character(len=*)           :: wild       !! A (potentially) corresponding string with wildcards
-character(len=len(tame)+1) :: tametext
-character(len=len(wild)+1) :: wildtext
-character(len=1),parameter :: NULL=char(0)
-integer                    :: wlen
-integer                    :: ti, wi
-integer                    :: i
-character(len=:),allocatable :: tbookmark, wbookmark
-! These two values are set when we observe a wildcard character. They
-! represent the locations, in the two strings, from which we start once we've observed it.
-   tametext=tame//NULL
-   wildtext=wild//NULL
-   tbookmark = NULL
-   wbookmark = NULL
-   wlen=len(wild)
-   wi=1
-   ti=1
-   do                                            ! Walk the text strings one character at a time.
-      if(wildtext(wi:wi) == '*')then             ! How do you match a unique text string?
-         do i=wi,wlen                            ! Easy: unique up on it!
-            if(wildtext(wi:wi)=='*')then
-               wi=wi+1
-            else
-               exit
-            endif
-         enddo
-         if(wildtext(wi:wi)==NULL) then        ! "x" matches "*"
-            glob=.true.
-            return
-         endif
-         if(wildtext(wi:wi) /= '?') then
-            ! Fast-forward to next possible match.
-            do while (tametext(ti:ti) /= wildtext(wi:wi))
-               ti=ti+1
-               if (tametext(ti:ti)==NULL)then
-                  glob=.false.
-                  return                         ! "x" doesn't match "*y*"
-               endif
-            enddo
-         endif
-         wbookmark = wildtext(wi:)
-         tbookmark = tametext(ti:)
-      elseif(tametext(ti:ti) /= wildtext(wi:wi) .and. wildtext(wi:wi) /= '?') then
-         ! Got a non-match. If we've set our bookmarks, back up to one or both of them and retry.
-         if(wbookmark/=NULL) then
-            if(wildtext(wi:)/= wbookmark) then
-               wildtext = wbookmark;
-               wlen=len_trim(wbookmark)
-               wi=1
-               ! Don't go this far back again.
-               if (tametext(ti:ti) /= wildtext(wi:wi)) then
-                  tbookmark=tbookmark(2:)
-                  tametext = tbookmark
-                  ti=1
-                  cycle                          ! "xy" matches "*y"
-               else
-                  wi=wi+1
-               endif
-            endif
-            if (tametext(ti:ti)/=NULL) then
-               ti=ti+1
-               cycle                             ! "mississippi" matches "*sip*"
-            endif
-         endif
-         glob=.false.
-         return                                  ! "xy" doesn't match "x"
-      endif
-      ti=ti+1
-      wi=wi+1
-      if (tametext(ti:ti)==NULL) then          ! How do you match a tame text string?
-         if(wildtext(wi:wi)/=NULL)then
-            do while (wildtext(wi:wi) == '*')    ! The tame way: unique up on it!
-               wi=wi+1                           ! "x" matches "x*"
-               if(wildtext(wi:wi)==NULL)exit
-            enddo
-         endif
-         if (wildtext(wi:wi)==NULL)then
-            glob=.true.
-            return                               ! "x" matches "x"
-         endif
-         glob=.false.
-         return                                  ! "x" doesn't match "xy"
-      endif
-   enddo
+integer                    :: ti, wi     ! Current positions in tame and wild
+integer                    :: star_wi    ! Position of the last '*' seen in wild (0 if none)
+integer                    :: star_ti    ! Position in tame where that '*' started matching
+
+   ti = 1
+   wi = 1
+   star_wi = 0
+   star_ti = 0
+   do while (ti <= len(tame))
+      if (wi <= len(wild)) then
+         if (wild(wi:wi) == '*') then
+            ! Remember the '*' and first let it match nothing
+            star_wi = wi
+            star_ti = ti
+            wi = wi + 1
+            cycle
+         else if (wild(wi:wi) == '?' .or. wild(wi:wi) == tame(ti:ti)) then
+            ti = ti + 1
+            wi = wi + 1
+            cycle
+         end if
+      end if
+      if (star_wi > 0) then
+         ! Mismatch: let the last '*' match one more character and retry
+         star_ti = star_ti + 1
+         ti = star_ti
+         wi = star_wi + 1
+         cycle
+      end if
+      glob = .false.
+      return
+   end do
+
+   ! All of tame is matched; anything left in wild must be '*'
+   do while (wi <= len(wild))
+      if (wild(wi:wi) /= '*') exit
+      wi = wi + 1
+   end do
+   glob = wi > len(wild)
+
 end function glob
 
 !> Returns the length of the string representation of 'i'
