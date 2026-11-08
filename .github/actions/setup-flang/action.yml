@@ -1,40 +1,21 @@
 name: 'Setup LLVM Flang'
 description: >-
-  Installs LLVM Flang, clang and LLVM's OpenMP runtime on Ubuntu and Windows
+  Installs LLVM Flang, clang and LLVM's OpenMP runtime from MSYS2 on Windows x64
   runners and exports FC, CC, CXX and FPM_FC, FPM_CC, FPM_CXX, like
-  fortran-lang/setup-fortran does. setup-fortran v1.10.0 does not provide
-  LLVM Flang. Replace with setup-fortran once it does, keeping the Windows
-  workarounds in the last steps.
+  fortran-lang/setup-fortran does. setup-fortran v1.11.0 does not provide LLVM
+  Flang on Windows. Replace with setup-fortran once it does, keeping the stack
+  reserve in the last steps.
 
 inputs:
   version:
     description: >-
-      LLVM major version. On Windows, MSYS2 only has its current LLVM, which
-      must match.
+      LLVM major version. MSYS2 only has its current LLVM, which must match.
     required: true
 
 runs:
   using: "composite"
   steps:
-    - name: Check the runner OS
-      if: runner.os != 'Linux' && runner.os != 'Windows'
-      shell: bash
-      run: |
-        echo "::error::setup-flang supports Ubuntu and Windows runners, not $RUNNER_OS"
-        exit 1
-
-    - name: (Ubuntu) Install LLVM Flang from apt.llvm.org
-      if: runner.os == 'Linux'
-      shell: bash
-      run: |
-        wget -q https://apt.llvm.org/llvm.sh
-        sudo bash llvm.sh ${{ inputs.version }}
-        sudo apt-get install -y flang-${{ inputs.version }} \
-                                libomp-${{ inputs.version }}-dev
-        echo "/usr/lib/llvm-${{ inputs.version }}/bin" >> "$GITHUB_PATH"
-
-    - name: (Windows) Install LLVM Flang from MSYS2
-      if: runner.os == 'Windows'
+    - name: Install LLVM Flang from MSYS2
       id: msys2
       uses: msys2/setup-msys2@v2
       with:
@@ -46,15 +27,10 @@ runs:
           mingw-w64-clang-x86_64-flang
           mingw-w64-clang-x86_64-llvm-openmp
 
-    - name: (Windows) Put LLVM Flang on PATH
-      if: runner.os == 'Windows'
+    - name: Put LLVM Flang on PATH
       shell: bash
       run: |
         echo "${{ steps.msys2.outputs.msys2-location }}\clang64\bin" >> "$GITHUB_PATH"
-        # LLVM's OpenMP runtime also implements GCC's libgomp interface: provide
-        # it as gomp for packages that link it, as there is no GCC here
-        lib="$(cygpath -u '${{ steps.msys2.outputs.msys2-location }}')/clang64/lib"
-        cp "$lib/libomp.dll.a" "$lib/libgomp.dll.a"
 
     - name: Set LLVM Flang environment
       shell: bash
@@ -63,11 +39,9 @@ runs:
           echo "FC=flang"; echo "CC=clang"; echo "CXX=clang++"
           echo "FPM_FC=flang"; echo "FPM_CC=clang"; echo "FPM_CXX=clang++"
         } >> "$GITHUB_ENV"
-        if [ "$RUNNER_OS" = Windows ]; then
-          # Flang may keep string temporaries on the stack across loop iterations
-          # (llvm/llvm-project#194828): reserve 8 MB as on Linux, not 1 MB
-          echo "FPM_LDFLAGS=-Wl,--stack,8388608" >> "$GITHUB_ENV"
-        fi
+        # Flang may keep string temporaries on the stack across loop iterations
+        # (llvm/llvm-project#194828): reserve 8 MB as on Linux, not 1 MB
+        echo "FPM_LDFLAGS=-Wl,--stack,8388608" >> "$GITHUB_ENV"
 
     - name: Check LLVM Flang version
       shell: bash

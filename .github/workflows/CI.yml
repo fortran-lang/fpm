@@ -116,6 +116,9 @@ jobs:
           - os: ubuntu-latest
             os-arch: linux-x86_64
             toolchain: {compiler: flang, version: 23}
+          - os: macos-15
+            os-arch: macos-arm64
+            toolchain: {compiler: flang, version: 23}
           - os: windows-latest
             os-arch: windows-x86_64
             exe: .exe
@@ -126,7 +129,7 @@ jobs:
       uses: actions/checkout@v7
 
     - name: Setup Fortran compiler
-      if: ${{ matrix.toolchain.compiler != 'flang' && !(matrix.toolchain.compiler == 'gcc' && matrix.toolchain.version == 16) }}
+      if: ${{ !(matrix.toolchain.compiler == 'flang' && runner.os == 'Windows') && !(matrix.toolchain.compiler == 'gcc' && matrix.toolchain.version == 16) }}
       uses: fortran-lang/setup-fortran@v1.11.0
       id: setup-fortran
       continue-on-error: ${{ matrix.os == 'windows-latest' }}
@@ -157,9 +160,9 @@ jobs:
       if: matrix.toolchain.compiler == 'gcc' && matrix.toolchain.version == 16
       uses: ./.github/actions/setup-gcc16
 
-    # setup-fortran v1.10.0 does not provide LLVM Flang
+    # setup-fortran v1.11.0 does not provide LLVM Flang on Windows
     - name: Setup LLVM Flang
-      if: matrix.toolchain.compiler == 'flang'
+      if: matrix.toolchain.compiler == 'flang' && runner.os == 'Windows'
       uses: ./.github/actions/setup-flang
       with:
         version: ${{ matrix.toolchain.version }}
@@ -177,8 +180,12 @@ jobs:
     - name: MacOS patch libgfortran
       if: contains(matrix.os, 'macos')
       run: |
-        which gfortran-${{ matrix.toolchain.version }}
-        which gfortran
+        GCC_V=${{ matrix.toolchain.version }}
+        if [ "${{ matrix.toolchain.compiler }}" = flang ]; then
+          # The bootstrap fpm still needs GCC libraries: use the newest gcc on the runner
+          GCC_V=$(ls -d "$(brew --prefix)"/opt/gcc@* | sed 's/.*@//' | sort -n | tail -n 1)
+        fi
+        which gfortran-$GCC_V
         BREW_PREFIX=$(brew --prefix)
 
         # Query the actual library paths that fpm expects
@@ -193,9 +200,9 @@ jobs:
         fi
 
         echo "Bootstrap fpm built with gcc@$BOOTSTRAP_GCC_VERSION"
-        echo "Current toolchain: gcc@${{ matrix.toolchain.version }}"
+        echo "Current toolchain: gcc@$GCC_V"
 
-        if [ "$BOOTSTRAP_GCC_VERSION" == "${{ matrix.toolchain.version }}" ]; then
+        if [ "$BOOTSTRAP_GCC_VERSION" == "$GCC_V" ]; then
           echo "✓ Bootstrap gcc version matches current toolchain - no patching needed"
           exit 0
         fi
@@ -203,19 +210,19 @@ jobs:
         echo "⚠ Version mismatch detected - creating compatibility symlinks..."
 
         # Find the actual Cellar path by following the symlink
-        if [ -L "${BREW_PREFIX}/opt/gcc@${{ matrix.toolchain.version }}" ]; then
-          GCC_CELLAR_PATH=$(cd -P "${BREW_PREFIX}/opt/gcc@${{ matrix.toolchain.version }}" && pwd)
+        if [ -L "${BREW_PREFIX}/opt/gcc@$GCC_V" ]; then
+          GCC_CELLAR_PATH=$(cd -P "${BREW_PREFIX}/opt/gcc@$GCC_V" && pwd)
         else
-          GCC_CELLAR_PATH="${BREW_PREFIX}/Cellar/gcc@${{ matrix.toolchain.version }}"/*
+          GCC_CELLAR_PATH="${BREW_PREFIX}/Cellar/gcc@$GCC_V"/*
         fi
         echo "GCC Cellar path: $GCC_CELLAR_PATH"
 
         # Find the actual library files
-        CURRENT_GFORTRAN=$(find "$GCC_CELLAR_PATH"/lib/gcc/${{ matrix.toolchain.version }} -name "libgfortran.*.dylib" 2>/dev/null | head -n 1)
-        CURRENT_QUADMATH=$(find "$GCC_CELLAR_PATH"/lib/gcc/${{ matrix.toolchain.version }} -name "libquadmath.*.dylib" 2>/dev/null | head -n 1)
-        CURRENT_GCC_S=$(find "$GCC_CELLAR_PATH"/lib/gcc/${{ matrix.toolchain.version }} -name "libgcc_s.*.dylib" 2>/dev/null | head -n 1)
+        CURRENT_GFORTRAN=$(find "$GCC_CELLAR_PATH"/lib/gcc/$GCC_V -name "libgfortran.*.dylib" 2>/dev/null | head -n 1)
+        CURRENT_QUADMATH=$(find "$GCC_CELLAR_PATH"/lib/gcc/$GCC_V -name "libquadmath.*.dylib" 2>/dev/null | head -n 1)
+        CURRENT_GCC_S=$(find "$GCC_CELLAR_PATH"/lib/gcc/$GCC_V -name "libgcc_s.*.dylib" 2>/dev/null | head -n 1)
 
-        echo "Current gcc@${{ matrix.toolchain.version }} libraries:"
+        echo "Current gcc@$GCC_V libraries:"
         echo "  libgfortran: $CURRENT_GFORTRAN"
         echo "  libquadmath: $CURRENT_QUADMATH"
         echo "  libgcc_s: $CURRENT_GCC_S"
@@ -252,7 +259,7 @@ jobs:
 
     # gcc and g++ will point to clang/clang++: use versioned alias for fpm
     - name: MacOS patch C and C++ compilers
-      if: contains(matrix.os, 'macos')
+      if: contains(matrix.os, 'macos') && matrix.toolchain.compiler == 'gcc'
       run: |
         echo "CC=gcc-${{ matrix.toolchain.version }}" >> $GITHUB_ENV
         echo "FPM_CC=gcc-${{ matrix.toolchain.version }}" >> $GITHUB_ENV
