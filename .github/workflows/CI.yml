@@ -80,6 +80,12 @@ jobs:
           - os: ubuntu-latest
             toolchain: {compiler: gcc, version: 14}
             release-flags: --features openmp --flag '--static -g -fbacktrace -O3'
+          # Linux ARM64 release artifact (issue #1282), built like linux-x86_64.
+          # setup-fpm looks for this os-arch name on Linux arm64 runners.
+          - os: ubuntu-24.04-arm
+            os-arch: linux-arm64
+            toolchain: {compiler: gcc, version: 14}
+            release-flags: --features openmp --flag '--static -g -fbacktrace -O3'
           # setup-fortran v1.10.0 installs Intel with apt-key, which
           # ubuntu-26.04 (ubuntu-latest) no longer has
           # (fortran-lang/setup-fortran#298).
@@ -166,7 +172,9 @@ jobs:
 
     # Phase 1: Bootstrap fpm with existing version
     - name: Install fpm
-      uses: fortran-lang/setup-fpm@v10
+      # TEMPORARY: setup-fpm main, for the Linux arm64 build-from-source fallback
+      # (fortran-lang/setup-fpm#61). Replace with the next setup-fpm release tag.
+      uses: fortran-lang/setup-fpm@eef8f4a9f1f3724c4937afd9fe2eb92df2091e8f
       with:
         fpm-version: 'v0.13.0'
 
@@ -361,6 +369,18 @@ jobs:
         deps=$(otool -L "${{ env.FPM_RELEASE }}" | tail -n +2 | awk '{print $1}' | grep -Ev "$allow" || true)
         if [ -n "$deps" ]; then
           echo "::error::release binary depends on non-system dylibs:" $deps
+          exit 1
+        fi
+
+    - name: Check Linux release static linkage
+      if: runner.os == 'Linux' && contains(matrix.release-flags, '--static')
+      shell: bash
+      run: |
+        file "${{ env.FPM_RELEASE }}"
+        ldd "${{ env.FPM_RELEASE }}" || true
+        if ! file "${{ env.FPM_RELEASE }}" | grep -Eq 'statically linked|static-pie linked' \
+           || ldd "${{ env.FPM_RELEASE }}" 2>&1 | grep -q '=>'; then
+          echo "::error::release binary is not statically linked"
           exit 1
         fi
 
