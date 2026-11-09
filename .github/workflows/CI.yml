@@ -172,9 +172,8 @@ jobs:
 
     # Phase 1: Bootstrap fpm with existing version
     - name: Install fpm
-      # TEMPORARY: setup-fpm main, for the Linux arm64 build-from-source fallback
-      # (fortran-lang/setup-fpm#61). Replace with the next setup-fpm release tag.
-      uses: fortran-lang/setup-fpm@eef8f4a9f1f3724c4937afd9fe2eb92df2091e8f
+      # v11 builds fpm from source where v0.13.0 has no binary (linux-arm64)
+      uses: fortran-lang/setup-fpm@v11
       with:
         fpm-version: 'v0.13.0'
 
