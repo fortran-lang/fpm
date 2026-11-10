@@ -158,7 +158,7 @@ jobs:
     - name: Create SHA256 checksums
       run: |
         cd fpm-cd-artifacts
-        for output in fpm-*; do
+        for output in fpm*; do
           sha256sum $(basename "$output") | tee $(basename "$output").sha256
         done
 
