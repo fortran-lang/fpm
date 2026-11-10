@@ -175,25 +175,25 @@
         <ul class="list-group list-group-flush">
             <li class="list-group-item">
               <ul class="list-inline">
-                  <li class="list-inline-item"><a href='fpm_toml.html'>fpm_toml</a></li>
-                  <li class="list-inline-item"><a href='fpm_meta.html'>fpm_meta</a></li>
+                  <li class="list-inline-item"><a href='fpm_manifest.html'>fpm_manifest</a></li>
+                  <li class="list-inline-item"><a href='fpm_error.html'>fpm_error</a></li>
+                  <li class="list-inline-item"><a href='fpm_backend.html'>fpm_backend</a></li>
                   <li class="list-inline-item"><a href='fpm_manifest_platform.html'>fpm_manifest_platform</a></li>
-                  <li class="list-inline-item"><a href='fpm_model.html'>fpm_model</a></li>
-                  <li class="list-inline-item"><a href='fpm_compiler.html'>fpm_compiler</a></li>
+                  <li class="list-inline-item"><a href='fpm_dependency.html'>fpm_dependency</a></li>
+                  <li class="list-inline-item"><a href='http://fortranwiki.org/fortran/show/iso_c_binding'>iso_c_binding</a></li>
+                  <li class="list-inline-item"><a href='fpm_strings.html'>fpm_strings</a></li>
+                  <li class="list-inline-item"><a href='http://fortranwiki.org/fortran/show/iso_fortran_env'>iso_fortran_env</a></li>
+                  <li class="list-inline-item"><a href='fpm_filesystem.html'>fpm_filesystem</a></li>
                   <li class="list-inline-item"><a href='fpm_sources.html'>fpm_sources</a></li>
                   <li class="list-inline-item"><a href='fpm_build_lock.html'>fpm_build_lock</a></li>
-                  <li class="list-inline-item"><a href='fpm_targets.html'>fpm_targets</a></li>
-                  <li class="list-inline-item"><a href='fpm_settings.html'>fpm_settings</a></li>
-                  <li class="list-inline-item">fpm_command_line</li>
-                  <li class="list-inline-item"><a href='fpm_error.html'>fpm_error</a></li>
-                  <li class="list-inline-item"><a href='fpm_dependency.html'>fpm_dependency</a></li>
-                  <li class="list-inline-item"><a href='http://fortranwiki.org/fortran/show/iso_fortran_env'>iso_fortran_env</a></li>
-                  <li class="list-inline-item"><a href='fpm_manifest.html'>fpm_manifest</a></li>
-                  <li class="list-inline-item"><a href='fpm_backend.html'>fpm_backend</a></li>
-                  <li class="list-inline-item"><a href='fpm_strings.html'>fpm_strings</a></li>
-                  <li class="list-inline-item"><a href='fpm_filesystem.html'>fpm_filesystem</a></li>
-                  <li class="list-inline-item"><a href='http://fortranwiki.org/fortran/show/iso_c_binding'>iso_c_binding</a></li>
                   <li class="list-inline-item"><a href='fpm_environment.html'>fpm_environment</a></li>
+                  <li class="list-inline-item">fpm_command_line</li>
+                  <li class="list-inline-item"><a href='fpm_meta.html'>fpm_meta</a></li>
+                  <li class="list-inline-item"><a href='fpm_compiler.html'>fpm_compiler</a></li>
+                  <li class="list-inline-item"><a href='fpm_targets.html'>fpm_targets</a></li>
+                  <li class="list-inline-item"><a href='fpm_toml.html'>fpm_toml</a></li>
+                  <li class="list-inline-item"><a href='fpm_settings.html'>fpm_settings</a></li>
+                  <li class="list-inline-item"><a href='fpm_model.html'>fpm_model</a></li>
               </ul>
             </li>
         </ul>
@@ -234,7 +234,7 @@ Add this dependency&rsquo;s package-level macros</p>
     <tbody>
         <tr>
             <td>
-              <span class="anchor" id="variable-model"></span>
+              <span class="anchor" id="variable-model~4"></span>
               type(<a href='../type/fpm_model_t.html'>fpm_model_t</a>),
             </td>
 <td>intent(out)</td>
@@ -249,7 +249,7 @@ Add this dependency&rsquo;s package-level macros</p>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-settings"></span>
+              <span class="anchor" id="variable-settings~5"></span>
               class(fpm_build_settings),
             </td>
 <td>intent(inout)</td>
@@ -279,7 +279,7 @@ Add this dependency&rsquo;s package-level macros</p>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-error"></span>
+              <span class="anchor" id="variable-error~57"></span>
               type(<a href='../type/error_t.html'>error_t</a>),
             </td>
 <td>intent(out),</td>
@@ -319,7 +319,7 @@ Add this dependency&rsquo;s package-level macros</p>
     <tbody>
         <tr>
             <td>
-              <span class="anchor" id="variable-model~3"></span>
+              <span class="anchor" id="variable-model~6"></span>
               type(<a href='../type/fpm_model_t.html'>fpm_model_t</a>),
             </td>
 <td>intent(in)</td>
@@ -374,7 +374,7 @@ Add this dependency&rsquo;s package-level macros</p>
     <tbody>
         <tr>
             <td>
-              <span class="anchor" id="variable-settings~3"></span>
+              <span class="anchor" id="variable-settings~7"></span>
               type(fpm_build_settings),
             </td>
 <td>intent(inout)</td>
@@ -415,7 +415,7 @@ to clear the registry cache.</p>
     <tbody>
         <tr>
             <td>
-              <span class="anchor" id="variable-settings~6"></span>
+              <span class="anchor" id="variable-settings~10"></span>
               class(fpm_clean_settings),
             </td>
 <td>intent(inout)</td>
@@ -455,7 +455,7 @@ to clear the registry cache.</p>
     <tbody>
         <tr>
             <td>
-              <span class="anchor" id="variable-settings~4"></span>
+              <span class="anchor" id="variable-settings~8"></span>
               class(fpm_run_settings),
             </td>
 <td>intent(inout)</td>
@@ -510,7 +510,7 @@ to clear the registry cache.</p>
     <tbody>
         <tr>
             <td>
-              <span class="anchor" id="variable-model~2"></span>
+              <span class="anchor" id="variable-model~5"></span>
               type(<a href='../type/fpm_model_t.html'>fpm_model_t</a>),
             </td>
 <td>intent(inout)</td>
@@ -525,7 +525,7 @@ to clear the registry cache.</p>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-settings~2"></span>
+              <span class="anchor" id="variable-settings~6"></span>
               type(fpm_build_settings),
             </td>
 <td>intent(in)</td>
@@ -540,7 +540,7 @@ to clear the registry cache.</p>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-package~2"></span>
+              <span class="anchor" id="variable-package~6"></span>
               type(<a href='../type/package_config_t.html'>package_config_t</a>),
             </td>
 <td>intent(in)</td>
@@ -583,7 +583,7 @@ to clear the registry cache.</p>
             <p class="text-end">
               Documentation generated by
               <a href="https://github.com/Fortran-FOSS-Programmers/ford">FORD</a>
- on 2026-11-10 07:20 +0000             </p>
+ on 2026-11-10 07:26 +0000             </p>
           </div>
         </div>
         <br>
