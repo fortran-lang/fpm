@@ -429,8 +429,7 @@ contains
         end if
 
         !> The cache stores the canonical directory, so compare canonical forms
-        if (allocated(manifest%path)) then
-            if (.not.allocated(cached%path)) return
+        if (allocated(manifest%path) .and. allocated(cached%path)) then
             if (canon_path(cached%path) /= canon_path(manifest%path)) then
                 if (verbosity>1) write(iunit,out_fmt) "PATH has changed: "//cached%path//" vs. "//manifest%path
                 return
