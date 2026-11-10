@@ -329,7 +329,7 @@
             <a class="list-group-item" href="../module/fpm_compiler.html#proc-compile_object">compile_object</a>
             <a class="list-group-item" href="../module/fpm_compiler.html#proc-compiler_dump">compiler_dump</a>
             <a class="list-group-item" href="../module/fpm_compiler.html#proc-compiler_load">compiler_load</a>
-            <a class="list-group-item" href="../module/fpm_compiler.html#proc-dump_to_toml~12">dump_to_toml</a>
+            <a class="list-group-item" href="../module/fpm_compiler.html#proc-dump_to_toml~3">dump_to_toml</a>
             <a class="list-group-item" href="../module/fpm_compiler.html#proc-get_debug_compile_flags">get_debug_compile_flags</a>
             <a class="list-group-item" href="../module/fpm_compiler.html#proc-get_default_c_compiler">get_default_c_compiler</a>
             <a class="list-group-item" href="../module/fpm_compiler.html#proc-get_default_cxx_compiler">get_default_cxx_compiler</a>
@@ -337,7 +337,7 @@
             <a class="list-group-item" href="../module/fpm_compiler.html#proc-get_release_compile_flags">get_release_compile_flags</a>
             <a class="list-group-item" href="../module/fpm_compiler.html#proc-link_executable">link_executable</a>
             <a class="list-group-item" href="../module/fpm_compiler.html#proc-link_shared">link_shared</a>
-            <a class="list-group-item" href="../module/fpm_compiler.html#proc-load_from_toml~12">load_from_toml</a>
+            <a class="list-group-item" href="../module/fpm_compiler.html#proc-load_from_toml~3">load_from_toml</a>
             <a class="list-group-item" href="../module/fpm_compiler.html#proc-make_archive">make_archive</a>
             <a class="list-group-item" href="../module/fpm_compiler.html#proc-new_archiver">new_archiver</a>
             <a class="list-group-item" href="../module/fpm_compiler.html#proc-new_compiler">new_compiler</a>
@@ -374,16 +374,16 @@
         <ul class="list-group list-group-flush">
             <li class="list-group-item">
               <ul class="list-inline">
+                  <li class="list-inline-item">shlex_module</li>
+                  <li class="list-inline-item"><a href='https://toml-f.github.io/toml-f'>tomlf</a></li>
                   <li class="list-inline-item"><a href='fpm_compile_commands.html'>fpm_compile_commands</a></li>
                   <li class="list-inline-item"><a href='fpm_environment.html'>fpm_environment</a></li>
-                  <li class="list-inline-item"><a href='https://toml-f.github.io/toml-f'>tomlf</a></li>
-                  <li class="list-inline-item"><a href='fpm_versioning.html'>fpm_versioning</a></li>
                   <li class="list-inline-item"><a href='fpm_strings.html'>fpm_strings</a></li>
-                  <li class="list-inline-item"><a href='http://fortranwiki.org/fortran/show/iso_fortran_env'>iso_fortran_env</a></li>
                   <li class="list-inline-item"><a href='fpm_toml.html'>fpm_toml</a></li>
-                  <li class="list-inline-item">shlex_module</li>
-                  <li class="list-inline-item"><a href='fpm_filesystem.html'>fpm_filesystem</a></li>
+                  <li class="list-inline-item"><a href='fpm_versioning.html'>fpm_versioning</a></li>
+                  <li class="list-inline-item"><a href='http://fortranwiki.org/fortran/show/iso_fortran_env'>iso_fortran_env</a></li>
                   <li class="list-inline-item"><a href='fpm_error.html'>fpm_error</a></li>
+                  <li class="list-inline-item"><a href='fpm_filesystem.html'>fpm_filesystem</a></li>
               </ul>
             </li>
         </ul>
@@ -2028,7 +2028,7 @@ parameter
     <tbody>
         <tr>
             <td>
-              <span class="anchor" id="variable-self~167"></span>
+              <span class="anchor" id="variable-self~47"></span>
               type(<a href='../type/compiler_t.html'>compiler_t</a>),
             </td>
 <td>intent(in)</td>
@@ -2072,7 +2072,7 @@ parameter
     <tbody>
         <tr>
             <td>
-              <span class="anchor" id="variable-self~168"></span>
+              <span class="anchor" id="variable-self~48"></span>
               type(<a href='../type/archiver_t.html'>archiver_t</a>),
             </td>
 <td>intent(in)</td>
@@ -2146,7 +2146,7 @@ parameter
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-echo~7"></span>
+              <span class="anchor" id="variable-echo~2"></span>
               logical,
             </td>
               <td>public</td>
@@ -2180,7 +2180,7 @@ parameter
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-verbose~17"></span>
+              <span class="anchor" id="variable-verbose~3"></span>
               logical,
             </td>
               <td>public</td>
@@ -2206,22 +2206,22 @@ parameter
           <tbody>
               <tr>
                 <td>  generic, public ::
-  <strong><a href='../type/archiver_t.html#boundprocedure-dump~20'>dump</a></strong> => <a href='/home/runner/work/fpm/fpm/fpm-doc/type/srcfile_t.html#boundprocedure-dump_to_toml~10'>dump_to_toml</a>, dump_to_file, dump_to_unit</td>
+  <strong><a href='../type/archiver_t.html#boundprocedure-dump~6'>dump</a></strong> => <a href='/home/runner/work/fpm/fpm/fpm-doc/type/srcfile_t.html#boundprocedure-dump_to_toml~22'>dump_to_toml</a>, dump_to_file, dump_to_unit</td>
                   <td></td>
               </tr>
               <tr>
                 <td>  procedure, public ::
-  <strong><a href='../type/archiver_t.html#boundprocedure-dump_to_toml~21'>dump_to_toml</a></strong></td>
+  <strong><a href='../type/archiver_t.html#boundprocedure-dump_to_toml~6'>dump_to_toml</a></strong></td>
                   <td></td>
               </tr>
               <tr>
                 <td>  generic, public ::
-  <strong><a href='../type/archiver_t.html#boundprocedure-load~20'>load</a></strong> => <a href='/home/runner/work/fpm/fpm/fpm-doc/type/srcfile_t.html#boundprocedure-load_from_toml~10'>load_from_toml</a>, load_from_file, load_from_unit</td>
+  <strong><a href='../type/archiver_t.html#boundprocedure-load~6'>load</a></strong> => <a href='/home/runner/work/fpm/fpm/fpm-doc/type/srcfile_t.html#boundprocedure-load_from_toml~22'>load_from_toml</a>, load_from_file, load_from_unit</td>
                   <td></td>
               </tr>
               <tr>
                 <td>  procedure, public ::
-  <strong><a href='../type/archiver_t.html#boundprocedure-load_from_toml~21'>load_from_toml</a></strong></td>
+  <strong><a href='../type/archiver_t.html#boundprocedure-load_from_toml~6'>load_from_toml</a></strong></td>
                   <td></td>
               </tr>
               <tr>
@@ -2231,12 +2231,12 @@ parameter
               </tr>
               <tr>
                 <td>  generic, public ::
-  <strong><a href='../type/archiver_t.html#boundprocedure-operator%28%3D%3D%29~21'>operator(==)</a></strong> => <a href='/home/runner/work/fpm/fpm/fpm-doc/type/srcfile_t.html#boundprocedure-serializable_is_same~10'>serializable_is_same</a></td>
+  <strong><a href='../type/archiver_t.html#boundprocedure-operator%28%3D%3D%29~7'>operator(==)</a></strong> => <a href='/home/runner/work/fpm/fpm/fpm-doc/type/srcfile_t.html#boundprocedure-serializable_is_same~22'>serializable_is_same</a></td>
                   <td></td>
               </tr>
               <tr>
                 <td>  procedure, public ::
-  <strong><a href='../type/archiver_t.html#boundprocedure-serializable_is_same~21'>serializable_is_same</a></strong> => <a href='/home/runner/work/fpm/fpm/fpm-doc/proc/ar_is_same.html'>ar_is_same</a></td>
+  <strong><a href='../type/archiver_t.html#boundprocedure-serializable_is_same~6'>serializable_is_same</a></strong> => <a href='/home/runner/work/fpm/fpm/fpm-doc/proc/ar_is_same.html'>ar_is_same</a></td>
                   <td><p>Serialization interface</p></td>
               </tr>
               <tr>
@@ -2308,7 +2308,7 @@ parameter
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-echo~6"></span>
+              <span class="anchor" id="variable-echo"></span>
               logical,
             </td>
               <td>public</td>
@@ -2342,7 +2342,7 @@ parameter
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-id~8"></span>
+              <span class="anchor" id="variable-id"></span>
               integer(kind=compiler_enum),
             </td>
               <td>public</td>
@@ -2359,7 +2359,7 @@ parameter
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-verbose~16"></span>
+              <span class="anchor" id="variable-verbose~2"></span>
               logical,
             </td>
               <td>public</td>
@@ -2430,12 +2430,12 @@ parameter
               </tr>
               <tr>
                 <td>  generic, public ::
-  <strong><a href='../type/compiler_t.html#boundprocedure-dump~21'>dump</a></strong> => <a href='/home/runner/work/fpm/fpm/fpm-doc/type/srcfile_t.html#boundprocedure-dump_to_toml~10'>dump_to_toml</a>, dump_to_file, dump_to_unit</td>
+  <strong><a href='../type/compiler_t.html#boundprocedure-dump~7'>dump</a></strong> => <a href='/home/runner/work/fpm/fpm/fpm-doc/type/srcfile_t.html#boundprocedure-dump_to_toml~22'>dump_to_toml</a>, dump_to_file, dump_to_unit</td>
                   <td></td>
               </tr>
               <tr>
                 <td>  procedure, public ::
-  <strong><a href='../type/compiler_t.html#boundprocedure-dump_to_toml~20'>dump_to_toml</a></strong> => <a href='/home/runner/work/fpm/fpm/fpm-doc/proc/compiler_dump.html'>compiler_dump</a></td>
+  <strong><a href='../type/compiler_t.html#boundprocedure-dump_to_toml~5'>dump_to_toml</a></strong> => <a href='/home/runner/work/fpm/fpm/fpm-doc/proc/compiler_dump.html'>compiler_dump</a></td>
                   <td></td>
               </tr>
               <tr>
@@ -2505,7 +2505,7 @@ parameter
               </tr>
               <tr>
                 <td>  procedure, public ::
-  <strong><a href='../type/compiler_t.html#boundprocedure-link~3'>link</a></strong> => <a href='/home/runner/work/fpm/fpm/fpm-doc/proc/link_executable.html'>link_executable</a></td>
+  <strong><a href='../type/compiler_t.html#boundprocedure-link'>link</a></strong> => <a href='/home/runner/work/fpm/fpm/fpm-doc/proc/link_executable.html'>link_executable</a></td>
                   <td><p>Link executable</p></td>
               </tr>
               <tr>
@@ -2515,27 +2515,27 @@ parameter
               </tr>
               <tr>
                 <td>  generic, public ::
-  <strong><a href='../type/compiler_t.html#boundprocedure-load~21'>load</a></strong> => <a href='/home/runner/work/fpm/fpm/fpm-doc/type/srcfile_t.html#boundprocedure-load_from_toml~10'>load_from_toml</a>, load_from_file, load_from_unit</td>
+  <strong><a href='../type/compiler_t.html#boundprocedure-load~7'>load</a></strong> => <a href='/home/runner/work/fpm/fpm/fpm-doc/type/srcfile_t.html#boundprocedure-load_from_toml~22'>load_from_toml</a>, load_from_file, load_from_unit</td>
                   <td></td>
               </tr>
               <tr>
                 <td>  procedure, public ::
-  <strong><a href='../type/compiler_t.html#boundprocedure-load_from_toml~20'>load_from_toml</a></strong> => <a href='/home/runner/work/fpm/fpm/fpm-doc/proc/compiler_load.html'>compiler_load</a></td>
+  <strong><a href='../type/compiler_t.html#boundprocedure-load_from_toml~5'>load_from_toml</a></strong> => <a href='/home/runner/work/fpm/fpm/fpm-doc/proc/compiler_load.html'>compiler_load</a></td>
                   <td></td>
               </tr>
               <tr>
                 <td>  procedure, public ::
-  <strong><a href='../type/compiler_t.html#boundprocedure-name~41'>name</a></strong> => <a href='/home/runner/work/fpm/fpm/fpm-doc/proc/compiler_name.html'>compiler_name</a></td>
+  <strong><a href='../type/compiler_t.html#boundprocedure-name~3'>name</a></strong> => <a href='/home/runner/work/fpm/fpm/fpm-doc/proc/compiler_name.html'>compiler_name</a></td>
                   <td><p>Return compiler name</p></td>
               </tr>
               <tr>
                 <td>  generic, public ::
-  <strong><a href='../type/compiler_t.html#boundprocedure-operator%28%3D%3D%29~22'>operator(==)</a></strong> => <a href='/home/runner/work/fpm/fpm/fpm-doc/type/srcfile_t.html#boundprocedure-serializable_is_same~10'>serializable_is_same</a></td>
+  <strong><a href='../type/compiler_t.html#boundprocedure-operator%28%3D%3D%29~8'>operator(==)</a></strong> => <a href='/home/runner/work/fpm/fpm/fpm-doc/type/srcfile_t.html#boundprocedure-serializable_is_same~22'>serializable_is_same</a></td>
                   <td></td>
               </tr>
               <tr>
                 <td>  procedure, public ::
-  <strong><a href='../type/compiler_t.html#boundprocedure-serializable_is_same~20'>serializable_is_same</a></strong> => <a href='/home/runner/work/fpm/fpm/fpm-doc/proc/compiler_is_same.html'>compiler_is_same</a></td>
+  <strong><a href='../type/compiler_t.html#boundprocedure-serializable_is_same~5'>serializable_is_same</a></strong> => <a href='/home/runner/work/fpm/fpm/fpm-doc/proc/compiler_is_same.html'>compiler_is_same</a></td>
                   <td><p>Serialization interface</p></td>
               </tr>
               <tr>
@@ -2584,7 +2584,7 @@ All checks passed!</p>
     <tbody>
         <tr>
             <td>
-              <span class="anchor" id="variable-this~37"></span>
+              <span class="anchor" id="variable-this~7"></span>
               class(<a href='../type/archiver_t.html'>archiver_t</a>),
             </td>
 <td>intent(in)</td>
@@ -2599,7 +2599,7 @@ All checks passed!</p>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-that~22"></span>
+              <span class="anchor" id="variable-that~5"></span>
               class(<a href='../type/serializable_t.html'>serializable_t</a>),
             </td>
 <td>intent(in)</td>
@@ -2644,7 +2644,7 @@ All checks passed!</p>
     <tbody>
         <tr>
             <td>
-              <span class="anchor" id="variable-self~177"></span>
+              <span class="anchor" id="variable-self~57"></span>
               class(<a href='../type/compiler_t.html'>compiler_t</a>),
             </td>
 <td>intent(in)</td>
@@ -2674,7 +2674,7 @@ All checks passed!</p>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-link_flags~5"></span>
+              <span class="anchor" id="variable-link_flags~4"></span>
               character(len=*),
             </td>
 <td>intent(in),</td>
@@ -2726,7 +2726,7 @@ Delete temporary files</p>
     <tbody>
         <tr>
             <td>
-              <span class="anchor" id="variable-self~175"></span>
+              <span class="anchor" id="variable-self~55"></span>
               class(<a href='../type/compiler_t.html'>compiler_t</a>),
             </td>
 <td>intent(in)</td>
@@ -2741,7 +2741,7 @@ Delete temporary files</p>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-input~8"></span>
+              <span class="anchor" id="variable-input~7"></span>
               character(len=*),
             </td>
 <td>intent(in)</td>
@@ -2771,7 +2771,7 @@ Delete temporary files</p>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-link_flags~3"></span>
+              <span class="anchor" id="variable-link_flags~2"></span>
               character(len=*),
             </td>
 <td>intent(in),</td>
@@ -2816,7 +2816,7 @@ Delete temporary files</p>
     <tbody>
         <tr>
             <td>
-              <span class="anchor" id="variable-compiler~30"></span>
+              <span class="anchor" id="variable-compiler~7"></span>
               character(len=*),
             </td>
 <td>intent(in)</td>
@@ -2876,7 +2876,7 @@ Delete temporary files</p>
     <tbody>
         <tr>
             <td>
-              <span class="anchor" id="variable-self~178"></span>
+              <span class="anchor" id="variable-self~58"></span>
               class(<a href='../type/compiler_t.html'>compiler_t</a>),
             </td>
 <td>intent(in)</td>
@@ -2906,7 +2906,7 @@ Delete temporary files</p>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-link_flags~6"></span>
+              <span class="anchor" id="variable-link_flags~5"></span>
               character(len=*),
             </td>
 <td>intent(in),</td>
@@ -2958,7 +2958,7 @@ Delete temporary files</p>
     <tbody>
         <tr>
             <td>
-              <span class="anchor" id="variable-self~176"></span>
+              <span class="anchor" id="variable-self~56"></span>
               class(<a href='../type/compiler_t.html'>compiler_t</a>),
             </td>
 <td>intent(in)</td>
@@ -2973,7 +2973,7 @@ Delete temporary files</p>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-input~9"></span>
+              <span class="anchor" id="variable-input~8"></span>
               character(len=*),
             </td>
 <td>intent(in)</td>
@@ -3003,7 +3003,7 @@ Delete temporary files</p>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-link_flags~4"></span>
+              <span class="anchor" id="variable-link_flags~3"></span>
               character(len=*),
             </td>
 <td>intent(in),</td>
@@ -3048,7 +3048,7 @@ Delete temporary files</p>
     <tbody>
         <tr>
             <td>
-              <span class="anchor" id="variable-self~179"></span>
+              <span class="anchor" id="variable-self~59"></span>
               class(<a href='../type/compiler_t.html'>compiler_t</a>),
             </td>
 <td>intent(in)</td>
@@ -3078,7 +3078,7 @@ Delete temporary files</p>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-link_flags~7"></span>
+              <span class="anchor" id="variable-link_flags~6"></span>
               character(len=*),
             </td>
 <td>intent(in),</td>
@@ -3130,7 +3130,7 @@ Run and retrieve exit code</p><a href="../proc/check_fortran_source_runs.html" c
     <tbody>
         <tr>
             <td>
-              <span class="anchor" id="variable-self~174"></span>
+              <span class="anchor" id="variable-self~54"></span>
               class(<a href='../type/compiler_t.html'>compiler_t</a>),
             </td>
 <td>intent(in)</td>
@@ -3145,7 +3145,7 @@ Run and retrieve exit code</p><a href="../proc/check_fortran_source_runs.html" c
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-input~7"></span>
+              <span class="anchor" id="variable-input~6"></span>
               character(len=*),
             </td>
 <td>intent(in)</td>
@@ -3175,7 +3175,7 @@ Run and retrieve exit code</p><a href="../proc/check_fortran_source_runs.html" c
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-link_flags~2"></span>
+              <span class="anchor" id="variable-link_flags"></span>
               character(len=*),
             </td>
 <td>intent(in),</td>
@@ -3220,7 +3220,7 @@ Run and retrieve exit code</p><a href="../proc/check_fortran_source_runs.html" c
     <tbody>
         <tr>
             <td>
-              <span class="anchor" id="variable-id~18"></span>
+              <span class="anchor" id="variable-id~11"></span>
               integer(kind=compiler_enum),
             </td>
 <td>intent(in)</td>
@@ -3266,7 +3266,7 @@ All checks passed!</p>
     <tbody>
         <tr>
             <td>
-              <span class="anchor" id="variable-this~38"></span>
+              <span class="anchor" id="variable-this~8"></span>
               class(<a href='../type/compiler_t.html'>compiler_t</a>),
             </td>
 <td>intent(in)</td>
@@ -3281,7 +3281,7 @@ All checks passed!</p>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-that~23"></span>
+              <span class="anchor" id="variable-that~6"></span>
               class(<a href='../type/serializable_t.html'>serializable_t</a>),
             </td>
 <td>intent(in)</td>
@@ -3326,7 +3326,7 @@ All checks passed!</p>
     <tbody>
         <tr>
             <td>
-              <span class="anchor" id="variable-self~173"></span>
+              <span class="anchor" id="variable-self~53"></span>
               class(<a href='../type/compiler_t.html'>compiler_t</a>),
             </td>
 <td>intent(in)</td>
@@ -3371,7 +3371,7 @@ All checks passed!</p>
     <tbody>
         <tr>
             <td>
-              <span class="anchor" id="variable-self~168"></span>
+              <span class="anchor" id="variable-self~48"></span>
               type(<a href='../type/archiver_t.html'>archiver_t</a>),
             </td>
 <td>intent(in)</td>
@@ -3416,7 +3416,7 @@ All checks passed!</p>
     <tbody>
         <tr>
             <td>
-              <span class="anchor" id="variable-self~167"></span>
+              <span class="anchor" id="variable-self~47"></span>
               type(<a href='../type/compiler_t.html'>compiler_t</a>),
             </td>
 <td>intent(in)</td>
@@ -3466,7 +3466,7 @@ keep their backslashes.</p>
     <tbody>
         <tr>
             <td>
-              <span class="anchor" id="variable-link_flags~8"></span>
+              <span class="anchor" id="variable-link_flags~7"></span>
               character(len=*),
             </td>
 <td>intent(in)</td>
@@ -3527,7 +3527,7 @@ separates it from anything concatenated after it.</p>
     <tbody>
         <tr>
             <td>
-              <span class="anchor" id="variable-str~4"></span>
+              <span class="anchor" id="variable-str~2"></span>
               character(len=*),
             </td>
 <td>intent(in)</td>
@@ -3572,7 +3572,7 @@ separates it from anything concatenated after it.</p>
     <tbody>
         <tr>
             <td>
-              <span class="anchor" id="variable-self~153"></span>
+              <span class="anchor" id="variable-self~33"></span>
               class(<a href='../type/compiler_t.html'>compiler_t</a>),
             </td>
 <td>intent(in)</td>
@@ -3587,7 +3587,7 @@ separates it from anything concatenated after it.</p>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-prefix~4"></span>
+              <span class="anchor" id="variable-prefix"></span>
               character(len=*),
             </td>
 <td>intent(in)</td>
@@ -3602,7 +3602,7 @@ separates it from anything concatenated after it.</p>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-libs~4"></span>
+              <span class="anchor" id="variable-libs~3"></span>
               type(<a href='../type/string_t.html'>string_t</a>),
             </td>
 <td>intent(in)</td>
@@ -3647,7 +3647,7 @@ separates it from anything concatenated after it.</p>
     <tbody>
         <tr>
             <td>
-              <span class="anchor" id="variable-compiler~26"></span>
+              <span class="anchor" id="variable-compiler~3"></span>
               character(len=*),
             </td>
 <td>intent(in)</td>
@@ -3692,7 +3692,7 @@ separates it from anything concatenated after it.</p>
     <tbody>
         <tr>
             <td>
-              <span class="anchor" id="variable-self~143"></span>
+              <span class="anchor" id="variable-self~23"></span>
               class(<a href='../type/compiler_t.html'>compiler_t</a>),
             </td>
 <td>intent(in)</td>
@@ -3707,7 +3707,7 @@ separates it from anything concatenated after it.</p>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-release~2"></span>
+              <span class="anchor" id="variable-release"></span>
               logical,
             </td>
 <td>intent(in)</td>
@@ -3752,7 +3752,7 @@ separates it from anything concatenated after it.</p>
     <tbody>
         <tr>
             <td>
-              <span class="anchor" id="variable-self~154"></span>
+              <span class="anchor" id="variable-self~34"></span>
               class(<a href='../type/compiler_t.html'>compiler_t</a>),
             </td>
 <td>intent(in)</td>
@@ -3767,7 +3767,7 @@ separates it from anything concatenated after it.</p>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-target_dir~3"></span>
+              <span class="anchor" id="variable-target_dir"></span>
               character(len=*),
             </td>
 <td>intent(in)</td>
@@ -3827,7 +3827,7 @@ separates it from anything concatenated after it.</p>
     <tbody>
         <tr>
             <td>
-              <span class="anchor" id="variable-self~147"></span>
+              <span class="anchor" id="variable-self~27"></span>
               class(<a href='../type/compiler_t.html'>compiler_t</a>),
             </td>
 <td>intent(in)</td>
@@ -3887,7 +3887,7 @@ separates it from anything concatenated after it.</p>
     <tbody>
         <tr>
             <td>
-              <span class="anchor" id="variable-self~156"></span>
+              <span class="anchor" id="variable-self~36"></span>
               class(<a href='../type/compiler_t.html'>compiler_t</a>),
             </td>
 <td>intent(in)</td>
@@ -3932,7 +3932,7 @@ separates it from anything concatenated after it.</p>
     <tbody>
         <tr>
             <td>
-              <span class="anchor" id="variable-self~144"></span>
+              <span class="anchor" id="variable-self~24"></span>
               class(<a href='../type/compiler_t.html'>compiler_t</a>),
             </td>
 <td>intent(in)</td>
@@ -3947,7 +3947,7 @@ separates it from anything concatenated after it.</p>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-path~22"></span>
+              <span class="anchor" id="variable-path~5"></span>
               character(len=*),
             </td>
 <td>intent(in)</td>
@@ -3992,7 +3992,7 @@ separates it from anything concatenated after it.</p>
     <tbody>
         <tr>
             <td>
-              <span class="anchor" id="variable-self~155"></span>
+              <span class="anchor" id="variable-self~35"></span>
               class(<a href='../type/compiler_t.html'>compiler_t</a>),
             </td>
 <td>intent(in)</td>
@@ -4007,7 +4007,7 @@ separates it from anything concatenated after it.</p>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-target_dir~4"></span>
+              <span class="anchor" id="variable-target_dir~2"></span>
               character(len=*),
             </td>
 <td>intent(in)</td>
@@ -4071,7 +4071,7 @@ Split the macro name and value.</p><a href="../proc/get_macros.html" class="pull
     <tbody>
         <tr>
             <td>
-              <span class="anchor" id="variable-id~12"></span>
+              <span class="anchor" id="variable-id~5"></span>
               integer(kind=compiler_enum),
             </td>
 <td>intent(in)</td>
@@ -4101,7 +4101,7 @@ Split the macro name and value.</p><a href="../proc/get_macros.html" class="pull
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-version~16"></span>
+              <span class="anchor" id="variable-version~3"></span>
               type(<a href='../type/version_t.html'>version_t</a>),
             </td>
 <td>intent(in),</td>
@@ -4146,7 +4146,7 @@ Split the macro name and value.</p><a href="../proc/get_macros.html" class="pull
     <tbody>
         <tr>
             <td>
-              <span class="anchor" id="variable-self~145"></span>
+              <span class="anchor" id="variable-self~25"></span>
               class(<a href='../type/compiler_t.html'>compiler_t</a>),
             </td>
 <td>intent(in)</td>
@@ -4161,7 +4161,7 @@ Split the macro name and value.</p><a href="../proc/get_macros.html" class="pull
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-path~23"></span>
+              <span class="anchor" id="variable-path~6"></span>
               character(len=*),
             </td>
 <td>intent(in)</td>
@@ -4208,7 +4208,7 @@ for compilers that do not do so on their own: NAG runs <code>fpp</code> by suffi
     <tbody>
         <tr>
             <td>
-              <span class="anchor" id="variable-self~157"></span>
+              <span class="anchor" id="variable-self~37"></span>
               class(<a href='../type/compiler_t.html'>compiler_t</a>),
             </td>
 <td>intent(in)</td>
@@ -4268,7 +4268,7 @@ for compilers that do not do so on their own: NAG runs <code>fpp</code> by suffi
     <tbody>
         <tr>
             <td>
-              <span class="anchor" id="variable-self~146"></span>
+              <span class="anchor" id="variable-self~26"></span>
               class(<a href='../type/compiler_t.html'>compiler_t</a>),
             </td>
 <td>intent(in)</td>
@@ -4314,7 +4314,7 @@ installation: AOCC, like other classic flang installs, also calls its compiler f
     <tbody>
         <tr>
             <td>
-              <span class="anchor" id="variable-compiler~27"></span>
+              <span class="anchor" id="variable-compiler~4"></span>
               character(len=*),
             </td>
 <td>intent(in)</td>
@@ -4360,7 +4360,7 @@ installed next to it, which LLVM flang does not have</p>
     <tbody>
         <tr>
             <td>
-              <span class="anchor" id="variable-compiler~28"></span>
+              <span class="anchor" id="variable-compiler~5"></span>
               character(len=*),
             </td>
 <td>intent(in)</td>
@@ -4405,7 +4405,7 @@ installed next to it, which LLVM flang does not have</p>
     <tbody>
         <tr>
             <td>
-              <span class="anchor" id="variable-self~149"></span>
+              <span class="anchor" id="variable-self~29"></span>
               class(<a href='../type/compiler_t.html'>compiler_t</a>),
             </td>
 <td>intent(in)</td>
@@ -4450,7 +4450,7 @@ installed next to it, which LLVM flang does not have</p>
     <tbody>
         <tr>
             <td>
-              <span class="anchor" id="variable-self~152"></span>
+              <span class="anchor" id="variable-self~32"></span>
               class(<a href='../type/compiler_t.html'>compiler_t</a>),
             </td>
 <td>intent(in)</td>
@@ -4495,7 +4495,7 @@ installed next to it, which LLVM flang does not have</p>
     <tbody>
         <tr>
             <td>
-              <span class="anchor" id="variable-self~151"></span>
+              <span class="anchor" id="variable-self~31"></span>
               class(<a href='../type/compiler_t.html'>compiler_t</a>),
             </td>
 <td>intent(in)</td>
@@ -4540,7 +4540,7 @@ installed next to it, which LLVM flang does not have</p>
     <tbody>
         <tr>
             <td>
-              <span class="anchor" id="variable-self~150"></span>
+              <span class="anchor" id="variable-self~30"></span>
               class(<a href='../type/compiler_t.html'>compiler_t</a>),
             </td>
 <td>intent(in)</td>
@@ -4585,7 +4585,7 @@ installed next to it, which LLVM flang does not have</p>
     <tbody>
         <tr>
             <td>
-              <span class="anchor" id="variable-compiler~29"></span>
+              <span class="anchor" id="variable-compiler~6"></span>
               character(len=*),
             </td>
 <td>intent(in)</td>
@@ -4630,7 +4630,7 @@ installed next to it, which LLVM flang does not have</p>
     <tbody>
         <tr>
             <td>
-              <span class="anchor" id="variable-self~180"></span>
+              <span class="anchor" id="variable-self~60"></span>
               class(<a href='../type/compiler_t.html'>compiler_t</a>),
             </td>
 <td>intent(in)</td>
@@ -4675,7 +4675,7 @@ installed next to it, which LLVM flang does not have</p>
     <tbody>
         <tr>
             <td>
-              <span class="anchor" id="variable-self~181"></span>
+              <span class="anchor" id="variable-self~61"></span>
               class(<a href='../type/compiler_t.html'>compiler_t</a>),
             </td>
 <td>intent(in)</td>
@@ -4725,7 +4725,7 @@ installed next to it, which LLVM flang does not have</p>
     <tbody>
         <tr>
             <td>
-              <span class="anchor" id="variable-flags~21"></span>
+              <span class="anchor" id="variable-flags~16"></span>
               character(len=:),
             </td>
 <td>intent(inout),</td>
@@ -4835,7 +4835,7 @@ installed next to it, which LLVM flang does not have</p>
     <tbody>
         <tr>
             <td>
-              <span class="anchor" id="variable-self~162"></span>
+              <span class="anchor" id="variable-self~42"></span>
               class(<a href='../type/compiler_t.html'>compiler_t</a>),
             </td>
 <td>intent(in)</td>
@@ -4850,7 +4850,7 @@ installed next to it, which LLVM flang does not have</p>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-input~5"></span>
+              <span class="anchor" id="variable-input~4"></span>
               character(len=*),
             </td>
 <td>intent(in)</td>
@@ -4865,7 +4865,7 @@ installed next to it, which LLVM flang does not have</p>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-output~8"></span>
+              <span class="anchor" id="variable-output~5"></span>
               character(len=*),
             </td>
 <td>intent(in)</td>
@@ -4880,7 +4880,7 @@ installed next to it, which LLVM flang does not have</p>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-args~6"></span>
+              <span class="anchor" id="variable-args~4"></span>
               character(len=*),
             </td>
 <td>intent(in)</td>
@@ -4910,7 +4910,7 @@ installed next to it, which LLVM flang does not have</p>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-stat~51"></span>
+              <span class="anchor" id="variable-stat~12"></span>
               integer,
             </td>
 <td>intent(out)</td>
@@ -4925,7 +4925,7 @@ installed next to it, which LLVM flang does not have</p>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-table~95"></span>
+              <span class="anchor" id="variable-table~19"></span>
               type(<a href='../type/compile_command_table_t.html'>compile_command_table_t</a>),
             </td>
 <td>intent(inout),</td>
@@ -4980,7 +4980,7 @@ installed next to it, which LLVM flang does not have</p>
     <tbody>
         <tr>
             <td>
-              <span class="anchor" id="variable-self~163"></span>
+              <span class="anchor" id="variable-self~43"></span>
               class(<a href='../type/compiler_t.html'>compiler_t</a>),
             </td>
 <td>intent(in)</td>
@@ -4995,7 +4995,7 @@ installed next to it, which LLVM flang does not have</p>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-input~6"></span>
+              <span class="anchor" id="variable-input~5"></span>
               character(len=*),
             </td>
 <td>intent(in)</td>
@@ -5010,7 +5010,7 @@ installed next to it, which LLVM flang does not have</p>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-output~9"></span>
+              <span class="anchor" id="variable-output~6"></span>
               character(len=*),
             </td>
 <td>intent(in)</td>
@@ -5025,7 +5025,7 @@ installed next to it, which LLVM flang does not have</p>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-args~7"></span>
+              <span class="anchor" id="variable-args~5"></span>
               character(len=*),
             </td>
 <td>intent(in)</td>
@@ -5055,7 +5055,7 @@ installed next to it, which LLVM flang does not have</p>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-stat~52"></span>
+              <span class="anchor" id="variable-stat~13"></span>
               integer,
             </td>
 <td>intent(out)</td>
@@ -5070,7 +5070,7 @@ installed next to it, which LLVM flang does not have</p>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-table~96"></span>
+              <span class="anchor" id="variable-table~20"></span>
               type(<a href='../type/compile_command_table_t.html'>compile_command_table_t</a>),
             </td>
 <td>intent(inout),</td>
@@ -5125,7 +5125,7 @@ installed next to it, which LLVM flang does not have</p>
     <tbody>
         <tr>
             <td>
-              <span class="anchor" id="variable-self~160"></span>
+              <span class="anchor" id="variable-self~40"></span>
               class(<a href='../type/compiler_t.html'>compiler_t</a>),
             </td>
 <td>intent(in)</td>
@@ -5140,7 +5140,7 @@ installed next to it, which LLVM flang does not have</p>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-input~2"></span>
+              <span class="anchor" id="variable-input"></span>
               character(len=*),
             </td>
 <td>intent(in)</td>
@@ -5155,7 +5155,7 @@ installed next to it, which LLVM flang does not have</p>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-output~5"></span>
+              <span class="anchor" id="variable-output~2"></span>
               character(len=*),
             </td>
 <td>intent(in)</td>
@@ -5170,7 +5170,7 @@ installed next to it, which LLVM flang does not have</p>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-args~3"></span>
+              <span class="anchor" id="variable-args"></span>
               character(len=*),
             </td>
 <td>intent(in)</td>
@@ -5200,7 +5200,7 @@ installed next to it, which LLVM flang does not have</p>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-stat~48"></span>
+              <span class="anchor" id="variable-stat~9"></span>
               integer,
             </td>
 <td>intent(out)</td>
@@ -5215,7 +5215,7 @@ installed next to it, which LLVM flang does not have</p>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-table~93"></span>
+              <span class="anchor" id="variable-table~17"></span>
               type(<a href='../type/compile_command_table_t.html'>compile_command_table_t</a>),
             </td>
 <td>intent(inout),</td>
@@ -5270,7 +5270,7 @@ installed next to it, which LLVM flang does not have</p>
     <tbody>
         <tr>
             <td>
-              <span class="anchor" id="variable-self~161"></span>
+              <span class="anchor" id="variable-self~41"></span>
               class(<a href='../type/compiler_t.html'>compiler_t</a>),
             </td>
 <td>intent(in)</td>
@@ -5300,7 +5300,7 @@ installed next to it, which LLVM flang does not have</p>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-input~3"></span>
+              <span class="anchor" id="variable-input~2"></span>
               character(len=*),
             </td>
 <td>intent(in)</td>
@@ -5315,7 +5315,7 @@ installed next to it, which LLVM flang does not have</p>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-output~6"></span>
+              <span class="anchor" id="variable-output~3"></span>
               character(len=*),
             </td>
 <td>intent(in)</td>
@@ -5330,7 +5330,7 @@ installed next to it, which LLVM flang does not have</p>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-args~4"></span>
+              <span class="anchor" id="variable-args~2"></span>
               character(len=*),
             </td>
 <td>intent(in)</td>
@@ -5360,7 +5360,7 @@ installed next to it, which LLVM flang does not have</p>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-stat~49"></span>
+              <span class="anchor" id="variable-stat~10"></span>
               integer,
             </td>
 <td>intent(out)</td>
@@ -5375,7 +5375,7 @@ installed next to it, which LLVM flang does not have</p>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-table~94"></span>
+              <span class="anchor" id="variable-table~18"></span>
               type(<a href='../type/compile_command_table_t.html'>compile_command_table_t</a>),
             </td>
 <td>intent(inout),</td>
@@ -5430,7 +5430,7 @@ installed next to it, which LLVM flang does not have</p>
     <tbody>
         <tr>
             <td>
-              <span class="anchor" id="variable-self~171"></span>
+              <span class="anchor" id="variable-self~51"></span>
               class(<a href='../type/compiler_t.html'>compiler_t</a>),
             </td>
 <td>intent(inout)</td>
@@ -5445,7 +5445,7 @@ installed next to it, which LLVM flang does not have</p>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-table~99"></span>
+              <span class="anchor" id="variable-table~23"></span>
               type(toml_table),
             </td>
 <td>intent(inout)</td>
@@ -5460,7 +5460,7 @@ installed next to it, which LLVM flang does not have</p>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-error~191"></span>
+              <span class="anchor" id="variable-error~41"></span>
               type(<a href='../type/error_t.html'>error_t</a>),
             </td>
 <td>intent(out),</td>
@@ -5500,7 +5500,7 @@ installed next to it, which LLVM flang does not have</p>
     <tbody>
         <tr>
             <td>
-              <span class="anchor" id="variable-self~172"></span>
+              <span class="anchor" id="variable-self~52"></span>
               class(<a href='../type/compiler_t.html'>compiler_t</a>),
             </td>
 <td>intent(inout)</td>
@@ -5515,7 +5515,7 @@ installed next to it, which LLVM flang does not have</p>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-table~100"></span>
+              <span class="anchor" id="variable-table~24"></span>
               type(toml_table),
             </td>
 <td>intent(inout)</td>
@@ -5530,7 +5530,7 @@ installed next to it, which LLVM flang does not have</p>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-error~192"></span>
+              <span class="anchor" id="variable-error~42"></span>
               type(<a href='../type/error_t.html'>error_t</a>),
             </td>
 <td>intent(out),</td>
@@ -5551,11 +5551,11 @@ installed next to it, which LLVM flang does not have</p>
   </div>
 
               <div class="card">
-    <div class="card-header codesum"><span class="anchor" id="proc-dump_to_toml~12"></span> <h3>public  subroutine <a href='../proc/dump_to_toml~12.html'>dump_to_toml</a>(self, table, error)  
+    <div class="card-header codesum"><span class="anchor" id="proc-dump_to_toml~3"></span> <h3>public  subroutine <a href='../proc/dump_to_toml~3.html'>dump_to_toml</a>(self, table, error)  
 </h3></div>
     <div class="card-body">
           
-  <p>Dump dependency to toml table</p><a href="../proc/dump_to_toml~12.html" class="pull-right"><emph>Read more&hellip;</emph></a>
+  <p>Dump dependency to toml table</p><a href="../proc/dump_to_toml~3.html" class="pull-right"><emph>Read more&hellip;</emph></a>
 
   <h4>Arguments</h4>
       <table class="table table-striped varlist">
@@ -5570,7 +5570,7 @@ installed next to it, which LLVM flang does not have</p>
     <tbody>
         <tr>
             <td>
-              <span class="anchor" id="variable-self~169"></span>
+              <span class="anchor" id="variable-self~49"></span>
               class(<a href='../type/archiver_t.html'>archiver_t</a>),
             </td>
 <td>intent(inout)</td>
@@ -5585,7 +5585,7 @@ installed next to it, which LLVM flang does not have</p>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-table~97"></span>
+              <span class="anchor" id="variable-table~21"></span>
               type(toml_table),
             </td>
 <td>intent(inout)</td>
@@ -5600,7 +5600,7 @@ installed next to it, which LLVM flang does not have</p>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-error~189"></span>
+              <span class="anchor" id="variable-error~39"></span>
               type(<a href='../type/error_t.html'>error_t</a>),
             </td>
 <td>intent(out),</td>
@@ -5640,7 +5640,7 @@ installed next to it, which LLVM flang does not have</p>
     <tbody>
         <tr>
             <td>
-              <span class="anchor" id="variable-id~10"></span>
+              <span class="anchor" id="variable-id~3"></span>
               integer(kind=compiler_enum),
             </td>
 <td>intent(in)</td>
@@ -5655,7 +5655,7 @@ installed next to it, which LLVM flang does not have</p>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-flags~10"></span>
+              <span class="anchor" id="variable-flags~5"></span>
               character(len=:),
             </td>
 <td>intent(out),</td>
@@ -5805,7 +5805,7 @@ installed next to it, which LLVM flang does not have</p>
     <tbody>
         <tr>
             <td>
-              <span class="anchor" id="variable-self~148"></span>
+              <span class="anchor" id="variable-self~28"></span>
               class(<a href='../type/compiler_t.html'>compiler_t</a>),
             </td>
 <td>intent(in)</td>
@@ -5820,7 +5820,7 @@ installed next to it, which LLVM flang does not have</p>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-language~4"></span>
+              <span class="anchor" id="variable-language"></span>
               character(len=*),
             </td>
 <td>intent(in)</td>
@@ -5835,7 +5835,7 @@ installed next to it, which LLVM flang does not have</p>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-flags~15"></span>
+              <span class="anchor" id="variable-flags~10"></span>
               character(len=:),
             </td>
 <td>intent(out),</td>
@@ -5875,7 +5875,7 @@ installed next to it, which LLVM flang does not have</p>
     <tbody>
         <tr>
             <td>
-              <span class="anchor" id="variable-id~9"></span>
+              <span class="anchor" id="variable-id~2"></span>
               integer(kind=compiler_enum),
             </td>
 <td>intent(in)</td>
@@ -5890,7 +5890,7 @@ installed next to it, which LLVM flang does not have</p>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-flags~9"></span>
+              <span class="anchor" id="variable-flags~4"></span>
               character(len=:),
             </td>
 <td>intent(out),</td>
@@ -5930,7 +5930,7 @@ installed next to it, which LLVM flang does not have</p>
     <tbody>
         <tr>
             <td>
-              <span class="anchor" id="variable-self~164"></span>
+              <span class="anchor" id="variable-self~44"></span>
               class(<a href='../type/compiler_t.html'>compiler_t</a>),
             </td>
 <td>intent(in)</td>
@@ -5945,7 +5945,7 @@ installed next to it, which LLVM flang does not have</p>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-output~10"></span>
+              <span class="anchor" id="variable-output~7"></span>
               character(len=*),
             </td>
 <td>intent(in)</td>
@@ -5960,7 +5960,7 @@ installed next to it, which LLVM flang does not have</p>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-args~8"></span>
+              <span class="anchor" id="variable-args~6"></span>
               character(len=*),
             </td>
 <td>intent(in)</td>
@@ -5990,7 +5990,7 @@ installed next to it, which LLVM flang does not have</p>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-stat~53"></span>
+              <span class="anchor" id="variable-stat~14"></span>
               integer,
             </td>
 <td>intent(out)</td>
@@ -6045,7 +6045,7 @@ installed next to it, which LLVM flang does not have</p>
     <tbody>
         <tr>
             <td>
-              <span class="anchor" id="variable-self~165"></span>
+              <span class="anchor" id="variable-self~45"></span>
               class(<a href='../type/compiler_t.html'>compiler_t</a>),
             </td>
 <td>intent(in)</td>
@@ -6060,7 +6060,7 @@ installed next to it, which LLVM flang does not have</p>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-output~11"></span>
+              <span class="anchor" id="variable-output~8"></span>
               character(len=*),
             </td>
 <td>intent(in)</td>
@@ -6075,7 +6075,7 @@ installed next to it, which LLVM flang does not have</p>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-args~9"></span>
+              <span class="anchor" id="variable-args~7"></span>
               character(len=*),
             </td>
 <td>intent(in)</td>
@@ -6105,7 +6105,7 @@ installed next to it, which LLVM flang does not have</p>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-stat~54"></span>
+              <span class="anchor" id="variable-stat~15"></span>
               integer,
             </td>
 <td>intent(out)</td>
@@ -6141,7 +6141,7 @@ installed next to it, which LLVM flang does not have</p>
   </div>
 
               <div class="card">
-    <div class="card-header codesum"><span class="anchor" id="proc-load_from_toml~12"></span> <h3>public  subroutine <a href='../proc/load_from_toml~12.html'>load_from_toml</a>(self, table, error)  
+    <div class="card-header codesum"><span class="anchor" id="proc-load_from_toml~3"></span> <h3>public  subroutine <a href='../proc/load_from_toml~3.html'>load_from_toml</a>(self, table, error)  
 </h3></div>
     <div class="card-body">
           
@@ -6160,7 +6160,7 @@ installed next to it, which LLVM flang does not have</p>
     <tbody>
         <tr>
             <td>
-              <span class="anchor" id="variable-self~170"></span>
+              <span class="anchor" id="variable-self~50"></span>
               class(<a href='../type/archiver_t.html'>archiver_t</a>),
             </td>
 <td>intent(inout)</td>
@@ -6175,7 +6175,7 @@ installed next to it, which LLVM flang does not have</p>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-table~98"></span>
+              <span class="anchor" id="variable-table~22"></span>
               type(toml_table),
             </td>
 <td>intent(inout)</td>
@@ -6190,7 +6190,7 @@ installed next to it, which LLVM flang does not have</p>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-error~190"></span>
+              <span class="anchor" id="variable-error~40"></span>
               type(<a href='../type/error_t.html'>error_t</a>),
             </td>
 <td>intent(out),</td>
@@ -6230,7 +6230,7 @@ installed next to it, which LLVM flang does not have</p>
     <tbody>
         <tr>
             <td>
-              <span class="anchor" id="variable-self~166"></span>
+              <span class="anchor" id="variable-self~46"></span>
               class(<a href='../type/archiver_t.html'>archiver_t</a>),
             </td>
 <td>intent(in)</td>
@@ -6245,7 +6245,7 @@ installed next to it, which LLVM flang does not have</p>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-output~12"></span>
+              <span class="anchor" id="variable-output~9"></span>
               character(len=*),
             </td>
 <td>intent(in)</td>
@@ -6260,7 +6260,7 @@ installed next to it, which LLVM flang does not have</p>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-args~10"></span>
+              <span class="anchor" id="variable-args~8"></span>
               type(<a href='../type/string_t.html'>string_t</a>),
             </td>
 <td>intent(in)</td>
@@ -6290,7 +6290,7 @@ installed next to it, which LLVM flang does not have</p>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-stat~55"></span>
+              <span class="anchor" id="variable-stat~16"></span>
               integer,
             </td>
 <td>intent(out)</td>
@@ -6345,7 +6345,7 @@ installed next to it, which LLVM flang does not have</p>
     <tbody>
         <tr>
             <td>
-              <span class="anchor" id="variable-self~159"></span>
+              <span class="anchor" id="variable-self~39"></span>
               type(<a href='../type/archiver_t.html'>archiver_t</a>),
             </td>
 <td>intent(out)</td>
@@ -6375,7 +6375,7 @@ installed next to it, which LLVM flang does not have</p>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-echo~9"></span>
+              <span class="anchor" id="variable-echo~4"></span>
               logical,
             </td>
 <td>intent(in)</td>
@@ -6390,7 +6390,7 @@ installed next to it, which LLVM flang does not have</p>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-verbose~19"></span>
+              <span class="anchor" id="variable-verbose~5"></span>
               logical,
             </td>
 <td>intent(in)</td>
@@ -6430,7 +6430,7 @@ installed next to it, which LLVM flang does not have</p>
     <tbody>
         <tr>
             <td>
-              <span class="anchor" id="variable-self~158"></span>
+              <span class="anchor" id="variable-self~38"></span>
               type(<a href='../type/compiler_t.html'>compiler_t</a>),
             </td>
 <td>intent(out)</td>
@@ -6490,7 +6490,7 @@ installed next to it, which LLVM flang does not have</p>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-echo~8"></span>
+              <span class="anchor" id="variable-echo~3"></span>
               logical,
             </td>
 <td>intent(in)</td>
@@ -6505,7 +6505,7 @@ installed next to it, which LLVM flang does not have</p>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-verbose~18"></span>
+              <span class="anchor" id="variable-verbose~4"></span>
               logical,
             </td>
 <td>intent(in)</td>
@@ -6546,7 +6546,7 @@ arguments could not be split, run the shell command instead, one at a time.</p>
     <tbody>
         <tr>
             <td>
-              <span class="anchor" id="variable-command~12"></span>
+              <span class="anchor" id="variable-command~4"></span>
               character(len=*),
             </td>
 <td>intent(in)</td>
@@ -6591,7 +6591,7 @@ arguments could not be split, run the shell command instead, one at a time.</p>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-echo~10"></span>
+              <span class="anchor" id="variable-echo~5"></span>
               logical,
             </td>
 <td>intent(in)</td>
@@ -6606,7 +6606,7 @@ arguments could not be split, run the shell command instead, one at a time.</p>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-verbose~20"></span>
+              <span class="anchor" id="variable-verbose~6"></span>
               logical,
             </td>
 <td>intent(in)</td>
@@ -6636,7 +6636,7 @@ arguments could not be split, run the shell command instead, one at a time.</p>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-stat~50"></span>
+              <span class="anchor" id="variable-stat~11"></span>
               integer,
             </td>
 <td>intent(out)</td>
@@ -6676,7 +6676,7 @@ arguments could not be split, run the shell command instead, one at a time.</p>
     <tbody>
         <tr>
             <td>
-              <span class="anchor" id="variable-id~11"></span>
+              <span class="anchor" id="variable-id~4"></span>
               integer(kind=compiler_enum),
             </td>
 <td>intent(in)</td>
@@ -6691,7 +6691,7 @@ arguments could not be split, run the shell command instead, one at a time.</p>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-flags~11"></span>
+              <span class="anchor" id="variable-flags~6"></span>
               character(len=:),
             </td>
 <td>intent(inout),</td>
@@ -6749,7 +6749,7 @@ in a critical region. Both lexers remove the quoting as a shell does, so
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-str~3"></span>
+              <span class="anchor" id="variable-str"></span>
               character(len=*),
             </td>
 <td>intent(in)</td>
@@ -6779,7 +6779,7 @@ in a critical region. Both lexers remove the quoting as a shell does, so
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-ok~2"></span>
+              <span class="anchor" id="variable-ok"></span>
               logical,
             </td>
 <td>intent(inout)</td>
@@ -6819,7 +6819,7 @@ in a critical region. Both lexers remove the quoting as a shell does, so
     <tbody>
         <tr>
             <td>
-              <span class="anchor" id="variable-flags~23"></span>
+              <span class="anchor" id="variable-flags~18"></span>
               character(len=*),
             </td>
 <td>intent(in)</td>
@@ -6876,7 +6876,7 @@ cannot be split: only the shell command can run then.</p>
     <tbody>
         <tr>
             <td>
-              <span class="anchor" id="variable-prog~4"></span>
+              <span class="anchor" id="variable-prog~2"></span>
               character(len=*),
             </td>
 <td>intent(in)</td>
@@ -6891,7 +6891,7 @@ cannot be split: only the shell command can run then.</p>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-args~5"></span>
+              <span class="anchor" id="variable-args~3"></span>
               character(len=*),
             </td>
 <td>intent(in)</td>
@@ -6906,7 +6906,7 @@ cannot be split: only the shell command can run then.</p>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-output~7"></span>
+              <span class="anchor" id="variable-output~4"></span>
               character(len=*),
             </td>
 <td>intent(in)</td>
@@ -6921,7 +6921,7 @@ cannot be split: only the shell command can run then.</p>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-command~11"></span>
+              <span class="anchor" id="variable-command~3"></span>
               character(len=:),
             </td>
 <td>intent(out),</td>
@@ -6966,7 +6966,7 @@ cannot be split: only the shell command can run then.</p>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-input~4"></span>
+              <span class="anchor" id="variable-input~3"></span>
               character(len=*),
             </td>
 <td>intent(in),</td>
@@ -7006,7 +7006,7 @@ cannot be split: only the shell command can run then.</p>
     <tbody>
         <tr>
             <td>
-              <span class="anchor" id="variable-compiler_name~3"></span>
+              <span class="anchor" id="variable-compiler_name"></span>
               character(len=*),
             </td>
 <td>intent(in)</td>
@@ -7021,7 +7021,7 @@ cannot be split: only the shell command can run then.</p>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-is_valid~4"></span>
+              <span class="anchor" id="variable-is_valid"></span>
               logical,
             </td>
 <td>intent(out)</td>
@@ -7064,7 +7064,7 @@ in case of errors.</p>
     <tbody>
         <tr>
             <td>
-              <span class="anchor" id="variable-name~42"></span>
+              <span class="anchor" id="variable-name~4"></span>
               character(len=*),
             </td>
 <td>intent(in)</td>
@@ -7122,7 +7122,7 @@ in case of errors.</p>
             <p class="text-end">
               Documentation generated by
               <a href="https://github.com/Fortran-FOSS-Programmers/ford">FORD</a>
- on 2026-11-10 07:26 +0000             </p>
+ on 2026-11-10 13:25 +0000             </p>
           </div>
         </div>
         <br>

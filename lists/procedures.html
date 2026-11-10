@@ -118,7 +118,7 @@
                  <td><p>Add default profiles to existing profiles array if they don&rsquo;t already exist</p></td>
                </tr>
 			   <tr>
-                 <td><a href='../proc/add_dependency~2.html'>add_dependency</a></td>
+                 <td><a href='../proc/add_dependency.html'>add_dependency</a></td>
                  <td><a href='../module/fpm_targets.html'>fpm_targets</a></td>
                  <td>Subroutine</td>
                  <td><p>Add pointer to dependeny in target%dependencies</p></td>
@@ -690,16 +690,16 @@ stay with that argument. The flags are split on blanks, not parsed, so Windows p
 keep their backslashes.</p></td>
                </tr>
 			   <tr>
-                 <td><a href='../proc/dump_to_toml~5.html'>dump_to_toml</a></td>
+                 <td><a href='../proc/dump_to_toml~3.html'>dump_to_toml</a></td>
+                 <td><a href='../module/fpm_compiler.html'>fpm_compiler</a></td>
+                 <td>Subroutine</td>
+                 <td><p>Dump dependency to toml table</p><a href="../proc/dump_to_toml~3.html" class="pull-right"><emph>Read more&hellip;</emph></a></td>
+               </tr>
+			   <tr>
+                 <td><a href='../proc/dump_to_toml~10.html'>dump_to_toml</a></td>
                  <td><a href='../module/fpm_git.html'>fpm_git</a></td>
                  <td>Subroutine</td>
                  <td><p>Dump dependency to toml table</p></td>
-               </tr>
-			   <tr>
-                 <td><a href='../proc/dump_to_toml~12.html'>dump_to_toml</a></td>
-                 <td><a href='../module/fpm_compiler.html'>fpm_compiler</a></td>
-                 <td>Subroutine</td>
-                 <td><p>Dump dependency to toml table</p><a href="../proc/dump_to_toml~12.html" class="pull-right"><emph>Read more&hellip;</emph></a></td>
                </tr>
 			   <tr>
                  <td><a href='../proc/ends_with_blank.html'>ends_with_blank</a></td>
@@ -794,7 +794,7 @@ single characters terminated with a C_NULL_CHAR character</p></td>
                  <td></td>
                </tr>
 			   <tr>
-                 <td><a href='../proc/find_feature~2.html'>find_feature</a></td>
+                 <td><a href='../proc/find_feature.html'>find_feature</a></td>
                  <td><a href='../module/fpm_manifest_feature.html'>fpm_manifest_feature</a></td>
                  <td>Subroutine</td>
                  <td><p>Find matching feature configuration (similar to find_profile)</p></td>
@@ -1195,7 +1195,7 @@ All checks passed!</p></td>
 installation: AOCC, like other classic flang installs, also calls its compiler flang</p></td>
                </tr>
 			   <tr>
-                 <td><a href='../proc/info~5.html'>info</a></td>
+                 <td><a href='../proc/info~10.html'>info</a></td>
                  <td><a href='../module/fpm_git.html'>fpm_git</a></td>
                  <td>Subroutine</td>
                  <td><p>Show information on git target</p></td>
@@ -1400,16 +1400,16 @@ installed next to it, which LLVM flang does not have</p></td>
                  <td><p>Get file &amp; directory names in directory <code>dir</code> using iso_c_binding.</p><a href="../proc/list_files.html" class="pull-right"><emph>Read more&hellip;</emph></a></td>
                </tr>
 			   <tr>
-                 <td><a href='../proc/load_from_toml~5.html'>load_from_toml</a></td>
-                 <td><a href='../module/fpm_git.html'>fpm_git</a></td>
-                 <td>Subroutine</td>
-                 <td><p>Read dependency from toml table (no checks made at this stage)</p><a href="../proc/load_from_toml~5.html" class="pull-right"><emph>Read more&hellip;</emph></a></td>
-               </tr>
-			   <tr>
-                 <td><a href='../proc/load_from_toml~12.html'>load_from_toml</a></td>
+                 <td><a href='../proc/load_from_toml~3.html'>load_from_toml</a></td>
                  <td><a href='../module/fpm_compiler.html'>fpm_compiler</a></td>
                  <td>Subroutine</td>
                  <td><p>Read dependency from toml table (no checks made at this stage)</p></td>
+               </tr>
+			   <tr>
+                 <td><a href='../proc/load_from_toml~10.html'>load_from_toml</a></td>
+                 <td><a href='../module/fpm_git.html'>fpm_git</a></td>
+                 <td>Subroutine</td>
+                 <td><p>Read dependency from toml table (no checks made at this stage)</p><a href="../proc/load_from_toml~10.html" class="pull-right"><emph>Read more&hellip;</emph></a></td>
                </tr>
 			   <tr>
                  <td><a href='../proc/load_table_from_file.html'>load_table_from_file</a></td>
@@ -1804,15 +1804,15 @@ by re-opening it first, which NAG 7.2 rejects for a unit from NEWUNIT=</p></td>
                </tr>
 			   <tr>
                  <td><a href='../interface/resize.html'>resize</a></td>
-                 <td><a href='../module/fpm_dependency.html'>fpm_dependency</a></td>
-                 <td>Interface</td>
-                 <td><p>Overloaded reallocation interface</p></td>
-               </tr>
-			   <tr>
-                 <td><a href='../interface/resize~2.html'>resize</a></td>
                  <td><a href='../module/fpm_strings.html'>fpm_strings</a></td>
                  <td>Interface</td>
                  <td></td>
+               </tr>
+			   <tr>
+                 <td><a href='../interface/resize~2.html'>resize</a></td>
+                 <td><a href='../module/fpm_dependency.html'>fpm_dependency</a></td>
+                 <td>Interface</td>
+                 <td><p>Overloaded reallocation interface</p></td>
                </tr>
 			   <tr>
                  <td><a href='../proc/resize_dependency_config.html'>resize_dependency_config</a></td>
@@ -2100,7 +2100,7 @@ in case of errors.</p></td>
             <p class="text-end">
               Documentation generated by
               <a href="https://github.com/Fortran-FOSS-Programmers/ford">FORD</a>
- on 2026-11-10 07:26 +0000             </p>
+ on 2026-11-10 13:25 +0000             </p>
           </div>
         </div>
         <br>
