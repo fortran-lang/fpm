@@ -18,7 +18,7 @@ module fpm_source_parsing
 use, intrinsic :: iso_fortran_env, only: int64
 use fpm_error, only: error_t, file_parse_error, fatal_error, file_not_found_error
 use fpm_strings, only: string_t, string_cat, len_trim, split, lower, str_ends_with, fnv_1a, &
-    is_fortran_name, operator(.in.), operator(==)
+    is_fortran_name, operator(.in.), operator(==), add_strings
 use fpm_model, only: srcfile_t, &
                     FPM_UNIT_UNKNOWN, FPM_UNIT_PROGRAM, FPM_UNIT_MODULE, &
                     FPM_UNIT_SUBMODULE, FPM_UNIT_SUBPROGRAM, &
@@ -30,7 +30,7 @@ use fpm_filesystem, only: read_lines, read_lines_expanded, exists, join_path, pa
 implicit none
 
 private
-public :: parse_f_source, parse_c_source, parse_use_statement, add_include_digest
+public :: parse_f_source, parse_c_source, parse_use_statement
 
 type :: cpp_block
     ! Nested block total depth
@@ -157,11 +157,27 @@ recursive subroutine add_include_digest(filename, include_dirs, digest, visited)
         end do
 
         if (.not. exists(path) .or. (path .in. visited)) cycle
-        visited = [visited, string_t(path)]
+        call add_strings(visited, string_t(path))
         call add_include_digest(path, include_dirs, digest, visited)
     end do
 
 end subroutine add_include_digest
+
+!> Fold the files a parsed source includes into its digest,
+!> so that the source is rebuilt when one of them changes
+subroutine add_includes_to_digest(source, include_dirs)
+    type(srcfile_t), intent(inout) :: source
+    type(string_t), intent(in) :: include_dirs(:)
+
+    type(string_t), allocatable :: visited(:)
+
+    if (.not. allocated(source%include_dependencies)) return
+    if (size(source%include_dependencies) == 0) return
+
+    allocate(visited(0))
+    call add_include_digest(source%file_name, include_dirs, source%digest, visited)
+
+end subroutine add_includes_to_digest
 
 !> Get the value of a macro from the macros list
 !> Returns empty string if macro is not defined
@@ -715,10 +731,12 @@ end subroutine parse_cpp_condition
 !>    my_module
 !>```
 !>
-function parse_f_source(f_filename,error,preprocess) result(f_source)
+function parse_f_source(f_filename,error,preprocess,include_dirs) result(f_source)
     character(*), intent(in) :: f_filename
     type(error_t), allocatable, intent(out) :: error
     type(preprocess_config_t), optional, intent(in) :: preprocess
+    !> Include directories searched by the compiler: the digest then covers the included files
+    type(string_t), optional, intent(in) :: include_dirs(:)
     type(srcfile_t) :: f_source
 
     logical :: inside_module, inside_interface, using, intrinsic_module
@@ -1122,6 +1140,8 @@ function parse_f_source(f_filename,error,preprocess) result(f_source)
 
     end do
 
+    if (present(include_dirs)) call add_includes_to_digest(f_source, include_dirs)
+
 end function parse_f_source
 
 
@@ -1131,10 +1151,12 @@ end function parse_f_source
 !>
 !> - `#include` preprocessor statement
 !>
-function parse_c_source(c_filename,error) result(c_source)
+function parse_c_source(c_filename,error,include_dirs) result(c_source)
     character(*), intent(in) :: c_filename
     type(srcfile_t) :: c_source
     type(error_t), allocatable, intent(out) :: error
+    !> Include directories searched by the compiler: the digest then covers the included files
+    type(string_t), optional, intent(in) :: include_dirs(:)
 
     integer :: fh, n_include, i, pass, stat
     type(string_t), allocatable :: file_lines(:)
@@ -1201,6 +1223,8 @@ function parse_c_source(c_filename,error) result(c_source)
         end if
 
     end do
+
+    if (present(include_dirs)) call add_includes_to_digest(c_source, include_dirs)
 
 end function parse_c_source
 
