@@ -76,6 +76,7 @@ module fpm_manifest_package
         character(len=:), allocatable :: author
         character(len=:), allocatable :: maintainer
         character(len=:), allocatable :: copyright
+        character(len=:), allocatable :: fortran_standard
 
         !> Additional feature collections beyond the default package feature
         type(feature_collection_t), allocatable :: features(:)
@@ -167,6 +168,7 @@ contains
         call get_value(table, "author", self%author)
         call get_value(table, "maintainer", self%maintainer)
         call get_value(table, "copyright", self%copyright)
+        call get_value(table, "fortran-standard", self%fortran_standard)
 
         ! Initialize shared feature components
         call init_feature_components(self%feature_config_t, table, root=root, error=error)
@@ -260,6 +262,7 @@ contains
                 name_present = .true.
 
             case("version", "license", "author", "maintainer", "copyright", &
+                    & "fortran-standard", &
                     & "description", "keywords", "categories", "homepage", "build", &
                     & "dependencies", "dev-dependencies", "profiles", "features", "test", "executable", &
                     & "example", "library", "install", "extra", "preprocess", "fortran")
@@ -404,6 +407,10 @@ contains
             if (allocated(this%copyright)) then
                 if (.not.this%copyright==other%copyright) return
             end if
+            if (allocated(this%fortran_standard).neqv.allocated(other%fortran_standard)) return
+            if (allocated(this%fortran_standard)) then
+                if (.not.this%fortran_standard==other%fortran_standard) return
+            end if
             if (allocated(this%profiles).neqv.allocated(other%profiles)) return
             if (allocated(this%profiles)) then
                 if (.not.size(this%profiles)==size(other%profiles)) return
@@ -453,6 +460,8 @@ contains
        call set_string(table, "maintainer", self%maintainer, error, class_name)
        if (allocated(error)) return
        call set_string(table, "copyright", self%copyright, error, class_name)
+       if (allocated(error)) return
+       call set_string(table, "fortran-standard", self%fortran_standard, error, class_name)
        if (allocated(error)) return
 
        if (allocated(self%profiles)) then
