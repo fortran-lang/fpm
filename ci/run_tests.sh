@@ -23,6 +23,13 @@ EXIT_CODE=0
 FPM_JOBS=two "$fpm" build -C $dir || EXIT_CODE=$?
 test $EXIT_CODE -eq 1
 
+# --verbose prints long flags and commands on one line, however fpm was compiled (#1405)
+long_macro=FPM_VERBOSE_LINE_$(printf '%0100d' 0)
+verbose_out=$("$fpm" build -C $dir --verbose --flag "-D$long_macro")
+echo "$verbose_out"
+grep -q "^ <INFO> COMPILER OPTIONS: .*-D$long_macro" <<< "$verbose_out"
+grep -q "^ + .*-D$long_macro" <<< "$verbose_out"
+
 pushd hello_fpm
 "$fpm" build
 "$fpm" run --target hello_fpm
