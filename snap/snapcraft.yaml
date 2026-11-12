@@ -64,7 +64,11 @@ parts:
       
       mkdir -p $CRAFT_PART_INSTALL/usr/bin/
       cd $CRAFT_PART_INSTALL/usr/bin/
-      wget -O fpm "https://github.com/fortran-lang/fpm/releases/download/v${LATEST}/fpm-${LATEST}-linux-x86_64"
+      # Pick the Linux x86_64 binary from the release assets; upstream renames it
+      # now and then (e.g. fpm-0.13.0-linux-x86_64-gcc-12).
+      URL=$(curl -s https://api.github.com/repos/fortran-lang/fpm/releases/tags/v${LATEST} | grep -oE '"browser_download_url": *"[^"]*-linux-x86_64[^"]*"' | grep -v sha256 | head -1 | cut -d'"' -f4)
+      [ -n "$URL" ] || { echo "No linux-x86_64 asset in fpm v${LATEST}"; exit 1; }
+      wget -O fpm "$URL"
       chmod a+x fpm
                
     override-pull: |
