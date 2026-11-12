@@ -12,3 +12,6 @@ project/
 # Local AI agent instruction files
 AGENTS.md
 CLAUDE.md
+
+# Release state written by the make-release skill
+.release/
