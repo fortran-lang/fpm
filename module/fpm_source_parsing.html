@@ -92,7 +92,7 @@
 
             <li class="list-inline-item" id="statements"><i class="fa fa-list-ol"></i>
               <a data-bs-toggle="tooltip" data-bs-placement="bottom" data-bs-html="true"
-                 title=" 4.7% of total for modules and submodules.">847 statements</a>
+                 title=" 4.9% of total for modules and submodules.">885 statements</a>
             </li>
 
             <li class="list-inline-item" id="source-file">
@@ -193,11 +193,12 @@
         <ul class="list-group list-group-flush">
             <li class="list-group-item">
               <ul class="list-inline">
-                  <li class="list-inline-item"><a href='fpm_manifest_preprocess.html'>fpm_manifest_preprocess</a></li>
-                  <li class="list-inline-item"><a href='fpm_strings.html'>fpm_strings</a></li>
                   <li class="list-inline-item"><a href='fpm_error.html'>fpm_error</a></li>
-                  <li class="list-inline-item"><a href='fpm_filesystem.html'>fpm_filesystem</a></li>
                   <li class="list-inline-item"><a href='fpm_model.html'>fpm_model</a></li>
+                  <li class="list-inline-item"><a href='fpm_filesystem.html'>fpm_filesystem</a></li>
+                  <li class="list-inline-item"><a href='http://fortranwiki.org/fortran/show/iso_fortran_env'>iso_fortran_env</a></li>
+                  <li class="list-inline-item"><a href='fpm_strings.html'>fpm_strings</a></li>
+                  <li class="list-inline-item"><a href='fpm_manifest_preprocess.html'>fpm_manifest_preprocess</a></li>
               </ul>
             </li>
         </ul>
@@ -216,7 +217,7 @@
         <section>
           <h2>Functions</h2>
               <div class="card">
-    <div class="card-header codesum"><span class="anchor" id="proc-parse_c_source"></span> <h3>public  function <a href='../proc/parse_c_source.html'>parse_c_source</a>(c_filename, error) result(c_source)  
+    <div class="card-header codesum"><span class="anchor" id="proc-parse_c_source"></span> <h3>public  function <a href='../proc/parse_c_source.html'>parse_c_source</a>(c_filename, error, include_dirs) result(c_source)  
 </h3></div>
     <div class="card-body">
           
@@ -250,7 +251,7 @@
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-error~257"></span>
+              <span class="anchor" id="variable-error~55"></span>
               type(<a href='../type/error_t.html'>error_t</a>),
             </td>
 <td>intent(out),</td>
@@ -261,6 +262,21 @@
             <td><strong>error</strong></td>
             <td>
 
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-include_dirs~4"></span>
+              type(<a href='../type/string_t.html'>string_t</a>),
+            </td>
+<td>intent(in),</td>
+              <td>optional</td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>include_dirs</strong>(:)</td>
+            <td>
+<p>Include directories searched by the compiler: the digest then covers the included files</p>
             </td>
         </tr>
     </tbody>
@@ -276,7 +292,7 @@
   </div>
 
               <div class="card">
-    <div class="card-header codesum"><span class="anchor" id="proc-parse_f_source"></span> <h3>public  function <a href='../proc/parse_f_source.html'>parse_f_source</a>(f_filename, error, preprocess) result(f_source)  
+    <div class="card-header codesum"><span class="anchor" id="proc-parse_f_source"></span> <h3>public  function <a href='../proc/parse_f_source.html'>parse_f_source</a>(f_filename, error, preprocess, include_dirs) result(f_source)  
 </h3></div>
     <div class="card-body">
           
@@ -310,7 +326,7 @@
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-error~256"></span>
+              <span class="anchor" id="variable-error~54"></span>
               type(<a href='../type/error_t.html'>error_t</a>),
             </td>
 <td>intent(out),</td>
@@ -325,7 +341,7 @@
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-preprocess~14"></span>
+              <span class="anchor" id="variable-preprocess~6"></span>
               type(<a href='../type/preprocess_config_t.html'>preprocess_config_t</a>),
             </td>
 <td>intent(in),</td>
@@ -336,6 +352,21 @@
             <td><strong>preprocess</strong></td>
             <td>
 
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-include_dirs~3"></span>
+              type(<a href='../type/string_t.html'>string_t</a>),
+            </td>
+<td>intent(in),</td>
+              <td>optional</td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>include_dirs</strong>(:)</td>
+            <td>
+<p>Include directories searched by the compiler: the digest then covers the included files</p>
             </td>
         </tr>
     </tbody>
@@ -390,7 +421,7 @@
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-i~159"></span>
+              <span class="anchor" id="variable-i~44"></span>
               integer,
             </td>
 <td>intent(in)</td>
@@ -405,7 +436,7 @@
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-line~20"></span>
+              <span class="anchor" id="variable-line~11"></span>
               character(len=*),
             </td>
 <td>intent(in)</td>
@@ -450,7 +481,7 @@
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-module_name~6"></span>
+              <span class="anchor" id="variable-module_name~2"></span>
               character(len=:),
             </td>
 <td>intent(out),</td>
@@ -465,7 +496,7 @@
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-error~258"></span>
+              <span class="anchor" id="variable-error~56"></span>
               type(<a href='../type/error_t.html'>error_t</a>),
             </td>
 <td>intent(out),</td>
@@ -508,7 +539,7 @@
             <p class="text-end">
               Documentation generated by
               <a href="https://github.com/Fortran-FOSS-Programmers/ford">FORD</a>
- on 2026-11-10 13:25 +0000             </p>
+ on 2026-11-12 08:53 +0000             </p>
           </div>
         </div>
         <br>
