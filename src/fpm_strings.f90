@@ -830,7 +830,6 @@ end function join
 !!
 !!             o "?" matching any one character
 !!             o "*" matching zero or more characters.
-!!               Do NOT use adjacent asterisks.
 !!             o Both strings may have trailing spaces which
 !!               are ignored.
 !!             o There is no escape character, so matching strings with
@@ -1028,10 +1027,6 @@ end function join
 !!
 !!   Expected output
 !!
-!!
-!!## REFERENCE
-!!   The article "Matching Wildcards: An Empirical Way to Tame an Algorithm"
-!!   in Dr Dobb's Journal, By Kirk J. Krauss, October 07, 2014
 !!
 function glob(tame,wild)
 

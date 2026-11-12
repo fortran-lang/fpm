@@ -526,6 +526,8 @@ contains
     subroutine test_glob(error)
         type(error_t), allocatable, intent(out) :: error
 
+        call check_glob(error, "", "*??", .false.)
+        if (allocated(error)) return
         ! A '*' must be able to backtrack over repeated characters
         call check_glob(error, "aaabb", "*b", .true.)
         if (allocated(error)) return
