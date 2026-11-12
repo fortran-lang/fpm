@@ -3,9 +3,9 @@ module test_filesystem
     use fpm_filesystem, only: canon_path, is_dir, mkdir, os_delete_dir, &
                               join_path, is_absolute_path, get_home, &
                               delete_file, read_lines, get_temp_filename, &
-                              command_program, command_not_found, getfile
+                              command_program, command_not_found, getfile, run
     use fpm_environment, only: OS_WINDOWS, get_os_type, os_is_unix
-    use fpm_strings, only: string_t, split_lines_first_last
+    use fpm_strings, only: string_t, split_lines_first_last, glob
     implicit none
     private
 
@@ -22,15 +22,18 @@ contains
         tests = [ &
             & new_unittest("canon-path", test_canon_path), &
             & new_unittest("create-delete-directory", test_mkdir_rmdir), &
+            & new_unittest("directory-with-spaces", test_directory_with_spaces), &
             & new_unittest("test-is-absolute-path", test_is_absolute_path), &
             & new_unittest("test-get-home", test_get_home), &
             & new_unittest("test-split-lines-first-last", test_split_lines_first_last), &
             & new_unittest("test-crlf-lines", test_dir_with_crlf), &
+            & new_unittest("glob", test_glob), &
             & new_unittest("command-program-standard", test_command_program_standard), &
             & new_unittest("command-not-found-missing", test_command_not_found_missing), &
             & new_unittest("command-not-found-present", test_command_not_found_present), &
             & new_unittest("getfile", test_getfile), &
-            & new_unittest("delete-file", test_delete_file) &
+            & new_unittest("delete-file", test_delete_file), &
+            & new_unittest("run-exit-status", test_run_exit_status) &
             ]
 
     end subroutine collect_filesystem
@@ -126,6 +129,36 @@ contains
         if (allocated(error)) return
 
     end subroutine test_mkdir_rmdir
+
+    subroutine test_directory_with_spaces(error)
+        type(error_t), allocatable, intent(out) :: error
+        character(:), allocatable :: marker, directory
+        integer :: stat, unit
+        logical :: valid
+
+        marker = get_temp_filename()
+        directory = marker//' directory with spaces'
+        call execute_command_line('mkdir "'//directory//'"', exitstat=stat)
+        if (stat /= 0) then
+            call test_failed(error, 'cannot create directory-with-spaces fixture')
+            return
+        end if
+        valid = is_dir(directory)
+        valid = valid .and. .not. is_dir(directory//'/missing')
+        valid = valid .and. .not. is_dir('')
+        open(newunit=unit, file=directory//'/ordinary-file', status='new')
+        close(unit)
+        valid = valid .and. .not. is_dir(directory//'/ordinary-file')
+        open(newunit=unit, file=directory//'/ordinary-file', status='old')
+        close(unit, status='delete')
+        call execute_command_line('rmdir "'//directory//'"', exitstat=stat)
+        if (stat /= 0) then
+            call test_failed(error, 'cannot remove directory-with-spaces fixture')
+        else if (.not. valid) then
+            call test_failed(error, &
+                'directory checks distinguish spaced directories, files and missing paths')
+        end if
+    end subroutine test_directory_with_spaces
 
     !> Create a directory and verify its existence
     subroutine check_mkdir(error, path)
@@ -593,5 +626,60 @@ contains
 
     end subroutine test_delete_file
 
+    !> run() returns a command's exit code, also where execute_command_line
+    !> reports the raw wait status (NAG)
+    subroutine test_run_exit_status(error)
+        type(error_t), allocatable, intent(out) :: error
+
+        integer :: stat
+        character(len=12) :: got
+
+        call run("exit 3", echo=.false., verbose=.false., exitstat=stat)
+        if (stat /= 3) then
+            write(got, '(i0)') stat
+            call test_failed(error, "Expected exit status 3, got "//trim(got))
+        end if
+
+    end subroutine test_run_exit_status
+
+    subroutine test_glob(error)
+        type(error_t), allocatable, intent(out) :: error
+
+        call check_glob(error, "", "*??", .false.)
+        if (allocated(error)) return
+        ! A '*' must be able to backtrack over repeated characters
+        call check_glob(error, "aaabb", "*b", .true.)
+        if (allocated(error)) return
+        call check_glob(error, "unit_test_test", "*_test", .true.)
+        if (allocated(error)) return
+        call check_glob(error, "bbbbb", "b*b", .true.)
+        if (allocated(error)) return
+        call check_glob(error, "bb", "*b", .true.)
+        if (allocated(error)) return
+        call check_glob(error, "mississippi", "*sip*", .true.)
+        if (allocated(error)) return
+        call check_glob(error, "abcd", "?b*??", .true.)
+        if (allocated(error)) return
+        call check_glob(error, "ab", "*?*?*", .true.)
+        if (allocated(error)) return
+        call check_glob(error, "a12b12", "*12*23", .false.)
+        if (allocated(error)) return
+        call check_glob(error, "abcd", "?a*??", .false.)
+        if (allocated(error)) return
+        call check_glob(error, "bLah", "bLaH", .false.)
+
+    end subroutine test_glob
+
+    subroutine check_glob(error, tame, wild, expected)
+        type(error_t), allocatable, intent(out) :: error
+        character(len=*), intent(in) :: tame, wild
+        logical, intent(in) :: expected
+
+        if (glob(tame, wild) .neqv. expected) then
+            call test_failed(error, "glob('"//tame//"', '"//wild//"') should be "// &
+                & merge("true ", "false", expected))
+        end if
+
+    end subroutine check_glob
 
 end module test_filesystem

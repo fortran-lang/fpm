@@ -107,6 +107,8 @@ contains
       msg = 'ifort'
     else if (index(version_str, 'Intel') > 0) then
       msg = 'ifx'
+    else if (index(version_str, 'AOCC') > 0) then
+      msg = 'flang-classic'
     else if (index(version_str, 'flang') > 0) then
       msg = 'flang'
     else

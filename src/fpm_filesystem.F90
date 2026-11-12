@@ -11,7 +11,7 @@ module fpm_filesystem
         str_begins_with_str, string_cat, str
     use iso_c_binding, only: c_char, c_ptr, c_int, c_null_char, c_associated, c_f_pointer
     use fpm_error, only : fpm_stop, error_t, fatal_error
-    use shlex_module, only: sh_split => split, ms_split
+    use shlex_module, only: sh_split => split, ms_split, quote => ms_quote
     implicit none
     private
     public :: basename, canon_path, dirname, is_dir, join_path, number_of_rows, list_files, get_local_prefix, &
@@ -58,6 +58,12 @@ module fpm_filesystem
             integer(kind=c_int), intent(in), value :: argc
             integer(kind=c_int) :: r
         end function c_run_argv
+
+        function c_mkdir_p(path) result(r) bind(c, name="c_mkdir_p")
+            import c_char, c_int
+            character(kind=c_char), intent(in) :: path(*)
+            integer(kind=c_int) :: r
+        end function c_mkdir_p
     end interface
 #endif
 
@@ -228,6 +234,8 @@ logical function is_dir(dir)
     character(*), intent(in) :: dir
     integer :: stat
 
+    is_dir = .false.
+    if (len_trim(dir) == 0) return
     select case (get_os_type())
 
     case (OS_UNKNOWN, OS_LINUX, OS_MACOS, OS_CYGWIN, OS_SOLARIS, OS_FREEBSD, OS_OPENBSD)
@@ -235,12 +243,12 @@ logical function is_dir(dir)
         is_dir = c_is_dir(dir(1:len_trim(dir))//c_null_char) /= 0
         return
 #else
-        call run( "test -d " // dir , &
+        call run( "test -d " // quote(trim(dir)) , &
                 & exitstat=stat,echo=.false.,verbose=.false.)
 #endif
 
     case (OS_WINDOWS)
-        call run('cmd /c "if not exist ' // windows_path(dir) // '\ exit /B 1"', &
+        call run('cmd /d /c if not exist "' // windows_path(trim(dir)) // '\" exit /B 1', &
                 & exitstat=stat,echo=.false.,verbose=.false.)
 
     end select
@@ -520,12 +528,20 @@ subroutine mkdir(dir, echo)
     logical, intent(in), optional :: echo
 
     integer :: stat
+    logical :: echo_local
 
     if (is_dir(dir)) return
 
     select case (get_os_type())
         case (OS_UNKNOWN, OS_LINUX, OS_MACOS, OS_CYGWIN, OS_SOLARIS, OS_FREEBSD, OS_OPENBSD)
+#ifndef FPM_BOOTSTRAP
+            echo_local = .true.
+            if (present(echo)) echo_local = echo
+            if (echo_local) print *, '+ ', 'mkdir -p ' // dir
+            stat = c_mkdir_p(dir(1:len_trim(dir))//c_null_char)
+#else
             call run('mkdir -p ' // dir, exitstat=stat,echo=echo,verbose=.false.)
+#endif
 
         case (OS_WINDOWS)
             call run("mkdir " // windows_path(dir), &
@@ -1181,6 +1197,9 @@ subroutine run(cmd,echo,exitstat,verbose,redirect)
     !$omp critical (run_command)
     call execute_command_line(cmd//redirect_str, exitstat=stat,cmdstat=cmdstat,cmdmsg=cmdmsg)
     !$omp end critical (run_command)
+
+    ! NAG returns the raw wait status, in which a program that exits with n reads n*256
+    if (os_is_unix() .and. stat > 255 .and. modulo(stat, 256) == 0) stat = stat / 256
 
     ! Explain a missing program only when the command could not be launched -- Unix
     ! cmdstat/=0 "Invalid command line", Windows cmdstat==0 but cmd.exe exit 9009 -- and

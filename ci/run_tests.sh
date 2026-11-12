@@ -151,6 +151,10 @@ pushd version_file
 "$fpm" run
 popd
 
+pushd include_directory_with_spaces
+"$fpm" run
+popd
+
 pushd with_c
 "$fpm" build
 "$fpm" run --target with_c
@@ -174,10 +178,13 @@ pushd program_with_cpp_guarded_module
 "$fpm" run 
 popd
 
-pushd link_executable
-"$fpm" build
-"$fpm" run --target gomp_test
-popd
+# link_executable links gomp, GCC's OpenMP runtime
+if [[ "$FPM_FC" != *flang* ]]; then
+   pushd link_executable
+   "$fpm" build
+   "$fpm" run --target gomp_test
+   popd
+fi
 
 pushd fortran_includes
 "$fpm" build

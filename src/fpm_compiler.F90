@@ -40,8 +40,8 @@ use fpm_environment, only: &
         OS_UNKNOWN, &
         os_is_unix, &
         library_filename
-use fpm_filesystem, only: join_path, basename, get_temp_filename, delete_file, unix_path, &
-    & getline, run, run_argv
+use fpm_filesystem, only: join_path, basename, dirname, get_temp_filename, delete_file, unix_path, &
+    & getline, run, run_argv, which, exists
 use fpm_strings, only: split, string_cat, string_t, str_ends_with, str_begins_with_str, &
     & string_array_contains, lower, add_strings
 use fpm_error, only: error_t, fatal_error, fpm_stop
@@ -52,7 +52,7 @@ use fpm_versioning, only: version_t
 use shlex_module, only: sh_split => split, ms_split, quote => ms_quote
 implicit none
 public :: compiler_t, new_compiler, archiver_t, new_archiver, get_macros
-public :: append_clean_flags, append_clean_flags_array
+public :: append_clean_flags, append_clean_flags_array, drop_compile_options
 public :: debug
 public :: id_gcc,id_all
 public :: match_compiler_type, compiler_id_name, validate_compiler_name, is_cxx_gnu_based
@@ -121,6 +121,8 @@ contains
     procedure :: get_install_name_flags
     !> Generate header padding flags for macOS executables
     procedure :: get_headerpad_flags
+    !> Get flag that preprocesses a source whose suffix asks for it
+    procedure :: get_preprocess_flag
     !> Compile a Fortran object
     procedure :: compile_fortran
     !> Compile a C object
@@ -261,6 +263,7 @@ character(*), parameter :: &
 character(*), parameter :: &
     flag_nag_coarray = " -coarray=single", &
     flag_nag_pic = " -PIC", &
+    flag_nag_fpp = " -fpp", &
     flag_nag_check = " -C", &
     flag_nag_debug = " -g -O0", &
     flag_nag_opt = " -O4", &
@@ -313,8 +316,12 @@ function get_default_flags(self, release) result(flags)
     select case (self%id)
     case (id_gcc, id_f95, id_caf, id_flang_classic, id_amdflang, id_f18, id_lfortran, &
           id_intel_classic_nix, id_intel_classic_mac, id_intel_llvm_nix, &
-          id_intel_llvm_unknown, id_pgi, id_nvhpc, id_nag, id_cray, id_ibmxl)
+          id_intel_llvm_unknown, id_pgi, id_nvhpc, id_cray, id_ibmxl)
         pic_flag = " -fPIC"
+    case (id_nag)
+        ! NAG spells this `-PIC` and rejects `-fPIC` outright
+        ! ("Option error: Unrecognised option -fPIC"), which fails every source probe
+        pic_flag = flag_nag_pic
     case (id_flang)
         ! LLVM Flang doesn't support -fPIC on Windows MSVC target
         if (get_os_type() == OS_WINDOWS) then
@@ -425,7 +432,7 @@ subroutine get_release_compile_flags(id, flags)
         flags = &
             flag_lfortran_opt
 
-    case(id_flang)
+    case(id_flang, id_flang_classic)
         flags = &
             flag_flang_opt
 
@@ -525,7 +532,7 @@ subroutine get_debug_compile_flags(id, flags)
     case(id_lfortran)
         flags = ""
 
-    case(id_flang)
+    case(id_flang, id_flang_classic)
         flags = &
             flag_flang_debug
 
@@ -545,7 +552,7 @@ pure subroutine set_cpp_preprocessor_flags(id, flags)
     select case(id)
     case default
         flag_cpp_preprocessor = ""
-    case(id_caf, id_gcc, id_f95, id_nvhpc, id_flang, id_amdflang)
+    case(id_caf, id_gcc, id_f95, id_nvhpc, id_flang, id_amdflang, id_flang_classic)
         flag_cpp_preprocessor = "-cpp"
     case(id_intel_classic_windows, id_intel_llvm_windows)
         flag_cpp_preprocessor = "/fpp"
@@ -860,7 +867,7 @@ subroutine get_main_flags(self, language, flags)
                flags = '-nofor-main'
            case(id_intel_classic_windows,id_intel_llvm_windows)
                flags = '/nofor-main'
-           case (id_pgi,id_nvhpc)
+           case (id_pgi,id_nvhpc,id_flang_classic)
                flags = '-Mnomain'
         end select
 
@@ -871,7 +878,7 @@ subroutine get_main_flags(self, language, flags)
                flags = '-nofor-main'
            case(id_intel_classic_windows,id_intel_llvm_windows)
                flags = '/nofor-main'
-           case (id_pgi,id_nvhpc)
+           case (id_pgi,id_nvhpc,id_flang_classic)
                flags = '-Mnomain'
         end select
 
@@ -903,6 +910,10 @@ subroutine get_default_c_compiler(f_compiler, c_compiler)
         c_compiler='xlc'
 
     case(id_lfortran)
+        c_compiler = 'cc'
+
+    case(id_nag)
+        ! nagfor compiles C through the host C compiler, but without passing on -I
         c_compiler = 'cc'
 
     case(id_gcc)
@@ -945,6 +956,9 @@ subroutine get_default_cxx_compiler(f_compiler, cxx_compiler)
 
     case(id_lfortran)
         cxx_compiler = 'cc'
+
+    case(id_nag)
+        cxx_compiler = 'c++'
 
     case(id_gcc)
         cxx_compiler = 'g++'
@@ -1023,15 +1037,51 @@ function get_compiler_id(compiler) result(id)
                command = trim(full_command_parts(1))
             endif
             if (allocated(command)) then
-                id = match_compiler_type(command)
+                id = identify_compiler(command)
                 if (id /= id_unknown) return
             end if
         end if
     end if
 
-    id = match_compiler_type(compiler)
+    id = identify_compiler(compiler)
 
 end function get_compiler_id
+
+!> Identify a compiler from its name, and for a compiler named like LLVM flang, from its
+!> installation: AOCC, like other classic flang installs, also calls its compiler flang
+function identify_compiler(compiler) result(id)
+    character(len=*), intent(in) :: compiler
+    integer(kind=compiler_enum) :: id
+
+    id = match_compiler_type(compiler)
+    if (id == id_flang) then
+        if (is_classic_flang(compiler)) id = id_flang_classic
+    end if
+
+end function identify_compiler
+
+!> Whether a compiler named flang is classic flang: its driver runs the flang1 program
+!> installed next to it, which LLVM flang does not have
+function is_classic_flang(compiler) result(classic)
+    character(len=*), intent(in) :: compiler
+    logical :: classic
+
+    character(len=:), allocatable :: path, bin_dir
+
+    classic = .false.
+
+    ! A compiler given by name is looked up on the PATH
+    if (scan(compiler, '/\') > 0) then
+        path = compiler
+    else
+        path = which(compiler)
+    end if
+    if (len_trim(path) == 0) return
+
+    bin_dir = dirname(path)
+    classic = exists(bin_dir//'flang1') .or. exists(bin_dir//'flang1.exe')
+
+end function is_classic_flang
 
 function match_compiler_type(compiler) result(id)
     character(len=*), intent(in) :: compiler
@@ -1156,7 +1206,7 @@ pure elemental subroutine validate_compiler_name(compiler_name, is_valid)
 
     select case (lname)
       case("gfortran", "ifort", "ifx", "pgfortran", &
-           "nvfortran", "flang", "amdflang", "caf", &
+           "nvfortran", "flang", "flang-new", "f18", "flang-classic", "amdflang", "caf", &
            "f95", "lfortran", "lfc", "nagfor",&
            "crayftn", "xlf90", "ftn95", "all")
         is_valid = .true.
@@ -1218,13 +1268,14 @@ function enumerate_libraries(self, prefix, libs) result(r)
         joined = string_cat(libs, ".lib ") // ".lib"
         r = trim(prefix) // " " // trim(joined)
 
-    case (id_nag, id_ibmxl)
-        ! NAG and IBMXL need -Wl, wrapper around linker flags
+    case (id_ibmxl)
+        ! IBMXL needs -Wl, wrapper around linker flags
         joined = string_cat(libs, " -Wl,")
         r = trim(prefix) // " -Wl," // trim(joined)
 
     case default
-        ! Generic Unix-style linker flags: use `-lfoo`
+        ! Generic Unix-style linker flags: use `-lfoo`. NAG takes these too: its `-Wl,`
+        ! hands the word to the host C compiler, which reads `-Wl,foo` as a file name
         joined = string_cat(libs, " -l")
         r = trim(prefix) // " -l" // trim(joined)
 
@@ -1308,13 +1359,33 @@ function get_headerpad_flags(self) result(flags)
     class(compiler_t), intent(in) :: self
     character(len=:), allocatable :: flags
 
-    if (get_os_type() /= OS_MACOS .or. self%id == id_nag) then
+    if (get_os_type() /= OS_MACOS) then
         flags = ""
         return
     end if
     ! Reserve enough space in the Mach-O header to safely add two install_name or rpath later
-    flags = " -Wl,-headerpad,0x200"
+    if (self%id == id_nag) then
+        ! NAG hands -Wl, options to the host C compiler, split at single commas
+        flags = " -Wl,-Wl,,-headerpad,,0x200"
+    else
+        flags = " -Wl,-headerpad,0x200"
+    end if
 end function get_headerpad_flags
+
+!>
+!> Get the flag that preprocesses a Fortran source with an upper-case `.F90` or `.F` suffix,
+!> for compilers that do not do so on their own: NAG runs `fpp` by suffix only on `.ff90`,
+!> `.ff95` and `.ff` sources
+!>
+function get_preprocess_flag(self, source_file) result(flag)
+    class(compiler_t), intent(in) :: self
+    character(len=*), intent(in) :: source_file
+    character(len=:), allocatable :: flag
+
+    flag = ""
+    if (self%id /= id_nag) return
+    if (str_ends_with(source_file, ".F90") .or. str_ends_with(source_file, ".F")) flag = flag_nag_fpp
+end function get_preprocess_flag
 
 !> Create new compiler instance
 subroutine new_compiler(self, fc, cc, cxx, echo, verbose)
@@ -2316,14 +2387,19 @@ subroutine append_clean_flags(flags, new_flags)
     character(*), intent(in) :: new_flags
 
     type(string_t), allocatable :: flags_array(:), new_flags_array(:)
-    integer :: i
+    integer :: i, n_old
 
     call tokenize_flags(flags, flags_array)
     call tokenize_flags(new_flags, new_flags_array)
 
+    ! `flags_array` starts out holding the flags already in `flags`, and
+    ! `append_clean_flags_array` only ever appends: re-emitting the whole array
+    ! would repeat every one of them on each call
+    n_old = size(flags_array)
+
     call append_clean_flags_array(flags_array, new_flags_array)
 
-    do i = 1, size(flags_array)
+    do i = n_old + 1, size(flags_array)
         flags = flags // " " // flags_array(i)%s
     end do
 end subroutine append_clean_flags
@@ -2347,6 +2423,50 @@ subroutine append_clean_flags_array(flags_array, new_flags_array)
         call add_strings(flags_array, new_flags_array(i))
     end do
 end subroutine append_clean_flags_array
+
+!> Link flags without the options that the compile flags already pass: executables are
+!> linked with both, and a metapackage can set the same option in each (OpenMP), which a
+!> strict compiler rejects when repeated (NAG: `-openmp`). Only an option standing alone
+!> is dropped: paths, libraries, linker flags, repeats, and options that take an argument
+!> stay with that argument. The flags are split on blanks, not parsed, so Windows paths
+!> keep their backslashes.
+function drop_compile_options(link_flags, compile_flags) result(flags)
+    character(*), intent(in) :: link_flags, compile_flags
+    character(:), allocatable :: flags
+
+    !> Options that take the next token as their argument
+    character(len=*), parameter :: keywords(*) = [character(len=15) :: '-framework', &
+        & '-weak_framework', '-arch', '-isysroot', '-target', '-rpath', '-u', '-T', '-z']
+
+    character(len=:), allocatable :: link_tokens(:), compile_tokens(:)
+    integer :: i
+    logical :: lone
+
+    call split(link_flags, link_tokens)
+    call split(compile_flags, compile_tokens)
+
+    flags = ""
+    do i = 1, size(link_tokens)
+        lone = str_begins_with_str(link_tokens(i), '-') .and. .not.takes_argument(link_tokens(i))
+        if (lone) lone = .not.(str_begins_with_str(link_tokens(i), '-l') .or. &
+                               str_begins_with_str(link_tokens(i), '-L') .or. &
+                               str_begins_with_str(link_tokens(i), '-Wl,'))
+        if (lone .and. i > 1) lone = .not.takes_argument(link_tokens(i-1))
+        if (lone) then
+            if (any(compile_tokens == link_tokens(i))) cycle
+        end if
+        flags = flags // " " // trim(link_tokens(i))
+    end do
+
+contains
+
+    !> Whether `token` is an option followed by its argument (`-framework Accelerate`)
+    pure logical function takes_argument(token)
+        character(*), intent(in) :: token
+        takes_argument = str_begins_with_str(token, '-X') .or. any(keywords == token)
+    end function takes_argument
+
+end function drop_compile_options
 
 !> Tokenize a string into an array of compiler flags
 subroutine tokenize_flags(flags, flags_array)

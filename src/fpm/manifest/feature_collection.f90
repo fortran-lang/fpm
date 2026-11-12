@@ -486,7 +486,7 @@ module fpm_manifest_feature_collection
         class(executable_config_t), allocatable, intent(in) :: source(:)
         type(error_t), allocatable, intent(out) :: error
         
-        class(executable_config_t), allocatable :: temp(:)
+        type(executable_config_t), allocatable :: temp(:)
         integer :: target_size, source_size, i, j
         
         if (.not. allocated(source)) return
@@ -514,12 +514,14 @@ module fpm_manifest_feature_collection
             allocate(target(source_size), source=source)
         else
             target_size = size(target)
+            ! Copy element by element: NAG 7.2 crashes on an array assignment from a polymorphic array
             allocate(temp(target_size + source_size))
-            select type (temp)
-            type is (executable_config_t)
-                temp(1:target_size) = target
-                temp(target_size+1:target_size+source_size) = source
-            end select
+            do i = 1, target_size
+                temp(i) = target(i)
+            end do
+            do i = 1, source_size
+                temp(target_size+i) = source(i)
+            end do
             call move_alloc(temp, target)
         end if
         
@@ -531,7 +533,7 @@ module fpm_manifest_feature_collection
         class(dependency_config_t), allocatable, intent(in) :: source(:)
         type(error_t), allocatable, intent(out) :: error
         
-        class(dependency_config_t), allocatable :: temp(:)
+        type(dependency_config_t), allocatable :: temp(:)
         integer :: target_size, source_size, i, j
         
         if (.not. allocated(source)) return
@@ -559,12 +561,14 @@ module fpm_manifest_feature_collection
             allocate(target(source_size), source=source)
         else
             target_size = size(target)
+            ! Copy element by element: NAG 7.2 crashes on an array assignment from a polymorphic array
             allocate(temp(target_size + source_size))
-            select type (temp)
-            type is (dependency_config_t)
-                temp(1:target_size) = target
-                temp(target_size+1:target_size+source_size) = source
-            end select
+            do i = 1, target_size
+                temp(i) = target(i)
+            end do
+            do i = 1, source_size
+                temp(target_size+i) = source(i)
+            end do
             call move_alloc(temp, target)
         end if
         
@@ -590,7 +594,7 @@ module fpm_manifest_feature_collection
         class(example_config_t), allocatable, intent(in) :: source(:)
         type(error_t), allocatable, intent(out) :: error
         
-        class(example_config_t), allocatable :: temp(:)
+        type(example_config_t), allocatable :: temp(:)
         integer :: target_size, source_size, i, j
         
         if (.not. allocated(source)) return
@@ -618,12 +622,14 @@ module fpm_manifest_feature_collection
             allocate(target(source_size), source=source)
         else
             target_size = size(target)
+            ! Copy element by element: NAG 7.2 crashes on an array assignment from a polymorphic array
             allocate(temp(target_size + source_size))
-            select type (temp)
-            type is (example_config_t)
-                temp(1:target_size) = target
-                temp(target_size+1:target_size+source_size) = source
-            end select
+            do i = 1, target_size
+                temp(i) = target(i)
+            end do
+            do i = 1, source_size
+                temp(target_size+i) = source(i)
+            end do
             call move_alloc(temp, target)
         end if
     end subroutine merge_example_arrays
@@ -634,7 +640,7 @@ module fpm_manifest_feature_collection
         class(test_config_t), allocatable, intent(in) :: source(:)
         type(error_t), allocatable, intent(out) :: error
         
-        class(test_config_t), allocatable :: temp(:)
+        type(test_config_t), allocatable :: temp(:)
         integer :: target_size, source_size, i, j
         
         if (.not. allocated(source)) return
@@ -663,12 +669,14 @@ module fpm_manifest_feature_collection
             target = source
         else
             target_size = size(target)
+            ! Copy element by element: NAG 7.2 crashes on an array assignment from a polymorphic array
             allocate(temp(target_size + source_size))
-            select type (temp)
-            type is (test_config_t)
-                temp(1:target_size) = target
-                temp(target_size+1:target_size+source_size) = source
-            end select
+            do i = 1, target_size
+                temp(i) = target(i)
+            end do
+            do i = 1, source_size
+                temp(target_size+i) = source(i)
+            end do
             call move_alloc(temp, target)
         end if
     end subroutine merge_test_arrays

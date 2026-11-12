@@ -30,8 +30,8 @@ use fpm_error, only : fpm_stop, error_t
 use fpm_environment, only: has_openmp, build_threads
 use fpm_filesystem, only: basename, dirname, join_path, exists, mkdir, run, getline, delete_file
 use fpm_model, only: fpm_model_t
+use fpm_compiler, only: drop_compile_options, id_gcc
 use fpm_strings, only: string_t, operator(.in.), fnv_1a
-use fpm_compiler, only: id_gcc
 use fpm_targets, only: build_target_t, build_target_ptr, FPM_TARGET_OBJECT, &
                        FPM_TARGET_C_OBJECT, FPM_TARGET_ARCHIVE, FPM_TARGET_EXECUTABLE, &
                        FPM_TARGET_CPP_OBJECT, FPM_TARGET_SHARED
@@ -336,6 +336,7 @@ subroutine build_target(model,target,verbose,dry_run,table,stat)
     integer, intent(out) :: stat
 
     integer :: fh
+    character(len=:), allocatable :: link_flags
     logical :: interface_aware, unchanged
 
     ! gfortran rewrites a .mod file only when the module interface changes, so an object
@@ -373,8 +374,11 @@ subroutine build_target(model,target,verbose,dry_run,table,stat)
             & target%compile_flags, target%output_log_file, stat, table, dry_run)
 
     case (FPM_TARGET_EXECUTABLE)
-        call model%compiler%link(target%output_file, &
-            & target%compile_flags//" "//target%link_flags, target%output_log_file, stat, dry_run)
+        ! Executables link in parallel: see run_argv
+        !$omp critical (fpm_string_result)
+        link_flags = target%compile_flags//drop_compile_options(target%link_flags, target%compile_flags)
+        !$omp end critical (fpm_string_result)
+        call model%compiler%link(target%output_file, link_flags, target%output_log_file, stat, dry_run)
 
     case (FPM_TARGET_ARCHIVE)
         call model%archiver%make_archive(target%output_file, target%link_objects, &

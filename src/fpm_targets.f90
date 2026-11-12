@@ -30,9 +30,10 @@ use fpm_model
 use fpm_compiler, only : compiler_t
 use fpm_environment, only: get_os_type, OS_WINDOWS, OS_MACOS, library_filename
 use fpm_filesystem, only: dirname, join_path, canon_path
+use shlex_module, only: quote => ms_quote
 use fpm_strings, only: string_t, operator(.in.), string_cat, fnv_1a, resize, lower, str_ends_with, &
     add_strings
-use fpm_compiler, only: get_macros, is_cxx_gnu_based
+use fpm_compiler, only: get_macros, is_cxx_gnu_based, append_clean_flags
 use fpm_sources, only: get_exe_name_with_suffix
 use fpm_manifest_library, only: library_config_t
 use fpm_manifest_preprocess, only: preprocess_config_t
@@ -1124,11 +1125,11 @@ subroutine resolve_target_linking(targets, model, library, error)
     
     allocate(character(0) :: global_include_flags)
     if (allocated(model%include_dirs)) then
-        if (size(model%include_dirs) > 0) then
+        do i = 1, size(model%include_dirs)
             global_include_flags = global_include_flags // &
-            & " -I" // string_cat(model%include_dirs," -I")
-        end if
-        end if
+                & " -I" // quote(model%include_dirs(i)%s)
+        end do
+    end if
         
     if (present(library)) then 
         shared     = library%shared()
@@ -1175,6 +1176,13 @@ subroutine resolve_target_linking(targets, model, library, error)
 
 
             call target%set_output_dir(get_output_dir(model%build_prefix, target%compile_flags))
+
+            ! Preprocess `.F90`/`.F` sources with compilers that do not by suffix (NAG). Added
+            ! after the output directory, so these objects share it with the package's others
+            if (target%target_type == FPM_TARGET_OBJECT .and. allocated(target%source)) then
+                call append_clean_flags(target%compile_flags, &
+                                        model%compiler%get_preprocess_flag(target%source%file_name))
+            end if
 
         end associate
 

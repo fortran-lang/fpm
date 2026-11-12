@@ -35,7 +35,7 @@ module fpm_manifest_dependency
     use tomlf, only: toml_table, toml_key, toml_stat
     use fpm_toml, only: get_value, check_keys, serializable_t, add_table, &
         & set_value, set_string, get_list, set_list
-    use fpm_filesystem, only: windows_path, join_path, is_absolute_path
+    use fpm_filesystem, only: windows_path, join_path, is_absolute_path, canon_path
     use fpm_environment, only: get_os_type, OS_WINDOWS
     use fpm_manifest_metapackages, only: metapackage_config_t, is_meta_package, new_meta_config, &
             metapackage_request_t, new_meta_request
@@ -426,6 +426,14 @@ contains
         endif
         if (allocated(cached%git)) then
             if (.not.git_matches_manifest(cached%git,manifest%git,verbosity,iunit)) return
+        end if
+
+        !> The cache stores the canonical directory, so compare canonical forms
+        if (allocated(manifest%path) .and. allocated(cached%path)) then
+            if (canon_path(cached%path) /= canon_path(manifest%path)) then
+                if (verbosity>1) write(iunit,out_fmt) "PATH has changed: "//cached%path//" vs. "//manifest%path
+                return
+            end if
         end if
 
         !> A different feature set (or profile) means different macros and
