@@ -14,9 +14,9 @@ pushd example_packages/
 rm -rf ./*/build
 
 dir=hello_world
-"$fpm" -C $dir build
-"$fpm" -C $dir run --target hello_world
-"$fpm" -C $dir/app run
+"$fpm" build -C $dir
+"$fpm" run -C $dir --target hello_world
+"$fpm" run -C $dir/app
 
 # An invalid FPM_JOBS stops fpm with an error
 EXIT_CODE=0
