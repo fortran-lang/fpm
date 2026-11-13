@@ -863,24 +863,24 @@ contains
 
         ! Print header with feature name
         if (allocated(extracted%name)) then
-            print *, '+ feature collection: ', trim(extracted%name)
+            print '(a)', ' + feature collection: '//trim(extracted%name)
         end if
 
         ! Print platform information
-        print *, '+   platform: ', platform%compiler_name(), ' on ', platform%os_name()
+        print '(a)', ' +   platform: '//platform%compiler_name()//' on '//platform%os_name()
 
         ! Print flags
         if (allocated(extracted%flags)) then
-            print *, '+   flags: ', trim(extracted%flags)
+            print '(a)', ' +   flags: '//trim(extracted%flags)
         end if
         if (allocated(extracted%c_flags)) then
-            print *, '+   c-flags: ', trim(extracted%c_flags)
+            print '(a)', ' +   c-flags: '//trim(extracted%c_flags)
         end if
         if (allocated(extracted%cxx_flags)) then
-            print *, '+   cxx-flags: ', trim(extracted%cxx_flags)
+            print '(a)', ' +   cxx-flags: '//trim(extracted%cxx_flags)
         end if
         if (allocated(extracted%link_time_flags)) then
-            print *, '+   link-flags: ', trim(extracted%link_time_flags)
+            print '(a)', ' +   link-flags: '//trim(extracted%link_time_flags)
         end if
 
         ! Print preprocessor macros
@@ -893,29 +893,29 @@ contains
             end do
 
             if (n_macros > 0) then
-                print *, '+   cpp-macros: yes (', n_macros, ' defined)'
+                print '(a,i0,a)', ' +   cpp-macros: yes (', n_macros, ' defined)'
                 do i = 1, size(extracted%preprocess)
                     if (allocated(extracted%preprocess(i)%macros)) then
                         do j = 1, size(extracted%preprocess(i)%macros)
-                            print *, '+     - ', trim(extracted%preprocess(i)%macros(j)%s)
+                            print '(a)', ' +     - '//trim(extracted%preprocess(i)%macros(j)%s)
                         end do
                     end if
                 end do
             else
-                print *, '+   cpp-macros: no'
+                print '(a)', ' +   cpp-macros: no'
             end if
         else
-            print *, '+   cpp-macros: no'
+            print '(a)', ' +   cpp-macros: no'
         end if
 
         ! Print description if available
         if (allocated(extracted%description)) then
-            print *, '+   description: ', trim(extracted%description)
+            print '(a)', ' +   description: '//trim(extracted%description)
         end if
 
         ! Print number of variants in collection
         if (allocated(collection%variants)) then
-            print *, '+   variants: ', size(collection%variants)
+            print '(a,i0)', ' +   variants: ', size(collection%variants)
         end if
 
     end subroutine print_feature_collection

@@ -95,10 +95,10 @@ subroutine build_model(model, settings, package_config, error)
     ! Print enabled features/profile in verbose mode
     if (settings%verbose) then
         if (allocated(settings%features)) then  
-            if (size(settings%features)>0) print *, '+ features: [', string_cat(settings%features,','),']'
+            if (size(settings%features)>0) print '(a)', ' + features: ['//string_cat(settings%features,',')//']'
         end if
         if (allocated(settings%profile)) then
-            print *, '+ profile: ', settings%profile
+            print '(a)', ' + profile: '//settings%profile
         end if
     end if
 
@@ -330,15 +330,15 @@ subroutine build_model(model, settings, package_config, error)
     endif
 
     if (settings%verbose) then
-        write(*,*)'<INFO> BUILD_NAME: ',model%build_prefix
-        write(*,*)'<INFO> COMPILER:  ',model%compiler%fc
-        write(*,*)'<INFO> C COMPILER:  ',model%compiler%cc
-        write(*,*)'<INFO> CXX COMPILER: ',model%compiler%cxx
-        write(*,*)'<INFO> COMPILER OPTIONS:  ', model%fortran_compile_flags
-        write(*,*)'<INFO> C COMPILER OPTIONS:  ', model%c_compile_flags
-        write(*,*)'<INFO> CXX COMPILER OPTIONS: ', model%cxx_compile_flags
-        write(*,*)'<INFO> LINKER OPTIONS:  ', model%link_flags
-        write(*,*)'<INFO> INCLUDE DIRECTORIES:  [', string_cat(model%include_dirs,','),']'
+        write(*,'(a)')' <INFO> BUILD_NAME: '//model%build_prefix
+        write(*,'(a)')' <INFO> COMPILER:  '//model%compiler%fc
+        write(*,'(a)')' <INFO> C COMPILER:  '//model%compiler%cc
+        write(*,'(a)')' <INFO> CXX COMPILER: '//model%compiler%cxx
+        write(*,'(a)')' <INFO> COMPILER OPTIONS:  '//model%fortran_compile_flags
+        write(*,'(a)')' <INFO> C COMPILER OPTIONS:  '//model%c_compile_flags
+        write(*,'(a)')' <INFO> CXX COMPILER OPTIONS: '//model%cxx_compile_flags
+        write(*,'(a)')' <INFO> LINKER OPTIONS:  '//model%link_flags
+        write(*,'(a)')' <INFO> INCLUDE DIRECTORIES:  ['//string_cat(model%include_dirs,',')//']'
     end if
 
     ! Check for invalid module names
