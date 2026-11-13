@@ -35,7 +35,7 @@ module fpm_release
 #else
         ! Fallback to last known version when the macro is undefined, or when the
         ! preprocessor cannot turn it into a string (NAG fpp)
-        ver_string = "0.13.0"
+        ver_string = "0.13.1"
 #endif
 
         call new_version(fpm_version,ver_string,error)
