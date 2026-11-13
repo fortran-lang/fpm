@@ -91,8 +91,30 @@ rm -rf test_build_all
 "$fpm" test --build-dir test_build_all 2>/dev/null || echo "No tests in $test_package (expected)"
 echo "✓ All commands work with custom build directory"
 
+# Test 7: clean acts on the custom build directory, not on ./build (#1408)
+echo "Test 7: clean with custom build directory"
+rm -rf ./build clean_build_test not_a_build_dir
+"$fpm" build
+"$fpm" build --build-dir clean_build_test
+"$fpm" clean --skip --build-dir clean_build_test
+test -d clean_build_test/dependencies
+test -z "$(find clean_build_test -mindepth 1 -maxdepth 1 -type d ! -name dependencies)"
+"$fpm" clean --all --build-dir clean_build_test
+test ! -d clean_build_test
+FPM_BUILD_DIR=clean_build_test "$fpm" build
+FPM_BUILD_DIR=clean_build_test "$fpm" clean --all
+test ! -d clean_build_test
+test -d build
+# A directory that fpm did not create is left alone
+mkdir not_a_build_dir
+if "$fpm" clean --all --build-dir not_a_build_dir; then
+    echo "ERROR: clean should refuse a directory without fpm's .gitignore" && exit 1
+fi
+test -d not_a_build_dir
+echo "✓ clean works with custom build directory"
+
 # Cleanup test directories
-rm -rf custom_build_test env_build_test cli_override_test test_build_all
+rm -rf custom_build_test env_build_test cli_override_test test_build_all not_a_build_dir
 popd
 
 echo "All custom build directory tests passed!"

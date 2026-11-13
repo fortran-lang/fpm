@@ -829,13 +829,14 @@ subroutine cmd_run(settings,test)
 
 end subroutine cmd_run
 
-subroutine delete_skip(is_unix)
+subroutine delete_skip(is_unix, build_dir)
     !> delete directories in the build folder, skipping dependencies
     logical, intent(in) :: is_unix
+    character(len=*), intent(in) :: build_dir
     character(len=:), allocatable :: dir
     type(string_t), allocatable :: files(:)
     integer :: i
-    call list_files('build', files, .false.)
+    call list_files(build_dir, files, .false.)
     do i = 1, size(files)
         if (is_dir(files(i)%s)) then
             dir = files(i)%s
@@ -944,8 +945,8 @@ subroutine cmd_clean(settings)
 
     ! Handle target-specific cleaning
     if (any([settings%clean_test, settings%clean_apps, settings%clean_examples])) then
-        if (.not. is_dir('build')) then
-            write (stdout, '(A)') "fpm: No build directory found."
+        if (.not. is_dir(settings%build_dir)) then
+            write (stdout, '(A)') "fpm: No build directory found: "//settings%build_dir
             return
         end if
         call delete_targets(settings, error)
@@ -956,21 +957,26 @@ subroutine cmd_clean(settings)
         return
     end if
 
-    if (is_dir('build')) then
+    if (is_dir(settings%build_dir)) then
+        ! fpm writes a .gitignore into every build directory: never delete a directory without one
+        if (.not. exists(join_path(settings%build_dir, '.gitignore'))) then
+            call fpm_stop(1, '"'//settings%build_dir//'" is not an fpm build directory (no .gitignore), not deleting it.')
+        end if
+
         ! Remove the entire build directory
         if (settings%clean_all) then
-            call os_delete_dir(os_is_unix(), 'build'); return
+            call os_delete_dir(os_is_unix(), settings%build_dir); return
         ! Remove the build directory but skip dependencies
         else if (settings%clean_skip) then
-            call delete_skip(os_is_unix()); return
+            call delete_skip(os_is_unix(), settings%build_dir); return
         end if
 
         ! Prompt to remove the build directory but skip dependencies
-        write(stdout, '(A)', advance='no') "Delete build, excluding dependencies (y/n)? "
+        write(stdout, '(A)', advance='no') "Delete "//settings%build_dir//", excluding dependencies (y/n)? "
         read(stdin, '(A1)') user_response
-        if (lower(user_response) == 'y') call delete_skip(os_is_unix())
+        if (lower(user_response) == 'y') call delete_skip(os_is_unix(), settings%build_dir)
     else
-        write (stdout, '(A)') "fpm: No build directory found."
+        write (stdout, '(A)') "fpm: No build directory found: "//settings%build_dir
     end if
 end subroutine cmd_clean
 
