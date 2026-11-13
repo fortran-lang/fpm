@@ -393,6 +393,9 @@ bash "../ci/test_features.sh" "$fpm"
 # Test incremental rebuilds after failed or partial builds
 bash "../ci/test_incremental_rebuild.sh" "$fpm"
 
+# Preserve dots in executable names in both list-output paths
+bash "../ci/test_dotted_executable_names.sh" "$fpm"
+
 # Test archives and executables made in parallel
 bash "../ci/test_parallel_link.sh" "$fpm"
 

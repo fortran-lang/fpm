@@ -803,7 +803,8 @@ subroutine cmd_run(settings,test)
 
                 if (exe_source%unit_scope == run_scope) then
                     write(stderr,'(A)',advance=(merge("yes","no ",modulo(jj,nCol)==0))) &
-                        & [character(len=col_width) :: basename(exe_target%output_file, suffix=.false.)]
+                        & [character(len=col_width) :: basename(exe_target%output_file, &
+                        & suffix=.not.str_ends_with(exe_target%output_file, '.exe'))]
                     jj = jj + 1
                 end if
             end if
@@ -819,7 +820,8 @@ subroutine cmd_run(settings,test)
         write(stderr,*) 'Matched names:'
         do ii=1,size(executables)
             write(stderr,'(A)',advance=(merge("yes","no ",modulo(jj,nCol)==0))) &
-                & [character(len=col_width) :: basename(executables(ii)%s, suffix=.false.)]
+                & [character(len=col_width) :: basename(executables(ii)%s, &
+                & suffix=.not.str_ends_with(executables(ii)%s, '.exe'))]
             jj = jj + 1
         end do
         write(stderr,*)
