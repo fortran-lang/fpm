@@ -181,7 +181,7 @@ Add this dependency&rsquo;s package-level macros</p>
     <tbody>
         <tr>
             <td>
-              <span class="anchor" id="variable-model~3"></span>
+              <span class="anchor" id="variable-model"></span>
               type(<a href='../type/fpm_model_t.html'>fpm_model_t</a>),
             </td>
 <td>intent(out)</td>
@@ -196,7 +196,7 @@ Add this dependency&rsquo;s package-level macros</p>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-settings~3"></span>
+              <span class="anchor" id="variable-settings"></span>
               class(fpm_build_settings),
             </td>
 <td>intent(inout)</td>
@@ -226,7 +226,7 @@ Add this dependency&rsquo;s package-level macros</p>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-error~64"></span>
+              <span class="anchor" id="variable-error~5"></span>
               type(<a href='../type/error_t.html'>error_t</a>),
             </td>
 <td>intent(out),</td>
@@ -310,10 +310,10 @@ Add this dependency&rsquo;s package-level macros</p>
 <span class="w">    </span><span class="c">! Print enabled features/profile in verbose mode</span>
 <span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">settings</span><span class="p">%</span><span class="n">verbose</span><span class="p">)</span><span class="w"> </span><span class="k">then</span>
 <span class="k">        if</span><span class="w"> </span><span class="p">(</span><span class="nb">allocated</span><span class="p">(</span><span class="n">settings</span><span class="p">%</span><span class="n">features</span><span class="p">))</span><span class="w"> </span><span class="k">then  </span>
-<span class="k">            if</span><span class="w"> </span><span class="p">(</span><span class="n">size</span><span class="p">(</span><span class="n">settings</span><span class="p">%</span><span class="n">features</span><span class="p">)</span><span class="o">&gt;</span><span class="mi">0</span><span class="p">)</span><span class="w"> </span><span class="k">print</span><span class="w"> </span><span class="o">*</span><span class="p">,</span><span class="w"> </span><span class="s1">'+ features: ['</span><span class="p">,</span><span class="w"> </span><span class="n">string_cat</span><span class="p">(</span><span class="n">settings</span><span class="p">%</span><span class="n">features</span><span class="p">,</span><span class="s1">','</span><span class="p">),</span><span class="s1">']'</span>
+<span class="k">            if</span><span class="w"> </span><span class="p">(</span><span class="n">size</span><span class="p">(</span><span class="n">settings</span><span class="p">%</span><span class="n">features</span><span class="p">)</span><span class="o">&gt;</span><span class="mi">0</span><span class="p">)</span><span class="w"> </span><span class="k">print</span><span class="w"> </span><span class="s1">'(a)'</span><span class="p">,</span><span class="w"> </span><span class="s1">' + features: ['</span><span class="o">//</span><span class="n">string_cat</span><span class="p">(</span><span class="n">settings</span><span class="p">%</span><span class="n">features</span><span class="p">,</span><span class="s1">','</span><span class="p">)</span><span class="o">//</span><span class="s1">']'</span>
 <span class="w">        </span><span class="k">end if</span>
 <span class="k">        if</span><span class="w"> </span><span class="p">(</span><span class="nb">allocated</span><span class="p">(</span><span class="n">settings</span><span class="p">%</span><span class="n">profile</span><span class="p">))</span><span class="w"> </span><span class="k">then</span>
-<span class="k">            print</span><span class="w"> </span><span class="o">*</span><span class="p">,</span><span class="w"> </span><span class="s1">'+ profile: '</span><span class="p">,</span><span class="w"> </span><span class="n">settings</span><span class="p">%</span><span class="n">profile</span>
+<span class="k">            print</span><span class="w"> </span><span class="s1">'(a)'</span><span class="p">,</span><span class="w"> </span><span class="s1">' + profile: '</span><span class="o">//</span><span class="n">settings</span><span class="p">%</span><span class="n">profile</span>
 <span class="w">        </span><span class="k">end if</span>
 <span class="k">    end if</span>
 
@@ -545,15 +545,15 @@ Add this dependency&rsquo;s package-level macros</p>
 <span class="k">    endif</span>
 
 <span class="k">    if</span><span class="w"> </span><span class="p">(</span><span class="n">settings</span><span class="p">%</span><span class="n">verbose</span><span class="p">)</span><span class="w"> </span><span class="k">then</span>
-<span class="k">        write</span><span class="p">(</span><span class="o">*</span><span class="p">,</span><span class="o">*</span><span class="p">)</span><span class="s1">'&lt;INFO&gt; BUILD_NAME: '</span><span class="p">,</span><span class="n">model</span><span class="p">%</span><span class="n">build_prefix</span>
-<span class="w">        </span><span class="k">write</span><span class="p">(</span><span class="o">*</span><span class="p">,</span><span class="o">*</span><span class="p">)</span><span class="s1">'&lt;INFO&gt; COMPILER:  '</span><span class="p">,</span><span class="n">model</span><span class="p">%</span><span class="n">compiler</span><span class="p">%</span><span class="n">fc</span>
-<span class="w">        </span><span class="k">write</span><span class="p">(</span><span class="o">*</span><span class="p">,</span><span class="o">*</span><span class="p">)</span><span class="s1">'&lt;INFO&gt; C COMPILER:  '</span><span class="p">,</span><span class="n">model</span><span class="p">%</span><span class="n">compiler</span><span class="p">%</span><span class="n">cc</span>
-<span class="w">        </span><span class="k">write</span><span class="p">(</span><span class="o">*</span><span class="p">,</span><span class="o">*</span><span class="p">)</span><span class="s1">'&lt;INFO&gt; CXX COMPILER: '</span><span class="p">,</span><span class="n">model</span><span class="p">%</span><span class="n">compiler</span><span class="p">%</span><span class="n">cxx</span>
-<span class="w">        </span><span class="k">write</span><span class="p">(</span><span class="o">*</span><span class="p">,</span><span class="o">*</span><span class="p">)</span><span class="s1">'&lt;INFO&gt; COMPILER OPTIONS:  '</span><span class="p">,</span><span class="w"> </span><span class="n">model</span><span class="p">%</span><span class="n">fortran_compile_flags</span>
-<span class="w">        </span><span class="k">write</span><span class="p">(</span><span class="o">*</span><span class="p">,</span><span class="o">*</span><span class="p">)</span><span class="s1">'&lt;INFO&gt; C COMPILER OPTIONS:  '</span><span class="p">,</span><span class="w"> </span><span class="n">model</span><span class="p">%</span><span class="n">c_compile_flags</span>
-<span class="w">        </span><span class="k">write</span><span class="p">(</span><span class="o">*</span><span class="p">,</span><span class="o">*</span><span class="p">)</span><span class="s1">'&lt;INFO&gt; CXX COMPILER OPTIONS: '</span><span class="p">,</span><span class="w"> </span><span class="n">model</span><span class="p">%</span><span class="n">cxx_compile_flags</span>
-<span class="w">        </span><span class="k">write</span><span class="p">(</span><span class="o">*</span><span class="p">,</span><span class="o">*</span><span class="p">)</span><span class="s1">'&lt;INFO&gt; LINKER OPTIONS:  '</span><span class="p">,</span><span class="w"> </span><span class="n">model</span><span class="p">%</span><span class="n">link_flags</span>
-<span class="w">        </span><span class="k">write</span><span class="p">(</span><span class="o">*</span><span class="p">,</span><span class="o">*</span><span class="p">)</span><span class="s1">'&lt;INFO&gt; INCLUDE DIRECTORIES:  ['</span><span class="p">,</span><span class="w"> </span><span class="n">string_cat</span><span class="p">(</span><span class="n">model</span><span class="p">%</span><span class="n">include_dirs</span><span class="p">,</span><span class="s1">','</span><span class="p">),</span><span class="s1">']'</span>
+<span class="k">        write</span><span class="p">(</span><span class="o">*</span><span class="p">,</span><span class="s1">'(a)'</span><span class="p">)</span><span class="s1">' &lt;INFO&gt; BUILD_NAME: '</span><span class="o">//</span><span class="n">model</span><span class="p">%</span><span class="n">build_prefix</span>
+<span class="w">        </span><span class="k">write</span><span class="p">(</span><span class="o">*</span><span class="p">,</span><span class="s1">'(a)'</span><span class="p">)</span><span class="s1">' &lt;INFO&gt; COMPILER:  '</span><span class="o">//</span><span class="n">model</span><span class="p">%</span><span class="n">compiler</span><span class="p">%</span><span class="n">fc</span>
+<span class="w">        </span><span class="k">write</span><span class="p">(</span><span class="o">*</span><span class="p">,</span><span class="s1">'(a)'</span><span class="p">)</span><span class="s1">' &lt;INFO&gt; C COMPILER:  '</span><span class="o">//</span><span class="n">model</span><span class="p">%</span><span class="n">compiler</span><span class="p">%</span><span class="n">cc</span>
+<span class="w">        </span><span class="k">write</span><span class="p">(</span><span class="o">*</span><span class="p">,</span><span class="s1">'(a)'</span><span class="p">)</span><span class="s1">' &lt;INFO&gt; CXX COMPILER: '</span><span class="o">//</span><span class="n">model</span><span class="p">%</span><span class="n">compiler</span><span class="p">%</span><span class="n">cxx</span>
+<span class="w">        </span><span class="k">write</span><span class="p">(</span><span class="o">*</span><span class="p">,</span><span class="s1">'(a)'</span><span class="p">)</span><span class="s1">' &lt;INFO&gt; COMPILER OPTIONS:  '</span><span class="o">//</span><span class="n">model</span><span class="p">%</span><span class="n">fortran_compile_flags</span>
+<span class="w">        </span><span class="k">write</span><span class="p">(</span><span class="o">*</span><span class="p">,</span><span class="s1">'(a)'</span><span class="p">)</span><span class="s1">' &lt;INFO&gt; C COMPILER OPTIONS:  '</span><span class="o">//</span><span class="n">model</span><span class="p">%</span><span class="n">c_compile_flags</span>
+<span class="w">        </span><span class="k">write</span><span class="p">(</span><span class="o">*</span><span class="p">,</span><span class="s1">'(a)'</span><span class="p">)</span><span class="s1">' &lt;INFO&gt; CXX COMPILER OPTIONS: '</span><span class="o">//</span><span class="n">model</span><span class="p">%</span><span class="n">cxx_compile_flags</span>
+<span class="w">        </span><span class="k">write</span><span class="p">(</span><span class="o">*</span><span class="p">,</span><span class="s1">'(a)'</span><span class="p">)</span><span class="s1">' &lt;INFO&gt; LINKER OPTIONS:  '</span><span class="o">//</span><span class="n">model</span><span class="p">%</span><span class="n">link_flags</span>
+<span class="w">        </span><span class="k">write</span><span class="p">(</span><span class="o">*</span><span class="p">,</span><span class="s1">'(a)'</span><span class="p">)</span><span class="s1">' &lt;INFO&gt; INCLUDE DIRECTORIES:  ['</span><span class="o">//</span><span class="n">string_cat</span><span class="p">(</span><span class="n">model</span><span class="p">%</span><span class="n">include_dirs</span><span class="p">,</span><span class="s1">','</span><span class="p">)</span><span class="o">//</span><span class="s1">']'</span>
 <span class="w">    </span><span class="k">end if</span>
 
 <span class="w">    </span><span class="c">! Check for invalid module names</span>
@@ -590,7 +590,7 @@ Add this dependency&rsquo;s package-level macros</p>
             <p class="text-end">
               Documentation generated by
               <a href="https://github.com/Fortran-FOSS-Programmers/ford">FORD</a>
- on 2026-11-13 11:08 +0000             </p>
+ on 2026-11-13 11:10 +0000             </p>
           </div>
         </div>
         <br>

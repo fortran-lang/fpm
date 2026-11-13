@@ -307,7 +307,7 @@ subroutine run_wrapper(wrapper,args,verbose,exitcode,cmd_success,screen_output)
         end do
     endif add_arguments
 
-    if (echo_local) print *, '+ ', command
+    if (echo_local) print '(a)', ' + '//command
 
     ! Test command
     call execute_command_line(command//redirect_str,exitstat=stat,cmdstat=cmdstat)

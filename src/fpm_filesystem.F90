@@ -539,7 +539,7 @@ subroutine mkdir(dir, echo)
 #ifndef FPM_BOOTSTRAP
             echo_local = .true.
             if (present(echo)) echo_local = echo
-            if (echo_local) print *, '+ ', 'mkdir -p ' // dir
+            if (echo_local) print '(a)', ' + mkdir -p ' // dir
             stat = c_mkdir_p(dir(1:len_trim(dir))//c_null_char)
 #else
             call run('mkdir -p ' // dir, exitstat=stat,echo=echo,verbose=.false.)
@@ -1192,7 +1192,7 @@ subroutine run(cmd,echo,exitstat,verbose,redirect)
         end if
     end if
 
-    if(echo_local) print *, '+ ', cmd !//redirect_str
+    if(echo_local) print '(a)', ' + '//cmd !//redirect_str
 
     stat = 0
     ! The shell forks, which is not safe from several OpenMP threads at once
@@ -1329,7 +1329,7 @@ subroutine run_argv(args,echo,exitstat,verbose,redirect)
         end if
     end if
 
-    if(echo_local) print *, '+ ', command
+    if(echo_local) print '(a)', ' + '//command
 
     if (size(args) < 1) then
         stat = 0
@@ -1517,7 +1517,7 @@ end subroutine os_delete_dir
            if (stat /= 0) exit
            output = output//output_line//' '
         end do
-        if (is_verbose) print *, output
+        if (is_verbose) print '(a)', ' '//output
         close(unit, status='delete')
     end
 
