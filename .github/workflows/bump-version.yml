@@ -1,0 +1,78 @@
+name: Bump version
+
+# After release vX.Y.Z, open a PR that sets main to X.Y.(Z+1), so builds of main report a
+# version no release has had. It changes the two places a release commit sets: the version
+# in fpm.toml and the fallback in src/fpm/fpm_release.F90. If main is not at X.Y.Z in both
+# (bumped by hand, or a release from another branch), it does nothing.
+
+on:
+  release:
+    types: [published]
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  bump-version:
+    # Not on forks: the release checklist publishes test releases there
+    if: github.repository == 'fortran-lang/fpm'
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout main
+      uses: actions/checkout@v7
+      with:
+        ref: main
+
+    - name: Bump patch version
+      id: bump
+      shell: bash
+      env:
+        TAG: ${{ github.event.release.tag_name }}
+      run: |
+        if [[ ! "$TAG" =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+          echo "Release tag $TAG is not vX.Y.Z: nothing to bump"
+          exit 0
+        fi
+        RELEASE="${TAG#v}"
+        MANIFEST=$(sed -n 's/^version = "\(.*\)"$/\1/p' fpm.toml)
+        FALLBACK=$(sed -n 's/^ *ver_string = "\(.*\)"$/\1/p' src/fpm/fpm_release.F90)
+        if [ "$MANIFEST" != "$RELEASE" ] || [ "$FALLBACK" != "$RELEASE" ]; then
+          echo "main has version $MANIFEST in fpm.toml and $FALLBACK in fpm_release.F90, not $RELEASE: nothing to bump"
+          exit 0
+        fi
+        NEXT="${RELEASE%.*}.$((10#${RELEASE##*.} + 1))"
+        OLD="${RELEASE//./\\.}"
+        sed -i "s/^version = \"$OLD\"$/version = \"$NEXT\"/" fpm.toml
+        sed -i "s/^\( *ver_string = \)\"$OLD\"$/\1\"$NEXT\"/" src/fpm/fpm_release.F90
+        # Exactly one line changed in each file
+        [ "$(git diff --numstat)" = "$(printf '1\t1\tfpm.toml\n1\t1\tsrc/fpm/fpm_release.F90')" ]
+        echo "Bumping $RELEASE to $NEXT"
+        echo "version=$NEXT" >> "$GITHUB_OUTPUT"
+
+    - name: Open pull request
+      if: steps.bump.outputs.version != ''
+      shell: bash
+      env:
+        GH_TOKEN: ${{ github.token }}
+        GH_REPO: ${{ github.repository }}
+        TAG: ${{ github.event.release.tag_name }}
+        VERSION: ${{ steps.bump.outputs.version }}
+      run: |
+        BRANCH="chore/bump-$VERSION"
+        if git ls-remote --exit-code --heads origin "$BRANCH" > /dev/null; then
+          echo "Branch $BRANCH already exists: nothing to do"
+          exit 0
+        fi
+        git config user.name "github-actions[bot]"
+        git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+        git switch -c "$BRANCH"
+        git commit -am "chore: bump version to $VERSION"
+        git push origin "$BRANCH"
+        gh pr create --base main --head "$BRANCH" \
+          --title "chore: bump version to $VERSION" \
+          --body-file - <<EOF
+        Sets main to $VERSION after the $TAG release, so builds of main report a version no release has had. Opened by \`.github/workflows/bump-version.yml\`.
+
+        GitHub does not run CI on pull requests opened by GitHub Actions. Close and reopen this PR to run it.
+        EOF
