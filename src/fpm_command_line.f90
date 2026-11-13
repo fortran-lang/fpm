@@ -34,7 +34,7 @@ use fpm_filesystem,   only : basename, canon_path, which, run
 use fpm_environment,  only : get_command_arguments_quoted
 use fpm_error,        only : fpm_stop, error_t
 use fpm_os,           only : get_current_directory
-use fpm_release,      only : fpm_version, version_t
+use fpm_release,      only : fpm_version_string
 use,intrinsic :: iso_fortran_env, only : stdin=>input_unit, &
                                        & stdout=>output_unit, &
                                        & stderr=>error_unit
@@ -260,7 +260,6 @@ contains
         integer                       :: os
         type(fpm_install_settings), allocatable :: install_settings
         type(fpm_export_settings) , allocatable :: export_settings
-        type(version_t) :: version
         character(len=:), allocatable :: common_args, compiler_args, run_args, working_dir, &
             & c_compiler, cxx_compiler, archiver, version_s, token_s, config_file, parallel_type
         integer :: jobs
@@ -288,8 +287,7 @@ contains
         end select
 
         ! Get current release version
-        version = fpm_version()
-        version_s = version%s()
+        version_s = fpm_version_string()
 
         ! Number of threads a build uses by default (FPM_JOBS, else the OpenMP default).
         ! Read FPM_JOBS also without OpenMP, so that an invalid value always stops fpm

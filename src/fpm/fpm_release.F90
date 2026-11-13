@@ -7,6 +7,7 @@ module fpm_release
     private
 
     public :: fpm_version
+    public :: fpm_version_string
     public :: version_t
 
     contains
@@ -43,5 +44,21 @@ module fpm_release
         if (allocated(error)) call fpm_stop(1,'*fpm*:internal error: cannot get version - '//error%message)
 
     end function fpm_version
+
+    !> Return the version string reported by `fpm --version`: the manifest version, with a
+    !> `+dev` label when the build defines FPM_DEV_BUILD (as CI does for the continuous
+    !> `current` builds of the main branch, so they cannot be mistaken for the release)
+    function fpm_version_string() result(string)
+
+        character(len=:), allocatable :: string
+        type(version_t) :: version
+
+        version = fpm_version()
+        string = version%s()
+#ifdef FPM_DEV_BUILD
+        string = string//'+dev'
+#endif
+
+    end function fpm_version_string
 
 end module fpm_release

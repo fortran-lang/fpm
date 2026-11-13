@@ -2,7 +2,7 @@
 module test_versioning
     use testsuite, only : new_unittest, unittest_t, error_t, test_failed
     use fpm_versioning
-    use fpm_release, only: fpm_version
+    use fpm_release, only: fpm_version, fpm_version_string
     implicit none
     private
 
@@ -20,6 +20,7 @@ contains
 
         tests = [ &
             & new_unittest("fpm-version", test_fpm_version), &        
+            & new_unittest("fpm-version-string", test_fpm_version_string), &
             & new_unittest("valid-version", test_valid_version), &
             & new_unittest("valid-equals", test_valid_equals), &
             & new_unittest("valid-notequals", test_valid_notequals), &
@@ -45,6 +46,38 @@ contains
         self_version = fpm_version()
 
     end subroutine test_fpm_version
+
+    !> Test that the reported version string is the fpm version,
+    !> with the `+dev` label of development builds if any
+    subroutine test_fpm_version_string(error)
+
+        !> Error handling
+        type(error_t), allocatable, intent(out) :: error
+
+        type(version_t) :: version, expected
+        character(len=:), allocatable :: string
+        integer :: iplus
+
+        string = fpm_version_string()
+        iplus = index(string, '+')
+        if (iplus == 0) iplus = len(string) + 1
+        call new_version(version, string(:iplus-1), error)
+        if (allocated(error)) return
+
+        expected = fpm_version()
+        if (version /= expected) then
+            call test_failed(error, "Version string "//string//" does not match "//expected%s())
+            return
+        end if
+
+        if (iplus <= len(string)) then
+            if (string(iplus:) /= '+dev') then
+                call test_failed(error, "Unexpected version label in "//string)
+                return
+            end if
+        end if
+
+    end subroutine test_fpm_version_string
 
     !> Read valid version strings
     subroutine test_valid_version(error)
