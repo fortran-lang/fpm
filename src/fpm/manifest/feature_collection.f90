@@ -153,7 +153,7 @@ module fpm_manifest_feature_collection
     end subroutine feature_collection_load
         
     ! helper: append a variant to self%variants
-    elemental subroutine push_variant(self,variant)
+    impure elemental subroutine push_variant(self,variant)
         class(feature_collection_t), intent(inout) :: self
         type(feature_config_t), intent(in) :: variant
         
@@ -482,8 +482,8 @@ module fpm_manifest_feature_collection
 
     !> Merge executable arrays by appending source to target, checking for duplicates
     subroutine merge_executable_arrays(target, source, error)        
-        type(executable_config_t), allocatable, intent(inout) :: target(:)
-        type(executable_config_t), allocatable, intent(in) :: source(:)
+        class(executable_config_t), allocatable, intent(inout) :: target(:)
+        class(executable_config_t), allocatable, intent(in) :: source(:)
         type(error_t), allocatable, intent(out) :: error
         
         type(executable_config_t), allocatable :: temp(:)
@@ -514,9 +514,14 @@ module fpm_manifest_feature_collection
             allocate(target(source_size), source=source)
         else
             target_size = size(target)
+            ! Copy element by element: NAG 7.2 crashes on an array assignment from a polymorphic array
             allocate(temp(target_size + source_size))
-            temp(1:target_size) = target
-            temp(target_size+1:target_size+source_size) = source
+            do i = 1, target_size
+                temp(i) = target(i)
+            end do
+            do i = 1, source_size
+                temp(target_size+i) = source(i)
+            end do
             call move_alloc(temp, target)
         end if
         
@@ -524,8 +529,8 @@ module fpm_manifest_feature_collection
 
     !> Merge dependency arrays by appending source to target, checking for duplicates
     subroutine merge_dependency_arrays(target, source, error)        
-        type(dependency_config_t), allocatable, intent(inout) :: target(:)
-        type(dependency_config_t), allocatable, intent(in) :: source(:)
+        class(dependency_config_t), allocatable, intent(inout) :: target(:)
+        class(dependency_config_t), allocatable, intent(in) :: source(:)
         type(error_t), allocatable, intent(out) :: error
         
         type(dependency_config_t), allocatable :: temp(:)
@@ -556,9 +561,14 @@ module fpm_manifest_feature_collection
             allocate(target(source_size), source=source)
         else
             target_size = size(target)
+            ! Copy element by element: NAG 7.2 crashes on an array assignment from a polymorphic array
             allocate(temp(target_size + source_size))
-            temp(1:target_size) = target
-            temp(target_size+1:target_size+source_size) = source
+            do i = 1, target_size
+                temp(i) = target(i)
+            end do
+            do i = 1, source_size
+                temp(target_size+i) = source(i)
+            end do
             call move_alloc(temp, target)
         end if
         
@@ -580,8 +590,8 @@ module fpm_manifest_feature_collection
 
     !> Merge example arrays by appending source to target, checking for duplicates
     subroutine merge_example_arrays(target, source, error)        
-        type(example_config_t), allocatable, intent(inout) :: target(:)
-        type(example_config_t), allocatable, intent(in) :: source(:)
+        class(example_config_t), allocatable, intent(inout) :: target(:)
+        class(example_config_t), allocatable, intent(in) :: source(:)
         type(error_t), allocatable, intent(out) :: error
         
         type(example_config_t), allocatable :: temp(:)
@@ -612,17 +622,22 @@ module fpm_manifest_feature_collection
             allocate(target(source_size), source=source)
         else
             target_size = size(target)
+            ! Copy element by element: NAG 7.2 crashes on an array assignment from a polymorphic array
             allocate(temp(target_size + source_size))
-            temp(1:target_size) = target
-            temp(target_size+1:target_size+source_size) = source
+            do i = 1, target_size
+                temp(i) = target(i)
+            end do
+            do i = 1, source_size
+                temp(target_size+i) = source(i)
+            end do
             call move_alloc(temp, target)
         end if
     end subroutine merge_example_arrays
 
     !> Merge test arrays by appending source to target, checking for duplicates
     subroutine merge_test_arrays(target, source, error)        
-        type(test_config_t), allocatable, intent(inout) :: target(:)
-        type(test_config_t), allocatable, intent(in) :: source(:)
+        class(test_config_t), allocatable, intent(inout) :: target(:)
+        class(test_config_t), allocatable, intent(in) :: source(:)
         type(error_t), allocatable, intent(out) :: error
         
         type(test_config_t), allocatable :: temp(:)
@@ -654,9 +669,14 @@ module fpm_manifest_feature_collection
             target = source
         else
             target_size = size(target)
+            ! Copy element by element: NAG 7.2 crashes on an array assignment from a polymorphic array
             allocate(temp(target_size + source_size))
-            temp(1:target_size) = target
-            temp(target_size+1:target_size+source_size) = source
+            do i = 1, target_size
+                temp(i) = target(i)
+            end do
+            do i = 1, source_size
+                temp(target_size+i) = source(i)
+            end do
             call move_alloc(temp, target)
         end if
     end subroutine merge_test_arrays
@@ -664,10 +684,10 @@ module fpm_manifest_feature_collection
     !> Merge preprocess arrays by merging configurations for same preprocessor names
     !> and appending new ones
     subroutine merge_preprocess_arrays(target, source)        
-        type(preprocess_config_t), allocatable, intent(inout) :: target(:)
-        type(preprocess_config_t), allocatable, intent(in) :: source(:)
+        class(preprocess_config_t), allocatable, intent(inout) :: target(:)
+        class(preprocess_config_t), allocatable, intent(in) :: source(:)
         
-        type(preprocess_config_t), allocatable :: temp(:)
+        class(preprocess_config_t), allocatable :: temp(:)
         integer :: target_size, source_size, i, j, new_count
         integer, allocatable :: source_to_target_map(:)  ! Maps source index to target index (0 = new)
         
@@ -711,16 +731,19 @@ module fpm_manifest_feature_collection
         new_count = count(source_to_target_map==0)
         if (new_count > 0) then
             allocate(temp(target_size + new_count))
-            temp(1:target_size) = target
-            
-            ! Add new preprocessors in a single pass
-            j = target_size
-            do i = 1, source_size
-                if (source_to_target_map(i)==0) then
-                    j = j + 1
-                    temp(j) = source(i)
-                end if
-            end do
+            select type (temp)
+            type is (preprocess_config_t)
+                temp(1:target_size) = target
+
+                ! Add new preprocessors in a single pass
+                j = target_size
+                do i = 1, source_size
+                    if (source_to_target_map(i)==0) then
+                        j = j + 1
+                        temp(j) = source(i)
+                    end if
+                end do
+            end select
             
             call move_alloc(temp, target)
         end if
@@ -835,7 +858,14 @@ module fpm_manifest_feature_collection
             ' -fPIC', &
             ' -fPIC'))
             
-        call collection%push_variant(default_variant('debug', id_intel_classic_nix, OS_ALL, &
+        ! Unix-style Intel flags must not reach Windows, where the variants below
+        ! are added to them instead of replacing them
+        call collection%push_variant(default_variant('debug', id_intel_classic_nix, OS_LINUX, &
+            ' -warn all -check all -error-limit 1 -O0 -g -assume byterecl -traceback', &
+            ' -fPIC', &
+            ' -fPIC'))
+
+        call collection%push_variant(default_variant('debug', id_intel_classic_mac, OS_MACOS, &
             ' -warn all -check all -error-limit 1 -O0 -g -assume byterecl -traceback', &
             ' -fPIC', &
             ' -fPIC'))
@@ -844,7 +874,7 @@ module fpm_manifest_feature_collection
             ' /warn:all /check:all /error-limit:1&
             & /Od /Z7 /assume:byterecl /traceback'))
             
-        call collection%push_variant(default_variant('debug', id_intel_llvm_nix, OS_ALL, &
+        call collection%push_variant(default_variant('debug', id_intel_llvm_nix, OS_LINUX, &
             ' -warn all -check all -error-limit 1 -O0 -g -assume byterecl -traceback', &
             ' -fPIC', &
             ' -fPIC'))

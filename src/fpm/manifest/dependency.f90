@@ -35,7 +35,7 @@ module fpm_manifest_dependency
     use tomlf, only: toml_table, toml_key, toml_stat
     use fpm_toml, only: get_value, check_keys, serializable_t, add_table, &
         & set_value, set_string, get_list, set_list
-    use fpm_filesystem, only: windows_path, join_path
+    use fpm_filesystem, only: windows_path, join_path, is_absolute_path, canon_path
     use fpm_environment, only: get_os_type, OS_WINDOWS
     use fpm_manifest_metapackages, only: metapackage_config_t, is_meta_package, new_meta_config, &
             metapackage_request_t, new_meta_request
@@ -46,7 +46,7 @@ module fpm_manifest_dependency
     private
 
     public :: dependency_config_t, new_dependency, new_dependencies, manifest_has_changed, &
-        & dependency_destroy, resize
+        & dependency_destroy, resize_dependency_config
 
     !> Configuration meta data for a dependency
     type, extends(serializable_t) :: dependency_config_t
@@ -67,7 +67,7 @@ module fpm_manifest_dependency
         type(version_t), allocatable :: requested_version
 
         !> Requested macros for the dependency
-        type(preprocess_config_t), allocatable :: preprocess(:)
+        class(preprocess_config_t), allocatable :: preprocess(:)
         
         !> Requested features for the dependency
         type(string_t), allocatable :: features(:)
@@ -95,10 +95,6 @@ module fpm_manifest_dependency
 
     !> Common output format for writing to the command line
     character(len=*), parameter :: out_fmt = '("#", *(1x, g0))'
-
-    interface resize
-        module procedure resize_dependency_config
-    end interface resize
 
 contains
 
@@ -151,7 +147,8 @@ contains
         call get_value(table, "path", uri)
         if (allocated(uri)) then
             if (get_os_type() == OS_WINDOWS) uri = windows_path(uri)
-            if (present(root)) uri = join_path(root,uri)  ! Relative to the fpm.toml it’s written in
+            ! Relative to the fpm.toml it’s written in, unless absolute
+            if (present(root) .and. .not.is_absolute_path(uri)) uri = join_path(root,uri)
             call move_alloc(uri, self%path)
             return
         end if
@@ -278,7 +275,7 @@ contains
     subroutine new_dependencies(deps, table, root, meta, error)
 
         !> Instance of the dependency configuration
-        type(dependency_config_t), allocatable, intent(out) :: deps(:)
+        class(dependency_config_t), allocatable, intent(inout) :: deps(:)
 
         !> (optional) metapackages
         type(metapackage_config_t), optional, intent(out) :: meta
@@ -294,11 +291,13 @@ contains
 
         type(toml_table), pointer :: node
         type(toml_key), allocatable :: list(:)
-        type(dependency_config_t), allocatable :: all_deps(:)
+        class(dependency_config_t), allocatable :: all_deps(:)
         type(metapackage_request_t) :: meta_request
         logical, allocatable :: is_meta(:)
         logical :: metapackages_allowed
         integer :: idep, stat, ndep
+
+        if (allocated(deps)) deallocate(deps)
 
         call table%get_keys(list)
         ! An empty table is okay
@@ -346,11 +345,14 @@ contains
         ! Finalize standard dependencies
         allocate(deps(ndep))
         ndep = 0
-        do idep = 1, size(list)
-            if (is_meta(idep)) cycle
-            ndep = ndep+1
-            deps(ndep) = all_deps(idep)
-        end do
+        select type (deps)
+        type is (dependency_config_t)
+            do idep = 1, size(list)
+                if (is_meta(idep)) cycle
+                ndep = ndep+1
+                deps(ndep) = all_deps(idep)
+            end do
+        end select
 
         ! Finalize meta dependencies
         if (metapackages_allowed) call new_meta_config(meta,table,is_meta,error)
@@ -424,6 +426,39 @@ contains
         endif
         if (allocated(cached%git)) then
             if (.not.git_matches_manifest(cached%git,manifest%git,verbosity,iunit)) return
+        end if
+
+        !> The cache stores the canonical directory, so compare canonical forms
+        if (allocated(manifest%path) .and. allocated(cached%path)) then
+            if (canon_path(cached%path) /= canon_path(manifest%path)) then
+                if (verbosity>1) write(iunit,out_fmt) "PATH has changed: "//cached%path//" vs. "//manifest%path
+                return
+            end if
+        end if
+
+        !> A different feature set (or profile) means different macros and
+        !> possibly different dependencies, so it is a different build of the
+        !> same revision -- the git checks above cannot see that.
+        if (allocated(cached%features).neqv.allocated(manifest%features)) then
+            if (verbosity>1) write(iunit,out_fmt) "FEATURES presence has changed. "
+            return
+        endif
+        if (allocated(cached%features)) then
+            if (.not.(cached%features==manifest%features)) then
+                if (verbosity>1) write(iunit,out_fmt) "FEATURES have changed. "
+                return
+            end if
+        end if
+        if (allocated(cached%profile).neqv.allocated(manifest%profile)) then
+            if (verbosity>1) write(iunit,out_fmt) "PROFILE presence has changed. "
+            return
+        endif
+        if (allocated(cached%profile)) then
+            if (.not.(cached%profile==manifest%profile)) then
+                if (verbosity>1) write(iunit,out_fmt) &
+                    "PROFILE has changed: "//cached%profile//" vs. "//manifest%profile
+                return
+            end if
         end if
 
         !> All checks passed! The two instances are equal
@@ -588,13 +623,13 @@ contains
     end subroutine load_from_toml
 
     !> Reallocate a list of dependencies
-    pure subroutine resize_dependency_config(var, n)
+    subroutine resize_dependency_config(var, n)
         !> Instance of the array to be resized
-        type(dependency_config_t), allocatable, intent(inout) :: var(:)
+        class(dependency_config_t), allocatable, intent(inout) :: var(:)
         !> Dimension of the final array size
         integer, intent(in), optional :: n
 
-        type(dependency_config_t), allocatable :: tmp(:)
+        class(dependency_config_t), allocatable :: tmp(:)
         integer :: this_size, new_size
         integer, parameter :: initial_size = 16
 
@@ -615,7 +650,10 @@ contains
 
         if (allocated(tmp)) then
           this_size = min(size(tmp, 1), size(var, 1))
-          var(:this_size) = tmp(:this_size)
+          select type (var)
+          type is (dependency_config_t)
+            var(:this_size) = tmp(:this_size)
+          end select
           deallocate (tmp)
         end if
 
@@ -628,17 +666,14 @@ contains
         type(preprocess_config_t), intent(in) :: preprocess
         
         integer :: i,n
-        type(preprocess_config_t), allocatable :: new_preprocess(:)
+        class(preprocess_config_t), allocatable :: new_preprocess(:)
         
         if (allocated(dep%preprocess)) then 
             
             n = size(dep%preprocess)
-            
-            if (n<1) then 
-                deallocate(dep%preprocess)
-                allocate(dep%preprocess(1),source=preprocess)
-            else
-                
+
+            if (n>0) then
+
                 find_similar: do i=1,n
                     if (dep%preprocess(i)%name==dep%name) then                             
                         call dep%preprocess(i)%add_config(preprocess)
@@ -648,18 +683,25 @@ contains
                 
                 ! Similar preprocessor config not found: add a new one
                 allocate(new_preprocess(n+1))
-                new_preprocess(1:n) = dep%preprocess
-                new_preprocess(n+1) = preprocess
+                select type (new_preprocess)
+                type is (preprocess_config_t)
+                    new_preprocess(1:n) = dep%preprocess
+                    new_preprocess(n+1) = preprocess
+                end select
                 call move_alloc(from=new_preprocess,to=dep%preprocess)
-                
+                return
+
             end if
-        else
-            
-            ! Copy configuration
-            allocate(dep%preprocess(1),source=preprocess)
-            
-        end if                
-               
+            deallocate(dep%preprocess)
+        end if
+
+        ! Replace allocate(..., source=preprocess) for a class(...): gfortran 15/16 finalization bug 
+        allocate(dep%preprocess(1))
+        select type (list => dep%preprocess)
+        type is (preprocess_config_t)
+            list(1) = preprocess
+        end select
+
     end subroutine add_preprocess
 
 

@@ -40,7 +40,8 @@ module fpm_manifest_feature
     use fpm_error, only: error_t, fatal_error, syntax_error
     use fpm_environment, only: OS_UNKNOWN, OS_LINUX, OS_MACOS, OS_WINDOWS, OS_CYGWIN, OS_SOLARIS, &
                              OS_FREEBSD, OS_OPENBSD, OS_ALL, OS_NAME, match_os_type
-    use fpm_compiler, only: compiler_enum, compiler_id_name, match_compiler_type, id_all
+    use fpm_compiler, only: compiler_enum, compiler_id_name, match_compiler_type, id_all, &
+        validate_compiler_name
     use fpm_strings, only: string_t, lower, operator(==)
     use tomlf, only: toml_table, toml_array, toml_key, toml_stat
     use fpm_toml, only: get_value, len, serializable_t, set_value, set_string, set_list, add_table, &
@@ -62,34 +63,34 @@ module fpm_manifest_feature
         type(platform_config_t) :: platform
         
         !> Build configuration
-        type(build_config_t), allocatable :: build
+        class(build_config_t), allocatable :: build
         
         !> Installation configuration
-        type(install_config_t), allocatable :: install
+        class(install_config_t), allocatable :: install
         
         !> Fortran configuration
-        type(fortran_config_t), allocatable :: fortran
+        class(fortran_config_t), allocatable :: fortran
         
         !> Library configuration
-        type(library_config_t), allocatable :: library
+        class(library_config_t), allocatable :: library
         
         !> Executable configurations
-        type(executable_config_t), allocatable :: executable(:)
+        class(executable_config_t), allocatable :: executable(:)
         
         !> Dependencies
-        type(dependency_config_t), allocatable :: dependency(:)
+        class(dependency_config_t), allocatable :: dependency(:)
         
         !> Development dependencies
-        type(dependency_config_t), allocatable :: dev_dependency(:)
+        class(dependency_config_t), allocatable :: dev_dependency(:)
         
         !> Examples
-        type(example_config_t), allocatable :: example(:)
+        class(example_config_t), allocatable :: example(:)
         
         !> Tests
-        type(test_config_t), allocatable :: test(:)
+        class(test_config_t), allocatable :: test(:)
         
         !> Preprocessor configuration
-        type(preprocess_config_t), allocatable :: preprocess(:)
+        class(preprocess_config_t), allocatable :: preprocess(:)
         
         !> Metapackage data
         type(metapackage_config_t) :: meta        
@@ -195,6 +196,7 @@ contains
 
         type(toml_key), allocatable :: list(:)
         integer :: ikey
+        logical :: is_compiler
 
         call table%get_keys(list)
 
@@ -206,8 +208,12 @@ contains
         do ikey = 1, size(list)
             select case(list(ikey)%key)
             case default
-                call syntax_error(error, "Key "//list(ikey)%key//" is not allowed in feature table")
-                exit
+                ! Compiler names, as fpm knows them
+                call validate_compiler_name(list(ikey)%key, is_compiler)
+                if (.not.is_compiler) then
+                    call syntax_error(error, "Key "//list(ikey)%key//" is not allowed in feature table")
+                    exit
+                end if
 
             ! Keys
             case("description", "platform", "flags", "c-flags", &
@@ -221,12 +227,6 @@ contains
              case("linux", "macos", "windows", "cygwin", "solaris", "freebsd", "openbsd")
                 
                  continue 
-                 
-             ! Compiler names  
-             case ("gfortran", "f95", "caf", "ifort", "ifx", "pgfortran", "nvfortran", "nagfor", &
-                   "flang", "flang-new", "f18", "xlf90", "lfortran")
-                 
-                 continue
                  
              ! Standard feature configuration names
              case("debug", "release")  

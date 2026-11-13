@@ -38,10 +38,13 @@ logical                              :: show_v,act_show_v    ; namelist/act_cli/
 logical                              :: show_u_d,act_show_u_d; namelist/act_cli/act_show_u_d
 logical                              :: dry_run,act_dry_run  ; namelist/act_cli/act_dry_run
 character(len=:), allocatable        :: token, act_token     ; namelist/act_cli/act_token
+integer                              :: jobs,act_jobs        ; namelist/act_cli/act_jobs
 
 character(len=:), allocatable        :: profile,act_profile  ; namelist/act_cli/act_profile
 character(len=:), allocatable        :: args,act_args        ; namelist/act_cli/act_args
-namelist/expected/cmd,cstat,estat,w_e,w_t,c_s,c_a,c_t,c_apps,c_ex,reg_c,name,features,profile,args,show_v,show_u_d,dry_run,token
+logical                              :: status_only          ! only check the exit status (e.g. "list" stops after printing)
+namelist/expected/cmd,cstat,estat,w_e,w_t,c_s,c_a,c_t,c_apps,c_ex,reg_c,name,features,profile,args,show_v,show_u_d,dry_run,token, &
+                 & jobs,status_only
 integer                              :: lun
 logical,allocatable                  :: tally(:)
 logical,allocatable                  :: subtally(:)
@@ -92,6 +95,43 @@ character(len=*),parameter           :: tests(*)= [ character(len=256) :: &
 'CMD="publish --token abc --show-upload-data",           SHOW_U_D=T, NAME=, token="abc",ARGS="",', &
 'CMD="publish --token abc --dry-run",                    DRY_RUN=T, NAME=, token="abc",ARGS="",', &
 'CMD="publish --token abc",                                        NAME=, token="abc",ARGS="",', &
+
+! subcommands without positional arguments reject them, but still take flags followed by values
+'CMD="build foo",                                     ESTAT=1,', &
+'CMD="build --tests foo",                             ESTAT=1,', &
+'CMD="build --flag ""-O2 -g"" --profile release",                  NAME=, profile="release",features=,ARGS="",', &
+'CMD="install foo",                                   ESTAT=1,', &
+'CMD="install --prefix ./installed --flag ""-O2""",                NAME=, ARGS="",', &
+'CMD="list foo",                                      ESTAT=1,', &
+'CMD="list --list",                                   STATUS_ONLY=T,', &
+'CMD="export foo",                                    ESTAT=1,', &
+'CMD="export --manifest manifest.json --flag ""-O2""",             NAME=, ARGS="",', &
+'CMD="clean --all foo",                               ESTAT=1,', &
+'CMD="clean --skip --config-file cfg.toml",                 C_S=T, NAME=, ARGS="",', &
+'CMD="publish foo",                                   ESTAT=1,', &
+'CMD="publish --token abc --flag ""-O2""",                         NAME=, token="abc",ARGS="",', &
+
+! number of targets to build at once
+'CMD="build --jobs 4",                                             NAME=, JOBS=4, ARGS="",', &
+'CMD="build -j 2 --profile release",                               NAME=, JOBS=2, profile="release",ARGS="",', &
+'CMD="build -j 0",                                                 NAME=, JOBS=0, ARGS="",', &
+'CMD="run -j 3 my_project",                                        NAME="my_project", JOBS=3,', &
+'CMD="test --jobs 1",                                              JOBS=1,', &
+'CMD="install -j 8 --prefix ./installed",                          NAME=, JOBS=8, ARGS="",', &
+'CMD="build --jobs=3",                                             NAME=, JOBS=3, ARGS="",', &
+'CMD="build -j",                                                   NAME=, JOBS=0, ARGS="",', &
+'CMD="build -j --profile release",                                 NAME=, JOBS=0, profile="release",ARGS="",', &
+'CMD="run my_project -j",                                          NAME="my_project", JOBS=0,', &
+'CMD="test -j -- -j4",                                             JOBS=0, ARGS="""-j4""",', &
+'CMD="build --jobs -1",                               ESTAT=1,', &
+'CMD="build --jobs two",                              ESTAT=1,', &
+'CMD="build -j 1.5",                                  ESTAT=1,', &
+'CMD="build --jobs",                                  ESTAT=1,', &
+'CMD="build --jobs --profile release",                ESTAT=1,', &
+'CMD="build --jobs=",                                 ESTAT=1,', &
+'CMD="build -j4",                                     ESTAT=1,', &
+'CMD="build -jv",                                     ESTAT=1,', &
+'CMD="run -j my_project",                             ESTAT=1,', &
 ' ' ]
 character(len=256) :: readme(3)
 
@@ -131,10 +171,12 @@ if(command_argument_count()==0)then  ! assume if called with no arguments to do 
       show_u_d=.false.               ! --show-upload-data
       dry_run=.false.                ! --dry-run
       token=''                       ! --token TOKEN
+      jobs=0                         ! --jobs N
       args=repeat(' ',132)           ! -- ARGS
       cmd=repeat(' ',132)            ! the command line arguments to test
       cstat=0                        ! status values from EXECUTE_COMMAND_LINE()
       estat=0
+      status_only=.false.
       readme(2)=' '//tests(i)        ! select command options to test for CMD and set nondefault expected values
       read(readme,nml=expected)
 
@@ -142,7 +184,7 @@ if(command_argument_count()==0)then  ! assume if called with no arguments to do 
       ! call this program which will crack command line and write results to scratch file _test_cli
       call execute_command_line(command//' '//trim(cmd),cmdstat=act_cstat,exitstat=act_estat)
       if(cstat==act_cstat.and.estat==act_estat)then
-          if(estat==0)then
+          if(estat==0.and..not.status_only)then
              open(file='_test_cli',newunit=lun,delim='quote')
              act_name=[(repeat(' ',len(act_name)),i=1,max_names)]
              if(.not.allocated(act_features)) allocate(character(len=15) :: act_features(max_names))
@@ -157,6 +199,7 @@ if(command_argument_count()==0)then  ! assume if called with no arguments to do 
              act_show_u_d=.false.
              act_dry_run=.false.
              act_token=''
+             act_jobs=0
              act_args=repeat(' ',132)
              read(lun,nml=act_cli,iostat=ios,iomsg=message)
              if(ios/=0)then
@@ -178,6 +221,7 @@ if(command_argument_count()==0)then  ! assume if called with no arguments to do 
              call test_test('SHOW-UPLOAD-DATA',act_show_u_d.eqv.show_u_d)
              call test_test('DRY-RUN',act_dry_run.eqv.dry_run)
              call test_test('TOKEN',act_token==token)
+             call test_test('JOBS',act_jobs==jobs)
              call test_test('ARGS',act_args==args)
              if(all(subtally))then
                 write(*,'(*(g0))')'PASSED: TEST ',i,' STATUS: expected ',cstat,' ',estat,' actual ',act_cstat,' ',act_estat,&
@@ -195,7 +239,7 @@ if(command_argument_count()==0)then  ! assume if called with no arguments to do 
                 tally=[tally,.false.]
              endif
           else
-             write(*,'(*(g0))')'PASSED: TEST ',i,' EXPECTED BAD STATUS: expected ',cstat,' ',estat, &
+             write(*,'(*(g0))')'PASSED: TEST ',i,' EXPECTED STATUS: expected ',cstat,' ',estat, &
              ' actual ',act_cstat,' ',act_estat,' for [',trim(cmd),']'
              tally=[tally,.true.]
           endif
@@ -272,6 +316,12 @@ act_show_u_d=.false.
 act_dry_run=.false.
 act_token=''
 act_profile=''
+act_jobs=0
+
+select type(settings=>cmd_settings)
+class is (fpm_build_settings)
+    act_jobs=settings%jobs
+end select
 
 select type(settings=>cmd_settings)
 type is (fpm_new_settings)
@@ -318,7 +368,9 @@ type is (fpm_publish_settings)
     act_token=settings%token
 end select
 
-open(file='_test_cli',newunit=lun,delim='quote')
+! A long record keeps the group on one line: LLVM Flang may otherwise split a
+! doubled quote across records, which it then cannot read back.
+open(file='_test_cli',newunit=lun,delim='quote',recl=4096)
 write(lun,nml=act_cli,delim='quote')
 close(unit=lun)
 

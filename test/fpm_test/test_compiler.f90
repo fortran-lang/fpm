@@ -2,8 +2,11 @@
 module test_compiler
     use testsuite, only : new_unittest, unittest_t, error_t, test_failed, &
         & check_string
-    use fpm_environment, only : OS_WINDOWS, OS_LINUX
-    use fpm_compiler   , only : compiler_t, new_compiler, tokenize_flags
+    use fpm_environment, only : OS_WINDOWS, OS_LINUX, OS_MACOS, os_is_unix, get_os_type
+    use fpm_compiler   , only : compiler_t, new_compiler, tokenize_flags, archiver_t, new_archiver, &
+        & match_compiler_type, id_flang, id_amdflang, id_flang_classic, set_cpp_preprocessor_flags, &
+        & append_clean_flags, drop_compile_options
+    use fpm_filesystem , only : get_temp_filename, mkdir, join_path, filewrite, run, os_delete_dir
     use fpm_strings    , only : string_t, operator(==)
     use fpm_command_line, only: get_fpm_env
     use fpm_compile_commands, only: compile_command_table_t
@@ -24,12 +27,114 @@ contains
             & new_unittest("check-fortran-source-runs", test_check_fortran_source_runs), &
             & new_unittest("check-c-source-runs", test_check_c_source_runs), &
             & new_unittest("check-cxx-source-runs", test_check_cxx_source_runs), &
+            & new_unittest("quoted-flags", test_quoted_flags), &
             & new_unittest("tokenize-flags", test_tokenize_flags), &
             & new_unittest("compile-commands-unix", test_register_compile_command_unix), &
             & new_unittest("compile-commands-windows", test_register_compile_command_windows), &
-            & new_unittest("get-default-flags-pic", test_get_default_flags_pic)]
+            & new_unittest("get-default-flags-pic", test_get_default_flags_pic), &
+            & new_unittest("match-compiler-type-flang", test_match_compiler_type_flang), &
+            & new_unittest("classic-flang", test_classic_flang), &
+            & new_unittest("append-clean-flags", test_append_clean_flags), &
+            & new_unittest("drop-compile-options", test_drop_compile_options), &
+            & new_unittest("enumerate-libraries-nag", test_enumerate_libraries_nag), &
+            & new_unittest("preprocess-flag-nag", test_preprocess_flag_nag), &
+            & new_unittest("default-c-compiler-nag", test_default_c_compiler_nag), &
+            & new_unittest("headerpad-flags-nag", test_headerpad_flags_nag), &
+            & new_unittest("archive-drops-stale-members", test_archive_drops_stale_members), &
+            & new_unittest("new-archiver-user-set", test_new_archiver_user_set)]
 
     end subroutine collect_compiler
+
+    !> A user-set archiver gets the flags of its kind, and uses response files on Windows only
+    subroutine test_new_archiver_user_set(error)
+        !> Error handling
+        type(error_t), allocatable, intent(out) :: error
+
+        type(archiver_t) :: archiver
+
+        call new_archiver(archiver, "lib", echo=.false., verbose=.false.)
+        if (archiver%ar /= "lib /OUT:") then
+            call test_failed(error, "Archiver 'lib' should use /OUT:, got: '"//archiver%ar//"'")
+            return
+        end if
+        if (archiver%use_response_file .neqv. get_os_type() == OS_WINDOWS) then
+            call test_failed(error, "User-set archiver should use response files on Windows only")
+            return
+        end if
+
+        call new_archiver(archiver, "ar", echo=.false., verbose=.false.)
+        if (archiver%ar /= "ar -rs ") then
+            call test_failed(error, "Archiver 'ar' should use -rs, got: '"//archiver%ar//"'")
+            return
+        end if
+        if (archiver%use_response_file .neqv. get_os_type() == OS_WINDOWS) then
+            call test_failed(error, "User-set archiver should use response files on Windows only")
+            return
+        end if
+
+    end subroutine test_new_archiver_user_set
+
+    !> Rebuilding an archive must drop members whose objects are no longer listed
+    !> (e.g. the object of a moved source file), otherwise they shadow the new ones
+    subroutine test_archive_drops_stale_members(error)
+        !> Error handling
+        type(error_t), allocatable, intent(out) :: error
+
+        type(compiler_t) :: compiler
+        type(archiver_t) :: archiver
+        character(:), allocatable :: dir, archive, exe, log
+        integer :: stat
+
+        call new_compiler(compiler, get_fpm_env("FC", default="gfortran"), &
+            & get_fpm_env("CC", default=" "), get_fpm_env("CXX", default=" "), &
+            & echo=.false., verbose=.false.)
+        call new_archiver(archiver, get_fpm_env("AR", default=""), echo=.false., verbose=.false.)
+
+        dir = get_temp_filename()
+        call mkdir(dir, echo=.false.)
+        archive = join_path(dir, "libprobe.a")
+        exe = join_path(dir, "probe.exe")
+        log = join_path(dir, "build.log")
+
+        !> Two objects providing the same procedure
+        call filewrite(join_path(dir, "old.f90"), [character(32) :: &
+            & "integer function probe()", "probe = 11", "end function probe"])
+        call filewrite(join_path(dir, "new.f90"), [character(32) :: &
+            & "integer function probe()", "probe = 22", "end function probe"])
+        call filewrite(join_path(dir, "main.f90"), [character(32) :: &
+            & "program main", "integer, external :: probe", &
+            & "if (probe() /= 22) stop 1", "end program main"])
+
+        call compiler%compile_fortran(join_path(dir, "old.f90"), join_path(dir, "old.o"), "", log, stat)
+        if (stat == 0) call compiler%compile_fortran(join_path(dir, "new.f90"), join_path(dir, "new.o"), "", log, stat)
+        if (stat /= 0) then
+            call test_failed(error, "Cannot compile archive members")
+            return
+        end if
+
+        !> Archive the old object, then rebuild the same archive from the new one only
+        call archiver%make_archive(archive, [string_t(join_path(dir, "old.o"))], log, stat)
+        if (stat == 0) call archiver%make_archive(archive, [string_t(join_path(dir, "new.o"))], log, stat)
+        if (stat /= 0) then
+            call test_failed(error, "Cannot create archive")
+            return
+        end if
+
+        call compiler%link(exe, join_path(dir, "main.f90")//" "//archive, log, stat)
+        if (stat /= 0) then
+            call test_failed(error, "Cannot link against archive")
+            return
+        end if
+
+        call run(exe, echo=.false., verbose=.false., exitstat=stat)
+        if (stat /= 0) then
+            call test_failed(error, "Rebuilt archive still provides a stale member")
+            return
+        end if
+
+        call os_delete_dir(os_is_unix(), dir, echo=.false.)
+
+    end subroutine test_archive_drops_stale_members
 
     subroutine test_check_fortran_source_runs(error)
         !> Error handling
@@ -77,8 +182,10 @@ contains
         end if
 
         !> Test the flag check wrapper
+        !> Intel and LFortran accept this flag without reporting an error
         if (compiler%check_flags_supported(compile_flags='-Werror=unknown-flag') &
-            .and. .not. compiler%is_intel()) then  ! Intel will not trigger an error
+            .and. .not. compiler%is_intel() &
+            .and. compiler%name() /= "lfortran") then
             call test_failed(error, "Invalid compile flags did not trigger an error")
             return
         end if
@@ -212,6 +319,49 @@ contains
         end if
 
     end subroutine test_check_cxx_source_runs
+
+    !> Quotes in flags reach the compiler as a shell passes them: -DMSG=\"hi\" defines
+    !> MSG as the string "hi", not as the identifier hi
+    subroutine test_quoted_flags(error)
+        type(error_t), allocatable, intent(out) :: error
+
+        character(:), allocatable :: fc, cc, cxx
+        type(compiler_t) :: compiler
+
+        fc  = get_fpm_env("FC", default="gfortran")
+        cc  = get_fpm_env("CC", default=" ")
+        cxx = get_fpm_env("CXX", default=" ")
+
+        call new_compiler(compiler, fc, cc, cxx, echo=.false., verbose=.false.)
+
+        if (compiler%is_unknown()) then
+            call test_failed(error, "Cannot initialize compiler")
+            return
+        end if
+
+        !> Skip tests if no C compiler is available
+        if (len_trim(compiler%cc) == 0) return
+
+        if (.not.compiler%check_c_source_runs( &
+                '#include <string.h>' // new_line('a') // &
+                'int main() { return strcmp(MSG, "hi") != 0; }', &
+                compile_flags='-DMSG=\"hi\"')) then
+            call test_failed(error, 'Flag -DMSG=\"hi\" did not define MSG as "hi"')
+            return
+        end if
+
+        !> Double quotes inside single quotes, which only a POSIX shell understands
+        if (os_is_unix()) then
+            if (.not.compiler%check_c_source_runs( &
+                    '#include <string.h>' // new_line('a') // &
+                    'int main() { return strcmp(MSG, "hello world") != 0; }', &
+                    compile_flags='-DMSG=''"hello world"''')) then
+                call test_failed(error, 'Flag -DMSG=''"hello world"'' did not define MSG as "hello world"')
+                return
+            end if
+        end if
+
+    end subroutine test_quoted_flags
 
     subroutine test_tokenize_flags(error)
         type(error_t), allocatable, intent(out) :: error
@@ -356,7 +506,233 @@ contains
             return
         end if
 
+        !> NAG spells it -PIC and rejects -fPIC
+        call new_compiler(compiler, "nagfor", "gcc", "g++", echo=.false., verbose=.false.)
+        flags = compiler%get_default_flags(release=.false.)
+        if (index(flags, "-fPIC") /= 0 .or. index(flags, " -PIC") == 0) then
+            call test_failed(error, "NAG flags should contain -PIC and not -fPIC, got: "//flags)
+            return
+        end if
+
     end subroutine test_get_default_flags_pic
+
+    !> amdflang contains "flang" in its name and must not be detected as LLVM flang
+    subroutine test_match_compiler_type_flang(error)
+        !> Error handling
+        type(error_t), allocatable, intent(out) :: error
+
+        if (match_compiler_type("amdflang") /= id_amdflang) then
+            call test_failed(error, "amdflang should be detected as AMD flang")
+            return
+        end if
+
+        if (match_compiler_type("/opt/rocm/bin/amdflang") /= id_amdflang) then
+            call test_failed(error, "/opt/rocm/bin/amdflang should be detected as AMD flang")
+            return
+        end if
+
+        if (match_compiler_type("flang") /= id_flang) then
+            call test_failed(error, "flang should be detected as LLVM flang")
+            return
+        end if
+
+        if (match_compiler_type("flang-new") /= id_flang) then
+            call test_failed(error, "flang-new should be detected as LLVM flang")
+            return
+        end if
+
+    end subroutine test_match_compiler_type_flang
+
+    !> A compiler named flang is classic flang, as AOCC's, when flang1 is installed next
+    !> to it, and gets the classic flang flags; otherwise it is LLVM flang
+    subroutine test_classic_flang(error)
+        !> Error handling
+        type(error_t), allocatable, intent(out) :: error
+
+        type(compiler_t) :: compiler
+        character(:), allocatable :: classic_dir, llvm_dir, flags
+
+        classic_dir = get_temp_filename()
+        llvm_dir = get_temp_filename()
+        call mkdir(classic_dir, echo=.false.)
+        call mkdir(llvm_dir, echo=.false.)
+        call filewrite(join_path(classic_dir, "flang"), [character(1) :: ""])
+        call filewrite(join_path(classic_dir, "flang1"), [character(1) :: ""])
+        call filewrite(join_path(llvm_dir, "flang"), [character(1) :: ""])
+
+        call new_compiler(compiler, join_path(classic_dir, "flang"), "", "", &
+            & echo=.false., verbose=.false.)
+        if (compiler%id /= id_flang_classic) then
+            call test_failed(error, "flang with flang1 next to it should be classic flang")
+        end if
+
+        if (.not.allocated(error)) then
+            flags = compiler%get_default_flags(release=.true.)
+            if (index(flags, "-O3") == 0) call test_failed(error, &
+                & "classic flang release flags should optimize, got '"//flags//"'")
+        end if
+
+        if (.not.allocated(error)) then
+            flags = compiler%get_default_flags(release=.false.)
+            if (index(flags, "-g") == 0) call test_failed(error, &
+                & "classic flang debug flags should include -g, got '"//flags//"'")
+        end if
+
+        if (.not.allocated(error)) then
+            flags = ""
+            call set_cpp_preprocessor_flags(compiler%id, flags)
+            if (flags /= "-cpp") call test_failed(error, &
+                & "classic flang should preprocess with -cpp, got '"//flags//"'")
+        end if
+
+        if (.not.allocated(error)) then
+            call compiler%get_main_flags("c", flags)
+            if (flags /= "-Mnomain") call test_failed(error, &
+                & "classic flang should link a C main with -Mnomain, got '"//flags//"'")
+        end if
+
+        if (.not.allocated(error)) then
+            call new_compiler(compiler, join_path(llvm_dir, "flang"), "", "", &
+                & echo=.false., verbose=.false.)
+            if (compiler%id /= id_flang) then
+                call test_failed(error, "flang without flang1 next to it should be LLVM flang")
+            end if
+        end if
+
+        call os_delete_dir(os_is_unix(), classic_dir)
+        call os_delete_dir(os_is_unix(), llvm_dir)
+
+    end subroutine test_classic_flang
+
+    !> Appending flags adds only those not already present
+    subroutine test_append_clean_flags(error)
+        !> Error handling
+        type(error_t), allocatable, intent(out) :: error
+
+        character(:), allocatable :: flags
+
+        flags = " -O1 -g"
+        call append_clean_flags(flags, "-fopenmp")
+        if (flags /= " -O1 -g -fopenmp") then
+            call test_failed(error, "Expected ' -O1 -g -fopenmp', got '"//flags//"'")
+            return
+        end if
+
+        call append_clean_flags(flags, "-fopenmp -g")
+        if (flags /= " -O1 -g -fopenmp") then
+            call test_failed(error, "Flags already present should not be added again, got '"//flags//"'")
+            return
+        end if
+
+    end subroutine test_append_clean_flags
+
+    !> An executable's link flags lose only the lone options its compile flags already pass
+    subroutine test_drop_compile_options(error)
+        !> Error handling
+        type(error_t), allocatable, intent(out) :: error
+
+        character(:), allocatable :: flags
+        character(*), parameter :: kept = &
+            ' build\gfortran_1\fpm\app_main.f90.o build\gfortran_1\fpm\libfpm.a -lfoo'// &
+            ' -framework Accelerate -framework CoreFoundation -Xlinker -fopenmp -lfoo'// &
+            ' -Wl,-headerpad,0x200'
+
+        flags = drop_compile_options(' -fopenmp'//kept, ' -O2 -g -fopenmp -framework')
+        if (flags /= kept) then
+            call test_failed(error, "Expected '"//kept//"', got '"//flags//"'")
+            return
+        end if
+
+    end subroutine test_drop_compile_options
+
+    !> NAG links libraries as `-lfoo`: its `-Wl,foo` reaches the host C compiler as a file name
+    subroutine test_enumerate_libraries_nag(error)
+        !> Error handling
+        type(error_t), allocatable, intent(out) :: error
+
+        type(compiler_t) :: compiler
+        character(:), allocatable :: flags
+
+        call new_compiler(compiler, "nagfor", "gcc", "g++", echo=.false., verbose=.false.)
+        flags = compiler%enumerate_libraries(" -openmp", [string_t("z"), string_t("c++")])
+        if (flags /= " -openmp -lz -lc++") then
+            call test_failed(error, "Expected ' -openmp -lz -lc++', got '"//flags//"'")
+            return
+        end if
+
+    end subroutine test_enumerate_libraries_nag
+
+    !> NAG compiles C and C++ with the host compilers by default: nagfor drops -I for C sources
+    subroutine test_default_c_compiler_nag(error)
+        !> Error handling
+        type(error_t), allocatable, intent(out) :: error
+
+        type(compiler_t) :: compiler
+
+        call new_compiler(compiler, "nagfor", "", "", echo=.false., verbose=.false.)
+        if (compiler%cc /= "cc" .or. compiler%cxx /= "c++") then
+            call test_failed(error, "Expected 'cc' and 'c++', got '"//compiler%cc//"' and '"//compiler%cxx//"'")
+            return
+        end if
+
+    end subroutine test_default_c_compiler_nag
+
+    !> On macOS, NAG pads Mach-O headers with -Wl, commas escaped for the host C compiler
+    subroutine test_headerpad_flags_nag(error)
+        !> Error handling
+        type(error_t), allocatable, intent(out) :: error
+
+        type(compiler_t) :: compiler
+        character(:), allocatable :: flags, expected
+
+        call new_compiler(compiler, "nagfor", "", "", echo=.false., verbose=.false.)
+        flags = compiler%get_headerpad_flags()
+        if (get_os_type() == OS_MACOS) then
+            expected = " -Wl,-Wl,,-headerpad,,0x200"
+        else
+            expected = ""
+        end if
+        if (flags /= expected) then
+            call test_failed(error, "Expected '"//expected//"', got '"//flags//"'")
+            return
+        end if
+
+    end subroutine test_headerpad_flags_nag
+
+    !> NAG preprocesses only `.ff90`, `.ff95` and `.ff` by suffix: `.F90` and `.F` need `-fpp`
+    subroutine test_preprocess_flag_nag(error)
+        !> Error handling
+        type(error_t), allocatable, intent(out) :: error
+
+        type(compiler_t) :: compiler
+        character(len=*), parameter :: needs_fpp(*) = [character(len=16) :: &
+            & "src/m.F90", "app/main.F", "a.b/c.F90"]
+        character(len=*), parameter :: no_fpp(*) = [character(len=16) :: &
+            & "src/m.f90", "app/main.f", "src/F90.f90", "src/m.ff90", "src/m.c"]
+        integer :: i
+
+        call new_compiler(compiler, "nagfor", "gcc", "g++", echo=.false., verbose=.false.)
+        do i = 1, size(needs_fpp)
+            if (compiler%get_preprocess_flag(trim(needs_fpp(i))) /= " -fpp") then
+                call test_failed(error, "NAG should preprocess "//trim(needs_fpp(i)))
+                return
+            end if
+        end do
+        do i = 1, size(no_fpp)
+            if (compiler%get_preprocess_flag(trim(no_fpp(i))) /= "") then
+                call test_failed(error, "NAG should not request -fpp for "//trim(no_fpp(i)))
+                return
+            end if
+        end do
+
+        !> Other compilers preprocess `.F90` by suffix on their own
+        call new_compiler(compiler, "gfortran", "gcc", "g++", echo=.false., verbose=.false.)
+        if (compiler%get_preprocess_flag("src/m.F90") /= "") then
+            call test_failed(error, "gfortran should not need a preprocess flag for .F90")
+            return
+        end if
+
+    end subroutine test_preprocess_flag_nag
 
 
 end module test_compiler

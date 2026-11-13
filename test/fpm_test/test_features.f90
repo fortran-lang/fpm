@@ -3,11 +3,11 @@ module test_features
     use testsuite, only : new_unittest, unittest_t, error_t, test_failed
     use fpm_manifest, only: package_config_t, get_package_data
     use fpm_manifest_feature, only: feature_config_t
-    use fpm_manifest_feature_collection, only: feature_collection_t
+    use fpm_manifest_feature_collection, only: feature_collection_t, default_debug_feature
     use fpm_manifest_platform, only: platform_config_t
     use fpm_environment, only: OS_ALL, OS_LINUX, OS_MACOS, OS_WINDOWS
     use fpm_compiler, only: id_all, id_gcc, id_intel_classic_nix, id_intel_classic_windows, id_intel_llvm_nix, &
-        match_compiler_type
+        id_intel_classic_mac, id_intel_llvm_windows, match_compiler_type, id_flang_classic
     use fpm_strings, only: string_t
     use fpm_filesystem, only: get_temp_filename
     implicit none
@@ -33,6 +33,7 @@ contains
             & new_unittest("feature-collection-complex", test_feature_collection_complex), &
             & new_unittest("feature-allocatable-conflict", test_feature_allocatable_conflict, should_fail=.true.), &
             & new_unittest("feature-flag-addition", test_feature_flag_addition), &
+            & new_unittest("feature-flags-classic-flang", test_feature_flags_classic_flang), &
             & new_unittest("feature-metapackage-addition", test_feature_metapackage_addition), &
             & new_unittest("feature-extract-gfortran-linux", test_feature_extract_gfortran_linux), &
             & new_unittest("feature-extract-ifort-windows", test_feature_extract_ifort_windows), &
@@ -54,7 +55,8 @@ contains
             & new_unittest("default-profile-with-debug", test_default_profile_with_debug), &
             & new_unittest("default-profile-with-release", test_default_profile_with_release), &
             & new_unittest("default-profile-implicit-debug", test_default_profile_implicit_debug), &
-            & new_unittest("default-profile-skipped-custom", test_default_profile_skipped_custom) &
+            & new_unittest("default-profile-skipped-custom", test_default_profile_skipped_custom), &
+            & new_unittest("default-debug-intel-windows-flags", test_default_debug_intel_windows_flags) &
             & ]
 
     end subroutine collect_features
@@ -507,6 +509,57 @@ contains
         call test_failed(error, "myfeature collection not found for addition test")
                         
     end subroutine test_feature_flag_addition
+
+    !> Feature tables accept every compiler name fpm knows next to their own keys, such as
+    !> flang-classic for AOCC, and apply each variant to its own compiler only
+    subroutine test_feature_flags_classic_flang(error)
+        !> Error handling
+        type(error_t), allocatable, intent(out) :: error
+
+        type(package_config_t) :: package
+        character(:), allocatable :: temp_file
+        integer :: unit, i
+        type(feature_config_t) :: extracted_feature
+        type(platform_config_t) :: target_platform
+
+        allocate(temp_file, source=get_temp_filename())
+
+        open(file=temp_file, newunit=unit)
+        write(unit, '(a)') &
+            & 'name = "classic-flang-test"', &
+            & 'version = "0.1.0"', &
+            & '[features]', &
+            & 'myfeature.flags = "-DBASE"', &
+            & 'myfeature.flang-classic.flags = "-DCLASSIC"', &
+            & 'myfeature.amdflang.flags = "-DAMD"'
+        close(unit)
+
+        call get_package_data(package, temp_file, error)
+        if (allocated(error)) return
+
+        do i = 1, size(package%features)
+            if (package%features(i)%base%name /= "myfeature") cycle
+
+            target_platform%compiler = id_flang_classic
+            target_platform%os_type = OS_LINUX
+            extracted_feature = package%features(i)%extract_for_target(target_platform, error=error)
+            if (allocated(error)) return
+
+            if (.not. allocated(extracted_feature%flags)) then
+                call test_failed(error, "classic flang feature has no flags")
+            else if (index(extracted_feature%flags, "-DBASE") == 0 .or. &
+                     index(extracted_feature%flags, "-DCLASSIC") == 0) then
+                call test_failed(error, "classic flang feature should have -DBASE and -DCLASSIC, got '"// &
+                                 extracted_feature%flags//"'")
+            else if (index(extracted_feature%flags, "-DAMD") > 0) then
+                call test_failed(error, "classic flang feature should not get the amdflang flags")
+            end if
+            return
+        end do
+
+        call test_failed(error, "myfeature not found")
+
+    end subroutine test_feature_flags_classic_flang
 
     !> Test that metapackages are properly combined with OR logic (additive)
     subroutine test_feature_metapackage_addition(error)
@@ -1799,5 +1852,45 @@ contains
         end if
 
     end subroutine test_default_profile_skipped_custom
+
+
+    !> Test that the default debug feature gives Intel compilers on Windows only Windows-style flags
+    subroutine test_default_debug_intel_windows_flags(error)
+        type(error_t), allocatable, intent(out) :: error
+
+        type(feature_collection_t) :: collection
+        type(feature_config_t) :: feature
+
+        collection = default_debug_feature()
+
+        feature = collection%extract_for_target(platform_config_t(id_intel_llvm_windows, OS_WINDOWS), error)
+        if (allocated(error)) return
+        if (index(feature%flags, "/Od") == 0 .or. index(feature%flags, "-O0") > 0) then
+            call test_failed(error, "Wrong ifx debug flags on Windows: '"//feature%flags//"'")
+            return
+        end if
+
+        feature = collection%extract_for_target(platform_config_t(id_intel_classic_windows, OS_WINDOWS), error)
+        if (allocated(error)) return
+        if (index(feature%flags, "/Od") == 0 .or. index(feature%flags, "-O0") > 0) then
+            call test_failed(error, "Wrong ifort debug flags on Windows: '"//feature%flags//"'")
+            return
+        end if
+
+        feature = collection%extract_for_target(platform_config_t(id_intel_llvm_nix, OS_LINUX), error)
+        if (allocated(error)) return
+        if (index(feature%flags, "-O0 -g") == 0 .or. index(feature%flags, "/Od") > 0) then
+            call test_failed(error, "Wrong ifx debug flags on Linux: '"//feature%flags//"'")
+            return
+        end if
+
+        feature = collection%extract_for_target(platform_config_t(id_intel_classic_mac, OS_MACOS), error)
+        if (allocated(error)) return
+        if (index(feature%flags, "-O0 -g") == 0 .or. index(feature%flags, "/Od") > 0) then
+            call test_failed(error, "Wrong ifort debug flags on macOS: '"//feature%flags//"'")
+            return
+        end if
+
+    end subroutine test_default_debug_intel_windows_flags
 
 end module test_features

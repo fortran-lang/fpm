@@ -15,16 +15,18 @@
 !> - `[[parse_c_source]]`
 !>
 module fpm_source_parsing
+use, intrinsic :: iso_fortran_env, only: int64
 use fpm_error, only: error_t, file_parse_error, fatal_error, file_not_found_error
 use fpm_strings, only: string_t, string_cat, len_trim, split, lower, str_ends_with, fnv_1a, &
-    is_fortran_name, operator(.in.), operator(==)
+    is_fortran_name, operator(.in.), operator(==), add_strings
 use fpm_model, only: srcfile_t, &
                     FPM_UNIT_UNKNOWN, FPM_UNIT_PROGRAM, FPM_UNIT_MODULE, &
                     FPM_UNIT_SUBMODULE, FPM_UNIT_SUBPROGRAM, &
                     FPM_UNIT_CSOURCE, FPM_UNIT_CHEADER, FPM_SCOPE_UNKNOWN, &
                     FPM_SCOPE_DEP, FPM_SCOPE_APP, FPM_SCOPE_TEST, FPM_UNIT_CPPSOURCE
 use fpm_manifest_preprocess, only: preprocess_config_t
-use fpm_filesystem, only: read_lines, read_lines_expanded, exists, join_path, parent_dir
+use fpm_filesystem, only: read_lines, read_lines_expanded, exists, join_path, parent_dir, &
+    canon_path
 implicit none
 
 private
@@ -37,6 +39,8 @@ type :: cpp_block
     logical :: inside_inactive_block = .false.
     ! Depth at which we became inactive (0 if active)
     integer :: inactive_depth = 0
+    ! Track whether a branch was taken at each depth
+    logical, allocatable :: branch_taken(:)
     ! Current macro
     character(:), allocatable :: name
 end type cpp_block
@@ -125,6 +129,55 @@ function find_include_file(name, src_dir, pkg_dir) result(path)
     ! Not found
     path = ""
 end function find_include_file
+
+!> Fold the contents of a file and, recursively, of the files it includes into a digest
+!> Searches like the compiler: the including file's directory, then the include directories
+recursive subroutine add_include_digest(filename, include_dirs, digest, visited)
+    character(*), intent(in) :: filename
+    type(string_t), intent(in) :: include_dirs(:)
+    integer(int64), intent(inout) :: digest
+    !> Files already hashed: preprocessor include guards allow cyclic includes
+    type(string_t), allocatable, intent(inout) :: visited(:)
+
+    type(string_t), allocatable :: lines(:)
+    character(:), allocatable :: name, path
+    logical :: is_include
+    integer :: i, j
+
+    lines = read_lines(filename)
+    if (size(lines) > 0) digest = fnv_1a(lines, digest)
+    do i = 1, size(lines)
+        call is_include_line(lines(i)%s, is_include, name)
+        if (.not. is_include) cycle
+
+        path = canon_path(join_path(parent_dir(filename), name))
+        do j = 1, size(include_dirs)
+            if (exists(path)) exit
+            path = canon_path(join_path(include_dirs(j)%s, name))
+        end do
+
+        if (.not. exists(path) .or. (path .in. visited)) cycle
+        call add_strings(visited, string_t(path))
+        call add_include_digest(path, include_dirs, digest, visited)
+    end do
+
+end subroutine add_include_digest
+
+!> Fold the files a parsed source includes into its digest,
+!> so that the source is rebuilt when one of them changes
+subroutine add_includes_to_digest(source, include_dirs)
+    type(srcfile_t), intent(inout) :: source
+    type(string_t), intent(in) :: include_dirs(:)
+
+    type(string_t), allocatable :: visited(:)
+
+    if (.not. allocated(source%include_dependencies)) return
+    if (size(source%include_dependencies) == 0) return
+
+    allocate(visited(0))
+    call add_include_digest(source%file_name, include_dirs, source%digest, visited)
+
+end subroutine add_includes_to_digest
 
 !> Get the value of a macro from the macros list
 !> Returns empty string if macro is not defined
@@ -473,22 +526,37 @@ subroutine start_cpp_block(blk, lower_line, line, preprocess, defined_macros)
 
     logical :: is_active
     character(:), allocatable :: macro_name
+    logical :: parent_active
+    logical, allocatable :: new_branch_taken(:)
+
+    parent_active = .not. blk%inside_inactive_block
 
     call parse_cpp_condition(lower_line, line, preprocess, is_active, macro_name, defined_macros)
     
     blk%depth = blk%depth + 1
-    
-    ! If we're not already in an inactive block, check this condition
-    enter_inactive: if (.not. blk%inside_inactive_block) then
+
+    ! Grow the branch stack as needed; CPP nesting has no fixed parser limit.
+    if (.not. allocated(blk%branch_taken)) then
+        allocate(blk%branch_taken(1))
+    elseif (blk%depth > size(blk%branch_taken)) then
+        allocate(new_branch_taken(2 * size(blk%branch_taken)))
+        new_branch_taken = .false.
+        new_branch_taken(:size(blk%branch_taken)) = blk%branch_taken
+        call move_alloc(new_branch_taken, blk%branch_taken)
+    end if
+    blk%branch_taken(blk%depth) = .false.
+
+    if (parent_active) then
         blk%name = macro_name    
-        if (.not. is_active) then
-            ! This condition is false, so we enter an inactive block
+        if (is_active) then
+            blk%branch_taken(blk%depth) = .true.
+            blk%inside_inactive_block = .false.
+            blk%inactive_depth = 0
+        else
             blk%inside_inactive_block = .true.
             blk%inactive_depth = blk%depth            
         end if
-    end if enter_inactive
-    
-    ! If we're already in an inactive block, stay inactive regardless of this condition
+    end if
         
 end subroutine start_cpp_block
 
@@ -496,32 +564,77 @@ end subroutine start_cpp_block
 subroutine end_cpp_block(blk)
     type(cpp_block), intent(inout) :: blk
     
+    if (blk%depth <= 0) return
+
     ! If we're ending the block where we became inactive, reactivate
     if (blk%inside_inactive_block .and. blk%depth == blk%inactive_depth) then
         blk%inside_inactive_block = .false.
         blk%inactive_depth = 0
     end if
-    
+
+    blk%branch_taken(blk%depth) = .false.
+
     blk%depth = max(0, blk%depth - 1)
         
 end subroutine end_cpp_block
 
-!> Handle #else directive by flipping the current condition
+!> Handle #else directive in CPP conditional block
 subroutine handle_else_block(blk)
     type(cpp_block), intent(inout) :: blk
-    
-    ! #else only matters if we're at the same level where we became inactive
-    if (blk%inside_inactive_block .and. blk%depth == blk%inactive_depth) then
-        ! We're in an inactive block at this level, #else makes it active
-        blk%inside_inactive_block = .false.
-        blk%inactive_depth = 0
-    elseif (.not. blk%inside_inactive_block .and. blk%depth > 0) then
-        ! We're in an active block at this level, #else makes it inactive
-        blk%inside_inactive_block = .true.
-        blk%inactive_depth = blk%depth
+
+    logical :: parent_active
+
+    if (blk%depth <= 0) return
+
+    parent_active = (.not. blk%inside_inactive_block) .or. (blk%depth == blk%inactive_depth)
+
+    if (parent_active) then
+        if (blk%branch_taken(blk%depth)) then
+            blk%inside_inactive_block = .true.
+            blk%inactive_depth = blk%depth
+        else
+            blk%branch_taken(blk%depth) = .true.
+            blk%inside_inactive_block = .false.
+            blk%inactive_depth = 0
+        end if
     end if
          
 end subroutine handle_else_block
+
+!> Handle #elif directive in CPP conditional block
+subroutine handle_elif_block(blk, lower_line, line, preprocess, defined_macros)
+    type(cpp_block), intent(inout) :: blk
+    character(*), intent(in) :: lower_line, line
+    type(preprocess_config_t), optional, intent(in) :: preprocess
+    type(string_t), optional, intent(in) :: defined_macros(:)
+
+    logical :: is_active
+    character(:), allocatable :: macro_name
+    logical :: parent_active
+
+    if (blk%depth <= 0) return
+
+    parent_active = (.not. blk%inside_inactive_block) .or. (blk%depth == blk%inactive_depth)
+
+    if (parent_active) then
+        if (blk%branch_taken(blk%depth)) then
+            blk%inside_inactive_block = .true.
+            blk%inactive_depth = blk%depth
+        else
+            call parse_cpp_condition(lower_line, line, preprocess, is_active, macro_name, defined_macros)
+            blk%name = macro_name
+            if (is_active) then
+                blk%branch_taken(blk%depth) = .true.
+                blk%inside_inactive_block = .false.
+                blk%inactive_depth = 0
+            else
+                blk%inside_inactive_block = .true.
+                blk%inactive_depth = blk%depth
+            end if
+        end if
+    end if
+
+end subroutine handle_elif_block
 
 !> Parse CPP conditional directive and determine if block should be active
 !> defined_macros: optional additional macros from #define directives in source/includes
@@ -618,10 +731,12 @@ end subroutine parse_cpp_condition
 !>    my_module
 !>```
 !>
-function parse_f_source(f_filename,error,preprocess) result(f_source)
+function parse_f_source(f_filename,error,preprocess,include_dirs) result(f_source)
     character(*), intent(in) :: f_filename
     type(error_t), allocatable, intent(out) :: error
     type(preprocess_config_t), optional, intent(in) :: preprocess
+    !> Include directories searched by the compiler: the digest then covers the included files
+    type(string_t), optional, intent(in) :: include_dirs(:)
     type(srcfile_t) :: f_source
 
     logical :: inside_module, inside_interface, using, intrinsic_module
@@ -703,9 +818,7 @@ function parse_f_source(f_filename,error,preprocess) result(f_source)
 
                     elseif (index(file_lines_lower(i)%s,'#elif') == 1) then
 
-                        ! Treat #elif as #else followed by #if
-                        call handle_else_block(cpp_blk)
-                        call start_cpp_block(cpp_blk, file_lines_lower(i)%s, file_lines(i)%s, preprocess, defined_macros)
+                        call handle_elif_block(cpp_blk, file_lines_lower(i)%s, file_lines(i)%s, preprocess, defined_macros)
 
                     elseif (index(file_lines_lower(i)%s,'#define') == 1) then
 
@@ -867,11 +980,12 @@ function parse_f_source(f_filename,error,preprocess) result(f_source)
                 end if
 
                 mod_name = trim(adjustl(string_parts(2)))
-                if (scan(mod_name,'=(&')>0 ) then
+                if (scan(mod_name,'=(&')>0 .or. index(mod_name,'procedure::')==1) then
                     ! Ignore these cases:
                     ! module <something>&
                     ! module =*
                     ! module (i)
+                    ! module procedure::name
                     cycle
                 end if
 
@@ -1026,6 +1140,8 @@ function parse_f_source(f_filename,error,preprocess) result(f_source)
 
     end do
 
+    if (present(include_dirs)) call add_includes_to_digest(f_source, include_dirs)
+
 end function parse_f_source
 
 
@@ -1035,10 +1151,12 @@ end function parse_f_source
 !>
 !> - `#include` preprocessor statement
 !>
-function parse_c_source(c_filename,error) result(c_source)
+function parse_c_source(c_filename,error,include_dirs) result(c_source)
     character(*), intent(in) :: c_filename
     type(srcfile_t) :: c_source
     type(error_t), allocatable, intent(out) :: error
+    !> Include directories searched by the compiler: the digest then covers the included files
+    type(string_t), optional, intent(in) :: include_dirs(:)
 
     integer :: fh, n_include, i, pass, stat
     type(string_t), allocatable :: file_lines(:)
@@ -1105,6 +1223,8 @@ function parse_c_source(c_filename,error) result(c_source)
         end if
 
     end do
+
+    if (present(include_dirs)) call add_includes_to_digest(c_source, include_dirs)
 
 end function parse_c_source
 

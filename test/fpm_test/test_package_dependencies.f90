@@ -2,9 +2,12 @@
 module test_package_dependencies
   use fpm_filesystem, only: get_temp_filename
   use testsuite, only: new_unittest, unittest_t, error_t, test_failed
-  use fpm_filesystem, only: is_dir, join_path, filewrite, mkdir, os_delete_dir, exists
+  use fpm_filesystem, only: is_dir, join_path, filewrite, mkdir, os_delete_dir, &
+      exists, unix_path
   use fpm_environment, only: os_is_unix
-  use fpm_os, only: get_current_directory
+  use fpm_os, only: get_current_directory, get_absolute_path, change_directory
+  use fpm_command_line, only: fpm_update_settings
+  use fpm_cmd_update, only: cmd_update
   use fpm_dependency
   use fpm_manifest_dependency
   use fpm_manifest_metapackages, only: metapackage_config_t
@@ -14,6 +17,8 @@ module test_package_dependencies
   use fpm_settings, only: fpm_global_settings, get_registry_settings, get_global_settings
   use fpm_downloader, only: downloader_t
   use fpm_versioning, only: version_t
+  use fpm_strings, only: string_t
+  use, intrinsic :: iso_fortran_env, only: output_unit
   use jonquil, only: json_object, json_value, json_loads, cast_to_object
 
   implicit none
@@ -45,9 +50,15 @@ contains
     testsuite = [ &
         & new_unittest("cache-load-dump", test_cache_load_dump), &
         & new_unittest("cache-dump-load", test_cache_dump_load), &
+        & new_unittest("cache-preserves-features", test_cache_preserves_features), &
+        & new_unittest("features-change-detection", test_features_change_detection), &
+        & new_unittest("path-change-detection", test_path_change_detection), &
         & new_unittest("status-after-load", test_status), &
         & new_unittest("add-dependencies", test_add_dependencies), &
+        & new_unittest("absolute-path-dependency", test_absolute_path_dependency), &
         & new_unittest("update-dependencies", test_update_dependencies), &
+        & new_unittest("fetch-only-test-project", &
+                       test_fetch_only_test_project), &
         & new_unittest("metapackage-override", test_metapackage_override), &
         & new_unittest("do-not-update-dependencies", test_non_updated_dependencies), &
         & new_unittest("registry-dir-not-found", registry_dir_not_found, should_fail=.true.), &
@@ -126,6 +137,161 @@ contains
     end if
 
   end subroutine test_cache_dump_load
+
+  !> A dependency's requested features and profile are part of its IDENTITY --
+  !> they change its macros and can change its own dependency set -- so they
+  !> must survive the cache round trip.  When they did not, the first build
+  !> applied the feature and every incremental build silently resolved the
+  !> dependency without it.
+  subroutine test_cache_preserves_features(error)
+
+    !> Error handling
+    type(error_t), allocatable, intent(out) :: error
+
+    type(dependency_tree_t) :: deps
+    type(dependency_config_t) :: dep
+    integer :: unit, id
+
+    call new_dependency_tree(deps)
+    call resize(deps%dep, 5)
+    deps%ndep = 2
+
+    dep%name = "dep1"
+    dep%path = "fpm-tmp1-dir"
+    allocate (dep%features(2))
+    dep%features(1)%s = "serial"
+    dep%features(2)%s = "openmp"
+    call new_dependency_node(deps%dep(1), dep, proj_dir=dep%path)
+
+    !> dep2 requests a profile and NO features, so it also pins that one
+    !> entry's optionals do not leak into the next while loading.
+    call dependency_destroy(dep)
+    dep%name = "dep2"
+    dep%path = "fpm-tmp2-dir"
+    dep%profile = "parallel-mpi"
+    call new_dependency_node(deps%dep(2), dep, proj_dir=dep%path)
+
+    open (newunit=unit, status='scratch')
+    call deps%dump_cache(unit, error)
+    if (.not. allocated(error)) then
+      rewind (unit)
+
+      call new_dependency_tree(deps)
+      call resize(deps%dep, 2)
+      call deps%load_cache(unit, error)
+      close (unit)
+    end if
+    if (allocated(error)) return
+
+    id = deps%find("dep1")
+    if (id <= 0) then
+      call test_failed(error, "Dependency 'dep1' missing from the loaded cache")
+      return
+    end if
+    if (.not. allocated(deps%dep(id)%features)) then
+      call test_failed(error, "Cached dependency 'dep1' lost its requested features")
+      return
+    end if
+    if (size(deps%dep(id)%features) /= 2) then
+      call test_failed(error, "Expected two features on 'dep1' after the cache round trip")
+      return
+    end if
+    if (deps%dep(id)%features(1)%s /= "serial" .or. &
+        deps%dep(id)%features(2)%s /= "openmp") then
+      call test_failed(error, "Feature names not preserved by the cache round trip")
+      return
+    end if
+
+    id = deps%find("dep2")
+    if (id <= 0) then
+      call test_failed(error, "Dependency 'dep2' missing from the loaded cache")
+      return
+    end if
+    if (allocated(deps%dep(id)%features)) then
+      call test_failed(error, "Dependency 'dep2' inherited the previous entry's features")
+      return
+    end if
+    if (.not. allocated(deps%dep(id)%profile)) then
+      call test_failed(error, "Cached dependency 'dep2' lost its requested profile")
+      return
+    end if
+    if (deps%dep(id)%profile /= "parallel-mpi") then
+      call test_failed(error, "Profile not preserved by the cache round trip")
+      return
+    end if
+
+  end subroutine test_cache_preserves_features
+
+  !> Differing features must mark a dependency as changed, so a cache entry
+  !> written before the feature was requested is re-resolved instead of being
+  !> accepted as equal.
+  subroutine test_features_change_detection(error)
+
+    !> Error handling
+    type(error_t), allocatable, intent(out) :: error
+
+    type(dependency_config_t) :: cached, manifest
+
+    cached%name = "dep1"
+    cached%path = "fpm-tmp1-dir"
+
+    manifest%name = "dep1"
+    manifest%path = "fpm-tmp1-dir"
+    allocate (manifest%features(1))
+    manifest%features(1)%s = "serial"
+
+    !> Cache has no features, manifest asks for one: that is a change.
+    if (.not. manifest_has_changed(cached=cached, manifest=manifest, &
+                                   verbosity=0, iunit=output_unit)) then
+      call test_failed(error, "Requesting a feature absent from the cache must count as a change")
+      return
+    end if
+
+    !> Same feature on both sides: not a change.
+    allocate (cached%features(1))
+    cached%features(1)%s = "serial"
+    if (manifest_has_changed(cached=cached, manifest=manifest, &
+                             verbosity=0, iunit=output_unit)) then
+      call test_failed(error, "Identical features must not count as a change")
+      return
+    end if
+
+    !> Different feature name: a change again.
+    manifest%features(1)%s = "openmp"
+    if (.not. manifest_has_changed(cached=cached, manifest=manifest, &
+                                   verbosity=0, iunit=output_unit)) then
+      call test_failed(error, "A different feature name must count as a change")
+      return
+    end if
+
+  end subroutine test_features_change_detection
+
+  !> A changed local path must mark a dependency as changed, while the
+  !> canonical form stored in the cache must not.
+  subroutine test_path_change_detection(error)
+
+    !> Error handling
+    type(error_t), allocatable, intent(out) :: error
+
+    type(dependency_config_t) :: cached, manifest
+
+    cached%name = "dep1"
+    cached%path = "../old"
+
+    manifest%name = "dep1"
+    manifest%path = "./../old/"
+    if (manifest_has_changed(cached=cached, manifest=manifest, verbosity=0, iunit=output_unit)) then
+      call test_failed(error, "An equivalent local path must not count as a change")
+      return
+    end if
+
+    manifest%path = "../new"
+    if (.not. manifest_has_changed(cached=cached, manifest=manifest, verbosity=0, iunit=output_unit)) then
+      call test_failed(error, "A different local path must count as a change")
+      return
+    end if
+
+  end subroutine test_path_change_detection
 
   !> Round trip of the dependency cache from a TOML data structure to
   !> a dependency tree to a TOML data structure
@@ -216,7 +382,7 @@ contains
     type(toml_table) :: table
     type(toml_table), pointer :: ptr
     type(mock_dependency_tree_t) :: deps
-    type(dependency_config_t), allocatable :: nodes(:)
+    class(dependency_config_t), allocatable :: nodes(:)
 
     table = toml_table()
     call add_table(table, "sub1", ptr)
@@ -259,6 +425,62 @@ contains
     end if
 
   end subroutine test_add_dependencies
+
+  !> A dependency declared with an absolute path is neither prefixed with the
+  !> directory of its manifest nor with the resolution root
+  subroutine test_absolute_path_dependency(error)
+
+    !> Error handling
+    type(error_t), allocatable, intent(out) :: error
+
+    type(toml_table) :: table
+    type(toml_table), pointer :: ptr
+    type(dependency_tree_t) :: deps
+    class(dependency_config_t), allocatable :: nodes(:)
+    character(len=:), allocatable :: dep_dir, abs_dir
+
+    call delete_tmp_folder
+    dep_dir = join_path(tmp_folder, 'abs-dep')
+    call mkdir(dep_dir)
+    call filewrite(join_path(dep_dir, 'fpm.toml'), ['name = "abs-dep"'])
+
+    call get_absolute_path(dep_dir, abs_dir, error)
+    if (allocated(error)) then
+      call delete_tmp_folder; return
+    end if
+
+    table = toml_table()
+    call add_table(table, "abs-dep", ptr)
+    call set_value(ptr, "path", abs_dir)
+
+    call new_dependencies(nodes, table, root='consumer', error=error)
+    if (allocated(error)) then
+      call delete_tmp_folder; return
+    end if
+
+    if (nodes(1)%path /= abs_dir) then
+      call test_failed(error, "Absolute dependency path changed to '"//nodes(1)%path//"'")
+      call delete_tmp_folder; return
+    end if
+
+    call new_dependency_tree(deps)
+    call deps%add(nodes, error)
+    if (allocated(error)) then
+      call delete_tmp_folder; return
+    end if
+
+    call deps%resolve(".", error)
+    if (allocated(error)) then
+      call delete_tmp_folder; return
+    end if
+
+    if (deps%dep(1)%proj_dir /= abs_dir) then
+      call test_failed(error, "Absolute dependency resolved to '"//deps%dep(1)%proj_dir//"'")
+    end if
+
+    call delete_tmp_folder
+
+  end subroutine test_absolute_path_dependency
 
   subroutine test_non_updated_dependencies(error)
 
@@ -425,6 +647,126 @@ contains
   end subroutine test_update_dependencies
 
 
+  subroutine test_fetch_only_test_project(error)
+
+    type(error_t), allocatable, intent(out) :: error
+
+    type(fpm_update_settings) :: settings
+    type(package_config_t) :: package
+    type(error_t), allocatable :: cleanup_error
+    character(len=:), allocatable :: work_dir, repo_dir, consumer_dir, old_dir
+    character(len=:), allocatable :: git_prefix, repo_url, fetched_manifest
+    character(len=128) :: source_line
+    integer :: stat, command_stat, unit
+    logical :: changed_directory
+
+    changed_directory = .false.
+    call get_current_directory(old_dir, error)
+    if (allocated(error)) return
+    work_dir = get_temp_filename()
+    repo_dir = join_path(work_dir, "local-dep")
+    consumer_dir = join_path(work_dir, "consumer")
+    git_prefix = 'git -C "'//repo_dir//'" '
+    repo_url = unix_path(repo_dir)
+    call mkdir(work_dir)
+    call mkdir(repo_dir)
+    call mkdir(consumer_dir)
+    call mkdir(join_path(consumer_dir, "test"))
+    call mkdir(join_path(repo_dir, "src"))
+
+    call filewrite(join_path(repo_dir, "fpm.toml"), [character(len=80) :: &
+        'name = "local_dep"', 'version = "0.1.0"', '[library]', 'source-dir = "src"'])
+    call filewrite(join_path(repo_dir, "src", "local_dep.f90"), [character(len=80) :: &
+        'module local_dep', 'integer, parameter :: fetched_value = 1329', &
+        'end module local_dep'])
+
+    stat = 1
+    call execute_command_line(git_prefix//"init -q", exitstat=stat, cmdstat=command_stat)
+    if (command_stat /= 0 .or. stat /= 0) then
+      call test_failed(error, "Could not initialize local Git dependency")
+      goto 900
+    end if
+    stat = 1
+    call execute_command_line(git_prefix//"add fpm.toml src/local_dep.f90", &
+        exitstat=stat, cmdstat=command_stat)
+    if (command_stat /= 0 .or. stat /= 0) then
+      call test_failed(error, "Could not stage local Git dependency")
+      goto 900
+    end if
+    stat = 1
+    call execute_command_line(git_prefix// &
+        "-c user.email=fpm-test@example.invalid -c user.name=fpm-test commit -qm fixture", &
+        exitstat=stat, cmdstat=command_stat)
+    if (command_stat /= 0 .or. stat /= 0) then
+      call test_failed(error, "Could not commit local Git dependency")
+      goto 900
+    end if
+
+    call filewrite(join_path(consumer_dir, "fpm.toml"), [character(len=512) :: &
+        'name = "fetch_only_consumer"', 'version = "0.1.0"', '[dependencies]', &
+        'local_dep = { git = "'//repo_url//'" }'])
+    call filewrite(join_path(consumer_dir, "test", "check_dep.f90"), &
+        [character(len=80) :: 'program check_dep', 'use local_dep', &
+        'if (fetched_value /= 1329) stop 1', 'end program check_dep'])
+    call change_directory(consumer_dir, error)
+    if (allocated(error)) goto 900
+    changed_directory = .true.
+
+    settings%fetch_only = .true.
+    settings%clean = .false.
+    settings%verbose = .false.
+    settings%name = [character(len=1) ::]
+    settings%dump = ""
+    call cmd_update(settings)
+
+    fetched_manifest = join_path(consumer_dir, "build", "dependencies", &
+        "local_dep", "fpm.toml")
+    call get_package_data(package, fetched_manifest, error, apply_defaults=.true.)
+    if (allocated(error)) goto 900
+    if (package%name /= "local_dep") then
+      call test_failed(error, "Fetch-only update materialized the wrong dependency")
+      goto 900
+    end if
+    source_line = ""
+    open(newunit=unit, file=join_path(join_path(consumer_dir, "build", &
+        "dependencies", "local_dep"), "src", "local_dep.f90"), &
+        status="old", iostat=stat)
+    if (stat /= 0) then
+      call test_failed(error, "Fetch-only update did not materialize dependency source")
+      goto 900
+    end if
+    read(unit, '(a)', iostat=stat) source_line
+    if (stat == 0) read(unit, '(a)', iostat=stat) source_line
+    close(unit)
+    if (stat /= 0 .or. trim(source_line) /= "integer, parameter :: fetched_value = 1329") then
+      call test_failed(error, "Fetch-only update did not preserve dependency source")
+      goto 900
+    end if
+
+    call get_package_data(package, "fpm.toml", error, apply_defaults=.true.)
+    if (.not. allocated(error)) then
+      call test_failed(error, "Ordinary target validation accepted a dependency-only project")
+      goto 900
+    end if
+    if (index(error%message, "Neither library nor executable found") == 0) then
+      deallocate(error)
+      call test_failed(error, "Ordinary target validation failed for an unexpected reason")
+    else
+      deallocate(error)
+    end if
+
+900 if (changed_directory) then
+      call change_directory(old_dir, cleanup_error)
+      if (allocated(cleanup_error)) then
+        if (.not. allocated(error)) call test_failed(error, cleanup_error%message)
+        return
+      end if
+    end if
+    if (is_dir(work_dir)) call os_delete_dir(os_is_unix(), work_dir)
+
+  end subroutine test_fetch_only_test_project
+
+
   !> Test that a metapackage is overridden if a regular dependency is provided
   subroutine test_metapackage_override(error)
 
@@ -433,7 +775,7 @@ contains
 
     type(toml_table) :: manifest
     type(toml_table), pointer :: ptr
-    type(dependency_config_t), allocatable :: deps(:)
+    class(dependency_config_t), allocatable :: deps(:)
     type(metapackage_config_t) :: meta
     logical :: found
     integer :: i

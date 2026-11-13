@@ -30,9 +30,10 @@ use fpm_model
 use fpm_compiler, only : compiler_t
 use fpm_environment, only: get_os_type, OS_WINDOWS, OS_MACOS, library_filename
 use fpm_filesystem, only: dirname, join_path, canon_path
+use shlex_module, only: quote => ms_quote
 use fpm_strings, only: string_t, operator(.in.), string_cat, fnv_1a, resize, lower, str_ends_with, &
     add_strings
-use fpm_compiler, only: get_macros, is_cxx_gnu_based
+use fpm_compiler, only: get_macros, is_cxx_gnu_based, append_clean_flags
 use fpm_sources, only: get_exe_name_with_suffix
 use fpm_manifest_library, only: library_config_t
 use fpm_manifest_preprocess, only: preprocess_config_t
@@ -129,7 +130,10 @@ type build_target_t
     !> Targets in the same schedule group are guaranteed to be independent
     integer :: schedule = -1
 
-    !> Previous source file hash
+    !> Hash of the target inputs: its source file and the digests of its dependencies
+    integer(int64) :: digest = 0
+
+    !> Target digest of the last successful build
     integer(int64), allocatable :: digest_cached
 
     !> List of macros
@@ -147,6 +151,9 @@ type build_target_t
         procedure :: set_output_dir
          
         procedure :: is_executable_target
+
+        !> Digest of the target inputs: its source file and the digests of its dependencies
+        procedure :: compute_digest
 
 end type build_target_t
 
@@ -1118,11 +1125,11 @@ subroutine resolve_target_linking(targets, model, library, error)
     
     allocate(character(0) :: global_include_flags)
     if (allocated(model%include_dirs)) then
-        if (size(model%include_dirs) > 0) then
+        do i = 1, size(model%include_dirs)
             global_include_flags = global_include_flags // &
-            & " -I" // string_cat(model%include_dirs," -I")
-        end if
-        end if
+                & " -I" // quote(model%include_dirs(i)%s)
+        end do
+    end if
         
     if (present(library)) then 
         shared     = library%shared()
@@ -1169,6 +1176,13 @@ subroutine resolve_target_linking(targets, model, library, error)
 
 
             call target%set_output_dir(get_output_dir(model%build_prefix, target%compile_flags))
+
+            ! Preprocess `.F90`/`.F` sources with compilers that do not by suffix (NAG). Added
+            ! after the output directory, so these objects share it with the package's others
+            if (target%target_type == FPM_TARGET_OBJECT .and. allocated(target%source)) then
+                call append_clean_flags(target%compile_flags, &
+                                        model%compiler%get_preprocess_flag(target%source%file_name))
+            end if
 
         end associate
 
@@ -1550,6 +1564,75 @@ subroutine set_output_dir(self, output_dir)
     self%output_log_file = self%output_file // ".log"
 
 end subroutine set_output_dir
+
+!> Digest of the target inputs: the digest of its source file, if any, combined
+!> with those of its dependencies, in an order-independent way.
+!> The digests of the dependencies must be computed first
+pure function compute_digest(self) result(digest)
+    class(build_target_t), intent(in) :: self
+    integer(int64) :: digest
+
+    integer :: i
+    integer(int64), allocatable :: dep_digests(:)
+    character(8) :: bytes
+
+    digest = 0
+    if (allocated(self%source)) digest = self%source%digest
+
+    dep_digests = [(self%dependencies(i)%ptr%digest, i=1,size(self%dependencies))]
+    call sort_digests(dep_digests)
+
+    do i=1,size(dep_digests)
+        bytes = transfer(dep_digests(i), bytes)
+        digest = fnv_1a(bytes, digest)
+    end do
+
+end function compute_digest
+
+!> Sort digests in ascending order (heapsort: libraries can have thousands of dependencies)
+pure subroutine sort_digests(digests)
+    integer(int64), intent(inout) :: digests(:)
+
+    integer :: i
+    integer(int64) :: tmp
+
+    ! Build a max-heap, then move its root to the end of the array
+    do i=size(digests)/2,1,-1
+        call sift_down(digests, i, size(digests))
+    end do
+    do i=size(digests),2,-1
+        tmp = digests(1)
+        digests(1) = digests(i)
+        digests(i) = tmp
+        call sift_down(digests, 1, i-1)
+    end do
+
+    contains
+
+    !> Move heap(root) down the max-heap heap(1:n)
+    pure subroutine sift_down(heap, root, n)
+        integer(int64), intent(inout) :: heap(:)
+        integer, intent(in) :: root, n
+
+        integer :: parent, child
+        integer(int64) :: tmp
+
+        parent = root
+        do while (2*parent <= n)
+            child = 2*parent
+            if (child < n) then
+                if (heap(child) < heap(child+1)) child = child + 1
+            end if
+            if (heap(parent) >= heap(child)) exit
+            tmp = heap(parent)
+            heap(parent) = heap(child)
+            heap(child) = tmp
+            parent = child
+        end do
+
+    end subroutine sift_down
+
+end subroutine sort_digests
 
 !> Build a lookup table mapping each package dependency to its corresponding
 !> shared or archive build target in the targets list.
