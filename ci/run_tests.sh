@@ -25,10 +25,19 @@ test $EXIT_CODE -eq 1
 
 # --verbose prints long flags and commands on one line, however fpm was compiled (#1405)
 long_macro=FPM_VERBOSE_LINE_$(printf '%0100d' 0)
+verbose_on_one_line() {
+   grep -q "^ <INFO> COMPILER OPTIONS: .*-D$long_macro" <<< "$1" &&
+   grep -q "^ + .*-D$long_macro" <<< "$1"
+}
 verbose_out=$("$fpm" build -C $dir --verbose --flag "-D$long_macro")
 echo "$verbose_out"
-grep -q "^ <INFO> COMPILER OPTIONS: .*-D$long_macro" <<< "$verbose_out"
-grep -q "^ + .*-D$long_macro" <<< "$verbose_out"
+verbose_on_one_line "$verbose_out"
+# The check must reject the same output wrapped at 80 columns, as flang and Intel printed it
+wrapped_out=$(awk '{ while (length($0) > 80) { print substr($0, 1, 80); $0 = " " substr($0, 81) } print }' <<< "$verbose_out")
+if verbose_on_one_line "$wrapped_out"; then
+  echo "The --verbose check does not catch output wrapped at 80 columns"
+  exit 1
+fi
 
 pushd hello_fpm
 "$fpm" build
