@@ -1397,9 +1397,9 @@ subroutine os_delete_dir(is_unix, dir, echo)
     logical, intent(in), optional :: echo
 
     if (is_unix) then
-        call run('rm -rf ' // dir, echo=echo,verbose=.false.)
+        call run('rm -rf "' // dir // '"', echo=echo,verbose=.false.)
     else
-        call run('rmdir /s/q ' // dir, echo=echo,verbose=.false.)
+        call run('rmdir /s/q "' // dir // '"', echo=echo,verbose=.false.)
     end if
 
 end subroutine os_delete_dir
