@@ -26,9 +26,9 @@ contains
 
     character(len=:), allocatable :: filename
 
-    if (len_trim(settings%dump_manifest)<=0 .and. &
-        len_trim(settings%dump_model)<=0 .and. &
-        len_trim(settings%dump_dependencies)<=0) then
+    if (.not. (requested(settings%dump_manifest) .or. &
+               requested(settings%dump_model) .or. &
+               requested(settings%dump_dependencies))) then
         call fpm_stop(0,'*cmd_export* exiting: no manifest/model/dependencies keyword provided')
     end if
 
@@ -37,13 +37,13 @@ contains
     call handle_error(error, lock)
 
     !> Export manifest
-    if (len_trim(settings%dump_manifest)>0) then
+    if (requested(settings%dump_manifest)) then
        filename = trim(settings%dump_manifest)
        call package%dump(filename, error, json=name_is_json(filename))
     end if
 
     !> Export dependency tree
-    if (len_trim(settings%dump_dependencies)>0) then
+    if (requested(settings%dump_dependencies)) then
 
         !> Wait for other fpm processes that use the same build directory
         call lock%acquire(settings%build_dir)
@@ -61,7 +61,7 @@ contains
     end if
 
     !> Export full model
-    if (len_trim(settings%dump_model)>0) then
+    if (requested(settings%dump_model)) then
 
         !> Wait for other fpm processes that use the same build directory
         call lock%acquire(settings%build_dir)
@@ -80,6 +80,14 @@ contains
     call lock%release()
 
   end subroutine cmd_export
+
+  !> Whether an export option was given a file name
+  logical function requested(filename)
+    !> File name from the command line, unallocated when the option is not given
+    character(len=:), allocatable, intent(in) :: filename
+    requested = .false.
+    if (allocated(filename)) requested = len_trim(filename) > 0
+  end function requested
 
   !> Error handling for this command: release the lock and stop
   subroutine handle_error(error, lock)

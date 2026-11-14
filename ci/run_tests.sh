@@ -23,11 +23,16 @@ EXIT_CODE=0
 FPM_JOBS=two "$fpm" build -C $dir || EXIT_CODE=$?
 test $EXIT_CODE -eq 1
 
-# fpm export writes the requested file
-rm -f $dir/manifest.json
+# fpm export writes each requested file, and nothing else
+rm -f $dir/manifest.json $dir/model.json $dir/dependencies.json $dir/filename
 "$fpm" export -C $dir --manifest manifest.json
 test -f $dir/manifest.json
-rm $dir/manifest.json
+test ! -e $dir/filename
+"$fpm" export -C $dir --model model.json --dependencies dependencies.json
+test -f $dir/model.json
+test -f $dir/dependencies.json
+test ! -e $dir/filename
+rm $dir/manifest.json $dir/model.json $dir/dependencies.json
 
 # --verbose prints long flags and commands on one line, however fpm was compiled (#1405)
 long_macro=FPM_VERBOSE_LINE_$(printf '%0100d' 0)

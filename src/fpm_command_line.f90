@@ -669,9 +669,9 @@ contains
         case('export')
 
             call set_args(common_args // compiler_args // '&
-                & --manifest "filename"  &
-                & --model "filename" &
-                & --dependencies "filename" &
+                & --manifest " " &
+                & --model " " &
+                & --dependencies " " &
                 & --config-file " " ', &
                 help_build, version_text)
             call check_no_unnamed_args('export')
