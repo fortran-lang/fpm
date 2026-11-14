@@ -840,7 +840,7 @@ function get_feature_flag(self, feature) result(flags)
         continue
 
     case default
-        error stop "Unknown feature '"//feature//"'"
+        call fpm_stop(1, "Unknown feature '"//feature//"'")
     end select
 end function get_feature_flag
 
@@ -883,7 +883,7 @@ subroutine get_main_flags(self, language, flags)
         end select
 
     case default
-        error stop "Unknown language '"//language//'", try "fortran", "c", "c++"'
+        call fpm_stop(1, "Unknown language '"//language//'", try "fortran", "c", "c++"')
     end select
 
 end subroutine get_main_flags

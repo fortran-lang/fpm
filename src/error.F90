@@ -177,7 +177,13 @@ contains
            endif
            flush(unit=stderr,iostat=iostat)
         endif
+        ! QUIET=: the runtime prints no stop code and no IEEE exception summary; gfortran accepts it from 12
+#if defined(__GFORTRAN__) && __GNUC__ < 12
+        if (value == 0) stop
         stop value
+#else
+        stop value, quiet=.true.
+#endif
     end subroutine fpm_stop
 
 end module fpm_error
