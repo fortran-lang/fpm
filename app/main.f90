@@ -12,7 +12,7 @@ use fpm_command_line, only: &
         fpm_clean_settings, &
         fpm_publish_settings, &
         get_command_line_settings
-use fpm_error, only: error_t
+use fpm_error, only: error_t, fpm_stop
 use fpm_filesystem, only: exists, parent_dir, join_path
 use fpm, only: cmd_build, cmd_run, cmd_clean
 use fpm_cmd_install, only: cmd_install
@@ -111,7 +111,7 @@ contains
         type(error_t), optional, intent(in) :: error_
         if (present(error_)) then
             write (error_unit, '("[Error]", 1x, a)') error_%message
-            stop 1
+            call fpm_stop(1, '')
         end if
     end subroutine handle_error
 

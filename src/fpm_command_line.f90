@@ -456,7 +456,7 @@ contains
                call get_current_directory(name, error)
                if (allocated(error)) then
                   write(stderr, '("[Error]", 1x, a)') error%message
-                  stop 1
+                  call fpm_stop(1, '')
                endif
             endif
             name=canon_path(name)
@@ -769,7 +769,7 @@ contains
 
             if(cmdarg.ne.''.and.which('fpm-'//cmdarg).ne.'')then
                 call run('fpm-'//trim(cmdarg)//' '// get_command_arguments_quoted(),.false.)
-                stop
+                call fpm_stop(0, '')
             else
                 call set_args('&
                 & --list F&
@@ -856,7 +856,7 @@ contains
                write(stdout,'(a)')'<WARNING> *printhelp* output requested is empty'
            endif
         endif
-        stop
+        call fpm_stop(0, '')
     end subroutine printhelp
 
     subroutine set_help()

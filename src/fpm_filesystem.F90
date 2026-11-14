@@ -587,8 +587,7 @@ recursive subroutine list_files(dir, files, recurse)
 
     dir_handle = c_opendir(dir(1:len_trim(dir))//c_null_char)
     if (.not. c_associated(dir_handle)) then
-        print *, 'c_opendir() failed'
-        error stop
+        call fpm_stop(1, 'c_opendir() failed')
     end if
 
     i = 0
@@ -619,8 +618,7 @@ recursive subroutine list_files(dir, files, recurse)
     r = c_closedir(dir_handle)
 
     if (r /= 0) then
-        print *, 'c_closedir() failed'
-        error stop
+        call fpm_stop(1, 'c_closedir() failed')
     end if
 
     if (i > 0) then

@@ -20,8 +20,13 @@ dir=hello_world
 
 # An invalid FPM_JOBS stops fpm with an error
 EXIT_CODE=0
-FPM_JOBS=two "$fpm" build -C $dir || EXIT_CODE=$?
+jobs_out=$(FPM_JOBS=two "$fpm" build -C $dir 2>&1) || EXIT_CODE=$?
 test $EXIT_CODE -eq 1
+# fpm prints only its own message when it stops: no stop code or IEEE exception summary (#1411)
+test "$(wc -l <<< "$jobs_out")" -eq 1
+[[ "$jobs_out" == "<ERROR> "* ]]
+list_err=$("$fpm" list 2>&1 >/dev/null)
+test -z "$list_err"
 
 # --verbose prints long flags and commands on one line, however fpm was compiled (#1405)
 long_macro=FPM_VERBOSE_LINE_$(printf '%0100d' 0)
