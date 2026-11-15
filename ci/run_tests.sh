@@ -28,6 +28,17 @@ test "$(wc -l <<< "$jobs_out")" -eq 1
 list_err=$("$fpm" list 2>&1 >/dev/null)
 test -z "$list_err"
 
+# fpm export writes each requested file, and nothing else
+rm -f $dir/manifest.json $dir/model.json $dir/dependencies.json $dir/filename
+"$fpm" export -C $dir --manifest manifest.json
+test -f $dir/manifest.json
+test ! -e $dir/filename
+"$fpm" export -C $dir --model model.json --dependencies dependencies.json
+test -f $dir/model.json
+test -f $dir/dependencies.json
+test ! -e $dir/filename
+rm $dir/manifest.json $dir/model.json $dir/dependencies.json
+
 # --verbose prints long flags and commands on one line, however fpm was compiled (#1405)
 long_macro=FPM_VERBOSE_LINE_$(printf '%0100d' 0)
 verbose_on_one_line() {
