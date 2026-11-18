@@ -26,6 +26,9 @@ module fpm_meta_base
 
         logical :: has_link_libraries   = .false.
         logical :: has_link_flags       = .false.
+        logical :: has_fortran_link_flags = .false.
+        logical :: has_c_link_flags     = .false.
+        logical :: has_cxx_link_flags   = .false.
         logical :: has_build_flags      = .false.
         logical :: has_fortran_flags    = .false.
         logical :: has_c_flags          = .false.
@@ -41,6 +44,9 @@ module fpm_meta_base
         type(string_t) :: cflags
         type(string_t) :: cxxflags
         type(string_t) :: link_flags
+        type(string_t) :: fortran_link_flags
+        type(string_t) :: c_link_flags
+        type(string_t) :: cxx_link_flags
         type(string_t) :: run_command
         type(string_t), allocatable :: incl_dirs(:)
         type(string_t), allocatable :: link_libs(:)
@@ -81,6 +87,9 @@ module fpm_meta_base
         class(metapackage_t), intent(inout) :: this
         this%has_link_libraries = .false.
         this%has_link_flags = .false.
+        this%has_fortran_link_flags = .false.
+        this%has_c_link_flags = .false.
+        this%has_cxx_link_flags = .false.
         this%has_build_flags = .false.
         this%has_fortran_flags = .false.
         this%has_c_flags = .false.
@@ -94,6 +103,9 @@ module fpm_meta_base
         if (allocated(this%name)) deallocate(this%name)
         if (allocated(this%version)) deallocate(this%version)
         if (allocated(this%flags%s)) deallocate(this%flags%s)
+        if (allocated(this%fortran_link_flags%s)) deallocate(this%fortran_link_flags%s)
+        if (allocated(this%c_link_flags%s)) deallocate(this%c_link_flags%s)
+        if (allocated(this%cxx_link_flags%s)) deallocate(this%cxx_link_flags%s)
         if (allocated(this%link_libs)) deallocate(this%link_libs)
         if (allocated(this%incl_dirs)) deallocate(this%incl_dirs)
         if (allocated(this%external_modules)) deallocate(this%external_modules)
@@ -134,11 +146,17 @@ module fpm_meta_base
             call append_clean_flags(model%cxx_compile_flags, self%flags%s)
         endif
 
-        ! Add language-specific flags
+        ! Add language-specific compile flags
         if (self%has_fortran_flags) call append_clean_flags(model%fortran_compile_flags, self%fflags%s)
         if (self%has_c_flags)       call append_clean_flags(model%c_compile_flags, self%cflags%s)
         if (self%has_cxx_flags)     call append_clean_flags(model%cxx_compile_flags, self%cxxflags%s)
 
+        ! Add language-specific link flags
+        if (self%has_fortran_link_flags) call append_clean_flags(model%fortran_link_flags, self%fortran_link_flags%s)
+        if (self%has_c_link_flags)       call append_clean_flags(model%c_link_flags, self%c_link_flags%s)
+        if (self%has_cxx_link_flags)     call append_clean_flags(model%cxx_link_flags, self%cxx_link_flags%s)
+
+        ! Keep backward compat: merge all into link_flags for fpm backend
         if (self%has_link_flags) then
             call append_clean_flags(model%link_flags, self%link_flags%s)
         end if
