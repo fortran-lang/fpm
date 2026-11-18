@@ -64,7 +64,7 @@ module fpm_dependency
   use fpm_manifest, only: package_config_t, dependency_config_t, get_package_data, get_package_dependencies
   use fpm_manifest_dependency, only: manifest_has_changed, dependency_destroy
   use fpm_manifest_preprocess, only: operator(==)
-  use fpm_strings, only: string_t, operator(.in.), operator(==), str
+  use fpm_strings, only: string_t, operator(.in.), operator(==), str, lower
   use tomlf, only: toml_table, toml_key, toml_error, toml_stat, toml_array, len, add_array
   use fpm_toml, only: toml_serialize, get_value, set_value, add_table, set_string, get_list, set_list, &
                       load_table_from_unit, load_table_from_file
@@ -551,7 +551,6 @@ contains
         else
           ! Store the cached one
           self%dep(id) = dependency
-          self%dep(id)%update = .false.
         end if
       end if
     else
@@ -610,9 +609,8 @@ contains
         call dep%git%checkout(proj_dir, error)
         if (allocated(error)) return
 
-        ! Unset dependency and remove updatable attribute
+        ! Resolve the package again after checkout.
         dep%done = .false.
-        dep%update = .false.
 
         ! Now decent into the dependency tree, level for level
         do while (.not. self%finished())
@@ -620,6 +618,9 @@ contains
           if (allocated(error)) exit
         end do
         if (allocated(error)) return
+
+        ! Resolving dependencies can reallocate the array behind dep.
+        self%dep(id)%update = .false.
       end if
     end associate
 
@@ -633,12 +634,20 @@ contains
     type(error_t), allocatable, intent(out) :: error
 
     integer :: i
+    logical :: updated
 
     ! Update dependencies where needed
+    updated = .false.
     do i = 1, self%ndep
+      updated = updated .or. self%dep(i)%update
       call self%update(self%dep(i)%name, error)
       if (allocated(error)) return
     end do
+
+    if (updated .and. allocated(self%cache)) then
+      call self%dump_cache(self%cache, error)
+      if (allocated(error)) return
+    end if
 
   end subroutine update_tree
 
@@ -1081,8 +1090,11 @@ contains
     if (allocated(node%git) .and. present(revision)) then
       node%revision = revision
       if (.not. fetch) then
-        ! Change in revision ID was checked already. Only update if ALL git information is missing
-        update = .not. allocated(node%git%url)
+        ! Without a cache entry, the existing checkout may belong to a different request.
+        update = .not. node%cached .or. .not. allocated(node%git%url)
+        if (allocated(node%git%object) .and. allocated(node%git%url)) then
+          if (lower(node%git%object) == lower(revision)) update = .false.
+        end if
       end if
     end if
   
@@ -1343,6 +1355,7 @@ contains
           dep%proj_dir = windows_path(proj_dir)
         end if
         dep%done = .false.
+        call get_value(ptr, "update", dep%update, .false.)
         if (allocated(version)) then
           if (.not. allocated(dep%version)) allocate (dep%version)
           call new_version(dep%version, version, error)
@@ -1356,6 +1369,14 @@ contains
           end if
           if (allocated(rev)) then
             dep%revision = rev
+            if (allocated(obj)) then
+              ! Older caches can record a requested commit alongside a different checkout.
+              if ((len(obj) == 40 .or. len(obj) == 64) .and. len(obj) == len(rev)) then
+                if (verify(lower(obj), "0123456789abcdef") == 0) then
+                  dep%update = dep%update .or. lower(obj) /= lower(rev)
+                end if
+              end if
+            end if
           end if
         else
           dep%path = proj_dir
@@ -1437,6 +1458,8 @@ contains
             call set_value(ptr, "rev", dep%revision)
           end if
         end if
+        ! Keep an unfinished update pending across failed fetches and fetch-only runs.
+        if (dep%update) call set_value(ptr, "update", .true.)
         ! The requested features/profile are part of the dependency's IDENTITY:
         ! they change its macros and its own dependency set, so a cache entry
         ! that omits them resolves to a DIFFERENT package on the next run.

@@ -68,6 +68,8 @@ contains
         call deps%update(trim(settings%name(ii)), error)
         call handle_error(error, lock)
       end do
+      call deps%dump_cache(cache, error)
+      call handle_error(error, lock)
     end if
 
     if (len_trim(settings%dump)>0) then
