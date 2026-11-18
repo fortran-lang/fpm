@@ -11,6 +11,7 @@
 !>name = "string"
 !>source-dir = "path"
 !>main = "file"
+!>args = ["--flag", "value"]
 !>link = ["lib"]
 !>[test.dependencies]
 !>```
@@ -18,8 +19,9 @@ module fpm_manifest_test
     use fpm_manifest_dependency, only : new_dependencies
     use fpm_manifest_executable, only : executable_config_t
     use fpm_error, only : error_t, syntax_error, bad_name_error
+    use fpm_strings, only : string_t
     use tomlf, only : toml_table, toml_key, toml_stat
-    use fpm_toml, only : get_value, get_list
+    use fpm_toml, only : get_value, get_list, has_list
     implicit none
     private
 
@@ -28,6 +30,9 @@ module fpm_manifest_test
 
     !> Configuation meta data for an test
     type, extends(executable_config_t) :: test_config_t
+
+        !> Command-line arguments passed to the test executable
+        character(len=:), allocatable :: args(:)
 
     contains
 
@@ -67,6 +72,9 @@ contains
         endif
         call get_value(table, "source-dir", self%source_dir, "test")
         call get_value(table, "main", self%main, "main.f90")
+
+        call get_args(table, self%args, error)
+        if (allocated(error)) return
 
         call get_value(table, "dependencies", child, requested=.false.)
         if (associated(child)) then
@@ -111,7 +119,7 @@ contains
             case("name")
                 name_present = .true.
 
-            case("source-dir", "main", "dependencies", "link")
+            case("source-dir", "main", "dependencies", "link", "args")
                 continue
 
             end select
@@ -164,6 +172,17 @@ contains
             end if
         end if
 
+        if (allocated(self%args)) then
+            if (size(self%args) > 1 .or. pr > 2) then
+                write(unit, fmti) "- arguments", size(self%args)
+            end if
+            if (pr > 2) then
+                do ii = 1, size(self%args)
+                    write(unit, fmt) "  - arg", self%args(ii)
+                end do
+            end if
+        end if
+
         if (allocated(self%dependency)) then
             if (size(self%dependency) > 1 .or. pr > 2) then
                 write(unit, fmti) "- dependencies", size(self%dependency)
@@ -174,6 +193,48 @@ contains
         end if
 
     end subroutine info
+
+
+    subroutine get_args(table, args, error)
+
+        type(toml_table), intent(inout) :: table
+
+        character(len=:), allocatable, intent(out) :: args(:)
+
+        type(error_t), allocatable, intent(out) :: error
+
+        type(string_t), allocatable :: values(:)
+        character(len=:), allocatable :: item
+        integer :: ii, maxlen
+
+        if (.not. table%has_key("args")) return
+
+        if (.not. has_list(table, "args")) then
+            call syntax_error(error, "Test args must be an array of strings")
+            return
+        end if
+
+        call get_list(table, "args", values, error)
+        if (allocated(error)) return
+
+        if (.not. allocated(values)) return
+        if (size(values) < 1) then
+            allocate(character(len=1) :: args(0))
+            return
+        end if
+
+        maxlen = 1
+        do ii = 1, size(values)
+            maxlen = max(maxlen, len(values(ii)%s))
+        end do
+
+        allocate(character(len=maxlen) :: args(size(values)))
+        do ii = 1, size(values)
+            item = values(ii)%s
+            args(ii) = item
+        end do
+
+    end subroutine get_args
 
 
 end module fpm_manifest_test
