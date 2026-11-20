@@ -95,9 +95,9 @@ if [ $? -ne 0 ]; then
   exit 2
 fi
 
-# Use 0.13.0 to bootstrap (first release with the features system,
-# which fpm.toml depends on for the openmp metapackage feature).
-BOOTSTRAP_RELEASE="0.13.0"
+# Use 0.14.0 to bootstrap (0.13.0 was the first release with the features
+# system, which fpm.toml depends on for the openmp metapackage feature).
+BOOTSTRAP_RELEASE="0.14.0"
 SOURCE_URL="https://github.com/fortran-lang/fpm/releases/download/v${BOOTSTRAP_RELEASE}/fpm-${BOOTSTRAP_RELEASE}.F90"
 BOOTSTRAP_DIR="build/bootstrap"
 

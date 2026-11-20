@@ -79,7 +79,7 @@ jobs:
     - name: Install fpm
       uses: fortran-lang/setup-fpm@v10
       with:
-        fpm-version: 'v0.13.0'
+        fpm-version: 'v0.14.0'
 
     - name: Create single file version
       run: |
