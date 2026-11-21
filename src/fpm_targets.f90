@@ -50,7 +50,8 @@ public FPM_TARGET_UNKNOWN,  FPM_TARGET_EXECUTABLE, &
 public build_target_t, build_target_ptr
 public targets_from_sources, resolve_module_dependencies
 public add_target, new_target, add_dependency, get_library_dirs, add_target_ptr
-public filter_library_targets, filter_executable_targets, filter_modules, create_preprocess_targets
+public filter_library_targets, filter_executable_targets, filter_modules, create_preprocess_targets, &
+        resolve_preprocessing_dependencies
 
 
 
@@ -1770,5 +1771,51 @@ subroutine create_preprocess_targets(targets, model)
     end do
 
 end subroutine create_preprocess_targets
+
+!> Resolve preprocessing dependencies
+!>
+!> This subroutine links compilation targets to their corresponding preprocessing targets.
+!> For each compilation target that has a source file, we check if there's a preprocessing
+!> target that generates a file with the same path. If found, the compilation target
+!> gets a dependency on the preprocessing target.
+!>
+subroutine resolve_preprocessing_dependencies(targets)
+    type(build_target_ptr), intent(inout) :: targets(:)
+
+    integer :: i, j
+    character(:), allocatable :: source_file
+
+    ! For each target, check if it's a compilation target that depends on a preprocessed file
+    do i = 1, size(targets)
+        associate(target => targets(i)%ptr)
+
+            ! Only compilation targets have source files
+            if (.not.allocated(target%source)) cycle
+
+            source_file = target%source%file_name
+
+            ! Search for a preprocessing target with matching output_file
+            do j = 1, size(targets)
+                associate(preproc_target => targets(j)%ptr)
+
+                    ! Check if this is a preprocessing target
+                    if (preproc_target%target_type /= FPM_TARGET_PREPROCESS) cycle
+
+                    ! Check if output file matches the source file we're compiling
+                    if (allocated(preproc_target%output_file)) then
+                        if (preproc_target%output_file == source_file) then
+                            ! Add preprocessing target as a dependency
+                            call add_dependency(target, preproc_target)
+                            exit  ! Found the preprocessing target, move to next compilation target
+                        end if
+                    end if
+
+                end associate
+            end do
+
+        end associate
+    end do
+
+end subroutine resolve_preprocessing_dependencies
 
 end module fpm_targets

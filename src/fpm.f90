@@ -21,7 +21,7 @@ use fpm_compiler, only: new_compiler, new_archiver, set_cpp_preprocessor_flags, 
 use fpm_sources, only: add_executable_sources, add_sources_from_dir, add_fypp_files_from_dir
 use fpm_targets, only: targets_from_sources, build_target_t, build_target_ptr, &
                         FPM_TARGET_EXECUTABLE, get_library_dirs, filter_executable_targets, &
-                        create_preprocess_targets
+                        create_preprocess_targets, resolve_preprocessing_dependencies
 use fpm_manifest, only : get_package_data, package_config_t
 use fpm_manifest_platform, only: platform_config_t
 use fpm_meta, only : resolve_metapackages
@@ -598,6 +598,9 @@ end if
 ! Create preprocessing targets for .fypp files
 call create_preprocess_targets(targets, model)
 
+! Resolve preprocessing dependencies (link compilation targets to preprocessing targets)
+call resolve_preprocessing_dependencies(targets)
+
 !> Dump model to file
 if (len_trim(settings%dump)>0) then
     call model%dump(trim(settings%dump),error,json=name_is_json(trim(settings%dump)))
@@ -667,6 +670,9 @@ subroutine cmd_run(settings,test)
 
     ! Create preprocessing targets for .fypp files
     call create_preprocess_targets(targets, model)
+
+    ! Resolve preprocessing dependencies (link compilation targets to preprocessing targets)
+    call resolve_preprocessing_dependencies(targets)
 
     if (test) then
        run_scope = FPM_SCOPE_TEST
@@ -916,6 +922,9 @@ subroutine delete_targets(settings, error)
 
     ! Create preprocessing targets for .fypp files
     call create_preprocess_targets(targets, model)
+
+    ! Resolve preprocessing dependencies (link compilation targets to preprocessing targets)
+    call resolve_preprocessing_dependencies(targets)
 
     deleted_any = .false.
 
