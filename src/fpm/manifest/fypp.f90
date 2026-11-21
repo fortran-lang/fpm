@@ -117,7 +117,12 @@ contains
                  trim(input_file) // " " // trim(output_file))
 
         ! Execute the command
-        call run(cmd, error)
+        call run(cmd, exitstat=stat)
+        
+        if (stat /= 0) then
+            allocate(error)
+            call fatal_error(error, "fypp preprocessing failed for " // trim(input_file))
+        end if
 
     end subroutine process_file
 
@@ -164,13 +169,18 @@ contains
         type(error_t), allocatable, intent(out) :: error
 
         character(:), allocatable :: cmd
-        integer :: unit
+        integer :: stat
 
         ! Build the command
         cmd = build_fypp_command("fypp", input_file, output_file, macros)
 
         ! Execute it
-        call run(cmd, error)
+        call run(cmd, exitstat=stat)
+        
+        if (stat /= 0) then
+            allocate(error)
+            call fatal_error(error, "fypp preprocessing failed for " // trim(input_file))
+        end if
 
     end subroutine run_fypp
 

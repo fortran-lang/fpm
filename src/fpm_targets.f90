@@ -45,7 +45,7 @@ private
 public FPM_TARGET_UNKNOWN,  FPM_TARGET_EXECUTABLE, &
        FPM_TARGET_ARCHIVE,  FPM_TARGET_OBJECT, &
        FPM_TARGET_C_OBJECT, FPM_TARGET_CPP_OBJECT, &
-       FPM_TARGET_SHARED,   FPM_TARGET_NAME
+       FPM_TARGET_SHARED,   FPM_TARGET_PREPROCESS, FPM_TARGET_NAME
 public build_target_t, build_target_ptr
 public targets_from_sources, resolve_module_dependencies
 public add_target, new_target, add_dependency, get_library_dirs, add_target_ptr
@@ -67,6 +67,8 @@ integer, parameter :: FPM_TARGET_C_OBJECT = 4
 integer, parameter :: FPM_TARGET_CPP_OBJECT = 5
 !> Target type is a shared library
 integer, parameter :: FPM_TARGET_SHARED = 6
+!> Target type is a preprocessing target (e.g., fypp)
+integer, parameter :: FPM_TARGET_PREPROCESS = 7
 
 !> Wrapper type for constructing arrays of `[[build_target_t]]` pointers
 type build_target_ptr
@@ -182,7 +184,8 @@ pure function FPM_TARGET_NAME(type) result(msg)
       case (FPM_TARGET_CPP_OBJECT); msg = 'C++ object'
       case (FPM_TARGET_C_OBJECT);   msg = 'C Object'
       case (FPM_TARGET_EXECUTABLE); msg = 'Executable'
-      case (FPM_TARGET_OBJECT);     msg = 'Object'      
+      case (FPM_TARGET_OBJECT);     msg = 'Object'
+      case (FPM_TARGET_PREPROCESS); msg = 'Preprocessor'
       case default;                 msg = 'Unknown'
    end select
 
