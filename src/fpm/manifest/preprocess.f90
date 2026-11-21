@@ -37,6 +37,9 @@ module fpm_manifest_preprocess
       !> Macros to be defined for the preprocessor
       type(string_t), allocatable :: macros(:)
 
+      !> Output suffix for preprocessed files (fypp-specific: f90 or F90)
+      character(len=:), allocatable :: output_suffix
+
    contains
 
       !> Print information on this instance
@@ -115,6 +118,15 @@ contains
       call get_list(table, "macros", self%macros, error)
       if (allocated(error)) return
 
+      call get_value(table, "output_suffix", self%output_suffix)
+
+      ! Set default output_suffix for fypp if not provided
+      if (.not.allocated(self%output_suffix)) then
+          if (self%name == "fypp") then
+              self%output_suffix = "F90"
+          end if
+      end if
+
    end subroutine new_preprocess_config
 
    !> Check local schema for allowed entries
@@ -136,7 +148,7 @@ contains
       do ikey = 1, size(list)
          select case(list(ikey)%key)
          !> Valid keys.
-         case("suffixes", "directories", "macros")
+         case("suffixes", "directories", "macros", "output_suffix")
          case default
             call syntax_error(error, "Key '"//list(ikey)%key//"' not allowed in preprocessor '"//name//"'."); exit
          end select
@@ -226,6 +238,9 @@ contains
             write(unit, fmt) "   - " // self%macros(ilink)%s
          end do
       end if
+      if (allocated(self%output_suffix)) then
+         write(unit, fmt) "- output_suffix", self%output_suffix
+      end if
 
    end subroutine info
 
@@ -247,16 +262,20 @@ contains
             if (.not.(this%suffixes==other%suffixes)) return
             if (.not.(this%directories==other%directories)) return
             if (.not.(this%macros==other%macros)) return
+           if (allocated(this%output_suffix).neqv.allocated(other%output_suffix)) return
+           if (allocated(this%output_suffix)) then
+               if (.not.(this%output_suffix==other%output_suffix)) return
+           endif
 
-         class default
-            ! Not the same type
-            return
-      end select
+        class default
+           ! Not the same type
+           return
+     end select
 
-      !> All checks passed!
-      preprocess_is_same = .true.
+     !> All checks passed!
+     preprocess_is_same = .true.
 
-    end function preprocess_is_same
+   end function preprocess_is_same
 
     !> Dump install config to toml table
     subroutine dump_to_toml(self, table, error)
@@ -277,6 +296,8 @@ contains
        call set_list(table, "directories", self%directories, error)
        if (allocated(error)) return
        call set_list(table, "macros", self%macros, error)
+       if (allocated(error)) return
+       call set_string(table, "output_suffix", self%output_suffix, error)
        if (allocated(error)) return
 
      end subroutine dump_to_toml
@@ -300,6 +321,7 @@ contains
         if (allocated(error)) return
         call get_list(table, "macros", self%macros, error)
         if (allocated(error)) return
+        call get_value(table, "output_suffix", self%output_suffix)
 
      end subroutine load_from_toml
 
@@ -311,6 +333,7 @@ contains
        if (allocated(this%suffixes))deallocate(this%suffixes)
        if (allocated(this%directories))deallocate(this%directories)
        if (allocated(this%macros))deallocate(this%macros)
+       if (allocated(this%output_suffix))deallocate(this%output_suffix)
 
     end subroutine destroy
 
@@ -319,7 +342,7 @@ contains
        class(preprocess_config_t), intent(inout) :: this
         type(preprocess_config_t), intent(in) :: that
 
-        if (.not.that%is_cpp()) then
+        if (.not.(that%is_cpp() .or. that%is_fypp())) then
             write(stderr, '(a)') 'Warning: Preprocessor ' // that%name // &
                                  ' is not supported; will ignore it'
             return
@@ -338,6 +361,15 @@ contains
         ! Add directories
         if (allocated(that%directories)) &
         call add_strings(this%directories, that%directories)
+
+        ! For fypp, also set output_suffix if not already set
+        if (.not.allocated(this%output_suffix)) then
+            if (allocated(that%output_suffix)) then
+                this%output_suffix = that%output_suffix
+            else if (that%is_fypp()) then
+                this%output_suffix = "F90"
+            end if
+        end if
 
     end subroutine add_config
 
