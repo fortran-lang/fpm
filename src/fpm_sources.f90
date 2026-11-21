@@ -302,7 +302,7 @@ subroutine add_fypp_files_from_dir(fypp_files, directory, recurse)
         temp_files(1:size(fypp_files)) = fypp_files
         deallocate(fypp_files)
         allocate(fypp_files(size(temp_files)))
-        fypp_files(1:size(temp_files)-n) = temp_files(1:size(temp_files)-n)
+        fypp_files(1:size(temp_files)-n) = temp_files
         deallocate(temp_files)
     else
         allocate(fypp_files(n))
