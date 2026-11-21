@@ -127,14 +127,15 @@ contains
     end subroutine process_file
 
     !> Build a fypp command string with the given parameters
-    function build_fypp_command(fypp_exe, input_file, output_file, macros) result(cmd)
+    function build_fypp_command(fypp_exe, input_file, output_file, macros, include_dirs) result(cmd)
         character(*), intent(in) :: fypp_exe
         character(*), intent(in) :: input_file
         character(*), intent(in) :: output_file
         type(string_t), intent(in), optional :: macros(:)
+        type(string_t), intent(in), optional :: include_dirs(:)
         character(:), allocatable :: cmd
 
-        character(:), allocatable :: macro_flags
+        character(:), allocatable :: macro_flags, include_flags
         integer :: i, cmd_len
         character(:), allocatable :: temp_cmd
 
@@ -150,14 +151,29 @@ contains
             end do
         end if
 
+        ! Build include directory flags string
+        allocate(include_flags, source="")
+        if (present(include_dirs)) then
+            do i = 1, size(include_dirs)
+                if (len(include_flags) > 0) then
+                    include_flags = include_flags // " -I" // trim(include_dirs(i)%s)
+                else
+                    include_flags = "-I" // trim(include_dirs(i)%s)
+                end if
+            end do
+        end if
+
         ! Build the command
-        if (len(macro_flags) > 0) then
-            allocate(cmd, source=fypp_exe // " " // macro_flags // " " // &
+        if (len(macro_flags) > 0 .or. len(include_flags) > 0) then
+            allocate(cmd, source=fypp_exe // " " // macro_flags // " " // include_flags // " " // &
                      trim(input_file) // " " // trim(output_file))
         else
             allocate(cmd, source=fypp_exe // " " // trim(input_file) // " " // &
                      trim(output_file))
         end if
+
+        ! Clean up extra spaces
+        cmd = adjustl(cmd)
 
     end function build_fypp_command
 

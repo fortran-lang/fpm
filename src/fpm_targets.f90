@@ -1732,8 +1732,19 @@ subroutine create_preprocess_targets(targets, model)
     type(build_target_ptr), allocatable, intent(inout) :: targets(:)
     type(fpm_model_t), intent(in) :: model
 
-    integer :: i, j
-    character(:), allocatable :: fypp_file, output_file, fypp_cmd, output_suffix
+    integer :: i, j, last_slash
+    character(:), allocatable :: fypp_file, output_file, output_dir, fypp_cmd, output_suffix
+    character(:), allocatable :: file_base, file_dir, rel_dir
+    character(:), allocatable :: preprocess_base
+
+    ! Determine base directory for preprocessed files
+    if (allocated(model%build_dir)) then
+        allocate(character(len=len_trim(model%build_dir)+12) :: preprocess_base)
+        preprocess_base = trim(model%build_dir)//"/preprocess"
+    else
+        allocate(character(len=11) :: preprocess_base)
+        preprocess_base = "./build/preprocess"
+    end if
 
     ! For each package, process discovered .fypp files
     do i = 1, model%deps%ndep
@@ -1750,17 +1761,34 @@ subroutine create_preprocess_targets(targets, model)
                 model%packages(i)%preprocess%skip_cpp_preprocessing, &
                 model%packages(i)%preprocess%force_cpp_preprocessing)
 
-            ! Construct output file path: replace .fypp with output_suffix
-            output_file = fypp_file(1:len_trim(fypp_file)-5)//"."//output_suffix
+            ! Extract directory and base name from fypp file
+            last_slash = max(index(fypp_file, "/", back=.true.), &
+                            index(fypp_file, "\", back=.true.))
+            if (last_slash > 0) then
+                file_dir = fypp_file(1:last_slash)
+                file_base = fypp_file(last_slash+1:len_trim(fypp_file)-5)
+            else
+                file_dir = ""
+                file_base = fypp_file(1:len_trim(fypp_file)-5)
+            end if
 
-            ! Build the fypp command (use "fypp" assuming it's in PATH)
+            ! Create output directory and file path in build/preprocess
+            if (len_trim(file_dir) > 0) then
+                rel_dir = trim(file_dir)
+            else
+                rel_dir = "."
+            end if
+            
+            output_dir = trim(preprocess_base)//"/"//trim(rel_dir)
+            output_file = trim(output_dir)//"/"//trim(file_base)//"."//output_suffix
+
+            ! Build the fypp command
             fypp_cmd = build_fypp_command("fypp", fypp_file, output_file, &
-                model%packages(i)%preprocess%macros)
+                model%packages(i)%preprocess%macros, model%include_dirs)
 
             ! Add preprocessing target to target list
-            ! For preprocessing targets, output_dir should be empty and output_file should be the full path
             call add_new_target(targets, model%packages(i)%name, FPM_TARGET_PREPROCESS, &
-                output_file, output_dir='')
+                output_file, output_dir=output_dir)
 
             ! Set the compile_flags to the preprocessing command
             if (allocated(targets)) then

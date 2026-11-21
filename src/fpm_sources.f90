@@ -117,6 +117,7 @@ subroutine add_sources_from_dir(sources,directory,scope,with_executables,with_f_
     type(string_t), allocatable :: file_names(:)
     type(string_t), allocatable :: src_file_names(:),f_ext(:)
     type(string_t), allocatable :: existing_src_files(:)
+    type(string_t), allocatable :: fypp_files(:)
     type(srcfile_t), allocatable :: dir_sources(:)
 
     recurse_ = .true.
@@ -132,6 +133,10 @@ subroutine add_sources_from_dir(sources,directory,scope,with_executables,with_f_
     else
         allocate(existing_src_files(0))
     end if
+
+    ! Discover fypp files in this directory to exclude their .F90 equivalents
+    allocate(fypp_files(0))
+    call add_fypp_files_from_dir(fypp_files, directory, recurse_)
 
     ! Get legal fortran suffixes
     call list_fortran_suffixes(f_ext,with_f_ext)
@@ -163,6 +168,13 @@ subroutine add_sources_from_dir(sources,directory,scope,with_executables,with_f_
 
                 exclude_source(i) = .false.
 
+            end if
+        end if
+        
+        ! Exclude .F90 files that have .fypp equivalents to avoid duplicate module definitions
+        if (.not. exclude_source(i)) then
+            if (has_fypp_equivalent(src_file_names(i)%s, fypp_files)) then
+                exclude_source(i) = .true.
             end if
         end if
 
@@ -374,6 +386,50 @@ logical function is_fypp_file(file_path) result(is_fypp)
     character(*), intent(in) :: file_path
     is_fypp = str_ends_with(lower(file_path), fypp_suffix)
 end function is_fypp_file
+
+!> Check if a .F90 file has a corresponding .fypp preprocessor file
+!> This is used to avoid compiling both the original .F90 and the preprocessed .f90
+!> from the .fypp file, which would create duplicate module definitions
+logical function has_fypp_equivalent(source_file, available_fypp_files) result(has_fypp)
+    character(*), intent(in) :: source_file
+    type(string_t), intent(in), optional :: available_fypp_files(:)
+    character(len=:), allocatable :: src_base, src_name, fypp_name
+    integer :: i, dot_pos
+    
+    has_fypp = .false.
+    
+    if (.not. present(available_fypp_files)) return
+    if (size(available_fypp_files) == 0) return
+    
+    ! Only check .F90 files
+    if (.not. str_ends_with(lower(source_file), ".F90")) return
+    
+    ! Get base name without extension
+    src_name = basename(source_file)
+    dot_pos = index(src_name, ".", back=.true.)
+    if (dot_pos > 0) then
+        allocate(character(len=dot_pos-1) :: src_base)
+        src_base = src_name(1:dot_pos-1)
+    else
+        allocate(character(len=len(src_name)) :: src_base)
+        src_base = src_name
+    end if
+    
+    ! Check if any .fypp file has the same base name
+    do i = 1, size(available_fypp_files)
+        if (str_ends_with(lower(available_fypp_files(i)%s), fypp_suffix)) then
+            fypp_name = basename(available_fypp_files(i)%s)
+            dot_pos = index(fypp_name, ".", back=.true.)
+            if (dot_pos > 0) then
+                if (fypp_name(1:dot_pos-1) == src_base) then
+                    has_fypp = .true.
+                    return
+                end if
+            end if
+        end if
+    end do
+    
+end function has_fypp_equivalent
 
 !> Add one source file to a source file array with a loop (gcc-15 bug on array initializer)
 pure subroutine add_srcfile_one(list,new)
