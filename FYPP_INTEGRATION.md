@@ -181,3 +181,157 @@ macros = ["MAXRANK=7"]
 This is an active development effort. See the main fpm repository for contribution guidelines.
 
 For discussion and feedback on fypp integration, please open issues or pull requests on the fpm repository.
+
+## Suffix Management: F90 vs f90
+
+### The Challenge
+
+Some fypp-generated files need further C preprocessing (by the Fortran compiler), while others don't:
+
+- **Files needing C preprocessing** → `.F90` suffix
+  - Example: `stdlib_linalg_constants.fypp` contains `#include "macros.inc"`
+  - Compiler runs C preprocessor after fypp
+  
+- **Files not needing C preprocessing** → `.f90` suffix  
+  - Example: `test_selection.fypp` uses only fypp directives
+  - Compiler treats as standard Fortran
+
+### Solution: `skip_cpp_preprocessing` and `force_cpp_preprocessing`
+
+Control which files need C preprocessing with two complementary lists using glob patterns:
+
+#### Option A: Default to .F90, skip some (most common)
+
+```toml
+[preprocess.fypp]
+suffixes = [".fypp"]
+directories = ["src", "test"]
+output_suffix = "F90"                           # Default suffix
+
+# Files that only use fypp (no C preprocessing needed)
+skip_cpp_preprocessing = [
+    "test_*.fypp",          # → test_foo.f90
+    "example_*.fypp",       # → example_bar.f90
+]
+```
+
+#### Option B: Default to .f90, force some (less common)
+
+```toml
+[preprocess.fypp]
+suffixes = [".fypp"]
+directories = ["src"]
+output_suffix = "f90"                           # Default suffix
+
+# Files that need C preprocessing
+force_cpp_preprocessing = [
+    "stdlib_*.fypp",        # → stdlib_linalg.F90
+    "*_constants.fypp"      # → misc_constants.F90
+]
+```
+
+#### Option C: Mix both for maximum flexibility
+
+```toml
+[preprocess.fypp]
+suffixes = [".fypp"]
+directories = ["src", "test"]
+output_suffix = "f90"                           # Default: no C preprocessing
+
+# Files that need C preprocessing (override default)
+force_cpp_preprocessing = [
+    "stdlib_*.fypp",
+    "*_constants.fypp"
+]
+
+# Files that explicitly skip (redundant but explicit)
+skip_cpp_preprocessing = [
+    "test_*.fypp"
+]
+```
+
+### How It Works
+
+1. **Priority order:**
+   - `force_cpp_preprocessing` patterns are checked FIRST → produce .F90
+   - `skip_cpp_preprocessing` patterns checked SECOND → produce .f90
+   - Default `output_suffix` applies if no patterns match
+
+2. **Pattern matching** - Use glob patterns to identify files
+3. **Suffix determination** - Each file gets f90 or F90 suffix
+4. **Preprocessing** - fypp runs with appropriate output file
+
+### Glob Patterns Supported
+
+- `prefix*` - Matches `prefixFOO`, `prefixBar`, etc.
+- `*suffix` - Matches `FOOsuffix`, `BARsuffix`, etc.
+- `*middle*` - Matches any filename containing "middle"
+- `*` - Matches all files
+- Exact match - No wildcards needed
+
+### Example: stdlib Configuration (Option A)
+
+```toml
+[package]
+name = "stdlib"
+version = "0.8.1"
+
+[preprocess]
+[preprocess.cpp]
+suffixes = [".F90"]
+directories = ["src"]
+
+[preprocess.fypp]
+suffixes = [".fypp"]
+directories = ["src", "test", "example"]
+output_suffix = "F90"                # Most need C preprocessing
+
+# These only use fypp, no C preprocessing
+skip_cpp_preprocessing = [
+    "test_*.fypp",
+    "example_*.fypp",
+    "bench_*.fypp"
+]
+```
+
+### Build Pipeline with Suffix Management
+
+```
+Input: test_selection.fypp
+       ↓ (fypp preprocessing)
+Output: test_selection.f90          # No C preprocessing
+        ↓ (compile as-is)
+        Object file
+
+Input: stdlib_linalg_constants.fypp
+       ↓ (fypp preprocessing)
+Intermediate: stdlib_linalg_constants.F90  # F90 suffix
+              ↓ (C preprocessing by compiler)
+              Preprocessed source
+              ↓ (compile)
+              Object file
+```
+
+### Migration from stdlib Script
+
+**Old (Python script):**
+```python
+C_PREPROCESSED = (
+    "stdlib_linalg_constants",
+    "stdlib_linalg_blas",
+    # ... more files
+)
+```
+
+**New (fpm.toml):**
+```toml
+skip_cpp_preprocessing = [
+    "test_*.fypp",
+    "example_*.fypp"
+]
+```
+
+Much simpler and more intuitive!
+
+---
+

@@ -44,6 +44,11 @@ module fpm_manifest_preprocess
       !! Only meaningful for fypp: files matching these patterns will output .f90 instead of .F90
       type(string_t), allocatable :: skip_cpp_preprocessing(:)
 
+      !> File patterns that should use uppercase suffix (force C preprocessing)
+      !! Only meaningful for fypp: files matching these patterns will output .F90 instead of .f90
+      !! Useful when default is .f90 but some files need C preprocessing
+      type(string_t), allocatable :: force_cpp_preprocessing(:)
+
    contains
 
       !> Print information on this instance
@@ -152,7 +157,7 @@ contains
       do ikey = 1, size(list)
          select case(list(ikey)%key)
          !> Valid keys.
-         case("suffixes", "directories", "macros", "output_suffix", "skip_cpp_preprocessing")
+         case("suffixes", "directories", "macros", "output_suffix", "skip_cpp_preprocessing", "force_cpp_preprocessing")
          case default
             call syntax_error(error, "Key '"//list(ikey)%key//"' not allowed in preprocessor '"//name//"'."); exit
          end select
@@ -251,6 +256,12 @@ contains
             write(unit, fmt) "   - " // self%skip_cpp_preprocessing(ilink)%s
          end do
       end if
+      if (allocated(self%force_cpp_preprocessing)) then
+         write(unit, fmt) "- force_cpp_preprocessing"
+         do ilink = 1, size(self%force_cpp_preprocessing)
+            write(unit, fmt) "   - " // self%force_cpp_preprocessing(ilink)%s
+         end do
+      end if
 
    end subroutine info
 
@@ -277,6 +288,7 @@ contains
                if (.not.(this%output_suffix==other%output_suffix)) return
            endif
            if (.not.(this%skip_cpp_preprocessing==other%skip_cpp_preprocessing)) return
+           if (.not.(this%force_cpp_preprocessing==other%force_cpp_preprocessing)) return
 
         class default
            ! Not the same type
@@ -312,6 +324,8 @@ contains
        if (allocated(error)) return
        call set_list(table, "skip_cpp_preprocessing", self%skip_cpp_preprocessing, error)
        if (allocated(error)) return
+       call set_list(table, "force_cpp_preprocessing", self%force_cpp_preprocessing, error)
+       if (allocated(error)) return
 
      end subroutine dump_to_toml
 
@@ -337,6 +351,8 @@ contains
         call get_value(table, "output_suffix", self%output_suffix)
         call get_list(table, "skip_cpp_preprocessing", self%skip_cpp_preprocessing, error)
         if (allocated(error)) return
+        call get_list(table, "force_cpp_preprocessing", self%force_cpp_preprocessing, error)
+        if (allocated(error)) return
 
      end subroutine load_from_toml
 
@@ -350,6 +366,7 @@ contains
        if (allocated(this%macros))deallocate(this%macros)
        if (allocated(this%output_suffix))deallocate(this%output_suffix)
        if (allocated(this%skip_cpp_preprocessing))deallocate(this%skip_cpp_preprocessing)
+       if (allocated(this%force_cpp_preprocessing))deallocate(this%force_cpp_preprocessing)
 
     end subroutine destroy
 

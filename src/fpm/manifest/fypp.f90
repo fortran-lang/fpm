@@ -188,10 +188,11 @@ contains
     !! Files matching skip_cpp_preprocessing patterns get .f90
     !! Other files use the configured output_suffix (default F90)
     function get_output_suffix_for_file(input_file, default_suffix, &
-                                       skip_patterns) result(suffix)
+                                       skip_patterns, force_patterns) result(suffix)
         character(*), intent(in) :: input_file
         character(*), intent(in) :: default_suffix
         type(string_t), intent(in), optional :: skip_patterns(:)
+        type(string_t), intent(in), optional :: force_patterns(:)
         character(:), allocatable :: suffix
 
         integer :: i
@@ -200,7 +201,19 @@ contains
         ! Get base filename only (without directory)
         base_name = basename(input_file)
 
+        ! Check if file matches any force_cpp_preprocessing patterns
+        ! These take priority: force .F90 (C preprocessing)
+        if (present(force_patterns)) then
+            do i = 1, size(force_patterns)
+                if (matches_glob_pattern(base_name, force_patterns(i)%s)) then
+                    allocate(suffix, source="F90")
+                    return
+                end if
+            end do
+        end if
+
         ! Check if file matches any skip_cpp_preprocessing patterns
+        ! These override the default to use .f90 (no C preprocessing)
         if (present(skip_patterns)) then
             do i = 1, size(skip_patterns)
                 if (matches_glob_pattern(base_name, skip_patterns(i)%s)) then
