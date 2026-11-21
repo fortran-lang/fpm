@@ -3,7 +3,8 @@ module test_package_dependencies
   use fpm_filesystem, only: get_temp_filename
   use testsuite, only: new_unittest, unittest_t, error_t, test_failed
   use fpm_filesystem, only: is_dir, join_path, filewrite, mkdir, os_delete_dir, &
-      exists, unix_path
+      exists, unix_path, delete_file
+  use fpm_git, only: git_revision
   use fpm_environment, only: os_is_unix
   use fpm_os, only: get_current_directory, get_absolute_path, change_directory
   use fpm_command_line, only: fpm_update_settings
@@ -57,6 +58,7 @@ contains
         & new_unittest("add-dependencies", test_add_dependencies), &
         & new_unittest("absolute-path-dependency", test_absolute_path_dependency), &
         & new_unittest("update-dependencies", test_update_dependencies), &
+        & new_unittest("update-without-cache", test_update_without_cache), &
         & new_unittest("fetch-only-test-project", &
                        test_fetch_only_test_project), &
         & new_unittest("metapackage-override", test_metapackage_override), &
@@ -645,6 +647,146 @@ contains
     end if
 
   end subroutine test_update_dependencies
+
+
+  subroutine test_update_without_cache(error)
+    type(error_t), allocatable, intent(out) :: error
+
+    type(fpm_update_settings) :: settings
+    type(error_t), allocatable :: cleanup_error
+    type(dependency_tree_t) :: cached, resolved
+    type(package_config_t) :: package
+    character(:), allocatable :: work_dir, repo_dir, old_dir, git_prefix
+    character(:), allocatable :: first, second, actual, checkout_dir
+    character(*), parameter :: scenarios(*) = [character(len=32) :: &
+        "initial checkout", "fetch-only without cache", "complete pending update", &
+        "repeat update", "clean update", "cached revision change", &
+        "legacy mismatched cache", "uncached matching commit", "whole-tree update"]
+    integer :: stat, command_stat, phase, id
+    logical :: changed_directory
+
+    changed_directory = .false.
+    call get_current_directory(old_dir, error)
+    if (allocated(error)) return
+    work_dir = get_temp_filename()
+    repo_dir = join_path(work_dir, "dep")
+    call mkdir(repo_dir)
+    call mkdir(join_path(repo_dir, "src"))
+    call mkdir(join_path(work_dir, "consumer", "src"))
+    git_prefix = 'git -C "'//repo_dir//'" '
+    call filewrite(join_path(repo_dir, "fpm.toml"), ['name = "dep"'])
+    call filewrite(join_path(repo_dir, "src", "dep.f90"), &
+        [character(len=80) :: 'module dep', 'integer, parameter :: value = 7', 'end module'])
+    call execute_command_line(git_prefix//'init -q', &
+                              exitstat=stat, cmdstat=command_stat)
+    if (stat /= 0 .or. command_stat /= 0) then
+      call test_failed(error, "Could not initialize local Git dependency")
+      goto 900
+    end if
+    do phase = 1, 2
+      if (phase == 2) call delete_file(join_path(repo_dir, "src", "dep.f90"))
+      if (phase == 2) call filewrite(join_path(repo_dir, "src", "dep.f90"), &
+          [character(len=80) :: 'module dep', 'integer, parameter :: value = 11', 'end module'])
+      call execute_command_line(git_prefix//'add .', &
+                                exitstat=stat, cmdstat=command_stat)
+      if (stat /= 0 .or. command_stat /= 0) then
+        call test_failed(error, "Could not stage local Git dependency")
+        goto 900
+      end if
+      call execute_command_line(git_prefix// &
+          '-c user.email=fpm-test@example.invalid -c user.name=fpm-test commit -qm fixture', &
+                                exitstat=stat, cmdstat=command_stat)
+      if (stat /= 0 .or. command_stat /= 0) then
+        call test_failed(error, "Could not commit local Git dependency")
+        goto 900
+      end if
+      call git_revision(repo_dir, actual, error)
+      if (allocated(error)) goto 900
+      if (phase == 1) first = actual
+      if (phase == 2) second = actual
+    end do
+    call filewrite(join_path(work_dir, "consumer", "src", "consumer.f90"), &
+        [character(len=80) :: 'module consumer', 'end module'])
+    call change_directory(join_path(work_dir, "consumer"), error)
+    if (allocated(error)) goto 900
+    changed_directory = .true.
+    checkout_dir = join_path("build", "dependencies", "dep")
+    settings%fetch_only = .false.
+    settings%clean = .false.
+    settings%verbose = .false.
+    settings%name = [character(len=3) :: 'dep']
+    settings%dump = ""
+
+    do phase = 1, size(scenarios)
+      if (phase == 2 .or. phase == 8) call delete_file(join_path("build", "cache.toml"))
+      if (phase == 5) settings%clean = .true.
+      if (phase == 6) settings%clean = .false.
+      if (phase == 1) actual = first
+      if (phase >= 2 .and. phase <= 5) actual = second
+      if (phase == 6 .or. phase == 9) actual = first
+      if (phase == 8) actual = second
+      if (phase == 7) then
+        actual = second
+        cached%dep(id)%git%object = second
+        call cached%dump_cache(join_path("build", "cache.toml"), error)
+        if (allocated(error)) goto 900
+      end if
+      if (exists("fpm.toml")) call delete_file("fpm.toml")
+      call filewrite("fpm.toml", [character(len=1024) :: &
+          'name = "consumer"', '[dependencies]', &
+          'dep = { git = "'//unix_path(repo_dir)//'", rev = "'//actual//'" }'])
+      settings%fetch_only = phase == 2 .or. phase == 8
+      if (phase == 9) then
+        call get_package_data(package, "fpm.toml", error)
+        if (allocated(error)) goto 900
+        call new_dependency_tree(resolved, cache=join_path("build", "cache.toml"))
+        call resolved%add(package, error)
+        if (allocated(error)) goto 900
+        call resolved%update(error)
+        if (allocated(error)) goto 900
+      else
+        call cmd_update(settings)
+      end if
+      call git_revision(checkout_dir, actual, error)
+      if (allocated(error)) goto 900
+      if ((phase >= 3 .and. phase <= 5) .or. phase == 7 .or. phase == 8) then
+        if (actual /= second) then
+          call test_failed(error, "Update without a cache entry kept the old Git revision")
+          goto 900
+        end if
+      else
+        if (actual /= first) then
+          call test_failed(error, "Cached update selected the wrong Git revision")
+          goto 900
+        end if
+      end if
+      call new_dependency_tree(cached)
+      call cached%load_cache(join_path("build", "cache.toml"), error)
+      if (allocated(error)) goto 900
+      id = cached%find("dep")
+      if (id <= 0) then
+        call test_failed(error, "Updated dependency is missing from cache")
+        goto 900
+      end if
+      if (cached%dep(id)%update .neqv. (phase == 2)) then
+        call test_failed(error, "Wrong pending update state: "//trim(scenarios(phase)))
+        goto 900
+      end if
+      if (cached%dep(id)%revision /= actual) then
+        call test_failed(error, "Cache does not record the updated Git revision")
+        goto 900
+      end if
+    end do
+
+900 if (changed_directory) then
+      call change_directory(old_dir, cleanup_error)
+      if (allocated(cleanup_error)) then
+        if (.not. allocated(error)) call test_failed(error, cleanup_error%message)
+        return
+      end if
+    end if
+    if (is_dir(work_dir)) call os_delete_dir(os_is_unix(), work_dir)
+  end subroutine test_update_without_cache
 
 
   subroutine test_fetch_only_test_project(error)
