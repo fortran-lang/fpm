@@ -1751,13 +1751,14 @@ subroutine create_preprocess_targets(targets, model)
                 model%packages(i)%preprocess%force_cpp_preprocessing)
 
             ! Construct output file path: replace .fypp with output_suffix
-            output_file = fypp_file(1:len_trim(fypp_file)-5)//output_suffix
+            output_file = fypp_file(1:len_trim(fypp_file)-5)//"."//output_suffix
 
             ! Build the fypp command (use "fypp" assuming it's in PATH)
             fypp_cmd = build_fypp_command("fypp", fypp_file, output_file, &
                 model%packages(i)%preprocess%macros)
 
             ! Add preprocessing target to target list
+            ! For preprocessing targets, output_dir should be empty and output_file should be the full path
             call add_new_target(targets, model%packages(i)%name, FPM_TARGET_PREPROCESS, &
                 output_file, output_dir='')
 

@@ -82,6 +82,7 @@ subroutine build_package(targets,model,verbose,dry_run,jobs)
     allocate(build_dirs(0))
     do i = 1, size(targets)
        associate(target => targets(i)%ptr)
+          if (len_trim(target%output_dir) == 0) cycle  ! Skip empty directories
           if (target%output_dir .in. build_dirs) cycle
           temp%s = target%output_dir
           build_dirs = [build_dirs, temp]
