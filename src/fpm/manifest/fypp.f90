@@ -11,7 +11,7 @@ module fpm_manifest_fypp
     implicit none
     private
 
-    public :: fypp_config_t, run_fypp, build_fypp_command
+    public :: fypp_config_t, run_fypp, build_fypp_command, get_output_suffix_for_file
 
     !> Type to hold fypp preprocessing configuration and utilities
     type :: fypp_config_t
@@ -183,5 +183,90 @@ contains
         end if
 
     end subroutine run_fypp
+
+    !> Determine the output suffix for a given input file
+    !! Files matching skip_cpp_preprocessing patterns get .f90
+    !! Other files use the configured output_suffix (default F90)
+    function get_output_suffix_for_file(input_file, default_suffix, &
+                                       skip_patterns) result(suffix)
+        character(*), intent(in) :: input_file
+        character(*), intent(in) :: default_suffix
+        type(string_t), intent(in), optional :: skip_patterns(:)
+        character(:), allocatable :: suffix
+
+        integer :: i
+        character(:), allocatable :: base_name
+
+        ! Get base filename only (without directory)
+        base_name = basename(input_file)
+
+        ! Check if file matches any skip_cpp_preprocessing patterns
+        if (present(skip_patterns)) then
+            do i = 1, size(skip_patterns)
+                if (matches_glob_pattern(base_name, skip_patterns(i)%s)) then
+                    allocate(suffix, source="f90")
+                    return
+                end if
+            end do
+        end if
+
+        ! Default to configured suffix
+        allocate(suffix, source=default_suffix)
+
+    end function get_output_suffix_for_file
+
+    !> Simple glob pattern matching
+    !! Supports: prefix*, *suffix, *middle*, and exact matches
+    function matches_glob_pattern(filename, pattern) result(matches)
+        character(*), intent(in) :: filename
+        character(*), intent(in) :: pattern
+        logical :: matches
+
+        integer :: star_pos, plen, flen
+
+        plen = len(pattern)
+        flen = len(filename)
+        matches = .false.
+
+        ! Exact match (no wildcard)
+        if (index(pattern, "*") == 0) then
+            matches = (filename == pattern)
+            return
+        end if
+
+        ! Match all
+        if (pattern == "*") then
+            matches = .true.
+            return
+        end if
+
+        ! *suffix pattern
+        if (pattern(1:1) == "*" .and. pattern(plen:plen) /= "*") then
+            if (plen > 1) then
+                matches = (index(filename, pattern(2:plen), back=.true.) == flen - plen + 2)
+            end if
+            return
+        end if
+
+        ! prefix* pattern
+        if (pattern(1:1) /= "*" .and. pattern(plen:plen) == "*") then
+            if (plen > 1) then
+                matches = (index(filename, pattern(1:plen-1)) == 1)
+            end if
+            return
+        end if
+
+        ! *middle* pattern
+        if (pattern(1:1) == "*" .and. pattern(plen:plen) == "*") then
+            if (plen > 2) then
+                matches = (index(filename, pattern(2:plen-1)) > 0)
+            end if
+            return
+        end if
+
+        ! Should not reach here
+        matches = .false.
+
+    end function matches_glob_pattern
 
 end module fpm_manifest_fypp
