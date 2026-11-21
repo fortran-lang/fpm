@@ -141,6 +141,9 @@ type, extends(serializable_t) :: package_t
     !> Array of sources
     type(srcfile_t), allocatable :: sources(:)
 
+    !> Array of .fypp preprocessor files (not yet parsed as source files)
+    type(string_t), allocatable :: fypp_files(:)
+
     !> List of macros.
     type(preprocess_config_t) :: preprocess
 

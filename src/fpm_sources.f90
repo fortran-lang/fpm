@@ -16,11 +16,12 @@ implicit none
 
 private
 public :: add_sources_from_dir, add_executable_sources
-public :: get_exe_name_with_suffix, add_srcfile
+public :: get_exe_name_with_suffix, add_srcfile, is_fypp_file, add_fypp_files_from_dir
 
 character(4), parameter :: fortran_suffixes(2) = [".f90", &
                                                   ".f  "]
 character(4), parameter :: c_suffixes(4) = [".c  ", ".h  ", ".cpp", ".hpp"]
+character(5), parameter :: fypp_suffix = ".fypp"
 
 !> Add one or multiple source files to a source file array (gcc-15 bug workaround)
 interface add_srcfile
@@ -261,6 +262,63 @@ subroutine add_executable_sources(sources,executables,scope,auto_discover,with_f
 
 end subroutine add_executable_sources
 
+!> Discover and collect all .fypp preprocessor files from a source directory
+!>
+!> This subroutine recursively searches directories for .fypp files and adds them
+!> to the fypp_files array. Unlike regular Fortran sources, .fypp files are not
+!> parsed - they are stored as paths for later preprocessing.
+!>
+!> @param[inout] fypp_files  Array of discovered .fypp file paths (allocated if not allocated)
+!> @param[in]    directory   Directory to search for .fypp files
+!> @param[in]    recurse     Whether to recursively search subdirectories
+subroutine add_fypp_files_from_dir(fypp_files, directory, recurse)
+    type(string_t), allocatable, intent(inout) :: fypp_files(:)
+    character(*), intent(in) :: directory
+    logical, intent(in) :: recurse
+
+    type(string_t), allocatable :: files(:)
+    type(string_t), allocatable :: temp_files(:)
+    integer :: i, n, n_new
+    character(:), allocatable :: file_path, file_name
+
+    ! Get list of all files in directory
+    call list_files(directory, files, recurse=recurse)
+
+    ! Filter for .fypp files
+    n = 0
+    n_new = size(files)
+
+    do i = 1, n_new
+        if (is_fypp_file(files(i)%s)) then
+            n = n + 1
+        end if
+    end do
+
+    if (n == 0) return
+
+    ! Allocate or reallocate fypp_files array
+    if (allocated(fypp_files)) then
+        allocate(temp_files(size(fypp_files) + n))
+        temp_files(1:size(fypp_files)) = fypp_files
+        deallocate(fypp_files)
+        allocate(fypp_files(size(temp_files)))
+        fypp_files(1:size(temp_files)-n) = temp_files(1:size(temp_files)-n)
+        deallocate(temp_files)
+    else
+        allocate(fypp_files(n))
+    end if
+
+    ! Add filtered .fypp files
+    n = size(fypp_files) - n + 1
+    do i = 1, n_new
+        if (is_fypp_file(files(i)%s)) then
+            fypp_files(n)%s = files(i)%s
+            n = n + 1
+        end if
+    end do
+
+end subroutine add_fypp_files_from_dir
+
 !> Build a list of unique source directories
 !>  from executables specified in manifest
 subroutine get_executable_source_dirs(exe_dirs,executables)
@@ -310,6 +368,12 @@ function get_exe_name_with_suffix(source) result(suffixed)
     endif
 
 end function get_exe_name_with_suffix
+
+!> Check if a file has the .fypp preprocessor extension
+logical function is_fypp_file(file_path) result(is_fypp)
+    character(*), intent(in) :: file_path
+    is_fypp = str_ends_with(lower(file_path), fypp_suffix)
+end function is_fypp_file
 
 !> Add one source file to a source file array with a loop (gcc-15 bug on array initializer)
 pure subroutine add_srcfile_one(list,new)

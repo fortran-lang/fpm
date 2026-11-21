@@ -18,9 +18,10 @@ use fpm_compiler, only: new_compiler, new_archiver, set_cpp_preprocessor_flags, 
                         id_intel_llvm_unknown
 
 
-use fpm_sources, only: add_executable_sources, add_sources_from_dir
+use fpm_sources, only: add_executable_sources, add_sources_from_dir, add_fypp_files_from_dir
 use fpm_targets, only: targets_from_sources, build_target_t, build_target_ptr, &
-                        FPM_TARGET_EXECUTABLE, get_library_dirs, filter_executable_targets
+                        FPM_TARGET_EXECUTABLE, get_library_dirs, filter_executable_targets, &
+                        create_preprocess_targets
 use fpm_manifest, only : get_package_data, package_config_t
 use fpm_manifest_platform, only: platform_config_t
 use fpm_meta, only : resolve_metapackages
@@ -240,6 +241,8 @@ subroutine build_model(model, settings, package_config, error)
             with_f_ext=model%packages(i)%preprocess%suffixes, error=error, &
             preprocess=model%packages(i)%preprocess, include_dirs=model%include_dirs)
         if (allocated(error)) return
+        ! Discover .fypp preprocessor files
+        call add_fypp_files_from_dir(model%packages(i)%fypp_files, lib_dirs(i)%s, recurse=.true.)
     end do
 
     ! Add optional flags
@@ -266,6 +269,7 @@ subroutine build_model(model, settings, package_config, error)
         if (allocated(error)) then
             return
         end if
+        call add_fypp_files_from_dir(model%packages(1)%fypp_files, 'app', recurse=.true.)
 
     end if
     if (is_dir('example') .and. auto_example) then
@@ -278,6 +282,7 @@ subroutine build_model(model, settings, package_config, error)
         if (allocated(error)) then
             return
         end if
+        call add_fypp_files_from_dir(model%packages(1)%fypp_files, 'example', recurse=.true.)
 
     end if
     if (is_dir('test') .and. auto_test) then
@@ -290,6 +295,7 @@ subroutine build_model(model, settings, package_config, error)
         if (allocated(error)) then
             return
         endif
+        call add_fypp_files_from_dir(model%packages(1)%fypp_files, 'test', recurse=.true.)
 
     end if
     if (allocated(package%executable)) then
@@ -589,6 +595,9 @@ if (allocated(error)) then
     call fpm_stop(1,'*cmd_build* Target error: '//error%message)
 end if
 
+! Create preprocessing targets for .fypp files
+call create_preprocess_targets(targets, model)
+
 !> Dump model to file
 if (len_trim(settings%dump)>0) then
     call model%dump(trim(settings%dump),error,json=name_is_json(trim(settings%dump)))
@@ -655,6 +664,9 @@ subroutine cmd_run(settings,test)
         call lock%release()
         call fpm_stop(1, '*cmd_run* Targets error: '//error%message)
     end if
+
+    ! Create preprocessing targets for .fypp files
+    call create_preprocess_targets(targets, model)
 
     if (test) then
        run_scope = FPM_SCOPE_TEST
@@ -901,6 +913,9 @@ subroutine delete_targets(settings, error)
         call lock%release()
         return
     end if
+
+    ! Create preprocessing targets for .fypp files
+    call create_preprocess_targets(targets, model)
 
     deleted_any = .false.
 

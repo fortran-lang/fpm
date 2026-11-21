@@ -37,6 +37,7 @@ use fpm_compiler, only: get_macros, is_cxx_gnu_based, append_clean_flags
 use fpm_sources, only: get_exe_name_with_suffix
 use fpm_manifest_library, only: library_config_t
 use fpm_manifest_preprocess, only: preprocess_config_t
+use fpm_manifest_fypp, only: build_fypp_command, get_output_suffix_for_file
 use fpm_versioning, only: version_t, new_version
 implicit none
 
@@ -49,7 +50,7 @@ public FPM_TARGET_UNKNOWN,  FPM_TARGET_EXECUTABLE, &
 public build_target_t, build_target_ptr
 public targets_from_sources, resolve_module_dependencies
 public add_target, new_target, add_dependency, get_library_dirs, add_target_ptr
-public filter_library_targets, filter_executable_targets, filter_modules
+public filter_library_targets, filter_executable_targets, filter_modules, create_preprocess_targets
 
 
 
@@ -1717,5 +1718,57 @@ subroutine add_target_ptr_many(list,new)
     call move_alloc(from=tmp,to=list)
 
 end subroutine add_target_ptr_many
+
+!> Create preprocessing targets for all discovered .fypp files
+!>
+!> This subroutine creates FPM_TARGET_PREPROCESS targets for each .fypp file
+!> found in the project. Each preprocessing target:
+!> - Has compile_flags set to the fypp command line
+!> - Has output_file pointing to the preprocessed .f90/.F90 file
+!> - Is added to the targets list
+!>
+subroutine create_preprocess_targets(targets, model)
+    type(build_target_ptr), allocatable, intent(inout) :: targets(:)
+    type(fpm_model_t), intent(in) :: model
+
+    integer :: i, j
+    character(:), allocatable :: fypp_file, output_file, fypp_cmd, output_suffix
+
+    ! For each package, process discovered .fypp files
+    do i = 1, model%deps%ndep
+        if (.not.allocated(model%packages(i)%fypp_files)) cycle
+        if (size(model%packages(i)%fypp_files) == 0) cycle
+
+        ! Create a target for each .fypp file
+        do j = 1, size(model%packages(i)%fypp_files)
+            fypp_file = model%packages(i)%fypp_files(j)%s
+
+            ! Determine output suffix based on configuration
+            output_suffix = get_output_suffix_for_file(fypp_file, &
+                model%packages(i)%preprocess%output_suffix, &
+                model%packages(i)%preprocess%skip_cpp_preprocessing, &
+                model%packages(i)%preprocess%force_cpp_preprocessing)
+
+            ! Construct output file path: replace .fypp with output_suffix
+            output_file = fypp_file(1:len_trim(fypp_file)-5)//output_suffix
+
+            ! Build the fypp command (use "fypp" assuming it's in PATH)
+            fypp_cmd = build_fypp_command("fypp", fypp_file, output_file, &
+                model%packages(i)%preprocess%macros)
+
+            ! Add preprocessing target to target list
+            call add_new_target(targets, model%packages(i)%name, FPM_TARGET_PREPROCESS, &
+                output_file, output_dir='')
+
+            ! Set the compile_flags to the preprocessing command
+            if (allocated(targets)) then
+                targets(size(targets))%ptr%compile_flags = fypp_cmd
+            end if
+
+        end do
+
+    end do
+
+end subroutine create_preprocess_targets
 
 end module fpm_targets
