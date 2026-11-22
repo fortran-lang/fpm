@@ -19,6 +19,7 @@ use fpm_compiler, only: new_compiler, new_archiver, set_cpp_preprocessor_flags, 
 
 
 use fpm_sources, only: add_executable_sources, add_sources_from_dir
+use fpm_fypp, only: preprocess_fypp_dir
 use fpm_targets, only: targets_from_sources, build_target_t, build_target_ptr, &
                         FPM_TARGET_EXECUTABLE, get_library_dirs, filter_executable_targets
 use fpm_manifest, only : get_package_data, package_config_t
@@ -55,7 +56,7 @@ subroutine build_model(model, settings, package_config, error)
     logical :: has_cpp
     logical :: duplicates_found, auto_exe, auto_example, auto_test
     type(string_t) :: include_dir
-    type(string_t), allocatable :: lib_dirs(:)
+    type(string_t), allocatable :: lib_dirs(:), lib_src(:)
     
     ! Large variables -> safer on heap
     allocate(package,dependency_config,dependency,target_platform)
@@ -139,9 +140,10 @@ subroutine build_model(model, settings, package_config, error)
     end if
 
     allocate(model%packages(model%deps%ndep))
-    allocate(lib_dirs(model%deps%ndep))
+    allocate(lib_dirs(model%deps%ndep), lib_src(model%deps%ndep))
     do i = 1, size(lib_dirs)
         lib_dirs(i)%s = ""
+        lib_src(i)%s = ""
     end do
     
     ! The current configuration may not have preprocessing, but some of its features may. 
@@ -198,7 +200,10 @@ subroutine build_model(model, settings, package_config, error)
 
                 if (allocated(manifest%library%source_dir)) then
                     lib_dir = join_path(dep%proj_dir, manifest%library%source_dir)
-                    if (is_dir(lib_dir)) lib_dirs(i)%s = lib_dir
+                    if (is_dir(lib_dir)) then
+                        lib_dirs(i)%s = lib_dir
+                        lib_src(i)%s = manifest%library%source_dir
+                    end if
                 end if
 
                 if (allocated(manifest%library%include_dir)) then
@@ -240,6 +245,9 @@ subroutine build_model(model, settings, package_config, error)
             with_f_ext=model%packages(i)%preprocess%suffixes, error=error, &
             preprocess=model%packages(i)%preprocess, include_dirs=model%include_dirs)
         if (allocated(error)) return
+        call add_fypp_sources(model, i, lib_dirs(i)%s, lib_src(i)%s, FPM_SCOPE_LIB, .false., &
+                              settings%verbose, error)
+        if (allocated(error)) return
     end do
 
     ! Add optional flags
@@ -266,6 +274,8 @@ subroutine build_model(model, settings, package_config, error)
         if (allocated(error)) then
             return
         end if
+        call add_fypp_sources(model, 1, 'app', 'app', FPM_SCOPE_APP, .true., settings%verbose, error)
+        if (allocated(error)) return
 
     end if
     if (is_dir('example') .and. auto_example) then
@@ -278,6 +288,9 @@ subroutine build_model(model, settings, package_config, error)
         if (allocated(error)) then
             return
         end if
+        call add_fypp_sources(model, 1, 'example', 'example', FPM_SCOPE_EXAMPLE, .true., &
+                              settings%verbose, error)
+        if (allocated(error)) return
 
     end if
     if (is_dir('test') .and. auto_test) then
@@ -290,6 +303,8 @@ subroutine build_model(model, settings, package_config, error)
         if (allocated(error)) then
             return
         endif
+        call add_fypp_sources(model, 1, 'test', 'test', FPM_SCOPE_TEST, .true., settings%verbose, error)
+        if (allocated(error)) return
 
     end if
     if (allocated(package%executable)) then
@@ -352,6 +367,28 @@ subroutine build_model(model, settings, package_config, error)
         call fpm_stop(1,'*build_model*:Error: One or more duplicate module names found.')
     end if
 end subroutine build_model
+
+!> Expand the `.fypp` files of a package source directory (if fypp is enabled for the package)
+!> into `<build_dir>/preprocess/<package>/<rel_dir>` and add the generated sources to the model
+subroutine add_fypp_sources(model, ipkg, src_dir, rel_dir, scope, with_executables, verbose, error)
+    type(fpm_model_t), intent(inout) :: model
+    !> Index of the package in model%packages
+    integer, intent(in) :: ipkg
+    !> Source directory, as scanned for sources
+    character(*), intent(in) :: src_dir
+    !> Source directory relative to the package root (names the output directory)
+    character(*), intent(in) :: rel_dir
+    integer, intent(in) :: scope
+    logical, intent(in) :: with_executables, verbose
+    type(error_t), allocatable, intent(out) :: error
+
+    if (.not.model%packages(ipkg)%preprocess%has_fypp()) return
+
+    call preprocess_fypp_dir(model%packages(ipkg)%sources, src_dir, &
+        join_path(model%build_dir, "preprocess", model%packages(ipkg)%name, rel_dir), scope, &
+        model%packages(ipkg)%preprocess, model%include_dirs, with_executables, verbose, error)
+
+end subroutine add_fypp_sources
 
 !> Helper: safely get string from either CLI or package, with fallback
 pure function assemble_flags(cli_flag, package_flag, fallback) result(flags)
