@@ -1237,6 +1237,10 @@ subroutine run(cmd,echo,exitstat,verbose,redirect)
 
     end if
 
+    if (.not. present(exitstat) .and. stat /= 0) then
+        write(stderr,'(a,i0)') '<ERROR>: command '//cmd//redirect_str//' returned status code ', stat
+    end if
+
     if (present(exitstat)) then
         exitstat = stat
     elseif (stat /= 0) then
