@@ -37,7 +37,6 @@ use fpm_compiler, only: get_macros, is_cxx_gnu_based, append_clean_flags
 use fpm_sources, only: get_exe_name_with_suffix
 use fpm_manifest_library, only: library_config_t
 use fpm_manifest_preprocess, only: preprocess_config_t
-use fpm_manifest_fypp, only: build_fypp_command, get_output_suffix_for_file
 use fpm_versioning, only: version_t, new_version
 implicit none
 
@@ -46,12 +45,11 @@ private
 public FPM_TARGET_UNKNOWN,  FPM_TARGET_EXECUTABLE, &
        FPM_TARGET_ARCHIVE,  FPM_TARGET_OBJECT, &
        FPM_TARGET_C_OBJECT, FPM_TARGET_CPP_OBJECT, &
-       FPM_TARGET_SHARED,   FPM_TARGET_PREPROCESS, FPM_TARGET_NAME
+       FPM_TARGET_SHARED,   FPM_TARGET_NAME
 public build_target_t, build_target_ptr
 public targets_from_sources, resolve_module_dependencies
 public add_target, new_target, add_dependency, get_library_dirs, add_target_ptr
-public filter_library_targets, filter_executable_targets, filter_modules, create_preprocess_targets, &
-        resolve_preprocessing_dependencies
+public filter_library_targets, filter_executable_targets, filter_modules
 
 
 
@@ -69,8 +67,6 @@ integer, parameter :: FPM_TARGET_C_OBJECT = 4
 integer, parameter :: FPM_TARGET_CPP_OBJECT = 5
 !> Target type is a shared library
 integer, parameter :: FPM_TARGET_SHARED = 6
-!> Target type is a preprocessing target (e.g., fypp)
-integer, parameter :: FPM_TARGET_PREPROCESS = 7
 
 !> Wrapper type for constructing arrays of `[[build_target_t]]` pointers
 type build_target_ptr
@@ -186,8 +182,7 @@ pure function FPM_TARGET_NAME(type) result(msg)
       case (FPM_TARGET_CPP_OBJECT); msg = 'C++ object'
       case (FPM_TARGET_C_OBJECT);   msg = 'C Object'
       case (FPM_TARGET_EXECUTABLE); msg = 'Executable'
-      case (FPM_TARGET_OBJECT);     msg = 'Object'
-      case (FPM_TARGET_PREPROCESS); msg = 'Preprocessor'
+      case (FPM_TARGET_OBJECT);     msg = 'Object'      
       case default;                 msg = 'Unknown'
    end select
 
@@ -1719,132 +1714,5 @@ subroutine add_target_ptr_many(list,new)
     call move_alloc(from=tmp,to=list)
 
 end subroutine add_target_ptr_many
-
-!> Create preprocessing targets for all discovered .fypp files
-!>
-!> This subroutine creates FPM_TARGET_PREPROCESS targets for each .fypp file
-!> found in the project. Each preprocessing target:
-!> - Has compile_flags set to the fypp command line
-!> - Has output_file pointing to the preprocessed .f90/.F90 file
-!> - Is added to the targets list
-!>
-subroutine create_preprocess_targets(targets, model)
-    type(build_target_ptr), allocatable, intent(inout) :: targets(:)
-    type(fpm_model_t), intent(in) :: model
-
-    integer :: i, j, last_slash
-    character(:), allocatable :: fypp_file, output_file, output_dir, fypp_cmd, output_suffix
-    character(:), allocatable :: file_base, file_dir, rel_dir
-    character(:), allocatable :: preprocess_base
-
-    ! Determine base directory for preprocessed files
-    if (allocated(model%build_dir)) then
-        allocate(character(len=len_trim(model%build_dir)+12) :: preprocess_base)
-        preprocess_base = trim(model%build_dir)//"/preprocess"
-    else
-        allocate(character(len=11) :: preprocess_base)
-        preprocess_base = "./build/preprocess"
-    end if
-
-    ! For each package, process discovered .fypp files
-    do i = 1, model%deps%ndep
-        if (.not.allocated(model%packages(i)%fypp_files)) cycle
-        if (size(model%packages(i)%fypp_files) == 0) cycle
-
-        ! Create a target for each .fypp file
-        do j = 1, size(model%packages(i)%fypp_files)
-            fypp_file = model%packages(i)%fypp_files(j)%s
-
-            ! Determine output suffix based on configuration
-            output_suffix = get_output_suffix_for_file(fypp_file, &
-                model%packages(i)%preprocess%output_suffix, &
-                model%packages(i)%preprocess%skip_cpp_preprocessing, &
-                model%packages(i)%preprocess%force_cpp_preprocessing)
-
-            ! Extract directory and base name from fypp file
-            last_slash = max(index(fypp_file, "/", back=.true.), &
-                            index(fypp_file, "\", back=.true.))
-            if (last_slash > 0) then
-                file_dir = fypp_file(1:last_slash)
-                file_base = fypp_file(last_slash+1:len_trim(fypp_file)-5)
-            else
-                file_dir = ""
-                file_base = fypp_file(1:len_trim(fypp_file)-5)
-            end if
-
-            ! Create output directory and file path in build/preprocess
-            if (len_trim(file_dir) > 0) then
-                rel_dir = trim(file_dir)
-            else
-                rel_dir = "."
-            end if
-            
-            output_dir = trim(preprocess_base)//"/"//trim(rel_dir)
-            output_file = trim(output_dir)//"/"//trim(file_base)//"."//output_suffix
-
-            ! Build the fypp command
-            fypp_cmd = build_fypp_command("fypp", fypp_file, output_file, &
-                model%packages(i)%preprocess%macros, model%include_dirs)
-
-            ! Add preprocessing target to target list
-            call add_new_target(targets, model%packages(i)%name, FPM_TARGET_PREPROCESS, &
-                output_file, output_dir=output_dir)
-
-            ! Set the compile_flags to the preprocessing command
-            if (allocated(targets)) then
-                targets(size(targets))%ptr%compile_flags = fypp_cmd
-            end if
-
-        end do
-
-    end do
-
-end subroutine create_preprocess_targets
-
-!> Resolve preprocessing dependencies
-!>
-!> This subroutine links compilation targets to their corresponding preprocessing targets.
-!> For each compilation target that has a source file, we check if there's a preprocessing
-!> target that generates a file with the same path. If found, the compilation target
-!> gets a dependency on the preprocessing target.
-!>
-subroutine resolve_preprocessing_dependencies(targets)
-    type(build_target_ptr), intent(inout) :: targets(:)
-
-    integer :: i, j
-    character(:), allocatable :: source_file
-
-    ! For each target, check if it's a compilation target that depends on a preprocessed file
-    do i = 1, size(targets)
-        associate(target => targets(i)%ptr)
-
-            ! Only compilation targets have source files
-            if (.not.allocated(target%source)) cycle
-
-            source_file = target%source%file_name
-
-            ! Search for a preprocessing target with matching output_file
-            do j = 1, size(targets)
-                associate(preproc_target => targets(j)%ptr)
-
-                    ! Check if this is a preprocessing target
-                    if (preproc_target%target_type /= FPM_TARGET_PREPROCESS) cycle
-
-                    ! Check if output file matches the source file we're compiling
-                    if (allocated(preproc_target%output_file)) then
-                        if (preproc_target%output_file == source_file) then
-                            ! Add preprocessing target as a dependency
-                            call add_dependency(target, preproc_target)
-                            exit  ! Found the preprocessing target, move to next compilation target
-                        end if
-                    end if
-
-                end associate
-            end do
-
-        end associate
-    end do
-
-end subroutine resolve_preprocessing_dependencies
 
 end module fpm_targets

@@ -16,12 +16,11 @@ implicit none
 
 private
 public :: add_sources_from_dir, add_executable_sources
-public :: get_exe_name_with_suffix, add_srcfile, is_fypp_file, add_fypp_files_from_dir
+public :: get_exe_name_with_suffix, add_srcfile, is_fypp_file
 
 character(4), parameter :: fortran_suffixes(2) = [".f90", &
                                                   ".f  "]
 character(4), parameter :: c_suffixes(4) = [".c  ", ".h  ", ".cpp", ".hpp"]
-character(5), parameter :: fypp_suffix = ".fypp"
 
 !> Add one or multiple source files to a source file array (gcc-15 bug workaround)
 interface add_srcfile
@@ -117,7 +116,7 @@ subroutine add_sources_from_dir(sources,directory,scope,with_executables,with_f_
     type(string_t), allocatable :: file_names(:)
     type(string_t), allocatable :: src_file_names(:),f_ext(:)
     type(string_t), allocatable :: existing_src_files(:)
-    type(string_t), allocatable :: fypp_files(:)
+    type(string_t), allocatable :: stems(:)
     type(srcfile_t), allocatable :: dir_sources(:)
 
     recurse_ = .true.
@@ -134,10 +133,6 @@ subroutine add_sources_from_dir(sources,directory,scope,with_executables,with_f_
         allocate(existing_src_files(0))
     end if
 
-    ! Discover fypp files in this directory to exclude their .F90 equivalents
-    allocate(fypp_files(0))
-    call add_fypp_files_from_dir(fypp_files, directory, recurse_)
-
     ! Get legal fortran suffixes
     call list_fortran_suffixes(f_ext,with_f_ext)
 
@@ -145,6 +140,18 @@ subroutine add_sources_from_dir(sources,directory,scope,with_executables,with_f_
                  .not.(canon_path(file_names(i)%s) .in. existing_src_files) .and. &
                  (str_ends_with(lower(file_names(i)%s), f_ext) .or. &
                  str_ends_with(lower(file_names(i)%s), c_suffixes) ),i=1,size(file_names))]
+
+    ! With fypp enabled, a Fortran file next to a .fypp file of the same name is assumed to be
+    ! a previously generated copy of it: skip it, the .fypp file is the source
+    ! (avoids duplicate module definitions)
+    if (present(preprocess)) then
+        if (preprocess%has_fypp()) then
+            stems = fypp_stems(file_names)
+            do i = 1, size(file_names)
+                if (is_source(i)) is_source(i) = .not.has_fypp_twin(file_names(i)%s, stems)
+            end do
+        end if
+    end if
 
 
     src_file_names = pack(file_names,is_source)
@@ -168,13 +175,6 @@ subroutine add_sources_from_dir(sources,directory,scope,with_executables,with_f_
 
                 exclude_source(i) = .false.
 
-            end if
-        end if
-        
-        ! Exclude .F90 files that have .fypp equivalents to avoid duplicate module definitions
-        if (.not. exclude_source(i)) then
-            if (has_fypp_equivalent(src_file_names(i)%s, fypp_files)) then
-                exclude_source(i) = .true.
             end if
         end if
 
@@ -274,63 +274,6 @@ subroutine add_executable_sources(sources,executables,scope,auto_discover,with_f
 
 end subroutine add_executable_sources
 
-!> Discover and collect all .fypp preprocessor files from a source directory
-!>
-!> This subroutine recursively searches directories for .fypp files and adds them
-!> to the fypp_files array. Unlike regular Fortran sources, .fypp files are not
-!> parsed - they are stored as paths for later preprocessing.
-!>
-!> @param[inout] fypp_files  Array of discovered .fypp file paths (allocated if not allocated)
-!> @param[in]    directory   Directory to search for .fypp files
-!> @param[in]    recurse     Whether to recursively search subdirectories
-subroutine add_fypp_files_from_dir(fypp_files, directory, recurse)
-    type(string_t), allocatable, intent(inout) :: fypp_files(:)
-    character(*), intent(in) :: directory
-    logical, intent(in) :: recurse
-
-    type(string_t), allocatable :: files(:)
-    type(string_t), allocatable :: temp_files(:)
-    integer :: i, n, n_new
-    character(:), allocatable :: file_path, file_name
-
-    ! Get list of all files in directory
-    call list_files(directory, files, recurse=recurse)
-
-    ! Filter for .fypp files
-    n = 0
-    n_new = size(files)
-
-    do i = 1, n_new
-        if (is_fypp_file(files(i)%s)) then
-            n = n + 1
-        end if
-    end do
-
-    if (n == 0) return
-
-    ! Allocate or reallocate fypp_files array
-    if (allocated(fypp_files)) then
-        allocate(temp_files(size(fypp_files) + n))
-        temp_files(1:size(fypp_files)) = fypp_files
-        deallocate(fypp_files)
-        allocate(fypp_files(size(temp_files)))
-        fypp_files(1:size(temp_files)-n) = temp_files
-        deallocate(temp_files)
-    else
-        allocate(fypp_files(n))
-    end if
-
-    ! Add filtered .fypp files
-    n = size(fypp_files) - n + 1
-    do i = 1, n_new
-        if (is_fypp_file(files(i)%s)) then
-            fypp_files(n)%s = files(i)%s
-            n = n + 1
-        end if
-    end do
-
-end subroutine add_fypp_files_from_dir
-
 !> Build a list of unique source directories
 !>  from executables specified in manifest
 subroutine get_executable_source_dirs(exe_dirs,executables)
@@ -381,55 +324,45 @@ function get_exe_name_with_suffix(source) result(suffixed)
 
 end function get_exe_name_with_suffix
 
-!> Check if a file has the .fypp preprocessor extension
-logical function is_fypp_file(file_path) result(is_fypp)
+!> Whether a file has the `.fypp` extension (any case)
+logical function is_fypp_file(file_path)
     character(*), intent(in) :: file_path
-    is_fypp = str_ends_with(lower(file_path), fypp_suffix)
+    is_fypp_file = str_ends_with(lower(file_path), ".fypp")
 end function is_fypp_file
 
-!> Check if a .F90 file has a corresponding .fypp preprocessor file
-!> This is used to avoid compiling both the original .F90 and the preprocessed .f90
-!> from the .fypp file, which would create duplicate module definitions
-logical function has_fypp_equivalent(source_file, available_fypp_files) result(has_fypp)
-    character(*), intent(in) :: source_file
-    type(string_t), intent(in), optional :: available_fypp_files(:)
-    character(len=:), allocatable :: src_base, src_name, fypp_name
-    integer :: i, dot_pos
-    
-    has_fypp = .false.
-    
-    if (.not. present(available_fypp_files)) return
-    if (size(available_fypp_files) == 0) return
-    
-    ! Only check .F90 files
-    if (.not. str_ends_with(lower(source_file), ".F90")) return
-    
-    ! Get base name without extension
-    src_name = basename(source_file)
-    dot_pos = index(src_name, ".", back=.true.)
-    if (dot_pos > 0) then
-        allocate(character(len=dot_pos-1) :: src_base)
-        src_base = src_name(1:dot_pos-1)
-    else
-        allocate(character(len=len(src_name)) :: src_base)
-        src_base = src_name
-    end if
-    
-    ! Check if any .fypp file has the same base name
-    do i = 1, size(available_fypp_files)
-        if (str_ends_with(lower(available_fypp_files(i)%s), fypp_suffix)) then
-            fypp_name = basename(available_fypp_files(i)%s)
-            dot_pos = index(fypp_name, ".", back=.true.)
-            if (dot_pos > 0) then
-                if (fypp_name(1:dot_pos-1) == src_base) then
-                    has_fypp = .true.
-                    return
-                end if
-            end if
-        end if
+!> Lower-case canonical paths, without extension, of the `.fypp` files in a file list
+function fypp_stems(files) result(stems)
+    type(string_t), intent(in) :: files(:)
+    type(string_t), allocatable :: stems(:)
+
+    character(:), allocatable :: path
+    integer :: i
+
+    allocate(stems(0))
+    do i = 1, size(files)
+        if (.not.is_fypp_file(files(i)%s)) cycle
+        path = lower(canon_path(files(i)%s))
+        call add_strings(stems, string_t(path(1:len(path) - len(".fypp"))))
     end do
-    
-end function has_fypp_equivalent
+
+end function fypp_stems
+
+!> Whether `file` is a `.f90`/`.F90` file with a `.fypp` file of the same name in the same
+!> directory (`stems`: result of `fypp_stems`)
+logical function has_fypp_twin(file, stems)
+    character(*), intent(in) :: file
+    type(string_t), intent(in) :: stems(:)
+
+    character(:), allocatable :: stem
+
+    has_fypp_twin = .false.
+    if (size(stems) == 0) return
+    if (.not.str_ends_with(lower(file), ".f90")) return
+
+    stem = lower(canon_path(file))
+    has_fypp_twin = stem(1:len(stem) - len(".f90")) .in. stems
+
+end function has_fypp_twin
 
 !> Add one source file to a source file array with a loop (gcc-15 bug on array initializer)
 pure subroutine add_srcfile_one(list,new)

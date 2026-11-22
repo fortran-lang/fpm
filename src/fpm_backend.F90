@@ -34,10 +34,9 @@ use fpm_compiler, only: drop_compile_options
 use fpm_strings, only: string_t, operator(.in.)
 use fpm_targets, only: build_target_t, build_target_ptr, FPM_TARGET_OBJECT, &
                        FPM_TARGET_C_OBJECT, FPM_TARGET_ARCHIVE, FPM_TARGET_EXECUTABLE, &
-                       FPM_TARGET_CPP_OBJECT, FPM_TARGET_SHARED, FPM_TARGET_PREPROCESS
+                       FPM_TARGET_CPP_OBJECT, FPM_TARGET_SHARED
 use fpm_backend_output
 use fpm_compile_commands, only: compile_command_table_t
-use fpm_manifest_fypp, only: build_fypp_command
 implicit none
 
 private
@@ -82,7 +81,6 @@ subroutine build_package(targets,model,verbose,dry_run,jobs)
     allocate(build_dirs(0))
     do i = 1, size(targets)
        associate(target => targets(i)%ptr)
-          if (len_trim(target%output_dir) == 0) cycle  ! Skip empty directories
           if (target%output_dir .in. build_dirs) cycle
           temp%s = target%output_dir
           build_dirs = [build_dirs, temp]
@@ -377,14 +375,6 @@ subroutine build_target(model,target,verbose,dry_run,table,stat)
 
         call model%compiler%link_shared(target%output_file, target%link_flags, &
             & target%output_log_file, stat, dry_run)
-
-    case (FPM_TARGET_PREPROCESS)
-        ! Execute preprocessing (e.g., fypp)
-        if (.not.dry_run) then
-            call run(target%compile_flags, exitstat=stat)
-        else
-            stat = 0
-        end if
 
     end select
 

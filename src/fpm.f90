@@ -18,10 +18,10 @@ use fpm_compiler, only: new_compiler, new_archiver, set_cpp_preprocessor_flags, 
                         id_intel_llvm_unknown
 
 
-use fpm_sources, only: add_executable_sources, add_sources_from_dir, add_fypp_files_from_dir
+use fpm_sources, only: add_executable_sources, add_sources_from_dir
+use fpm_fypp, only: preprocess_fypp_dir
 use fpm_targets, only: targets_from_sources, build_target_t, build_target_ptr, &
-                        FPM_TARGET_EXECUTABLE, get_library_dirs, filter_executable_targets, &
-                        create_preprocess_targets, resolve_preprocessing_dependencies
+                        FPM_TARGET_EXECUTABLE, get_library_dirs, filter_executable_targets
 use fpm_manifest, only : get_package_data, package_config_t
 use fpm_manifest_platform, only: platform_config_t
 use fpm_meta, only : resolve_metapackages
@@ -56,7 +56,7 @@ subroutine build_model(model, settings, package_config, error)
     logical :: has_cpp
     logical :: duplicates_found, auto_exe, auto_example, auto_test
     type(string_t) :: include_dir
-    type(string_t), allocatable :: lib_dirs(:)
+    type(string_t), allocatable :: lib_dirs(:), lib_src(:)
     
     ! Large variables -> safer on heap
     allocate(package,dependency_config,dependency,target_platform)
@@ -140,9 +140,10 @@ subroutine build_model(model, settings, package_config, error)
     end if
 
     allocate(model%packages(model%deps%ndep))
-    allocate(lib_dirs(model%deps%ndep))
+    allocate(lib_dirs(model%deps%ndep), lib_src(model%deps%ndep))
     do i = 1, size(lib_dirs)
         lib_dirs(i)%s = ""
+        lib_src(i)%s = ""
     end do
     
     ! The current configuration may not have preprocessing, but some of its features may. 
@@ -199,7 +200,10 @@ subroutine build_model(model, settings, package_config, error)
 
                 if (allocated(manifest%library%source_dir)) then
                     lib_dir = join_path(dep%proj_dir, manifest%library%source_dir)
-                    if (is_dir(lib_dir)) lib_dirs(i)%s = lib_dir
+                    if (is_dir(lib_dir)) then
+                        lib_dirs(i)%s = lib_dir
+                        lib_src(i)%s = manifest%library%source_dir
+                    end if
                 end if
 
                 if (allocated(manifest%library%include_dir)) then
@@ -241,8 +245,9 @@ subroutine build_model(model, settings, package_config, error)
             with_f_ext=model%packages(i)%preprocess%suffixes, error=error, &
             preprocess=model%packages(i)%preprocess, include_dirs=model%include_dirs)
         if (allocated(error)) return
-        ! Discover .fypp preprocessor files
-        call add_fypp_files_from_dir(model%packages(i)%fypp_files, lib_dirs(i)%s, recurse=.true.)
+        call add_fypp_sources(model, i, lib_dirs(i)%s, lib_src(i)%s, FPM_SCOPE_LIB, .false., &
+                              settings%verbose, error)
+        if (allocated(error)) return
     end do
 
     ! Add optional flags
@@ -269,7 +274,8 @@ subroutine build_model(model, settings, package_config, error)
         if (allocated(error)) then
             return
         end if
-        call add_fypp_files_from_dir(model%packages(1)%fypp_files, 'app', recurse=.true.)
+        call add_fypp_sources(model, 1, 'app', 'app', FPM_SCOPE_APP, .true., settings%verbose, error)
+        if (allocated(error)) return
 
     end if
     if (is_dir('example') .and. auto_example) then
@@ -282,7 +288,9 @@ subroutine build_model(model, settings, package_config, error)
         if (allocated(error)) then
             return
         end if
-        call add_fypp_files_from_dir(model%packages(1)%fypp_files, 'example', recurse=.true.)
+        call add_fypp_sources(model, 1, 'example', 'example', FPM_SCOPE_EXAMPLE, .true., &
+                              settings%verbose, error)
+        if (allocated(error)) return
 
     end if
     if (is_dir('test') .and. auto_test) then
@@ -295,7 +303,8 @@ subroutine build_model(model, settings, package_config, error)
         if (allocated(error)) then
             return
         endif
-        call add_fypp_files_from_dir(model%packages(1)%fypp_files, 'test', recurse=.true.)
+        call add_fypp_sources(model, 1, 'test', 'test', FPM_SCOPE_TEST, .true., settings%verbose, error)
+        if (allocated(error)) return
 
     end if
     if (allocated(package%executable)) then
@@ -358,6 +367,28 @@ subroutine build_model(model, settings, package_config, error)
         call fpm_stop(1,'*build_model*:Error: One or more duplicate module names found.')
     end if
 end subroutine build_model
+
+!> Expand the `.fypp` files of a package source directory (if fypp is enabled for the package)
+!> into `<build_dir>/preprocess/<package>/<rel_dir>` and add the generated sources to the model
+subroutine add_fypp_sources(model, ipkg, src_dir, rel_dir, scope, with_executables, verbose, error)
+    type(fpm_model_t), intent(inout) :: model
+    !> Index of the package in model%packages
+    integer, intent(in) :: ipkg
+    !> Source directory, as scanned for sources
+    character(*), intent(in) :: src_dir
+    !> Source directory relative to the package root (names the output directory)
+    character(*), intent(in) :: rel_dir
+    integer, intent(in) :: scope
+    logical, intent(in) :: with_executables, verbose
+    type(error_t), allocatable, intent(out) :: error
+
+    if (.not.model%packages(ipkg)%preprocess%has_fypp()) return
+
+    call preprocess_fypp_dir(model%packages(ipkg)%sources, src_dir, &
+        join_path(model%build_dir, "preprocess", model%packages(ipkg)%name, rel_dir), scope, &
+        model%packages(ipkg)%preprocess, model%include_dirs, with_executables, verbose, error)
+
+end subroutine add_fypp_sources
 
 !> Helper: safely get string from either CLI or package, with fallback
 pure function assemble_flags(cli_flag, package_flag, fallback) result(flags)
@@ -561,87 +592,6 @@ subroutine check_module_names(model, error)
 
 end subroutine check_module_names
 
-!> Execute fypp preprocessing for all discovered .fypp files
-!> This runs BEFORE targets are created, so preprocessed files are available for source discovery
-subroutine run_fypp_preprocessing(model, error)
-    use, intrinsic :: iso_fortran_env, only: stderr => error_unit
-    use fpm_manifest_fypp, only: build_fypp_command, get_output_suffix_for_file
-    type(fpm_model_t), intent(in) :: model
-    type(error_t), allocatable, intent(out) :: error
-    
-    integer :: i, j, last_slash, stat
-    character(:), allocatable :: fypp_file, output_file, output_dir, fypp_cmd, output_suffix
-    character(:), allocatable :: file_base, file_dir, rel_dir, preprocess_base
-    character(len=:), allocatable :: fypp_exe
-    
-    ! Get the fypp executable
-    allocate(character(len=4) :: fypp_exe)
-    fypp_exe = "fypp"
-    
-    ! Determine base directory for preprocessed files
-    if (allocated(model%build_dir)) then
-        allocate(character(len=len_trim(model%build_dir)+12) :: preprocess_base)
-        preprocess_base = trim(model%build_dir)//"/preprocess"
-    else
-        allocate(character(len=18) :: preprocess_base)
-        preprocess_base = "./build/preprocess"
-    end if
-    
-    ! For each package, preprocess .fypp files
-    do i = 1, model%deps%ndep
-        if (.not.allocated(model%packages(i)%fypp_files)) cycle
-        if (size(model%packages(i)%fypp_files) == 0) cycle
-        
-        ! Preprocess each .fypp file
-        do j = 1, size(model%packages(i)%fypp_files)
-            fypp_file = model%packages(i)%fypp_files(j)%s
-            
-            ! Determine output suffix
-            output_suffix = get_output_suffix_for_file(fypp_file, &
-                model%packages(i)%preprocess%output_suffix, &
-                model%packages(i)%preprocess%skip_cpp_preprocessing, &
-                model%packages(i)%preprocess%force_cpp_preprocessing)
-            
-            ! Extract directory and base name
-            last_slash = max(index(fypp_file, "/", back=.true.), &
-                            index(fypp_file, "\", back=.true.))
-            if (last_slash > 0) then
-                file_dir = fypp_file(1:last_slash)
-                file_base = fypp_file(last_slash+1:len_trim(fypp_file)-5)
-            else
-                file_dir = ""
-                file_base = fypp_file(1:len_trim(fypp_file)-5)
-            end if
-            
-            ! Create output directory and file path
-            if (len_trim(file_dir) > 0) then
-                rel_dir = trim(file_dir)
-            else
-                rel_dir = "."
-            end if
-            
-            output_dir = trim(preprocess_base)//"/"//trim(rel_dir)
-            output_file = trim(output_dir)//"/"//trim(file_base)//"."//output_suffix
-            
-            ! Create output directory if it doesn't exist
-            call mkdir(output_dir)
-            
-            ! Build and execute fypp command
-            fypp_cmd = build_fypp_command(fypp_exe, fypp_file, output_file, &
-                model%packages(i)%preprocess%macros, model%include_dirs)
-            
-            ! Execute fypp (synchronously)
-            call execute_command_line(trim(fypp_cmd), .true., stat)
-            if (stat /= 0) then
-                ! Don't fail on preprocessing errors - let the compiler handle them
-                if (allocated(error)) deallocate(error)
-                ! print *, "Warning: fypp preprocessing of ", trim(fypp_file), " failed"
-            end if
-        end do
-    end do
-
-end subroutine run_fypp_preprocessing
-
 subroutine cmd_build(settings)
 type(fpm_build_settings), intent(inout) :: settings
 
@@ -670,49 +620,11 @@ if (allocated(error)) then
     call fpm_stop(1,'*cmd_build* Model error: '//error%message)
 end if
 
-! Run fypp preprocessing for all discovered .fypp files
-! This must happen BEFORE targets_from_sources so preprocessed files are discovered
-call run_fypp_preprocessing(model, error)
-if (allocated(error)) then
-    call lock%release()
-    call fpm_stop(1,'*cmd_build* Preprocessing error: '//error%message)
-end if
-
-! Discover preprocessed sources and add them to source list
-! This allows the compiler to find preprocessed .f90/.F90 files and their modules
-do i = 1, model%deps%ndep
-    if (.not.allocated(model%packages(i)%fypp_files)) cycle
-    if (size(model%packages(i)%fypp_files) == 0) cycle
-    
-    ! Add sources from the preprocessed directory
-    block
-        character(:), allocatable :: preprocess_dir
-        if (allocated(model%build_dir)) then
-            allocate(character(len=len_trim(model%build_dir)+12) :: preprocess_dir)
-            preprocess_dir = trim(model%build_dir)//"/preprocess"
-        else
-            allocate(character(len=18) :: preprocess_dir)
-            preprocess_dir = "./build/preprocess"
-        end if
-        
-        call add_sources_from_dir(model%packages(i)%sources, preprocess_dir, FPM_SCOPE_LIB, &
-            with_f_ext=model%packages(i)%preprocess%suffixes, error=error, &
-            preprocess=model%packages(i)%preprocess, include_dirs=model%include_dirs)
-        if (allocated(error)) return
-    end block
-end do
-
 call targets_from_sources(targets, model, settings%prune, package%library, error)
 if (allocated(error)) then
     call lock%release()
     call fpm_stop(1,'*cmd_build* Target error: '//error%message)
 end if
-
-! Create preprocessing targets for .fypp files
-call create_preprocess_targets(targets, model)
-
-! Resolve preprocessing dependencies (link compilation targets to preprocessing targets)
-call resolve_preprocessing_dependencies(targets)
 
 !> Dump model to file
 if (len_trim(settings%dump)>0) then
@@ -775,46 +687,11 @@ subroutine cmd_run(settings,test)
         call fpm_stop(1, '*cmd_run* Model error: '//error%message)
     end if
 
-    ! Run fypp preprocessing for all discovered .fypp files
-    call run_fypp_preprocessing(model, error)
-    if (allocated(error)) then
-        call lock%release()
-        call fpm_stop(1, '*cmd_run* Preprocessing error: '//error%message)
-    end if
-
-    ! Discover preprocessed sources and add them to source list
-    do i = 1, model%deps%ndep
-        if (.not.allocated(model%packages(i)%fypp_files)) cycle
-        if (size(model%packages(i)%fypp_files) == 0) cycle
-        
-        block
-            character(:), allocatable :: preprocess_dir
-            if (allocated(model%build_dir)) then
-                allocate(character(len=len_trim(model%build_dir)+12) :: preprocess_dir)
-                preprocess_dir = trim(model%build_dir)//"/preprocess"
-            else
-                allocate(character(len=18) :: preprocess_dir)
-                preprocess_dir = "./build/preprocess"
-            end if
-            
-            call add_sources_from_dir(model%packages(i)%sources, preprocess_dir, FPM_SCOPE_LIB, &
-                with_f_ext=model%packages(i)%preprocess%suffixes, error=error, &
-                preprocess=model%packages(i)%preprocess, include_dirs=model%include_dirs)
-            if (allocated(error)) return
-        end block
-    end do
-
     call targets_from_sources(targets, model, settings%prune, package%library, error)
     if (allocated(error)) then
         call lock%release()
         call fpm_stop(1, '*cmd_run* Targets error: '//error%message)
     end if
-
-    ! Create preprocessing targets for .fypp files
-    call create_preprocess_targets(targets, model)
-
-    ! Resolve preprocessing dependencies (link compilation targets to preprocessing targets)
-    call resolve_preprocessing_dependencies(targets)
 
     if (test) then
        run_scope = FPM_SCOPE_TEST
@@ -1055,50 +932,12 @@ subroutine delete_targets(settings, error)
         return
     end if
 
-    ! Run fypp preprocessing for all discovered .fypp files
-    call run_fypp_preprocessing(model, error)
-    if (allocated(error)) then
-        call lock%release()
-        return
-    end if
-
-    ! Discover preprocessed sources and add them to source list
-    block
-        integer :: i
-        do i = 1, model%deps%ndep
-            if (.not.allocated(model%packages(i)%fypp_files)) cycle
-            if (size(model%packages(i)%fypp_files) == 0) cycle
-            
-            block
-                character(:), allocatable :: preprocess_dir
-                if (allocated(model%build_dir)) then
-                    allocate(character(len=len_trim(model%build_dir)+12) :: preprocess_dir)
-                    preprocess_dir = trim(model%build_dir)//"/preprocess"
-                else
-                    allocate(character(len=18) :: preprocess_dir)
-                    preprocess_dir = "./build/preprocess"
-                end if
-                
-                call add_sources_from_dir(model%packages(i)%sources, preprocess_dir, FPM_SCOPE_LIB, &
-                    with_f_ext=model%packages(i)%preprocess%suffixes, error=error, &
-                    preprocess=model%packages(i)%preprocess, include_dirs=model%include_dirs)
-                if (allocated(error)) return
-            end block
-        end do
-    end block
-
     ! Get the exact targets
     call targets_from_sources(targets, model, settings%prune, package%library, error)
     if (allocated(error)) then
         call lock%release()
         return
     end if
-
-    ! Create preprocessing targets for .fypp files
-    call create_preprocess_targets(targets, model)
-
-    ! Resolve preprocessing dependencies (link compilation targets to preprocessing targets)
-    call resolve_preprocessing_dependencies(targets)
 
     deleted_any = .false.
 
