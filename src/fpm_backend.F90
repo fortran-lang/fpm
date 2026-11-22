@@ -25,13 +25,13 @@
 !>
 module fpm_backend
 
-use,intrinsic :: iso_fortran_env, only : stdin=>input_unit, stdout=>output_unit, stderr=>error_unit
+use,intrinsic :: iso_fortran_env, only : stdin=>input_unit, stdout=>output_unit, stderr=>error_unit, int64
 use fpm_error, only : fpm_stop, error_t
 use fpm_environment, only: has_openmp, build_threads
-use fpm_filesystem, only: basename, dirname, join_path, exists, mkdir, run, getline
+use fpm_filesystem, only: basename, dirname, join_path, exists, mkdir, run, getline, delete_file
 use fpm_model, only: fpm_model_t
-use fpm_compiler, only: drop_compile_options
-use fpm_strings, only: string_t, operator(.in.)
+use fpm_compiler, only: drop_compile_options, id_gcc
+use fpm_strings, only: string_t, operator(.in.), fnv_1a
 use fpm_targets, only: build_target_t, build_target_ptr, FPM_TARGET_OBJECT, &
                        FPM_TARGET_C_OBJECT, FPM_TARGET_ARCHIVE, FPM_TARGET_EXECUTABLE, &
                        FPM_TARGET_CPP_OBJECT, FPM_TARGET_SHARED
@@ -337,6 +337,14 @@ subroutine build_target(model,target,verbose,dry_run,table,stat)
 
     integer :: fh
     character(len=:), allocatable :: link_flags
+    logical :: interface_aware, unchanged
+
+    ! gfortran rewrites a .mod file only when the module interface changes, so an object
+    ! whose source and whose dependencies' interfaces are unchanged needs no recompile,
+    ! even if a dependency was recompiled. Other compilers keep the full cascade
+    interface_aware = .not.dry_run .and. target%target_type == FPM_TARGET_OBJECT &
+            .and. model%compiler%id == id_gcc
+    unchanged = .false.
 
     ! Check and create the output directory under one lock, so two threads never
     ! both create it: on Windows, mkdir fails if the directory already exists
@@ -349,8 +357,13 @@ subroutine build_target(model,target,verbose,dry_run,table,stat)
     select case(target%target_type)
 
     case (FPM_TARGET_OBJECT)
-        call model%compiler%compile_fortran(target%source%file_name, target%output_file, &
-            & target%compile_flags, target%output_log_file, stat, table, dry_run)
+        if (interface_aware) unchanged = object_can_skip(target)
+        if (unchanged) then
+            stat = 0
+        else
+            call model%compiler%compile_fortran(target%source%file_name, target%output_file, &
+                & target%compile_flags, target%output_log_file, stat, table, dry_run)
+        end if
 
     case (FPM_TARGET_C_OBJECT)
         call model%compiler%compile_c(target%source%file_name, target%output_file, &
@@ -384,7 +397,157 @@ subroutine build_target(model,target,verbose,dry_run,table,stat)
         close(fh)
     end if
 
+    if (interface_aware .and. .not.unchanged) call record_interfaces(target, stat == 0)
+
 end subroutine build_target
+
+
+!> Whether an object queued for rebuild can keep its output: true only if it was last
+!> compiled from the same source and against the same dependency module interfaces.
+!> The record `<object>.iface` holds the source digest, the fingerprint of the
+!> dependencies' interfaces and the fingerprint of the modules the object provides
+logical function object_can_skip(target) result(can_skip)
+    type(build_target_t), intent(in) :: target
+
+    integer(int64) :: record(3), deps
+    logical :: ok
+
+    can_skip = .false.
+    if (.not.allocated(target%source) .or. .not.exists(target%output_file)) return
+
+    call read_record(target%output_file, record, ok)
+    if (.not.ok .or. record(1) /= target%source%digest) return
+
+    deps = deps_fingerprint(target, ok)
+    if (ok) can_skip = record(2) == deps
+
+end function object_can_skip
+
+
+!> Write the interface record of a compiled object, or delete it if the compile failed
+!> or a fingerprint cannot be taken, which forces a rebuild of the object and its dependents
+subroutine record_interfaces(target, compiled)
+    type(build_target_t), intent(in) :: target
+    logical, intent(in) :: compiled
+
+    integer(int64) :: deps, mods
+    integer :: fh
+    logical :: ok
+
+    ok = compiled .and. allocated(target%source)
+    if (ok) deps = deps_fingerprint(target, ok)
+    if (ok) mods = module_fingerprint(target, ok)
+    if (ok) then
+        open(newunit=fh,file=target%output_file//'.iface',status='unknown')
+        write(fh,*) target%source%digest, deps, mods
+        close(fh)
+    else
+        call delete_file(target%output_file//'.iface')
+    end if
+
+end subroutine record_interfaces
+
+
+!> Read the interface record of an object. `ok` is false if it is missing or unreadable
+subroutine read_record(object, record, ok)
+    character(*), intent(in) :: object
+    integer(int64), intent(out) :: record(3)
+    logical, intent(out) :: ok
+
+    integer :: fh, ios
+
+    ok = .false.
+    open(newunit=fh,file=object//'.iface',status='old',action='read',iostat=ios)
+    if (ios /= 0) return
+    read(fh,*,iostat=ios) record
+    close(fh)
+    ok = ios == 0
+
+end subroutine read_record
+
+
+!> Hash of the module files (`.mod`, and `.smod` for submodules) an object provides.
+!> `ok` is false if a `.mod` file cannot be read
+integer(int64) function module_fingerprint(target, ok) result(fp)
+    type(build_target_t), intent(in) :: target
+    logical, intent(out) :: ok
+
+    character(:), allocatable :: mod_base
+    integer :: i
+
+    fp = 0
+    ok = .true.
+    if (.not.allocated(target%source%modules_provided)) return
+
+    do i=1,size(target%source%modules_provided)
+
+        ! Build threads share deferred-length function results: see build_package
+        !$omp critical (fpm_string_result)
+        mod_base = join_path(target%output_dir, target%source%modules_provided(i)%s)
+        !$omp end critical (fpm_string_result)
+
+        call hash_file(mod_base//'.mod', fp, ok)
+        if (.not.ok) return
+
+        ! Submodules use the private entities of their ancestor, which are only in .smod
+        if (exists(mod_base//'.smod')) then
+            call hash_file(mod_base//'.smod', fp, ok)
+            if (.not.ok) return
+        end if
+
+    end do
+
+end function module_fingerprint
+
+
+!> Hash of the recorded module fingerprints of the dependencies of an object.
+!> `ok` is false if a dependency is not a Fortran object or has no record
+integer(int64) function deps_fingerprint(target, ok) result(fp)
+    type(build_target_t), intent(in) :: target
+    logical, intent(out) :: ok
+
+    integer(int64) :: record(3)
+    character(8) :: bytes
+    integer :: i
+
+    fp = 0
+    ok = .true.
+    do i=1,size(target%dependencies)
+        associate(dependency => target%dependencies(i)%ptr)
+            ok = dependency%target_type == FPM_TARGET_OBJECT
+            if (ok) call read_record(dependency%output_file, record, ok)
+            if (.not.ok) return
+            bytes = transfer(record(3), bytes)
+            fp = fnv_1a(bytes, fp)
+        end associate
+    end do
+
+end function deps_fingerprint
+
+
+!> Update a hash with the bytes of a file
+subroutine hash_file(path, fp, ok)
+    character(*), intent(in) :: path
+    integer(int64), intent(inout) :: fp
+    logical, intent(out) :: ok
+
+    character(:), allocatable :: bytes
+    integer :: fh, ios, n
+
+    ok = .false.
+    open(newunit=fh,file=path,access='stream',form='unformatted',status='old', &
+            action='read',iostat=ios)
+    if (ios /= 0) return
+    inquire(unit=fh,size=n)
+    allocate(character(len=max(n,0)) :: bytes)
+    read(fh,iostat=ios) bytes
+    close(fh)
+    if (n < 0 .or. ios /= 0) return
+
+    fp = fnv_1a(bytes, fp)
+    ok = .true.
+
+end subroutine hash_file
 
 
 !> Read and print the build log for target
