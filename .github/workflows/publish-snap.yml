@@ -9,6 +9,10 @@ on:
   schedule:
     - cron: '0 6 * * 1'
   workflow_dispatch:
+  workflow_call:
+    secrets:
+      SNAPCRAFT_STORE_CREDENTIALS:
+        required: true
 
 concurrency:
   group: publish-snap
@@ -27,6 +31,15 @@ jobs:
         include:
           - arch: amd64
             runner: ubuntu-24.04
+          - arch: arm64
+            runner: ubuntu-24.04-arm
+          # Cross-compiled (see snapcraft.yaml)
+          - arch: armhf
+            runner: ubuntu-24.04
+          - arch: ppc64el
+            runner: ubuntu-24.04
+          - arch: s390x
+            runner: ubuntu-24.04
 
     steps:
       - uses: actions/checkout@v7
@@ -39,7 +52,7 @@ jobs:
           SNAPCRAFT_BUILD_INFO: 1
         run: |
           sudo snap install snapcraft --classic
-          snapcraft pack
+          snapcraft pack --platform ${{ matrix.arch }}
           echo "snap=$(ls *.snap)" >> "$GITHUB_OUTPUT"
 
       - uses: actions/upload-artifact@v7

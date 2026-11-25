@@ -1,0 +1,112 @@
+name: 🛡️ Security Rebuild
+
+# Once a week (Thursdays, between the Monday publish runs), runs the Snap
+# Store's own check (review-tools.snap-check-notices) on the snaps published on
+# stable. If Ubuntu has fixed a package bundled in them (libgfortran and
+# friends), publish-snap.yml rebuilds and releases to stable.
+#
+# By hand (Run workflow): dry_run only reports; force rebuilds regardless.
+
+on:
+  schedule:
+    - cron: "17 9 * * 4"
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: "Only check and report - don't rebuild or publish"
+        type: boolean
+        default: true
+      force:
+        description: "Rebuild even if nothing needs it"
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+
+concurrency:
+  group: security-rebuild
+  cancel-in-progress: false
+
+env:
+  SNAP_NAME: fortran-fpm
+
+jobs:
+  check:
+    runs-on: ubuntu-24.04
+    outputs:
+      rebuild: ${{ steps.decide.outputs.rebuild }}
+    steps:
+      - name: Install review-tools
+        run: |
+          for attempt in 1 2 3; do
+            sudo snap install review-tools && break
+            [[ "$attempt" == 3 ]] && { echo "::error::snap install review-tools failed"; exit 1; }
+            sleep 30
+          done
+          # Fetched and verified here: on a checksum mismatch review-tools keeps
+          # the bad file and reuses it for a day. USNDB points it at this copy.
+          export USNDB="$RUNNER_TEMP/usn-database.json"
+          for attempt in 1 2 3 4 5; do
+            if curl -fsSL --retry 3 -o "$USNDB.sha256" https://usn.ubuntu.com/usn-db/database.json.sha256 \
+              && curl -fsSL --retry 3 -o "$USNDB" https://usn.ubuntu.com/usn-db/database.json \
+              && [[ "$(sha256sum "$USNDB" | cut -d' ' -f1)" == "$(cut -d' ' -f1 "$USNDB.sha256")" ]]; then
+              break
+            fi
+            [[ "$attempt" == 5 ]] && { echo "::error::security notices database download failed 5 times"; exit 1; }
+            sleep 60
+          done
+          echo "USNDB=$USNDB" >> "$GITHUB_ENV"
+
+      - name: Check the stable snaps for security notices
+        run: |
+          # Only the architectures that are on stable. A store outage fails here.
+          curl -fsS --retry 5 --retry-all-errors -H 'Snap-Device-Series: 16' \
+            "https://api.snapcraft.io/v2/snaps/info/$SNAP_NAME" > info.json
+          archs="$(jq -r '."channel-map"[] | select(.channel.track == "latest" and .channel.risk == "stable") | .channel.architecture' info.json | sort -u)"
+          [[ -n "$archs" ]] || { echo "::error::nothing on stable"; exit 1; }
+          for arch in $archs; do
+            for attempt in 1 2 3; do
+              UBUNTU_STORE_ARCH=$arch snap download "$SNAP_NAME" --channel=stable --basename="$arch" && break
+              [[ "$attempt" == 3 ]] && { echo "::error::snap download ($arch) failed"; exit 1; }
+              sleep 30
+            done
+            review-tools.snap-check-notices "$arch.snap" > "notices-$arch.json"
+          done
+
+      - name: Decide
+        id: decide
+        env:
+          FORCE: ${{ inputs.force }}
+          DRY_RUN: ${{ inputs.dry_run }}
+        run: |
+          python3 - <<'PY'
+          import glob, json, os
+
+          needed, lines = False, []
+          for path in sorted(glob.glob("notices-*.json")):
+              arch = path[len("notices-"):-len(".json")]
+              raw = json.load(open(path))
+              notices = next(iter(next(iter(raw.values())).values()), {}) if raw else {}
+              lines.append(f"- {arch}: {sum(map(len, notices.values()))} notice(s)")
+              for pkg, usns in sorted(notices.items()):
+                  needed = True
+                  lines.append(f"  - `{pkg}`: {', '.join(usns)}")
+          rebuild = needed or os.environ["FORCE"] == "true"
+          if rebuild and os.environ["DRY_RUN"] == "true":
+              lines.append("\nDry run: would rebuild.")
+              rebuild = False
+          else:
+              lines.append(f"\nRebuild: {rebuild}")
+          report = "\n".join(lines) + "\n"
+          print(report)
+          open(os.environ["GITHUB_STEP_SUMMARY"], "a").write(report)
+          open(os.environ["GITHUB_OUTPUT"], "a").write(f"rebuild={str(rebuild).lower()}\n")
+          PY
+
+  publish:
+    needs: check
+    if: needs.check.outputs.rebuild == 'true'
+    uses: ./.github/workflows/publish-snap.yml
+    secrets:
+      SNAPCRAFT_STORE_CREDENTIALS: ${{ secrets.SNAPCRAFT_STORE_CREDENTIALS }}

@@ -23,7 +23,7 @@ jobs:
           SNAPCRAFT_BUILD_INFO: 1
         run: |
           sudo snap install snapcraft --classic
-          snapcraft pack
+          snapcraft pack --platform amd64
           echo "snap=$(ls *.snap)" >> "$GITHUB_OUTPUT"
 
       - uses: snapcrafters/ci/review-snap@main
